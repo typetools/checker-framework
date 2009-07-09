@@ -195,7 +195,8 @@ problems more effectively.
 
 \subsubsection{The short instructions (for Linux only)}
 
-%% This text is identically reproduced at ../../langtools/README-jsr308.html
+%%% This comment does not seem to be correct any longer.
+%% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
 %% so if you change either one, change the other also!
 
 The following commands install
@@ -256,8 +257,8 @@ etc.
   siblings.
 
 \item Add to your classpath:
-  \code{\$JSR308/langtools/lib/tools.jar} and
-  \code{\$JSR308/checkers/checkers.jar}.
+  \code{\$JSR308/jsr308-langtools/lib/tools.jar} and
+  \code{\$JSR308/checker-framework/checkers/checkers.jar}.
   (If you do not do this, you will have to supply the \code{-cp} option
   whenever you run \code{javac} and use a checker plugin.)  Example
   commands:
@@ -267,7 +268,7 @@ etc.
 %END LATEX
 \begin{Verbatim}
   export JSR308=${HOME}/jsr308
-  export CLASSPATH=${CLASSPATH}:$JSR308/langtools/lib/tools.jar:$JSR308/checkers/checkers.jar
+  export CLASSPATH=${CLASSPATH}:$JSR308/jsr308-langtools/lib/tools.jar:$JSR308/checker-framework/checkers/checkers.jar
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
