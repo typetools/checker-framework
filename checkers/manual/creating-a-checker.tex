@@ -546,7 +546,39 @@ the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
 
+\subsubsection{Bundling multiple checkers}
 
+% TODO: Have better explanation on why one would want to bundle checkers
+% and why passing checkers in commandline is error-prone
+
+Users need to specify the checker class name in command line
+\<-processor> flag to invoke each checker.  When multiple related
+checkers need to be run together as a unit, users will have to pass
+each checker class name, like:
+
+\begin{Verbatim}
+  javac -processor DistanceUnitChecker -processor SpeedUnitChecker ... files ...
+\end{Verbatim}
+
+Alternatively, an aggregate checker class is declared to combine these
+multiple checkers.  \refclass{util}{AggregateChecker} forms a
+convenient base class for such situation, where the checkers can be
+declared in one method, like the following:
+
+\begin{Verbatim}
+  public class UnitCheckers extends AggregateChecker {
+    protected abstract Collection<Class<? extends SourceChecker>>
+    getSupportedCheckers() {
+      return Arrays.asList(DistanceUnitChecker.class, SpeedUnitChecker);
+    }
+  }
+\end{Verbatim}
+
+Now, users can simply pass \<UnitCheckers> a single argument to the commandline:
+
+\begin{Verbatim}
+  javac -processor UnitCheckers ... files ...
+\end{Verbatim}
 
 \subsection{Testing framework}
 
