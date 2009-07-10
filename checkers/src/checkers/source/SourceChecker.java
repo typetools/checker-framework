@@ -531,6 +531,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         // Inferring key from class name
         String className = this.getClass().getSimpleName();
         int indexOfChecker = className.lastIndexOf("Checker");
+        if (indexOfChecker == -1)
+        	indexOfChecker = className.lastIndexOf("Subchecker");
         String key = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
         return Collections.singleton(key.trim().toLowerCase());
     }

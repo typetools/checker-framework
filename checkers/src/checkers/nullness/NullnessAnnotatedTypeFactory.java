@@ -68,6 +68,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final TreeAnnotator treeAnnotator;
     private final QualifierPolymorphism poly;
     private final DependentTypes dependentTypes;
+    /*package*/ final AnnotatedTypeFactory rawnessFactory;
 
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
@@ -78,7 +79,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final CollectionToArrayHeauristics collectionToArrayHeauristics;
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
-    public NullnessAnnotatedTypeFactory(NullnessChecker checker,
+    public NullnessAnnotatedTypeFactory(NullnessSubchecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
@@ -98,6 +99,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         this.poly = new QualifierPolymorphism(checker, this);
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
+
+        RawnessSubchecker rawness = new RawnessSubchecker();
+        rawness.currentPath = checker.currentPath;
+        rawness.init(checker.getProcessingEnvironment());
+        rawnessFactory = rawness.createFactory(root);
 
         flow = new NullnessFlow(checker, root, this);
         flow.scan(root, null);
@@ -138,11 +144,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
         AnnotatedDeclaredType type = super.getImplicitReceiverType(tree);
-        // 'this' should always be nonnull, unless it's raw
-        if (type != null && !type.hasAnnotation(RAW)) {
-            type.clearAnnotations();
-            type.addAnnotation(NONNULL);
-        }
+//        // 'this' should always be nonnull, unless it's raw
+//        if (type != null && !type.hasAnnotation(RAW)) {
+//            type.clearAnnotations();
+//            type.addAnnotation(NONNULL);
+//        }
         return type;
     }
 
@@ -222,7 +228,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         // case 13
-        final AnnotatedTypeMirror select = getReceiver((ExpressionTree) tree);
+        final AnnotatedTypeMirror select = rawnessFactory.getReceiver((ExpressionTree) tree);
         if (select != null && select.hasAnnotation(RAW)
                 && !type.hasAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
             boolean wasNN = type.hasAnnotation(NONNULL);

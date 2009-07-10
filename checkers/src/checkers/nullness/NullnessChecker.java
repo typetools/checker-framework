@@ -1,12 +1,14 @@
 package checkers.nullness;
 
-import checkers.basetype.BaseTypeChecker;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import checkers.nullness.quals.*;
-import checkers.quals.TypeQualifiers;
 import checkers.source.*;
+import checkers.util.AggregateChecker;
 
 /**
- * A typechecker plug-in for the Nullness type system qualifier that finds (and
+ * A typechecker plug-in for the Rawness type system qualifier that finds (and
  * verifies the absence of) null-pointer errors.
  *
  * @see NonNull
@@ -14,6 +16,13 @@ import checkers.source.*;
  * @see Raw
  * @manual #nullness-checker Nullness Checker
  */
-@TypeQualifiers({ Nullable.class, LazyNonNull.class, Raw.class, NonNull.class, PolyNull.class })
-@SupportedLintOptions({"flow", "cast", "cast:redundant", "nulltest"})
-public class NullnessChecker extends BaseTypeChecker {}
+public class NullnessChecker extends AggregateChecker {
+
+	@Override
+	protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+		Collection<Class<? extends SourceChecker>> checkers = new ArrayList<Class<? extends SourceChecker>>(2);
+		checkers.add(NullnessSubchecker.class);
+		checkers.add(RawnessSubchecker.class);
+		return checkers;
+	}
+}
