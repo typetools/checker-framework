@@ -25,7 +25,7 @@ import checkers.quals.*;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
 @TypeQualifier
-@SubtypeOf( {} )
-public @interface Raw {
-    //Class<?> upTo() default Object.class;
+@DefaultQualifierInHierarchy
+@SubtypeOf( Raw.class )
+public @interface NonRaw {
 }
