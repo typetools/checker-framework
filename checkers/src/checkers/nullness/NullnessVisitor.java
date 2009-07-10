@@ -35,7 +35,7 @@ import com.sun.source.tree.*;
  *
  * Self-accesses (via {@code this} or {@code super}) can always be dereferenced.
  *
- * @see NullnessChecker
+ * @see NullnessSubchecker
  */
 public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
@@ -49,7 +49,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
      * @param checker the checker to use
      * @param root the root of the input program's AST to check
      */
-    public NullnessVisitor(NullnessChecker checker, CompilationUnitTree root) {
+    public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
         NONNULL = this.annoFactory.fromClass(NonNull.class);
         NULLABLE = this.annoFactory.fromClass(Nullable.class);

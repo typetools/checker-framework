@@ -244,7 +244,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
-                checkerClass.getName().replace("Checker", "Visitor");
+                checkerClass.getName().replace("Checker", "Visitor")
+                .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?, ?> result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { this.getClass(), CompilationUnitTree.class },
                     new Object[] { this, root });
@@ -280,7 +281,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
         Class<?> checkerClass = this.getClass();
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
-                checkerClass.getName().replace("Checker", "AnnotatedTypeFactory");
+                checkerClass.getName().replace("Checker", "AnnotatedTypeFactory")
+                .replace("Subchecker", "AnnotatedTypeFactory");
 
             AnnotatedTypeFactory result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { this.getClass(), CompilationUnitTree.class },
