@@ -256,6 +256,10 @@ public abstract class AnnotatedTypeMirror {
         if (a == null) return;
         if (typeFactory.isSupportedQualifier(a))
             this.annotations.add(a);
+        else {
+            AnnotationMirror aliased = typeFactory.aliasedAnnotation(a);
+            addAnnotation(aliased);
+        }
     }
 
     /**

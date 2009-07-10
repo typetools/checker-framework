@@ -177,4 +177,6 @@ public class NullnessTest extends CheckerTest {
     @Test public void testLazyInitialization() { test(); }
 
     @Test public void testSuperCall() { test(); }
+
+    @Test public void testFindBugs() { test(); }
 }

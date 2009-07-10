@@ -1,7 +1,9 @@
 package checkers.nullness;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -74,6 +76,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
     /** Represents the Nullness Checker qualifiers */
     protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
+    Map<String, AnnotationMirror> aliases;
 
     private final MapGetHeauristics mapGetHeauristics;
     private final CollectionToArrayHeauristics collectionToArrayHeauristics;
@@ -93,6 +96,21 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         RAW = this.annotations.fromClass(Raw.class);
         NULLABLE = this.annotations.fromClass(Nullable.class);
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
+
+        aliases = new HashMap<String, AnnotationMirror>();
+
+        // aliases for nonnull
+        aliases.put(edu.umd.cs.findbugs.annotations.NonNull.class.getCanonicalName(), NONNULL);
+        aliases.put(javax.annotation.Nonnull.class.getCanonicalName(), NONNULL);
+        aliases.put(org.jetbrains.annotations.NotNull.class.getCanonicalName(), NONNULL);
+
+        // aliases for nullable
+        aliases.put(edu.umd.cs.findbugs.annotations.CheckForNull.class.getCanonicalName(), NULLABLE);
+        aliases.put(edu.umd.cs.findbugs.annotations.Nullable.class.getCanonicalName(), NULLABLE);
+        aliases.put(edu.umd.cs.findbugs.annotations.UnknownNullness.class.getCanonicalName(), NULLABLE);
+        aliases.put(javax.annotation.CheckForNull.class.getCanonicalName(), NULLABLE);
+        aliases.put(javax.annotation.Nullable.class.getCanonicalName(), NULLABLE);
+        aliases.put(org.jetbrains.annotations.Nullable.class.getCanonicalName(), NULLABLE);
 
         defaults = new QualifierDefaults(this, this.annotations);
         defaults.setAbsoluteDefaults(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
@@ -432,4 +450,16 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             return elt.equals(catchParamElt);
         }
     }
+
+    /**
+     * Aliased annotations.
+     *
+     */
+    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+
+        String qualName = elem.getQualifiedName().toString();
+        return aliases.get(qualName);
+    }
+
 }
