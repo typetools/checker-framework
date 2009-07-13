@@ -1,3 +1,20 @@
+Version 0.9.5, 13 Jul 2009
+
+Functionality
+  Added support for Findbugs, JSR305, and IntelliJ nullness annotations
+  Added an Aggregate Checker base-class
+  Added support for a form of field access control
+
+Bug fixes
+  Added check for arguments in super() calls in constructors
+
+Manual
+  Added new sections:
+    Fields access control
+    Other tools for nullness checking
+    Bundling multiple checkers
+
+----------------------------------------------------------------------
 Version 0.9.4, 30 Jun 2009
 
 Functionality
