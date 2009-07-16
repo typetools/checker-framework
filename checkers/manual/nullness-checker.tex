@@ -543,7 +543,9 @@ indicate a nullable variable that FindBugs should check.)  For example:
 
 The Checker Framework does not emulate this behavior of FindBugs, even if
 you are using FindBugs annotations.
-When using the Checker Framework, if you wish to suppress warnings at a
+The Checker Framework will issue more warnings than FindBugs, and some of
+them may be about real bugs in your program.
+If you wish to suppress warnings at a
 specific client use where the value is known to be non-null, you should do that
 at the client use.  For example:
 % not at the definition site
