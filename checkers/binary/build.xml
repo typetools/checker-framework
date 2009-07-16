@@ -1,6 +1,6 @@
 <project name="JSR 308 binary distribution script" default="dist" basedir=".">
 
-  <property name="javac.lib" value="../../jsr308-langtools/dist/lib/javac.jar"/>
+  <property name="javac.lib" value="../../../jsr308-langtools/dist/lib/javac.jar"/>
   <property name="checkers.lib" value="../checkers.jar"/>
   <property name="dist.file" value="jsr308-all.jar"/>
   <property name="temp.dir" value="build"/>
