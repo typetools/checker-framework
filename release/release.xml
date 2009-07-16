@@ -14,6 +14,7 @@
 
     <target name="-prep-checkdiff">
         <!-- Checks that TargetType is in sync in scene-lib & langtools. -->
+<!--
         <exec executable="diff" failonerror="true">
             <arg value="${targettype.scene-lib.dir}/TargetType.java"/>
             <arg value="${targettype.langtools.dir}/TargetType.java"/>
@@ -21,6 +22,7 @@
 	    <arg line="-I '^import'"/>
             <arg line="-w"/>
         </exec>
+-->
     </target>
 
 
