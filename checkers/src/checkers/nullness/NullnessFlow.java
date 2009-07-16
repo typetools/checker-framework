@@ -6,6 +6,7 @@ import javax.lang.model.element.*;
 
 import checkers.flow.*;
 import checkers.nullness.quals.*;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.TreeUtils;
 
@@ -32,12 +33,13 @@ import com.sun.source.util.*;
  * possibly-null in the argument for {@code bar}.
  *
  * @see Flow
- * @see NullnessChecker
+ * @see NullnessSubchecker
  */
 class NullnessFlow extends Flow {
 
     private final AnnotationMirror POLYNULL, RAW, NONNULL;
     private boolean isNullPolyNull;
+    private final AnnotatedTypeFactory rawFactory;
 
     /**
      * Creates a NonNull-specific flow-sensitive inference.
@@ -47,13 +49,14 @@ class NullnessFlow extends Flow {
      * @param annotations the annotations to use
      * @param factory the type factory to use
      */
-    public NullnessFlow(NullnessChecker checker, CompilationUnitTree root,
+    public NullnessFlow(NullnessSubchecker checker, CompilationUnitTree root,
             NullnessAnnotatedTypeFactory factory) {
         super(checker, root, Collections.singleton(factory.NONNULL), factory);
         POLYNULL = factory.POLYNULL;
         RAW = factory.RAW;
         NONNULL = factory.NONNULL;
         isNullPolyNull = false;
+        this.rawFactory = factory.rawnessFactory;
     }
 
     /**
@@ -498,7 +501,7 @@ class NullnessFlow extends Flow {
      * @return true if the method has a {@link Raw} receiver, false otherwise
      */
     private final boolean hasRawReceiver(MethodTree node) {
-        return factory.getAnnotatedType(node).getReceiverType().hasAnnotation(RAW);
+        return rawFactory.getAnnotatedType(node).getReceiverType().hasAnnotation(RAW);
     }
 
     /**

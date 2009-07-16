@@ -872,6 +872,18 @@ public class AnnotatedTypeFactory {
     }
 
     /**
+     * Returns the canonical annotation for the passed annotation if it is
+     * an alias of a canonical one in the framework.  If it is not an alias,
+     * the method returns null.
+     * 
+     * 
+     * Returns an aliased type of the current one
+     */
+    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        return null;
+    }
+
+    /**
      * A convenience method that converts a {@link TypeMirror} to an {@link
      * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#create}.
      *

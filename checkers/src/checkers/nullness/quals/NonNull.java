@@ -29,7 +29,7 @@ import com.sun.source.tree.Tree;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
 @TypeQualifier
-@SubtypeOf( Raw.class )
+@SubtypeOf( LazyNonNull.class )
 @ImplicitFor(
     types={TypeKind.PACKAGE},
     typeClasses={AnnotatedPrimitiveType.class},

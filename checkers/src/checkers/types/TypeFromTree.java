@@ -574,7 +574,7 @@ abstract class TypeFromTree extends
                 = new LinkedList<AnnotatedTypeMirror>();
             for (Tree t : node.getBounds()) {
                 AnnotatedTypeMirror bound;
-                if (visitedBounds.containsKey(t))
+                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory)
                     bound = visitedBounds.get(t);
                 else {
                     visitedBounds.put(t, f.type(t));
