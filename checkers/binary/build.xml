@@ -1,0 +1,36 @@
+<project name="JSR 308 binary distribution script" default="dist" basedir=".">
+
+  <property name="javac.lib" value="../../jsr308-langtools/dist/lib/javac.jar"/>
+  <property name="checkers.lib" value="../checkers.jar"/>
+  <property name="dist.file" value="jsr308-all.jar"/>
+  <property name="temp.dir" value="build"/>
+
+  <target name="-prep"
+          description="ensures that the necessary jar files exist">
+    <!-- check javac.jar -->
+    <available property="javac.exist" file="${javac.lib}"/>
+    <fail unless="javac.exist" message="Could not find javac.jar"/>
+    
+    <!-- check checkers.jar -->
+    <available property="checkers.exist" file="${checkers.lib}"/>
+    <fail unless="checkers.exist" message="Could not find checkers.jar"/>
+  </target>
+
+  <target name="dist" depends="-prep"
+          description="Generates a jar file including the checkers and javac classes">
+    <delete dir="${temp.dir}"/>
+    <unjar src="${checkers.lib}" dest="${temp.dir}"/>
+    <unjar src="${javac.lib}" dest="${temp.dir}"/>
+    <jar destfile="${dist.file}" basedir="${temp.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="com.sun.tools.javac.Main"/>
+      </manifest>
+    </jar>
+    <delete dir="${temp.dir}"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${temp.dir}"/>
+    <delete file="${dist.file}"/>
+  </target>
+</project>
