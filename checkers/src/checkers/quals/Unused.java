@@ -6,10 +6,10 @@ import java.lang.annotation.*;
 
 /**
  * Declares that the field may not be accessed if the receiver is of the
- * specified qualifier type.
+ * specified qualifier type (or any supertype).
  *
- * The checker that type-checks the {@code when} element value qualifier
- * verifies that property.
+ * This property is verified by the checker that type-checks the {@code
+ * when} element value qualifier.
  *
  * <p><b>Example</b>
  * Consider a class, {@code Table}, with a locking field, {@code lock}.  The
@@ -25,13 +25,11 @@ import java.lang.annotation.*;
  * }
  * </code></pre>
  *
- * The appropriate checker (which type-checks the specified qualifier) is to
- * issue an error whenever the lock is used in a {@code LocalToThread}, like
- * in the following case:
+ * The checker for @LocalToThread would issue an error for the following code:
  *
  * <pre><code>
- *   final @LocalToThread Table table = ....;
- *   table.lock.lock();
+ *   @LocalToThread Table table = ...;
+ *   ... table.lock ...;
  * </code></pre>
  *
  */
@@ -39,5 +37,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({FIELD})
 public @interface Unused {
+    /**
+     * The field that is annotated with @Unused may not be accessed via a
+     * receiver that is annotated with the "when" annotation.
+     */
     Class<? extends Annotation> when();
 }
