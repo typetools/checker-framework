@@ -1,0 +1,26 @@
+<project name="personalblog" basedir="." default="pblog">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+    <property name="pblog.lib" value="../lib/pblog/activation.jar:../lib/pblog/c3p0.jar:../lib/pblog/cglib-asm.jar:../lib/pblog/commons-beanutils.jar:../lib/pblog/commons-collections.jar:../lib/pblog/commons-dbcp.jar:../lib/pblog/commons-digester.jar:../lib/pblog/commons-fileupload.jar:../lib/pblog/commons-lang.jar:../lib/pblog/commons-logging.jar:../lib/pblog/commons-pool.jar:../lib/pblog/commons-validator.jar:../lib/pblog/connector.jar:../lib/pblog/datetime.jar:../lib/pblog/datetimetag.jar:../lib/pblog/dom4j.jar:../lib/pblog/hibernate2.jar:../lib/pblog/hsqldb.jar:../lib/pblog/jaas.jar:../lib/pblog/jakarta-oro.jar:../lib/pblog/jcs.jar:../lib/pblog/jdbc2_0-stdext.jar:../lib/pblog/jta.jar:../lib/pblog/log4j-1.2.8.jar:../lib/pblog/mail.jar:../lib/pblog/mysql-connector-java-3.0.8-stable-bin.jar:../lib/pblog/odmg.jar:../lib/pblog/proxool.jar:../lib/pblog/servlet-api.jar:../lib/pblog/struts.jar:../lib/pblog/personalblog.jar"/>
+
+    <target name="pblog">
+        <run-demo-basic srcpath="src" 
+						quals="checkers.tainting.Untainted"
+            files="${basedir}/src/net/eyde/personalblog/service/PersonalBlogService.java ${basedir}/src/net/eyde/personalblog/struts/action/ReadAction.java"
+            custom.lib="${pblog.lib}"/>
+    </target>
+
+    <target name="check-pblog">
+      <check-demo-common target="pblog" step="0"/>
+      <check-demo-common target="pblog" step="1"/>
+      <check-demo-common target="pblog" step="2"/>
+      <echo message="pblog demo works as expected" />
+    </target>
+
+    <target name="check-demo" depends="check-pblog">
+      <echo message="personalblog taintness demo works as expected"/>
+    </target>
+
+</project>
