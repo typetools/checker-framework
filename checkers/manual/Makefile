@@ -1,7 +1,10 @@
 # To regenerate this list, run:   latex-process-inputs.pl -list manual.tex
 TEX_FILES = manual.tex introduction.tex nullness-checker.tex igj-checker.tex interning-checker.tex javari-checker.tex lock-checker.tex basic-checker.tex annotating-libraries.tex creating-a-checker.tex troubleshooting.tex
 
-all: doc manual.pdf manual.html
+all: figures-all doc manual.pdf manual.html
+
+figures-all:
+	${MAKE} -C figures all
 
 doc:
 	ln -s ../doc doc

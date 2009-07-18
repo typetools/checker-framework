@@ -162,7 +162,7 @@ different shell, you may need to slightly adjust the commands.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-0.9.4
+  javac 1.7.0-jsr308-0.9.5
 \end{Verbatim}
 
 \end{enumerate}
@@ -637,6 +637,12 @@ experimental now, but some people have used it successfully (and we have fixed
 all bugs that have been reported so far).
 
 
+\subsubsection{tIDE}
+
+tIDE, an open-source Java IDE, supports the Checker Framework.  See its
+documentation at \myurl{http://tide.olympe-network.com/}.
+
+
 \subsection{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
 
 Sometimes, you wish to type-check only part of your program.  
@@ -951,12 +957,33 @@ the method side-effects one of its arguments.
 % Qualifier polymorphism is limited to a single qualifier variable per method.
 
 
+\subsection{Unused fields and dependent types}
 
-\subsection{Dependent types\label{dependent-types}}
+Sometimes, the type of a field depends on the qualifier on the receiver.
+The Checker Framework supports two varieties of such a field:  fields that
+may not be used if the receiver has a given qualifier, and fields whose
+qualifier changes based on the qualifier of the receiver.
+
+
+\subsubsection{Unused fields\label{unused-fields}}
+
+A Java subtype can have more fields than its supertype.  You can simulate
+the same effect for type qualifiers:  a given field may not be accessed via
+a reference with a supertype qualifier, but can be accessed via a reference
+with a subtype qualifier.
+
+This permits you to restrict use of a field to certain contexts.
+
+The \code{@\refclass{quals}{Unused}} annotation
+on a field declares that the field may not be accessed via a receiver of
+the given qualified type (or any supertype).
+
+
+\subsubsection{Dependent types\label{dependent-types}}
 
 A variable has a \emph{dependent type} if its type depends on some other
 value or type.
-%  --- the type is dynamically, not statically, deterimined.
+%  --- the type is dynamically, not statically, determined.
 % (Type-safety can still be statically determined, though.)
 
 The Checker Framework supports a form of dependent types, via the
@@ -967,6 +994,10 @@ expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
 also be seen as a way of linking the meanings of two type qualifier
 hierarchies.
 
+When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+should use it instead of \code{@Dependent}.
+
+
 \subsubsection{Example\label{dependent-types-example}}
 
 Suppose we have a class \code{Person} and a field \code{spouse} that is
@@ -975,13 +1006,15 @@ non-\code{null} if the person is married.  We could declare this as
 \begin{Verbatim}
   class Person {
     ...
+    // non-null if this person is married
     @Nullable Person spouse;
     ...
   }
 \end{Verbatim}
 
-A more informative declaration (assuming you have defined the qualifier
-\code{@Married}) would be
+Now, suppose that we have defined the qualifier hierarchy in which 
+\code{@Single} (meaning ``not married'') is a supertype of \code{@Married}.
+A more informative declaration would be
 
 \begin{Verbatim}
   class Person {
@@ -991,47 +1024,28 @@ A more informative declaration (assuming you have defined the qualifier
   }
 \end{Verbatim}
 
-Then, if a person is known to be \code{@Married}, the \code{spouse} field
-is known to be non-\code{null}:
+If a person is known to be \code{@Married}, the
+\code{spouse} field is known to be non-\code{null}:
 
 \begin{Verbatim}
   class Person {
     ...
-    @Nullable @Dependent(result=NonNull.class, when=Married.class) Person spouse;
-    ...
+
     void celebrateWeddingAnniversary() @Married {
       System.out.println("Happy anniversary, "
                          + spouse.toString()); // no possible null pointer exception
     }
+
     ...
   }
 \end{Verbatim}
 
 Without the \code{@\refclass{quals}{Dependent}} annotation on the
-declaration of the \code{spouse} variable, the Nullness checker would have
-complained that \code{toString} was being invoked on a possibly-\code{null}
+declaration of the \code{spouse} variable, the Nullness Checker would
+complain that \code{toString} was being invoked on a possibly-\code{null}
 value.
 
-\subsection{Fields access control\label{unused-fields}}
-
-It is desired sometimes to restrict use of a field that get
-initialized only in certain contexts.
-
-The Checker Framework supports a form of access control, via the
-\code{@\refclass{quals}{Unused}} annotation.  This annotation
-declares that when the receiver of a particular qualified type, the
-field may not be accessed.
-
-\subsubsection{Example}
-
-Consider the example of dependent types
-(Section~\ref{dependent-types-example}).  Suppose we have a class
-\code{Person} and a field \code{spouse} that is only initialized if
-the person is married.  Section~\ref{dependent-types-example} offers a
-possible implementation using dependent types.
-
-Another more informative declaration using field access control
-(assuming you have defined the qualifier \code{@Single}) would be
+An even better declaration is
 
 \begin{Verbatim}
   class Person {
@@ -1045,12 +1059,13 @@ Then, if a person is known to be \code{@Married} (or more
 appropriately non-\code{@Single}), the \code{spouse} field is known to
 be non-\code{null}.  Also, if a person is known to be \code{@Single},
 the \code{spouse} field may not be accessed:
-
+ 
 \begin{Verbatim}
   @Single Person person = ...;
   Person spouse = person.spouse;  // invalid field access
   ...
 \end{Verbatim}
+
 
 \subsection{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
 
@@ -1504,4 +1519,4 @@ explicit import statements into your code.
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
-% LocalWords:  subpackages bak
+% LocalWords:  subpackages bak tIDE

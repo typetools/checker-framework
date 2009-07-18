@@ -4,12 +4,12 @@ import java.lang.annotation.*;
 
 /**
  * Refines the qualified type of the annotated field or variable based on the
- * receiver qualified type.  The annotation declares a relationship between
- * multiple type qualifier hierarchies.
+ * qualified type of the receiver.  The annotation declares a relationship
+ * between multiple type qualifier hierarchies.
  *
  * <p><b>Example:</b>
  * Consider a field, {@code lock}, that is only initialized if the
- * enclosing object, receiver, is marked as {@code ThreadSafe}.  Such field
+ * enclosing object, receiver, is marked as {@code ThreadSafe}.  Such a field
  * can be declared as:
  *
  * <pre><code>
@@ -27,7 +27,7 @@ public @interface Dependent {
     Class<? extends Annotation> result();
 
     /**
-     * The qualifier class of the receiver that cause the {@code result}
+     * The qualifier class of the receiver that causes the {@code result}
      * qualifier to be applied.
      */
     Class<? extends Annotation> when();
