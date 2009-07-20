@@ -18,6 +18,7 @@ bin
 build
 doc
 *.jar
+checkers/jdk/**/*.class
 
 # manual files
 doc
