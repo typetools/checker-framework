@@ -142,4 +142,13 @@ class RawTypes {
             return "nonnull";
         }
     }
+
+    public RawTypes(String[] args) {
+        parseArgs(args);
+    }
+
+    public void parseArgs(String[] args) /*@Raw*/ {
+        @NonNull RawTypes r = this;
+    }
+
 }
