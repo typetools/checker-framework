@@ -182,6 +182,8 @@ public class QualifierDefaults {
 
     private void applyDefault(Element elt, DefaultQualifier d, AnnotatedTypeMirror type) {
         AnnotationMirror anno = annoFactory.fromName(d.value());
+        if (anno == null)
+            return;
         new DefaultApplier(elt, d.locations(), type).scan(type, anno);
     }
 

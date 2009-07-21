@@ -89,7 +89,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
         mapGetHeauristics = new MapGetHeauristics(env, this);
-        collectionToArrayHeauristics = new CollectionToArrayHeauristics(env, this);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
@@ -111,6 +110,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         aliases.put(javax.annotation.CheckForNull.class.getCanonicalName(), NULLABLE);
         aliases.put(javax.annotation.Nullable.class.getCanonicalName(), NULLABLE);
         aliases.put(org.jetbrains.annotations.Nullable.class.getCanonicalName(), NULLABLE);
+
+        collectionToArrayHeauristics = new CollectionToArrayHeauristics(env, this);
 
         defaults = new QualifierDefaults(this, this.annotations);
         defaults.setAbsoluteDefaults(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
