@@ -3,7 +3,7 @@ package java.lang;
 import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
-
+@Raw
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
