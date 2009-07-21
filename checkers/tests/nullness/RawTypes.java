@@ -147,8 +147,9 @@ class RawTypes {
         parseArgs(args);
     }
 
-    public void parseArgs(String[] args) /*@Raw*/ {
-        @NonNull RawTypes r = this;
+    public void parseArgs(String[] args) @Raw {
+        @Raw @NonNull RawTypes r = this;
+        @NonNull RawTypes n = this; // error
     }
 
 }
