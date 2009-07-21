@@ -8,3 +8,4 @@
 :64: (dereference.of.nullable)
 :111: (method.invocation.invalid)
 :117: (method.invocation.invalid)
+:152: (type.incompatible)
