@@ -71,8 +71,9 @@ public class AnnotationUtils {
         if (annotationsFromNames.containsKey(name))
             return annotationsFromNames.get(name);
         final DeclaredType annoType = typeFromName(name);
-        if (annoType == null
-                || annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE)
+        if (annoType == null)
+            return null;
+        if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE)
             throw new AssertionError(annoType + " is not an annotation");
         AnnotationMirror result = new AnnotationMirror() {
             String toString = "@" + annoType;
@@ -117,7 +118,7 @@ public class AnnotationUtils {
 
         /*@Nullable*/ TypeElement typeElt = elements.getTypeElement(name);
         if (typeElt == null)
-            throw new IllegalArgumentException("invalid name: " + name);
+            return null;
 
         return (DeclaredType)typeElt.asType();
     }
