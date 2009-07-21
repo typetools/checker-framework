@@ -153,11 +153,13 @@ ${build.version} of the 'javac.jar' library."/>
         </javadoc>
     </target>
 
+    <!-- This builds checkers.jar -->
     <target name="dist" depends="build,dist-qualifiers"
             description="Create jar file">
         <jar destfile="${dist.file}" basedir="${build}"/>
     </target>
 
+    <!-- This builds checkers-quals.jar -->
     <target name="dist-qualifiers" depends="build"
             description="Create a jar file for annotations">
         <jar destfile="${dist.annos.file}" basedir="${build}"
