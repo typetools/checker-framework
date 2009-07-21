@@ -625,6 +625,10 @@ public class AnnotatedTypeFactory {
             // No receiver type for those
             return null;
 
+        if (expression.getKind() == Tree.Kind.IDENTIFIER
+            && "this".equals(expression.toString()))
+            return null;
+
         ExpressionTree receiver = TreeUtils.skipParens(expression);
         if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS)
             return getAnnotatedType(((ArrayAccessTree)receiver).getExpression());
