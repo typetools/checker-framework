@@ -712,7 +712,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type = fromTypeTree(tree.getIdentifier());
         annotateImplicit(tree.getIdentifier(), type);
         AnnotatedExecutableType con = atypes.asMemberOf(type, ctor);
-        if (tree.getArguments().size() != con.getParameterTypes().size()) {
+        if (tree.getArguments().size() == con.getParameterTypes().size() + 1) {
             // happens for anonymous constructors of inner classes
             List<AnnotatedTypeMirror> actualParams = new ArrayList<AnnotatedTypeMirror>();
             actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
