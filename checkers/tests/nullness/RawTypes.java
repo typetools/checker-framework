@@ -146,7 +146,7 @@ class RawTypes {
     void cast(/*@Raw*/ Object... args) {
 
         @SuppressWarnings("rawtypes")
-        Object[] argsNonRaw2 = args;
+        Object[] argsNonRaw1 = args;
 
         @SuppressWarnings("cast")
         Object[] argsNonRaw2 = (Object[]) args;
