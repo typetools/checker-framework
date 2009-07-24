@@ -518,7 +518,8 @@ public class Flow extends TreePathScanner<Void, Void> {
      */
     protected void scanCond(Tree tree) {
         alive = true;
-        scan(tree, null);
+        if (tree != null)
+            scan(tree, null);
         if (annos != null) split();
         annos = null;
     }
@@ -771,8 +772,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits<AnnotationMirror> annoCond;
         do {
             GenKillBits<AnnotationMirror> annoEntry = GenKillBits.copy(annos);
-            if (node.getCondition() != null)
-                scanCond(node.getCondition());
+            scanCond(node.getCondition());
             annoCond = annosWhenFalse;
             annos = annosWhenTrue;
             scanStat(node.getStatement());
