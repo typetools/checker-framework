@@ -19,11 +19,16 @@ public class Varargs {
     /* ------------------------------------------------------------ */
 
     public void aVarargsMethod(@Odd String s, @Odd String ... more) {
-
     }
 
-    public void moreVarargs( @Odd String ... args) {
+    public void moreVarargs(@Odd String ... args) {
+    }
 
+    Varargs(String ...args) { }
+
+    void test() {
+        new Varargs("m", "n");
+        new Varargs();
     }
 
     void testVarargsConstructor() {
