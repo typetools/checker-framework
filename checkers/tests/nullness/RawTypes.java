@@ -142,4 +142,15 @@ class RawTypes {
             return "nonnull";
         }
     }
+
+    void cast(/*@Raw*/ Object... args) {
+
+        @SuppressWarnings("rawtypes")
+        Object[] argsNonRaw2 = args;
+
+        @SuppressWarnings("cast")
+        Object[] argsNonRaw2 = (Object[]) args;
+
+    }
+
 }
