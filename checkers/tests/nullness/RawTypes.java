@@ -143,12 +143,14 @@ class RawTypes {
         }
     }
 
-    public RawTypes(String[] args) {
-        parseArgs(args);
+    void cast(/*@Raw*/ Object... args) {
+
+        @SuppressWarnings("rawtypes")
+        Object[] argsNonRaw2 = args;
+
+        @SuppressWarnings("cast")
+        Object[] argsNonRaw2 = (Object[]) args;
+
     }
 
-    public void parseArgs(String[] args) @Raw {
-        @Raw @NonNull RawTypes r = this;
-        @NonNull RawTypes n = this; // error
-    }
 }

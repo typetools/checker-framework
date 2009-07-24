@@ -25,11 +25,9 @@ public class Varargs {
     public void moreVarargs( @Odd String ... args) {
 
     }
-    
-    Varargs(String ...args) { }
-    
-    void test() {
-        new Varargs("m", "n");
-        new Varargs();
+
+    void testVarargsConstructor() {
+        new ProcessBuilder("hello");
     }
+
 }

@@ -136,6 +136,11 @@ written, they are treated as being
 % Does our implementation handle static fields soundly?
 
 
+You can suppress warnings related to partially-initialized objects with
+\<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
+\<@SuppressWarnings("rawness")> annotation!)
+
+
 \paragraph{How an object becomes non-raw}
 
 The Nullness checker issues an error if the constructor fails to initialize
