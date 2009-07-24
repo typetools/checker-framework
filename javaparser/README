@@ -1,0 +1,12 @@
+javaparser
+___________
+
+A JSR 308 Confirming Java  Parser with AST generation and visitor support.
+The project is based on javaparser (http://code.google.com/p/javaparser/).
+
+The project branched off of javaparser 1.0.2, available at:
+  http://code.google.com/p/javaparser/downloads/list
+
+Known Issues:
+- does not parse annotations on new class or new array expressions
+- does not parse annotations in class literals, e.g. @FOO String.class
