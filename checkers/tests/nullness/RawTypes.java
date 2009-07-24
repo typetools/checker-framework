@@ -151,5 +151,4 @@ class RawTypes {
         @Raw @NonNull RawTypes r = this;
         @NonNull RawTypes n = this; // error
     }
-
 }
