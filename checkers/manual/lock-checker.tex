@@ -1,0 +1,97 @@
+\htmlhr
+\section{Lock checker\label{lock-checker}}
+
+The Lock checker prevents certain kinds of concurrency errors.  If the Lock
+checker issues no warnings for a given program, then the program holds the
+appropriate lock every time that it accesses a variable.
+
+Note:  This does \emph{not} mean that your program has no concurrency
+errors.  (You might have forgotten to annotate that a particular variable
+should only be accessed when a lock is held.  You might released and
+re-acquire the lock, when correctness requires you to hold it throughout a
+computation.  And, there are other concurrency errors that cannot, or
+should not, be solved with locks.)  However, ensuring that your program
+program obeys its locking discipline is an easy and effective way to
+eliminate a common and important class of errors.
+
+
+\subsection{Lock annotations\label{lock-annotations}}
+
+The Lock checker uses two annotations.  One is a type qualifier, and the
+other is a method annotation.
+
+\begin{description}
+
+\item[\code{@\refclass{lock/quals}{GuardedBy}}]
+  indicates a type whose value may be accessed only when the given lock is
+  held.  See the Javadoc for an explanation of the argument.  The lock
+  acquisition and the field access may be arbitrarily far in the future.
+
+\item[\code{@\refclass{lock/quals}{Holding}}]
+  is a method annotation (not a type) qualifier.  It indicates that when
+  the method is called, the given lock must be held by the caller.
+
+\end{description}
+
+
+A programmer may use the \code{@Holding} method annotation in two different ways.
+\begin{itemize}
+\item
+  as specifying a higher-level synchronization protocol
+\item
+  as being a method summary that simplifies reasoning
+\end{itemize}
+\noindent
+Both of these are useful, and the Lock checker supports both.
+The latter (``summary'') use doesn't necessarily introduce a new
+correctness constraint ``must hold this lock when accessing''.  Rather,
+it expresses a fact about execution --- when execution reaches this
+point, the following locks are held --- that enables people and tools to
+reason intra- rather than inter-procedurally.  The point at which the
+lock must be held for correctness may come later in the body of the
+method or in a method it calls.
+
+
+\subsubsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
+
+The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\ahref{http://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+\code{@GuardedBy} serves two related purposes:
+
+\begin{itemize}
+\item
+  When applied to a field, it means that the given lock must be held when
+  accessing the field.  The lock acquisition and the field access may be
+  arbitrarily far in the future.
+\item
+  When applied to a method, it means that the given lock must be held by
+  the caller at the time that the method is called --- in other words, at
+  the time that execution passes the \code{@GuardedBy} annotation.
+\end{itemize}
+
+One rationale for reusing the annotation name for both purposes in JCIP is
+simplicity:  there are fewer annotations to learn.  Another rationale is
+that both variables and methods are ``members'' that can be ``accessed'';
+variables can be accessed by reading or writing them (putfield, getfield),
+and methods can be accessed by calling them (invokevirtual,
+invokeinterface).  In both cases,
+\code{@GuardedBy} creates preconditions for accessing so-annotated members.
+
+The Lock checker renames the method annotation to
+\code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
+\code{@\refclass{lock/quals}{GuardedBy}} annotation into a type qualifier
+that can apply not just to a field but to an arbitrary type (including the
+type of a parameter, return value, local variable, generic type parameter,
+etc.).  This makes the annotations more expressive and also more amenable
+to automated checking.  It also accommodates the distinct (though related)
+meaning of the two annotations.
+
+% It would not work to retain the name \code{@GuardedBy} but put it on the
+% receiver; an annotation on the receiver indicates what lock must be held
+% when it is accessed in the future, not what must have already been held
+% when the method was called.
+
+
+
+% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
+% LocalWords:  invokeinterface
