@@ -135,7 +135,9 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
   initialize every non-null field.  However, because the checker does not
   fully implement all of Java's definite assignment rules (e.g., for
   \code{finally} blocks), the checker sometimes issues a false positive
-  warning.
+  warning.  The checker's behavior is sound but unnecessarily restrictive.
+  If you encounter this problem in practice, please submit a bug report so
+  that we can improve the checker.
 
 \end{itemize}
 

@@ -5,7 +5,7 @@ public class DependentNull {
 
     /**
      * NOTE that @Prototype is a SUPERTYPE of an unannotated reference.
-     * (Uh, how does the checker know that?  It's important to the checking!
+     * (Uh, how does the checker know that?  It's important to the checking!)
      */
     @interface Prototype {}
 
