@@ -625,6 +625,10 @@ public class AnnotatedTypeFactory {
             // No receiver type for those
             return null;
 
+        if (expression.getKind() == Tree.Kind.IDENTIFIER
+            && "this".equals(expression.toString()))
+            return null;
+
         ExpressionTree receiver = TreeUtils.skipParens(expression);
         if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS)
             return getAnnotatedType(((ArrayAccessTree)receiver).getExpression());
@@ -708,7 +712,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type = fromTypeTree(tree.getIdentifier());
         annotateImplicit(tree.getIdentifier(), type);
         AnnotatedExecutableType con = atypes.asMemberOf(type, ctor);
-        if (tree.getArguments().size() != con.getParameterTypes().size()) {
+        if (tree.getArguments().size() == con.getParameterTypes().size() + 1) {
             // happens for anonymous constructors of inner classes
             List<AnnotatedTypeMirror> actualParams = new ArrayList<AnnotatedTypeMirror>();
             actualParams.add(getAnnotatedType(tree.getArguments().get(0)));

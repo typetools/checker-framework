@@ -87,7 +87,10 @@ most type qualifiers, because the default annotation
 
 \subsubsection{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
 
-The rawness hierarchy contains these qualifiers:
+The rawness hierarchy indicates whether an object is fully initialized ---
+that is, whether its fields have all been assigned.  This is mostly
+relevant within the constructor, or for references to \code{this} that
+escape the constructor.  The rawness hierarchy contains these qualifiers:
 
 \begin{description}
 
@@ -96,7 +99,8 @@ The rawness hierarchy contains these qualifiers:
   partially-initialized object, fields that are annotated as
   \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
   has not yet been assigned.  Within the constructor,
-  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type.
+  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
+  the fields have been assigned.
 
 % Cut this?
 \item[\code{@\refclass{nullness/quals}{NonRaw}}]
@@ -149,7 +153,7 @@ This is different than Java's test for definite assignment  (see
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since 
-which does not apply to apply to fields because fields have a default value
+which does not apply to fields because fields have a default value
 of null.
 
 
@@ -548,7 +552,9 @@ indicate a nullable variable that FindBugs should check.)  For example:
 
 The Checker Framework does not emulate this behavior of FindBugs, even if
 you are using FindBugs annotations.
-When using the Checker Framework, if you wish to suppress warnings at a
+The Checker Framework will issue more warnings than FindBugs, and some of
+them may be about real bugs in your program.
+If you wish to suppress warnings at a
 specific client use where the value is known to be non-null, you should do that
 at the client use.  For example:
 % not at the definition site

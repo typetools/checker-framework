@@ -81,6 +81,8 @@ class NullnessFlow extends Flow {
     @Override
     protected void scanCond(Tree tree) {
         super.scanCond(tree);
+        if (tree == null)
+            return;
 
         Conditions conds = new Conditions();
         conds.visit(tree, null);
