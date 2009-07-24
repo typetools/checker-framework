@@ -1,5 +1,9 @@
 package checkers.nullness;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
@@ -20,5 +24,13 @@ public class RawnessSubchecker extends BaseTypeChecker {
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
         return true;
+    }
+
+    @Override
+    public Collection<String> getSuppressWarningsKey() {
+        Collection<String> lst = new ArrayList<String>();
+        lst.addAll(super.getSuppressWarningsKey());
+        lst.add("nullness");
+        return lst;
     }
 }
