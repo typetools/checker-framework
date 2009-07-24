@@ -78,8 +78,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     private boolean warns;
 
     /** A regular expression for classes that should be skipped. */
-    protected final Pattern skipPattern =
-        Pattern.compile(System.getProperty("checkers.skipClasses", ""));
+    protected Pattern skipPattern;
 
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
@@ -140,6 +139,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
+    private String getSkipPattern(Map<String, String> options) {
+        if (options.containsKey("skipClasses"))
+            return options.get("skipClasses");
+
+        if (System.getProperty("checkers.skipClasses") != null)
+            return System.getProperty("checkers.skipClasses");
+
+        if (System.getenv("skipClasses") != null)
+            return System.getenv("skipClasses");
+
+        return "";
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -149,6 +161,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.env = processingEnv;
+
+        this.skipPattern = Pattern.compile(getSkipPattern(processingEnv.getOptions()));
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
@@ -472,6 +486,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
+        options.add("skipClasses");
         options.add("lint");
         options.add("nomsgtext");
         options.add("filenames");
