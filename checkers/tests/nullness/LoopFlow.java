@@ -71,4 +71,14 @@ public class LoopFlow {
         }
         s.toString();   // error
     }
+
+    public void badIterator () {
+        Class<?> opt_doc1 = null;
+        opt_doc1.getInterfaces();
+        Class<?> opt_doc2 = null;
+        for (Class<?> fd : opt_doc2.getInterfaces()) {
+            // empty loop body
+        }
+    }
+
 }

@@ -460,7 +460,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
 
         String qualName = elem.getQualifiedName().toString();
-        return aliases.get(qualName);
+        return aliases == null ? null : aliases.get(qualName);
     }
 
 }
