@@ -49,6 +49,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   public boolean isEnum() { throw new RuntimeException("skeleton method"); }
   public T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
+  java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
   public T cast(java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> java.lang.Class<? extends U> asSubclass(java.lang.Class<U> a1) { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(java.lang.Class<A> a1) { throw new RuntimeException("skeleton method"); }

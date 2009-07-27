@@ -15,6 +15,7 @@ public final class Integer extends java.lang.Number implements java.lang.Compara
   public static java.lang.String toOctalString(int a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String toBinaryString(int a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String toString(int a1) { throw new RuntimeException("skeleton method"); }
+  static int stringSize(int x) { throw new RuntimeException("skeleton method"); }
   public static int parseInt(java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static int parseInt(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static java.lang.Integer valueOf(java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
