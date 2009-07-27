@@ -44,6 +44,24 @@ public class StubParser {
         annotations = getSupportedAnnotations();
     }
 
+    private Map<String, AnnotationMirror> annoWithinPackage(String packageName) {
+        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
+        Map<String, AnnotationMirror> r = new HashMap<String, AnnotationMirror>();
+
+        PackageElement pkg = this.elements.getPackageElement(packageName);
+        if (pkg == null)
+            return r;
+
+        for (TypeElement typeElm : ElementFilter.typesIn(pkg.getEnclosedElements())) {
+            if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
+                AnnotationMirror anno = annoUtils.fromName(typeElm.getQualifiedName());
+                r.put(typeElm.getSimpleName().toString(), anno);
+            }
+        }
+
+        return r;
+    }
+
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
         assert !index.getCompilationUnits().isEmpty();
         CompilationUnit cu = index.getCompilationUnits().get(0);
@@ -51,11 +69,19 @@ public class StubParser {
 
         Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
 
+        if (cu.getImports() == null)
+            return result;
+
         for (ImportDeclaration importDecl : cu.getImports()) {
             String imported = importDecl.getName().toString();
             try {
-                AnnotationMirror anno = annoUtils.fromName(imported);
-                result.put(anno.getAnnotationType().asElement().getSimpleName().toString(), anno);
+                if (!importDecl.isAsterisk()) {
+                    AnnotationMirror anno = annoUtils.fromName(imported);
+                    Element annoElt = anno.getAnnotationType().asElement();
+                    result.put(annoElt.getSimpleName().toString(), anno);
+                } else {
+                    result.putAll(annoWithinPackage(imported));
+                }
             } catch (AssertionError error) {
                 // do nothing
             }

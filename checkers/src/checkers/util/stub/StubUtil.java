@@ -210,7 +210,7 @@ public class StubUtil {
                     Parameter p = i.next();
                     p.accept(this, arg);
                     if (i.hasNext()) {
-                        sb.append(", ");
+                        sb.append(",");
                     }
                 }
             }
