@@ -413,7 +413,8 @@ statements for the annotations, then your code has a dependency on the
 annotation declarations.  You also will need to provide the annotation
 declarations as well, if you decide to distribute your project.
 
-For your convenience, the checkers distribution comes with a jar file,
+For your convenience, inside the the checkers distribution \code{.zip} file
+is a jar file,
 \code{checkers-quals.jar}, that only contains the distributed qualifiers.
 You may include the jar file in your distribution.
 
@@ -1373,19 +1374,6 @@ If you find that a checker fails to issue a warning that it
 should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 
-\subsection{Common conventions about annotations\label{annotation-location-details}}
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
-
-\begin{Verbatim}
-  new @ReadOnly Date()
-  (@ReadOnly Date) new Date()
-\end{Verbatim}
-
-
 \subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
 
 Sometimes, your code needs to be compilable by people who are not
@@ -1508,6 +1496,138 @@ If you are using implicit import statements
 explicit import statements into your code.
 
 
+\subsection{Tips about writing annotations\label{tips-about-writing-annotations}}
+
+\subsubsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+
+In the checkers distributed with the Checker Framework, an annotation on a
+constructor invocation is equivalent to a cast on a constructor result.
+That is, the following two expressions have identical semantics:  one is
+just shorthand for the other.
+
+\begin{Verbatim}
+  new @ReadOnly Date()
+  (@ReadOnly Date) new Date()
+\end{Verbatim}
+
+However, you should rarely have to use this.  The Checker Framework will
+determine the qualifier on the result, based on the ``return value''
+annotation on the constructor definition.
+
+
+
+\subsubsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
+
+You should use annotations to indicate \emph{normal} behavior.  The
+annotation indicate all the values that you \emph{want} to flow to
+reference --- not every value that might possibly flow there if your
+program has a bug.
+
+Many methods are guaranteed to throw an exception if they are passed \code{null}
+as an argument.  Examples include
+
+\begin{Verbatim}
+  java.lang.Double.valueOf(String)
+  java.lang.String.contains(CharSequence)
+  org.junit.Assert.assertNotNull(Object)
+  com.google.common.base.Preconditions.checkNotNull(Object)
+\end{Verbatim}
+
+In some sense, \code{null} is a legal argument with a well-defined
+semantics:  throw an exception.  Another reason \code{@Nullable} might seem
+like a reasonable annotation is that it describes a possible program
+execution:  it might be possible for \code{null} to flow there, if your
+program has a bug.
+
+% (Checking for such a bug is the whole purpose of the \code{assertNotNull}
+% and \code{checkNotNull} methods.)
+
+However, it is never useful for a programmer to pass \code{null}.  It is
+the programmer's intention that \code{null} never flows there.  If
+\code{null} does flow there, the program will not continue normally.
+
+Therefore, you should mark such parameters as \code{@NonNull}, indicating
+the intended use of the method.  The \code{@NonNull} annotation will enable
+compile-time warnings about possible run-time exceptions, which is the
+purpose of the checker.
+
+% (The note at
+% http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html
+% argues that the parameter could be marked as @Nullable, since it is
+
+% possible for null to flow there at run time.  However, since that is an
+% erroneous case, the annotation would be counterproductive rather than
+% useful.)
+
+
+\subsubsection{Annotations indicate a contract\label{annotations-are-a-contract}}
+
+Annotations indicate guarantees that a client can depend upon.  A subclass
+is permitted not permitted to weaken the contract; for example,
+if a method accepts \code{null} as an argument, then every overriding
+definition must also accept \code{null}.
+A subclass is permitted to strengthen the contract; for example,
+if a method does \emph{not} accept \code{null} as an argument, then an 
+overriding definition is permitted to accept \code{null}.
+
+As a bad example, consider an erroneous \code{@Nullable} annotation at
+line 141 of \ahref{http://pauillac.inria.fr/~maranget/hevea/doc/manual018.html#toc22}{\code{com/google/common/collect/Multiset.java}}, version r78:
+
+\begin{Verbatim}
+101  public interface Multiset<E> extends Collection<E> {
+...
+122    /**
+123     * Adds a number of occurrences of an element to this multiset.
+...
+129     * @param element the element to add occurrences of; may be {@code null} only
+130     *     if explicitly allowed by the implementation
+...
+137     * @throws NullPointerException if {@code element} is null and this
+138     *     implementation does not permit null elements. Note that if {@code
+139     *     occurrences} is zero, the implementation may opt to return normally.
+140     */
+141    int add(@Nullable E element, int occurrences);
+\end{Verbatim}
+
+There exist implementations of Multiset that permit \code{null} elements,
+and implementations of Multiset that do not permit \code{null} elements.  A
+client with a variable \code{Multiset ms} does not know which variety of
+Multiset \code{ms} refers to.  However, the \code{@Nullable} annotation
+promises that \code{ms.add(null, 1)} is permissible.  (Recall from
+Section~\ref{annotate-normal-behavior} that annotations should indicate
+normal behavior.)
+
+If parameter \code{element} on line 141 were to be annotated, the correct
+annotation would be \code{@NonNull}.  Given an arbitrary Multiset
+\code{ms}, the only way to be sure not to throw an exception is to pass
+only non-\code{null} elements to its \code{add} method.  A particular class
+that implements Multiset could declare \code{add} to take a
+\code{@Nullable} parameter.  That still satisfies the original contract.
+It strengthens the contract by promising even more:  a client with such a
+reference can call \code{add(null)} with confidence that no
+\code{NullPointerException} will be thrown.
+
+\textbf{However}, the best annotation for line 141 is no annotation at all.
+The reason is that each implementation of the Multiset interface should
+specify its own nullness properties when it specifies the type parameter
+for Multiset.  For example, two clients could be written as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset implements Multiset<@Nullable Object> { ... }
+  class MyNullProhibitingMultiset implements Multiset<@NonNull Object> { ... }
+\end{Verbatim}
+
+\noindent
+or, more generally, as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset<E extends @Nullable Object> implements Multiset<E> { ... }
+  class MyNullProhibitingMultiset<E extends @NonNull Object> implements Multiset<E> { ... }
+\end{Verbatim}
+
+Then, the specification is more informative, and the Checker Framework is
+able to do more precise checking, than if line 141 has an annotation.
+
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
 % LocalWords:  SuppressWarnings un skipClasses java plugins plugin TODO cp igj
@@ -1520,4 +1640,4 @@ explicit import statements into your code.
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
-% LocalWords:  subpackages bak tIDE
+% LocalWords:  subpackages bak tIDE Multiset NullPointerException

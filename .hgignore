@@ -4,7 +4,7 @@ syntax: glob
 *~
 .#*
 
-# Random files
+# Emacs files
 TAGS
 
 # Eclipse files
@@ -30,6 +30,7 @@ manual.html
 manual.htoc
 manual.image.tex
 manual.image.tex.new
+manual.image.log
 manual.log
 manual.pdf
 manual.ps

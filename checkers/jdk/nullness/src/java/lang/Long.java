@@ -15,6 +15,7 @@ public final class Long extends java.lang.Number implements java.lang.Comparable
   public static java.lang.String toOctalString(long a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String toBinaryString(long a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String toString(long a1) { throw new RuntimeException("skeleton method"); }
+  static int stringSize(long x) { throw new RuntimeException("skeleton method"); }
   public static long parseLong(java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static long parseLong(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static java.lang.Long valueOf(java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
