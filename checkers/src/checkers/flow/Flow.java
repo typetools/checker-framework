@@ -651,6 +651,8 @@ public class Flow extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        scan(node.getVariable(), p);
+
         VariableTree var = node.getVariable();
         newVar(var);
 
@@ -662,7 +664,10 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (iter != null)
             propagateFromType(var, iter);
 
-        return super.visitEnhancedForLoop(node, p);
+        // only visit statement. skip variable and expression..
+        // visited variable and expression already
+        scanStat(node.getStatement());
+        return null;
     }
 
     @Override
