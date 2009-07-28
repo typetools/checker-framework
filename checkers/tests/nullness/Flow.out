@@ -14,3 +14,4 @@
 :185: (dereference.of.nullable)
 :194: (dereference.of.nullable)
 :267: (dereference.of.nullable)
+:274: (type.incompatible)
