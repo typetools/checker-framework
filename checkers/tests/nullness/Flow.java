@@ -264,12 +264,22 @@ public class Flow {
     }
     void testNullableCall() {
         if (returnNullable() != null)
-            returnNullable().toString();
+            returnNullable().toString(); // error
     }
 
+    void nonNullArg(@NonNull Object arg) {
+        // empty body
+    }
+    void testNonNullArg(@Nullable Object arg) {
+        nonNullArg(arg);        // error
+        nonNullArg(arg);        // no error
+    }
+
+}
+
     // This might be useful: "if this routine has ever returned non-null
-    // before, it will never return null again".  But hold off until there
-    // is a demostrated need.
+    // before, it will never return null again".  But hold off on the effort
+    // of implementing there is a demostrated need.
     // @LazyNonNull Object returnLazyNonNull() {
     //     return null;
     // }
@@ -277,5 +287,3 @@ public class Flow {
     //     if (returnLazyNonNull() != null)
     //         returnLazyNonNull().toString();
     // }
-
-}
