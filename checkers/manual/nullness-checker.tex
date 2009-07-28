@@ -126,11 +126,19 @@ construction, the object is in an illegal state.
 
 The \code{@\refclass{nullness/quals}{Raw}} type annotation represents a
 partially-initialized object.  If a reference has
-\code{@Raw} type, then all of its fields are treated as
+\code{@Raw} type, then all of its \code{@NonNull} fields are treated as
 \code{@\refclass{nullness/quals}{LazyNonNull}}:  when read, they are
 treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
 written, they are treated as being
 \code{@\refclass{nullness/quals}{NonNull}}.
+
+
+The rawness hierarchy is \textbf{orthogonal} to the nullness hierarchy.  It
+is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
+\<@NonNull @NonRaw>, or \<@Nullable @NonRaw>.  The nullness hierarchy tells
+you about the reference itself:  might the reference be null?
+The rawness hierarchy tells you about the fields in the referred-to object:
+might those fields be null?
 
 
 % Does our implementation handle static fields soundly?
@@ -138,7 +146,7 @@ written, they are treated as being
 
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
-\<@SuppressWarnings("rawness")> annotation!)
+\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!)
 
 
 \paragraph{How an object becomes non-raw}
