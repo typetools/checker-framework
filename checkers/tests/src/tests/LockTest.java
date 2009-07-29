@@ -13,5 +13,6 @@ public class LockTest extends CheckerTest {
     @Test public void testConstructors() { test(); }
     @Test public void testFields()  { test(); }
     @Test public void testMethods() { test(); }
+    @Test public void testOverriding() { test(); }
 
 }

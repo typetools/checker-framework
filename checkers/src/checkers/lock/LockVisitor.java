@@ -14,6 +14,7 @@ import checkers.basetype.BaseTypeVisitor;
 import checkers.lock.quals.Holding;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
@@ -140,6 +141,33 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         return super.visitMethodInvocation(node, p);
     }
 
+    protected boolean checkOverride(MethodTree overriderTree,
+            AnnotatedDeclaredType enclosingType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            Void p) {
+        
+        Holding overriderHolding = TreeUtils.elementFromDeclaration(overriderTree).getAnnotation(Holding.class);
+        Holding overridenHolding = overridden.getElement().getAnnotation(Holding.class);
+        
+        boolean isValid = true;
+
+        if (overridenHolding != null) {
+            String[] overriderLocks = (overriderHolding == null) ? new String[] {} : overriderHolding.value();
+            String[] overridenLocks = overridenHolding.value();
+            
+            if (!Arrays.asList(overridenLocks).containsAll(Arrays.asList(overriderLocks))) {
+                checker.report(Result.failure("override.holding.invalid",
+                        TreeUtils.elementFromDeclaration(overriderTree), 
+                        enclosingType.getElement(), overridden.getElement(),
+                        overriddenType.getElement(),
+                        overriderHolding, overridenHolding), overriderTree);
+                isValid = false;
+            }
+        }
+
+        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
+    }
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         return true;
