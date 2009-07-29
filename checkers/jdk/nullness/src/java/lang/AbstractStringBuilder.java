@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import sun.misc.FloatingDecimal;
+// import sun.misc.FloatingDecimal;
 import java.util.Arrays;
 
 /**
@@ -632,8 +632,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(float f) {
-        new FloatingDecimal(f).appendTo(this);
-        return this;
+        throw new Error("skeleton file");
     }
 
     /**
@@ -649,8 +648,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(double d) {
-        new FloatingDecimal(d).appendTo(this);
-        return this;
+        throw new Error("skeleton file");
     }
 
     /**
