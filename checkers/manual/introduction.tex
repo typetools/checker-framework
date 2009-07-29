@@ -511,16 +511,16 @@ You can disable this auto-discovery mechanism by passing the
 If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
-\code{javac} task.  Duplicate that target, then modify it slightly as
-indicated in this example:
+\code{javac} task.
+
+First, set the \code{jsr308javac} property:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  <property environment="env"/>
-
   <!-- Boilerplate to set jsr308javac property. Is there a better way? -->
+  <property environment="env"/>
   <condition property="isUnix">
     <os family="unix" />
   </condition>
@@ -533,16 +533,33 @@ indicated in this example:
   <target name="init-jsr308javac-windows" if="isWindows">
     <property name="jsr308javac" value="${env.CHECKERS}/binary/javac.bat" />
   </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
-  <target name="check-nullness" description="Check for nullness errors."
-          depends="clean,init-jsr308javac-unix,init-jsr308javac-windows">
+\noindent
+The \code{property} target makes environment variables (such as your home
+directory) available to Ant.
+
+Next, duplicate the compilation target, then modify it slightly as
+indicated in this example, filling in each ellipsis (\ldots) from the
+original compilation target:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target name="check-nullness"
+          description="Check for nullness errors."
+          depends="clean,...,init-jsr308javac-unix,init-jsr308javac-windows">
     <javac ...
            fork="yes"
            executable="${jsr308javac}">
       <compilerarg value="-version"/>
       <compilerarg line="-target 5"/>
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg line="-sourcepath ${env.annotations}/checkers/jdk/nullness/src"/>
+      <compilerarg line="-sourcepath ${env.CHECKERS}/jdk/nullness/src"/>
       <compilerarg value="-implicit:class"/>
       <classpath>
         <pathelement location="${env.annotations}/checkers/checkers.jar"/>
@@ -556,10 +573,7 @@ indicated in this example:
 \end{smaller}
 %END LATEX
 
-The \code{property} target makes environment variables (such as your home
-directory) available to Ant.
-
-In the example, the target is named \code{check-interning}, but you can
+In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
 
 The target assumes the existence of a \code{clean} target that removes all
