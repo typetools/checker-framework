@@ -675,7 +675,7 @@ there are several ways to eliminate the compiler warnings.
   \code{@SuppressWarnings} annotation or by not running the checker on that
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
-  via the \code{checkers.skipClasses} Java property
+  via the \code{skipClasses} processor option
   (see Section~\ref{suppressing-warnings}).
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
@@ -707,7 +707,7 @@ warnings via
 \item
   the \code{@SuppressWarnings} annotation,
 \item
-  the \code{checkers.skipClasses} Java property,
+  the \code{-AskipClasses} command-line option,
 \item
   the javac \code{-Alint} command-line option, or
 \item
@@ -729,10 +729,10 @@ annotation on the class declaration or on the package's
 \code{package-info.java} file.
 
 You can suppress all errors and warnings at all uses of a given class.
-Set the \code{checkers.skipClasses} Java property to a
+Set the \code{-AskipClasses} command-line option to a
 regular expression that matches classes for which warnings and errors
 should be suppressed.  For example, if you use
-``{\codesize\verb|-J-Dcheckers.skipClasses=^java\.|}'' on the command line
+``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the checkers will suppress all warnings within those
 classes, all warnings relating to invalid arguments, and all warnings
@@ -1340,7 +1340,7 @@ There are some limitations to the guarantee.
 \item 
   A compiler plugin can check only those parts of your program that you run
   it on. If you compile some parts of your program without the
-  \code{-processor} switch or with the \code{checkers.skipClasses} property
+  \code{-processor} switch or with the \code{-AskipClasses} property
   (in other words, without running the checker), or if you use the
   \code{@SuppressWarnings} annotation to suppress some errors or warnings,
   then there is no guarantee that the entire program satisfies the property
