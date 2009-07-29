@@ -1,0 +1,8 @@
+old-src/**
+build/**
+dist/**
+.hg/**
+.hgignore
+.hgtags
+.jcheck
+**/*.orig

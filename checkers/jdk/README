@@ -1,0 +1,8 @@
+This directory contains annotated versions of "skeleton" library classes
+(such as the JDK) to use with the appropriate type-checker.
+
+See the JSR 308 Checkers documentation for information on using these
+classes (essentially, invoke the compiler with the "-sourcepath" option).
+
+If you annotate more library classes, please share them with us via email
+at jsr308-bugs@lists.csail.mit.edu.
