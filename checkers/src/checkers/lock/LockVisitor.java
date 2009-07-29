@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 
 import com.sun.source.tree.*;
@@ -81,7 +82,8 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         List<String> locks = prevLocks;
         try {
             Element method = TreeUtils.elementFromDeclaration(node);
-            if (method.getModifiers().contains(Modifier.SYNCHRONIZED)) {
+            if (method.getModifiers().contains(Modifier.SYNCHRONIZED)
+                || method.getKind() == ElementKind.CONSTRUCTOR) {
                 if (method.getModifiers().contains(Modifier.STATIC)) {
                     String enclosingClass = method.getEnclosingElement().getSimpleName().toString();
                     locks = append(locks, enclosingClass + ".class");
