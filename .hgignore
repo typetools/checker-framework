@@ -47,3 +47,6 @@ manual004.png
 # is there true?
 *.pdf
 *.eps
+
+# release tmps
+tmp
