@@ -55,7 +55,7 @@ import com.sun.source.util.*;
  * <li value="14">may resolve the types of some {@link NonNull} fields as
  *  {@link Nullable} depending on the presence of a {@link Raw} annotation on
  *  a constructor or method receiver.  Please review
- *  <a href="http://people.csail.mit.edu/mernst/pubs/pluggable-checkers-issta2008-abstract.html">
+ *  <a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html">
  *  the Checker Framework</a> for {@link Raw} semantics.
  * </ol>
  *
