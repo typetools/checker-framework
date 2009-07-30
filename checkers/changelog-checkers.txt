@@ -1,3 +1,23 @@
+Version 0.9.6, 29 Jul 2009
+
+Functionality
+  Changed 'jsr308.skipClasses' property with '-AskipClasses' option
+  Locking checker
+    - Add subtype checking for Holding
+    - Treat constructors as synchronized methods
+
+Bug fixes
+  Added some missing nullness annotations in the jdk
+  Fixed some bugs related to reading stub files
+
+Manual
+  Added a new section
+    2.10  Tips about writing annotations
+  Updated sections of
+    2.6   Unused fields and dependent types
+    3.1.1 Rawness annotation hierarchy
+
+----------------------------------------------------------------------
 Version 0.9.5, 13 Jul 2009
 
 Functionality
