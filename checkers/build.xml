@@ -1,0 +1,334 @@
+<!--
+  This is an Ant build file for compiling the JSR 308 checkers and framework.
+-->
+<project name="checkers" default="dist" basedir=".">
+
+    <description>
+      Builds the Checker Framework for the JSR 308 compiler.
+    </description>
+
+    <property name="src" value="src"/>
+    <property name="tests" value="tests"/>
+    <property name="tests.junit" value="${tests}/junit.jar"/>
+    <property name="build" value="build"/>
+    <property name="build.tests" value="tests/build"/>
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+    <property name="dist.file" value="checkers.jar"/>
+    <property name="dist.annos.file" value="checkers-quals.jar"/>
+    <property name="dist.doc" value="doc"/>
+    <property name="javari.jdk.src" value="jdk/javari/src"/>
+    <property name="javari.jdk.build" value="jdk/javari/build"/>
+    <property name="javaparser.loc" value="../javaparser"/>
+    <property name="checkers.rel.jp" value="../checkers"/>
+
+    <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
+    <property name="run.tests.should.fork" value="true"/>
+
+    <path id="build.path">
+        <pathelement location="${compiler.lib}"/>
+    </path>
+
+    <target name="prep" depends="touch-jdk" description="Create required directories">
+        <mkdir dir="${build}"/>
+        <mkdir dir="${build.tests}"/>
+        <mkdir dir="${build.tests}/testclasses"/>
+        <mkdir dir="${dist.doc}"/>
+
+        <java fork="true"
+	      outputproperty="compiler.version"
+	      classpath="${compiler.lib}"
+	      classname="com.sun.tools.javac.Main">
+          <arg line="-version"/>
+        </java>
+
+        <condition property="compiler.exists">
+           <equals
+             arg1="${compiler.version}"
+             arg2="${compiler.version.goal}"/>
+        </condition>
+
+        <available property="jp.project"
+                   file="${javaparser.loc}/build.xml"/>
+        <antcall target="-prep-jp-compile"/>
+    </target>
+
+    <target name="-prep-jp-compile" if="jp.project"
+            description="compile javaparser project if available">
+      <ant dir="${javaparser.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.jp}/${javaparser.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="clean" description="Remove generated files">
+        <delete dir="${build}"/>
+        <delete dir="${dist.doc}"/>
+        <delete file="${dist.file}"/>
+        <delete file="${dist.annos.file}"/>
+        <delete failonerror="false">
+            <fileset dir="${build.tests}" includes="**/*.class"/>
+            <fileset dir="jdk" includes="**/*.class"/>
+        </delete>
+    </target>
+
+    <target name="build" depends="prep" description="Compile files">
+        <fail unless="compiler.exists"
+            message="
+Needed version ${compiler.version.goal} of the JSR 308 compiler,
+but found version ${compiler.version} on your classpath.
+${line.separator}${line.separator}
+Check that the 'compiler.lib' property in 'build.properties' points to version
+${build.version} of the 'javac.jar' library."/>
+        <pathconvert pathsep=" " property="src.files">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                    <exclude name="checkers/util/dist/**"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <copy todir="${build}">
+            <fileset dir="${src}" includes="**/*.properties"/>
+            <fileset dir="${src}" includes="**/*.astub"/>
+        </copy>
+        <java fork="true"
+              failonerror="true"
+	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}"
+	      classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <arg value="-g"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="${src.files}"/>
+            <arg line="-version"/>
+        </java>
+        <unjar src="${javaparser.lib}" dest="${build}" />
+    </target>
+
+      <target name="build-javari-jdk" depends="build"
+          description="Compile Javari's annotated JDK.">
+          <pathconvert pathsep=" " property="javari.jdk.src.files">
+             <path>
+                <fileset dir="${javari.jdk.src}">
+                   <include name="**/*.java"/>
+                </fileset>
+             </path>
+      </pathconvert>
+          <mkdir dir="${javari.jdk.build}"/>
+          <java fork="true"
+                failonerror="true"
+		classpath="${build}:${compiler.lib}"
+		classname="com.sun.tools.javac.Main">
+             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+             <arg value="-g"/>
+             <arg line="-sourcepath ${javari.jdk.src}"/>
+             <arg line="-d ${javari.jdk.build}"/>
+             <arg line="${javari.jdk.src.files}"/>
+             <arg line="-version"/>
+          </java>
+      </target>
+
+    <target name="docs" depends="prep" description="Create Javadoc documentation">
+        <java fork="true"
+              failonerror="true"
+	      classpath="${compiler.lib}:${java.home}/../lib/tools.jar"
+	      classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <arg value="-g"/>
+            <arg line="-d ${build}"/>
+            <arg line="src/checkers/util/dist/ManualTaglet.java"/>
+            <arg line="-version"/>
+        </java>
+        <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
+          classpath="${build}:${compiler.lib}"
+          excludepackagenames="checkers.util.stub,checkers.util.dist"
+          bootclasspath="${compiler.lib}:${java.home}/lib/rt.jar">
+          <package name="checkers.*"/>
+          <link href="http://java.sun.com/javase/6/docs/api/"/>
+          <link href="http://java.sun.com/javase/6/docs/jdk/api/javac/tree/"/>
+          <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
+          <tag name="manual"/>
+        </javadoc>
+    </target>
+
+    <!-- This creates checkers.jar -->
+    <target name="dist" depends="build,dist-qualifiers"
+            description="Create jar file">
+        <jar destfile="${dist.file}" basedir="${build}"/>
+    </target>
+
+    <!-- This creates checkers-quals.jar -->
+    <target name="dist-qualifiers" depends="build"
+            description="Create a jar file for annotations">
+        <jar destfile="${dist.annos.file}" basedir="${build}"
+             includes="**/quals/*"/>
+    </target>
+
+    <target name="tags" depends="prep" description="Create Emacs TAGS table">
+        <exec executable="/bin/sh">
+            <arg value="-c"/>
+            <arg value="etags `find -name '*.java' | sort-directory-order.pl`"/>
+        </exec>
+    </target>
+
+    <target name="build-tests" depends="prep" description="Compile tests">
+        <fail unless="compiler.exists"
+            message="
+Version ${build.version} of the JSR 308 compiler was not found on your
+classpath.
+${line.separator}${line.separator}
+Check that the 'compiler.lib' property in 'build.properties' points to version
+${build.version} of the 'javac.jar' library."/>
+        <pathconvert pathsep=" " property="src.tests">
+            <path>
+                <fileset dir="${tests}">
+                    <include name="src/tests/**/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <java fork="true"
+              failonerror="true"
+	      classpath="${compiler.lib}:${tests.junit}:${build}"
+	      classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <arg value="-g"/>
+            <arg line="-sourcepath ${tests}"/>
+            <arg line="-d ${build.tests}"/>
+            <arg line="${src.tests}"/>
+        </java>
+    </target>
+
+    <target name="-run-tests" description="Generalized test runner">
+        <java fork="${run.tests.should.fork}"
+	      failonerror="true"
+	      classpath="${compiler.lib}:${dist.file}:${build.tests}:${tests.junit}:${build}"
+	      classname="org.junit.runner.JUnitCore">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-ea"/>
+            <arg line="${param}"/>
+        </java>
+    </target>
+
+    <!-- Note that this target ignores file src/tests/AllTests.java .
+         We should perhaps eliminate either that file or this target.
+     -->
+    <target name="all-tests"
+      depends="basic-tests,flow-tests,framework-tests,igj-tests,interning-tests,javari-tests,nullness-tests"
+      description="Run tests for all checkers"/>
+
+    <target name="annotation-builder-tests" depends="dist,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AnnotationBuilderTest"/>
+        </antcall>
+    </target>
+
+    <target name="basic-tests" depends="dist,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.BasicEncryptedTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.BasicSuperSubTest"/>
+        </antcall>
+    </target>
+
+    <target name="flow-tests" depends="dist,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FrameworkTest"/>
+        </antcall>
+    </target>
+
+    <target name="framework-tests" depends="dist,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FrameworkTest"/>
+        </antcall>
+    </target>
+
+    <target name="javari-tests" depends="dist,build-tests"
+      description="Run tests for the Javari checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.JavariTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-tests" depends="dist,build-tests"
+      description="Run tests for the Nullness checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessTest"/>
+        </antcall>
+    </target>
+
+    <target name="interning-tests" depends="dist,build-tests"
+      description="Run tests for the Interning checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.InterningTest"/>
+        </antcall>
+    </target>
+
+    <target name="igj-tests" depends="dist,build-tests"
+      description="Run tests for the IGJ checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.IGJTest"/>
+        </antcall>
+    </target>
+
+    <!-- Type Check the Checkers -->
+
+    <!-- depends on dist, needs classfile of the checker itself -->
+    <target name="-run-checker" depends="dist"
+            description="Run Nullness checker on Checker Framework">
+        <pathconvert pathsep=" " property="src.files">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                    <exclude name="checkers/util/dist/**"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <java fork="true"
+	      failonerror="true"
+	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${dist.file}"
+	      classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <arg value="-g"/>
+            <arg line="-sourcepath ${src}:${checker-jdk}"/>
+            <arg line="-d ${build}"/>
+            <arg line="${src.files}"/>
+            <arg line="-version"/>
+            <arg line="-proc:only"/>
+            <arg line="-processor ${checker-name}"/>
+        </java>
+    </target>
+
+    <target name="check-nullness"
+      description="Run the nullness checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
+            <param name="checker-jdk" value="jdk/nullness/src"/>
+        </antcall>
+    </target>
+
+    <target name="check-igj"
+      description="Run the IGJ checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="checkers.igj.IGJChecker"/>
+            <param name="checker-jdk" value="jdk/igj/src"/>
+        </antcall>
+    </target>
+
+    <target name="touch-jdk"
+            description="Update the date of all jdk files">
+      <touch>
+        <fileset dir="jdk">
+          <include name="**/*"/>
+        </fileset>
+      </touch>
+    </target>
+
+</project>
