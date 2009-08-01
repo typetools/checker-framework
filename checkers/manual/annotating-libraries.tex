@@ -5,10 +5,13 @@ When annotated code uses an unannotated library, a checker may issue warnings.
 As described in Section~\ref{unannotated-code}, the best way to correct
 this problem is to add annotations to the library (though you can instead
 suppress all warnings related to an unannotated library by use of the 
-\code{-AskipClasses} command-line option).  This section tells you
+\code{-AskipClasses} command-line option).  If you have source code for the
+library, you can easily add the annotations.
+This section tells you
 how to add annotations to a library for which you have no source code,
 because the library is library distributed only binary (\code{.class} or
-\code{.jar}) form.
+\code{.jar}) form.  It is also useful if you do not wish to edit the
+library's source code.
 
 The Checker Framework distribution contains annotations
 for popular libraries, such as the JDK\@.
