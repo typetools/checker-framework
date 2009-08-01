@@ -146,16 +146,12 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \subsection{How to report problems\label{reporting-bugs}}
 
 If you have a problem with any checker, or with the Checker Framework,
-please let us know at
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\code{jsr308-bugs@lists.csail.mit.edu}%
-%BEGIN LATEX
-\end{smaller}%
-%END LATEX
-.  In addition
-to bug reports, we welcome suggestions, annotated libraries, bug fixes, new
+please file a bug at 
+\ahref{http://code.google.com/p/checker-framework/issues}.
+
+Alternately (especially if your communication is not a bug report), you can
+send mail to checker-framework-dev@googlegroups.com.
+We welcome suggestions, annotated libraries, bug fixes, new
 features, new checker plugins, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
@@ -215,7 +211,7 @@ For more details, or if anything goes wrong, see the comments in the
 
 \begin{Verbatim}
   cd
-  wget -nv -N http://groups.csail.mit.edu/pag/jsr308/current/Makefile-jsr308-install
+  wget -nv -N http://types.cs.washington.edu/checker-framework/current/Makefile-jsr308-install
   make -f Makefile-jsr308-install
 \end{Verbatim}
 
@@ -234,19 +230,19 @@ release of the Checker Framework.
 \begin{enumerate}
 
 \item Download and install the JSR 308 implementation; follow the instructions at
-% alternative: \urldef{\JsrInstallingUrl}\url{http://groups.csail.mit.edu/pag/jsr308/current/README-jsr308.html#installing}
-{\codesize\url{http://groups.csail.mit.edu/pag/jsr308/current/README-jsr308.html#installing}}.
+% alternative: \urldef{\JsrInstallingUrl}\url{http://types.cs.washington.edu/checker-framework/README-jsr308.html#installing}
+{\codesize\url{http://types.cs.washington.edu/checker-framework/README-jsr308.html#installing}}.
 This creates a \code{langtools} directory.
 
 \item Download the Checker Framework distribution zipfile from
-\myurl{http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip},
+\myurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip},
 and unzip it to create a \code{checkers} directory.  We recommend that the
 \code{checkers} directory and the \code{langtools} directory be siblings.
 Example commands:
 
 \begin{Verbatim}
   cd $JSR308
-  wget http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip
+  wget http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip
   unzip jsr308-checkers.zip
 \end{Verbatim}
 
@@ -426,7 +422,7 @@ Many users have provided valuable feedback, for which we are grateful.
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog-checkers.txt} file.  This file is included in the
 checkers distribution and is also available on the web at
-\myurl{http://groups.csail.mit.edu/pag/jsr308/current/changelog-checkers.txt}.
+\myurl{http://types.cs.washington.edu/checker-framework/current/changelog-checkers.txt}.
 
 
 

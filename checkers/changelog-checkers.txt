@@ -437,7 +437,7 @@ Manual
     8  Annotating libraries
     9  How to create a new checker plugin
   Javadoc for the Checker Framework is included in its distribution and is
-    available online at http://groups.csail.mit.edu/pag/jsr308/current/doc/ .
+    available online at http://types.cs.washington.edu/checker-framework/current/doc/ .
 
 ----------------------------------------------------------------------
 Version 0.6.4, 9 June 2008
