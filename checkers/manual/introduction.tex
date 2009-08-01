@@ -1512,37 +1512,15 @@ annotation, and its optional second argument indicates where the default
 applies.  If the second argument is omitted, the specified annotation is
 the default in all locations.  See the Javadoc of \refclass{quals}{DefaultQualifier} for details.
 
-If you wish to write multiple 
-\<@\refclass{quals}{DefaultQualifier}> annotations at a single location,
-use 
-\<@\refclass{quals}{DefaultQualifiers}> instead.
-
-If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
-\<package-info.java> file), then it applies to the given package \emph{and}
-all subpackages.
-% This is slightly at odds with Java's treatment of packages of different
-% names as essentially unrelated, but is more intuitive and useful.
-
-Setting a default for class declarations may have an unexpected result:  a
-type qualifier on a class declaration gives an implicit qualifier
-(Section~\ref{effective-qualifier}) that can only be strengthened, not
-weakened.  Thus, you may want to put explicit qualifiers on class
-declarations, or exclude class declarations from defaulting.
-
-\paragraph{Example}
-This example shows use of both \code{@\refclass{quals}{DefaultQualifier}}
-and \code{@\refclass{quals}{DefaultQualifiers}}.  (The example uses
-the Nullness type system (Section~\ref{nullness-checker}) and
-the IGJ type system (Section~\ref{igj-checker}).)
+For example, using the Nullness type system (Section~\ref{nullness-checker}):
 
 \begin{Verbatim}
-@DefaultQualifiers({
-  @DefaultQualifier("checkers.nullness.quals.NonNull"),
-  @DefaultQualifier("checkers.igj.quals.Mutable")
-})
+import checkers.quals.*;        // for DefaultQualifier[s]
+
+@DefaultQualifier("checkers.nullness.quals.NonNull"),
 class MyClass {
 
-  public boolean compile(File myFile) { // myFile has type "@NonNull @Mutable File"
+  public boolean compile(File myFile) { // myFile has type "@NonNull File"
     if (!myFile.exists())          // no warning: myFile is non-null
       return false;
     @Nullable File srcPath = ...;  // must annotate to specify "@Nullable File"
@@ -1551,13 +1529,38 @@ class MyClass {
       ...
   }
 
-  @DefaultQualifier("checkers.igj.quals.ReadOnly")
-  public boolean isJavaFile(File myfile) {  // myFile has type "@NonNull @ReadOnly File"
+  @DefaultQualifier("checkers.igj.quals.Nullable")
+  public boolean isJavaFile(File myfile) {  // myFile has type "@Nullable File"
     ...
   }
 }
 \end{Verbatim}
 
+If you wish to write multiple 
+\<@\refclass{quals}{DefaultQualifier}> annotations at a single location,
+use 
+\<@\refclass{quals}{DefaultQualifiers}> instead.  For example:
+
+\begin{Verbatim}
+@DefaultQualifiers({
+  @DefaultQualifier("checkers.nullness.quals.NonNull"),
+  @DefaultQualifier("checkers.igj.quals.Mutable")
+})
+\end{Verbatim}
+
+
+If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
+\<package-info.java> file), then it applies to the given package \emph{and}
+all subpackages.
+% This is slightly at odds with Java's treatment of packages of different
+% names as essentially unrelated, but is more intuitive and useful.
+
+Recall that an annotation on a class definition indicates an implicit
+qualifier (Section~\ref{effective-qualifier}) that can only be
+strengthened, not weakened.  This can lead to unexpected results when if
+the default qualifier applies to a class definition.  Thus, you may want to
+put explicit qualifiers on class declarations (which prevents the default
+from taking effect), or exclude class declarations from defaulting.
 
 
 \paragraph{When a default qualifier may not be specified}
