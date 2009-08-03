@@ -55,7 +55,7 @@ public class NonnullAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @see FlowVisitor
      */
     public NonnullAnnotatedTypeFactory(ProcessingEnvironment env, CompilationUnitTree root, boolean useFlow, boolean ignoreSameTypeCast) {
-      super(null, root);
+      super(env, root);
 
         @Nullable Elements elements = env.getElementUtils();
         assert elements != null; /*nninvariant*/
