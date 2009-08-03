@@ -122,7 +122,7 @@ different shell, you may need to slightly adjust the commands.
 
 \item
   Download the latest Checker Framework distribution
-  % (\ahrefurl{http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip})
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip})
   and unzip it.  You can put it anywhere you like; a standard place is in a
   new directory named \code{jsr308}.
 
@@ -130,7 +130,7 @@ different shell, you may need to slightly adjust the commands.
   export JSR308=$HOME/jsr308
   mkdir ${JSR308}
   cd ${JSR308}
-  wget http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip
+  wget http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip
   unzip jsr308-checkers.zip
 \end{Verbatim}
 
@@ -179,7 +179,7 @@ instructions for using a checker appear in Section~\ref{using-a-checker}.
 
 \item
   Download the latest Checker Framework distribution
-  % (\ahrefurl{http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip})
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip})
   and unzip it to create a \<checkers> directory.  You can put it anywhere
   you like; a standard place is in a new directory under \<C:\ttbs{}Program
   Files>.
@@ -187,7 +187,7 @@ instructions for using a checker appear in Section~\ref{using-a-checker}.
 \begin{enumerate}
 \item
   Save the file
-  \ahrefurl{http://groups.csail.mit.edu/pag/jsr308/current/jsr308-checkers.zip}
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip}
   to your Desktop.
 \item
   Double-click the \<jsr308-checkers.zip> file on your computer.  Click on
@@ -381,7 +381,7 @@ Finding bugs with a checker plugin is a two-step process:
 \subsection{Writing annotations\label{writing-annotations}}
 
 The syntax of type qualifier annotations in Java 7 is specified by
-\ahref{http://groups.csail.mit.edu/pag/jsr308/}{JSR 308}~\cite{jsr308}.  Ordinary
+\ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{jsr308}.  Ordinary
 Java permits annotations on declarations.  JSR 308 permits annotations
 anywhere that you would write a type, including generics and casts.  You
 can also write annotations to indicate type qualifiers for array levels and
@@ -646,7 +646,7 @@ run the Ant target by executing the following steps
 \paragraph{Eclipse plug-in}
 
 A prototype Eclipse plug-in for running a checker is available at
-\myurl{http://groups.csail.mit.edu/pag/jsr308/eclipse/}.  
+\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.  
 The website contains instructions for installing and using the plug-in.
 The plug-in is
 experimental now, but some people have used it successfully (and we have fixed
@@ -657,6 +657,212 @@ all bugs that have been reported so far).
 
 tIDE, an open-source Java IDE, supports the Checker Framework.  See its
 documentation at \myurl{http://tide.olympe-network.com/}.
+
+
+\subsection{What the checker guarantees\label{checker-guarantees}}
+
+A checker can guarantee that a particular property holds throughout the
+code.  For example, the Nullness checker (Section~\ref{nullness-checker})
+guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
+evaluates to null.  The Interning checker (Section~\ref{interning-checker})
+guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
+evaluates to an interned value.  The checker makes its guarantee by
+examining every part of your program and verifying that no part of the
+program violates the guarantee.
+
+There are some limitations to the guarantee.
+
+\begin{itemize}
+
+\item
+  Native methods and reflection can behave in a manner that is impossible
+  for a compiler plugin to check.  Such constructs may violate the
+  property being checked.  Similarly, deserialization and cloning can
+  create objects that could not result from normal constructor calls, and
+  that therefore may violate the property being checked.
+
+\item 
+  A compiler plugin can check only those parts of your program that you run
+  it on. If you compile some parts of your program without the
+  \code{-processor} switch or with the \code{-AskipClasses} property
+  (in other words, without running the checker), or if you use the
+  \code{@SuppressWarnings} annotation to suppress some errors or warnings,
+  then there is no guarantee that the entire program satisfies the property
+  being checked.  An analogous situation is using an external library that
+  was compiled without being checked by the compiler plugin.
+
+\item 
+  Your code should pass the Java compiler without errors or warnings.  In
+  particular, your code should use generic types, with no uses of raw types.
+  Misuse of generics, including casting away generic types, can cause other
+  errors to be missed.
+
+\item
+  \urldef{\jlsintersectiontypesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.9}
+  The Checker Framework does not yet support annotations on intersection
+  types (see
+  \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
+  intersection types.
+
+\item
+  Specific checkers may have other limitations; see their documentation for
+  details.
+
+\end{itemize}
+
+A checker can be useful in finding bugs or in verifying part of a
+program, even if the checker is unable to verify the correctness of an
+entire program.
+
+If you find that a checker fails to issue a warning that it
+should, then please report a bug (see Section~\ref{reporting-bugs}).
+
+
+\subsection{Tips about writing annotations\label{tips-about-writing-annotations}}
+
+\subsubsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
+
+You should use annotations to indicate \emph{normal} behavior.  The
+annotation indicate all the values that you \emph{want} to flow to
+reference --- not every value that might possibly flow there if your
+program has a bug.
+
+Many methods are guaranteed to throw an exception if they are passed \code{null}
+as an argument.  Examples include
+
+\begin{Verbatim}
+  java.lang.Double.valueOf(String)
+  java.lang.String.contains(CharSequence)
+  org.junit.Assert.assertNotNull(Object)
+  com.google.common.base.Preconditions.checkNotNull(Object)
+\end{Verbatim}
+
+\code{@Nullable} might seem like a reasonable annotation for the parameter,
+for two reasons.  First, \code{null} is a legal argument with a
+well-defined semantics:  throw an exception.  Second, \code{@Nullable}
+describes a possible program execution:  it might be possible for
+\code{null} to flow there, if your program has a bug.
+
+% (Checking for such a bug is the whole purpose of the \code{assertNotNull}
+% and \code{checkNotNull} methods.)
+
+However, it is never useful for a programmer to pass \code{null}.  It is
+the programmer's intention that \code{null} never flows there.  If
+\code{null} does flow there, the program will not continue normally.
+
+Therefore, you should mark such parameters as \code{@NonNull}, indicating
+the intended use of the method.  When you use the \code{@NonNull}
+annotation, the checker is able to issue compile-time warnings about
+possible run-time exceptions, which is its purpose.  Marking the parameter
+as \code{@Nullable} would suppress such warnings, which is undesirable.
+
+% (The note at
+% http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html
+% argues that the parameter could be marked as @Nullable, since it is
+% possible for null to flow there at run time.  However, since that is an
+% erroneous case, the annotation would be counterproductive rather than
+% useful.)
+
+
+\subsubsection{Subclasses must respect superclass annotations\label{annotations-are-a-contract}}
+
+An annotation indicates a guarantee that a client can depend upon.  A subclass
+is not permitted to \emph{weaken} the contract; for example,
+if a method accepts \code{null} as an argument, then every overriding
+definition must also accept \code{null}.
+A subclass is permitted to \emph{strengthen} the contract; for example,
+if a method does \emph{not} accept \code{null} as an argument, then an 
+overriding definition is permitted to accept \code{null}.
+
+As a bad example, consider an erroneous \code{@Nullable} annotation at
+line 141 of \ahref{http://pauillac.inria.fr/~maranget/hevea/doc/manual018.html#toc22}{\code{com/google/common/collect/Multiset.java}}, version r78:
+
+\begin{Verbatim}
+101  public interface Multiset<E> extends Collection<E> {
+...
+122    /**
+123     * Adds a number of occurrences of an element to this multiset.
+...
+129     * @param element the element to add occurrences of; may be {@code null} only
+130     *     if explicitly allowed by the implementation
+...
+137     * @throws NullPointerException if {@code element} is null and this
+138     *     implementation does not permit null elements. Note that if {@code
+139     *     occurrences} is zero, the implementation may opt to return normally.
+140     */
+141    int add(@Nullable E element, int occurrences);
+\end{Verbatim}
+
+There exist implementations of Multiset that permit \code{null} elements,
+and implementations of Multiset that do not permit \code{null} elements.  A
+client with a variable \code{Multiset ms} does not know which variety of
+Multiset \code{ms} refers to.  However, the \code{@Nullable} annotation
+promises that \code{ms.add(null, 1)} is permissible.  (Recall from
+Section~\ref{annotate-normal-behavior} that annotations should indicate
+normal behavior.)
+
+If parameter \code{element} on line 141 were to be annotated, the correct
+annotation would be \code{@NonNull}.  Suppose a client has a reference to
+same Multiset \code{ms}.  The only way the clienc can be sure not to throw an exception is to pass
+only non-\code{null} elements to \code{ms.add()}.  A particular class
+that implements Multiset could declare \code{add} to take a
+\code{@Nullable} parameter.  That still satisfies the original contract.
+It strengthens the contract by promising even more:  a client with such a
+reference can pass any non-\code{null} value to \code{add()}, and may also
+pass \code{null}.
+
+\textbf{However}, the best annotation for line 141 is no annotation at all.
+The reason is that each implementation of the Multiset interface should
+specify its own nullness properties when it specifies the type parameter
+for Multiset.  For example, two clients could be written as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset implements Multiset<@Nullable Object> { ... }
+  class MyNullProhibitingMultiset implements Multiset<@NonNull Object> { ... }
+\end{Verbatim}
+
+\noindent
+or, more generally, as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset<E extends @Nullable Object> implements Multiset<E> { ... }
+  class MyNullProhibitingMultiset<E extends @NonNull Object> implements Multiset<E> { ... }
+\end{Verbatim}
+
+Then, the specification is more informative, and the Checker Framework is
+able to do more precise checking, than if line 141 has an annotation.
+
+It is a pleasant feature of the Checker Framework that in many cases, no
+annotations at all are needed on type parameters such as \code{E} in MultiSet.
+
+
+\subsubsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+
+%% I want to get rid of this syntax.
+
+In the checkers distributed with the Checker Framework, an annotation on a
+constructor invocation is equivalent to a cast on a constructor result.
+That is, the following two expressions have identical semantics:  one is
+just shorthand for the other.
+
+\begin{Verbatim}
+  new @ReadOnly Date()
+  (@ReadOnly Date) new Date()
+\end{Verbatim}
+
+However, you should rarely have to use this.  The Checker Framework will
+determine the qualifier on the result, based on the ``return value''
+annotation on the constructor definition.  The ``return value'' annotation
+appears before the constructor name, for example:
+
+\begin{Verbatim}
+  class MyClass {
+    @ReadOnly MyClass() { ... }
+  }
+\end{Verbatim}
+
+
+\section{Handling warnings and legacy code\label{warnings-and-legacy}}
 
 
 \subsection{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
@@ -683,9 +889,11 @@ there are several ways to eliminate the compiler warnings.
 \begin{enumerate}
 \item Annotate \code{unannotated\_method} in full.  This approach provides the
   the strongest guarantees, but may require you to annotate additional
-  methods that \code{unannotated\_method} calls.
+  methods that \code{unannotated\_method} calls.  See
+  Section~\ref{annotating-libraries} for a discussion of how to annotate
+  libraries for which you have no source code.
 \item Annotate only the signature of \code{unannotated\_method}, and
-  suppress warnings in its body.  Two ways to do this are via a
+  suppress warnings in its body.  Two ways to suppress the warnings are via a
   \code{@SuppressWarnings} annotation or by not running the checker on that
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
@@ -771,6 +979,136 @@ checker (Section~\ref{nullness-checker}) uses \code{assert} statements that cont
 null checks to suppress warnings
 (Section~\ref{suppressing-warnings-with-assertions}).
 
+
+
+\subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
+
+Sometimes, your code needs to be compilable by people who are not
+using the Type Annotations or Java 7 compiler.
+
+
+\subsubsection{Annotations in comments}
+
+A Java 4 compiler does not permit use of
+annotations, and a Java 5 compiler only permits annotations on
+declarations (but not on generic arguments, casts, method receiver, etc.).
+
+For compatibility with all Java versions, you may write any annotation inside a
+\code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
+The Type Annotations compiler treats the code exactly as if you had not written the
+\code{/*} and \code{*/}.
+In other words, the Type Annotations compiler will recognize the
+annotation, but your code will still compile with any other Java compiler.
+
+(\textbf{Note:} This is a feature of the Type Annotations compiler that is
+distributed along with the Checker Framework.  It is not supported by the
+mainline OpenJDK compiler, which will ignore annotations written in
+comments.  This is the only difference between the Type Annotations
+compiler and the OpenJDK compiler.)
+%   For more details
+% about the differences, see file \code{README-jsr308.html} in the Type
+% Annotations distribution.
+
+In a single program, you may write some annotations in comments, and others
+without comments.
+
+By default, the compiler ignores any comment that contains spaces at the
+beginning or end, or between the \code{@} and the annotation name.  
+In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
+\code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
+This
+feature enables backward compatibility with code that contains comments
+that start with \code{@} but are not annotations.  (The
+ESC/Java~\cite{FlanaganLLNSS02}, JML~\cite{LeavensBR2006:JML}, and
+Splint~\cite{Evans96} tools all use ``\code{/*@}'' or ``\code{/*~@}'' as a
+comment marker.)
+Compiler flag
+\code{-XDTA:spacesincomments} causes the compiler to parse annotation comments
+even when they contain spaces.  You may need to use
+\code{-XDTA:spacesincomments} if you use Eclipse's ``Source $>$ Correct
+Indentation'' command, since it inserts space in comments.  But the
+annotation comments are less readable with spaces, so you may wish to disable
+inserting spaces:  in the Formatter preferences, in the Comments tab,
+unselect the ``enable block comment formatting'' checkbox.
+
+
+\subsubsection{Import statements\label{implicit-import-statements}}
+
+When writing source code with annotations, it is more convenient to write a
+short form such as \code{@NonNull} instead of
+\code{@checkers.nullness.quals.NonNull}.  There are two ways to do this.
+
+\begin{itemize}
+\item
+  Write an import statement like: \code{import checkers.nullness.quals.*;}
+
+  A disadvantage of this is that everyone who compiles the code
+  (even using a non-JSR-308 compiler) must have the annotation definitions
+  (e.g., the \code{checkers.jar} or \code{checkers-quals.jar} file) on
+  their classpath.  The reason is
+  that a Java compiler issues an error if an imported package is not on the
+  classpath.  See Section~\ref{distributing}.
+
+\item
+  \label{jsr308_imports}
+  When you compile the code, set the shell environment variable
+  \code{jsr308\_imports}.  This permits your code to compile whether or not
+  the Type Annotations compiler is being used.
+
+  In bash, you could write \code{export
+    jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
+  command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
+  Alternately, you can set the system variable via the javac command line
+  argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
+
+  You can specify multiple packages separated by the classpath separator
+  (same as the file path separator:   \<;> for Windows, and \<:> for Unix
+  and Mac.).  For example, to
+  implicitly import the Nullness and Interning qualifiers,
+  set \code{jsr308\_imports} to
+  \code{checkers.nullness.quals.*:checkers.interning.quals.*}.  
+\end{itemize}
+
+
+\subsubsection{Migrating away from annotations in comments}
+
+If your codebase currently uses annotations in comments, but you are
+willing to use only compilers that support type annotations (such as any
+Java 7 compiler), then you can remove the comment characters around your
+annotations.  This Unix command will do so, for all Java files in the
+current working directory or any subdirectory.
+
+\begin{Verbatim}
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+\end{Verbatim}
+
+You can customize this command:
+\begin{itemize}
+\item
+To process comments with embedded spaces and asterisks, change 
+two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
+\item
+To ignore comments with leading or trailing spaces, remove the four
+instances of ``\verb|\s*|''.  
+\item
+  To not make backups, remove
+``\verb|.bak|''.
+\end{itemize}
+
+
+If you are using implicit import statements
+(Section~\ref{implicit-import-statements}), you may also need to introduce
+explicit import statements into your code.
+
+
+\section{Advanced type system features\label{advanced-type-system-features}}
+
+You may wish to skim or skip this section on first reading.  After you have
+used a checker for a little while and want to be able to express more
+sophisticated and useful types, or to understand more about how the Checker
+Framework works, you can return to it.
 
 
 \subsection{Polymorphism and generics\label{polymorphism}}
@@ -1329,320 +1667,6 @@ type is never inferred to be treated as possibly-null).
 
 
 
-\subsection{What the checker guarantees\label{checker-guarantees}}
-
-A checker can guarantee that a particular property holds throughout the
-code.  For example, the Nullness checker (Section~\ref{nullness-checker})
-guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
-evaluates to null.  The Interning checker (Section~\ref{interning-checker})
-guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
-evaluates to an interned value.  The checker makes its guarantee by
-examining every part of your program and verifying that no part of the
-program violates the guarantee.
-
-There are some limitations to the guarantee.
-
-\begin{itemize}
-
-\item
-  Native methods and reflection can behave in a manner that is impossible
-  for a compiler plugin to check.  Such constructs may violate the
-  property being checked.  Similarly, deserialization and cloning can
-  create objects that could not result from normal constructor calls, and
-  that therefore may violate the property being checked.
-
-\item 
-  A compiler plugin can check only those parts of your program that you run
-  it on. If you compile some parts of your program without the
-  \code{-processor} switch or with the \code{-AskipClasses} property
-  (in other words, without running the checker), or if you use the
-  \code{@SuppressWarnings} annotation to suppress some errors or warnings,
-  then there is no guarantee that the entire program satisfies the property
-  being checked.  An analogous situation is using an external library that
-  was compiled without being checked by the compiler plugin.
-
-\item 
-  Your code should pass the Java compiler without errors or warnings.  In
-  particular, your code should use generic types, with no uses of raw types.
-  Misuse of generics, including casting away generic types, can cause other
-  errors to be missed.
-
-\item
-  \urldef{\jlsintersectiontypesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.9}
-  The Checker Framework does not yet support annotations on intersection
-  types (see
-  \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
-  intersection types.
-
-\item
-  Specific checkers may have other limitations; see their documentation for
-  details.
-
-\end{itemize}
-
-A checker can be useful in finding bugs or in verifying part of a
-program, even if the checker is unable to verify the correctness of an
-entire program.
-
-If you find that a checker fails to issue a warning that it
-should, then please report a bug (see Section~\ref{reporting-bugs}).
-
-
-\subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
-
-Sometimes, your code needs to be compilable by people who are not
-using the Type Annotations or Java 7 compiler.
-
-
-\subsubsection{Annotations in comments}
-
-A Java 4 compiler does not permit use of
-annotations, and a Java 5 compiler only permits annotations on
-declarations (but not on generic arguments, casts, method receiver, etc.).
-
-For compatibility with all Java versions, you may write any annotation inside a
-\code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
-The Type Annotations compiler treats the code exactly as if you had not written the
-\code{/*} and \code{*/}.
-In other words, the Type Annotations compiler will recognize the
-annotation, but your code will still compile with any other Java compiler.
-
-(\textbf{Note:} This is a feature of the Type Annotations compiler that is
-distributed along with the Checker Framework.  It is not supported by the
-mainline OpenJDK compiler, which will ignore annotations written in
-comments.  This is the only difference between the Type Annotations
-compiler and the OpenJDK compiler.)
-%   For more details
-% about the differences, see file \code{README-jsr308.html} in the Type
-% Annotations distribution.
-
-In a single program, you may write some annotations in comments, and others
-without comments.
-
-By default, the compiler ignores any comment that contains spaces at the
-beginning or end, or between the \code{@} and the annotation name.  
-In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
-\code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
-This
-feature enables backward compatibility with code that contains comments
-that start with \code{@} but are not annotations.  (The
-ESC/Java~\cite{FlanaganLLNSS02}, JML~\cite{LeavensBR2006:JML}, and
-Splint~\cite{Evans96} tools all use ``\code{/*@}'' or ``\code{/*~@}'' as a
-comment marker.)
-Compiler flag
-\code{-XDTA:spacesincomments} causes the compiler to parse annotation comments
-even when they contain spaces.  You may need to use
-\code{-XDTA:spacesincomments} if you use Eclipse's ``Source $>$ Correct
-Indentation'' command, since it inserts space in comments.  But the
-annotation comments are less readable with spaces, so you may wish to disable
-inserting spaces:  in the Formatter preferences, in the Comments tab,
-unselect the ``enable block comment formatting'' checkbox.
-
-
-\subsubsection{Import statements\label{implicit-import-statements}}
-
-When writing source code with annotations, it is more convenient to write a
-short form such as \code{@NonNull} instead of
-\code{@checkers.nullness.quals.NonNull}.  There are two ways to do this.
-
-\begin{itemize}
-\item
-  Write an import statement like: \code{import checkers.nullness.quals.*;}
-
-  A disadvantage of this is that everyone who compiles the code
-  (even using a non-JSR-308 compiler) must have the annotation definitions
-  (e.g., the \code{checkers.jar} or \code{checkers-quals.jar} file) on
-  their classpath.  The reason is
-  that a Java compiler issues an error if an imported package is not on the
-  classpath.  See Section~\ref{distributing}.
-
-\item
-  \label{jsr308_imports}
-  When you compile the code, set the shell environment variable
-  \code{jsr308\_imports}.  This permits your code to compile whether or not
-  the Type Annotations compiler is being used.
-
-  In bash, you could write \code{export
-    jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
-  command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
-  Alternately, you can set the system variable via the javac command line
-  argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
-
-  You can specify multiple packages separated by the classpath separator
-  (same as the file path separator:   \<;> for Windows, and \<:> for Unix
-  and Mac.).  For example, to
-  implicitly import the Nullness and Interning qualifiers,
-  set \code{jsr308\_imports} to
-  \code{checkers.nullness.quals.*:checkers.interning.quals.*}.  
-\end{itemize}
-
-
-\subsubsection{Migrating away from annotations in comments}
-
-If your codebase currently uses annotations in comments, but you are
-willing to use only compilers that support type annotations (such as any
-Java 7 compiler), then you can remove the comment characters around your
-annotations.  This Unix command will do so, for all Java files in the
-current working directory or any subdirectory.
-
-\begin{Verbatim}
-   find . -type f -name '*.java' -print \
-     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
-     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
-\end{Verbatim}
-
-You can customize this command:
-\begin{itemize}
-\item
-To process comments with embedded spaces and asterisks, change 
-two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
-\item
-To ignore comments with leading or trailing spaces, remove the four
-instances of ``\verb|\s*|''.  
-\item
-  To not make backups, remove
-``\verb|.bak|''.
-\end{itemize}
-
-
-If you are using implicit import statements
-(Section~\ref{implicit-import-statements}), you may also need to introduce
-explicit import statements into your code.
-
-
-\subsection{Tips about writing annotations\label{tips-about-writing-annotations}}
-
-\subsubsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
-
-\begin{Verbatim}
-  new @ReadOnly Date()
-  (@ReadOnly Date) new Date()
-\end{Verbatim}
-
-However, you should rarely have to use this.  The Checker Framework will
-determine the qualifier on the result, based on the ``return value''
-annotation on the constructor definition.
-
-
-
-\subsubsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
-
-You should use annotations to indicate \emph{normal} behavior.  The
-annotation indicate all the values that you \emph{want} to flow to
-reference --- not every value that might possibly flow there if your
-program has a bug.
-
-Many methods are guaranteed to throw an exception if they are passed \code{null}
-as an argument.  Examples include
-
-\begin{Verbatim}
-  java.lang.Double.valueOf(String)
-  java.lang.String.contains(CharSequence)
-  org.junit.Assert.assertNotNull(Object)
-  com.google.common.base.Preconditions.checkNotNull(Object)
-\end{Verbatim}
-
-In some sense, \code{null} is a legal argument with a well-defined
-semantics:  throw an exception.  Another reason \code{@Nullable} might seem
-like a reasonable annotation is that it describes a possible program
-execution:  it might be possible for \code{null} to flow there, if your
-program has a bug.
-
-% (Checking for such a bug is the whole purpose of the \code{assertNotNull}
-% and \code{checkNotNull} methods.)
-
-However, it is never useful for a programmer to pass \code{null}.  It is
-the programmer's intention that \code{null} never flows there.  If
-\code{null} does flow there, the program will not continue normally.
-
-Therefore, you should mark such parameters as \code{@NonNull}, indicating
-the intended use of the method.  The \code{@NonNull} annotation will enable
-compile-time warnings about possible run-time exceptions, which is the
-purpose of the checker.
-
-% (The note at
-% http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html
-% argues that the parameter could be marked as @Nullable, since it is
-
-% possible for null to flow there at run time.  However, since that is an
-% erroneous case, the annotation would be counterproductive rather than
-% useful.)
-
-
-\subsubsection{Annotations indicate a contract\label{annotations-are-a-contract}}
-
-Annotations indicate guarantees that a client can depend upon.  A subclass
-is permitted not permitted to weaken the contract; for example,
-if a method accepts \code{null} as an argument, then every overriding
-definition must also accept \code{null}.
-A subclass is permitted to strengthen the contract; for example,
-if a method does \emph{not} accept \code{null} as an argument, then an 
-overriding definition is permitted to accept \code{null}.
-
-As a bad example, consider an erroneous \code{@Nullable} annotation at
-line 141 of \ahref{http://pauillac.inria.fr/~maranget/hevea/doc/manual018.html#toc22}{\code{com/google/common/collect/Multiset.java}}, version r78:
-
-\begin{Verbatim}
-101  public interface Multiset<E> extends Collection<E> {
-...
-122    /**
-123     * Adds a number of occurrences of an element to this multiset.
-...
-129     * @param element the element to add occurrences of; may be {@code null} only
-130     *     if explicitly allowed by the implementation
-...
-137     * @throws NullPointerException if {@code element} is null and this
-138     *     implementation does not permit null elements. Note that if {@code
-139     *     occurrences} is zero, the implementation may opt to return normally.
-140     */
-141    int add(@Nullable E element, int occurrences);
-\end{Verbatim}
-
-There exist implementations of Multiset that permit \code{null} elements,
-and implementations of Multiset that do not permit \code{null} elements.  A
-client with a variable \code{Multiset ms} does not know which variety of
-Multiset \code{ms} refers to.  However, the \code{@Nullable} annotation
-promises that \code{ms.add(null, 1)} is permissible.  (Recall from
-Section~\ref{annotate-normal-behavior} that annotations should indicate
-normal behavior.)
-
-If parameter \code{element} on line 141 were to be annotated, the correct
-annotation would be \code{@NonNull}.  Given an arbitrary Multiset
-\code{ms}, the only way to be sure not to throw an exception is to pass
-only non-\code{null} elements to its \code{add} method.  A particular class
-that implements Multiset could declare \code{add} to take a
-\code{@Nullable} parameter.  That still satisfies the original contract.
-It strengthens the contract by promising even more:  a client with such a
-reference can call \code{add(null)} with confidence that no
-\code{NullPointerException} will be thrown.
-
-\textbf{However}, the best annotation for line 141 is no annotation at all.
-The reason is that each implementation of the Multiset interface should
-specify its own nullness properties when it specifies the type parameter
-for Multiset.  For example, two clients could be written as
-
-\begin{Verbatim}
-  class MyNullPermittingMultiset implements Multiset<@Nullable Object> { ... }
-  class MyNullProhibitingMultiset implements Multiset<@NonNull Object> { ... }
-\end{Verbatim}
-
-\noindent
-or, more generally, as
-
-\begin{Verbatim}
-  class MyNullPermittingMultiset<E extends @Nullable Object> implements Multiset<E> { ... }
-  class MyNullProhibitingMultiset<E extends @NonNull Object> implements Multiset<E> { ... }
-\end{Verbatim}
-
-Then, the specification is more informative, and the Checker Framework is
-able to do more precise checking, than if line 141 has an annotation.
-
-
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
 % LocalWords:  SuppressWarnings un skipClasses java plugins plugin TODO cp igj
 % LocalWords:  nonnull javari langtools sourcepath classpath OpenJDK pre jsr
@@ -1654,4 +1678,5 @@ able to do more precise checking, than if line 141 has an annotation.
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
-% LocalWords:  subpackages bak tIDE Multiset NullPointerException
+% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
+% LocalWords:  html
