@@ -317,7 +317,8 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromExpression.INSTANCE, tree);
         annotateInheritedFromClass(result);
-        fromTreeCache.put(tree, atypes.deepCopy(result));
+        if (SHOULD_CACHE)
+        	fromTreeCache.put(tree, atypes.deepCopy(result));
         return result;
     }
 
