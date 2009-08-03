@@ -8,6 +8,7 @@ import checkers.flow.*;
 import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
@@ -435,6 +436,14 @@ class NullnessFlow extends Flow {
         if (method.getAnnotation(AssertNonNull.class) != null) {
             for (ExpressionTree arg : node.getArguments())
                 inferNullness(arg);
+        }
+        
+        AnnotatedExecutableType methodType = factory.getAnnotatedType(method);
+        List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
+        List<? extends ExpressionTree> methodArgs = node.getArguments();
+        for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
+        	if (methodParams.get(i).hasAnnotation(NONNULL))
+        		inferNullness(methodArgs.get(i));
         }
 
         for (int i = 0; i < vars.size(); ++i) {
