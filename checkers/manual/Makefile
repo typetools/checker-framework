@@ -29,7 +29,7 @@ html: manual.html
 manual.html: manual.dvi
 	hevea -fix urlhref.hva manual.tex
 	hevea urlhref.hva manual.tex
-	perl -pi -e 's/(<TT>http:\/\/pag.csail.mit.edu\/jsr308\/<\/TT><\/A>)/"$$1<BR>" . `date "+%B %e, %Y"`/e' manual.html
+	perl -pi -e 's/(<TT>http:\/\/types.cs.washington.edu\/checker-framework\/<\/TT><\/A>)/"$$1<BR>" . `date "+%B %e, %Y"`/e' manual.html
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
 
