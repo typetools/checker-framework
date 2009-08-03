@@ -5,10 +5,13 @@ When annotated code uses an unannotated library, a checker may issue warnings.
 As described in Section~\ref{unannotated-code}, the best way to correct
 this problem is to add annotations to the library (though you can instead
 suppress all warnings related to an unannotated library by use of the 
-\code{-AskipClasses} command-line option).  This section tells you
+\code{-AskipClasses} command-line option).  If you have source code for the
+library, you can easily add the annotations.
+This section tells you
 how to add annotations to a library for which you have no source code,
 because the library is library distributed only binary (\code{.class} or
-\code{.jar}) form.
+\code{.jar}) form.  It is also useful if you do not wish to edit the
+library's source code.
 
 The Checker Framework distribution contains annotations
 for popular libraries, such as the JDK\@.
@@ -38,7 +41,7 @@ to the checkers) in two ways.
 
 \item You can annotate the compiled
   \code{.jar} or \code{.class} files using the annotation file utilities
-  (\myurl{http://groups.csail.mit.edu/pag/jsr308/annotation-file-utilities/}).
+  (\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
   First, express the annotations textually as an annotation index file, and
   then the tools insert them in the compiled library class files.
   See the Annotation File Utilities documentation for full details.
@@ -273,7 +276,7 @@ files into stub files.
 %
 % \item
 %   Install the annotation file utilities, using the instructions at
-%   \myurl{http://groups.csail.mit.edu/pag/jsr308/annotation-file-utilities/}.
+%   \myurl{http://types.cs.washington.edu/annotation-file-utilities/}.
 %   Per those instructions, the \code{annotation-file-utilities.jar} file
 %   should be on your classpath.
 %

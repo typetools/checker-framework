@@ -226,7 +226,7 @@ build-javap</code> for langtools, and <code>ant clean dists
 all-tests</code> for checkers, so if the build is broken or any
 checker tests fail, you won't be able to continue. (If this is the
 case, you should fix the issue, or contact someone who can via <a
-href="mailto:checkers@lists.csail.mit.edu">checkers@lists.csail.mit.edu</a>.)</p>
+href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>.)</p>
 
 <p>The <code>sanitycheck</code> step unzips the releases from the website, then
 rebuilds both projects and runs tests on the source and binary versions
@@ -302,14 +302,14 @@ dry-run passed successfully, this step should pass as well.</p>
 <ol>
 <li>
 <pre>
-$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://groups.csail.mit.edu/pag/jsr308/
+$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://types.cs.washington.edu/checker-framework/
 </pre>
 </li>
 
 <li>
 <pre>
 cd
-wget -nv -N http://groups.csail.mit.edu/pag/jsr308/current/Makefile-jsr308-install
+wget -nv -N http://types.cs.washington.edu/checker-framework/current/Makefile-jsr308-install
 make -f Makefile-jsr308-install
 </pre>
 </li>
