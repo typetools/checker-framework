@@ -52,7 +52,8 @@ public final
     }
 
 
-    public @Nullable Class<?> getReturnType() {
+    // never returns null; returns Void instead
+    public Class<?> getReturnType() {
 	throw new RuntimeException("skeleton method");
     }
 
