@@ -1,0 +1,1690 @@
+\section{Introduction\label{introduction}}
+
+The Checker Framework enhances Java's type system to make it more powerful
+and useful.
+This lets software developers detect and 
+prevent errors in their Java programs.
+
+The Checker Framework comes with 4 checkers for specific types of errors:
+
+\begin{enumerate}
+
+\item
+  \ahrefloc{nullness-checker}{Nullness checker} for null pointer errors
+  (see Section~\ref{nullness-checker})
+\item
+  \ahrefloc{interning-checker}{Interning checker} for errors in equality
+  testing and interning (see Section~\ref{interning-checker})
+\item
+  \ahrefloc{igj-checker}{IGJ checker} for mutation errors (incorrect
+  side effects), based on the IGJ type system (see
+  Section~\ref{igj-checker})
+\item
+  \ahrefloc{javari-checker}{Javari checker} for mutation errors
+  (incorrect side effects), based on the Javari type system (see
+  Section~\ref{javari-checker})
+
+\end{enumerate}
+
+\noindent
+These checkers are easy to use and are invoked as arguments to \<javac>.
+
+
+The Checker Framework also enables you to write new checkers of your
+own; see Sections~\ref{basic-checker} and~\ref{writing-a-checker}.
+
+
+\subsection{How it works:  Pluggable types}
+
+The Checker Framework supports adding
+pluggable type systems to the Java language in a backward-compatible way.
+Java's built-in typechecker finds and prevents many errors --- but it
+doesn't find and prevent \emph{enough} errors.  The Checker Framework lets you
+run an additional typechecker as a plug-in to the javac compiler.  Your
+code stays completely backward-compatible:  your code compiles with any
+Java compiler, it runs on any JVM, and your coworkers don't have to use the
+enhanced type system if they don't want to.  You can check only part of
+your program, and type inference tools exist to help you annotate your
+code.
+
+
+A type system designer uses the Checker Framework to define type qualifiers
+and their semantics, and a
+compiler plug-in (a ``checker'') enforces the semantics.  Programmers can
+write the type qualifiers in their programs and use the plug-in to detect
+or prevent errors.  The Checker Framework is useful both to programmers who
+wish to write error-free code, and to type system designers who wish to
+evaluate and deploy their type systems.
+
+
+
+% This manual is organized as follows.
+% \begin{itemize}
+% \item Section~\ref{introduction} overviews the Checker Framework and
+%   describes how to \ahrefloc{installation}{install} it (Section~\ref{installation}).
+% \item Section~\ref{using-a-checker} describes how to \ahrefloc{using-a-checker}{use a checker}.
+% \item 
+%   The next sections are user manuals for the \ahrefloc{nullness-checker}{Nullness}
+%   (Section~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
+%   (Section~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Section~\ref{javari-checker}),
+%   \ahrefloc{igj-checker}{IGJ} (Section~\ref{igj-checker}), and \ahrefloc{basic-checker}{Basic}
+%   (Section~\ref{basic-checker}) checkers.
+% \item Section~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
+% libraries}.
+% \item Section~\ref{writing-a-checker} describes how to
+%   \ahrefloc{writing-a-checker}{write a new checker} using the Checker Framework.
+% \end{itemize}
+
+
+
+
+
+
+This document uses the terms ``checker'', ``checker plugin'',
+``type-checking compiler plugin'', and ``annotation processor'' as
+synonyms.
+
+
+\subsection{Installation\label{installation}}
+
+This section describes how to install the binary release of the Checker
+Framework.  The binary release contains everything that you need, both to
+run checkers and to write your own checkers.  As an alternative, the source
+release (Section~\ref{install-source}) is useful if you wish to examine or
+modify the implementation of checkers or of the framework itself.
+
+% Not "\ahrefurl" because it looks bad in the printed manual.
+\textbf{Requirement:} 
+You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from 
+\ahref{http://java.sun.com/javase/downloads/index.jsp}{Sun}
+or elsewhere.  If you are using Apple Mac OS X, you can either use
+\ahref{http://developer.apple.com/java/}{Apple's implementation} or
+\ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
+
+For Unix/Linux/MacOS installation instructions, see Section~\ref{unix-installation}.
+For Windows installation instructions, see Section~\ref{windows-installation}.
+
+
+
+%%% *****
+%%% UPDATE
+%%% *****
+
+%%% Note that much of this section is duplicated with the "Windows
+%%% installation" section.  That is better for users, even though it is
+%%% longer and makes the maintainers keep two versions in sync.
+\subsubsection{Unix/Linux/MacOS installation\label{unix-installation}}
+
+These instructions assume that you use the bash or sh shell.  If you use a
+different shell, you may need to slightly adjust the commands.
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip})
+  and unzip it.  You can put it anywhere you like; a standard place is in a
+  new directory named \code{jsr308}.
+
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  mkdir ${JSR308}
+  cd ${JSR308}
+  wget http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip
+  unzip jsr308-checkers.zip
+\end{Verbatim}
+
+\item
+  The download includes an updated version of the javac compiler, called
+  the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
+  shipped with Java 7.  In order to use the updated compiler when you type
+  \code{javac}, add the directory \code{.../checkers/binary} to your path.
+
+  Place the following commands in your \code{.bashrc} file (and also execute
+  it on the command line, or log out and back in):
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  export PATH=$JSR308/checkers/binary:${PATH}
+\end{Verbatim}
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+
+
+\item
+  Verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-0.9.6
+\end{Verbatim}
+
+\end{enumerate}
+
+That's all there is to it!  Now you are ready to start using the checkers.
+
+Section~\ref{example-use} walks you through a simple example.  More detailed
+instructions for using a checker appear in Section~\ref{using-a-checker}.
+
+
+\subsubsection{Windows installation\label{windows-installation}}
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip})
+  and unzip it to create a \<checkers> directory.  You can put it anywhere
+  you like; a standard place is in a new directory under \<C:\ttbs{}Program
+  Files>.
+
+\begin{enumerate}
+\item
+  Save the file
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip}
+  to your Desktop.
+\item
+  Double-click the \<jsr308-checkers.zip> file on your computer.  Click on
+  the \<checkers> directory, then Select \<Extract all files>, and use
+  \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
+  \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
+\end{enumerate}
+
+\item
+  The download includes an updated version of the javac compiler, called
+  the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
+  shipped with Java 7.  In order to use the updated compiler when you type
+  \code{javac}, add the directory \<C:\ttbs{}Program
+  Files\ttbs{}checkers\ttbs{}binary> to your path variable.  Also set a
+  CHECKERS variable.
+
+% Instructions stolen from http://www.webreference.com/js/tips/020429.html
+
+To set an environment variable, you have two options:  make the change
+temporarily or permanently.
+\begin{itemize}
+\item
+To make the change \textbf{temporarily}, type at the command shell prompt:
+
+\begin{alltt}
+path = \emph{newdir};%PATH%
+\end{alltt}
+
+For example:
+
+\begin{Verbatim}
+path = C:\Program Files\checkers\binary;%PATH%
+set CHECKERS = C:\Program Files\checkers
+\end{Verbatim}
+
+This is a temporary change that endures until the window is closed, and you
+must re-do it every time you start a new command shell.
+
+\item
+To make the change \textbf{permanently},
+Right-click the \<My Computer> icon and
+select \<Properties>. Select the \<Advanced> tab and click the
+\<Environment Variables> button. In the \<System Variables> pane, select
+\<Path> from the list and click \<Edit>. In the \<Edit System Variable>
+dialog box, move the cursor to the beginning of the string in the
+\<Variable Value> field and type the full directory name followed by a
+semicolon (\<;>).
+
+% This is for the benefit of the Ant task.
+Similarly, set the CHECKERS variable.
+
+This is a permanent change that only needs to be done once ever.
+\end{itemize}
+
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+
+\item
+  Verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-0.9.6
+\end{Verbatim}
+
+\end{enumerate}
+
+That's all there is to it!  Now you are ready to start using the checkers.
+
+Section~\ref{example-use} walks you through a simple example.  More detailed
+instructions for using a checker appear in Section~\ref{using-a-checker}.
+
+
+
+\subsection{Example use:  detecting a null pointer bug\label{example-use}}
+
+To run a checker on a source file, just run javac as usual, passing the
+\<-processor> flag.  For instance, if you usually run the compiler like
+this:
+
+\begin{Verbatim}
+  javac Foo.java Bar.java
+\end{Verbatim}
+
+\noindent
+then you will instead run it like this (where \<javac> is the JSR 308
+compiler that is distributed with the Checker Framework):
+
+\begin{alltt}
+  javac -processor \textit{ProcessorName} Foo.java Bar.java
+\end{alltt}
+
+\noindent
+(If you usually do your coding within an IDE, you will need to configure
+the IDE to use the correct version of javac and to pass the command-line
+argument.  See your IDE documentation for details.)
+
+\begin{enumerate}
+\item
+  Let's consider this very simple Java class.  One local variable is
+  annotated as \<NonNull>, indicating that \<ref> must be a reference to a
+  non-null object.  Save the file as \<GetStarted.java>.
+
+\begin{Verbatim}
+import checkers.nullness.quals.*;
+
+public class GetStarted {
+    void sample() {
+        @NonNull Object ref = new Object();
+    }
+}
+\end{Verbatim}
+
+\item
+  Run the nullness checker on the class.  Either run this from the command line:
+
+\begin{Verbatim}
+  javac -processor checkers.nullness.NullnessChecker GetStarted.java
+\end{Verbatim}
+
+\noindent
+or compile from within your IDE, which you have customized to use the JSR
+308 compiler and to pass the extra arguments.
+
+  The compilation should complete without any errors.
+
+\item
+  Let's introduce an error now.  Modify \<ref>'s assignment to:
+\begin{Verbatim}
+  @NonNull Object ref = null;
+\end{Verbatim}
+
+\item
+  Run the nullness checker again, just as before.  This run should emit
+  the following error:
+\begin{Verbatim}
+GetStarted.java:5: incompatible types.
+found   : @Nullable <nulltype>
+required: @NonNull Object
+		@NonNull Object ref = null;
+		                      ^
+1 error
+\end{Verbatim}
+
+The type qualifiers (e.g. \<@NonNull>) are permitted anywhere
+that would write a type, including generics and casts; see
+Section~\ref{writing-annotations}.
+
+\begin{alltt}
+  \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}             // return value
+  int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}  // parameter
+  \underline{@NonNull} List<\underline{@Interned} String> messages;     // non-null list of interned Strings
+\end{alltt}
+
+\end{enumerate}
+
+
+\htmlhr
+\section{Using a checker\label{using-a-checker}}
+
+Finding bugs with a checker plugin is a two-step process:
+
+\begin{enumerate}
+
+\item The programmer writes annotations, such as \code{@\refclass{nullness/quals}{NonNull}} and
+  \code{@\refclass{interning/quals}{Interned}}, that specify additional information about Java types.
+  (Or, the programmer uses an inference tool to automatically insert
+  annotations in his code:  see Sections~\ref{nullness-inference} and~\ref{javari-inference}.)
+  It is possible to annotate only part of your code:  see
+  Section~\ref{unannotated-code}.
+
+\item The checker reports whether the program contains any erroneous code
+  --- that is, code that is inconsistent with the annotations.
+
+\end{enumerate}
+
+
+
+% The annotations have to be on your classpath even when you are not using
+% the -processor, because of the existence of the import statement for
+% the annotations.
+
+
+\subsection{Writing annotations\label{writing-annotations}}
+
+The syntax of type qualifier annotations in Java 7 is specified by
+\ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{jsr308}.  Ordinary
+Java permits annotations on declarations.  JSR 308 permits annotations
+anywhere that you would write a type, including generics and casts.  You
+can also write annotations to indicate type qualifiers for array levels and
+receivers.  Here are a few examples:
+
+\begin{alltt}
+  \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}             // return value
+  int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}  // parameter
+  String toString() \underline{@ReadOnly} \ttlcb{} ... \ttrcb{}           // receiver ("this" parameter)
+  \underline{@NonNull} List<\underline{@Interned} String> messages;     // generics:  non-null list of interned Strings
+  \underline{@Interned} String \underline{@NonNull} [] messages;        // arrays:  non-null array of interned Strings
+  myDate = (\underline{@ReadOnly} Date) readonlyObject;     // cast
+\end{alltt}
+
+You can also write the annotations within comments, as in
+\code{List</*@NonNull*/ String>}.  The Type Annotations compiler, which is
+distributed with the Checker Framework, will still process
+the annotations.
+However, your code will remain compilable by people who are not using the JSR
+308 or Java 7 compiler.  For more details, see
+Section~\ref{annotations-in-comments}.
+
+
+
+\subsubsection{Distributing your annotated project\label{distributing}}
+
+If your code contains any annotations (outside of comments, see Section~\ref{annotations-in-comments}), or any import
+statements for the annotations, then your code has a dependency on the
+annotation declarations.  You also will need to provide the annotation
+declarations as well, if you decide to distribute your project.
+
+For your convenience, inside the the checkers distribution \code{.zip} file
+is a jar file,
+\code{checkers-quals.jar}, that only contains the distributed qualifiers.
+You may include the jar file in your distribution.
+
+Your clients need to have the annotations jar in the classpath when
+compiling your project.  When running it though, they most likely
+don't require the annotations declarations (unless the annotation
+classes are loaded via reflection, which would be unusual).
+
+
+\subsection{Running a checker\label{running}}
+
+To run a checker plugin, run the compiler \code{javac} as usual,
+but pass the \code{-processor \emph{plugin\_class}} command-line
+option.
+(You might run the compiler from the command line as shown below, or your
+IDE might run the javac command on your behalf, in which case see the IDE
+documentation to learn how to customize it.)
+Remember that you must be using the
+Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
+
+Two concrete examples (using the Nullness checker) are:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor checkers.nullness.NullnessChecker MyFile.java
+  javac -processor checkers.nullness.NullnessChecker -sourcepath checkers/jdk/nullness/src MyFile.java
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+For a discussion of the \code{-sourcepath} argument, see
+Section~\ref{skeleton-using}.
+
+The checker is run only on the Java files specified on the command line (or
+created by another annotation processor).
+The checker does not analyze other classes (e.g., pre-compiled classes, or
+classes whose source
+code is available on the classpath), but it does check
+the \emph{uses} of those classes in the source code being compiled.
+
+The javac compiler halts compilation as soon as an error is found in a
+source file.  You can pass \code{-Awarns} in the command-line to
+treat checker errors as warnings.  This option allows you to see all
+the type-checking errors at once, rather than just the errors in the first
+file that contains errors.
+
+You can always compile the code without the \code{-processor}
+command-line option, but in that case no checking of the type
+annotations is performed.
+
+\subsubsection{Checker auto-discovery}
+
+``Auto-discovery'' makes the \code{javac} compiler always run a checker
+plugin, even if you do not explicitly pass the \code{-processor}
+command-line option.  This can make your command line shorter, and ensures
+that your code is checked even if you forget the command-line option.
+
+To enable auto-discovery, place a configuration file named
+\code{META-INF/services/javax.annotation.processing.Processor}
+in your classpath.  The file contains the names of the checker plugins to
+be used, listed one per line.  For instance, to run the Nullness and the
+Interning checkers automatically, the configuration file should contain:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  checkers.nullness.NullnessChecker
+  checkers.interning.InterningChecker
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+You can disable this auto-discovery mechanism by passing the
+\code{-proc:none} command-line option to \<javac>.
+
+%% Auto-discovering all the distributed checkers by default would be
+%% problematic.  So, leave it up to the user to enable auto-discovery.
+%%  1. We don't want to auto-discover both the Javari & IGJ type checkers,
+%%     as then the user would see multiple, possibly contradictory, types
+%%     of mutability diagnostics.
+%%  2. The nullness and mutability checkers would issue lots of errors for
+%%     unannotated code, and that would be irritating.
+
+
+
+\subsubsection{Ant task\label{ant-task}}
+
+If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
+your software, then you can add an Ant task that runs a checker.  We assume
+that your Ant file already contains a compilation target that uses the
+\code{javac} task.
+
+First, set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <!-- Boilerplate to set jsr308javac property. Is there a better way? -->
+  <property environment="env"/>
+  <condition property="isUnix">
+    <os family="unix" />
+  </condition>
+  <condition property="isWindows">
+    <os family="windows" />
+  </condition>
+  <target name="init-jsr308javac-unix" if="isUnix">
+    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac" />
+  </target>
+  <target name="init-jsr308javac-windows" if="isWindows">
+    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac.bat" />
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+The \code{property} target makes environment variables (such as your home
+directory) available to Ant.
+
+Next, duplicate the compilation target, then modify it slightly as
+indicated in this example, filling in each ellipsis (\ldots) from the
+original compilation target:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target name="check-nullness"
+          description="Check for nullness errors."
+          depends="clean,...,init-jsr308javac-unix,init-jsr308javac-windows">
+    <javac ...
+           fork="yes"
+           executable="${jsr308javac}">
+      <compilerarg value="-version"/>
+      <compilerarg line="-target 5"/>
+      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg line="-sourcepath ${env.CHECKERS}/jdk/nullness/src"/>
+      <compilerarg value="-implicit:class"/>
+      <classpath>
+        <pathelement location="${env.annotations}/checkers/checkers.jar"/>
+        ...
+      </classpath>
+      ...
+    </javac>
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+In the example, the target is named \code{check-nullness}, but you can
+name it whatever you like.
+
+The target assumes the existence of a \code{clean} target that removes all
+\code{.class} files.  That is necessary because Ant's \code{javac} target
+doesn't re-compile \code{.java} files for which a \code{.class} file
+already exists.
+
+The \code{executable} and \code{fork} fields of the \code{javac} task
+ensure that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the JSR 308 version that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-target 5} compiler argument is optional, if you use Java 5 in
+ordinary compilation when not performing pluggable type-checking.
+
+The \code{-processor ...} compiler argument indicates which checker to
+run.  You can supply additional arguments to the checker as well.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+
+\subsubsection{Maven plugin\label{maven-task}}
+
+Adam Warski has written a Maven2 plugin that runs a checker.
+The plugin is available at 
+\myurl{http://www.warski.org/checkersplugin.html}.
+
+
+\subsubsection{Intellij IDEA\label{intellij}}
+
+IntelliJ IDEA (Maia release)
+\ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
+the Type Annotations (JSR-308) syntax.
+
+http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/
+
+\subsubsection{Eclipse\label{eclipse}}
+
+There are two ways to run a checker from within the Eclipse IDE:  via Ant
+or using an Eclipse plug-in.
+
+
+\paragraph{Using an Ant task}
+
+Add an Ant target as described in Section~\ref{ant-task}.  You can
+run the Ant target by executing the following steps
+(instructions copied from
+\myurl{http://www.eclipse.org/documentation/?topic=/org.eclipse.platform.doc.user/gettingStarted/qs-84_run_ant.htm}):
+
+\begin{enumerate}
+
+\item
+  Select \code{build.xml} in one of the navigation views and choose
+  {\bf Run As $>$ Ant Build...} from its context menu.
+
+\item
+  A launch configuration dialog is opened on a launch configuration
+  for this Ant buildfile.
+
+\item
+  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+
+\item
+  Click {\bf Run}.
+
+\item
+  The Ant buildfile is run, and the output is sent to the Console view.
+
+\end{enumerate}
+
+\paragraph{Eclipse plug-in}
+
+A prototype Eclipse plug-in for running a checker is available at
+\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.  
+The website contains instructions for installing and using the plug-in.
+The plug-in is
+experimental now, but some people have used it successfully (and we have fixed
+all bugs that have been reported so far).
+
+
+\subsubsection{tIDE}
+
+tIDE, an open-source Java IDE, supports the Checker Framework.  See its
+documentation at \myurl{http://tide.olympe-network.com/}.
+
+
+\subsection{What the checker guarantees\label{checker-guarantees}}
+
+A checker can guarantee that a particular property holds throughout the
+code.  For example, the Nullness checker (Section~\ref{nullness-checker})
+guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
+evaluates to null.  The Interning checker (Section~\ref{interning-checker})
+guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
+evaluates to an interned value.  The checker makes its guarantee by
+examining every part of your program and verifying that no part of the
+program violates the guarantee.
+
+There are some limitations to the guarantee.
+
+\begin{itemize}
+
+\item
+  Native methods and reflection can behave in a manner that is impossible
+  for a compiler plugin to check.  Such constructs may violate the
+  property being checked.  Similarly, deserialization and cloning can
+  create objects that could not result from normal constructor calls, and
+  that therefore may violate the property being checked.
+
+\item 
+  A compiler plugin can check only those parts of your program that you run
+  it on. If you compile some parts of your program without the
+  \code{-processor} switch or with the \code{-AskipClasses} property
+  (in other words, without running the checker), or if you use the
+  \code{@SuppressWarnings} annotation to suppress some errors or warnings,
+  then there is no guarantee that the entire program satisfies the property
+  being checked.  An analogous situation is using an external library that
+  was compiled without being checked by the compiler plugin.
+
+\item 
+  Your code should pass the Java compiler without errors or warnings.  In
+  particular, your code should use generic types, with no uses of raw types.
+  Misuse of generics, including casting away generic types, can cause other
+  errors to be missed.
+
+\item
+  \urldef{\jlsintersectiontypesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.9}
+  The Checker Framework does not yet support annotations on intersection
+  types (see
+  \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
+  intersection types.
+
+\item
+  Specific checkers may have other limitations; see their documentation for
+  details.
+
+\end{itemize}
+
+A checker can be useful in finding bugs or in verifying part of a
+program, even if the checker is unable to verify the correctness of an
+entire program.
+
+If you find that a checker fails to issue a warning that it
+should, then please report a bug (see Section~\ref{reporting-bugs}).
+
+
+\subsection{Tips about writing annotations\label{tips-about-writing-annotations}}
+
+\subsubsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
+
+You should use annotations to indicate \emph{normal} behavior.  The
+annotation indicate all the values that you \emph{want} to flow to
+reference --- not every value that might possibly flow there if your
+program has a bug.
+
+Many methods are guaranteed to throw an exception if they are passed \code{null}
+as an argument.  Examples include
+
+\begin{Verbatim}
+  java.lang.Double.valueOf(String)
+  java.lang.String.contains(CharSequence)
+  org.junit.Assert.assertNotNull(Object)
+  com.google.common.base.Preconditions.checkNotNull(Object)
+\end{Verbatim}
+
+\code{@Nullable} might seem like a reasonable annotation for the parameter,
+for two reasons.  First, \code{null} is a legal argument with a
+well-defined semantics:  throw an exception.  Second, \code{@Nullable}
+describes a possible program execution:  it might be possible for
+\code{null} to flow there, if your program has a bug.
+
+% (Checking for such a bug is the whole purpose of the \code{assertNotNull}
+% and \code{checkNotNull} methods.)
+
+However, it is never useful for a programmer to pass \code{null}.  It is
+the programmer's intention that \code{null} never flows there.  If
+\code{null} does flow there, the program will not continue normally.
+
+Therefore, you should mark such parameters as \code{@NonNull}, indicating
+the intended use of the method.  When you use the \code{@NonNull}
+annotation, the checker is able to issue compile-time warnings about
+possible run-time exceptions, which is its purpose.  Marking the parameter
+as \code{@Nullable} would suppress such warnings, which is undesirable.
+
+% (The note at
+% http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html
+% argues that the parameter could be marked as @Nullable, since it is
+% possible for null to flow there at run time.  However, since that is an
+% erroneous case, the annotation would be counterproductive rather than
+% useful.)
+
+
+\subsubsection{Subclasses must respect superclass annotations\label{annotations-are-a-contract}}
+
+An annotation indicates a guarantee that a client can depend upon.  A subclass
+is not permitted to \emph{weaken} the contract; for example,
+if a method accepts \code{null} as an argument, then every overriding
+definition must also accept \code{null}.
+A subclass is permitted to \emph{strengthen} the contract; for example,
+if a method does \emph{not} accept \code{null} as an argument, then an 
+overriding definition is permitted to accept \code{null}.
+
+As a bad example, consider an erroneous \code{@Nullable} annotation at
+line 141 of \ahref{http://pauillac.inria.fr/~maranget/hevea/doc/manual018.html#toc22}{\code{com/google/common/collect/Multiset.java}}, version r78:
+
+\begin{Verbatim}
+101  public interface Multiset<E> extends Collection<E> {
+...
+122    /**
+123     * Adds a number of occurrences of an element to this multiset.
+...
+129     * @param element the element to add occurrences of; may be {@code null} only
+130     *     if explicitly allowed by the implementation
+...
+137     * @throws NullPointerException if {@code element} is null and this
+138     *     implementation does not permit null elements. Note that if {@code
+139     *     occurrences} is zero, the implementation may opt to return normally.
+140     */
+141    int add(@Nullable E element, int occurrences);
+\end{Verbatim}
+
+There exist implementations of Multiset that permit \code{null} elements,
+and implementations of Multiset that do not permit \code{null} elements.  A
+client with a variable \code{Multiset ms} does not know which variety of
+Multiset \code{ms} refers to.  However, the \code{@Nullable} annotation
+promises that \code{ms.add(null, 1)} is permissible.  (Recall from
+Section~\ref{annotate-normal-behavior} that annotations should indicate
+normal behavior.)
+
+If parameter \code{element} on line 141 were to be annotated, the correct
+annotation would be \code{@NonNull}.  Suppose a client has a reference to
+same Multiset \code{ms}.  The only way the clienc can be sure not to throw an exception is to pass
+only non-\code{null} elements to \code{ms.add()}.  A particular class
+that implements Multiset could declare \code{add} to take a
+\code{@Nullable} parameter.  That still satisfies the original contract.
+It strengthens the contract by promising even more:  a client with such a
+reference can pass any non-\code{null} value to \code{add()}, and may also
+pass \code{null}.
+
+\textbf{However}, the best annotation for line 141 is no annotation at all.
+The reason is that each implementation of the Multiset interface should
+specify its own nullness properties when it specifies the type parameter
+for Multiset.  For example, two clients could be written as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset implements Multiset<@Nullable Object> { ... }
+  class MyNullProhibitingMultiset implements Multiset<@NonNull Object> { ... }
+\end{Verbatim}
+
+\noindent
+or, more generally, as
+
+\begin{Verbatim}
+  class MyNullPermittingMultiset<E extends @Nullable Object> implements Multiset<E> { ... }
+  class MyNullProhibitingMultiset<E extends @NonNull Object> implements Multiset<E> { ... }
+\end{Verbatim}
+
+Then, the specification is more informative, and the Checker Framework is
+able to do more precise checking, than if line 141 has an annotation.
+
+It is a pleasant feature of the Checker Framework that in many cases, no
+annotations at all are needed on type parameters such as \code{E} in MultiSet.
+
+
+\subsubsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+
+%% I want to get rid of this syntax.
+
+In the checkers distributed with the Checker Framework, an annotation on a
+constructor invocation is equivalent to a cast on a constructor result.
+That is, the following two expressions have identical semantics:  one is
+just shorthand for the other.
+
+\begin{Verbatim}
+  new @ReadOnly Date()
+  (@ReadOnly Date) new Date()
+\end{Verbatim}
+
+However, you should rarely have to use this.  The Checker Framework will
+determine the qualifier on the result, based on the ``return value''
+annotation on the constructor definition.  The ``return value'' annotation
+appears before the constructor name, for example:
+
+\begin{Verbatim}
+  class MyClass {
+    @ReadOnly MyClass() { ... }
+  }
+\end{Verbatim}
+
+
+\section{Handling warnings and legacy code\label{warnings-and-legacy}}
+
+
+\subsection{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+
+Sometimes, you wish to type-check only part of your program.  
+You might focus on the most mission-critical or error-prone part of your
+code.  When you start to use a checker, you may not wish to annotate
+your entire program right away.  You may not have source code (or
+enough knowledge to annotate) the libraries that your program uses.
+
+If annotated code uses unannotated code, then the checker may issue
+warnings.  For example, the Nullness checker (Section~\ref{nullness-checker}) will
+warn whenever an unannotated method result is used in a non-null context:
+
+\begin{Verbatim}
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return a null value
+\end{Verbatim}
+
+If the call can return null, you should fix the bug in your program by
+removing the \code{@\refclass{nullness/quals}{NonNull}} annotation in your own program.
+
+If the library call never returns null,
+there are several ways to eliminate the compiler warnings.
+\begin{enumerate}
+\item Annotate \code{unannotated\_method} in full.  This approach provides the
+  the strongest guarantees, but may require you to annotate additional
+  methods that \code{unannotated\_method} calls.  See
+  Section~\ref{annotating-libraries} for a discussion of how to annotate
+  libraries for which you have no source code.
+\item Annotate only the signature of \code{unannotated\_method}, and
+  suppress warnings in its body.  Two ways to suppress the warnings are via a
+  \code{@SuppressWarnings} annotation or by not running the checker on that
+  file (see Section~\ref{suppressing-warnings}).
+\item Suppress all warnings related to uses of \code{unannotated\_method}
+  via the \code{skipClasses} processor option
+  (see Section~\ref{suppressing-warnings}).
+  Since this can suppress more warnings than you may expect,
+  it is usually better to annotate at least the method's signature.  If you
+  choose the boundary between the annotated and unannotated code wisely,
+  then you only have to annotate the signatures of a few classes/methods
+  (e.g., the public interface to a library or package).
+  
+\end{enumerate}
+
+Section~\ref{annotating-libraries} discusses adding annotations to
+signatures when you do not have source code available.
+Section~\ref{suppressing-warnings} discusses suppressing warnings.
+
+
+If you annotate additional libraries, please share them with us so that we
+can distribute the annotations with the Checker Framework; see
+Section~\ref{reporting-bugs}.
+
+
+\subsection{Suppressing warnings\label{suppressing-warnings}}
+
+You may wish to suppress checker warnings because of unannotated libraries
+or un-annotated portions of your own code, because of application
+invariants that are beyond the capabilities of the type system, because of
+checker limitations, because you are interested in only some of the
+guarantees provided by a checker, or for other reasons.  You can suppress
+warnings via
+\begin{itemize}
+\item
+  the \code{@SuppressWarnings} annotation,
+\item
+  the \code{-AskipClasses} command-line option,
+\item
+  the javac \code{-Alint} command-line option, or
+\item
+  not using the \code{-processor} switch to \code{javac}.
+\end{itemize}
+
+You can suppress specific errors and warnings by use of the
+\code{@SuppressWarnings("\emph{annotationname}")} annotation, for example
+\code{@SuppressWarnings("interning")}.
+This may be placed on program elements such as a class, method, or local
+variable declaration.  It is good practice to suppress warnings in the
+smallest possible scope.  For example, if a particular expression causes a
+false positive warning, you should extract that expression into a local variable
+and place a \code{@SuppressWarnings} annotation on the variable
+declaration.
+As another example, if you have annotated the signatures but not the bodies
+of the methods in a class or package, put a \code{@SuppressWarnings}
+annotation on the class declaration or on the package's
+\code{package-info.java} file.
+
+You can suppress all errors and warnings at all uses of a given class.
+Set the \code{-AskipClasses} command-line option to a
+regular expression that matches classes for which warnings and errors
+should be suppressed.  For example, if you use
+``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}, then the checkers will suppress all warnings within those
+classes, all warnings relating to invalid arguments, and all warnings
+relating to incorrect use of the return value.
+
+You can suppress an entire class of warnings via javac's \code{-Alint}
+command-line option.  The \code{-Alint} option uses the same syntax as
+javac's \code{-Xlint} option.
+Following \code{-Alint=}, write a list of option
+names.  If the option name is preceded by a hyphen (\code{-}), that
+disables the option; otherwise it enables it.  For example:
+\code{-Alint=-dotequals} causes the Interning checker
+(Section~\ref{interning-checker}) not to output advice about when \code{a.equals(b)}
+could be replaced by \code{a==b}.
+
+You can also compile parts of your code without use of the
+\code{-processor} switch to \code{javac}.  No checking is done during
+such compilations.
+
+Finally, some checkers have special rules.  For example, the Nullness
+checker (Section~\ref{nullness-checker}) uses \code{assert} statements that contain
+null checks to suppress warnings
+(Section~\ref{suppressing-warnings-with-assertions}).
+
+
+
+\subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
+
+Sometimes, your code needs to be compilable by people who are not
+using the Type Annotations or Java 7 compiler.
+
+
+\subsubsection{Annotations in comments}
+
+A Java 4 compiler does not permit use of
+annotations, and a Java 5 compiler only permits annotations on
+declarations (but not on generic arguments, casts, method receiver, etc.).
+
+For compatibility with all Java versions, you may write any annotation inside a
+\code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
+The Type Annotations compiler treats the code exactly as if you had not written the
+\code{/*} and \code{*/}.
+In other words, the Type Annotations compiler will recognize the
+annotation, but your code will still compile with any other Java compiler.
+
+(\textbf{Note:} This is a feature of the Type Annotations compiler that is
+distributed along with the Checker Framework.  It is not supported by the
+mainline OpenJDK compiler, which will ignore annotations written in
+comments.  This is the only difference between the Type Annotations
+compiler and the OpenJDK compiler.)
+%   For more details
+% about the differences, see file \code{README-jsr308.html} in the Type
+% Annotations distribution.
+
+In a single program, you may write some annotations in comments, and others
+without comments.
+
+By default, the compiler ignores any comment that contains spaces at the
+beginning or end, or between the \code{@} and the annotation name.  
+In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
+\code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
+This
+feature enables backward compatibility with code that contains comments
+that start with \code{@} but are not annotations.  (The
+ESC/Java~\cite{FlanaganLLNSS02}, JML~\cite{LeavensBR2006:JML}, and
+Splint~\cite{Evans96} tools all use ``\code{/*@}'' or ``\code{/*~@}'' as a
+comment marker.)
+Compiler flag
+\code{-XDTA:spacesincomments} causes the compiler to parse annotation comments
+even when they contain spaces.  You may need to use
+\code{-XDTA:spacesincomments} if you use Eclipse's ``Source $>$ Correct
+Indentation'' command, since it inserts space in comments.  But the
+annotation comments are less readable with spaces, so you may wish to disable
+inserting spaces:  in the Formatter preferences, in the Comments tab,
+unselect the ``enable block comment formatting'' checkbox.
+
+
+\subsubsection{Import statements\label{implicit-import-statements}}
+
+When writing source code with annotations, it is more convenient to write a
+short form such as \code{@NonNull} instead of
+\code{@checkers.nullness.quals.NonNull}.  There are two ways to do this.
+
+\begin{itemize}
+\item
+  Write an import statement like: \code{import checkers.nullness.quals.*;}
+
+  A disadvantage of this is that everyone who compiles the code
+  (even using a non-JSR-308 compiler) must have the annotation definitions
+  (e.g., the \code{checkers.jar} or \code{checkers-quals.jar} file) on
+  their classpath.  The reason is
+  that a Java compiler issues an error if an imported package is not on the
+  classpath.  See Section~\ref{distributing}.
+
+\item
+  \label{jsr308_imports}
+  When you compile the code, set the shell environment variable
+  \code{jsr308\_imports}.  This permits your code to compile whether or not
+  the Type Annotations compiler is being used.
+
+  In bash, you could write \code{export
+    jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
+  command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
+  Alternately, you can set the system variable via the javac command line
+  argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
+
+  You can specify multiple packages separated by the classpath separator
+  (same as the file path separator:   \<;> for Windows, and \<:> for Unix
+  and Mac.).  For example, to
+  implicitly import the Nullness and Interning qualifiers,
+  set \code{jsr308\_imports} to
+  \code{checkers.nullness.quals.*:checkers.interning.quals.*}.  
+\end{itemize}
+
+
+\subsubsection{Migrating away from annotations in comments}
+
+If your codebase currently uses annotations in comments, but you are
+willing to use only compilers that support type annotations (such as any
+Java 7 compiler), then you can remove the comment characters around your
+annotations.  This Unix command will do so, for all Java files in the
+current working directory or any subdirectory.
+
+\begin{Verbatim}
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+\end{Verbatim}
+
+You can customize this command:
+\begin{itemize}
+\item
+To process comments with embedded spaces and asterisks, change 
+two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
+\item
+To ignore comments with leading or trailing spaces, remove the four
+instances of ``\verb|\s*|''.  
+\item
+  To not make backups, remove
+``\verb|.bak|''.
+\end{itemize}
+
+
+If you are using implicit import statements
+(Section~\ref{implicit-import-statements}), you may also need to introduce
+explicit import statements into your code.
+
+
+\section{Advanced type system features\label{advanced-type-system-features}}
+
+You may wish to skim or skip this section on first reading.  After you have
+used a checker for a little while and want to be able to express more
+sophisticated and useful types, or to understand more about how the Checker
+Framework works, you can return to it.
+
+
+\subsection{Polymorphism and generics\label{polymorphism}}
+
+\subsubsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
+
+The Checker Framework fully supports 
+qualified Java generic types (also known in the literature as ``parametric
+polymorphism'').  Before running a checker, we recommend that you eliminate
+raw types (e.g., \code{List} as opposed to \code{List<...>}) from your code.
+Using generics helps prevent type errors just as using a pluggable
+type-checker does.
+% Should say why, or what are the consequences of violating this.
+
+When instantiating a generic type, 
+clients supply the qualifier along with the type argument, as in
+\code{List<@NonNull String>}.
+
+The declaration (that is, the implementation) of a generic class may use
+the \code{extends} clause to restrict the types and qualifiers that may be
+used for instantiating.  For example, given the declaration \code{class
+  MyClass<T extends @NonNull Object> \ttlcb ...\ttrcb}, a client could use
+\code{MyClass<@NonNull String>} but not \code{MyClass<@Nullable String>}.
+
+\emph{Style note:}
+When using the Nullness checker (Section~\ref{nullness-checker}),
+programmers sometimes write \<extends @NonNull Object> even though it's the 
+default.
+The reason is that code with no extends clause, like 
+
+\begin{Verbatim}
+  class C<T> { ... }
+\end{Verbatim}
+
+typically means that class \<C> can be instantiated with any type argument at
+all.  But in the Nullness type system, to permit all type arguments, to
+obtain that effect one must write
+
+\begin{Verbatim}
+  class C<T extends @Nullable Object> { ... }
+\end{Verbatim}
+
+
+\paragraph{Type annotations on generic type variables}
+
+A type annotation on a generic type variable overrides/ignores any type
+qualifier (in the same type hierarchy) on the corresponding actual type
+argument.  For example,
+\code{@Nullable T} applies the type qualifier \code{@Nullable} to the
+(unqualified) Java type of the type argument \code{T}.
+
+Here is an example of applying a type annotation to a generic type
+variable:
+
+\begin{Verbatim}
+  class MyClass2<T> {
+    ...
+    @Nullable T = null;
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+The type annotation does not restrict how \code{MyClass2} may be instantiated
+(only the optional \code{extends} clause on the declaration of type
+variable \code{T} would do so).  In other words, both 
+\code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
+legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
+In \code{MyClass2<@Interned String>}, 
+\code{@Nullable T} means \code{@Nullable @Interned String}.
+
+% Note that a type annotation on a generic type variable does not act like
+% other type qualifiers.  In both cases the type annotation acts as a type
+% constructor, but as noted above they act slightly differently.
+
+
+% %% This isn't quite right because a type qualifier is itself a type
+% %% constructor.
+% More formally, a type annotation on a generic type variable acts as a type
+% constructor rather than a type qualifier.  Another example of a type
+% constructor is \code{[]}.  Just as \code{T[]} is not the same type as
+% \code{T}, \code{@Nullable T} is not (necessarily) the same type as
+% \code{T}.
+
+
+\subsubsection{Qualifier polymorphism\label{qualifier-polymorphism}}
+
+The Checker Framework also supports type \emph{qualifier} polymorphism for methods,
+which permits a single method to have multiple different qualified type
+signatures.
+
+A polymorphic qualifier's definition is marked with
+\<@\refclass{quals}{PolymorphicQualifier}>.  For example, 
+\<@\refclass{nullness/quals}{PolyNull}> is a polymorphic type
+qualifier for the Nullness type system:
+
+\begin{Verbatim}
+  @PolymorphicQualifier
+  public @interface PolyNull { }
+\end{Verbatim}
+
+A method written using a polymorphic qualifier conceptually has multiple
+versions, somewhat like a template in C++.  In each version, the
+polymorphic qualifier has been replaced by another qualifier from the
+hierarchy.  See the examples in Section~\ref{qualifier-polymorphism-examples}.
+
+The method body must type-check with all signatures.  A method call is
+type-correct if it type-checks under any signature.
+
+Polymorphic qualifiers can be used within a method body.  They may not be
+used on classes or fields.
+
+
+\paragraph{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
+
+As an example of the use of \<@PolyNull>, method \ahref{http://java.sun.com/javase/6/docs/api/java/lang/Class.html#cast(java.lang.Object)}{\<Class.cast>}
+returns null if and only if its argument is \<null>:
+
+\begin{Verbatim}
+  @PolyNull T cast(@PolyNull Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+This is like writing:
+
+\begin{Verbatim}
+   @NonNull T cast( @NonNull Object obj) { ... }
+  @Nullable T cast(@Nullable Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+except that the latter is not legal Java, since it defines two
+methods with the same Java signature.
+
+
+As another example, consider
+
+\begin{Verbatim}
+  @PolyNull T max(@PolyNull T x, @PolyNull T y);
+\end{Verbatim}
+
+\noindent
+which is like writing
+
+\begin{Verbatim}
+   @NonNull T max( @NonNull T x,  @NonNull T y);
+  @Nullable T max(@Nullable T x, @Nullable T y);
+\end{Verbatim}
+
+\noindent
+One way of thinking about which one of the two \code{max} variants is
+selected is that the nullness annotations of (the declared types of) both
+arguments are \emph{unified} to a type that is a subtype of both.  If both
+arguments are \code{@NonNull}, their unification is \<@NonNull>, and the
+result is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
+then the result is \<@Nullable>.
+
+
+%% I can't think of a non-clumsy way to say this.
+% Each method containing a polymorphic qualifier is (conceptually) expanded
+% into multiple versions completely independently.
+
+It does not make sense to write only a single instance of a polymorphic
+qualifier in a method definition, as in
+
+\begin{Verbatim}
+  void m(@PolyNull Object obj)
+\end{Verbatim}
+
+\noindent
+which expands to
+
+\begin{Verbatim}
+  void m(@NonNull Object obj)
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+\noindent
+which is no different than writing just
+
+\begin{Verbatim}
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+\noindent
+The benefit of polymorphic qualifiers comes when one is used multiple times
+in a method, since then each instance turns into the same type qualifier.
+Most frequently, the polymorphic qualifier appears on both the return type
+and at least one formal parameter.  It can also be useful to have
+polymorphic qualifiers on (only) multiple formal parameters, especially if
+the method side-effects one of its arguments.
+
+
+%% It would be nice to give an example that isn't too contrived.
+
+
+%% I don't see why this is necessarily true; one could define @PolyNull1
+%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
+%% the point just makes type system bigots criticize the Checker Framework.
+% Qualifier polymorphism is limited to a single qualifier variable per method.
+
+
+\subsection{Unused fields and dependent types}
+
+Sometimes, the type of a field depends on the qualifier on the receiver.
+The Checker Framework supports two varieties of such a field:  fields that
+may not be used if the receiver has a given qualifier, and fields whose
+qualifier changes based on the qualifier of the receiver.
+
+
+\subsubsection{Unused fields\label{unused-fields}}
+
+A Java subtype can have more fields than its supertype.  You can simulate
+the same effect for type qualifiers:  a given field may not be accessed via
+a reference with a supertype qualifier, but can be accessed via a reference
+with a subtype qualifier.
+
+This permits you to restrict use of a field to certain contexts.
+
+The \code{@\refclass{quals}{Unused}} annotation
+on a field declares that the field may not be accessed via a receiver of
+the given qualified type (or any supertype).
+
+
+\subsubsection{Dependent types\label{dependent-types}}
+
+A variable has a \emph{dependent type} if its type depends on some other
+value or type.
+%  --- the type is dynamically, not statically, determined.
+% (Type-safety can still be statically determined, though.)
+
+The Checker Framework supports a form of dependent types, via the
+\code{@\refclass{quals}{Dependent}} annotation.
+This annotation changes the type of a field or variable, based on the
+qualified type of the receiver (\code{this}).  This can be viewed as a more
+expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
+also be seen as a way of linking the meanings of two type qualifier
+hierarchies.
+
+When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+should use it instead of \code{@Dependent}.
+
+
+\subsubsection{Example\label{dependent-types-example}}
+
+Suppose we have a class \code{Person} and a field \code{spouse} that is
+non-\code{null} if the person is married.  We could declare this as
+
+\begin{Verbatim}
+  class Person {
+    ...
+    // non-null if this person is married
+    @Nullable Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+Now, suppose that we have defined the qualifier hierarchy in which 
+\code{@Single} (meaning ``not married'') is a supertype of \code{@Married}.
+A more informative declaration would be
+
+\begin{Verbatim}
+  class Person {
+    ...
+    @Nullable @Dependent(result=NonNull.class, when=Married.class) Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+If a person is known to be \code{@Married}, the
+\code{spouse} field is known to be non-\code{null}:
+
+\begin{Verbatim}
+  class Person {
+    ...
+
+    void celebrateWeddingAnniversary() @Married {
+      System.out.println("Happy anniversary, "
+                         + spouse.toString()); // no possible null pointer exception
+    }
+
+    ...
+  }
+\end{Verbatim}
+
+Without the \code{@\refclass{quals}{Dependent}} annotation on the
+declaration of the \code{spouse} variable, the Nullness Checker would
+complain that \code{toString} was being invoked on a possibly-\code{null}
+value.
+
+An even better declaration is
+
+\begin{Verbatim}
+  class Person {
+    ...
+    @Unused(when=Single.class) @NonNull Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+Then, if a person is known to be \code{@Married} (or more
+appropriately non-\code{@Single}), the \code{spouse} field is known to
+be non-\code{null}.  Also, if a person is known to be \code{@Single},
+the \code{spouse} field may not be accessed:
+ 
+\begin{Verbatim}
+  @Single Person person = ...;
+  Person spouse = person.spouse;  // invalid field access
+  ...
+\end{Verbatim}
+
+
+\subsection{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
+
+A checker sometimes treats a type as having a slightly different qualifier
+than what is written on the type --- especially if the programmer wrote no
+qualifier at all.
+Most readers can skip this section on first reading, because you will
+probably find the system simply ``does what you mean'', without forcing
+you to write too many qualifiers in your program.
+
+  The following steps determine the effective
+qualifier on a type --- the qualifier that the checkers treat as being present.
+
+\begin{enumerate}
+\item
+  The type system adds implicit qualifiers.  Implicit qualifiers can be
+  built into a type system (Section~\ref{writing-type-introduction}), in
+  which case the type system's documentation should explain all of the type
+  system's implicit qualifiers.  Or, a programmer may introduce an implicit
+  annotations on each use of class $C$ by writing a qualifier on the
+  declaration of class $C$.
+
+\begin{itemize}
+\item
+  Example 1 (built-in):  In the Nullness type system,
+  \<enum> values are never null, nor is a method receiver.
+\item
+  Example 2 (built-in):  In the Interning type system, string literals
+  and \<enum> values are always interned.
+\end{itemize}
+
+\item
+  If a type qualifier is present in the source code, that qualifier is used.
+
+  If the type has an implicit qualifier, then it is an error to write an
+  explicit qualifier that is equal to (redundant with) or a supertype of
+  (weaker than) the implicit qualifier.  A programmer may strengthen
+  (write a subtype of) an implicit qualifier, however.
+
+\item
+  If there is no implicit or explicit qualifier on a type, then a default
+  qualifier may be applied; see Section~\ref{defaults}.  
+
+  \smallskip
+
+  At this point, every type has a qualifier.
+
+\item
+  The type system may refine a qualified type on a local variable --- that
+  is, treat it as a subtype of how it was declared or defaulted.  This
+  refinement is always sound and has the effect of eliminating false
+  positive error messages.  See Section~\ref{type-refinement}.
+
+  % Type
+  % qualifier refinement is implemented by the \refclass{flow}{Flow} class.
+
+\end{enumerate}
+
+
+
+\subsubsection{Default qualifier for unannotated types\label{defaults}}
+
+A type system designer, or an end-user programmer, can cause unannotated
+references to be treated as if they had a default annotation.
+
+There are several defaulting mechanisms, for convenience and flexibility.
+When determining the default qualifier for a use of a type, the following
+rules are used in order, until one applies.
+\begin{itemize}
+\item
+  Use the innermost user-written \code{@DefaultQualifier}, as explained in
+  this section.
+\item
+  Use the default specified by the type system designer
+  (Section~\ref{typesystem-defaults}).
+\item
+  Use \code{@\refclass{quals}{Unqualified}}, which the framework
+  inserts to avoid ambiguity and simplify the programming interface for
+  type system designers.  Users do not have to worry about this detail.
+\end{itemize}
+
+% (Implementation detail:  setting defaults is implemented by the
+% \refclass{util}{QualifierDefaults} class.)
+
+
+The end-user programmer specifies a default qualifier by writing the \code{@\refclass{quals}{DefaultQualifier}}
+annotation on a package, class, method, or variable declaration.  The
+argument to \<@\refclass{quals}{DefaultQualifier}> is the fully qualified \code{String} name of an
+annotation, and its optional second argument indicates where the default
+applies.  If the second argument is omitted, the specified annotation is
+the default in all locations.  See the Javadoc of \refclass{quals}{DefaultQualifier} for details.
+
+If you wish to write multiple 
+\<@\refclass{quals}{DefaultQualifier}> annotations at a single location,
+use 
+\<@\refclass{quals}{DefaultQualifiers}> instead.
+
+If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
+\<package-info.java> file), then it applies to the given package \emph{and}
+all subpackages.
+% This is slightly at odds with Java's treatment of packages of different
+% names as essentially unrelated, but is more intuitive and useful.
+
+Setting a default for class declarations may have an unexpected result:  a
+type qualifier on a class declaration gives an implicit qualifier
+(Section~\ref{effective-qualifier}) that can only be strengthened, not
+weakened.  Thus, you may want to put explicit qualifiers on class
+declarations, or exclude class declarations from defaulting.
+
+\paragraph{Example}
+This example shows use of both \code{@\refclass{quals}{DefaultQualifier}}
+and \code{@\refclass{quals}{DefaultQualifiers}}.  (The example uses
+the Nullness type system (Section~\ref{nullness-checker}) and
+the IGJ type system (Section~\ref{igj-checker}).)
+
+\begin{Verbatim}
+@DefaultQualifiers({
+  @DefaultQualifier("checkers.nullness.quals.NonNull"),
+  @DefaultQualifier("checkers.igj.quals.Mutable")
+})
+class MyClass {
+
+  public boolean compile(File myFile) { // myFile has type "@NonNull @Mutable File"
+    if (!myFile.exists())          // no warning: myFile is non-null
+      return false;
+    @Nullable File srcPath = ...;  // must annotate to specify "@Nullable File"
+    ...
+    if (srcPath.exists())          // warning: srcPath might be null
+      ...
+  }
+
+  @DefaultQualifier("checkers.igj.quals.ReadOnly")
+  public boolean isJavaFile(File myfile) {  // myFile has type "@NonNull @ReadOnly File"
+    ...
+  }
+}
+\end{Verbatim}
+
+
+
+\paragraph{When a default qualifier may not be specified}
+
+Sometimes, the meaning of an unannotated reference is determined by the
+type system.  For example, in the Interning type system, each type is
+either unqualified, or it has the \<@\refclass{interning/quals}{Interned}>
+qualifier.  In such a case, specifying a default for unannotated types is
+not sensible.
+
+In other cases, the type hierarchy has an explicit qualifier for every
+possible meaning.  For example, the Nullness type system has
+\<@\refclass{nullness/quals}{Nullable}> types and
+\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
+unannotated types; a user may specify a default qualifier.
+
+Permitting users to specify defaults is a reason you may wish to make your
+type hierarchy ``complete'', in the sense that there is a qualifier for
+every location in the hierarchy.
+
+
+\subsubsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
+
+In order to reduce the burden of annotating types in your program, the
+checkers soundly treat certain variables and expressions as having a
+subtype of their declared or defaulted (Section~\ref{defaults})
+type.  This functionality
+never introduces unsoundness or causes an error to be missed:  it merely
+suppresses false positive warnings.
+
+By default, all checkers, including new checkers that you write, can take
+advantage of this functionality.  Most of the time, users don't have to
+think about, and may not even notice, this feature of the framework.  The
+checkers simply do the right thing even when a programmer forgets an
+annotation on a local variable, or when a programmers writes an
+unnecessarily general type in a declaration.
+
+If you are curious or want more details about this feature, then read on.
+
+As an example, the Nullness checker (Section~\ref{nullness-checker}) can automatically
+determine that certain variables are non-null, even if they were explicitly
+or by default annotated as nullable.
+A variable or expression can be treated as \code{@\refclass{nullness/quals}{NonNull}}
+from the time that it is either
+assigned a non-null value or checked against null (e.g., via an assertion,
+\code{if} statement, or being dereferenced), until it might be re-assigned (e.g.,
+via an assignment that might affect this variable, or via a method call
+that might affect this variable).
+
+As with explicit annotations, the implicitly non-null types permit
+dereferences and assignments to explicitly non-null types, without
+compiler warnings.
+
+Consider this code, along with comments indicating whether the
+Nullness checker (Section~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
+warning or not depending on its context.
+
+\begin{Verbatim}
+  // Requires an argument of type @NonNull String
+  void parse(@NonNull String toParse) { ... }
+
+  // Argument does NOT have a @NonNull type
+  void lex(String toLex) {
+    parse(toLex);        // warning:  toLex might be null
+    if (toLex != null) {
+      parse(toLex);      // no warning:  toLex is known to be non-null
+    }
+    parse(toLex);        // warning:  toLex might be null
+    toLex = new String(...);
+    parse(toLex);        // no warning:  toLex is known to be non-null
+  }
+\end{Verbatim}
+
+If you find instances where you think a value should be inferred to have
+(or not have) a
+given annotation, but the checker does not do so, please submit a bug
+report (see Section~\ref{reporting-bugs}) that includes a small piece of
+Java code that reproduces the problem.
+
+% Flow-sensitive non-null inference has been implemented for the following
+% varieties of expressions:
+%
+% \begin{itemize}
+% \item null checks in if/else statements
+% \item null checks in assert statements
+% \item null checks that result in a return or thrown exception, or call System.exit
+% \item assignments from new class/array expressions
+% \end{itemize}
+%
+% \emph{Note:} The items in the above list exclude complex null checks, i.e., not
+% of the form \code{x != null}. Support for these types of checks will be available in a
+% future release.
+
+
+% TODO:  Is NonNull inferred for any parameters or fields, or just for locals?
+
+Type inference is never performed for method parameters of non-private
+methods and for non-private fields, because unknown client code could use
+them in arbitrary ways.  The inferred information is never written to the
+\code{.class} file as user-written annotations are.
+
+The inference indicates when a variable can be treated as having a subtype
+of its declared type --- for instance, when an otherwise nullable type can be
+treated as a \code{@\refclass{nullness/quals}{NonNull}} one.  The inference never treats a variable as
+a supertype of its declared type (e.g., an expression of \code{@\refclass{nullness/quals}{NonNull}}
+type is never inferred to be treated as possibly-null).
+
+
+
+% LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
+% LocalWords:  SuppressWarnings un skipClasses java plugins plugin TODO cp igj
+% LocalWords:  nonnull javari langtools sourcepath classpath OpenJDK pre jsr
+% LocalWords:  Djsr quals Alint javac's dotequals nullable supertype JLS Papi
+% LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
+% LocalWords:  Nullness Xspacesincomments unselect checkbox unsetting PolyNull
+% LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
+% LocalWords:  typechecker proc discoverable Xlint util QualifierDefaults Foo
+% LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
+% LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
+% LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
+% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
+% LocalWords:  html
