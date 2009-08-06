@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when an application tries to create an instance of a class
  * using the {@code newInstance} method in class

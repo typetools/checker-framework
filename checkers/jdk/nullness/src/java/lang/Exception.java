@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * The class <code>Exception</code> and its subclasses are a form of
  * <code>Throwable</code> that indicates conditions that a reasonable
