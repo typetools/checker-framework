@@ -31,6 +31,8 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 
+import checkers.nullness.quals.*;
+
 /**
  * This is the common base class of all Java language enumeration types.
  *

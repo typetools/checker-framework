@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * <code>RuntimeException</code> is the superclass of those
  * exceptions that can be thrown during the normal operation of the
