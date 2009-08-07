@@ -49,7 +49,9 @@ import checkers.quals.SubtypeOf;
  * <li>
  * <code>class-name.class</code> : The Class object for the specified class should be used as the lock object.
  * </li>
- * </ul>s@Target({ElementType.TYPE_USE})
+ * </ul>
+ */
+@Target({ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuardedBy {
     String value();
