@@ -21,9 +21,9 @@ import checkers.quals.SubtypeOf;
 /**
  * The field or method to which this annotation is applied can only be accessed
  * when holding a particular lock, which may be a built-in (synchronization) lock,
- * or may be an explicit java.util.concurrent.Lock.
+ * or may be an explicit {@link java.util.concurrent.locks.Lock}.
  *
- * The argument determines which lock guards the annotated field or method:
+ * The argument is a string that indicates which lock guards the annotated variable:
  * <ul>
  * <li>
  * <code>this</code> : The intrinsic lock of the object in whose class the field is defined.
@@ -49,10 +49,7 @@ import checkers.quals.SubtypeOf;
  * <li>
  * <code>class-name.class</code> : The Class object for the specified class should be used as the lock object.
  * </li>
- */
-@Documented
-@SubtypeOf({})
-@Target({ElementType.TYPE_USE})
+ * </ul>s@Target({ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuardedBy {
     String value();
