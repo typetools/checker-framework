@@ -29,10 +29,10 @@ class Test {
 
     static @I("O") Test getSame(@I("O") Test o) { return o; }
 
-    void testOneParam() {
-        @Mutable Test mutable = mutable();
-        @Immutable Test immutable = immutable();
-        @ReadOnly Test readOnly = readOnly();
+    void testOneParam(
+        @Mutable Test mutable,
+        @Immutable Test immutable,
+        @ReadOnly Test readOnly) {
 
         mutable = getSame(mutable());
         immutable = getSame(mutable());     // emit error
@@ -63,21 +63,21 @@ class Test {
         return null;
     }
 
-    void testUpperBoundWithConcrete() {
+    void testUpperBoundWithConcrete(@Mutable Test mutableTemp) {
         @Mutable Test mutable = mutable();
         @Immutable Test immutable = immutable();
         @ReadOnly Test readOnly = readOnly();
 
         {
-            @Mutable Test t1 = getUpperBound(mutable, mutable);
-            @Mutable Test t2 = getUpperBound(mutable, immutable);   // invalid
-            @Mutable Test t3 = getUpperBound(mutable, readOnly);    // invalid
-            @Mutable Test t4 = getUpperBound(immutable, mutable);   // invalid
-            @Mutable Test t5 = getUpperBound(immutable, immutable); // invalid
-            @Mutable Test t6 = getUpperBound(immutable, readOnly);  // invalid
-            @Mutable Test t7 = getUpperBound(readOnly, mutable);    // invalid
-            @Mutable Test t8 = getUpperBound(readOnly, immutable);  // invalid
-            @Mutable Test t9 = getUpperBound(readOnly, readOnly);   // invalid
+            mutableTemp = getUpperBound(mutable, mutable);
+            mutableTemp = getUpperBound(mutable, immutable);   // invalid
+            mutableTemp = getUpperBound(mutable, readOnly);    // invalid
+            mutableTemp = getUpperBound(immutable, mutable);   // invalid
+            mutableTemp = getUpperBound(immutable, immutable); // invalid
+            mutableTemp = getUpperBound(immutable, readOnly);  // invalid
+            mutableTemp = getUpperBound(readOnly, mutable);    // invalid
+            mutableTemp = getUpperBound(readOnly, immutable);  // invalid
+            mutableTemp = getUpperBound(readOnly, readOnly);   // invalid
         }
 
         {
@@ -105,22 +105,22 @@ class Test {
         }
     }
 
-    void testUpperBoundWithImmutabilityVar() {
-        @I("1") Test tm1 = null;
-        @I("2") Test tm2 = null;
+    void testUpperBoundWithImmutabilityVar(@I("1") Test tm1, @I("2") Test tm2, @Mutable Test mutableTemp) {
+//        @I("1") Test tm1 = null;
+//        @I("2") Test tm2 = null;
 
         {
             @I("1") Test t1 = getUpperBound(tm1, tm1);
             @I("2") Test t2 = getUpperBound(tm1, tm1);  // invalid
-            @Mutable Test t3 = getUpperBound(tm1, tm1); // invalid
-            @Immutable Test t4 = getUpperBound(tm1, tm1);   // invalid
+            mutableTemp = getUpperBound(tm1, tm1); // invalid
+            mutableTemp = getUpperBound(tm1, tm1);   // invalid
             @ReadOnly Test t5 = getUpperBound(tm1, tm1);
         }
 
         {
             @I("1") Test t1 = getUpperBound(tm1, tm2);  // invalid
             @I("2") Test t2 = getUpperBound(tm1, tm2);  // invalid
-            @Mutable Test t3 = getUpperBound(tm1, tm2); // invalid
+            mutableTemp = getUpperBound(tm1, tm2); // invalid
             @Immutable Test t4 = getUpperBound(tm1, tm2);   // invalid
             @ReadOnly Test t5 = getUpperBound(tm1, tm2);
         }
@@ -128,7 +128,7 @@ class Test {
         {
             @I("1") Test t1 = getUpperBound(tm2, tm2);  // invalid
             @I("2") Test t2 = getUpperBound(tm2, tm2);
-            @Mutable Test t3 = getUpperBound(tm2, tm2); // invalid
+            mutableTemp = getUpperBound(tm2, tm2); // invalid
             @Immutable Test t4 = getUpperBound(tm2, tm2);   // invalid
             @ReadOnly Test t5 = getUpperBound(tm2, tm2);
         }

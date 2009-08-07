@@ -1,5 +1,6 @@
 package checkers.igj;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import javax.lang.model.type.*;
 
 import com.sun.source.tree.*;
 
+import checkers.flow.Flow;
 import checkers.igj.quals.*;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -110,6 +112,18 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         I = checker.I;
         BOTTOM_QUAL = checker.BOTTOM_QUAL;
         ASSIGNS_FIELDS = checker.ASSIGNS_FIELDS;
+    }
+
+    @Override
+    protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+
+        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
+            if (!I.class.equals(cl))
+                flowQuals.add(annoFactory.fromClass(cl));
+        }
+        return flowQuals;
     }
 
     @Override
@@ -271,6 +285,15 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     p.addAnnotations(ct.getAnnotations());
             }
 
+            return null;
+        }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror p) {
+            if (!hasImmutabilityAnnotation(p)) {
+                AnnotatedTypeMirror castedType = getAnnotatedType(node.getExpression());
+                p.addAnnotations(castedType.getAnnotations());
+            }
             return null;
         }
     }
