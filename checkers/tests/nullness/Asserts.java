@@ -8,13 +8,13 @@ public class Asserts {
 
     void incorrectAssertExpr() {
         String s = null;
-        assert s != null : s.getClass();  // error
+        assert s != null : s.getClass() + " suppress nullness";  // error
         s.getClass();  // OK
     }
 
     void correctAssertExpr() {
         String s = null;
-        assert s == null : s.getClass();
+        assert s == null : s.getClass() + " suppress nullness";
         s.getClass();   // error
     }
 }

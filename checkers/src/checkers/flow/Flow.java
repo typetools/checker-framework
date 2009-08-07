@@ -670,10 +670,25 @@ public class Flow extends TreePathScanner<Void, Void> {
         return null;
     }
 
+    private static boolean containsKey(Tree tree, Collection<String> keys) {
+        if (tree == null)
+            return false;
+
+        String treeStr = tree.toString();
+        for (String key : keys) {
+            if (treeStr.contains(key))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public Void visitAssert(AssertTree node, Void p) {
+        boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey());
+        GenKillBits<AnnotationMirror> annosAfterAssert = GenKillBits.copy(annos);
         scanCond(node.getCondition());
-        GenKillBits<AnnotationMirror> annosAfterAssert = GenKillBits.copy(annosWhenTrue);
+        if (inferFromAsserts)
+            annosAfterAssert = GenKillBits.copy(annosWhenTrue);
         annos = GenKillBits.copy(annosWhenFalse);
         scanExpr(node.getDetail());
         annos = annosAfterAssert;
