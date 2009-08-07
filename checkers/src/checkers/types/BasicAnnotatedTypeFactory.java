@@ -204,7 +204,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     /**
      * Returns the set of annotations to be inferred in flow analysis
      */
-    private Set<AnnotationMirror> createFlowQualifiers(Checker checker) {
+    protected Set<AnnotationMirror> createFlowQualifiers(Checker checker) {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
         Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();

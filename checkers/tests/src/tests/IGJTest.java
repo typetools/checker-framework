@@ -40,7 +40,7 @@ public class IGJTest extends CheckerTest {
 
     /** Tests fields. */
     @Test public void testFields() {
-        runTest("Fields.out", false, "Fields.java");
+        test();
     }
 
     @Test public void testFieldsDefault() {
@@ -49,7 +49,7 @@ public class IGJTest extends CheckerTest {
 
     /** Tests method invocation */
     @Test public void testMethodInvocation() {
-        runTest("MethodInvocation.out", false, "MethodInvocation.java");
+        test();
     }
 
     /** Tests method invocation */
@@ -59,47 +59,57 @@ public class IGJTest extends CheckerTest {
 
     /** Tests Immutable Object */
     @Test public void testImmutableObject() {
-        runTest("ImmutableObject.out", false, "ImmutableObject.java");
+        test();
     }
 
     /** Tests ListNode */
-    @Ignore
     @Test public void testListNode() {
-        runTest("ListNode.out", false, "ListNode.java");
+        test();
     }
 
     /** Tests ThisReference */
-    @Ignore @Test public void testThisReference() {
-        runTest("ThisReference.out", false, "ThisReference.java");
+    @Test public void testThisReferenceReadOnly() {
+        test();
     }
 
     /** Tests ThisReference */
-    @Ignore @Test public void testThisReferenceDefault() {
-        runTestWithDefault("ThisReference.out", false, "ThisReference.java");
+    @Test public void testThisReferenceReadOnlyDefault() {
+        runTestWithDefault("ThisReferenceReadOnly.out", false, "ThisReferenceReadOnly.java");
+    }
+
+    @Test public void testThisReferenceMutable() {
+        test();
+    }
+
+    /** Tests ThisReference */
+    @Test public void testThisReferenceMutableDefault() {
+        runTestWithDefault("ThisReferenceMutable.out", false, "ThisReferenceMutable.java");
+    }
+
+    @Test public void testThisReferenceImmutable() {
+        test();
+    }
+
+    /** Tests ThisReference */
+    @Test public void testThisReferenceImmutableDefault() {
+        runTestWithDefault("ThisReferenceImmutable.out", false, "ThisReferenceImmutable.java");
     }
 
     /** Tests ForEnhanced */
     @Test public void testForEnhanced() {
-        runTest("ForEnhanced.out", false, "ForEnhanced.java");
+        test();
     }
 
-    @Ignore
-    @Test public void testForEnhancedDefault() {
-        runTestWithDefault("ForEnhanced.out", false, "ForEnhanced.java");
-    }
-
-    @Ignore
     @Test public void testTemplateImmutability()  {
-        runTest("TemplateImmutability.out", false, "TemplateImmutability.java");
+        test();
     }
 
-    @Ignore
     @Test public void testTemplateImmutabilityDefault() {
         runTestWithDefault("TemplateImmutability.out", false, "TemplateImmutability.java");
     }
 
     @Test public void testAssignability() {
-        runTest("Assignability.out", false, "Assignability.java");
+        test();
     }
 
     @Test public void testAssignabilityDefault() {
@@ -107,38 +117,38 @@ public class IGJTest extends CheckerTest {
     }
 
     @Test public void testOverrideGenericMethod() {
-        runTest("OverrideGenericMethod.out", true, "OverrideGenericMethod.java");
+        test();
     }
 
     @Test public void testArrays() {
-        runTest("Arrays.out", false, "Arrays.java");
+        test();
     }
 
     @Test public void testPrimitives() {
-        runTest("Primitives.out", true, "Primitives.java");
+        test();
     }
 
     @Test public void testFlow() {
-        runTest("Flow.out", false, "Flow.java");
+        test();
     }
 
     @Test public void testRandomTests() {
-        runTest("RandomTests.out", true, "RandomTests.java");
+        test();
     }
 
     @Test public void testMutableEnum() {
-        runTest("Mutable.out", true, "MutableEnum.java");
+        test();
     }
 
     @Test public void testInnerClassesThis() {
-        runTest("InnerClassesThis.out", false, "InnerClassesThis.java");
+        test();
     }
 
     @Test public void testInnerClassesInvok() {
-        runTest("InnerClassesInvok.out", false, "InnerClassesInvok.java");
+        test();
     }
 
     @Test public void testIResolution() {
-        runTest("IResolution.out", true, "IResolution.java");
+        test();
     }
 }
