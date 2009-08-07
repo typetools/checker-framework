@@ -536,7 +536,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *
      * @see SuppressWarningsKey
      */
-    protected Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKey() {
         SuppressWarningsKey annotation =
             this.getClass().getAnnotation(SuppressWarningsKey.class);
 

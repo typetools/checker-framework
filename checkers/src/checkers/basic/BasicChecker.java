@@ -57,7 +57,7 @@ public final class BasicChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKey() {
         Set<String> swKeys = new HashSet<String>();
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
         if (annos.isEmpty())

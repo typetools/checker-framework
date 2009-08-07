@@ -33,7 +33,7 @@ public class FlowField {
 
     class B extends A {
         void test() {
-            assert field != null;
+            assert field != null : "suppress nullness";
             field.length();
         }
     }

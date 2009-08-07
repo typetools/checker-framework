@@ -24,7 +24,7 @@ class FlowCompound {
     }
 
   public static boolean equal(@Nullable Object a, @Nullable Object b) {
-      assert b != null;
+      assert b != null : "suppress nullness";
     return a == b || (a != null && a.equals(b));
   }
 
