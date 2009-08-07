@@ -1,5 +1,5 @@
 <!--
-  This is an Ant build file for compiling the JSR 308 checkers and framework.
+  This is an Ant build file for compiling the Checker Framework.
 -->
 <project name="checkers" default="dist" basedir=".">
 
