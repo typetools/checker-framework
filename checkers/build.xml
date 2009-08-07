@@ -69,6 +69,8 @@
         <delete dir="${dist.doc}"/>
         <delete file="${dist.file}"/>
         <delete file="${dist.annos.file}"/>
+        <delete dir="${temp.dir}"/>
+        <delete file="${bindist.file}"/>
         <delete failonerror="false">
             <fileset dir="${build.tests}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
@@ -349,7 +351,7 @@ ${build.version} of the 'javac.jar' library."/>
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
     </target>
 
-    <target name="bindist" depends="-prep-bindist,dist,"
+    <target name="bindist" depends="-prep-bindist,dist"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
@@ -360,11 +362,6 @@ ${build.version} of the 'javac.jar' library."/>
             </manifest>
         </jar>
         <delete dir="${temp.dir}"/>
-    </target>
-
-    <target name="clean">
-        <delete dir="${temp.dir}"/>
-        <delete file="${bindist.file}"/>
     </target>
 
 </project>
