@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when an application attempts to use <code>null</code> in a
  * case where an object is required. These include:

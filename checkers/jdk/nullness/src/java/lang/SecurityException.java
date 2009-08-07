@@ -24,6 +24,8 @@
  */
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown by the security manager to indicate a security violation.
  *

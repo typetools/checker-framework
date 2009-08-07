@@ -1,7 +1,7 @@
 javaparser
 ___________
 
-A JSR 308 Confirming Java  Parser with AST generation and visitor support.
+A JSR-308-conforming Java parser with AST generation and visitor support.
 The project is based on javaparser (http://code.google.com/p/javaparser/).
 
 The project branched off of javaparser 1.0.2, available at:

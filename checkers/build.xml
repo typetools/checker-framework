@@ -1,5 +1,5 @@
 <!--
-  This is an Ant build file for compiling the JSR 308 checkers and framework.
+  This is an Ant build file for compiling the Checker Framework.
 -->
 <project name="checkers" default="dist" basedir=".">
 
@@ -21,6 +21,8 @@
     <property name="javari.jdk.build" value="jdk/javari/build"/>
     <property name="javaparser.loc" value="../javaparser"/>
     <property name="checkers.rel.jp" value="../checkers"/>
+
+    <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
 
     <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
     <property name="run.tests.should.fork" value="true"/>
@@ -324,11 +326,45 @@ ${build.version} of the 'javac.jar' library."/>
 
     <target name="touch-jdk"
             description="Update the date of all jdk files">
-      <touch>
-        <fileset dir="jdk">
-          <include name="**/*"/>
-        </fileset>
-      </touch>
+        <touch>
+            <fileset dir="jdk">
+                <include name="**/*"/>
+            </fileset>
+        </touch>
+    </target>
+
+    <!--
+      Binary release of the Checker Framework; it includes javac.
+     -->
+
+    <property name="javac.lib" value="../../jsr308-langtools/dist/lib/javac.jar"/>
+    <property name="checkers.lib" value="checkers.jar"/>
+    <property name="bindist.file" value="binary/jsr308-all.jar"/>
+    <property name="temp.dir" value="binary/buildbin"/>
+
+    <target name="-prep-bindist"
+            description="ensures that the necessary jar files exist">
+        <!-- check javac.jar -->
+        <available property="javac.exist" file="${javac.lib}"/>
+        <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
+    </target>
+
+    <target name="bindist" depends="-prep-bindist,dist,"
+            description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
+        <delete dir="${temp.dir}"/>
+        <unjar src="${checkers.lib}" dest="${temp.dir}"/>
+        <unjar src="${javac.lib}" dest="${temp.dir}"/>
+        <jar destfile="${bindist.file}" basedir="${temp.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.sun.tools.javac.Main"/>
+            </manifest>
+        </jar>
+        <delete dir="${temp.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${temp.dir}"/>
+        <delete file="${bindist.file}"/>
     </target>
 
 </project>

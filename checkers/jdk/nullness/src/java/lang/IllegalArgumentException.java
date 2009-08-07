@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown to indicate that a method has been passed an illegal or
  * inappropriate argument.
