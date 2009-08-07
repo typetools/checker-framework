@@ -147,7 +147,7 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 
 If you have a problem with any checker, or with the Checker Framework,
 please file a bug at 
-\ahref{http://code.google.com/p/checker-framework/issues}.
+\url{http://code.google.com/p/checker-framework/issues}.
 
 Alternately (especially if your communication is not a bug report), you can
 send mail to checker-framework-dev@googlegroups.com.
@@ -185,10 +185,24 @@ helpful if you:
 
 The binary release (Section~\ref{installation}) contains everything that
 most users need, both to use the distributed checkers and to write your own
-checkers.  This section describes how to install the source release.  Doing
+checkers.  This section describes how to install from source.  Doing
 so permits you to examine and modify the implementation of the distributed
 checkers and of the checker framework.  It may also help you to debug
 problems more effectively.
+
+% TODO:  We should perhaps later reduce the number of options to just 1...
+You have two options.  You can obtain the source code from its version
+control repository, or you can obtain a packaged source release.
+
+To obtain the source code from the version control repository, do
+
+\begin{Verbatim}
+mkdir -p ~/jsr308
+hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+\end{Verbatim}
+
+
+The rest of this section discusses how to install the source release.
 
 
 \subsubsection{The short instructions (for Linux only)}
