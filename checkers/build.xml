@@ -349,7 +349,7 @@ ${build.version} of the 'javac.jar' library."/>
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
     </target>
 
-    <target name="bindist" depends="-prep-bindist,dist,"
+    <target name="bindist" depends="-prep-bindist,dist"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
