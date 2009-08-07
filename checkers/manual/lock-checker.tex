@@ -7,7 +7,7 @@ appropriate lock every time that it accesses a variable.
 
 Note:  This does \emph{not} mean that your program has no concurrency
 errors.  (You might have forgotten to annotate that a particular variable
-should only be accessed when a lock is held.  You might released and
+should only be accessed when a lock is held.  You might release and
 re-acquire the lock, when correctness requires you to hold it throughout a
 computation.  And, there are other concurrency errors that cannot, or
 should not, be solved with locks.)  However, ensuring that your program
@@ -24,32 +24,97 @@ other is a method annotation.
 
 \item[\code{@\refclass{lock/quals}{GuardedBy}}]
   indicates a type whose value may be accessed only when the given lock is
-  held.  See the Javadoc for an explanation of the argument.  The lock
-  acquisition and the field access may be arbitrarily far in the future.
+  held.  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
+    Javadoc} for an explanation of the argument.  The lock
+  acquisition and the value access may be arbitrarily far in the future;
+  or, if the value is never accessed, the lock never need be held.
 
 \item[\code{@\refclass{lock/quals}{Holding}}]
-  is a method annotation (not a type) qualifier.  It indicates that when
+  is a method annotation (not a  qualifier).  It indicates that when
   the method is called, the given lock must be held by the caller.
 
 \end{description}
 
+\subsubsection{Examples}
 
-A programmer may use the \code{@Holding} method annotation in two different ways.
+Most often, field values are annotated with \code{@GuardedBy}, but other
+uses are possible.
+
+A return value may be annotated with \code{@GuardedBy}:
+
+\begin{Verbatim}
+  @GuardedBy("MyClass.myLock") Object myMethod() { ... }
+
+  // reassignments without holding the lock are OK.
+  @GuardedBy("MyClass.myLock") Object x = myMethod();
+  @GuardedBy("MyClass.myLock") Object y = x;
+  Object z = x;  // ILLEGAL (assuming no lock inference),
+                 // because z can be freely accessed.
+  x.toString() // ILLEGAL because the lock is not held
+  synchronized(MyClass.myLock) {
+    y.toString();  // OK: the lock is held
+  }
+\end{Verbatim}
+
+A parameter may be annotated with \code{@GuardedBy}:
+
+\begin{Verbatim}
+  void helper1(@GuardedBy("MyClass.myLock") Object a) {
+    a.toString(); // ILLEGAL: the lock is not held
+    synchronized(MyClass.myLock) {
+      a.toString();  // OK: the lock is held
+    }
+  }
+  @Holding("MyClass.myLock")
+  void helper2(@GuardedBy("MyClass.myLock") Object b) {
+    b.toString(); // OK: the lock is held
+  }
+  void helper3(Object c) {
+    c.toString(); // OK: no lock constraints
+  }
+  void helper4(@GuardedBy("MyClass.myLock") Object d) {
+    d.toString(); // ILLEGAL: the lock is not held
+  }
+  void myMethod2(@GuardedBy("MyClass.myLock") Object e) {
+    helper1(e);  // OK to pass to another routine without holding the lock
+    e.toString(); // ILLEGAL: the lock is not held
+    synchronized (MyClass.myLock) {
+      helper2(e);
+      helper3(e);
+      helper4(e); // OK, but helper4's body still does not type-check
+    }
+  }
+\end{Verbatim}
+
+
+    
+
+
+
+A programmer might choose to use the \code{@Holding} method annotation in
+two different ways.
 \begin{itemize}
 \item
-  as specifying a higher-level synchronization protocol
+  \code{@Holding} can specify a higher-level synchronization protocol that
+  is not expressible as locks over Java objects.  By requiring locks to be
+  held, you can create higher-level protocol primitives without giving up
+  the benefits of the annotations and checking of them.
+
 \item
-  as being a method summary that simplifies reasoning
+  \code{@Holding} can be a method summary that simplifies reasoning.  In
+  this case, the \code{@Holding} doesn't necessarily introduce a new
+  correctness constraint; the program might be correct even if the lock
+  were acquired later in the body of the method or in a method it calls, so
+  long as the lock is acquired before accessing the data it protects.
+
+  Rather, here \code{@Holding} expresses a fact about execution:  when
+  execution reaches this point, the following locks are already held.  This
+  fact enables people and tools to reason intra- rather than
+  inter-procedurally.
 \end{itemize}
+
 \noindent
-Both of these are useful, and the Lock checker supports both.
-The latter (``summary'') use doesn't necessarily introduce a new
-correctness constraint ``must hold this lock when accessing''.  Rather,
-it expresses a fact about execution --- when execution reaches this
-point, the following locks are held --- that enables people and tools to
-reason intra- rather than inter-procedurally.  The point at which the
-lock must be held for correctness may come later in the body of the
-method or in a method it calls.
+Both of these approaches are useful, and the Lock checker supports both.
 
 
 \subsubsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
@@ -84,7 +149,7 @@ that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
 etc.).  This makes the annotations more expressive and also more amenable
 to automated checking.  It also accommodates the distinct (though related)
-meaning of the two annotations.
+meanings of the two annotations.
 
 % It would not work to retain the name \code{@GuardedBy} but put it on the
 % receiver; an annotation on the receiver indicates what lock must be held
