@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown by <code>String</code> methods to indicate that an index
  * is either negative or greater than the size of the string.  For

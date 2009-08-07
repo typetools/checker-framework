@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * An IllegalAccessException is thrown when an application tries
  * to reflectively create an instance (other than an array),

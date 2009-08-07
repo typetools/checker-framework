@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown to indicate that the <code>clone</code> method in class
  * <code>Object</code> has been called to clone an object, but that

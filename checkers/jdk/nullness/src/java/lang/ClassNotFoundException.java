@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when an application tries to load in a class through its
  * string name using:

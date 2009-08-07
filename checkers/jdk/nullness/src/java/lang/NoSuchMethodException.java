@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when a particular method cannot be found.
  *
