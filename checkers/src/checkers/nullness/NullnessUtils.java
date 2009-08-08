@@ -20,19 +20,33 @@ public final class NullnessUtils {
     { throw new AssertionError("shouldn't be intiantiated"); }
 
     /**
-     * A nullness suppression method.  It retrieves a nonnull reference
-     * from a potentially nullable one, while suppressing the Nullness
-     * checker for the unsafe cast.
+     * A method that suppresses warnings from the Nullness Checker.
+     * ("sw" in the name stands for "Suppress Warnings".)
+     * <p>
      *
-     * The method throws an {@link AssertionError} if Java assertions are
-     * enabled and the argument is a {@code null}.
+     * The method takes a possibly-null reference, unsafely casts it to
+     * have the @NonNull type qualifier, and returns it.
+     * <p>
      *
-     * @param a reference whose nullness is unknown
-     * @return the passed reference as a nonnull one
+     * This method is intended to be used in situations where the
+     * programmer definitively knows that a given reference is not null,
+     * but the type system is unable to make this deduction.
+     * See the Checker Framework manual for further discussion.
+     * <p>
+     *
+     * The method throws {@link AssertionError} if Java assertions are
+     * enabled and the argument is {@code null}.  If the exception is ever
+     * thrown, then that indicates that the programmer misused the method
+     * by using it in a circumstance where its argument can be null.
+     * <p>
+     *
+     * @param a possibly-null reference
+     * @return the argument, casted to have the type qualifier @NonNull
      */
     @SuppressWarnings("nullness")
+    @AssertNonNull
     public <T extends @Nullable Object> @NonNull T swNonNull(T ref) {
-        assert ref != null : "ref cannot be null";
+        assert ref != null : "swNonNull should never be called on a null argument";
         return (@NonNull T)ref;
     }
 }
