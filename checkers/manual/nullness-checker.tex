@@ -332,8 +332,19 @@ Parameter passing and return values are checked analogously to assignments.
 
 \subsubsection{Suppressing warnings with assertions\label{suppressing-warnings-with-assertions}}
 
-In addition to the other ways of suppressing warnings
-(Section~\ref{suppressing-warnings}), the Nullness checker 
+The Checker Framework supplies several ways to suppress warnings (see
+Section~\ref{suppressing-warnings}).  The Nullness checker provides two
+additional ways to suppress warnings.  These are appropriate when the
+Nullness Checker issues a warning, but the programmer knows for sure that
+the value cannot be null and the warning is a false positive.
+
+\begin{enumerate}
+\item
+  Use an assertion.
+
+  TODO:  discuss string that must be in message
+
+  The checker 
 assumes that assertions succeed.  For example, it assumes that no null
 pointer exception can occur in code such as
 \begin{Verbatim}
@@ -346,6 +357,17 @@ additional caveat to the guarantees provided by a checker
 (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
 pointer errors in your code under the assumption that assertions are
 enabled, and it does not guarantee that all of your assertions succeed.)
+
+\item
+  Use the NullnessUtils.swNonNull method.
+
+  TODO:  copy text from its documentation.
+
+\end{enumerate}
+
+
+TODO: discuss how to write your own, and why the default doesn't have
+assert or checking methods suppress warnings.
 
 
 
