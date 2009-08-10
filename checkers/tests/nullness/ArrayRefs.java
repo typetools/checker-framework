@@ -17,4 +17,7 @@ public class ArrayRefs {
         Arrays.<Object>asList (new Object[] {a});
     }
 
+    <T> void test(T[] a) {
+        test(a);
+    }
 }

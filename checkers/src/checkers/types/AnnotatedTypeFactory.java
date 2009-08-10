@@ -429,10 +429,9 @@ public class AnnotatedTypeFactory {
      */
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        if (type.getKind() != TypeKind.TYPEVAR
-                && type.getKind() != TypeKind.WILDCARD) {
-            Set<AnnotationMirror> annotations = type.getAnnotations();
-            for (AnnotatedTypeMirror supertype : supertypes) {
+        Set<AnnotationMirror> annotations = type.getAnnotations();
+        for (AnnotatedTypeMirror supertype : supertypes) {
+            if (!annotations.equals(supertype.getAnnotations())) {
                 supertype.clearAnnotations();
                 supertype.addAnnotations(annotations);
             }
