@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  *
  * <p>
  * Example:
- * <pre>@SubtypeOf( { Nullable.class } )
+ * <pre> @SubtypeOf( { Nullable.class } )
  * public @interface NonNull { }
  * </pre>
  *
@@ -28,10 +28,10 @@ import java.lang.annotation.Target;
  * is a subtype of <code><em>C</em></code> (for every class
  * <code><em>C</em></code>), and likewise for <code>@Interned</code>, write:
  *
- * <pre>@SubtypeOf(Unqualified.class)
+ * <pre> @SubtypeOf(Unqualified.class)
  * public @interface Encrypted { }
  *
- * &064;@SubtypeOf(Unqualified.class)
+ * <i></i>@SubtypeOf(Unqualified.class)
  * public @interface Interned { }
  * </pre>
  *
@@ -41,10 +41,10 @@ import java.lang.annotation.Target;
  * qualifier that is a supertype of all other qualifiers in the given
  * hierarchy), use an empty set of values:
  *
- * <pre>@SubtypeOf( { } )
+ * <pre> @SubtypeOf( { } )
  * public @interface Nullable { }
  *
- * &064;SubtypeOf( {} )
+ * <i></i>@SubtypeOf( {} )
  * public @interface ReadOnly { }
  * </pre>
  *

@@ -15,7 +15,7 @@ import static java.lang.annotation.ElementType.*;
  * except if the field is marked {@code Assignable}. Only a method with a
  * readonly receiver can be called using a readonly reference.
  *
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -4,6 +4,6 @@
  * additionally provides utilities for obtaining and manipulating this type
  * representation.
  *
- * @manual #writing-a-checker How to write a checker plugin
+ * @checker.framework.manual #writing-a-checker How to write a checker plugin
  */
 package checkers.types;

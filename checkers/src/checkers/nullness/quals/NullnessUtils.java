@@ -34,7 +34,7 @@ public final class NullnessUtils {
      *
      * <pre>
      *   // one way to use as a cast:
-     *   @NonNull String s = swNonNull(possiblyNull1);
+     *   <i></i>@NonNull String s = swNonNull(possiblyNull1);
      *
      *   // another way to use as a cast:
      *   swNonNull(possiblyNull2).toString();
@@ -59,7 +59,7 @@ public final class NullnessUtils {
      * by using it in a circumstance where its argument can be null.
      * <p>
      *
-     * @param a possibly-null reference
+     * @param ref a possibly-null reference
      * @return the argument, casted to have the type qualifier @NonNull
      */
     @SuppressWarnings("nullness")

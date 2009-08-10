@@ -22,7 +22,7 @@ import static java.lang.annotation.ElementType.*;
  *
  * @see Mutable
  * @see JavariChecker
- * @manual #javari-checker Javari Checker
+ * @checker.framework.manual #javari-checker Javari Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

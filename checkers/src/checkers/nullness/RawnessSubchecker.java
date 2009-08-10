@@ -16,7 +16,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
  * @see NonNull
  * @see Nullable
  * @see Raw
- * @manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ Raw.class, NonRaw.class, PolyRaw.class })
 public class RawnessSubchecker extends BaseTypeChecker {

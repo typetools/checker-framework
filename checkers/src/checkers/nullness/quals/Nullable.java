@@ -21,7 +21,7 @@ import com.sun.source.tree.Tree;
  *
  * @see NonNull
  * @see NullnessChecker
- * @manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

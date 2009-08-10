@@ -6,16 +6,16 @@ import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 
 /**
- * A taglet for processing the {@code \@manual} javadoc block tag, which inserts
+ * A taglet for processing the {@code @checker.framework.manual} javadoc block tag, which inserts
  * references to the JSR 308 checkers and framework manual into javadoc.
  *
  * <p>
  *
- * The {@code \@manual} tag is used as follows:
+ * The {@code @checker.framework.manual} tag is used as follows:
  *
  * <ul>
- * <li>{@code \@manual #} expands to a top-level link to the JSR 308 manual
- * <li>{@code \@manual #anchor text} expands to a link with some text to a
+ * <li>{@code @checker.framework.manual #} expands to a top-level link to the JSR 308 manual
+ * <li>{@code @checker.framework.manual #anchor text} expands to a link with some text to a
  * particular part of the manual
  * </ul>
  */
@@ -23,7 +23,7 @@ public class ManualTaglet implements Taglet {
 
     @Override
     public String getName() {
-        return "manual";
+        return "checker.framework.manual";
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ManualTaglet implements Taglet {
     }
 
     /**
-     * Formats the {@code \@manual} tag, prepending the tag header to the
+     * Formats the {@code @checker.framework.manual} tag, prepending the tag header to the
      * tag content.
      *
      * @param text the tag content
@@ -91,7 +91,7 @@ public class ManualTaglet implements Taglet {
      */
     private String formatHeader(String text) {
         return String.format(
-                "<DT><B>See the checkers manual:</B><DD>%s<BR>",
+                "<DT><B>See the Checker Framework manual:</B><DD>%s<BR>",
                 text);
     }
 

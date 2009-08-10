@@ -16,7 +16,7 @@ import static java.lang.annotation.ElementType.*;
  * An Immutable object cannot be modified. Its fields may be reassigned or
  * mutated only if they are explicitly marked as Mutable or Assignable.
  *
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

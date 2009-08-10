@@ -12,7 +12,7 @@ import checkers.source.*;
  * @see NonNull
  * @see Nullable
  * @see Raw
- * @manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, PolyNull.class })
 @SupportedLintOptions({"flow", "cast", "cast:redundant", "nulltest"})
