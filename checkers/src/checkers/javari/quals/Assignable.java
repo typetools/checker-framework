@@ -18,7 +18,7 @@ import static java.lang.annotation.ElementType.*;
  * This annotation is part of the Javari language.
  *
  * @see JavariChecker
- * @manual #javari-checker Javari Checker
+ * @checker.framework.manual #javari-checker Javari Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

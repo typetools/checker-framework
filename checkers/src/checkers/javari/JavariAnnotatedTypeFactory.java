@@ -124,7 +124,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @param type the type obtained from {@code tree}
      */
     @Override
-    protected void annotateImplicit(Tree tree, /*\@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
 
         // primitives are all the same
         if (type.getKind().isPrimitive()
@@ -194,7 +194,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @param type the type obtained from {@code elt}
      */
     @Override
-    protected void annotateImplicit(Element element, /*\@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Element element, /*@Mutable*/ AnnotatedTypeMirror type) {
         if (element.getKind().isClass() || element.getKind().isInterface()) {
             if (!hasImmutabilityAnnotation(type))
                 type.addAnnotation(MUTABLE);
@@ -218,7 +218,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * method with an empty method to remove the framework behavior.
      */
     @Override
-    protected void annotateInheritedFromClass(/*\@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
         // Do nothing
     }
 
@@ -489,7 +489,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * <ul>
          *
          *  <li> 1. If the identifier qualified type is annotated with
-         *  {@code \@ReadOnly} or {@code \@Mutable}, the parameter
+         *  {@code @ReadOnly} or {@code @Mutable}, the parameter
          *  receives the same annotation.
          *
          *  <li> 2. If not, and if the expression qualified type has
@@ -574,7 +574,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      *   their underlying type's element annotations.
      *
      *   <li> 3. Annotates unnanotated qualified types whose elements
-     *   correspond to fields with {@code \@ThisMutable}.
+     *   correspond to fields with {@code @ThisMutable}.
      *
      *   <li> 4. Annotated unnanotated qualified types corresponding to arrays
      *   with {@code @Mutable}.

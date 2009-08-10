@@ -7,6 +7,6 @@
  * Most typechecker implementations will want to use the classes in this package
  * as the base of their own typecheckers.
  *
- * @manual #writing-a-checker Writing a checker
+ * @checker.framework.manual #writing-a-checker Writing a checker
  */
 package checkers.basetype;

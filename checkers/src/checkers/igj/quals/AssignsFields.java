@@ -18,7 +18,7 @@ import checkers.quals.TypeQualifier;
  * A method with an AssignsFields receiver may not use the receiver to
  * invoke other methods with mutable or immutable reciever.
  *
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  */
 // TODO: Document this
 

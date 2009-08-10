@@ -14,7 +14,7 @@ import checkers.util.AggregateChecker;
  * @see NonNull
  * @see Nullable
  * @see Raw
- * @manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 public class NullnessChecker extends AggregateChecker {
 

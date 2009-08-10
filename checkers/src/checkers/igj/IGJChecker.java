@@ -23,7 +23,7 @@ import checkers.util.*;
  * {@link Immutable}, {@link I} -- a polymorphic qualifier, {@link Assignable},
  * and {@link AssignsFields}.  The language is specified by the FSE 2007 paper.
  *
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  *
  */
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
@@ -54,7 +54,7 @@ public class IGJChecker extends BaseTypeChecker {
     //    The design of QualifierHierarchy.isSubtype(Collection, Collection)
     //    reflect this choice.
     //
-    /** Supported Annotations for IGJ. Used for subtyping rules **/
+    /** Supported annotations for IGJ.  Used for subtyping rules. **/
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;
 
     @Override
@@ -203,9 +203,7 @@ public class IGJChecker extends BaseTypeChecker {
          * arguments to change while maintaining subtype relationship.
          *
          * This allows for subtyping relationships of the kind:
-         * <code>
-         *  \@Mutable List<\@Mutable Date> <: \@ReadOnly List<@ReadOnly Date>
-         * </code>
+         * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;<\pre>
          */
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {

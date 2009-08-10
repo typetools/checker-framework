@@ -8,8 +8,8 @@
  *
  * <p>
  *
- * The {@code \@Odd} annotation is a straightforward subtype-style qualifier.
- * It has no special semantics; values that do not have an {@code \@Odd} type
- * cannot be assigned to values that do have the {@code \@Odd} type.
+ * The {@code @Odd} annotation is a straightforward subtype-style qualifier.
+ * It has no special semantics; values that do not have an {@code @Odd} type
+ * cannot be assigned to values that do have the {@code @Odd} type.
  */
 package checkers.util.test;

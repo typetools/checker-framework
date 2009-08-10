@@ -503,7 +503,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * This method returns the argument to the {@link
      * SupportedAnnotationTypes} annotation, so the effect of returning "*"
      * is as if the checker were annotated by
-     * \@SupportedAnnotationTypes("*"):  javac runs the checker on every
+     * {@code @SupportedAnnotationTypes("*")}:
+     * javac runs the checker on every
      * class mentioned on the javac command line.  This method also checks
      * that subclasses do not contain a {@link SupportedAnnotationTypes}
      * annotation.  <p>

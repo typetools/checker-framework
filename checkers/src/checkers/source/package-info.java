@@ -11,7 +11,6 @@
  * functionality.
  *
  * @see checkers.basetype
- * @manual #writing-a-checker Writing a Checker
+ * @checker.framework.manual #writing-a-checker Writing a Checker
  */
 package checkers.source;
-
