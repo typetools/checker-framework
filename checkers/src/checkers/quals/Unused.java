@@ -27,10 +27,9 @@ import java.lang.annotation.*;
  *
  * The checker for @LocalToThread would issue an error for the following code:
  *
- * <pre><code>
- *   @LocalToThread Table table = ...;
+ * <pre>  @LocalToThread Table table = ...;
  *   ... table.lock ...;
- * </code></pre>
+ * </pre>
  *
  */
 @Documented

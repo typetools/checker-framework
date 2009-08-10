@@ -3,6 +3,6 @@
  * qualifier that finds (and verifies the absence of) null pointer errors.
  *
  * @see checkers.nullness.NullnessChecker
- * @manual #nullness-checker Nullness checker
+ * @checker.framework.manual #nullness-checker Nullness checker
  */
 package checkers.nullness;

@@ -63,7 +63,7 @@ import static java.lang.annotation.ElementType.*;
  * immutability, otherwise {@code @I} is resolved to {@code @ReadOnly}.
  *
  *
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

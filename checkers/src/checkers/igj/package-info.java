@@ -6,6 +6,6 @@
  * is mutated through a read-only reference.
  *
  * @see checkers.igj.IGJChecker
- * @manual #igj-checker IGJ Checker
+ * @checker.framework.manual #igj-checker IGJ Checker
  */
 package checkers.igj;

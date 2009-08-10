@@ -53,7 +53,7 @@ import com.sun.tools.javac.tree.*;
  * {@link AnnotatedTypeFactory#annotateImplicit(Element, AnnotatedTypeMirror)}
  * and {@link #annotateImplicit(Tree, AnnotatedTypeMirror)}.
  *
- * @manual #writing-a-checker How to write a checker plug-in
+ * @checker.framework.manual #writing-a-checker How to write a checker plug-in
  */
 public class AnnotatedTypeFactory {
 

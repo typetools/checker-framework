@@ -18,7 +18,7 @@ import checkers.source.SupportedLintOptions;
  * {@link Interned}.  Optionally, it suggests using "=="
  * instead of ".equals" where possible.
  *
- * @manual #interning-checker Interning checker
+ * @checker.framework.manual #interning-checker Interning checker
  */
 @TypeQualifiers({ Interned.class, PolyInterned.class })
 @SupportedLintOptions({"dotequals"})

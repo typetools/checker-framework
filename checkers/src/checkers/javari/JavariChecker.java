@@ -12,10 +12,10 @@ import checkers.javari.quals.*;
 
 /**
  * An annotation processor that checks a program's use of the Javari
- * type annotations ({@code \@ReadOnly}, {@code \@Mutable}, {@code
- * \@Assignable}, {@code \@PolyRead} and {@code \@QReadOnly}).
+ * type annotations ({@code @ReadOnly}, {@code @Mutable},
+ * {@code @Assignable}, {@code @PolyRead} and {@code @QReadOnly}).
  *
- * @manual #javari-checker Javari Checker
+ * @checker.framework.manual #javari-checker Javari Checker
  */
 @TypeQualifiers( { ReadOnly.class, ThisMutable.class, Mutable.class,
     PolyRead.class, QReadOnly.class })
