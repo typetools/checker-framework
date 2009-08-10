@@ -151,4 +151,8 @@ public class IGJTest extends CheckerTest {
     @Test public void testIResolution() {
         test();
     }
+
+    @Test public void testConstructors() {
+        test();
+    }
 }
