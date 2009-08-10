@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * <pre> @SubtypeOf(Unqualified.class)
  * public @interface Encrypted { }
  *
- * <i></i>@SubtypeOf(Unqualified.class)
+ * &#64;SubtypeOf(Unqualified.class)
  * public @interface Interned { }
  * </pre>
  *
@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
  * <pre> @SubtypeOf( { } )
  * public @interface Nullable { }
  *
- * <i></i>@SubtypeOf( {} )
+ * &#64;SubtypeOf( {} )
  * public @interface ReadOnly { }
  * </pre>
  *
