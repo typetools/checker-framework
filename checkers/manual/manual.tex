@@ -74,11 +74,21 @@
 
 
 % Reference to Checker Framework Javadoc for a class (not a method, etc.).
-% Arg 1: directory under checkers/, including internal "/", but no trailing "/".
+% Arg 1: directory under checkers/, including internal "/", but no leading
+% or trailing "/".
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
 \newcommand{\refclass}[2]{\ahref{doc/checkers/#1/#2.html}{\<#2>}}
+% Reference to Checker Framework Javadoc for a method or field.).
+% Arg 1: directory under checkers/, including internal "/", but no leading
+% or trailing "/".
+% Arg 2: class name.
+% Arg 3: method name.
+% Arg 4: fully-qualified arguments.  Example: "(T)"
+% In the printed version, only "class.method" appears.
+% In the HTML version, it's a link to the Javadoc.
+\newcommand{\refmethod}[4]{\ahref{doc/checkers/#1/#2.html\##3#4}{\<#2.#3>}}
 % Reference to Sun Javadoc.
 % Arg 1: .html reference, without the .../api/ prefix
 % Arg 2: What will appear in the formatted manual.
