@@ -25,13 +25,32 @@ public final class NullnessUtils {
      * <p>
      *
      * The method takes a possibly-null reference, unsafely casts it to
-     * have the @NonNull type qualifier, and returns it.
-     * <p>
+     * have the @NonNull type qualifier, and returns it.  The Nullness
+     * Checker considers both the return value, and also the argument, to
+     * be non-null after the method call.  Therefore, the
+     * <tt>swNonNull</tt> method can be used either as a cast expression or
+     * as a statement.  The Nullness Checker issues no warnings in any of
+     * the following code:
      *
-     * This method is intended to be used in situations where the
-     * programmer definitively knows that a given reference is not null,
-     * but the type system is unable to make this deduction.
-     * See the Checker Framework manual for further discussion.
+     * <pre>
+     *   // one way to use as a cast:
+     *   @NonNull String s = swNonNull(possiblyNull1);
+     *
+     *   // another way to use as a cast:
+     *   swNonNull(possiblyNull2).toString();
+     *
+     *   // one way to use as a statement:
+     *   swNonNull(possiblyNull3);
+     *   possiblyNull3.toString();`
+     * </pre>
+     *
+     * The <tt>swNonNull</tt> method is intended to be used in situations
+     * where the programmer definitively knows that a given reference is
+     * not null, but the type system is unable to make this deduction.  It
+     * is not intended for defensive programming, in which a programmer
+     * cannot prove that the value is not null but wishes to have an
+     * earlier indication if it is.  See the Checker Framework manual for
+     * further discussion.
      * <p>
      *
      * The method throws {@link AssertionError} if Java assertions are
@@ -46,7 +65,7 @@ public final class NullnessUtils {
     @SuppressWarnings("nullness")
     @AssertNonNull
     public <T extends @Nullable Object> @NonNull T swNonNull(T ref) {
-        assert ref != null : "swNonNull should never be called on a null argument";
+        assert ref != null : "misuse of swNonNull, which should never be called on a null argument";
         return (@NonNull T)ref;
     }
 }

@@ -330,45 +330,171 @@ Parameter passing and return values are checked analogously to assignments.
 
 
 
-\subsubsection{Suppressing warnings with assertions\label{suppressing-warnings-with-assertions}}
+\subsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-nullness}\label{suppressing-warnings-with-assertions}}
 
-The Checker Framework supplies several ways to suppress warnings (see
-Section~\ref{suppressing-warnings}).  The Nullness checker provides two
-additional ways to suppress warnings.  These are appropriate when the
-Nullness Checker issues a warning, but the programmer knows for sure that
-the value cannot be null and the warning is a false positive.
+The Checker Framework supplies several ways to suppress warnings, most
+notably the \<@SuppressWarnings("nullness")> annotation (see
+Section~\ref{suppressing-warnings}).  Occasionally, it is inconvenient or
+verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
+not permit annotations to appear on statements.
+
+For situations when the \<@SuppressWarnings> annotation is inconvenient,
+the Nullness Checker provides two additional ways to suppress warnings:
+via an \<assert> statement or the \<swNonNull> method.  These are
+appropriate when the Nullness Checker issues a warning, but the programmer
+knows for sure that the warning is a false positive, because the value
+cannot ever be null at run time.
+
+  % "@SuppressWarnings(nullness)" might be a better string.
+  % That enables a programmer to search the source code to find all instances.
+\newcommand{\nullnessSuppressionString}{nullness}
 
 \begin{enumerate}
 \item
-  Use an assertion.
-
-  TODO:  discuss string that must be in message
-
-  The checker 
-assumes that assertions succeed.  For example, it assumes that no null
-pointer exception can occur in code such as
+  Use an assertion.  If the string ``\<\nullnessSuppressionString>''
+  appears in the message body, then the Nullness Checker treats the
+  assertion as suppressing a warning and assumes that the assertion always
+  succeeds.  For example, the checker assumes that no null pointer
+  exception can occur in code such as
 \begin{Verbatim}
-assert x != null;
-... x.f ...
+  assert x != null : "@SuppressWarnings(nullness)";
+  ... x.f ...
 \end{Verbatim}
 
-(Another way of stating the Nullness checker's use of assertions is as an
-additional caveat to the guarantees provided by a checker
-(Section~\ref{checker-guarantees}).  The Nullness checker prevents null
-pointer errors in your code under the assumption that assertions are
-enabled, and it does not guarantee that all of your assertions succeed.)
+  If the string ``\<\nullnessSuppressionString>'' does not appear in the
+  assertion message, then the Nullness Checker treats the assertion as being
+  used for defensive programming, and it warns if the method might throw a
+  nullness-related exception.
+
+% (Another way of stating the Nullness checker's use of assertions is as an
+% additional caveat to the guarantees provided by a checker
+% (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
+% pointer errors in your code under the assumption that assertions are
+% enabled, and it does not guarantee that all of your assertions succeed.)
 
 \item
-  Use the NullnessUtils.swNonNull method.
+  Use the \refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} method.
 
   TODO:  copy text from its documentation.
+
+  A potential disadvantage of using the \<swNonNull> method is that your
+  code becomes dependent on the Checker Framework at run time as well as at
+  compile time.  You can avoid this by copying the implementation of
+  \<swNonNull> into your own code, and possibly renaming it if you do not
+  like the name.  Be sure to retain the documentation that indicates that
+  your copy is intended for use only to suppress warnings and not for
+  defensive programming.
 
 \end{enumerate}
 
 
-TODO: discuss how to write your own, and why the default doesn't have
-assert or checking methods suppress warnings.
+\subsubsection{Suppressing warnings on nullness-checking routines}
 
+%% Work this in
+% As explained in Section~\ref{annotate-normal-behavior}, annotations should
+% indicate normal behavior that will not cause an exception.
+% 
+% TODO: discuss how to write your own, and why the default doesn't have
+% assert or checking methods suppress warnings.
+
+
+To suppress warnings in the Nullness Checker, you can use 
+method \code{swNonNull}.
+
+This section explains why the Nullness Checker introduces a new  rather than re-using the \<assert> statement (as in
+\<assert x != null>) or an existing method such as:
+
+\begin{Verbatim}
+  org.junit.Assert.assertNotNull(Object)
+  com.google.common.base.Preconditions.checkNotNull(Object)
+\end{Verbatim}
+
+In each case, the assertion or method indicates an application invariant, a
+fact that should always be true.  There are two distinct reasons a
+programmer may have written the invariant, depending on whether the
+programmer is 100\% sure that the application invariant holds.
+
+\begin{enumerate}
+\item
+  A programmer might write it as \textbf{defensive programming}.  This causes
+  the program to throw an exception, which is useful for debugging because
+  it gives an earlier run-time indication of the error.
+  A programmer would use an assertion in this way if the programmer is not
+  100\% sure that the application invariant holds.
+
+  % , or even to document what the program
+  % is intended to do.
+
+\item
+  A programmer might write it to \textbf{suppress} false positive
+  \textbf{warning messages} from a checker.  A programmer would use an
+  assertion this way if the programmer is 100\% sure that the application
+  invariant holds, and the can never be null at run time.
+
+\end{enumerate}
+
+With assertions and existing methods like JUnit's \<assertNotNull>, there
+is no way of knowing the programmer's intent in using the method.  Guessing
+wrong would make the Nullness Checker less useful.  Different programmers
+or codebases may use them in different ways.  And, different checking tools
+issue different false warnings that need to be suppressed.
+
+As an example of using assertions for defensive programming, some style
+guides suggest using assertions or method calls to indicate nullness.  A
+programmer might write
+
+\begin{Verbatim}
+    String s = ...
+    assert s != null;    // or:  assertNotNull(s);   or: checkNotNull(s);
+    ... Double.valueOf(s) ...
+\end{Verbatim}
+
+A programming error might cause \<s> to be null, in which case the code
+would throw an exception at run time.
+If the assertion caused the Nullness Checker to assume that \<s> is not
+\<null>, then the Nullness Checker would issue no warning for this code.
+That would be undesirable, because the whole purpose of the Nullness
+Checker is to give a compile-time warning about possible run-time
+exceptions.  Furthermore, if the programmer uses assertions for defensive
+programming systematically throughout the codebase, then many useful
+Nullness Checker warnings would be suppressed.
+
+
+Because it is important to distinguish between the two uses of assertions
+(defensive programming vs.~suppressing warnings), the Checker Framework
+introduces the \refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} method.
+Unlike existing assertions and
+methods, \<swNonNull> is intended only to suppress false warnings that are
+issued by the Nullness Checker, not for defensive programming.
+
+If you know that a particular codebase uses the \<assert> statement or a
+nullness-checking method not for defensive programming but to indicate
+facts that are guaranteed to be true (that is, these assertions will never
+fail at run time), then you can cause the Nullness Checker to suppress
+warnings related to them, just as it does for \<swNonNull>.  For a
+method, annotate its definition just as
+\refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} is annotated (see the
+source code for the Checker Framework).
+% TODO:
+% For an assert statement, XXXXX.
+Also, be sure to document the intention, so that programmers do not
+accidentally misuse them for defensive programming.
+
+
+If you are annotating a codebase that already contains precondition checks,
+such as:
+
+\begin{Verbatim}
+  public String get(String key, String def) {
+    checkNotNull(key, "key"); //NOI18N
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+then you should mark the appropriate parameter as \<@NonNull> (which is the
+default).  This will prevent the checker from issuing a warning about the
+\<checkNotNull> call.
 
 
 \subsection{Examples\label{nullness-example}}
@@ -651,4 +777,5 @@ at the client use.  For example:
 % LocalWords:  DefaultLocation Nullness PolyNull nullness AnnotateNullable JLS
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
-% LocalWords:  inferencer utilMDE Nonnull CheckForNull UnknownNullness
+% LocalWords:  inferencer utilMDE Nonnull CheckForNull UnknownNullness rawtypes
+% LocalWords:  swNonNull NullnessUtils assertNotNull codebases checkNotNull
