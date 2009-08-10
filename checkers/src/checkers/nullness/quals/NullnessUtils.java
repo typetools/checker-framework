@@ -34,7 +34,7 @@ public final class NullnessUtils {
      *
      * <pre>
      *   // one way to use as a cast:
-     *   <i></i>@NonNull String s = swNonNull(possiblyNull1);
+     *   &#64;NonNull String s = swNonNull(possiblyNull1);
      *
      *   // another way to use as a cast:
      *   swNonNull(possiblyNull2).toString();
