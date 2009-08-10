@@ -828,43 +828,6 @@ processed by the visitor class and checked by the checker class on
 your checker plugin.
 
 
-\subsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
-
-For some programming tasks, you can use either a Java subclass or a type
-qualifier.  For instance, suppose that your code currently uses
-\code{String} to represent an address.  You could create a new \code{Address}
-class and refactor your code to use it, or you could create a
-\code{@Address} annotation and apply it to some uses of \code{String} in
-your code.  If both of these are truly possible, then it is probably more
-foolproof to use the Java class.  We do not encourage you to use type
-qualifiers as a poor substitute for classes.  However, sometimes type
-qualifiers are a better choice.
-
-Using a new class may your code incompatible with existing libraries or
-clients.  Brian Goetz expands on this issues in an article on the
-pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
-is not a concern, a code change may introduce bugs, whereas adding
-annotations does not change the run-time behavior.  It is possible to add
-annotations to existing code, including code you do not maintain or cannot
-change.  It is possible to annotate primitive types without converting them
-to wrappers, which would make the code both uglier and slower.
-
-Type qualifiers can be applied to any type, including final classes that
-cannot be subclassed.
-
-Type qualifiers permit you to remove operations, with a compile-time
-guarantee.  An example is mutating methods that are forbidden by immutable
-types (see Sections~\ref{igj-checker} and~\ref{igj-checker}).  More
-generally, type qualifiers permit creating a new supertype, not just a
-subtype, of an existing Java type.
-
-The least important reason is efficiency.  Type qualifiers can be more
-efficient, since there is no no run-time representation such as a wrapper
-or a separate class, nor introduction of dynamic dispatch for methods that
-could otherwise be statically dispatched.
-
-
-
 % LocalWords:  plugin javac's SourceChecker AbstractProcessor getMessages quals
 % LocalWords:  getSourceVisitor SourceVisitor getFactory AnnotatedTypeFactory
 % LocalWords:  SupportedAnnotationTypes SupportedSourceVersion TreePathScanner
