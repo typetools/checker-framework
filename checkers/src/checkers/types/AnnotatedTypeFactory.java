@@ -301,7 +301,8 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromMember.INSTANCE, tree);
         annotateInheritedFromClass(result);
-        fromTreeCache.put(tree, atypes.deepCopy(result));
+        if (SHOULD_CACHE)
+            fromTreeCache.put(tree, atypes.deepCopy(result));
         return result;
     }
 
@@ -428,10 +429,13 @@ public class AnnotatedTypeFactory {
      */
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        Set<AnnotationMirror> annotations = type.getAnnotations();
-        for (AnnotatedTypeMirror supertype : supertypes) {
-            supertype.clearAnnotations();
-            supertype.addAnnotations(annotations);
+        if (type.getKind() != TypeKind.TYPEVAR
+                && type.getKind() != TypeKind.WILDCARD) {
+            Set<AnnotationMirror> annotations = type.getAnnotations();
+            for (AnnotatedTypeMirror supertype : supertypes) {
+                supertype.clearAnnotations();
+                supertype.addAnnotations(annotations);
+            }
         }
     }
 
