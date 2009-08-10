@@ -883,8 +883,8 @@ public class AnnotatedTypeFactory {
      * Returns the canonical annotation for the passed annotation if it is
      * an alias of a canonical one in the framework.  If it is not an alias,
      * the method returns null.
-     * 
-     * 
+     *
+     *
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
@@ -1038,6 +1038,15 @@ public class AnnotatedTypeFactory {
             return null;
         AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
         return method.getReceiverType();
+    }
+
+    protected final boolean isWithinConstructor(Tree tree) {
+        if (visitorState.getClassType() != null)
+            return visitorState.getMethodTree() != null
+                && TreeUtils.isConstructor(visitorState.getMethodTree());
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+        return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
     }
 
     private final Element getMostInnerClassOrMethod(Tree tree) {

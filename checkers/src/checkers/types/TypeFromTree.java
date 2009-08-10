@@ -438,6 +438,8 @@ abstract class TypeFromTree extends
                 }
                 enclosing.clearAnnotations();
                 enclosing.addAnnotations(receiverAnnos);
+                if (TreeUtils.isConstructor(node))
+                    enclosing.addAnnotations(elt.getAnnotationMirrors());
                 result.setReceiverType(enclosing);
             }
 

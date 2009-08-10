@@ -278,11 +278,16 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 
-                if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotation(I))
-                    p.addAnnotation(MUTABLE);
-                else
+                if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotation(I)) {
+                    AnnotatedExecutableType con = constructorFromUse(node);
+                    if (con.getReceiverType().hasAnnotation(IMMUTABLE))
+                        p.addAnnotation(IMMUTABLE);
+                    else
+                        p.addAnnotation(MUTABLE);
+                } else {
                     // case 2: known immutability type
                     p.addAnnotations(ct.getAnnotations());
+                }
             }
 
             return null;
@@ -329,6 +334,11 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         if (methodReceiver == null)
             return act;
         // Are we in a mutable or Immutable scope
+        if (isWithinConstructor(tree) && !methodReceiver.hasAnnotation(MUTABLE)) {
+            methodReceiver.clearAnnotations();
+            methodReceiver.addAnnotation(ASSIGNS_FIELDS);
+        }
+
         if (methodReceiver.hasAnnotation(MUTABLE) ||
                 methodReceiver.hasAnnotation(IMMUTABLE)) {
             return methodReceiver;
