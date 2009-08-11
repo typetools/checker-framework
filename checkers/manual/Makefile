@@ -1,5 +1,6 @@
 # To regenerate this list, run:   latex-process-inputs.pl -list manual.tex
-TEX_FILES = manual.tex introduction.tex nullness-checker.tex igj-checker.tex interning-checker.tex javari-checker.tex lock-checker.tex basic-checker.tex annotating-libraries.tex creating-a-checker.tex troubleshooting.tex
+
+TEX_FILES = manual.tex introduction.tex nullness-checker.tex interning-checker.tex igj-checker.tex javari-checker.tex lock-checker.tex basic-checker.tex advanced-features.tex warnings.tex annotating-libraries.tex creating-a-checker.tex troubleshooting.tex
 
 all: figures-all doc manual.pdf manual.html
 
