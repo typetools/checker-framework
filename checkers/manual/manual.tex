@@ -102,6 +102,24 @@
 Section~\ref{installation} describes how to \textbf{install and use} pluggable
 type-checkers.
 
+\newcommand{\sectionpageref}[1]{Section~\ref{#1}, page~\pageref{#1}}
+%HEVEA \renewcommand{\sectionpageref}[1]{Section~\ref{#1}}
+
+%BEGIN LATEX
+\medskip
+%END LATEX
+
+\noindent
+You can also jump directly to the documentation for a particular checker:
+\begin{itemize}
+\item Nullness checker: \sectionpageref{nullness-checker}
+\item Interning checker: \sectionpageref{interning-checker}
+\item IGJ (immutability) checker: \sectionpageref{igj-checker}
+\item Javari (immutability) checker: \sectionpageref{javari-checker}
+\item Lock checker: \sectionpageref{lock-checker}
+\end{itemize}
+
+
 %HEVEA \setcounter{tocdepth}{2}
 \tableofcontents
 \newpage
