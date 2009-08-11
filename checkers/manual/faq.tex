@@ -4,6 +4,66 @@ These are some common questions about the Checker Framework and about
 pluggable type-checking in general.  Feel free to suggest improvements to
 the answers, or other questions to include here.
 
+There is a separate FAQ for the type annotations syntax
+(\url{http://types.cs.washington.edu/jsr308/jsr308-faq.html}).
+
+
+% This FAQ also appears in the JSR 308 FAQ.
+\subsection{ id="ease-of-use">Are type annotations easy to read and write?}
+
+The paper
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
+  pluggable types for Java}~\cite{PapiACPE2008} discusses case studies in
+which programmers
+found type annotations to be natural to read and write.  The code
+continued to feel like Java, and the type-checking errors were easy to
+comprehend and often led to real bugs.
+
+You don't have to take our word for it, though.  You can try the
+Checker Framework for yourself.
+
+The difficulty of adding and verifying annotations depends on your program.
+If your program is well-designed and -documented, then skimming the
+existing documentation and writing type annotations is extremely easy.
+Otherwise, you may find yourself spending a lot of time trying to
+understand, reverse-engineer, or fix bugs in your program, and then just a
+moment writing a type annotation that describes what you discovered.  This
+process inevitably improves your code.  You must decide whether it is a
+good use of your time.  For code that is not causing trouble now and is
+unlikely to do so in the future (the code is bug-free, and you do not
+anticipate changing it or using it in new contexts), then the
+effort of writing type annotations for it may not be justified.
+
+
+% This FAQ also appears in the JSR 308 FAQ.
+\subsection{Will my code become cluttered with type annotations?}
+
+As with any language feature, it is possible to write ugly code that
+over-uses annotations.  However, in normal use, very few annotations need
+to be written.  Figure 1 of the paper
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
+  pluggable types for Java}~\cite{PapiACPE2008} reports data for over
+350,000 lines of type-annotated code:
+
+\begin{itemize}
+\item
+    1 annotation per 62 lines for nullness annotations (\<@NonNull>, \<@Nullable>, etc.)
+    % (/ (+ 4640 3961 10798) (+ 107 35 167))
+\item
+    1 annotation per 1736 lines for interning annotations (\<@Interned>)
+    % (/ 224048 129)
+\item
+    1 annotation per 27 lines for immutability annotations (IGJ type system)
+    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
+\end{itemize}
+
+Furthermore, these numbers are for annotating existing code.  New code that
+is written with the type annotation system in mind is cleaner and more
+correct, so it requires even fewer annotations.
+
+In other words, annotations do not clutter code, and they are used much
+less frequently than generic types, which Java programmers find acceptable.
+
 
 \subsection{Can a pluggable type-checker give an absolute guarantee of correctness?}
 
@@ -117,3 +177,5 @@ However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 
 
+
+% LocalWords:  IGJ toolset
