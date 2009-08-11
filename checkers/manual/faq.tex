@@ -9,7 +9,7 @@ There is a separate FAQ for the type annotations syntax
 
 
 % This FAQ also appears in the JSR 308 FAQ.
-\subsection{ id="ease-of-use">Are type annotations easy to read and write?}
+\subsection{Are type annotations easy to read and write?}
 
 The paper
 \ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
@@ -176,6 +176,61 @@ generics or other features of Java 5, then you cannot use JML.
 However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 
+
+\subsection{Why is the type parameter to \<List> annotated as \<@NonNull>?}
+
+If you try to write \code{List<@Nullable Object>}, or to otherwise use
+certain collections (including \<AbstractCollection>, \<Collection>,
+\<List>, \<Map>, and \<Queue>), you will get a type error, because their
+type parameter is annotated as \<@NonNull>.
+
+This is in conformance with the Javadoc specification of those classes.
+The Javadoc contains text such as:
+
+\begin{quote}
+  Some list implementations have restrictions on the elements that they may
+  contain. For example, some implementations prohibit null elements,
+\end{quote}
+
+For example, calling this method might result in a null pointer exception:
+
+\begin{Verbatim}
+  static void addNull(List l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+The Checker Framework is designed to warn you whenever your code might
+throw a null pointer exception.  If you want to be safe, you will never put
+\<null> in a \<List> of unknown provenance, because that \<List> might not
+accept null.
+
+By contrast, this code is OK because \<ArrayList> is documented to support
+null elements:
+
+\begin{Verbatim}
+  static void addNull(ArrayList l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+If you know that any objects that can be passed as the parameter will
+definitely support null, then you can suppress the warning:
+
+\begin{Verbatim}
+  @SuppressWarnings("nullness:collection-typeargs")
+  static void addNull(List l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+\noindent
+You need to use \<@SuppressWarnings("nullness:collection-typeargs")>
+whenever you use a collection that may contain \<null> elements in
+contradiction to its documentation.  Fortunately, such uses are relatively
+rare.
+
+For more details, see Section~\ref{nullness-checker}.
 
 
 % LocalWords:  IGJ toolset
