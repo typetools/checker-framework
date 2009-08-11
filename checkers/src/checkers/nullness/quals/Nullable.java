@@ -14,7 +14,12 @@ import com.sun.source.tree.Tree;
 
 /**
  * Indicates that a variable may have a null value.
+ * <p>
  *
+ * If a method parameter is annotated with {@code @Nullable}, then passing
+ * {@code null} as an argument should not cause the method to throw an
+ * exception, including a {@code NullPointerException}.  A similar argument
+ * applies to public fields that are annotated with {@code @Nullable}.
  * <p>
  *
  * This annotation is associated with the {@link NullnessChecker}.
