@@ -34,8 +34,8 @@
            <target name="clean"/>
             <target name="build-javac"/>
             <target name="build-javap"/>
-	    <target name="build-javadoc"/>
-	    <target name="build-doclets"/>
+            <target name="build-javadoc"/>
+            <target name="build-doclets"/>
         </ant>
     </target>
 
@@ -47,7 +47,7 @@
             <target name="dist"/>
             <target name="docs"/>
             <target name="all-tests"/>
-	    <target name="bindist"/>
+            <target name="bindist"/>
         </ant>
     </target>
 
