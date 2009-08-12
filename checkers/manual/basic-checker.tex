@@ -1,0 +1,145 @@
+\htmlhr
+% TODO this should eventually be expanded
+\section{Basic checker\label{basic-checker}}
+
+The Basic checker enforces only subtyping rules.  It operates over
+annotations specified by a user on the command line.  Thus, users can
+create a simple type checker without writing any code beyond definitions of
+the type qualifier annotations.
+
+The Basic checker can accommodate all of the type system enhancements that
+can be declaratively specified (see Section~\ref{writing-a-checker}).
+This includes type introduction rules (implicit
+annotations, e.g., literals are implicitly considered \code{@\refclass{nullness/quals}{NonNull}}) via
+the \code{@\refclass{quals}{ImplicitFor}} meta-annotation, and other features such as
+flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
+qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
+
+The Basic checker is also useful to type system designers who wish to
+experiment with a checker before writing code; the Basic checker
+demonstrates the functionality that a checker inherits from the Checker
+Framework.
+
+For type systems that require special checks (e.g., warning about
+dereferences of possibly-null values), you will need to write code and
+extend the framework as discussed in Section~\ref{writing-a-checker}.
+
+
+\subsection{Using the Basic checker\label{basic-using}}
+
+The Basic checker is used in the same way as other checkers (using the
+\code{-processor} option; see Section~\ref{using-a-checker}), except that it
+requires an additional annotation processor argument via the standard
+``\code{-A}'' switch:
+
+\begin{itemize}
+
+\item
+\code{-Aquals}: this option specifies a comma-no-space-separated list of
+the fully-qualified class
+names of the annotations used as qualifiers in the custom type system.
+%
+It serves the same purpose as the \code{@\refclass{quals}{TypeQualifiers}}
+annotation used by other checkers (see section
+\ref{writing-compiler-interface}).
+
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled before you run the Basic checker with \code{javac}; it
+is not sufficient to supply their source files on the command line.
+
+\end{itemize}
+
+To suppress a warning issued by the basic checker, use a 
+\code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
+annotation, with the argument being the unqualified, uncapitalized name of
+any of the annotations passed to \code{-Aquals}.
+
+
+\subsection{Basic checker example\label{basic-example}}
+
+Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
+representation of an object (such as a \code{String}, \code{CharSequence}, or
+\code{byte[]}) is encrypted. To use the Basic checker for the \code{Encrypted}
+type system, follow three steps.
+
+\begin{enumerate}
+\item
+ Define an annotation for the \code{Encrypted} qualifier:
+
+\begin{Verbatim}
+package myquals;
+
+import checkers.quals.*;
+
+/**
+ * Denotes that the representation of an object is encrypted.
+ * ...
+ */
+@TypeQualifier
+@SubtypeOf(Unqualified.class)
+public @interface Encrypted {}
+\end{Verbatim}
+
+Don't forget to compile this class:
+
+\begin{Verbatim}
+$ javac myquals/Encrypted.java
+\end{Verbatim}
+
+The resulting \<.class> file should either be on your classpath, or on the
+processor path (set via the \<-processorpath> command-line option to javac).
+
+\item 
+  Write \code{@Encrypted} annotations in your program:
+
+\begin{Verbatim}
+import myquals.Encrypted;
+
+...
+
+public @Encrypted String encrypt(String text) {
+    // ...
+}
+
+// Only send encrypted data!
+public void sendOverInternet(@Encrypted String msg) {
+    // ...
+}
+
+void sendText() {
+    // ...
+    @Encrypted String ciphertext = encrypt(plaintext);
+    sendOverInternet(ciphertext);
+    // ...
+}
+
+void sendPassword() {
+    String password = getUserPassword();
+    sendOverInternet(password);
+}
+\end{Verbatim}
+
+You may also need to add \code{@SuppressWarnings} annotations to the
+\code{encrypt} and \code{decrypt} methods.
+
+\item
+  Invoke the compiler with the Basic checker, specifying the
+  \code{@Encrypted} annotation using the \code{-Aquals} option:
+
+\begin{Verbatim}
+$ javac -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted YourProgram.java
+
+YourProgram.java:42: incompatible types.
+found   : java.lang.String
+required: @myquals.Encrypted java.lang.String
+    sendOverInternet(password);
+                     ^
+\end{Verbatim}
+
+\end{enumerate}
+
+
+% LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
+% LocalWords:  CharSequence classpath nullness quals SuppressWarnings
+% LocalWords:  uncapitalized

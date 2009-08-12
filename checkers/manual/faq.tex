@@ -1,0 +1,236 @@
+\section{Frequently Asked Questions (FAQs)\label{faq}}
+
+These are some common questions about the Checker Framework and about
+pluggable type-checking in general.  Feel free to suggest improvements to
+the answers, or other questions to include here.
+
+There is a separate FAQ for the type annotations syntax
+(\url{http://types.cs.washington.edu/jsr308/jsr308-faq.html}).
+
+
+% This FAQ also appears in the JSR 308 FAQ.
+\subsection{Are type annotations easy to read and write?}
+
+The paper
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
+  pluggable types for Java}~\cite{PapiACPE2008} discusses case studies in
+which programmers
+found type annotations to be natural to read and write.  The code
+continued to feel like Java, and the type-checking errors were easy to
+comprehend and often led to real bugs.
+
+You don't have to take our word for it, though.  You can try the
+Checker Framework for yourself.
+
+The difficulty of adding and verifying annotations depends on your program.
+If your program is well-designed and -documented, then skimming the
+existing documentation and writing type annotations is extremely easy.
+Otherwise, you may find yourself spending a lot of time trying to
+understand, reverse-engineer, or fix bugs in your program, and then just a
+moment writing a type annotation that describes what you discovered.  This
+process inevitably improves your code.  You must decide whether it is a
+good use of your time.  For code that is not causing trouble now and is
+unlikely to do so in the future (the code is bug-free, and you do not
+anticipate changing it or using it in new contexts), then the
+effort of writing type annotations for it may not be justified.
+
+
+% This FAQ also appears in the JSR 308 FAQ.
+\subsection{Will my code become cluttered with type annotations?}
+
+As with any language feature, it is possible to write ugly code that
+over-uses annotations.  However, in normal use, very few annotations need
+to be written.  Figure 1 of the paper
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
+  pluggable types for Java}~\cite{PapiACPE2008} reports data for over
+350,000 lines of type-annotated code:
+
+\begin{itemize}
+\item
+    1 annotation per 62 lines for nullness annotations (\<@NonNull>, \<@Nullable>, etc.)
+    % (/ (+ 4640 3961 10798) (+ 107 35 167))
+\item
+    1 annotation per 1736 lines for interning annotations (\<@Interned>)
+    % (/ 224048 129)
+\item
+    1 annotation per 27 lines for immutability annotations (IGJ type system)
+    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
+\end{itemize}
+
+Furthermore, these numbers are for annotating existing code.  New code that
+is written with the type annotation system in mind is cleaner and more
+correct, so it requires even fewer annotations.
+
+In other words, annotations do not clutter code, and they are used much
+less frequently than generic types, which Java programmers find acceptable.
+
+
+\subsection{Can a pluggable type-checker give an absolute guarantee of correctness?}
+
+Each checker looks for certain errors.  You can use multiple checkers, but
+even then your program might still contain other kinds of errors.
+
+If you run a pluggable checker on only part of the code of a program, then
+you do not get a guarantee that all parts of the program satisfy the type
+system (that is, are error-free).  An example is a framework that clients
+are intended to extend.  In this case, you should recommend that clients
+run the pluggable checker.  There is no way to force users to do so, so you
+may want to retain dynamic checks or use other mechanisms to detect errors.
+
+There are other circumstances in which a static type-checker may fail to
+detect a possible type error.  In Java, these include arrays, casts, raw
+types, reflection, separate compilation (bytecodes from unverified sources),
+native code, etc.  (For details, see section~\ref{checker-guarantees}.)
+Java uses dynamic checks for most of these, so that the
+type error cannot cause a security vulnerability or a crash.  The pluggable
+type-checkers inherit many (not all) of these weaknesses of Java
+type-checking, but do not currently have built-in dynamic checkers.
+Writing dynamic checkers would be an interesting and valuable project.
+
+% This paragraph is weak.
+
+Even if a tool such as a pluggable checker cannot give an ironclad
+guarantee of correctness, it is still useful.  It can finding errors, 
+excluding certain types of possible problems (e.g., restricting the
+possible class of problems), and increasing confidence in a piece of
+software.
+
+
+\subsection{When should I use type qualifiers, and when should I use subclasses?}
+
+In brief, use subtypes when you can, and use type qualifiers when you cannot
+use subtypes.
+For more details, see section~\ref{when-to-use-type-qualifiers}.
+
+
+\subsection{How do I create a new checker?}
+
+In addition to using the checkers that are distributed with the Checker
+Framework, you can write your own checker to check specific properties that
+you care about.  Thus, you can find and prevent the bugs that are most
+important to you.
+
+Section~\ref{writing-a-checker} gives
+complete details regarding how to write a checker.  It also suggests places
+to look for more help, such as the \ahref{current/doc/}{Checker Framework
+API documentation (Javadoc)} and the source code of the distributed
+checkers.
+
+To whet your interest and demonstrate how easy it is to get started, here
+is an example of a complete, useful type checker.
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf(Unqualified.class)
+  public @interface Encrypted { }
+\end{Verbatim}
+
+Section~\ref{basic-example} explains this checker and tells
+you how to run it.
+
+
+
+\subsection{Why not just use a bug detector (like FindBugs)?}
+
+Pluggable type-checking finds more bugs than a bug detector does, for any
+given variety of bug.
+
+A bug detector like \ahref{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2006},
+\ahref{http://artho.com/jlint/}{JLint}~\cite{Artho2001}, or
+\ahref{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
+of the most obvious bugs in your program.  It uses a lightweight analysis,
+then uses heuristics to discard some of its warnings.  Thus, even if the tool
+prints no warnings, your code might still have errors --- maybe the
+analysis was too weak to find them, or the tool's heuristics classified the
+warnings as likely false positives and discarded them.
+
+A type checker aims to find \emph{all} the bugs (of certain varieties).
+It requires you to write type qualifiers in your program, or to use a tool
+that infers types.  Thus, it requires more work from the programmer, and in
+return it gives stronger guarantees.
+
+Each tool is useful in different circumstances, depending on how important
+your code is and your desired level of confidence in your code.  For more
+details on the comparison, see section~\ref{other-tools}.  For a case study
+that compared the nullness analysis of FindBugs, JLint, PMD, and the
+Checker Framework, see section 6 of the paper
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
+
+
+\subsection{How does pluggable type-checking compare with JML?}
+
+\ahref{http://www.cs.ucf.edu/~leavens/JML/}{JML}, the Java Modeling
+Language~\cite{LeavensBR2006:JML}, is a language for writing formal
+specifications.  JML aims to be more expressive than pluggable
+type-checking.  JML is not as practical as pluggable type-checking.
+
+A programmer can write a JML specification that
+describes arbitrary facts about program behavior.  Then, the programmer can
+use formal reasoning or a theorem-proving tool to verify that the code
+meets the specification.  Run-time checking is also possible.
+By contrast, pluggable type-checking can express a more limited set of
+properties about your program.
+
+The JML toolset is less mature.  For instance, if your code uses
+generics or other features of Java 5, then you cannot use JML.  
+However, JML has a run-time checker, which the Checker Framework currently
+lacks.
+
+
+\subsection{Why is the type parameter to \<List> annotated as \<@NonNull>?}
+
+If you try to write \code{List<@Nullable Object>}, or to otherwise use
+certain collections (including \<AbstractCollection>, \<Collection>,
+\<List>, \<Map>, and \<Queue>), you will get a type error, because their
+type parameter is annotated as \<@NonNull>.
+
+This is in conformance with the Javadoc specification of those classes.
+The Javadoc contains text such as:
+
+\begin{quote}
+  Some list implementations have restrictions on the elements that they may
+  contain. For example, some implementations prohibit null elements,
+\end{quote}
+
+For example, calling this method might result in a null pointer exception:
+
+\begin{Verbatim}
+  static void addNull(List l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+The Checker Framework is designed to warn you whenever your code might
+throw a null pointer exception.  If you want to be safe, you will never put
+\<null> in a \<List> of unknown provenance, because that \<List> might not
+accept null.
+
+By contrast, this code is OK because \<ArrayList> is documented to support
+null elements:
+
+\begin{Verbatim}
+  static void addNull(ArrayList l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+If you know that any objects that can be passed as the parameter will
+definitely support null, then you can suppress the warning:
+
+\begin{Verbatim}
+  @SuppressWarnings("nullness:collection-typeargs")
+  static void addNull(List l) {
+    l.add(null);
+  }
+\end{Verbatim}
+
+\noindent
+You need to use \<@SuppressWarnings("nullness:collection-typeargs")>
+whenever you use a collection that may contain \<null> elements in
+contradiction to its documentation.  Fortunately, such uses are relatively
+rare.
+
+For more details, see Section~\ref{nullness-checker}.
+
+
+% LocalWords:  IGJ toolset
