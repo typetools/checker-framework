@@ -1,6 +1,17 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
 \begin{thebibliography}{GPB{\etalchar{+}}06}
 
+\bibitem[Art01]{Artho2001}
+Cyrille Artho.
+\newblock Finding faults in multi-threaded programs.
+\newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
+  2001.
+
+\bibitem[Cop05]{Copeland2005}
+Tom Copeland.
+\newblock {\em PMD Applied}.
+\newblock Centennial Books, November 2005.
+
 \bibitem[Cro06]{JSR198}
 Jose Cronembold.
 \newblock {JSR} 198: A standard extension {API} for {Integrated} {Development}
@@ -51,6 +62,20 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
   Lea.
 \newblock {\em Java Concurrency in Practice}.
 \newblock Addison-Wesley, 2006.
+
+\bibitem[HP04]{HovemeyerP2004}
+David Hovemeyer and William Pugh.
+\newblock Finding bugs is easy.
+\newblock In {\em Companion to Object-Oriented Programming Systems, Languages,
+  and Applications (OOPSLA 2004)}, pages 132--136, Vancouver, BC, Canada,
+  October~26--28, 2004.
+
+\bibitem[HSP05]{HovemeyerSP2006}
+David Hovemeyer, Jaime Spacco, and William Pugh.
+\newblock Evaluating and tuning a static analysis to find null pointer bugs.
+\newblock In {\em ACM SIGPLAN/SIGSOFT Workshop on Program Analysis for Software
+  Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon, Portugal,
+  September~5--6, 2005.
 
 \bibitem[LBR06]{LeavensBR2006:JML}
 Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.

@@ -399,8 +399,9 @@ cannot ever be null at run time.
 % assert or checking methods suppress warnings.
 
 
-To suppress warnings in the Nullness Checker, you can use 
+One way to suppress warnings in the Nullness Checker is to use
 method \code{swNonNull}.
+(Section~\ref{suppressing-warnings-with-assertions} gives other techniques.)
 
 This section explains why the Nullness Checker introduces a new  rather than re-using the \<assert> statement (as in
 \<assert x != null>) or an existing method such as:
