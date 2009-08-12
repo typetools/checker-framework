@@ -1,10 +1,8 @@
 syntax: glob
 
-# swap files
+# Emacs and other temporary files
 *~
 .#*
-
-# Emacs files
 TAGS
 
 # Eclipse files
@@ -50,3 +48,7 @@ manual004.png
 
 # release tmps
 tmp
+
+syntax: regexp
+# Not a glob because it starts with # which looks like a comment.
+(^|/)\#.*\#$
