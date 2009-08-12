@@ -341,7 +341,7 @@ not permit annotations to appear on statements.
 
 For situations when the \<@SuppressWarnings> annotation is inconvenient,
 the Nullness Checker provides two additional ways to suppress warnings:
-via an \<assert> statement or the \<swNonNull> method.  These are
+via an \<assert> statement or the \<castNonNull> method.  These are
 appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
@@ -374,14 +374,14 @@ cannot ever be null at run time.
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
 \item
-  Use the \refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} method.
+  Use the \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method.
 
   TODO:  copy text from its documentation.
 
-  A potential disadvantage of using the \<swNonNull> method is that your
+  A potential disadvantage of using the \<castNonNull> method is that your
   code becomes dependent on the Checker Framework at run time as well as at
   compile time.  You can avoid this by copying the implementation of
-  \<swNonNull> into your own code, and possibly renaming it if you do not
+  \<castNonNull> into your own code, and possibly renaming it if you do not
   like the name.  Be sure to retain the documentation that indicates that
   your copy is intended for use only to suppress warnings and not for
   defensive programming.
@@ -400,7 +400,7 @@ cannot ever be null at run time.
 
 
 One way to suppress warnings in the Nullness Checker is to use
-method \code{swNonNull}.
+method \code{castNonNull}.
 (Section~\ref{suppressing-warnings-with-assertions} gives other techniques.)
 
 This section explains why the Nullness Checker introduces a new  rather than re-using the \<assert> statement (as in
@@ -464,18 +464,18 @@ Nullness Checker warnings would be suppressed.
 
 Because it is important to distinguish between the two uses of assertions
 (defensive programming vs.~suppressing warnings), the Checker Framework
-introduces the \refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} method.
+introduces the \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method.
 Unlike existing assertions and
-methods, \<swNonNull> is intended only to suppress false warnings that are
+methods, \<castNonNull> is intended only to suppress false warnings that are
 issued by the Nullness Checker, not for defensive programming.
 
 If you know that a particular codebase uses the \<assert> statement or a
 nullness-checking method not for defensive programming but to indicate
 facts that are guaranteed to be true (that is, these assertions will never
 fail at run time), then you can cause the Nullness Checker to suppress
-warnings related to them, just as it does for \<swNonNull>.  For a
+warnings related to them, just as it does for \<castNonNull>.  For a
 method, annotate its definition just as
-\refmethod{nullness}{NullnessUtils}{swNonNull}{(T)} is annotated (see the
+\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} is annotated (see the
 source code for the Checker Framework).
 % TODO:
 % For an assert statement, XXXXX.
@@ -780,4 +780,4 @@ at the client use.  For example:
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
 % LocalWords:  inferencer utilMDE Nonnull CheckForNull UnknownNullness rawtypes
-% LocalWords:  swNonNull NullnessUtils assertNotNull codebases checkNotNull
+% LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
