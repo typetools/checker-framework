@@ -1,3 +1,14 @@
+Version 0.9.7, 12 Aug 2009
+
+Functionality
+  Changed swNonNull to castNonNull
+  nullness: Improved flow to infer nullness based on method invocations
+  locking: Permitted @Holding to appear on constructors
+
+Bug fixes
+  Fixed a bug related to typevar and wildcard extends clauses
+
+----------------------------------------------------------------------
 Version 0.9.6, 29 Jul 2009
 
 Functionality

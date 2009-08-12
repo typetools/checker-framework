@@ -137,18 +137,19 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="docs" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
-	      classpath="${compiler.lib}:${java.home}/../lib/tools.jar"
+	      classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
 	      classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
             <arg line="src/checkers/util/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
-          classpath="${build}:${compiler.lib}"
+		 executable="../langtools/dist/bin/javadoc"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
-          bootclasspath="${compiler.lib}:${java.home}/lib/rt.jar">
+          bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
           <link href="http://java.sun.com/javase/6/docs/api/"/>
           <link href="http://java.sun.com/javase/6/docs/jdk/api/javac/tree/"/>
