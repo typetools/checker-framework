@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * @see GuardedBy
  */
 @Documented
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Holding {
     String[] value();
