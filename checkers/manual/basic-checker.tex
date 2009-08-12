@@ -70,6 +70,8 @@ type system, follow three steps.
 \begin{Verbatim}
 package myquals;
 
+import checkers.quals.*;
+
 /**
  * Denotes that the representation of an object is encrypted.
  * ...
@@ -79,10 +81,20 @@ package myquals;
 public @interface Encrypted {}
 \end{Verbatim}
 
+Don't forget to compile this class:
+
+\begin{Verbatim}
+$ javac myquals/Encrypted.java
+\end{Verbatim}
+
 \item 
   Write \code{@Encrypted} annotations in your program:
 
 \begin{Verbatim}
+import myquals.Encrypted;
+
+...
+
 public @Encrypted String encrypt(String text) {
     // ...
 }
