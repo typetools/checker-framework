@@ -28,23 +28,23 @@ public final class NullnessUtils {
      * have the @NonNull type qualifier, and returns it.  The Nullness
      * Checker considers both the return value, and also the argument, to
      * be non-null after the method call.  Therefore, the
-     * <tt>swNonNull</tt> method can be used either as a cast expression or
+     * <tt>castNonNull</tt> method can be used either as a cast expression or
      * as a statement.  The Nullness Checker issues no warnings in any of
      * the following code:
      *
      * <pre>
      *   // one way to use as a cast:
-     *   &#64;NonNull String s = swNonNull(possiblyNull1);
+     *   &#64;NonNull String s = castNonNull(possiblyNull1);
      *
      *   // another way to use as a cast:
-     *   swNonNull(possiblyNull2).toString();
+     *   castNonNull(possiblyNull2).toString();
      *
      *   // one way to use as a statement:
-     *   swNonNull(possiblyNull3);
+     *   castNonNull(possiblyNull3);
      *   possiblyNull3.toString();`
      * </pre>
      *
-     * The <tt>swNonNull</tt> method is intended to be used in situations
+     * The <tt>castNonNull</tt> method is intended to be used in situations
      * where the programmer definitively knows that a given reference is
      * not null, but the type system is unable to make this deduction.  It
      * is not intended for defensive programming, in which a programmer
@@ -64,8 +64,8 @@ public final class NullnessUtils {
      */
     @SuppressWarnings("nullness")
     @AssertNonNull
-    public <T extends @Nullable Object> @NonNull T swNonNull(T ref) {
-        assert ref != null : "misuse of swNonNull, which should never be called on a null argument";
+    public <T extends @Nullable Object> @NonNull T castNonNull(T ref) {
+        assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (@NonNull T)ref;
     }
 }
