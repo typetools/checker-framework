@@ -125,10 +125,11 @@ You may also need to add \code{@SuppressWarnings} annotations to the
 
 \item
   Invoke the compiler with the Basic checker, specifying the
-  \code{@Encrypted} annotation using the \code{-Aquals} option:
+  \code{@Encrypted} annotation using the \code{-Aquals} option.
+  You should add the \code{Encrypted} classfile in the processor classpath:
 
 \begin{Verbatim}
-$ javac -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted YourProgram.java
+$ javac -processorpath myqualspath -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted YourProgram.java
 
 YourProgram.java:42: incompatible types.
 found   : java.lang.String
