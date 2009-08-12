@@ -19,7 +19,7 @@
             <arg value="${targettype.scene-lib.dir}/TargetType.java"/>
             <arg value="${targettype.langtools.dir}/TargetType.java"/>
             <arg line="-I '^package'"/>
-	    <arg line="-I '^import'"/>
+            <arg line="-I '^import'"/>
             <arg line="-w"/>
         </exec>
 -->
@@ -34,8 +34,8 @@
            <target name="clean"/>
             <target name="build-javac"/>
             <target name="build-javap"/>
-	    <target name="build-javadoc"/>
-	    <target name="build-doclets"/>
+            <target name="build-javadoc"/>
+            <target name="build-doclets"/>
         </ant>
     </target>
 
@@ -47,7 +47,7 @@
             <target name="dist"/>
             <target name="docs"/>
             <target name="all-tests"/>
-	    <target name="bindist"/>
+            <target name="bindist"/>
         </ant>
     </target>
 
@@ -145,10 +145,10 @@
         </copy>
 
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
-	    <fileset dir="${checkers}/doc">
+            <fileset dir="${checkers}/doc">
                 <include name="**" />
             </fileset>
-	</copy>
+        </copy>
     </target>
 
 
