@@ -31,9 +31,11 @@
     <target name="-prep-build-langtools">
         <!-- Runs "ant clean build-javac build-javap" for langtools. -->
         <ant antfile="make/build.xml" dir="${langtools}">
-            <target name="clean"/>
+           <target name="clean"/>
             <target name="build-javac"/>
             <target name="build-javap"/>
+	    <target name="build-javadoc"/>
+	    <target name="build-doclets"/>
         </ant>
     </target>
 
@@ -45,11 +47,7 @@
             <target name="dist"/>
             <target name="docs"/>
             <target name="all-tests"/>
-        </ant>
-
-        <ant dir="${checkers}/binary" inheritAll="false">
-            <target name="clean"/>
-            <target name="dist"/>
+	    <target name="bindist"/>
         </ant>
     </target>
 
@@ -142,7 +140,7 @@
                 <include name="${langtools}/README-jsr308.html"/>
                 <include name="doc/Makefile-jsr308-install"/>
                 <include name="${checkers}/changelog-*.txt"/>
-                <include name="${langtools}/changelog-*.txt"/>
+                <include name="${langtools}/doc/changelog-*.txt"/>
             </fileset>
         </copy>
 
@@ -312,7 +310,7 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
     <target name="webpage" depends="update-versions,-prep-releasedir"
       description="makes the JSR 308 web page">
         <exec executable="make" dir="${doc}" failonerror="true" taskname="make">
-            <arg line="jsr308_www=${web.root.dir}"/>
+            <arg line="jsr308_www=${web.jsr308.root.dir}"/>
             <arg line="webpage"/>
             <env key="PERL5LIB" value="${perl5.lib}"/>
         </exec>
@@ -327,7 +325,7 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
             <fileset dir="${tmp.ver.dir}"/>
         </copy>
         <symlink overwrite="true"
-            link="${web.root.dir}/index.html"
+            link="${web.jsr308.root.dir}/index.html"
             resource="${webpage}"/>
     </target>
 

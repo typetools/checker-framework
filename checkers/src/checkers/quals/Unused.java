@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * }
  * </code></pre>
  *
- * The checker for @LocalToThread would issue an error for the following code:
+ * The checker for {@code @LocalToThread} would issue an error for the following code:
  *
  * <pre>  @LocalToThread Table table = ...;
  *   ... table.lock ...;
