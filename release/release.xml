@@ -19,7 +19,7 @@
             <arg value="${targettype.scene-lib.dir}/TargetType.java"/>
             <arg value="${targettype.langtools.dir}/TargetType.java"/>
             <arg line="-I '^package'"/>
-	    <arg line="-I '^import'"/>
+            <arg line="-I '^import'"/>
             <arg line="-w"/>
         </exec>
 -->
@@ -147,10 +147,10 @@
         </copy>
 
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
-	    <fileset dir="${checkers}/doc">
+            <fileset dir="${checkers}/doc">
                 <include name="**" />
             </fileset>
-	</copy>
+        </copy>
     </target>
 
 
