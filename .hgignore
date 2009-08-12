@@ -4,6 +4,7 @@ syntax: glob
 *~
 .#*
 TAGS
+*.orig
 
 # Eclipse files
 .metadata
