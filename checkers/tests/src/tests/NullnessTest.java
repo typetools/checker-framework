@@ -179,4 +179,6 @@ public class NullnessTest extends CheckerTest {
     @Test public void testSuperCall() { test(); }
 
     @Test public void testFindBugs() { test(); }
+
+    @Test public void testConditionalNullness() { test(); }
 }
