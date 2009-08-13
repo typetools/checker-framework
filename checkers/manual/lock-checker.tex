@@ -177,12 +177,12 @@ The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goe
 \end{itemize}
 
 One rationale for reusing the annotation name for both purposes in JCIP is
-simplicity:  there are fewer annotations to learn.  Another rationale is
+that there are fewer annotations to learn.  Another rationale is
 that both variables and methods are ``members'' that can be ``accessed'';
 variables can be accessed by reading or writing them (putfield, getfield),
 and methods can be accessed by calling them (invokevirtual,
-invokeinterface).  In both cases,
-\code{@GuardedBy} creates preconditions for accessing so-annotated members.
+invokeinterface).  In both cases, \code{@GuardedBy} creates preconditions
+for accessing so-annotated members.
 
 The Lock checker renames the method annotation to
 \code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
