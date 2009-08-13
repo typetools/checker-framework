@@ -32,6 +32,8 @@ other is a method annotation.
 \item[\code{@\refclass{lock/quals}{Holding}}]
   is a method annotation (not a  qualifier).  It indicates that when
   the method is called, the given lock must be held by the caller.
+  In other words, the given lock is already held at the time the method is
+  called.
 
 \end{description}
 
@@ -89,18 +91,22 @@ A parameter may be annotated with \code{@GuardedBy}:
 
     
 
-
+\subsubsection{Discussion of \<@Holding>}
 
 A programmer might choose to use the \code{@Holding} method annotation in
-two different ways.
-\begin{itemize}
-\item
+two different ways:  to specify a higher-level protocol, or to summarize
+intended usage.  Both of these approaches are useful, and the Lock checker
+supports both.
+
+\paragraph{Higher-level synchronization protocol}
+
   \code{@Holding} can specify a higher-level synchronization protocol that
   is not expressible as locks over Java objects.  By requiring locks to be
   held, you can create higher-level protocol primitives without giving up
   the benefits of the annotations and checking of them.
 
-\item
+\paragraph{Method summary that simplifies reasoning}
+
   \code{@Holding} can be a method summary that simplifies reasoning.  In
   this case, the \code{@Holding} doesn't necessarily introduce a new
   correctness constraint; the program might be correct even if the lock
@@ -111,10 +117,46 @@ two different ways.
   execution reaches this point, the following locks are already held.  This
   fact enables people and tools to reason intra- rather than
   inter-procedurally.
-\end{itemize}
+
+  In Java, it is always legal to re-acquire a lock that is already held,
+  and the re-acquisition always works.  Thus, whenever you write 
+
+\begin{Verbatim}
+  @Holding("myLock")
+  void myMethod() {
+    ...
+  }
+\end{Verbatim}
 
 \noindent
-Both of these approaches are useful, and the Lock checker supports both.
+it would be equivalent, from the point of view of which locks are held
+during the body, to write
+
+\begin{Verbatim}
+  void myMethod() {
+    synchronized (myLock) {   // no-op:  re-aquire a lock that is already held
+      ...
+    }
+  }
+\end{Verbatim}
+
+The advantages of the \<@Holding> annotation include:
+\begin{itemize}
+\item
+  The annotation documents the fact that the lock is intended to already be
+  held.
+\item
+  The Lock Checker enforces that the lock is held when the method is
+  called, rather than masking a programmer error by silently re-acquiring
+  the lock.
+\item
+  The \<synchronized> statement can deadlock if, due to a programmer error,
+  the lock is not already held.  The Lock Checker prevents this type of
+  error.
+\item
+  The annotation has no run-time overhead.  Even if the lock re-acquisition
+  succeeds, it still consumes time.
+\end{itemize}
 
 
 \subsubsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
