@@ -1,0 +1,5 @@
+To add a new file to the test suite, edit
+  ../src/tests/FlowTest.java
+
+To run the tests, do
+  ant -e -find build.xml flow-tests

@@ -1,0 +1,5 @@
+annotation-file-utilities/**
+eclipse/**
+specification/**
+*.html
+*.pdf
