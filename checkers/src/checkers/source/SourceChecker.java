@@ -269,7 +269,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         annotation with the key returned by {@link
      *         SourceChecker#getSuppressWarningsKey}
      */
-    private boolean checkSuppressWarnings(List<? extends AnnotationMirror> annos) {
+    private boolean checkSuppressWarnings(List<? extends AnnotationMirror> annos, String err) {
 
         Collection<String> swkeys = this.getSuppressWarningsKey();
 
@@ -289,9 +289,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // true if it contains the SuppressWarnings key.
             @Nullable List<String> vals = AnnotationUtils.parseStringArrayValue(am, "value");
             if (vals != null)
-                for (String swkey : swkeys)
-                    if (vals.contains(swkey))
+                for (String swkey : swkeys) {
+                    if (vals.contains(swkey) || vals.contains(swkey + ":" + err))
                         return true;
+                }
         }
 
         return false;
@@ -308,7 +309,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         it is contained by a method with an appropriately-valued
      *         @SuppressWarnings annotation; false otherwise
      */
-    private boolean shouldSuppressWarnings(Tree tree) {
+    private boolean shouldSuppressWarnings(Tree tree, String err) {
 
         // Don't suppress warnings if there's no key.
         Collection<String> swKeys = this.getSuppressWarningsKey();
@@ -320,27 +321,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             return false;
 
         @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var)))
+        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err))
             return true;
 
         @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
-        if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method)))
+        if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method), err))
             return true;
 
         @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
-        if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls)))
+        if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls), err))
             return true;
 
         return false;
     }
 
-    private boolean shouldSuppressWarnings(@Nullable Element elt) {
+    private boolean shouldSuppressWarnings(@Nullable Element elt, String err) {
 
         if (elt == null)
             return false;
 
-        return checkSuppressWarnings(elt.getAnnotationMirrors()) ||
-            shouldSuppressWarnings(elt.getEnclosingElement());
+        return checkSuppressWarnings(elt.getAnnotationMirrors(), err) ||
+            shouldSuppressWarnings(elt.getEnclosingElement(), err);
     }
 
     /**
@@ -355,10 +356,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     public void report(final Result r, final Object src) {
 
+        String err = r.getMessageKeys().iterator().next();
         // TODO: SuppressWarnings checking for Elements
-        if (src instanceof Tree && shouldSuppressWarnings((Tree)src))
+        if (src instanceof Tree && shouldSuppressWarnings((Tree)src, err))
             return;
-        if (src instanceof Element && shouldSuppressWarnings((Element)src))
+        if (src instanceof Element && shouldSuppressWarnings((Element)src, err))
             return;
 
         if (r.isSuccess())
