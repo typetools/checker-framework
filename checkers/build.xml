@@ -146,7 +146,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
         </java>
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
-		 executable="../langtools/dist/bin/javadoc"
+		 executable="../../jsr308-langtools/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
