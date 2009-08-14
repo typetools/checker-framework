@@ -385,7 +385,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     /**
      * Split the bitset before a conditional branch.
      */
-    void split() {
+    protected void split() {
         annosWhenFalse = GenKillBits.copy(annos);
         annosWhenTrue = annos;
         annos = null;
@@ -394,7 +394,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     /**
      * Merge the bitset after a conditional branch.
      */
-    void merge() {
+    protected void merge() {
         annos = GenKillBits.copy(annos);
         annos.and(annosWhenFalse);
         annosWhenTrue = annosWhenFalse = null;
@@ -682,21 +682,27 @@ public class Flow extends TreePathScanner<Void, Void> {
         return false;
     }
 
+    protected void pushNewLevel() { }
+    protected void popLastLevel() { }
+
     @Override
     public Void visitAssert(AssertTree node, Void p) {
         boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey());
         GenKillBits<AnnotationMirror> annosAfterAssert = GenKillBits.copy(annos);
+        pushNewLevel();
         scanCond(node.getCondition());
         if (inferFromAsserts)
             annosAfterAssert = GenKillBits.copy(annosWhenTrue);
         annos = GenKillBits.copy(annosWhenFalse);
         scanExpr(node.getDetail());
         annos = annosAfterAssert;
+        popLastLevel();
         return null;
     }
 
     @Override
     public Void visitIf(IfTree node, Void p) {
+        pushNewLevel();
         scanCond(node.getCondition());
 
         GenKillBits<AnnotationMirror> before = annosWhenFalse;
@@ -705,6 +711,8 @@ public class Flow extends TreePathScanner<Void, Void> {
         boolean aliveBefore = alive;
 
         scanStat(node.getThenStatement());
+        popLastLevel();
+        pushNewLevel();
         StatementTree elseStmt = node.getElseStatement();
         if (elseStmt != null) {
             boolean aliveAfter = alive;
@@ -724,6 +732,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             else
                 annos.and(before);
         }
+        popLastLevel();
 
         return null;
     }
@@ -838,8 +847,10 @@ public class Flow extends TreePathScanner<Void, Void> {
     tryBits.push(GenKillBits.copy(annos));
     scan(node.getBlock(), p);
     GenKillBits<AnnotationMirror> annoAfterBlock = GenKillBits.copy(annos);
+    pushNewLevel();
     GenKillBits<AnnotationMirror> result = tryBits.pop();
     annos.and(result);
+    popLastLevel();
     if (node.getCatches() != null) {
         boolean catchAlive = false;
         for (CatchTree ct : node.getCatches()) {
@@ -886,12 +897,14 @@ public class Flow extends TreePathScanner<Void, Void> {
     @Override
     public Void visitBlock(BlockTree node, Void p) {
         if (node.isStatic()) {
+            pushNewLevel();
             GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
             try {
                 super.visitBlock(node, p);
                 return null;
             } finally {
                 annos = prev;
+                popLastLevel();
             }
         }
         return super.visitBlock(node, p);
@@ -907,11 +920,13 @@ public class Flow extends TreePathScanner<Void, Void> {
 
         // Intraprocedural, so save and restore bits.
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
+        pushNewLevel();
         try {
             super.visitMethod(node, p);
             return null;
         } finally {
             annos = prev;
+            popLastLevel();
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }

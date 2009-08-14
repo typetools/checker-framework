@@ -40,6 +40,7 @@ class NullnessFlow extends Flow {
 
     private final AnnotationMirror POLYNULL, RAW, NONNULL;
     private boolean isNullPolyNull;
+    private List<String> nnExprs, nnExprsWhenTrue, nnExprsWhenFalse;
     private final AnnotatedTypeFactory rawFactory;
 
     /**
@@ -58,6 +59,8 @@ class NullnessFlow extends Flow {
         NONNULL = factory.NONNULL;
         isNullPolyNull = false;
         this.rawFactory = factory.rawnessFactory;
+        nnExprs = new ArrayList<String>();
+        nnExprsWhenTrue = nnExprsWhenFalse = null;
     }
 
     /**
@@ -79,6 +82,34 @@ class NullnessFlow extends Flow {
         }
     }
 
+    @Override
+    protected void split() {
+        super.split();
+        nnExprsWhenFalse = new ArrayList<String>(nnExprs);
+        nnExprsWhenTrue = nnExprs;
+//        nnExprs = null;
+    }
+
+    @Override
+    protected void merge() {
+        super.merge();
+        nnExprs = new ArrayList<String>(nnExprs);
+        nnExprs.retainAll(nnExprsWhenFalse);
+        nnExprsWhenTrue = nnExprsWhenFalse = null;
+    }
+
+    private Stack<List<String>> levelnnExprs = new Stack<List<String>>();
+
+    @Override
+    protected void pushNewLevel() {
+        levelnnExprs.push(nnExprs);
+        nnExprs = new ArrayList<String>();
+    }
+
+    @Override
+    protected void popLastLevel() {
+        nnExprs = levelnnExprs.pop();
+    }
     @Override
     protected void scanCond(Tree tree) {
         super.scanCond(tree);
@@ -113,6 +144,7 @@ class NullnessFlow extends Flow {
         }
 
         isNullPolyNull = conds.isNullPolyNull;
+        nnExprsWhenTrue.addAll(conds.nonnullExpressions);
     }
 
     @Override
@@ -137,6 +169,7 @@ class NullnessFlow extends Flow {
         private BitSet nonnull = new BitSet(0);
         private BitSet nullable = new BitSet(0);
         public boolean isNullPolyNull = false;
+        public List<String> nonnullExpressions = new LinkedList<String>();
 
         private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
@@ -194,6 +227,7 @@ class NullnessFlow extends Flow {
                 nullable.clear();
             }
             isNullPolyNull = false;
+            nnExprs = new ArrayList<String>();
 
             // the false branch of a logic complement of instance is nonnull!
             if (TreeUtils.skipParens(node.getExpression()).getKind() == Tree.Kind.INSTANCE_OF) {
@@ -264,7 +298,7 @@ class NullnessFlow extends Flow {
                     record(e, node);
                     return super.visitMemberSelect(node, p);
                 }
-                
+
             }.scan(right, null);
 
             nonnull = (BitSet)nonnullOld.clone();
@@ -278,6 +312,7 @@ class NullnessFlow extends Flow {
             } else {
                 nonnullSplit.or(nonnull);
                 nullableSplit.or(nullable);
+                nnExprs.clear();
             }
 
             nonnull = nonnullOld;
@@ -399,6 +434,9 @@ class NullnessFlow extends Flow {
             assert e instanceof VariableElement;
             if (!vars.contains(e))
                 vars.add((VariableElement) e);
+            if (nnExprs.contains(node.toString())) {
+                markTree(node, NONNULL);
+            }
             return super.visitMemberSelect(node, p);
         }
 
@@ -414,6 +452,30 @@ class NullnessFlow extends Flow {
             visit(node.getExpression(), p);
             return null;
         }
+
+        private String receiver(MethodInvocationTree node) {
+            ExpressionTree sel = node.getMethodSelect();
+            if (sel.getKind() == Tree.Kind.IDENTIFIER)
+                return "";
+            else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
+                return ((MemberSelectTree)sel).getExpression().toString() + ".";
+            throw new AssertionError("Cannot be here");
+        }
+
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+            super.visitMethodInvocation(node, p);
+
+            ExecutableElement method = TreeUtils.elementFromUse(node);
+            if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
+                AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
+                String receiver = receiver(node);
+                for (String s : anno.value()) {
+                    this.nonnullExpressions.add(receiver + s);
+                }
+            }
+            return null;
+        }
     }
 
     @Override
@@ -422,10 +484,22 @@ class NullnessFlow extends Flow {
         super.visitMemberSelect(node, p);
 
         inferNullness(node.getExpression());
+        if (nnExprs.contains(node.toString())) {
+            markTree(node, NONNULL);
+        }
 
         return null;
     }
 
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+        super.visitIdentifier(node, p);
+        if (nnExprs.contains(node.toString())) {
+            markTree(node, NONNULL);
+        }
+
+        return null;
+    }
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
@@ -437,7 +511,7 @@ class NullnessFlow extends Flow {
             for (ExpressionTree arg : node.getArguments())
                 inferNullness(arg);
         }
-        
+
         AnnotatedExecutableType methodType = factory.getAnnotatedType(method);
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = node.getArguments();
@@ -453,7 +527,18 @@ class NullnessFlow extends Flow {
                 && prev.get(NONNULL, i))
                 annos.set(NONNULL, i);
         }
+
+        if (nnExprs.contains(node.toString())) {
+            markTree(node, NONNULL);
+        }
+
         return null;
+    }
+
+    private void markTree(Tree node, AnnotationMirror anno) {
+        long pos = source.getStartPosition(root, node);
+        Location loc = new Location(pos, node);
+        flowResults.put(loc, anno);
     }
 
     @Override
@@ -461,9 +546,7 @@ class NullnessFlow extends Flow {
         super.visitLiteral(node, p);
 
         if (isNullPolyNull && node.getKind() == Tree.Kind.NULL_LITERAL) {
-            long pos = source.getStartPosition(root, node);
-            Location loc = new Location(pos, node);
-            flowResults.put(loc, POLYNULL);
+            markTree(node, POLYNULL);
         }
         return null;
     }
