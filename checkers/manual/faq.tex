@@ -177,10 +177,11 @@ However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 
 
-\subsection{Why is the type parameter to \<List> annotated as \<@NonNull>?}
+\subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?}
 
-If you try to write \code{List<@Nullable Object>}, or to otherwise use
-certain collections (including \<AbstractCollection>, \<Collection>,
+If you try to write \code{List<@Nullable Object>}, or to use a nullable
+type parameter to 
+certain other collections (including \<AbstractCollection>, \<Collection>,
 \<List>, \<Map>, and \<Queue>), you will get a type error, because their
 type parameter is annotated as \<@NonNull>.
 
@@ -213,6 +214,10 @@ null elements:
     l.add(null);
   }
 \end{Verbatim}
+
+A similar argument applies to \<Map>.
+For example, \<ConcurrentHashMap> and \<Hashtable> implement \<Map> but do
+not permit \<null> to be used as a key or value.
 
 If you know that any objects that can be passed as the parameter will
 definitely support null, then you can suppress the warning:
