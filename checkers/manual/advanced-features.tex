@@ -108,7 +108,7 @@ qualifier for the Nullness type system:
 A method written using a polymorphic qualifier conceptually has multiple
 versions, somewhat like a template in C++.  In each version, the
 polymorphic qualifier has been replaced by another qualifier from the
-hierarchy.  See the examples in Section~\ref{qualifier-polymorphism-examples}.
+hierarchy.  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
 
 The method body must type-check with all signatures.  A method call is
 type-correct if it type-checks under any signature.
@@ -195,6 +195,23 @@ Most frequently, the polymorphic qualifier appears on both the return type
 and at least one formal parameter.  It can also be useful to have
 polymorphic qualifiers on (only) multiple formal parameters, especially if
 the method side-effects one of its arguments.
+For example, consider
+
+\begin{Verbatim}
+void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+\noindent
+In this case, if it is acceptable to rewrite your code to use Java
+generics, the code can be even cleaner:
+
+\begin{Verbatim}
+<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
 
 
 %% It would be nice to give an example that isn't too contrived.
