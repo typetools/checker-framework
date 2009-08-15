@@ -14,7 +14,7 @@
     <property name="build.tests" value="tests/build"/>
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
-    <property name="dist.file" value="checkers.jar"/>
+    <property name="checkers.jar.file" value="checkers.jar"/>
     <property name="dist.annos.file" value="checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javari.jdk.src" value="jdk/javari/src"/>
@@ -67,7 +67,7 @@
     <target name="clean" description="Remove generated files">
         <delete dir="${build}"/>
         <delete dir="${dist.doc}"/>
-        <delete file="${dist.file}"/>
+        <delete file="${checkers.jar.file}"/>
         <delete file="${dist.annos.file}"/>
         <delete dir="${temp.dir}"/>
         <delete file="${bindist.file}"/>
@@ -158,14 +158,17 @@ ${build.version} of the 'javac.jar' library."/>
         </javadoc>
     </target>
 
+    <target name="dist" depends="jar,bindist">
+    </target>
+
     <!-- This creates checkers.jar -->
-    <target name="dist" depends="build,dist-qualifiers"
+    <target name="jar" depends="build,checkers-quals-jar"
             description="Create jar file">
-        <jar destfile="${dist.file}" basedir="${build}"/>
+        <jar destfile="${checkers.jar.file}" basedir="${build}"/>
     </target>
 
     <!-- This creates checkers-quals.jar -->
-    <target name="dist-qualifiers" depends="build"
+    <target name="checkers-quals-jar" depends="build"
             description="Create a jar file for annotations">
         <jar destfile="${dist.annos.file}" basedir="${build}"
              includes="**/quals/*"/>
@@ -208,7 +211,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="-run-tests" description="Generalized test runner">
         <java fork="${run.tests.should.fork}"
 	      failonerror="true"
-	      classpath="${compiler.lib}:${dist.file}:${build.tests}:${tests.junit}:${build}"
+	      classpath="${compiler.lib}:${checkers.jar.file}:${build.tests}:${tests.junit}:${build}"
 	      classname="org.junit.runner.JUnitCore">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <jvmarg line="-ea"/>
@@ -223,14 +226,14 @@ ${build.version} of the 'javac.jar' library."/>
       depends="basic-tests,flow-tests,framework-tests,igj-tests,interning-tests,javari-tests,nullness-tests"
       description="Run tests for all checkers"/>
 
-    <target name="annotation-builder-tests" depends="dist,build-tests"
+    <target name="annotation-builder-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.AnnotationBuilderTest"/>
         </antcall>
     </target>
 
-    <target name="basic-tests" depends="dist,build-tests"
+    <target name="basic-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.BasicEncryptedTest"/>
@@ -240,42 +243,42 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="flow-tests" depends="dist,build-tests"
+    <target name="flow-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.FrameworkTest"/>
         </antcall>
     </target>
 
-    <target name="framework-tests" depends="dist,build-tests"
+    <target name="framework-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.FrameworkTest"/>
         </antcall>
     </target>
 
-    <target name="javari-tests" depends="dist,build-tests"
+    <target name="javari-tests" depends="jar,build-tests"
       description="Run tests for the Javari checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.JavariTest"/>
         </antcall>
     </target>
 
-    <target name="nullness-tests" depends="dist,build-tests"
+    <target name="nullness-tests" depends="jar,build-tests"
       description="Run tests for the Nullness checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessTest"/>
         </antcall>
     </target>
 
-    <target name="interning-tests" depends="dist,build-tests"
+    <target name="interning-tests" depends="jar,build-tests"
       description="Run tests for the Interning checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.InterningTest"/>
         </antcall>
     </target>
 
-    <target name="igj-tests" depends="dist,build-tests"
+    <target name="igj-tests" depends="jar,build-tests"
       description="Run tests for the IGJ checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IGJTest"/>
@@ -284,8 +287,8 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Type Check the Checkers -->
 
-    <!-- depends on dist, needs classfile of the checker itself -->
-    <target name="-run-checker" depends="dist"
+    <!-- depends on jar, needs classfile of the checker itself -->
+    <target name="-run-checker" depends="jar"
             description="Run Nullness checker on Checker Framework">
         <pathconvert pathsep=" " property="src.files">
             <path>
@@ -298,7 +301,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
 	      failonerror="true"
-	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${dist.file}"
+	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${checkers.jar.file}"
 	      classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -352,7 +355,7 @@ ${build.version} of the 'javac.jar' library."/>
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
     </target>
 
-    <target name="bindist" depends="-prep-bindist,dist"
+    <target name="bindist" depends="-prep-bindist,jar"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
