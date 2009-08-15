@@ -10,10 +10,11 @@ import checkers.nullness.NullnessChecker;
  * are non-null.
  * <p>
  *
- * For instance, {@link File#list()} is non-null if {@link File#isDirectory()}
- * is true; so you can express this relationship as:
+ * For instance, if {@link File#isDirectory()} is true, then {@link
+ * File#list()} is non-null, and {@link File#listFiles()} is non-null.  You
+ * can express this relationship as:
  *
- * <pre><code>   @AssertNonNullIfTrue("list()")
+ * <pre><code>   @AssertNonNullIfTrue({"list()","listFiles()"})
  *   public boolean isDirectory() { ... }
  * </code></pre>
  * <p>
