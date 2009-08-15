@@ -28,6 +28,7 @@ public class File implements java.io.Serializable, java.lang.Comparable<java.io.
   public boolean canRead() { throw new RuntimeException("skeleton method"); }
   public boolean canWrite() { throw new RuntimeException("skeleton method"); }
   public boolean exists() { throw new RuntimeException("skeleton method"); }
+  @AssertNonNullIfTrue({"list()","listFiles()"})
   public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
   public boolean isFile() { throw new RuntimeException("skeleton method"); }
   public boolean isHidden() { throw new RuntimeException("skeleton method"); }
