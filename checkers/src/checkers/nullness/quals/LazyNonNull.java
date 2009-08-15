@@ -27,6 +27,9 @@ import checkers.quals.TypeQualifier;
  * external method calls that have access to the given field.
  * <p>
  *
+ * Note that final fields are treated as LazyNonNull by default.
+ * <p>
+ *
  * This annotation is associated with the {@link NullnessChecker}.
  *
  * @see Nullable
