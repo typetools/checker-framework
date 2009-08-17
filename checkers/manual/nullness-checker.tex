@@ -337,11 +337,30 @@ Parameter passing and return values are checked analogously to assignments.
 
 
 
-\subsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-nullness}\label{suppressing-warnings-with-assertions}}
+\subsection{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
 
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
-Section~\ref{suppressing-warnings}).  Occasionally, it is inconvenient or
+Section~\ref{suppressing-warnings}).
+
+The Nullness Checker supports an additional warning suppression key, 
+\<nullness:collection-typeargs>.
+Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
+Checker to suppress only those warnings related to misuse of generic type
+arguments.  One use for this key is when a class is declared to take only
+\<@NonNull> type arguments, but you want to instantiate the class with a
+\<@NonNull> type argument, as in \code{List<@Nullable Object>}.  For a more
+complete explanation of this example, see
+Section~\ref{list-map-nonnull-typeargs}.
+
+The Nullness Checker also permits you to use assertions or method calls to
+suppress warnings; see below.
+
+
+
+\subsubsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-with-assertions}}
+
+Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations to appear on statements.
 
@@ -409,7 +428,8 @@ One way to suppress warnings in the Nullness Checker is to use
 method \code{castNonNull}.
 (Section~\ref{suppressing-warnings-with-assertions} gives other techniques.)
 
-This section explains why the Nullness Checker introduces a new  rather than re-using the \<assert> statement (as in
+This section explains why the Nullness Checker introduces a new method
+rather than re-using the \<assert> statement (as in
 \<assert x != null>) or an existing method such as:
 
 \begin{Verbatim}
@@ -787,3 +807,4 @@ at the client use.  For example:
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
 % LocalWords:  inferencer utilMDE Nonnull CheckForNull UnknownNullness rawtypes
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
+% LocalWords:  Nullability typeargs
