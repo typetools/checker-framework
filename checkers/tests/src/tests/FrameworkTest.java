@@ -57,4 +57,6 @@ public class FrameworkTest extends CheckerTest {
     @Test public void testWildcards()                   { test(); }
     @Test public void testInnerGenerics()               { test(); }
     @Test public void testAnnotatedGenerics()           { test(); }
+
+    @Test public void testMoreVarargs()                 { test(); }
 }

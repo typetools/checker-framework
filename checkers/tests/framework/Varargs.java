@@ -34,5 +34,4 @@ public class Varargs {
     void testVarargsConstructor() {
         new ProcessBuilder("hello");
     }
-
 }
