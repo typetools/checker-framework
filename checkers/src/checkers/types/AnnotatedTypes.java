@@ -613,7 +613,14 @@ public class AnnotatedTypes {
                 return Collections.emptyList();
             assert type.getKind() == p.getKind();
             AnnotatedArrayType pArray = (AnnotatedArrayType) p;
-            return visit(type.getComponentType(), pArray.getComponentType());
+
+            AnnotatedTypeMirror typeToLookIn;
+            if (pArray.getComponentType().getKind().isPrimitive())
+                typeToLookIn = pArray;
+            else
+                typeToLookIn = pArray.getComponentType();
+
+            return visit(type.getComponentType(), typeToLookIn);
         }
 
         @Override
