@@ -170,8 +170,11 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates checkers-quals.jar -->
     <target name="checkers-quals-jar" depends="build"
             description="Create a jar file for annotations">
-        <jar destfile="${dist.annos.file}" basedir="${build}"
-             includes="**/quals/*"/>
+        <jar destfile="${dist.annos.file}" basedir="${build}">
+            <include name="**/quals/*"/>
+            <!-- Watch out for inner anonymous class within utilities -->
+            <include name="**/NullnessUtils*"/>
+        </jar>
     </target>
 
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
