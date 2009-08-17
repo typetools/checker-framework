@@ -223,14 +223,14 @@ If you know that any objects that can be passed as the parameter will
 definitely support null, then you can suppress the warning:
 
 \begin{Verbatim}
-  @SuppressWarnings("nullness:collection-typeargs")
+  @SuppressWarnings("nullness:generic.argument")
   static void addNull(List l) {
     l.add(null);
   }
 \end{Verbatim}
 
 \noindent
-You need to use \<@SuppressWarnings("nullness:collection-typeargs")>
+You need to use \<@SuppressWarnings("nullness:generic.argument")>
 whenever you use a collection that may contain \<null> elements in
 contradiction to its documentation.  Fortunately, such uses are relatively
 rare.

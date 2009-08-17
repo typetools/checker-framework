@@ -273,30 +273,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         annotation with the key returned by {@link
      *         SourceChecker#getSuppressWarningsKey}
      */
-    private boolean checkSuppressWarnings(List<? extends AnnotationMirror> annos, String err) {
+    private boolean checkSuppressWarnings(SuppressWarnings anno, String err) {
+
+        if (anno == null)
+            return false;
 
         Collection<String> swkeys = this.getSuppressWarningsKey();
 
         // For all the method's annotations, check for a @SuppressWarnings
         // annotation. If one is found, check its values for this checker's
         // SuppressWarnings key.
-        for (AnnotationMirror am : annos) {
+        for (String suppressWarningValue : anno.value()) {
+            for (String swKey : swkeys) {
+                if (suppressWarningValue.equals(swKey))
+                    return true;
 
-            Element elt = am.getAnnotationType().asElement();
-            assert elt instanceof TypeElement;
-
-            String annoName = ((TypeElement)elt).getQualifiedName().toString();
-            if (!("java.lang.SuppressWarnings".equals(annoName)))
-                continue;
-
-            // Parse the value of the @SuppressWarnings annotation. Return
-            // true if it contains the SuppressWarnings key.
-            @Nullable List<String> vals = AnnotationUtils.parseStringArrayValue(am, "value");
-            if (vals != null)
-                for (String swkey : swkeys) {
-                    if (vals.contains(swkey) || vals.contains(swkey + ":" + err))
-                        return true;
-                }
+                String expected = swKey + ":" + err;
+                if (expected.contains(suppressWarningValue))
+                    return true;
+            }
         }
 
         return false;
@@ -344,8 +339,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (elt == null)
             return false;
 
-        return checkSuppressWarnings(elt.getAnnotationMirrors(), err) ||
-            shouldSuppressWarnings(elt.getEnclosingElement(), err);
+        return checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err)
+                || shouldSuppressWarnings(elt.getEnclosingElement(), err);
     }
 
     /**
