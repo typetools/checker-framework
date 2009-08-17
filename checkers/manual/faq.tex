@@ -177,7 +177,7 @@ However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 
 
-\subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?}
+\subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{list-map-nonnull-typeargs}}
 
 If you try to write \code{List<@Nullable Object>}, or to use a nullable
 type parameter to 
@@ -235,7 +235,7 @@ whenever you use a collection that may contain \<null> elements in
 contradiction to its documentation.  Fortunately, such uses are relatively
 rare.
 
-For more details, see Section~\ref{nullness-checker}.
+For more details, see Section~\ref{suppressing-warnings-nullness}.
 
 
-% LocalWords:  IGJ toolset
+% LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap
