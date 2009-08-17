@@ -78,7 +78,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     private boolean warns;
 
     /** A regular expression for classes that should be skipped. */
-    protected Pattern skipPattern;
+    private Pattern skipPattern;
 
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
@@ -139,17 +139,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
-    private String getSkipPattern(Map<String, String> options) {
+    private Pattern getSkipPattern(Map<String, String> options) {
+        String pattern = "";
+
         if (options.containsKey("skipClasses"))
-            return options.get("skipClasses");
+            pattern = options.get("skipClasses");
+        else if (System.getProperty("checkers.skipClasses") != null)
+            pattern = System.getProperty("checkers.skipClasses");
+        else if (System.getenv("skipClasses") != null)
+            pattern = System.getenv("skipClasses");
 
-        if (System.getProperty("checkers.skipClasses") != null)
-            return System.getProperty("checkers.skipClasses");
+        // return a pattern of an illegal Java identifier character
+        if (pattern.equals(""))
+            pattern = "\\(";
 
-        if (System.getenv("skipClasses") != null)
-            return System.getenv("skipClasses");
-
-        return "";
+        return Pattern.compile(pattern);
     }
 
     /**
@@ -162,7 +166,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         super.init(processingEnv);
         this.env = processingEnv;
 
-        this.skipPattern = Pattern.compile(getSkipPattern(processingEnv.getOptions()));
+        this.skipPattern = getSkipPattern(processingEnv.getOptions());
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
@@ -378,21 +382,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
-     * Determines whether checking against members of the class with the given
-     * name should be performed. This method will return true only when the
-     * given class name matches the regular expression specified by the
-     * {@code checkers.skipClasses} property.
-     *
-     * @param className the fully qualified name of the class to check
-     * @return true if the members of the class named {@code className} should
-     *         not be checked against
-     */
-    public boolean shouldSkip(String className) {
-        Matcher m = skipPattern.matcher(className);
-        return m.matches();
-    }
-
-    /**
      * Determines the value of the lint option with the given name.  Just
      * as <a
      * href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
@@ -566,10 +555,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @return pattern of un-annotated classes that should be skipped
      */
     public Pattern getShouldSkip() {
-        String unannotatedClasses = System.getProperty("checkers.skipClasses");
-        if (unannotatedClasses != null && !unannotatedClasses.trim().equals(""))
-            return Pattern.compile(unannotatedClasses);
-        return Pattern.compile("_");
+        return this.skipPattern;
     }
 
     /**
