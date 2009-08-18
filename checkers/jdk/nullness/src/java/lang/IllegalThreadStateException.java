@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown to indicate that a thread is not in an appropriate state
  * for the requested operation. See, for example, the

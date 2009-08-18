@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 abstract class CharacterData {
     abstract int getProperties(int ch);
     abstract int getType(int ch);

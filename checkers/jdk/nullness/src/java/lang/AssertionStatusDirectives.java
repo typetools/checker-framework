@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * A collection of assertion status directives (such as "enable assertions
  * in package p" or "disable assertions in class c").  This class is used by

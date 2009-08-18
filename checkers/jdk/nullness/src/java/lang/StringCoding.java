@@ -43,6 +43,8 @@ import sun.nio.cs.HistoricallyNamedCharset;
 import sun.nio.cs.ArrayDecoder;
 import sun.nio.cs.ArrayEncoder;
 
+import checkers.nullness.quals.*;
+
 /**
  * Utility class for string encoding and decoding.
  */

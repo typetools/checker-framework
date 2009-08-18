@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown to indicate that a thread has attempted to wait on an
  * object's monitor or to notify other threads waiting on an object's
