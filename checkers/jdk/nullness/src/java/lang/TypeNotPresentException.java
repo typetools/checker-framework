@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when an application tries to access a type using a string
  * representing the type's name, but no definition for the type with

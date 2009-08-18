@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown when an application tries to access an enum constant by name
  * and the enum type contains no constant with the specified name.

@@ -26,6 +26,8 @@ package java.lang;
 
 import java.util.*;
 
+import checkers.nullness.quals.*;
+
 /*
  * Class to track and run user level shutdown hooks registered through
  * <tt>{@link Runtime#addShutdownHook Runtime.addShutdownHook}</tt>.
