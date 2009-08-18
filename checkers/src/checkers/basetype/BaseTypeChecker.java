@@ -378,6 +378,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         Set<String> lintSet = new HashSet<String>(super.getSupportedLintOptions());
         lintSet.add("flow");
         lintSet.add("cast");
+        lintSet.add("cast:redundant");
         return lintSet;
     }
 

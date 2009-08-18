@@ -429,6 +429,18 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         return super.visitParameterizedType(node, p);
     }
 
+    protected void checkTypecastRedundancy(TypeCastTree node, P p) {
+        if (!checker.getLintOption("cast:redundant", false))
+            return;
+
+        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
+
+        if (annoTypes.areSame(castType, exprType)) {
+            checker.report(Result.warning("cast.redundant", castType), node);
+        }
+    }
+
     protected void checkTypecastSafety(TypeCastTree node, P p) {
         if (!checker.getLintOption("cast", true))
             return;
@@ -463,6 +475,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     public R visitTypeCast(TypeCastTree node, P p) {
         validateTypeOf(node.getType());
         checkTypecastSafety(node, p);
+        checkTypecastRedundancy(node, p);
         return super.visitTypeCast(node, p);
     }
 

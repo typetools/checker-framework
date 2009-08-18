@@ -945,4 +945,8 @@ public class AnnotatedTypes {
 
         return types;
     }
+
+    public boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
+        return t1.toString().equals(t2.toString());
+    }
 }
