@@ -181,4 +181,6 @@ public class NullnessTest extends CheckerTest {
     @Test public void testFindBugs() { test(); }
 
     @Test public void testConditionalNullness() { test(); }
+
+    @Test public void testFlowNegation() { test(); }
 }
