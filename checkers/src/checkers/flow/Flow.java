@@ -703,9 +703,12 @@ public class Flow extends TreePathScanner<Void, Void> {
     @Override
     public Void visitIf(IfTree node, Void p) {
         pushNewLevel();
+        GenKillBits<AnnotationMirror> beforeIf = GenKillBits.copy(annos);
+
         scanCond(node.getCondition());
 
-        GenKillBits<AnnotationMirror> before = annosWhenFalse;
+        GenKillBits<AnnotationMirror> beforeElse = annosWhenFalse;
+        annosWhenFalse.or(beforeIf);
         annos = annosWhenTrue;
 
         boolean aliveBefore = alive;
@@ -718,7 +721,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             boolean aliveAfter = alive;
             alive = aliveBefore;
             GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
-            annos = before;
+            annos = beforeElse;
             scanStat(elseStmt);
             alive &= aliveAfter;
             if (!alive)
@@ -728,9 +731,9 @@ public class Flow extends TreePathScanner<Void, Void> {
         } else {
             alive &= aliveBefore;
             if (!alive)
-                annos = GenKillBits.copy(before);
+                annos = GenKillBits.copy(beforeElse);
             else
-                annos.and(before);
+                annos.and(beforeElse);
         }
         popLastLevel();
 
