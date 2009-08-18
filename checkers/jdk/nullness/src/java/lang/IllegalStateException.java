@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Signals that a method has been invoked at an illegal or
  * inappropriate time.  In other words, the Java environment or

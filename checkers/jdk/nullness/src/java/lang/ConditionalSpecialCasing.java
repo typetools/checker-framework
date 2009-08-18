@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import sun.text.Normalizer;
 
+import checkers.nullness.quals.*;
 
 /**
  * This is a utility class for <code>String.toLowerCase()</code> and

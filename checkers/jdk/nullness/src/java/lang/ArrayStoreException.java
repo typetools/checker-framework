@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 /**
  * Thrown to indicate that an attempt has been made to store the
  * wrong type of object into an array of objects. For example, the

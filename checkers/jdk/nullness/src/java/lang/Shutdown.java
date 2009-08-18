@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import checkers.nullness.quals.*;
+
 
 /**
  * Package-private utility class containing data structures and logic
