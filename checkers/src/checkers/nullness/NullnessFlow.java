@@ -112,10 +112,11 @@ class NullnessFlow extends Flow {
     }
     @Override
     protected void scanCond(Tree tree) {
-        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annos);
         super.scanCond(tree);
         if (tree == null)
             return;
+
+        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annosWhenFalse);
 
         Conditions conds = new Conditions();
         conds.visit(tree, null);
