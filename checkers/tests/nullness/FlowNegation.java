@@ -62,4 +62,12 @@ public class FlowNegation {
         s.toString();   // error
     }
 
+    void testAssignInCond() {
+        String s = "m";
+        if ((s = null) != "m") {
+            s.toString();   // error
+        } else {
+        }
+        s.toString();   // error
+    }
 }
