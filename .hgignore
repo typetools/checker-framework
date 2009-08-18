@@ -1,0 +1,55 @@
+syntax: glob
+
+# Emacs and other temporary files
+*~
+.#*
+TAGS
+*.orig
+
+# Eclipse files
+.metadata
+.classpath
+.project
+.externalToolBuilders
+
+# build files
+bin
+build
+doc
+*.jar
+checkers/jdk/**/*.class
+
+# manual files
+doc
+manual.aux
+manual.blg
+manual.dvi
+manual.haux
+manual.html
+manual.htoc
+manual.image.tex
+manual.image.tex.new
+manual.image.log
+manual.log
+manual.pdf
+manual.ps
+manual.toc
+manual001.gif
+manual001.png
+manual002.gif
+manual002.png
+manual003.gif
+manual003.png
+manual004.gif
+manual004.png
+
+# is there true?
+*.pdf
+*.eps
+
+# release tmps
+tmp
+
+syntax: regexp
+# Not a glob because it starts with # which looks like a comment.
+(^|/)\#.*\#$
