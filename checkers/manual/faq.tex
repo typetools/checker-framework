@@ -238,4 +238,19 @@ rare.
 For more details, see Section~\ref{suppressing-warnings-nullness}.
 
 
-% LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap
+\subsection{How can I do run-time monitoring of properties that were not statically checked?}
+
+Currently, the Checker Framework has no support for adding code to check,
+at run time, code that was not checked (see
+Section~\ref{warnings-and-legacy} for reasons that code might not be
+checked).  An exception is the Nullness Checker, which has ways to
+dynamically check nullness via assertions and casts (the
+\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method).
+
+More general support would be an interesting and valuable project.  If you
+are able to add run-time verification functionality, we would gladly
+welcome it as a contribution to the Checker Framework.
+
+
+% LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
+% LocalWords:  castNonNull
