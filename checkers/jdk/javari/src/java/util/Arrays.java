@@ -98,8 +98,8 @@ public class Arrays {
     public static int hashCode(@ReadOnly boolean a[]) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly float a[]) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly double a[]) { throw new RuntimeException("skeleton method"); }
-    public static int hashCode(@ReadOnly Object @ReadOnly a []) { throw new RuntimeException("skeleton method"); }
-    public static int deepHashCode(@ReadOnly Object @ReadOnly a []) { throw new RuntimeException("skeleton method"); }
+    public static int hashCode(@ReadOnly Object @ReadOnly [] a) { throw new RuntimeException("skeleton method"); }
+    public static int deepHashCode(@ReadOnly Object @ReadOnly [] a) { throw new RuntimeException("skeleton method"); }
     public static boolean deepEquals(@ReadOnly Object @ReadOnly [] a1, @ReadOnly Object @ReadOnly [] a2) { throw new RuntimeException("skeleton method"); }
     public static String toString(long @ReadOnly [] a) { throw new RuntimeException("skeleton method"); }
     public static String toString(int @ReadOnly [] a) { throw new RuntimeException("skeleton method"); }
