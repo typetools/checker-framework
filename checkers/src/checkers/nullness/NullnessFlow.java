@@ -112,6 +112,7 @@ class NullnessFlow extends Flow {
     }
     @Override
     protected void scanCond(Tree tree) {
+        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annos);
         super.scanCond(tree);
         if (tree == null)
             return;
@@ -142,6 +143,7 @@ class NullnessFlow extends Flow {
                     annosWhenFalse.set(NONNULL, idx);
             }
         }
+        annosWhenFalse.or(before);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
