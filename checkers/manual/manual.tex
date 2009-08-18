@@ -29,7 +29,9 @@
 
 % Problem: Hevea writes this into manual.image.tex, and invokes LaTeX on
 % it.  Sometimes running "make" leads to an error as a result, sometimes
-% not.  I don't know the pattern of the failures.
+% not.  I don't know the pattern of the failures, though running "make
+% clean" and then "make" seems to work.  So maybe there's a problem with an
+% auxiliary file.
 %HEVEA \newcommand{\discretionary}[3]{\relax}
 
 %HEVEA \newstyle{.lstframe}{margin:auto;margin-bottom:2em}
