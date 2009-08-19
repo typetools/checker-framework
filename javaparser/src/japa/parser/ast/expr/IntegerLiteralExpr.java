@@ -29,7 +29,15 @@ import japa.parser.ast.visitor.VoidVisitor;
  */
 public class IntegerLiteralExpr extends StringLiteralExpr {
 
+    private static final String UNSIGNED_MIN_VALUE = "2147483648";
+
+    protected static final String MIN_VALUE = "-" + UNSIGNED_MIN_VALUE;
+
     public IntegerLiteralExpr() {
+    }
+
+    public IntegerLiteralExpr(String value) {
+        super(value);
     }
 
     public IntegerLiteralExpr(int beginLine, int beginColumn, int endLine, int endColumn, String value) {
@@ -49,6 +57,6 @@ public class IntegerLiteralExpr extends StringLiteralExpr {
     public final boolean isMinValue() {
         return value != null && //
                 value.length() == 10 && //
-                value.equals("2147483648");
+                value.equals(UNSIGNED_MIN_VALUE);
     }
 }

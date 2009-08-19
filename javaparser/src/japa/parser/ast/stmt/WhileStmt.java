@@ -37,6 +37,11 @@ public final class WhileStmt extends Statement {
     public WhileStmt() {
     }
 
+    public WhileStmt(Expression condition, Statement body) {
+        this.condition = condition;
+        this.body = body;
+    }
+
     public WhileStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression condition, Statement body) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.condition = condition;

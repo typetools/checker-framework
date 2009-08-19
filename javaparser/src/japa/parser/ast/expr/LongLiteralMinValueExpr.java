@@ -30,11 +30,11 @@ import japa.parser.ast.visitor.VoidVisitor;
 public final class LongLiteralMinValueExpr extends LongLiteralExpr {
 
     public LongLiteralMinValueExpr() {
-        this.value = "-9223372036854775808L";
+        super(MIN_VALUE);
     }
 
     public LongLiteralMinValueExpr(int beginLine, int beginColumn, int endLine, int endColumn) {
-        super(beginLine, beginColumn, endLine, endColumn, "-9223372036854775808L");
+        super(beginLine, beginColumn, endLine, endColumn, MIN_VALUE);
     }
 
     @Override

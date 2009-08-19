@@ -21,6 +21,8 @@
  */
 package japa.parser.ast.body;
 
+import japa.parser.ast.expr.AnnotationExpr;
+
 import java.util.List;
 
 /**
@@ -37,8 +39,20 @@ public abstract class TypeDeclaration extends BodyDeclaration {
     public TypeDeclaration() {
     }
 
-    public TypeDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, String name, int modifiers, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+    public TypeDeclaration(int modifiers, String name) {
+        this.name = name;
+        this.modifiers = modifiers;
+    }
+
+    public TypeDeclaration(List<AnnotationExpr> annotations, JavadocComment javaDoc, int modifiers, String name, List<BodyDeclaration> members) {
+        super(annotations, javaDoc);
+        this.name = name;
+        this.modifiers = modifiers;
+        this.members = members;
+    }
+
+    public TypeDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations, JavadocComment javaDoc, int modifiers, String name, List<BodyDeclaration> members) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
         this.name = name;
         this.modifiers = modifiers;
         this.members = members;
@@ -48,6 +62,12 @@ public abstract class TypeDeclaration extends BodyDeclaration {
         return members;
     }
 
+    /**
+     * Return the modifiers of this type declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public final int getModifiers() {
         return modifiers;
     }

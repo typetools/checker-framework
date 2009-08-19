@@ -53,6 +53,12 @@ public final class AssignExpr extends Expression {
     public AssignExpr() {
     }
 
+    public AssignExpr(Expression target, Expression value, Operator op) {
+        this.target = target;
+        this.value = value;
+        this.op = op;
+    }
+
     public AssignExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression target, Expression value, Operator op) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.target = target;

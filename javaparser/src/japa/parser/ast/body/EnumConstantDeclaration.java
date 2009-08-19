@@ -33,8 +33,6 @@ import java.util.List;
  */
 public final class EnumConstantDeclaration extends BodyDeclaration {
 
-    private List<AnnotationExpr> annotations;
-
     private String name;
 
     private List<Expression> args;
@@ -44,9 +42,19 @@ public final class EnumConstantDeclaration extends BodyDeclaration {
     public EnumConstantDeclaration() {
     }
 
+    public EnumConstantDeclaration(String name) {
+        this.name = name;
+    }
+
+    public EnumConstantDeclaration(JavadocComment javaDoc, List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
+        super(annotations, javaDoc);
+        this.name = name;
+        this.args = args;
+        this.classBody = classBody;
+    }
+
     public EnumConstantDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
-        this.annotations = annotations;
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
         this.name = name;
         this.args = args;
         this.classBody = classBody;
@@ -62,10 +70,6 @@ public final class EnumConstantDeclaration extends BodyDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public List<Expression> getArgs() {
         return args;
     }
@@ -76,10 +80,6 @@ public final class EnumConstantDeclaration extends BodyDeclaration {
 
     public String getName() {
         return name;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setArgs(List<Expression> args) {

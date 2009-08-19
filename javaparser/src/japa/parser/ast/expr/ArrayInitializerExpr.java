@@ -36,6 +36,10 @@ public final class ArrayInitializerExpr extends Expression {
     public ArrayInitializerExpr() {
     }
 
+    public ArrayInitializerExpr(List<Expression> values) {
+        this.values = values;
+    }
+
     public ArrayInitializerExpr(int beginLine, int beginColumn, int endLine, int endColumn, List<Expression> values) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.values = values;

@@ -26,7 +26,6 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.LineComment;
-import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.AnnotationDeclaration;
@@ -73,7 +72,6 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.expr.StringLiteralExpr;
 import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.SuperMemberAccessExpr;
 import japa.parser.ast.expr.ThisExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
@@ -108,8 +106,6 @@ import japa.parser.ast.type.WildcardType;
  * @author Julio Vilmar Gesser
  */
 public interface VoidVisitor<A> {
-
-    public void visit(Node n, A arg);
 
     //- Compilation Unit ----------------------------------
 
@@ -220,8 +216,6 @@ public interface VoidVisitor<A> {
     public void visit(ObjectCreationExpr n, A arg);
 
     public void visit(QualifiedNameExpr n, A arg);
-
-    public void visit(SuperMemberAccessExpr n, A arg);
 
     public void visit(ThisExpr n, A arg);
 

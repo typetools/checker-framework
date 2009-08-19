@@ -26,7 +26,6 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.LineComment;
-import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.AnnotationDeclaration;
@@ -77,7 +76,6 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.expr.StringLiteralExpr;
 import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.SuperMemberAccessExpr;
 import japa.parser.ast.expr.ThisExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
@@ -113,7 +111,7 @@ import japa.parser.ast.type.WildcardType;
 /**
  * @author Julio Vilmar Gesser
  */
-public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
+public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
 
     public R visit(AnnotationDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
@@ -156,11 +154,6 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
 
     public R visit(ArrayCreationExpr n, A arg) {
         n.getType().accept(this, arg);
-        if (n.getTypeArgs() != null) {
-            for (Type t : n.getTypeArgs()) {
-                t.accept(this, arg);
-            }
-        }
         if (n.getDimensions() != null) {
             for (Expression dim : n.getDimensions()) {
                 dim.accept(this, arg);
@@ -197,10 +190,6 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
     public R visit(BinaryExpr n, A arg) {
         n.getLeft().accept(this, arg);
         n.getRight().accept(this, arg);
-        return null;
-    }
-
-    public R visit(BlockComment n, A arg) {
         return null;
     }
 
@@ -290,8 +279,8 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
     }
 
     public R visit(CompilationUnit n, A arg) {
-        if (n.getPakage() != null) {
-            n.getPakage().accept(this, arg);
+        if (n.getPackage() != null) {
+            n.getPackage().accept(this, arg);
         }
         if (n.getImports() != null) {
             for (ImportDeclaration i : n.getImports()) {
@@ -542,10 +531,6 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
         return null;
     }
 
-    public R visit(LineComment n, A arg) {
-        return null;
-    }
-
     public R visit(LongLiteralExpr n, A arg) {
         return null;
     }
@@ -614,10 +599,6 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
 
     public R visit(NameExpr n, A arg) {
         return null;
-    }
-
-    public R visit(Node n, A arg) {
-        throw new IllegalStateException(n.getClass().getName());
     }
 
     public R visit(NormalAnnotationExpr n, A arg) {
@@ -713,10 +694,6 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
         if (n.getClassExpr() != null) {
             n.getClassExpr().accept(this, arg);
         }
-        return null;
-    }
-
-    public R visit(SuperMemberAccessExpr n, A arg) {
         return null;
     }
 
@@ -844,4 +821,13 @@ public class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A> {
             unit.accept(this, arg);
         return null;
     }
+
+    public R visit(BlockComment n, A arg) {
+        return null;
+    }
+
+    public R visit(LineComment n, A arg) {
+        return null;
+    }
+
 }

@@ -38,6 +38,12 @@ public final class ConditionalExpr extends Expression {
     public ConditionalExpr() {
     }
 
+    public ConditionalExpr(Expression condition, Expression thenExpr, Expression elseExpr) {
+        this.condition = condition;
+        this.thenExpr = thenExpr;
+        this.elseExpr = elseExpr;
+    }
+
     public ConditionalExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression condition, Expression thenExpr, Expression elseExpr) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.condition = condition;

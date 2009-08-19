@@ -32,14 +32,19 @@ import java.util.List;
  */
 public final class AnnotationDeclaration extends TypeDeclaration {
 
-    private List<AnnotationExpr> annotations;
-
     public AnnotationDeclaration() {
     }
 
+    public AnnotationDeclaration(int modifiers, String name) {
+        super(modifiers, name);
+    }
+
+    public AnnotationDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, String name, List<BodyDeclaration> members) {
+        super(annotations, javaDoc, modifiers, name, members);
+    }
+
     public AnnotationDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, String name, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc, name, modifiers, members);
-        this.annotations = annotations;
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc, modifiers, name, members);
     }
 
     @Override
@@ -52,11 +57,4 @@ public final class AnnotationDeclaration extends TypeDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
-    }
 }

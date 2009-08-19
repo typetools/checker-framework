@@ -1792,7 +1792,7 @@ private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, lo
    {
       case 0:
          return ((jjbitVec2[i2] & l2) != 0L);
-      default : 
+      default :
          if ((jjbitVec0[i1] & l1) != 0L)
             return true;
          return false;
@@ -1882,7 +1882,7 @@ private static final boolean jjCanMove_1(int hiByte, int i1, int i2, long l1, lo
          return ((jjbitVec41[i2] & l2) != 0L);
       case 255:
          return ((jjbitVec42[i2] & l2) != 0L);
-      default : 
+      default :
          if ((jjbitVec3[i1] & l1) != 0L)
             return true;
          return false;
@@ -1976,7 +1976,7 @@ private static final boolean jjCanMove_2(int hiByte, int i1, int i2, long l1, lo
          return ((jjbitVec67[i2] & l2) != 0L);
       case 255:
          return ((jjbitVec68[i2] & l2) != 0L);
-      default : 
+      default :
          if ((jjbitVec3[i1] & l1) != 0L)
             return true;
          return false;
@@ -2011,9 +2011,9 @@ null, null, null, null, null, null, "\50", "\51", "\173", "\175", "\133", "\135"
 
 /** Lexer state names. */
 public static final String[] lexStateNames = {
-   "DEFAULT", 
-   "IN_JAVA_DOC_COMMENT", 
-   "IN_MULTI_LINE_COMMENT", 
+   "DEFAULT",
+   "IN_JAVA_DOC_COMMENT",
+   "IN_MULTI_LINE_COMMENT",
 };
 
 /** Lex State array. */
@@ -2040,8 +2040,8 @@ static final long[] jjtoMore = {
 protected JavaCharStream input_stream;
 private final int[] jjrounds = new int[86];
 private final int[] jjstateSet = new int[172];
-private final StringBuffer jjimage = new StringBuffer();
-private StringBuffer image = jjimage;
+private final StringBuilder jjimage = new StringBuilder();
+private StringBuilder image = jjimage;
 private int jjimageLen;
 private int lengthOfMatch;
 protected char curChar;
@@ -2104,7 +2104,7 @@ protected Token jjFillToken()
    beginColumn = input_stream.getBeginColumn();
    endLine = input_stream.getEndLine();
    endColumn = input_stream.getEndColumn();
-   t = Token.newToken(jjmatchedKind, curTokenImage);
+   t = ASTParser.GTToken.newToken(jjmatchedKind, curTokenImage);
 
    t.beginLine = beginLine;
    t.endLine = endLine;
@@ -2130,13 +2130,13 @@ public Token getNextToken()
 
   EOFLoop :
   for (;;)
-  {   
-   try   
-   {     
+  {
+   try
+   {
       curChar = input_stream.BeginToken();
-   }     
+   }
    catch(java.io.IOException e)
-   {        
+   {
       jjmatchedKind = 0;
       matchedToken = jjFillToken();
       matchedToken.specialToken = specialToken;
@@ -2208,7 +2208,7 @@ public Token getNextToken()
               }
               SkipLexicalActions(matchedToken);
            }
-           else 
+           else
               SkipLexicalActions(null);
          if (jjnewLexState[jjmatchedKind] != -1)
            curLexState = jjnewLexState[jjmatchedKind];
@@ -2267,7 +2267,7 @@ void MoreLexicalActions()
          jjimageLen = 0;
                    input_stream.backup(1);
          break;
-      default : 
+      default :
          break;
    }
 }
@@ -2279,17 +2279,17 @@ void TokenLexicalActions(Token matchedToken)
         image.append(jjstrLiteralImages[125]);
         lengthOfMatch = jjstrLiteralImages[125].length();
      matchedToken.kind = GT;
-     ((Token.GTToken)matchedToken).realKind = RUNSIGNEDSHIFT;
+     ((ASTParser.GTToken)matchedToken).realKind = RUNSIGNEDSHIFT;
      input_stream.backup(2);
          break;
       case 126 :
         image.append(jjstrLiteralImages[126]);
         lengthOfMatch = jjstrLiteralImages[126].length();
      matchedToken.kind = GT;
-     ((Token.GTToken)matchedToken).realKind = RSIGNEDSHIFT;
+     ((ASTParser.GTToken)matchedToken).realKind = RSIGNEDSHIFT;
      input_stream.backup(1);
          break;
-      default : 
+      default :
          break;
    }
 }

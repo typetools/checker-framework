@@ -34,6 +34,10 @@ public final class BooleanLiteralExpr extends LiteralExpr {
     public BooleanLiteralExpr() {
     }
 
+    public BooleanLiteralExpr(boolean value) {
+        this.value = value;
+    }
+
     public BooleanLiteralExpr(int beginLine, int beginColumn, int endLine, int endColumn, boolean value) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.value = value;

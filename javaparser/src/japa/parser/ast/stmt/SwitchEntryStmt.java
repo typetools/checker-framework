@@ -39,6 +39,11 @@ public final class SwitchEntryStmt extends Statement {
     public SwitchEntryStmt() {
     }
 
+    public SwitchEntryStmt(Expression label, List<Statement> stmts) {
+        this.label = label;
+        this.stmts = stmts;
+    }
+
     public SwitchEntryStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression label, List<Statement> stmts) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.label = label;

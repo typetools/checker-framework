@@ -26,7 +26,6 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.LineComment;
-import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.AnnotationDeclaration;
@@ -77,7 +76,6 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.expr.StringLiteralExpr;
 import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.SuperMemberAccessExpr;
 import japa.parser.ast.expr.ThisExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
@@ -113,7 +111,7 @@ import japa.parser.ast.type.WildcardType;
 /**
  * @author Julio Vilmar Gesser
  */
-public class VoidVisitorAdapter<A> implements VoidVisitor<A> {
+public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
 
     public void visit(AnnotationDeclaration n, A arg) {
         if (n.getJavaDoc() != null) {
@@ -153,11 +151,6 @@ public class VoidVisitorAdapter<A> implements VoidVisitor<A> {
 
     public void visit(ArrayCreationExpr n, A arg) {
         n.getType().accept(this, arg);
-        if (n.getTypeArgs() != null) {
-            for (Type t : n.getTypeArgs()) {
-                t.accept(this, arg);
-            }
-        }
         if (n.getDimensions() != null) {
             for (Expression dim : n.getDimensions()) {
                 dim.accept(this, arg);
@@ -270,8 +263,8 @@ public class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     }
 
     public void visit(CompilationUnit n, A arg) {
-        if (n.getPakage() != null) {
-            n.getPakage().accept(this, arg);
+        if (n.getPackage() != null) {
+            n.getPackage().accept(this, arg);
         }
         if (n.getImports() != null) {
             for (ImportDeclaration i : n.getImports()) {
@@ -562,10 +555,6 @@ public class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     public void visit(NameExpr n, A arg) {
     }
 
-    public void visit(Node n, A arg) {
-        throw new IllegalStateException(n.getClass().getName());
-    }
-
     public void visit(NormalAnnotationExpr n, A arg) {
         n.getName().accept(this, arg);
         if (n.getPairs() != null) {
@@ -648,9 +637,6 @@ public class VoidVisitorAdapter<A> implements VoidVisitor<A> {
         if (n.getClassExpr() != null) {
             n.getClassExpr().accept(this, arg);
         }
-    }
-
-    public void visit(SuperMemberAccessExpr n, A arg) {
     }
 
     public void visit(SwitchEntryStmt n, A arg) {

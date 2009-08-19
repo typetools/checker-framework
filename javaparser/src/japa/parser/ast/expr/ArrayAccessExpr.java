@@ -36,6 +36,11 @@ public final class ArrayAccessExpr extends Expression {
     public ArrayAccessExpr() {
     }
 
+    public ArrayAccessExpr(Expression name, Expression index) {
+        this.name = name;
+        this.index = index;
+    }
+
     public ArrayAccessExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression name, Expression index) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

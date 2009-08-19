@@ -37,6 +37,11 @@ public final class DoStmt extends Statement {
     public DoStmt() {
     }
 
+    public DoStmt(Statement body, Expression condition) {
+        this.body = body;
+        this.condition = condition;
+    }
+
     public DoStmt(int beginLine, int beginColumn, int endLine, int endColumn, Statement body, Expression condition) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.body = body;

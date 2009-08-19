@@ -40,6 +40,12 @@ public final class ForeachStmt extends Statement {
     public ForeachStmt() {
     }
 
+    public ForeachStmt(VariableDeclarationExpr var, Expression iterable, Statement body) {
+        this.var = var;
+        this.iterable = iterable;
+        this.body = body;
+    }
+
     public ForeachStmt(int beginLine, int beginColumn, int endLine, int endColumn, VariableDeclarationExpr var, Expression iterable, Statement body) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.var = var;

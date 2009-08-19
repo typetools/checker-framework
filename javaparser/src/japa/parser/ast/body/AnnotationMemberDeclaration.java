@@ -36,8 +36,6 @@ public final class AnnotationMemberDeclaration extends BodyDeclaration {
 
     private int modifiers;
 
-    private List<AnnotationExpr> annotations;
-
     private Type type;
 
     private String name;
@@ -47,10 +45,24 @@ public final class AnnotationMemberDeclaration extends BodyDeclaration {
     public AnnotationMemberDeclaration() {
     }
 
-    public AnnotationMemberDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, String name, Expression defaultValue) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+    public AnnotationMemberDeclaration(int modifiers, Type type, String name, Expression defaultValue) {
         this.modifiers = modifiers;
-        this.annotations = annotations;
+        this.type = type;
+        this.name = name;
+        this.defaultValue = defaultValue;
+    }
+
+    public AnnotationMemberDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, String name, Expression defaultValue) {
+        super(annotations, javaDoc);
+        this.modifiers = modifiers;
+        this.type = type;
+        this.name = name;
+        this.defaultValue = defaultValue;
+    }
+
+    public AnnotationMemberDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, String name, Expression defaultValue) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
+        this.modifiers = modifiers;
         this.type = type;
         this.name = name;
         this.defaultValue = defaultValue;
@@ -66,14 +78,16 @@ public final class AnnotationMemberDeclaration extends BodyDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public Expression getDefaultValue() {
         return defaultValue;
     }
 
+    /**
+     * Return the modifiers of this member declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }
@@ -84,10 +98,6 @@ public final class AnnotationMemberDeclaration extends BodyDeclaration {
 
     public Type getType() {
         return type;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setDefaultValue(Expression defaultValue) {
