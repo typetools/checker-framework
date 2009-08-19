@@ -35,6 +35,10 @@ public final class ThrowStmt extends Statement {
     public ThrowStmt() {
     }
 
+    public ThrowStmt(Expression expr) {
+        this.expr = expr;
+    }
+
     public ThrowStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression expr) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.expr = expr;

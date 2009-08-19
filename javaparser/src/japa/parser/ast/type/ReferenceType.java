@@ -41,6 +41,15 @@ public final class ReferenceType extends Type {
     public ReferenceType() {
     }
 
+    public ReferenceType(Type type) {
+        this.type = type;
+    }
+
+    public ReferenceType(Type type, int arrayCount) {
+        this.type = type;
+        this.arrayCount = arrayCount;
+    }
+
     public ReferenceType(int beginLine, int beginColumn, int endLine, int endColumn, Type type, int arrayCount, List<List<AnnotationExpr>> arrayAnnotations) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.type = type;

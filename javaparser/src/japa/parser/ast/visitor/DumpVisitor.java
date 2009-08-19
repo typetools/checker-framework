@@ -26,7 +26,6 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.LineComment;
-import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.TypeParameter;
 import japa.parser.ast.body.AnnotationDeclaration;
@@ -78,7 +77,6 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.expr.StringLiteralExpr;
 import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.SuperMemberAccessExpr;
 import japa.parser.ast.expr.ThisExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
@@ -286,10 +284,6 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
-    public void visit(Node n, Object arg) {
-        throw new IllegalStateException(n.getClass().getName());
-    }
-
     public void visit(IndexUnit n, Object arg) {
         for (CompilationUnit unit : n.getCompilationUnits()) {
             visit(unit, arg);
@@ -299,8 +293,8 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     }
 
     public void visit(CompilationUnit n, Object arg) {
-        if (n.getPakage() != null) {
-            n.getPakage().accept(this, arg);
+        if (n.getPackage() != null) {
+            n.getPackage().accept(this, arg);
         }
         if (n.getImports() != null) {
             for (ImportDeclaration i : n.getImports()) {
@@ -550,7 +544,6 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     public void visit(ArrayCreationExpr n, Object arg) {
         printer.print("new ");
         n.getType().accept(this, arg);
-        printTypeArgs(n.getTypeArgs(), arg);
 
         if (n.getDimensions() != null) {
             for (Expression dim : n.getDimensions()) {
@@ -805,11 +798,6 @@ public final class DumpVisitor implements VoidVisitor<Object> {
             printer.unindent();
             printer.print("}");
         }
-    }
-
-    public void visit(SuperMemberAccessExpr n, Object arg) {
-        printer.print("super.");
-        printer.print(n.getName());
     }
 
     public void visit(UnaryExpr n, Object arg) {
@@ -1336,4 +1324,5 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         printer.print(n.getContent());
         printer.printLn("*/");
     }
+
 }

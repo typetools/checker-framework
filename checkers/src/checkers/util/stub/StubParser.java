@@ -106,10 +106,10 @@ public class StubParser {
 
     private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> result) {
         final String packageName;
-        if (cu.getPakage() == null)
+        if (cu.getPackage() == null)
             packageName = null;
         else
-            packageName = cu.getPakage().getName().toString();
+            packageName = cu.getPackage().getName().toString();
         if (cu.getTypes() != null) {
             for (TypeDeclaration typeDecl : cu.getTypes())
                 parse(typeDecl, packageName, result);

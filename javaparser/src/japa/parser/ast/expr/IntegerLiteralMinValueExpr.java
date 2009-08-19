@@ -30,11 +30,11 @@ import japa.parser.ast.visitor.VoidVisitor;
 public final class IntegerLiteralMinValueExpr extends IntegerLiteralExpr {
 
     public IntegerLiteralMinValueExpr() {
-        this.value = "-2147483648";
+        super(MIN_VALUE);
     }
 
     public IntegerLiteralMinValueExpr(int beginLine, int beginColumn, int endLine, int endColumn) {
-        super(beginLine, beginColumn, endLine, endColumn, "-2147483648");
+        super(beginLine, beginColumn, endLine, endColumn, MIN_VALUE);
     }
 
     @Override

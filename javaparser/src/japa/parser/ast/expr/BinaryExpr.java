@@ -60,6 +60,12 @@ public final class BinaryExpr extends Expression {
     public BinaryExpr() {
     }
 
+    public BinaryExpr(Expression left, Expression right, Operator op) {
+        this.left = left;
+        this.right = right;
+        this.op = op;
+    }
+
     public BinaryExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression left, Expression right, Operator op) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.left = left;

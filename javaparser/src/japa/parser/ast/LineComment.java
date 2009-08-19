@@ -25,16 +25,20 @@ import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
 
 /**
- * <p>AST node that represent line comments.</p>
- * 
- * Line comments are started with "//" and finish at 
- * the end of the line ("\n").  
+ * <p>
+ * AST node that represent line comments.
+ * </p>
+ * Line comments are started with "//" and finish at the end of the line ("\n").
  * 
  * @author Julio Vilmar Gesser
  */
 public final class LineComment extends Comment {
 
     public LineComment() {
+    }
+
+    public LineComment(String content) {
+        super(content);
     }
 
     public LineComment(int beginLine, int beginColumn, int endLine, int endColumn, String content) {

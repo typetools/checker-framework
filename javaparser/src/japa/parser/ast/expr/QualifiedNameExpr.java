@@ -34,6 +34,11 @@ public final class QualifiedNameExpr extends NameExpr {
     public QualifiedNameExpr() {
     }
 
+    public QualifiedNameExpr(NameExpr scope, String name) {
+        super(name);
+        this.qualifier = scope;
+    }
+
     public QualifiedNameExpr(int beginLine, int beginColumn, int endLine, int endColumn, NameExpr scope, String name) {
         super(beginLine, beginColumn, endLine, endColumn, name);
         this.qualifier = scope;

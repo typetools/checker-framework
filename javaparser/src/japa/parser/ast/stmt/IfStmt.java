@@ -39,6 +39,12 @@ public final class IfStmt extends Statement {
     public IfStmt() {
     }
 
+    public IfStmt(Expression condition, Statement thenStmt, Statement elseStmt) {
+        this.condition = condition;
+        this.thenStmt = thenStmt;
+        this.elseStmt = elseStmt;
+    }
+
     public IfStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression condition, Statement thenStmt, Statement elseStmt) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.condition = condition;

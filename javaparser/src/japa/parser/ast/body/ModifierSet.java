@@ -77,8 +77,10 @@ public final class ModifierSet {
         return (modifiers & PROTECTED) != 0;
     }
 
-    /** A set of accessors that indicate whether the specified modifier
-     is in the set. */
+    /**
+     * A set of accessors that indicate whether the specified modifier is in the
+     * set.
+     */
 
     public static boolean isPublic(int modifiers) {
         return (modifiers & PUBLIC) != 0;

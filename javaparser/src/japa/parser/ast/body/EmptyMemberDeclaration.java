@@ -32,8 +32,12 @@ public final class EmptyMemberDeclaration extends BodyDeclaration {
     public EmptyMemberDeclaration() {
     }
 
+    public EmptyMemberDeclaration(JavadocComment javaDoc) {
+        super(null, javaDoc);
+    }
+
     public EmptyMemberDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+        super(beginLine, beginColumn, endLine, endColumn, null, javaDoc);
     }
 
     @Override

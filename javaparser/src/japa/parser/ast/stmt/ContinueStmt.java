@@ -34,6 +34,10 @@ public final class ContinueStmt extends Statement {
     public ContinueStmt() {
     }
 
+    public ContinueStmt(String id) {
+        this.id = id;
+    }
+
     public ContinueStmt(int beginLine, int beginColumn, int endLine, int endColumn, String id) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.id = id;

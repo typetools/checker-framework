@@ -47,6 +47,17 @@ public final class Parameter extends Node {
     public Parameter() {
     }
 
+    public Parameter(Type type, VariableDeclaratorId id) {
+        this.type = type;
+        this.id = id;
+    }
+
+    public Parameter(int modifiers, Type type, VariableDeclaratorId id) {
+        this.modifiers = modifiers;
+        this.type = type;
+        this.id = id;
+    }
+
     public Parameter(int beginLine, int beginColumn, int endLine, int endColumn, int modifiers, List<AnnotationExpr> annotations, Type type, boolean isVarArgs, VariableDeclaratorId id) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.modifiers = modifiers;
@@ -74,6 +85,12 @@ public final class Parameter extends Node {
         return id;
     }
 
+    /**
+     * Return the modifiers of this parameter declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }

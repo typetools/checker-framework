@@ -33,6 +33,10 @@ public final class JavadocComment extends Comment {
     public JavadocComment() {
     }
 
+    public JavadocComment(String content) {
+        super(content);
+    }
+
     public JavadocComment(int beginLine, int beginColumn, int endLine, int endColumn, String content) {
         super(beginLine, beginColumn, endLine, endColumn, content);
     }

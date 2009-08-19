@@ -26,6 +26,7 @@ import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,8 +36,6 @@ public final class FieldDeclaration extends BodyDeclaration {
 
     private int modifiers;
 
-    private List<AnnotationExpr> annotations;
-
     private Type type;
 
     private List<VariableDeclarator> variables;
@@ -44,10 +43,29 @@ public final class FieldDeclaration extends BodyDeclaration {
     public FieldDeclaration() {
     }
 
-    public FieldDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, List<VariableDeclarator> variables) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+    public FieldDeclaration(int modifiers, Type type, VariableDeclarator variable) {
         this.modifiers = modifiers;
-        this.annotations = annotations;
+        this.type = type;
+        this.variables = new ArrayList<VariableDeclarator>();
+        this.variables.add(variable);
+    }
+
+    public FieldDeclaration(int modifiers, Type type, List<VariableDeclarator> variables) {
+        this.modifiers = modifiers;
+        this.type = type;
+        this.variables = variables;
+    }
+
+    public FieldDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, List<VariableDeclarator> variables) {
+        super(annotations, javaDoc);
+        this.modifiers = modifiers;
+        this.type = type;
+        this.variables = variables;
+    }
+
+    public FieldDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, Type type, List<VariableDeclarator> variables) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
+        this.modifiers = modifiers;
         this.type = type;
         this.variables = variables;
     }
@@ -62,10 +80,12 @@ public final class FieldDeclaration extends BodyDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
+    /**
+     * Return the modifiers of this member declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }
@@ -76,10 +96,6 @@ public final class FieldDeclaration extends BodyDeclaration {
 
     public List<VariableDeclarator> getVariables() {
         return variables;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setModifiers(int modifiers) {

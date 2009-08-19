@@ -37,6 +37,10 @@ public final class VariableDeclaratorId extends Node {
     public VariableDeclaratorId() {
     }
 
+    public VariableDeclaratorId(String name) {
+        this.name = name;
+    }
+
     public VariableDeclaratorId(int beginLine, int beginColumn, int endLine, int endColumn, String name, int arrayCount) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

@@ -40,6 +40,15 @@ public final class ClassOrInterfaceType extends Type {
     public ClassOrInterfaceType() {
     }
 
+    public ClassOrInterfaceType(String name) {
+        this.name = name;
+    }
+
+    public ClassOrInterfaceType(ClassOrInterfaceType scope, String name) {
+        this.scope = scope;
+        this.name = name;
+    }
+
     public ClassOrInterfaceType(int beginLine, int beginColumn, int endLine, int endColumn, ClassOrInterfaceType scope, String name, List<Type> typeArgs) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.scope = scope;

@@ -35,6 +35,10 @@ public final class TypeDeclarationStmt extends Statement {
     public TypeDeclarationStmt() {
     }
 
+    public TypeDeclarationStmt(TypeDeclaration typeDecl) {
+        this.typeDecl = typeDecl;
+    }
+
     public TypeDeclarationStmt(int beginLine, int beginColumn, int endLine, int endColumn, TypeDeclaration typeDecl) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.typeDecl = typeDecl;

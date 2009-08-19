@@ -34,6 +34,10 @@ public final class BreakStmt extends Statement {
     public BreakStmt() {
     }
 
+    public BreakStmt(String id) {
+        this.id = id;
+    }
+
     public BreakStmt(int beginLine, int beginColumn, int endLine, int endColumn, String id) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.id = id;

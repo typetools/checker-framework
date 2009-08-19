@@ -115,8 +115,6 @@ public class SimpleVoidVisitor<A> implements VoidVisitor<A> {
 
     public void visit(QualifiedNameExpr n, A arg) { defaultAction(n, arg); }
 
-    public void visit(SuperMemberAccessExpr n, A arg) { defaultAction(n, arg); }
-
     public void visit(ThisExpr n, A arg) { defaultAction(n, arg); }
 
     public void visit(SuperExpr n, A arg) { defaultAction(n, arg); }

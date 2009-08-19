@@ -38,8 +38,6 @@ public final class MethodDeclaration extends BodyDeclaration {
 
     private int modifiers;
 
-    private List<AnnotationExpr> annotations;
-
     private List<TypeParameter> typeParameters;
 
     private Type type;
@@ -59,10 +57,34 @@ public final class MethodDeclaration extends BodyDeclaration {
     public MethodDeclaration() {
     }
 
-    public MethodDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, Type type, String name, List<Parameter> parameters, int arrayCount, List<AnnotationExpr> receiverAnnotations, List<NameExpr> throws_, BlockStmt block) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+    public MethodDeclaration(int modifiers, Type type, String name) {
         this.modifiers = modifiers;
-        this.annotations = annotations;
+        this.type = type;
+        this.name = name;
+    }
+
+    public MethodDeclaration(int modifiers, Type type, String name, List<Parameter> parameters) {
+        this.modifiers = modifiers;
+        this.type = type;
+        this.name = name;
+        this.parameters = parameters;
+    }
+
+    public MethodDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, Type type, String name, List<Parameter> parameters, int arrayCount, List<NameExpr> throws_, BlockStmt block) {
+        super(annotations, javaDoc);
+        this.modifiers = modifiers;
+        this.typeParameters = typeParameters;
+        this.type = type;
+        this.name = name;
+        this.parameters = parameters;
+        this.arrayCount = arrayCount;
+        this.throws_ = throws_;
+        this.body = block;
+    }
+
+    public MethodDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, Type type, String name, List<Parameter> parameters, int arrayCount, List<AnnotationExpr> receiverAnnotations, List<NameExpr> throws_, BlockStmt block) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
+        this.modifiers = modifiers;
         this.typeParameters = typeParameters;
         this.type = type;
         this.name = name;
@@ -83,10 +105,6 @@ public final class MethodDeclaration extends BodyDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public int getArrayCount() {
         return arrayCount;
     }
@@ -95,6 +113,12 @@ public final class MethodDeclaration extends BodyDeclaration {
         return body;
     }
 
+    /**
+     * Return the modifiers of this member declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }
@@ -121,10 +145,6 @@ public final class MethodDeclaration extends BodyDeclaration {
 
     public List<TypeParameter> getTypeParameters() {
         return typeParameters;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setArrayCount(int arrayCount) {

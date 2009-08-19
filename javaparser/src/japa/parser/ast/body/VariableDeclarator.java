@@ -38,6 +38,15 @@ public final class VariableDeclarator extends Node {
     public VariableDeclarator() {
     }
 
+    public VariableDeclarator(VariableDeclaratorId id) {
+        this.id = id;
+    }
+
+    public VariableDeclarator(VariableDeclaratorId id, Expression init) {
+        this.id = id;
+        this.init = init;
+    }
+
     public VariableDeclarator(int beginLine, int beginColumn, int endLine, int endColumn, VariableDeclaratorId id, Expression init) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.id = id;

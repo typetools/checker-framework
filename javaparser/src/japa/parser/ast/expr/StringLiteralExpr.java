@@ -34,6 +34,10 @@ public class StringLiteralExpr extends LiteralExpr {
     public StringLiteralExpr() {
     }
 
+    public StringLiteralExpr(String value) {
+        this.value = value;
+    }
+
     public StringLiteralExpr(int beginLine, int beginColumn, int endLine, int endColumn, String value) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.value = value;

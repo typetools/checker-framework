@@ -40,6 +40,12 @@ public final class TryStmt extends Statement {
     public TryStmt() {
     }
 
+    public TryStmt(BlockStmt tryBlock, List<CatchClause> catchs, BlockStmt finallyBlock) {
+        this.tryBlock = tryBlock;
+        this.catchs = catchs;
+        this.finallyBlock = finallyBlock;
+    }
+
     public TryStmt(int beginLine, int beginColumn, int endLine, int endColumn, BlockStmt tryBlock, List<CatchClause> catchs, BlockStmt finallyBlock) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.tryBlock = tryBlock;
