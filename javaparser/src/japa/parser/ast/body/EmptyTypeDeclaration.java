@@ -32,8 +32,12 @@ public final class EmptyTypeDeclaration extends TypeDeclaration {
     public EmptyTypeDeclaration() {
     }
 
+    public EmptyTypeDeclaration(JavadocComment javaDoc) {
+        super(null, javaDoc, 0, null, null);
+    }
+
     public EmptyTypeDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc, null, 0, null);
+        super(beginLine, beginColumn, endLine, endColumn, null, javaDoc, 0, null, null);
     }
 
     @Override

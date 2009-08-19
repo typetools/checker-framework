@@ -34,6 +34,10 @@ public final class MarkerAnnotationExpr extends AnnotationExpr {
     public MarkerAnnotationExpr() {
     }
 
+    public MarkerAnnotationExpr(NameExpr name) {
+        this.name = name;
+    }
+
     public MarkerAnnotationExpr(int beginLine, int beginColumn, int endLine, int endColumn, NameExpr name) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

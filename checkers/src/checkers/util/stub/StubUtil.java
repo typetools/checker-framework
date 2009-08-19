@@ -33,7 +33,7 @@ public class StubUtil {
         if (indexOfDot == -1) {
             // classes not within a package needs to be the first in the index file
             assert !indexFile.getCompilationUnits().isEmpty();
-            assert indexFile.getCompilationUnits().get(0).getPakage() == null;
+            assert indexFile.getCompilationUnits().get(0).getPackage() == null;
             return findDeclaration(className, indexFile.getCompilationUnits().get(0));
         }
 
@@ -41,7 +41,7 @@ public class StubUtil {
         final String simpleName = className.substring(indexOfDot + 1);
 
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
-            if (cu.getPakage() != null && cu.getPakage().getName().getName().equals(packageName)) {
+            if (cu.getPackage() != null && cu.getPackage().getName().getName().equals(packageName)) {
                 TypeDeclaration type = findDeclaration(simpleName, cu);
                 if (type != null)
                     return type;

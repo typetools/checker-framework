@@ -35,6 +35,10 @@ public final class ExpressionStmt extends Statement {
     public ExpressionStmt() {
     }
 
+    public ExpressionStmt(Expression expr) {
+        this.expr = expr;
+    }
+
     public ExpressionStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression expr) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.expr = expr;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Julio Vilmar Gesser.
+ * Copyright (C) 2008 Júlio Vilmar Gesser.
  *
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -20,18 +20,16 @@
 options {
   LOOKAHEAD=1;
   STATIC=false;
-  CACHE_TOKENS=true;
-  ERROR_REPORTING = true;
   JAVA_UNICODE_ESCAPE=true;
-  DEBUG_PARSER=false;
-  DEBUG_LOOKAHEAD=false;
-  DEBUG_TOKEN_MANAGER=false;
   COMMON_TOKEN_ACTION=true;
+  //SUPPORT_CLASS_VISIBILITY_PUBLIC=false;
+  JDK_VERSION = "1.5";
+  TOKEN_FACTORY = "ASTParser.GTToken";
 }
 
 PARSER_BEGIN(ASTParser)
 /*
- * Copyright (C) 2008 Julio Vilmar Gesser.
+ * Copyright (C) 2008 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -60,7 +58,7 @@ import japa.parser.ast.type.*;
 
 /**
  * <p>This class was generated automatically by javacc, do not edit.</p>
- * @author Julio Vilmar Gesser
+ * @author Júlio Vilmar Gesser
  */
 final class ASTParser {
 
@@ -102,7 +100,7 @@ final class ASTParser {
 
     public int addModifier(int modifiers, int mod, Token token) throws ParseException {
         if ((ModifierSet.hasModifier(modifiers, mod))) {
-            throw new ParseException(token, "Duplicated modifier");
+            throwParseException(token, "Duplicated modifier");
         }
         return ModifierSet.addModifier(modifiers, mod);
     }
@@ -117,6 +115,34 @@ final class ASTParser {
 
     private List<Comment> getComments() {
         return token_source.getComments();
+    }
+    
+    private void throwParseException(Token token, String message) throws ParseException {
+        StringBuilder buf = new StringBuilder();
+        buf.append(message);
+        buf.append(": \"");
+        buf.append(token.image);
+        buf.append("\" at line ");
+        buf.append(token.beginLine);
+        buf.append(", column ");
+        buf.append(token.beginColumn);
+        ParseException e = new ParseException(buf.toString());
+        e.currentToken = token;
+        throw e;
+    }
+    
+    static final class GTToken extends Token {
+
+        int realKind = ASTParserConstants.GT;
+
+        GTToken(int kind, String image) {
+            this.kind = kind;
+            this.image = image;
+        }
+
+        public static Token newToken(int kind, String image) {
+            return new GTToken(kind, image);
+        }
     }
 }
 
@@ -1117,13 +1143,13 @@ TOKEN :
   < RUNSIGNEDSHIFT: ">>>" >
   {
      matchedToken.kind = GT;
-     ((Token.GTToken)matchedToken).realKind = RUNSIGNEDSHIFT;
+     ((ASTParser.GTToken)matchedToken).realKind = RUNSIGNEDSHIFT;
      input_stream.backup(2);
   }
 | < RSIGNEDSHIFT: ">>" >
   {
      matchedToken.kind = GT;
-     ((Token.GTToken)matchedToken).realKind = RSIGNEDSHIFT;
+     ((ASTParser.GTToken)matchedToken).realKind = RSIGNEDSHIFT;
      input_stream.backup(1);
   }
 | < GT: ">" >
@@ -1291,7 +1317,7 @@ List ExtendsList(boolean isInterface):
    ( "," cit = ClassOrInterfaceType() { ret.add(cit); extendsMoreThanOne = true; } )*
    {
       if (extendsMoreThanOne && !isInterface)
-         throw new ParseException(token, "A class cannot extend more than one other class");
+         throwParseException(token, "A class cannot extend more than one other class");
    }
    { return ret; }
 }
@@ -1306,7 +1332,7 @@ List ImplementsList(boolean isInterface):
    ( "," cit = ClassOrInterfaceType() { ret.add(cit); } )*
    {
       if (isInterface)
-         throw new ParseException(token, "An interface cannot implement other interfaces");
+         throwParseException(token, "An interface cannot implement other interfaces");
    }
    { return ret; }
 }
@@ -1418,7 +1444,7 @@ BodyDeclaration ClassOrInterfaceBodyDeclaration(boolean isInterface):
 	  ret = InitializerDeclaration()
 	  {
 	     if (isInterface)
-	        throw new ParseException(token, "An interface cannot have initializers");
+	        throwParseException(token, "An interface cannot have initializers");
 	  }
 	|
 	  modifier = Modifiers() // Just get all the modifiers out of the way. If you want to do
@@ -2017,15 +2043,19 @@ Expression UnaryExpression():
 }
 {
   (
+	  ret = PreIncrementExpression()
+	|
+	  ret = PreDecrementExpression()
+	|
 	  ( "+" { op = UnaryExpr.Operator.positive; line=token.beginLine; column=token.beginColumn;} |
 	    "-" { op = UnaryExpr.Operator.negative; line=token.beginLine; column=token.beginColumn;}
 	  ) ret = UnaryExpression()
 	  {
 	  	 if(op == UnaryExpr.Operator.negative) {
 	  	 	if (ret instanceof IntegerLiteralExpr && ((IntegerLiteralExpr)ret).isMinValue()) {
-	  	 		ret = new IntegerLiteralMinValueExpr(ret.getBeginLine(), ret.getBeginColumn(), token.endLine, token.endColumn);
+	  	 		ret = new IntegerLiteralMinValueExpr(line, column, token.endLine, token.endColumn);
 	  	 	} else if (ret instanceof LongLiteralExpr && ((LongLiteralExpr)ret).isMinValue()) {
-	  	 		ret = new LongLiteralMinValueExpr(ret.getBeginLine(), ret.getBeginColumn(), token.endLine, token.endColumn);
+	  	 		ret = new LongLiteralMinValueExpr(line, column, token.endLine, token.endColumn);
 	  	 	} else {
 	  	 		ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, op);
 	  	 	}
@@ -2033,10 +2063,6 @@ Expression UnaryExpression():
 	  	 	ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, op);
 	  	 }
 	  }
-	|
-	  ret = PreIncrementExpression()
-	|
-	  ret = PreDecrementExpression()
 	|
 	  ret = UnaryExpressionNotPlusMinus()
   )
@@ -2050,7 +2076,7 @@ Expression PreIncrementExpression():
 	int column;
 }
 {
-  "++" {line=token.beginLine; column=token.beginColumn;} ret = PrimaryExpression() { ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, UnaryExpr.Operator.preIncrement); }
+  "++" {line=token.beginLine; column=token.beginColumn;} ret = UnaryExpression() { ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, UnaryExpr.Operator.preIncrement); }
   { return ret; }
 }
 
@@ -2061,7 +2087,7 @@ Expression PreDecrementExpression():
 	int column;
 }
 {
-  "--" {line=token.beginLine; column=token.beginColumn;} ret = PrimaryExpression() { ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, UnaryExpr.Operator.preDecrement); }
+  "--" {line=token.beginLine; column=token.beginColumn;} ret = UnaryExpression() { ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, UnaryExpr.Operator.preDecrement); }
   { return ret; }
 }
 
@@ -2078,24 +2104,12 @@ Expression UnaryExpressionNotPlusMinus():
 	    "!" { op = UnaryExpr.Operator.not;     line=token.beginLine; column=token.beginColumn;}
 	  ) ret = UnaryExpression() { ret = new UnaryExpr(line, column, token.endLine, token.endColumn,ret, op); }
 	|
-	  LOOKAHEAD( CastLookahead() )
+	  LOOKAHEAD( CastExpression() )
 	  ret = CastExpression()
 	|
-	  ret = PostfixExpression()
+      ret = PostfixExpression()
   )
   { return ret; }
-}
-
-// This production is to determine lookahead only.  The LOOKAHEAD specifications
-// below are not used, but they are there just to indicate that we know about
-// this.
-void CastLookahead():
-{}
-{
-  LOOKAHEAD("(" Type() "[")
-  "(" Type() "[" "]"
-|
-  "(" Type() ")" UnaryExpression()
 }
 
 Expression PostfixExpression():
@@ -2122,7 +2136,13 @@ Expression CastExpression():
 	int column;
 }
 {
-  "(" {line=token.beginLine; column=token.beginColumn;} type = Type() ")" ret = UnaryExpression() { ret = new CastExpr(line, column, token.endLine, token.endColumn,type, ret); }
+  "(" {line=token.beginLine; column=token.beginColumn;} 
+  (
+  	  LOOKAHEAD(2)
+  	  type = PrimitiveType() ")" ret = UnaryExpression() { ret = new CastExpr(line, column, token.endLine, token.endColumn,type, ret); }
+  	|
+  	  type = ReferenceType() ")" ret = UnaryExpressionNotPlusMinus() { ret = new CastExpr(line, column, token.endLine, token.endColumn,type, ret); }
+  )
   { return ret; }
 }
 
@@ -2325,30 +2345,31 @@ Expression AllocationExpression(Expression scope):
 {
   "new" { if(scope==null) {line=token.beginLine; column=token.beginColumn;} else {line=scope.getBeginLine(); column=scope.getBeginColumn();} }
   (
-	  type = PrimitiveType() arr = ArrayDimsAndInits()
+	  type = PrimitiveType()
+	  arr = ArrayDimsAndInits()
 	  {
 	  	if (arr[0] instanceof Integer) {
-		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, null, ((Integer)arr[0]).intValue(), (ArrayInitializerExpr)arr[1]);
+		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, ((Integer)arr[0]).intValue(), (ArrayInitializerExpr)arr[1]);
 	  	} else {
-		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, null, (List)arr[0], ((Integer)arr[1]).intValue());
+		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, (List)arr[0], ((Integer)arr[1]).intValue());
 	  	}
 	  }
 	|
-	  [ typeArgs = TypeArguments() {typeArgs.remove(0);} ]
+  	  LOOKAHEAD(ClassOrInterfaceType() ArrayDimsAndInits())
 	  type = ClassOrInterfaceType()
-	  (
-	      arr = ArrayDimsAndInits()
-		  {
-		  	if (arr[0] instanceof Integer) {
-			  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, typeArgs, ((Integer)arr[0]).intValue(), (ArrayInitializerExpr)arr[1]);
-		  	} else {
-			  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, typeArgs, (List)arr[0], ((Integer)arr[1]).intValue());
-		  	}
-		  }
-	    |
-	      args = Arguments() [ LOOKAHEAD(2) anonymousBody = ClassOrInterfaceBody(false) ]
-	      { ret = new ObjectCreationExpr(line, column, token.endLine, token.endColumn, scope, (ClassOrInterfaceType) type, typeArgs, args, anonymousBody); }
-	    )
+      arr = ArrayDimsAndInits()
+	  {
+	  	if (arr[0] instanceof Integer) {
+		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, ((Integer)arr[0]).intValue(), (ArrayInitializerExpr)arr[1]);
+	  	} else {
+		  	ret = new ArrayCreationExpr(line, column, token.endLine, token.endColumn, type, (List)arr[0], ((Integer)arr[1]).intValue());
+	  	}
+	  }
+    |
+  	  [ typeArgs = TypeArguments() {typeArgs.remove(0);} ]
+  	  type = ClassOrInterfaceType()
+      args = Arguments() [ LOOKAHEAD(2) anonymousBody = ClassOrInterfaceBody(false) ]
+      { ret = new ObjectCreationExpr(line, column, token.endLine, token.endColumn, scope, (ClassOrInterfaceType) type, typeArgs, args, anonymousBody); }
   )
   { return ret; }
 }
@@ -2778,7 +2799,7 @@ void RUNSIGNEDSHIFT():
 {}
 {
   ( LOOKAHEAD({ getToken(1).kind == GT &&
-                ((Token.GTToken)getToken(1)).realKind == RUNSIGNEDSHIFT} )
+                ((GTToken)getToken(1)).realKind == RUNSIGNEDSHIFT} )
    ">" ">" ">"
   )
 }
@@ -2787,7 +2808,7 @@ void RSIGNEDSHIFT():
 {}
 {
   ( LOOKAHEAD({ getToken(1).kind == GT &&
-                ((Token.GTToken)getToken(1)).realKind == RSIGNEDSHIFT} )
+                ((GTToken)getToken(1)).realKind == RSIGNEDSHIFT} )
   ">" ">"
   )
 }

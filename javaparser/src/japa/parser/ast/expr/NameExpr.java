@@ -34,6 +34,10 @@ public class NameExpr extends Expression {
     public NameExpr() {
     }
 
+    public NameExpr(String name) {
+        this.name = name;
+    }
+
     public NameExpr(int beginLine, int beginColumn, int endLine, int endColumn, String name) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

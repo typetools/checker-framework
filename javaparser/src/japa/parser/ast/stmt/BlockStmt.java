@@ -36,6 +36,10 @@ public final class BlockStmt extends Statement {
     public BlockStmt() {
     }
 
+    public BlockStmt(List<Statement> stmts) {
+        this.stmts = stmts;
+    }
+
     public BlockStmt(int beginLine, int beginColumn, int endLine, int endColumn, List<Statement> stmts) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.stmts = stmts;

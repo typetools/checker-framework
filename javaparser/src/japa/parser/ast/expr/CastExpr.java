@@ -37,6 +37,11 @@ public final class CastExpr extends Expression {
     public CastExpr() {
     }
 
+    public CastExpr(Type type, Expression expr) {
+        this.type = type;
+        this.expr = expr;
+    }
+
     public CastExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, Expression expr) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.type = type;

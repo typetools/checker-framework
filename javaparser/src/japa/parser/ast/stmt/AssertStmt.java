@@ -37,6 +37,15 @@ public final class AssertStmt extends Statement {
     public AssertStmt() {
     }
 
+    public AssertStmt(Expression check) {
+        this.check = check;
+    }
+
+    public AssertStmt(Expression check, Expression msg) {
+        this.check = check;
+        this.msg = msg;
+    }
+
     public AssertStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression check, Expression msg) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.check = check;

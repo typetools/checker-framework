@@ -39,6 +39,11 @@ public final class SwitchStmt extends Statement {
     public SwitchStmt() {
     }
 
+    public SwitchStmt(Expression selector, List<SwitchEntryStmt> entries) {
+        this.selector = selector;
+        this.entries = entries;
+    }
+
     public SwitchStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression selector, List<SwitchEntryStmt> entries) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.selector = selector;

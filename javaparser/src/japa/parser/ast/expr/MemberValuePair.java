@@ -37,6 +37,11 @@ public final class MemberValuePair extends Node {
     public MemberValuePair() {
     }
 
+    public MemberValuePair(String name, Expression value) {
+        this.name = name;
+        this.value = value;
+    }
+
     public MemberValuePair(int beginLine, int beginColumn, int endLine, int endColumn, String name, Expression value) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

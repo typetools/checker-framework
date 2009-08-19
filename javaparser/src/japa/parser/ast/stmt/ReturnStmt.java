@@ -35,6 +35,10 @@ public final class ReturnStmt extends Statement {
     public ReturnStmt() {
     }
 
+    public ReturnStmt(Expression expr) {
+        this.expr = expr;
+    }
+
     public ReturnStmt(int beginLine, int beginColumn, int endLine, int endColumn, Expression expr) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.expr = expr;

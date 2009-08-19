@@ -47,6 +47,11 @@ public final class UnaryExpr extends Expression {
     public UnaryExpr() {
     }
 
+    public UnaryExpr(Expression expr, Operator op) {
+        this.expr = expr;
+        this.op = op;
+    }
+
     public UnaryExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression expr, Operator op) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.expr = expr;

@@ -32,6 +32,10 @@ public final class DoubleLiteralExpr extends StringLiteralExpr {
     public DoubleLiteralExpr() {
     }
 
+    public DoubleLiteralExpr(String value) {
+        super(value);
+    }
+
     public DoubleLiteralExpr(int beginLine, int beginColumn, int endLine, int endColumn, String value) {
         super(beginLine, beginColumn, endLine, endColumn, value);
     }

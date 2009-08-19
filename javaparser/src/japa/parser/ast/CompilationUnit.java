@@ -33,9 +33,10 @@ import japa.parser.ast.visitor.VoidVisitor;
 import java.util.List;
 
 /**
- * <p>This class represents the entire compilation unit. Each java
- * file denotes a compilation unit.</p>
- * 
+ * <p>
+ * This class represents the entire compilation unit. Each java file denotes a
+ * compilation unit.
+ * </p>
  * The CompilationUnit is constructed following the syntax:<br>
  * <code>
  * <table>
@@ -66,6 +67,13 @@ public final class CompilationUnit extends Node {
     public CompilationUnit() {
     }
 
+    public CompilationUnit(PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types, List<Comment> comments) {
+        this.pakage = pakage;
+        this.imports = imports;
+        this.types = types;
+        this.comments = comments;
+    }
+
     public CompilationUnit(int beginLine, int beginColumn, int endLine, int endColumn, PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types, List<Comment> comments) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.pakage = pakage;
@@ -86,10 +94,12 @@ public final class CompilationUnit extends Node {
 
     /**
      * Return a list containing all comments declared in this compilation unit.
-     * Including javadocs, line comments and block comments of all types, 
+     * Including javadocs, line comments and block comments of all types,
      * inner-classes and other members.<br>
      * If there is no comment, <code>null</code> is returned.
-     * @return list with all comments of this compilation unit or <code>null</code>
+     * 
+     * @return list with all comments of this compilation unit or
+     *         <code>null</code>
      * @see JavadocComment
      * @see LineComment
      * @see BlockComment
@@ -101,6 +111,7 @@ public final class CompilationUnit extends Node {
     /**
      * Retrieves the list of imports declared in this compilation unit or
      * <code>null</code> if there is no import.
+     * 
      * @return the list of imports or <code>null</code> if there is no import
      */
     public List<ImportDeclaration> getImports() {
@@ -111,15 +122,17 @@ public final class CompilationUnit extends Node {
      * Retrieves the package declaration of this compilation unit.<br>
      * If this compilation unit has no package declaration (default package),
      * <code>null</code> is returned.
+     * 
      * @return the package declaration or <code>null</code>
      */
-    public PackageDeclaration getPakage() {
+    public PackageDeclaration getPackage() {
         return pakage;
     }
 
     /**
      * Return the list of types declared in this compilation unit.<br>
      * If there is no types declared, <code>null</code> is returned.
+     * 
      * @return the list of types or <code>null</code> null if there is no type
      * @see AnnotationDeclaration
      * @see ClassOrInterfaceDeclaration
@@ -132,32 +145,41 @@ public final class CompilationUnit extends Node {
 
     /**
      * Sets the list of comments of this compilation unit.
-     * @param comments the list of comments
+     * 
+     * @param comments
+     *            the list of comments
      */
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
 
     /**
-     * Sets the list of imports of this compilation unit.
-     * The list is initially <code>null</code>.
-     * @param imports the list of imports
+     * Sets the list of imports of this compilation unit. The list is initially
+     * <code>null</code>.
+     * 
+     * @param imports
+     *            the list of imports
      */
     public void setImports(List<ImportDeclaration> imports) {
         this.imports = imports;
     }
 
     /**
-     * Sets or clear the package declarations of this compilation unit. 
-     * @param pakage the pakage declaration to set or <code>null</code> to default package
+     * Sets or clear the package declarations of this compilation unit.
+     * 
+     * @param pakage
+     *            the pakage declaration to set or <code>null</code> to default
+     *            package
      */
-    public void setPakage(PackageDeclaration pakage) {
+    public void setPackage(PackageDeclaration pakage) {
         this.pakage = pakage;
     }
 
     /**
      * Sets the list of types declared in this compilation unit.
-     * @param types the lis of types
+     * 
+     * @param types
+     *            the lis of types
      */
     public void setTypes(List<TypeDeclaration> types) {
         this.types = types;

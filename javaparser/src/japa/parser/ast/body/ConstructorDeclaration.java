@@ -37,8 +37,6 @@ public final class ConstructorDeclaration extends BodyDeclaration {
 
     private int modifiers;
 
-    private List<AnnotationExpr> annotations;
-
     private List<TypeParameter> typeParameters;
 
     private String name;
@@ -54,10 +52,24 @@ public final class ConstructorDeclaration extends BodyDeclaration {
     public ConstructorDeclaration() {
     }
 
-    public ConstructorDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<AnnotationExpr> receiverAnnotations, List<NameExpr> throws_, BlockStmt block) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc);
+    public ConstructorDeclaration(int modifiers, String name) {
         this.modifiers = modifiers;
-        this.annotations = annotations;
+        this.name = name;
+    }
+
+    public ConstructorDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<NameExpr> throws_, BlockStmt block) {
+        super(annotations, javaDoc);
+        this.modifiers = modifiers;
+        this.typeParameters = typeParameters;
+        this.name = name;
+        this.parameters = parameters;
+        this.throws_ = throws_;
+        this.block = block;
+    }
+
+    public ConstructorDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<AnnotationExpr> receiverAnnotations, List<NameExpr> throws_, BlockStmt block) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
+        this.modifiers = modifiers;
         this.typeParameters = typeParameters;
         this.name = name;
         this.parameters = parameters;
@@ -76,14 +88,16 @@ public final class ConstructorDeclaration extends BodyDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public BlockStmt getBlock() {
         return block;
     }
 
+    /**
+     * Return the modifiers of this member declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }
@@ -106,10 +120,6 @@ public final class ConstructorDeclaration extends BodyDeclaration {
 
     public List<TypeParameter> getTypeParameters() {
         return typeParameters;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setBlock(BlockStmt block) {
