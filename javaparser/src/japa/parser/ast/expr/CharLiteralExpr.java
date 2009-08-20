@@ -32,6 +32,10 @@ public final class CharLiteralExpr extends StringLiteralExpr {
     public CharLiteralExpr() {
     }
 
+    public CharLiteralExpr(String value) {
+        super(value);
+    }
+
     public CharLiteralExpr(int beginLine, int beginColumn, int endLine, int endColumn, String value) {
         super(beginLine, beginColumn, endLine, endColumn, value);
     }

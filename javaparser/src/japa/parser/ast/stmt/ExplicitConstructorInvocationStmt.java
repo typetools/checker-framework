@@ -44,6 +44,12 @@ public final class ExplicitConstructorInvocationStmt extends Statement {
     public ExplicitConstructorInvocationStmt() {
     }
 
+    public ExplicitConstructorInvocationStmt(boolean isThis, Expression expr, List<Expression> args) {
+        this.isThis = isThis;
+        this.expr = expr;
+        this.args = args;
+    }
+
     public ExplicitConstructorInvocationStmt(int beginLine, int beginColumn, int endLine, int endColumn, List<Type> typeArgs, boolean isThis, Expression expr, List<Expression> args) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.typeArgs = typeArgs;

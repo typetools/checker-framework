@@ -37,6 +37,11 @@ public final class InstanceOfExpr extends Expression {
     public InstanceOfExpr() {
     }
 
+    public InstanceOfExpr(Expression expr, Type type) {
+        this.expr = expr;
+        this.type = type;
+    }
+
     public InstanceOfExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression expr, Type type) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.expr = expr;

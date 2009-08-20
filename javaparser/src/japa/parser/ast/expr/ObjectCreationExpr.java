@@ -47,6 +47,12 @@ public final class ObjectCreationExpr extends Expression {
     public ObjectCreationExpr() {
     }
 
+    public ObjectCreationExpr(Expression scope, ClassOrInterfaceType type, List<Expression> args) {
+        this.scope = scope;
+        this.type = type;
+        this.args = args;
+    }
+
     public ObjectCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression scope, ClassOrInterfaceType type, List<Type> typeArgs, List<Expression> args, List<BodyDeclaration> anonymousBody) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.scope = scope;

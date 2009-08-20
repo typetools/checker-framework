@@ -33,8 +33,6 @@ import java.util.List;
  */
 public final class EnumDeclaration extends TypeDeclaration {
 
-    private List<AnnotationExpr> annotations;
-
     private List<ClassOrInterfaceType> implementsList;
 
     private List<EnumConstantDeclaration> entries;
@@ -42,9 +40,18 @@ public final class EnumDeclaration extends TypeDeclaration {
     public EnumDeclaration() {
     }
 
+    public EnumDeclaration(int modifiers, String name) {
+        super(modifiers, name);
+    }
+
+    public EnumDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, String name, List<ClassOrInterfaceType> implementsList, List<EnumConstantDeclaration> entries, List<BodyDeclaration> members) {
+        super(annotations, javaDoc, modifiers, name, members);
+        this.implementsList = implementsList;
+        this.entries = entries;
+    }
+
     public EnumDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, String name, List<ClassOrInterfaceType> implementsList, List<EnumConstantDeclaration> entries, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc, name, modifiers, members);
-        this.annotations = annotations;
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc, modifiers, name, members);
         this.implementsList = implementsList;
         this.entries = entries;
     }
@@ -59,20 +66,12 @@ public final class EnumDeclaration extends TypeDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public List<EnumConstantDeclaration> getEntries() {
         return entries;
     }
 
     public List<ClassOrInterfaceType> getImplements() {
         return implementsList;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setEntries(List<EnumConstantDeclaration> entries) {

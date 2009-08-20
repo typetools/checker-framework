@@ -38,13 +38,18 @@ public abstract class Comment extends Node {
     public Comment() {
     }
 
+    public Comment(String content) {
+        this.content = content;
+    }
+
     public Comment(int beginLine, int beginColumn, int endLine, int endColumn, String content) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.content = content;
     }
 
     /**
-     * Return the text of the comment. 
+     * Return the text of the comment.
+     * 
      * @return text of the comment
      */
     public final String getContent() {
@@ -53,7 +58,9 @@ public abstract class Comment extends Node {
 
     /**
      * Sets the text of the comment.
-     * @param content the text of the comment to set
+     * 
+     * @param content
+     *            the text of the comment to set
      */
     public void setContent(String content) {
         this.content = content;

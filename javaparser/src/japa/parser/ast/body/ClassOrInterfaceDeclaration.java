@@ -34,8 +34,6 @@ import java.util.List;
  */
 public final class ClassOrInterfaceDeclaration extends TypeDeclaration {
 
-    private List<AnnotationExpr> annotations;
-
     private boolean interface_;
 
     private List<TypeParameter> typeParameters;
@@ -47,9 +45,21 @@ public final class ClassOrInterfaceDeclaration extends TypeDeclaration {
     public ClassOrInterfaceDeclaration() {
     }
 
+    public ClassOrInterfaceDeclaration(int modifiers, boolean isInterface, String name) {
+        super(modifiers, name);
+        this.interface_ = isInterface;
+    }
+
+    public ClassOrInterfaceDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, boolean isInterface, String name, List<TypeParameter> typeParameters, List<ClassOrInterfaceType> extendsList, List<ClassOrInterfaceType> implementsList, List<BodyDeclaration> members) {
+        super(annotations, javaDoc, modifiers, name, members);
+        this.interface_ = isInterface;
+        this.typeParameters = typeParameters;
+        this.extendsList = extendsList;
+        this.implementsList = implementsList;
+    }
+
     public ClassOrInterfaceDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, boolean isInterface, String name, List<TypeParameter> typeParameters, List<ClassOrInterfaceType> extendsList, List<ClassOrInterfaceType> implementsList, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, javaDoc, name, modifiers, members);
-        this.annotations = annotations;
+        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc, modifiers, name, members);
         this.interface_ = isInterface;
         this.typeParameters = typeParameters;
         this.extendsList = extendsList;
@@ -66,10 +76,6 @@ public final class ClassOrInterfaceDeclaration extends TypeDeclaration {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
     public List<ClassOrInterfaceType> getExtends() {
         return extendsList;
     }
@@ -84,10 +90,6 @@ public final class ClassOrInterfaceDeclaration extends TypeDeclaration {
 
     public boolean isInterface() {
         return interface_;
-    }
-
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
     }
 
     public void setExtends(List<ClassOrInterfaceType> extendsList) {

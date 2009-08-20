@@ -28,8 +28,9 @@ import japa.parser.ast.visitor.VoidVisitor;
 import java.util.List;
 
 /**
- * <p>This class represents the declaration of a genetics argument.</p>
- * 
+ * <p>
+ * This class represents the declaration of a genetics argument.
+ * </p>
  * The TypeParameter is constructed following the syntax:<br>
  * <code>
  * <table>
@@ -54,6 +55,11 @@ public final class TypeParameter extends Node {
     public TypeParameter() {
     }
 
+    public TypeParameter(String name, List<ClassOrInterfaceType> typeBound) {
+        this.name = name;
+        this.typeBound = typeBound;
+    }
+
     public TypeParameter(int beginLine, int beginColumn, int endLine, int endColumn, String name, List<ClassOrInterfaceType> typeBound) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;
@@ -72,6 +78,7 @@ public final class TypeParameter extends Node {
 
     /**
      * Return the name of the paramenter.
+     * 
      * @return the name of the paramenter
      */
     public String getName() {
@@ -80,7 +87,8 @@ public final class TypeParameter extends Node {
 
     /**
      * Return the list of {@link ClassOrInterfaceType} that this parameter
-     * extends. Return <code>null</code> null if there are no type. 
+     * extends. Return <code>null</code> null if there are no type.
+     * 
      * @return list of types that this paramente extends or <code>null</code>
      */
     public List<ClassOrInterfaceType> getTypeBound() {
@@ -89,7 +97,9 @@ public final class TypeParameter extends Node {
 
     /**
      * Sets the name of this type parameter.
-     * @param name the name to set
+     * 
+     * @param name
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -97,7 +107,9 @@ public final class TypeParameter extends Node {
 
     /**
      * Sets the list o types.
-     * @param typeBound the typeBound to set
+     * 
+     * @param typeBound
+     *            the typeBound to set
      */
     public void setTypeBound(List<ClassOrInterfaceType> typeBound) {
         this.typeBound = typeBound;

@@ -38,6 +38,10 @@ public final class PrimitiveType extends Type {
     public PrimitiveType() {
     }
 
+    public PrimitiveType(Primitive type) {
+        this.type = type;
+    }
+
     public PrimitiveType(int beginLine, int beginColumn, int endLine, int endColumn, Primitive type) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.type = type;

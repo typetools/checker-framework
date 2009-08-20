@@ -34,8 +34,6 @@ public final class ArrayCreationExpr extends Expression {
 
     private Type type;
 
-    private List<Type> typeArgs;
-
     private int arrayCount;
 
     private ArrayInitializerExpr initializer;
@@ -45,19 +43,31 @@ public final class ArrayCreationExpr extends Expression {
     public ArrayCreationExpr() {
     }
 
-    public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, List<Type> typeArgs, int arrayCount, ArrayInitializerExpr initializer) {
-        super(beginLine, beginColumn, endLine, endColumn);
+    public ArrayCreationExpr(Type type, int arrayCount, ArrayInitializerExpr initializer) {
         this.type = type;
-        this.typeArgs = typeArgs;
         this.arrayCount = arrayCount;
         this.initializer = initializer;
         this.dimensions = null;
     }
 
-    public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, List<Type> typeArgs, List<Expression> dimensions, int arrayCount) {
+    public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, int arrayCount, ArrayInitializerExpr initializer) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.type = type;
-        this.typeArgs = typeArgs;
+        this.arrayCount = arrayCount;
+        this.initializer = initializer;
+        this.dimensions = null;
+    }
+
+    public ArrayCreationExpr(Type type, List<Expression> dimensions, int arrayCount) {
+        this.type = type;
+        this.arrayCount = arrayCount;
+        this.dimensions = dimensions;
+        this.initializer = null;
+    }
+
+    public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, List<Expression> dimensions, int arrayCount) {
+        super(beginLine, beginColumn, endLine, endColumn);
+        this.type = type;
         this.arrayCount = arrayCount;
         this.dimensions = dimensions;
         this.initializer = null;
@@ -89,10 +99,6 @@ public final class ArrayCreationExpr extends Expression {
         return type;
     }
 
-    public List<Type> getTypeArgs() {
-        return typeArgs;
-    }
-
     public void setArrayCount(int arrayCount) {
         this.arrayCount = arrayCount;
     }
@@ -107,10 +113,6 @@ public final class ArrayCreationExpr extends Expression {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    public void setTypeArgs(List<Type> typeArgs) {
-        this.typeArgs = typeArgs;
     }
 
 }

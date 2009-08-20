@@ -36,9 +36,17 @@ public final class WildcardType extends Type {
     public WildcardType() {
     }
 
+    public WildcardType(ReferenceType ext) {
+        this.ext = ext;
+    }
+
+    public WildcardType(ReferenceType ext, ReferenceType sup) {
+        this.ext = ext;
+        this.sup = sup;
+    }
+
     public WildcardType(int beginLine, int beginColumn, int endLine, int endColumn, ReferenceType ext, ReferenceType sup) {
         super(beginLine, beginColumn, endLine, endColumn);
-        assert ext == null || sup == null;
         this.ext = ext;
         this.sup = sup;
     }

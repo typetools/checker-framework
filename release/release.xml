@@ -195,6 +195,10 @@
 
         <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
             match="\/pag\/jsr308\/dev" replace="/pag/jsr308/current"/>
+
+        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
+            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+
     </target>
 
     <target name="-update-versions-dev" depends="-prep-checkdev"
@@ -229,6 +233,9 @@
 
         <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
             match="\/pag\/jsr308\/current" replace="/pag/jsr308/dev"/>
+
+        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
+            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
     </target>
 

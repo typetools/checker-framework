@@ -34,6 +34,10 @@ public final class EnclosedExpr extends Expression {
     public EnclosedExpr() {
     }
 
+    public EnclosedExpr(Expression inner) {
+        this.inner = inner;
+    }
+
     public EnclosedExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression inner) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.inner = inner;

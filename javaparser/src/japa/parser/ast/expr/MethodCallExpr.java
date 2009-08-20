@@ -43,6 +43,17 @@ public final class MethodCallExpr extends Expression {
     public MethodCallExpr() {
     }
 
+    public MethodCallExpr(Expression scope, String name) {
+        this.scope = scope;
+        this.name = name;
+    }
+
+    public MethodCallExpr(Expression scope, String name, List<Expression> args) {
+        this.scope = scope;
+        this.name = name;
+        this.args = args;
+    }
+
     public MethodCallExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression scope, List<Type> typeArgs, String name, List<Expression> args) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.scope = scope;

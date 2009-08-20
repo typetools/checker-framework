@@ -35,6 +35,10 @@ public final class ClassExpr extends Expression {
     public ClassExpr() {
     }
 
+    public ClassExpr(Type type) {
+        this.type = type;
+    }
+
     public ClassExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.type = type;

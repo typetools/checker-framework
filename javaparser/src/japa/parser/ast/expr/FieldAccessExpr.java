@@ -41,6 +41,11 @@ public final class FieldAccessExpr extends Expression {
     public FieldAccessExpr() {
     }
 
+    public FieldAccessExpr(Expression scope, String field) {
+        this.scope = scope;
+        this.field = field;
+    }
+
     public FieldAccessExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression scope, List<Type> typeArgs, String field) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.scope = scope;

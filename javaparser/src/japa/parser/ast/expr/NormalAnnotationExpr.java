@@ -38,6 +38,11 @@ public final class NormalAnnotationExpr extends AnnotationExpr {
     public NormalAnnotationExpr() {
     }
 
+    public NormalAnnotationExpr(NameExpr name, List<MemberValuePair> pairs) {
+        this.name = name;
+        this.pairs = pairs;
+    }
+
     public NormalAnnotationExpr(int beginLine, int beginColumn, int endLine, int endColumn, NameExpr name, List<MemberValuePair> pairs) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;

@@ -21,6 +21,7 @@
  */
 package japa.parser.ast.expr;
 
+import japa.parser.ast.body.ModifierSet;
 import japa.parser.ast.body.VariableDeclarator;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.GenericVisitor;
@@ -42,6 +43,17 @@ public final class VariableDeclarationExpr extends Expression {
     private List<VariableDeclarator> vars;
 
     public VariableDeclarationExpr() {
+    }
+
+    public VariableDeclarationExpr(Type type, List<VariableDeclarator> vars) {
+        this.type = type;
+        this.vars = vars;
+    }
+
+    public VariableDeclarationExpr(int modifiers, Type type, List<VariableDeclarator> vars) {
+        this.modifiers = modifiers;
+        this.type = type;
+        this.vars = vars;
     }
 
     public VariableDeclarationExpr(int beginLine, int beginColumn, int endLine, int endColumn, int modifiers, List<AnnotationExpr> annotations, Type type, List<VariableDeclarator> vars) {
@@ -66,6 +78,12 @@ public final class VariableDeclarationExpr extends Expression {
         return annotations;
     }
 
+    /**
+     * Return the modifiers of this variable declaration.
+     * 
+     * @see ModifierSet
+     * @return modifiers
+     */
     public int getModifiers() {
         return modifiers;
     }
