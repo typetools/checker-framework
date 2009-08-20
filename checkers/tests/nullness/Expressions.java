@@ -50,4 +50,8 @@ public class Expressions {
   void test5() {
       Comparable<Date> d = new Date();
   }
+
+  void testInersection() {
+      java.util.Arrays.asList("m",1);
+  }
 }
