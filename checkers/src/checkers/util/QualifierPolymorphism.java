@@ -330,7 +330,11 @@ public class QualifierPolymorphism {
 
             assert actualType.getKind() == type.getKind();
             type = (AnnotatedDeclaredType)atypes.asSuper(type, actualType);
-            assert type != null;
+            // TODO: type is null if type is an intersection type
+            // assert type != null;
+            if (type == null)
+                return new HashMap<String, AnnotationMirror>();
+
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
             Map<String, AnnotationMirror> result =
