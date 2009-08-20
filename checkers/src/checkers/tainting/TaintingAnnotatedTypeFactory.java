@@ -47,12 +47,9 @@ public class TaintingAnnotatedTypeFactory
      * AnnotationTypeMirror
      */
     private class TaintingTreeAnnotator extends TreeAnnotator {
-        private AnnotationMirror UNTAINTED;
 
         public TaintingTreeAnnotator(BaseTypeChecker checker) {
             super(checker);
-            AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-            UNTAINTED = annoFactory.fromClass(Untainted.class);
         }
 
         /**
@@ -67,8 +64,8 @@ public class TaintingAnnotatedTypeFactory
                 && TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.String")) {
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
-                if (lExpr.hasAnnotation(UNTAINTED) && rExpr.hasAnnotation(UNTAINTED))
-                    type.addAnnotation(UNTAINTED);
+                if (lExpr.hasAnnotation(Untainted.class) && rExpr.hasAnnotation(Untainted.class))
+                    type.addAnnotation(Untainted.class);
             }
             return super.visitBinary(tree, type);
         }
@@ -84,7 +81,7 @@ public class TaintingAnnotatedTypeFactory
 //                String str = (String)sl.getValue();
 //
 //                if (isUntaintedValue(str)) {
-//                    type.addAnnotation(UNTAINTED);
+//                    type.addAnnotation(Untainted.class);
 //                }
 //            }
 //            return super.visitLiteral(tree, type);
