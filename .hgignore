@@ -31,6 +31,7 @@ manual.image.tex
 manual.image.tex.new
 manual.image.log
 manual.log
+manual.out
 manual.pdf
 manual.ps
 manual.toc
