@@ -56,16 +56,16 @@
       description="Creates a zip archive for langtools.">
 
         <zip destfile="${tmp.ver.dir}/${langtools.zip}">
-            <zipfileset dir="${langtools}" prefix="langtools"
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
               excludesfile="release/langtools-excludes"/>
 
             <zipfileset dir="${langtools}"
               includes="dist/lib/javac.jar"
-              fullpath="langtools/binary/javac.jar"/>
+              fullpath="jsr308-langtools/binary/javac.jar"/>
 
             <zipfileset dir="${langtools}"
               includes="dist/lib/javap.jar"
-              fullpath="langtools/binary/javap.jar"/>
+              fullpath="jsr308-langtools/binary/javap.jar"/>
         </zip>
     </target>
 

@@ -3,6 +3,7 @@ package checkers.tainting;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
+import checkers.tainting.quals.Untainted;
 
 /**
  * A type-checker plug-in for the Tainting type system qualifier that finds
