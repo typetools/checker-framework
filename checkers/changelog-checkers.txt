@@ -1,3 +1,23 @@
+Version 0.9.8, 21 Aug 2009
+
+Functionality
+  Added a Tainting Checker
+  Added support for conditional nonnull checking
+  Added optional check for redundant nullness tests
+  Updated stub parser to latest libraries
+
+Bug fixes
+  Fixed a bug related to int[] treated as Object when passed to vararg T...
+  Fixed a crash related to intersection types
+  Fixed a bug related to -AskipClasses not being honored
+  Fixed a bug related to flow
+
+Manual
+  Added new sections
+    8 Tainting Checker
+    3.2.3 Conditional nullness
+
+----------------------------------------------------------------------
 Version 0.9.7, 12 Aug 2009
 
 Functionality

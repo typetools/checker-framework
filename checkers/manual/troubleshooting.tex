@@ -246,18 +246,18 @@ release of the Checker Framework.
 \item Download and install the JSR 308 implementation; follow the instructions at
 % alternative: \urldef{\JsrInstallingUrl}\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
 {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
-This creates a \code{langtools} directory.
+This creates a \code{jsr308-langtools} directory.
 
 \item Download the Checker Framework distribution zipfile from
-\myurl{http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip},
+\myurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip},
 and unzip it to create a \code{checkers} directory.  We recommend that the
-\code{checkers} directory and the \code{langtools} directory be siblings.
+\code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
 Example commands:
 
 \begin{Verbatim}
   cd $JSR308
-  wget http://types.cs.washington.edu/checker-framework/current/jsr308-checkers.zip
-  unzip jsr308-checkers.zip
+  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  unzip checkers.zip
 \end{Verbatim}
 
 You will also need to adjust the path to \<javac> in any Ant buildfiles,
@@ -265,12 +265,12 @@ etc.
 
 \item Optionally edit property \code{compiler.lib} in file
   \code{checkers/build.properties}.  You don't have to do this if the
-  \code{checkers} directory and the \code{langtools} directory are
+  \code{checkers} directory and the \code{jsr308-langtools} directory are
   siblings.
 
 \item Add to your classpath:
   \code{\$JSR308/jsr308-langtools/lib/tools.jar} and
-  \code{\$JSR308/checker-framework/checkers/checkers.jar}.
+  \code{\$JSR308/checkers/checkers.jar}.
   (If you do not do this, you will have to supply the \code{-cp} option
   whenever you run \code{javac} and use a checker plugin.)  Example
   commands:
@@ -280,7 +280,7 @@ etc.
 %END LATEX
 \begin{Verbatim}
   export JSR308=${HOME}/jsr308
-  export CLASSPATH=${CLASSPATH}:$JSR308/jsr308-langtools/lib/tools.jar:$JSR308/checker-framework/checkers/checkers.jar
+  export CLASSPATH=${CLASSPATH}:$JSR308/jsr308-langtools/lib/tools.jar:$JSR308/checkers/checkers.jar
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -336,7 +336,7 @@ use the pre-compiled version.
 Edit \code{checkers/build.properties} file so that the
 \code{compiler.lib} property specifies the location of the JSR 308
 \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-source, and you made the \code{checkers} and \code{langtools} directories
+source, and you made the \code{checkers} and \code{jsr308-langtools} directories
 siblings, then you don't need to edit \code{checkers/build.properties}.)
 
 \item
