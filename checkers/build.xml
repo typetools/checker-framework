@@ -154,7 +154,6 @@ ${build.version} of the 'javac.jar' library."/>
           <link href="http://download.java.net/jdk7/docs/api/"/>
           <link href="http://download.java.net/jdk7/docs/jdk/api/javac/tree/"/>
           <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
-          <tag name="checker.framework.manual"/>
         </javadoc>
     </target>
 
