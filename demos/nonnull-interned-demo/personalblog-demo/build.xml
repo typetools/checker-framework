@@ -7,7 +7,7 @@
 
     <target name="pblog">
         <run-demo-basic srcpath="src" 
-						quals="checkers.tainting.Untainted"
+						quals="checkers.tainting.quals.Untainted"
             files="${basedir}/src/net/eyde/personalblog/service/PersonalBlogService.java ${basedir}/src/net/eyde/personalblog/struts/action/ReadAction.java"
             custom.lib="${pblog.lib}"/>
     </target>

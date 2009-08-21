@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.tainting.quals.Untainted;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;

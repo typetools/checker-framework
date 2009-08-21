@@ -1,4 +1,4 @@
-package checkers.tainting;
+package checkers.tainting.quals;
 
 import checkers.quals.*;
 import static com.sun.source.tree.Tree.Kind.STRING_LITERAL;
