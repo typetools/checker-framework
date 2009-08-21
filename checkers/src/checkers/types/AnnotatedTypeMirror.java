@@ -1,5 +1,6 @@
 package checkers.types;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -225,12 +226,30 @@ public abstract class AnnotatedTypeMirror {
         return getAnnotation(name);
     }
 
+    /**
+     * Returns the actual annotation mirror used to annotate this type,
+     * whose name equals the passed annotationName if one exist, null otherwise.
+     *
+     * @param annotationName
+     * @return the annotation mirror for annotationName
+     */
     public AnnotationMirror getAnnotation(Name annotationName) {
         assert annotationName != null : annotationName + " cannot be null";
         for (AnnotationMirror anno : getAnnotations())
             if (AnnotationUtils.annotationName(anno).equals(annotationName))
                 return anno;
         return null;
+    }
+
+    /**
+     * Returns the actual annotation mirror used to annotate this type,
+     * whose name equals the passed annotationName if one exist, null otherwise.
+     *
+     * @param anno annotation class
+     * @return the annotation mirror for anno
+     */
+    public AnnotationMirror getAnnotation(Class<? extends Annotation> anno) {
+        return getAnnotation(anno.getCanonicalName());
     }
 
     /**
@@ -247,6 +266,19 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Determines whether this type contains an annotation with the same
+     * annotation type as a particular annotation. This method does not
+     * consider an annotation's values.
+     *
+     * @param a the class of annotation to check for
+     * @return true iff the type contains an annotation with the same type as
+     * the annotation given by {@code a}
+     */
+    public boolean hasAnnotation(Class<? extends Annotation> a) {
+        return getAnnotation(a) != null;
+    }
+
+    /**
      * Adds an annotation to this type. If the annotation does not have the
      * {@link TypeQualifier} meta-annotation, this method has no effect.
      *
@@ -260,6 +292,17 @@ public abstract class AnnotatedTypeMirror {
             AnnotationMirror aliased = typeFactory.aliasedAnnotation(a);
             addAnnotation(aliased);
         }
+    }
+
+    /**
+     * Adds an annotation to this type. If the annotation does not have the
+     * {@link TypeQualifier} meta-annotation, this method has no effect.
+     *
+     * @param a the class of the annotation to add
+     */
+    public void addAnnotation(Class<? extends Annotation> a) {
+        AnnotationMirror anno = annotationFactory.fromClass(a);
+        addAnnotation(anno);
     }
 
     /**
@@ -281,6 +324,10 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean removeAnnotation(AnnotationMirror a) {
         return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
+    }
+
+    public boolean removeAnnotation(Class<? extends Annotation> a) {
+        return removeAnnotation(annotationFactory.fromClass(a));
     }
 
     /**
