@@ -270,6 +270,43 @@ possible but are not as useful.
 \end{sloppy}
 %END LATEX
 
+\subsubsection{Conditional nullness}
+
+The Nullness Checker supports a form of conditional nullness types, via the
+\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}.  The annotation
+on a method declares that some expressions are nonnull, if the method
+returns true.
+
+Consider \sunjavadoc{java/io/File.html}{java.io.File}.
+\sunjavadoc{java/io/File.html#listFiles()}{File.listFiles()} may
+return a null, but is specified to return non-null value if
+\sunjavadoc{java/io/File.html#isDirectory()}{File.isDirectory()} is
+true.  You can declare this relationship in the following way:
+
+\begin{Verbatim}
+  class File {
+
+    @AssertNonNullIfTrue("list()'', "listFiles()")
+    public boolean isDirectory() { ... }
+
+    public File @Nullable [] listFiles();
+  }
+\end{Verbatim}
+
+A client that checks that a \code{File} reference is indeed that of a directory,
+can then de-reference \code{File.isDirectory} safely without any nullness check.
+
+\begin{Verbatim}
+  static void analyze(File file) {
+    if (file.isDirectory()) {
+      for (File child : file.listFiles()) {
+        analyze(child);
+      }
+    } else {
+        ... analyze each file
+    }
+  }
+\end{Verbatim}
 
 
 \subsubsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
@@ -312,7 +349,6 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \end{itemize}
 
 \end{itemize}
-
 
 
 
