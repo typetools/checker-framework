@@ -1,0 +1,99 @@
+<project name="junit" basedir="." default="assert">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+
+    <property name="src" value="src"/>
+    <property name="tests" value="tests"/>
+    <property name="build" value="build"/>
+    <property name="build.tests" value="tests/build"/>
+
+    <!-- Typecheck assert -->
+    <target name="assert">
+        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src"
+            files="${basedir}/src/org/junit/Assert.java"/>
+    </target>
+
+    <!-- Compile JUnit and test -->
+    <target name="clean">
+      <delete dir="${build}"/>
+      <delete dir="${build.tests}" failonerror="false"/>
+    </target>
+
+    <target name="-prep">
+      <mkdir dir="${build}"/>
+      <mkdir dir="${build.tests}"/>
+    </target>
+
+    <target name="build" depends="-prep">
+      <pathconvert pathsep=" " property="src.files">
+        <path>
+          <fileset dir="${src}">
+            <include name="**/*.java"/>
+          </fileset>
+        </path>
+      </pathconvert>
+        <java fork="true"
+              failonerror="true"
+	      classpath="${compiler.lib}:${checkers.lib}"
+	      classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <arg value="-g"/>
+            <arg line="-d ${build}"/>
+            <arg line="${src.files}"/>
+            <arg line="-version"/>
+        </java>
+    </target>
+
+    <target name="build-tests" depends="-prep,build">
+      <pathconvert pathsep=" " property="src.tests">
+        <path>
+          <fileset dir="${tests}">
+            <include name="**/*.java"/>
+          </fileset>
+        </path>
+      </pathconvert>
+      <java fork="true"
+            failonerror="true"
+            classpath="${compiler.lib}:${checkers.lib}:${build}"
+            classname="com.sun.tools.javac.Main">
+        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+        <arg value="-g"/>
+        <arg line="-sourcepath ${tests}"/>
+        <arg line="-d ${build.tests}"/>
+        <arg line="${src.tests}"/>
+      </java>
+    </target>
+
+    <target name="-run-test" depends="build-tests">
+      <java fork="true"
+            failonerror="true"
+            classpath="${build.tests}:${build}:${compiler.lib}:${checkers.lib}"
+            classname="org.junit.runner.JUnitCore">
+        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+        <jvmarg line="-ea"/>
+        <arg line="${param}"/>
+      </java>
+    </target>
+
+    <target name="test-assert">
+      <antcall target="-run-test">
+        <param name="param" value="JUnitTests"/>
+      </antcall>
+    </target>
+
+    <target name="test" depends="test-assert"/>
+
+    <!-- Check the demo -->
+    <target name="check-assert">
+      <check-demo-common target="assert" step="0"/>
+      <check-demo-common target="assert" step="1"/>
+      <echo message="assert demo works as expected" />
+    </target>
+
+    <target name="check-demo" depends="check-assert">
+      <echo message="junit nullness demo works as expected"/>
+    </target>
+
+</project>
