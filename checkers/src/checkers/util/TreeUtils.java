@@ -15,6 +15,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 
 /**
  * A utility class made for helping to analyze a given {@code Tree}.
@@ -337,6 +338,11 @@ public final class TreeUtils {
             throw new IllegalArgumentException("Tree not use: " + node.getKind());
         }
     }
+    
+    public static final ExecutableElement elementFromUse(NewClassTree node) {
+        return (ExecutableElement)((JCNewClass)node).constructor;
+    }
+
     /**
      * Gets the element for the declaration corresponding to this member
      * access.  To get the element for a declaration, use {@link
