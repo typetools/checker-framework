@@ -197,8 +197,8 @@ class InternalAnnotationScanner extends SimpleTreeVisitor<InternalAnnotationGrou
 
     @Override
     public InternalAnnotationGroup visitNewArray(@Nullable NewArrayTree node, @Nullable Void p) {
-        assert root != null;
-        assert node != null;
+        assert root != null: "nullness";
+        assert node != null: "nullness";
 
         TreePath path = trees.getPath(root, node);
         Element method = InternalUtils.enclosingSymbol(path);
