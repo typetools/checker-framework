@@ -279,7 +279,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 
                 if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotation(I)) {
-                    AnnotatedExecutableType con = constructorFromUse(node);
+                    AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
                     if (con.getReceiverType().hasAnnotation(IMMUTABLE))
                         p.addAnnotation(IMMUTABLE);
                     else
