@@ -127,4 +127,7 @@ public class GenericClass {
         @Immutable GenericClass c7 = new @Mutable GenericClass(); // should emit error
     }
 
+    void testNewArray() {
+        Object a = new ArrayList<Integer>();
+    }
 }
