@@ -12,6 +12,13 @@
             custom.lib="${pblog.lib}"/>
     </target>
 
+    <target name="pblog-tainting">
+      <run-demo checker="checkers.tainting.TaintingChecker"
+                srcpath="src"
+            files="${basedir}/src/net/eyde/personalblog/service/PersonalBlogService.java ${basedir}/src/net/eyde/personalblog/struts/action/ReadAction.java"
+            custom.lib="${pblog.lib}"/>
+    </target>
+
     <target name="check-pblog">
       <check-demo-common target="pblog" step="0"/>
       <check-demo-common target="pblog" step="1"/>
