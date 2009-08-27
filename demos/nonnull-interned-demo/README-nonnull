@@ -59,7 +59,7 @@ class InternalAnnotationScanner extends SimpleTreeVisitor<InternalAnnotationGrou
   required: @NonNull Object
 
 To fix it, do
-  touch $annotations/demos/nonnull-interned-demo/checkers/src/com/sun/source/util/SimpleTreeVisitor.java
+  touch $t/checker-framework/demos/nonnull-interned-demo/checkers/src/com/sun/source/util/SimpleTreeVisitor.java
 and the error will go away and will not recur.  (This is weird behavior
 that suggests there is a bug somewhere.)
 
