@@ -16,7 +16,7 @@ a @Nullable Element to a @NonNull (by default) Element; the symbol() method,
 contrary to the programmer's understanding, returns a @Nullable Element.
 
 Add a @Nullable to the declaration of elt on 201, and re-run the checker. Now,
-the checker issues on error, since we're dereferencing "elt", which is
+the checker issues one error, since we're dereferencing "elt", which is
 @Nullable. We can fix it by adding an (elt != null) if in the if condition,
 and re-run the checker to ensure that there are no more nullness errors.
 
