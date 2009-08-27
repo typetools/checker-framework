@@ -1,0 +1,1806 @@
+#if 0
+Do not attempt to compile this file with a Java compiler such as javac.
+You first need to preprocess it with cpp, the C preprocessor.
+The correct way to build the system is to run 'make'.
+#endif
+
+#if !(defined(BOOLEAN) \
+      || defined(BYTE) \
+      || defined(CHAR) \
+      || defined(DOUBLE) \
+      || defined(FLOAT) \
+      || defined(INT) \
+      || defined(LONG) \
+      || defined(SHORT) \
+      || defined(OBJECT) \
+      || defined(STRING))
+  #error "One of BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, INTEGER, LONG, SHORT, OBJECT, STRING  must be defined"
+#endif
+
+#undef _TYPE
+#undef _TYPE_WRAPPER_NAME
+#undef ARRAY_GET_NAME
+#undef BAD_VALUE
+#if defined(BOOLEAN)
+  #define _TYPE boolean
+  #define _TYPE_WRAPPER_NAME Boolean
+  #define BAD_VALUE false
+#elif defined(BYTE)
+  #define _TYPE byte
+  #define _TYPE_WRAPPER_NAME Byte
+  #define BAD_VALUE Byte.MAX_VALUE
+#elif defined(CHAR)
+  #define _TYPE char
+  #define _TYPE_WRAPPER_NAME Character
+  #define BAD_VALUE Character.MAX_VALUE
+#elif defined(DOUBLE)
+  #define _TYPE double
+  #define _TYPE_WRAPPER_NAME Double
+  #define BAD_VALUE Double.NaN
+#elif defined(FLOAT)
+  #define _TYPE float
+  #define _TYPE_WRAPPER_NAME Float
+  #define BAD_VALUE Float.NaN
+#elif defined(INT)
+  #define _TYPE int
+  #define _TYPE_WRAPPER_NAME Integer
+  #define BAD_VALUE Integer.MAX_VALUE
+#elif defined(LONG)
+  #define _TYPE long
+  #define _TYPE_WRAPPER_NAME Long
+  #define BAD_VALUE Long.MAX_VALUE
+#elif defined(SHORT)
+  #define _TYPE short
+  #define _TYPE_WRAPPER_NAME Short
+  #define BAD_VALUE Short.MAX_VALUE
+#elif defined(OBJECT)
+  #define _TYPE Object
+  #define BAD_VALUE null
+#elif defined(STRING)
+  #define _TYPE String
+  #define BAD_VALUE null
+#endif
+
+#if defined(OBJECT)
+  #define GETVALUE(object) object
+#elif defined(STRING)
+  #define GETVALUE(object) (String)object
+#else
+  #define GETVALUE(object) ((_TYPE_WRAPPER_NAME)fieldObj)._TYPE ## Value()
+#endif
+#undef ARRAY_GET_NAME
+#if defined(OBJECT)
+  #define ARRAY_GET_NAME java.lang.reflect.Array.get
+#elif defined(STRING)
+  #define ARRAY_GET_NAME (String)java.lang.reflect.Array.get
+#elif defined(CHAR)
+  #define ARRAY_GET_NAME java.lang.reflect.Array.getChar
+#elif defined(INT)
+  #define ARRAY_GET_NAME java.lang.reflect.Array.getInt
+#else
+  #define ARRAY_GET_NAME java.lang.reflect.Array.get ## _TYPE_WRAPPER_NAME
+#endif
+
+
+#define COLLECT_TYPE collect ## _TYPE
+#define COLLECT_TYPE_FIELD collect ## _TYPE ## _field
+#define GET_ELEMENT getElement_ ## _TYPE
+
+#undef COMPATIBLE
+#undef CAST_TYPE
+#if defined(BYTE)
+  #define COMPATIBLE int
+  #define CAST_TYPE int
+#endif
+#if defined(INT)
+  #define COMPATIBLE long
+  #define CAST_TYPE long
+#endif
+#if defined(LONG)
+  #define COMPATIBLE int
+  #define CAST_TYPE long
+#endif
+#if defined(DOUBLE)
+  #define COMPATIBLE float
+  #define CAST_TYPE double
+#endif
+#if defined(FLOAT)
+  #define COMPATIBLE double
+  #define CAST_TYPE double
+#endif
+
+#undef NUMERIC
+#if defined(COMPATIBLE) || defined(SHORT)
+  #define NUMERIC
+#endif
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  /// Methods for #_TYPE (from QuantBody.java.jpp)
+  ///
+
+
+  /** Returns the ith element of the array or collection argument.
+   * If the argument is null or not an array or collection, returns a
+   * default value (BAD_VALUE).
+   **/
+  /* pure */ public static _TYPE GET_ELEMENT (Object o, long i) {
+    if (o == null) { return BAD_VALUE; } // return default value
+    java.lang.Class c = o.getClass();
+    if (c.isArray()) {
+      return ARRAY_GET_NAME (o, (int)i);
+    } else if (o instanceof java.util.AbstractCollection) {
+      return ARRAY_GET_NAME (((java.util.AbstractCollection)o).toArray(), (int)i);
+    } else {
+      return BAD_VALUE; // return default value
+    }
+  }
+
+  /* pure */ public static _TYPE GET_ELEMENT (_TYPE[] arr, long i) {
+    if (arr == null) { return BAD_VALUE; } // return default value
+    return arr[(int)i];
+  }
+
+#if (defined(FLOAT) || defined(DOUBLE))
+
+  private static boolean eq(_TYPE x, _TYPE y) {
+    return fuzzy.eq(x,y);
+  }
+
+  private static boolean ne(_TYPE x, _TYPE y) {
+    return fuzzy.ne(x,y);
+  }
+
+  #if !(defined(BOOLEAN) || defined(OBJECT) || defined(STRING))
+  private static boolean lt(_TYPE x, _TYPE y) {
+    return fuzzy.lt(x,y);
+  }
+
+  private static boolean lte(_TYPE x, _TYPE y) {
+    return fuzzy.lte(x,y);
+  }
+
+  private static boolean gt(_TYPE x, _TYPE y) {
+    return fuzzy.gt(x,y);
+  }
+
+  private static boolean gte(_TYPE x, _TYPE y) {
+    return fuzzy.gte(x,y);
+  }
+  #endif
+
+#else
+
+  private static boolean eq(_TYPE x, _TYPE y) {
+    return (x == y);
+  }
+
+  private static boolean ne(_TYPE x, _TYPE y) {
+    return x != y;
+  }
+
+  #if !(defined(BOOLEAN) || defined(OBJECT) || defined(STRING))
+  private static boolean lt(_TYPE x, _TYPE y) {
+    return x < y;
+  }
+
+  private static boolean lte(_TYPE x, _TYPE y) {
+    return x <= y;
+  }
+
+  private static boolean gt(_TYPE x, _TYPE y) {
+    return x > y;
+  }
+
+  private static boolean gte(_TYPE x, _TYPE y) {
+    return x >= y;
+  }
+  #endif
+
+#endif /* (defined(FLOAT) || defined(DOUBLE)) */
+
+#if (defined(OBJECT))
+  /** Returns an array of Strings, where the strings are the result of
+   * invoking x.getClass().toString() for each element x in the
+   * array. If an element of the array is null, its slot in the returned
+   * array is null.
+   */
+  /* pure */ public static String[] typeArray(_TYPE[] seq) {
+    if (seq == null) { return null; }
+    String[] retval = new String[seq.length];
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (seq[i] == null) {
+        retval[i] = null;
+      } else {
+        retval[i] = seq[i].getClass().toString();
+      }
+    }
+    return retval;
+  }
+#endif
+
+  /** True iff both sequences are non-null and have the same length. */
+  /* pure */ public static boolean sameLength(_TYPE[] seq1, _TYPE[] seq2) {
+    return ((seq1 != null)
+            && (seq2 != null)
+            && seq1.length == seq2.length);
+  }
+
+#ifdef COMPATIBLE
+  /** True iff both sequences are non-null and have the same length. */
+  /* pure */ public static boolean sameLength(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    return ((seq1 != null)
+            && (seq2 != null)
+            && seq1.length == seq2.length);
+  }
+#endif
+
+#if (defined(BYTE) || defined(INT) || defined(LONG) || defined(FLOAT) || defined(DOUBLE))
+
+  /** True iff both sequences have the same length, and all seq2[i] divide seq1[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * <pre>
+   * /\ seq1.length == seq2.length
+   * /\ forall i in { 0..seq2.length-1 } : seq2[i] divides seq1[i]
+   * </pre>
+   *
+   */
+  /* pure */ public static boolean pairwiseDivides(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i] % seq2[i], 0)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  /* pure */ public static boolean pairwiseDivides(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i] % seq2[i], 0)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff both sequences have the same length, and all seq1[i] ==  seq2[i] * seq2[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * <pre>
+   * /\ seq1.length == seq2.length
+   * /\ forall i in { 0..seq2.length-1 } : seq1[i] ==  seq2[i] * seq2[i]
+   * </pre>
+   *
+   */
+  /* pure */ public static boolean pairwiseSquare(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], seq2[i] * seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  /* pure */ public static boolean pairwiseSquare(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], seq2[i] * seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#endif
+
+#if (defined(INT) || defined(LONG))
+
+  /** True iff both sequences have the same length, and all seq1[i] == ~ seq2[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * <pre>
+   * /\ seq1.length == seq2.length
+   * /\ forall i in { 0..seq2.length-1 } : seq1[i] == ~ seq2[i]
+   * </pre>
+   *
+   */
+  /* pure */ public static boolean pairwiseBitwiseComplement(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (seq1[i] != ~seq2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  /* pure */ public static boolean pairwiseBitwiseComplement(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (seq1[i] != ~seq2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#if 0
+This has nothing to do with INT.
+The test ensures that the method only appears once in the output.
+#endif
+#if (defined(INT))
+  /* pure */ public static boolean pairwiseBitwiseComplement(Object[] seq1, Object[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    if (! eltsNonNull(seq1)) { return false; }
+    if (! eltsNonNull(seq2)) { return false; }
+    int[] hashArr1 = new int[seq1.length];
+    for (int i = 0 ; i < seq1.length ; i++) {
+      hashArr1[i] = seq1[i].hashCode();
+    }
+    int[] hashArr2 = new int[seq2.length];
+    for (int i = 0 ; i < seq2.length ; i++) {
+      hashArr2[i] = seq2[i].hashCode();
+    }
+    return pairwiseBitwiseComplement(hashArr1, hashArr2);
+  }
+#endif
+
+  /** True iff both sequences have the same length, and all seq1[i] == (seq2[i] | seq1[i]).
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * <pre>
+   * /\ seq1.length == seq2.length
+   * /\ forall i in { 0..seq2.length-1 } : seq1[i] == (seq2[i] | seq1[i])
+   * </pre>
+   *
+   */
+  /* pure */ public static boolean pairwiseBitwiseSubset(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    if (seq1.length != seq2.length) {
+      return false;
+    }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], (seq2[i] | seq1[i]))) {
+        return false;
+      }
+    }
+    return true;
+  }
+  /* pure */ public static boolean pairwiseBitwiseSubset(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], (seq2[i] | seq1[i]))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#if 0
+This has nothing to do with INT.
+The test ensures that the method only appears once in the output.
+#endif
+#if (defined(INT))
+  /* pure */ public static boolean pairwiseBitwiseSubset(Object[] seq1, Object[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    if (! eltsNonNull(seq1)) { return false; }
+    if (! eltsNonNull(seq2)) { return false; }
+    int[] hashArr1 = new int[seq1.length];
+    for (int i = 0 ; i < seq1.length ; i++) {
+      hashArr1[i] = seq1[i].hashCode();
+    }
+    int[] hashArr2 = new int[seq2.length];
+    for (int i = 0 ; i < seq2.length ; i++) {
+      hashArr2[i] = seq2[i].hashCode();
+    }
+    return pairwiseBitwiseSubset(hashArr1, hashArr2);
+  }
+#endif
+
+#endif /* (defined(INT) || defined(LONG)) */
+
+#if 0
+#ifdef NUMERIC
+
+  // These methods aren't used to express any invariants; no need for them.
+  //   /**
+  //    * Requires: seq.length > 0
+  //    * Returns the minimum element in the array.
+  //    */
+  //   /* pure */ public static _TYPE min(_TYPE[] seq) {
+  //      //Assert.assertTrue(seq.length > 0);
+  //     _TYPE retval = seq[0];
+  //     for (int i = 1 ; i < seq.length ; i++) {
+  //       if (lt(seq[i], retval)) {
+  //         retval = seq[i];
+  //       }
+  //     }
+  //     return retval;
+  //   }
+
+  //   /**
+  //    * Requires: seq.length > 0
+  //    * Returns the minimum element in the array.
+  //    */
+  //   /* pure */ public static _TYPE max(_TYPE[] seq) {
+  //      //Assert.assertTrue(seq.length > 0);
+  //     _TYPE retval = seq[0];
+  //     for (int i = 1 ; i < seq.length ; i++) {
+  //       if (gt(seq[i], retval)) {
+  //         retval = seq[i];
+  //       }
+  //     }
+  //     return retval;
+  //   }
+
+#endif
+#endif /* 0 */
+
+  /**
+   * Returns the array { seq1[0], ..., seq1[seq1.length-1], seq2[0], ... , seq2[seq2.length-1] }
+   * If either array is null, returns null.
+   * If either array is empty, returns only those elements in the other array.
+   * If both arrays are empty, returns a new empty array.
+   */
+  /* pure */ public static _TYPE[] concat(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    return utilMDE.ArraysMDE.concat(seq1, seq2);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static CAST_TYPE[] concat(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    // Cannot just use utilMDE.ArraysMDE.concat because the two arrays
+    // have different types.  This essentially inlines that method.
+    int newLength = seq1.length + seq2.length;
+    CAST_TYPE[] retval = new CAST_TYPE[newLength];
+    System.arraycopy(seq1, 0, retval, 0, seq1.length);
+    for (int j = 0 ; j < seq2.length ; j++) {
+      retval[seq1.length+j] = seq2[j];
+    }
+    return retval;
+  }
+#endif
+
+  /**
+   * Returns an array that is equivalent to the set union of seq1 and seq2.
+   * This method gives no assurances about the order or repetition of elements:
+   * elements may be repeated, and their order may be different from the
+   * order of elements in seq1 and seq2.
+   */
+  /* pure */ public static _TYPE[] union(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    return concat(seq1, seq2);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static CAST_TYPE[] union(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    return concat(seq1, seq2);
+  }
+#endif
+
+  /**
+   * Returns an array that is equivalent to the set intersection of seq1 and seq2.
+   * This method gives no assurances about the order or repetition of elements:
+   * elements may be repeated, and their order may be different from the
+   * order of elements in seq1 and seq2.
+   */
+  /* pure */ public static _TYPE[] intersection(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    _TYPE[] intermediate = new _TYPE[Math.min(seq1.length, seq2.length)];
+    int length = 0;
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (memberOf(seq1[i], seq2) ) {
+        intermediate[length++] = seq1[i];
+      }
+    }
+    return utilMDE.ArraysMDE.subarray(intermediate, 0, length);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static CAST_TYPE[] intersection(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    CAST_TYPE[] intermediate = new CAST_TYPE[Math.min(seq1.length, seq2.length)];
+    int length = 0;
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (memberOf(seq1[i], seq2) ) {
+        intermediate[length++] = seq1[i];
+      }
+    }
+    return utilMDE.ArraysMDE.subarray(intermediate, 0, length);
+  }
+#endif
+
+  /**
+   * Returns an array that is equivalent to the set difference of seq1 and seq2.
+   * This method gives no assurances about the order or repetition of elements:
+   * elements may be repeated, and their order may be different from the
+   * order of elements in seq1 and seq2.
+   */
+  /* pure */ public static _TYPE[] setDiff(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    _TYPE[] intermediate = new _TYPE[seq1.length];
+    int length = 0;
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2)) {
+        intermediate[length++] = seq1[i];
+      }
+    }
+    return utilMDE.ArraysMDE.subarray(intermediate, 0, length);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static CAST_TYPE[] setDiff(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return null; }
+    if (seq2 == null) { return null; }
+    CAST_TYPE[] intermediate = new CAST_TYPE[seq1.length];
+    int length = 0;
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2)) {
+        intermediate[length++] = seq1[i];
+      }
+    }
+    return utilMDE.ArraysMDE.subarray(intermediate, 0, length);
+  }
+#endif
+
+  /**
+   * Retuns true iff seq1 and seq2 are equal when considered as sets.
+   */
+  /* pure */ public static boolean setEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    for (int i = 0; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2) ) {
+        return false;
+      }
+    }
+    for (int i = 0; i < seq2.length ; i++) {
+      if (!memberOf(seq2[i], seq1) ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean setEqual(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    for (int i = 0; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2) ) {
+        return false;
+      }
+    }
+    for (int i = 0; i < seq2.length ; i++) {
+      if (!memberOf(seq2[i], seq1) ) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+
+  /** True iff seq1 is the reverse of seq2.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * <pre>
+   * /\ seq1.length == seq2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] == seq2[seq2.length-1-i]
+   * </pre>
+   *
+   */
+  /* pure */ public static boolean isReverse(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    int length = seq1.length;
+    for (int i = 0 ; i < length ; i++) {
+      if (ne(seq1[i], seq2[length - i - 1])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#if (defined(OBJECT))
+  /* pure */ public static boolean isReverse(Collection<? extends _TYPE> seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    _TYPE[] seq1_array = seq1.toArray(new _TYPE[]{});
+    return isReverse(seq1_array, seq2);
+  }
+#endif
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean isReverse(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    int length = seq1.length;
+    for (int i = 0 ; i < length ; i++) {
+      if (ne(seq1[i], seq2[length - i - 1])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+
+#if 0
+This has nothing to do with INT.
+The test is ensures that it only appears once in the output.
+#endif
+#if (defined(INT))
+  /** True iff all elements in elts occur once or more in arr;
+   * that is, elts is a subset of arr.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..elt.length-1 } : elt[i] element_of arr
+   *
+   */
+  /* pure */ public static boolean subsetOf(Object elts, Object arr) {
+    if (arr == null) { return false; }
+    if (elts == null) { return false; }
+    if (!(elts.getClass().isArray() && arr.getClass().isArray())) {
+      //throw new IllegalArgumentException("both arguments must be arrays.");
+      return false;
+    }
+    // We know that the two arguments are arrays of different types; if
+    // they had been of the same type, then one of the more specific
+    // overriding versions of this method would have been called.
+
+    // This implementation simply calls either subsetOf(long[], long[]) or
+    // subsetOf(double[], double[]).
+
+    Class eltsType = elts.getClass().getComponentType();
+    Class arrType = arr.getClass().getComponentType();
+    if (isIntegralType(eltsType) && isIntegralType(arrType)) {
+      // Both arrays are int/long
+      // Cast both arrays to long and call subsetOf(long[],long[])
+      long[] elts_long;
+      if (eltsType == Long.class) {
+        elts_long = (long[]) elts;
+      } else {
+        elts_long = new long[Array.getLength(elts)];
+        for (int i = 0 ; i < elts_long.length ; i++) {
+          elts_long[i] = Array.getLong(elts, i);
+        }
+      }
+      long[] arr_long;
+      if (arrType == Long.class) {
+        arr_long = (long[]) arr;
+      } else {
+        arr_long = new long[Array.getLength(arr)];
+        for (int i = 0 ; i < arr_long.length ; i++) {
+          arr_long[i] = Array.getLong(arr, i);
+        }
+      }
+      return subsetOf(elts_long, arr_long);
+    } else if (isNumericType(eltsType) && isNumericType(arrType)) {
+      // At least one array is float/double.
+      // Cast both arrays to double and call subsetOf(double[],double[])
+      double[] elts_double = new double[Array.getLength(elts)];
+      for (int i = 0 ; i < elts_double.length ; i++) {
+        elts_double[i] = Array.getDouble(elts, i);
+      }
+      double[] arr_double = new double[Array.getLength(arr)];
+      for (int i = 0 ; i < arr_double.length ; i++) {
+        arr_double[i] = Array.getDouble(arr, i);
+      }
+      return subsetOf(elts_double, arr_double);
+    } else {
+      // throw new IllegalArgumentException("both arguments must be arrays of numeric types.");
+      return false;
+    }
+
+  }
+
+#endif
+
+  /**
+   * True iff seq1 is a subset of seq2, when the sequences are
+   * considered as sets.
+   */
+  /* pure */ public static boolean subsetOf(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean subsetOf(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (!memberOf(seq1[i], seq2)) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+#if (defined(OBJECT))
+  /* pure */ public static boolean subsetOf(Collection<? extends _TYPE> seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    _TYPE[] seq1_array = seq1.toArray(new _TYPE[]{});
+    return subsetOf(seq1_array, seq2);
+  }
+
+  /* pure */ public static boolean subsetOf(_TYPE[] seq1, Collection<? extends _TYPE> seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    _TYPE[] seq2_array = seq2.toArray(new _TYPE[]{});
+    return subsetOf(seq1, seq2_array);
+  }
+#endif
+
+
+  /**
+   * Returns true iff seq contains no duplicate elements.
+   */
+  /* pure */ public static boolean noDups(_TYPE[] seq) {
+    if (seq == null) { return false; }
+    return utilMDE.ArraysMDE.noDuplicates(seq);
+  }
+
+ /**
+  * Returns true iff elt is in array arr.
+  */
+  /* pure */ public static boolean memberOf(_TYPE elt, _TYPE[] arr) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (eq(arr[i], elt)) { return true; }
+    }
+    return false;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean memberOf(_TYPE elt, COMPATIBLE[] arr) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (eq(arr[i], elt)) { return true; }
+    }
+    return false;
+  }
+#endif
+
+#if (defined(BYTE) || defined(SHORT))
+  /* pure */ public static boolean memberOf(long elt, _TYPE[] arr) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (eq(arr[i], elt)) { return true; }
+    }
+    return false;
+  }
+#endif
+
+
+  /**
+   * Returns a subsequence of seq with first elements seq[start] and
+   * last element seq[end].
+   */
+  /* pure */ public static _TYPE[] slice(_TYPE[] seq, int start, int end) {
+    if (seq == null) { return null; }
+    int sliceStart = start;
+    int sliceEnd = end;
+    if (start < 0) { return new _TYPE[] { }; }
+    if (end > seq.length-1) { return new _TYPE[] { }; }
+    if (sliceStart > sliceEnd) { return new _TYPE[] { }; }
+    int length = sliceEnd - sliceStart + 1;
+    return utilMDE.ArraysMDE.subarray(seq, sliceStart, length);
+  }
+
+  /* pure */ public static _TYPE[] slice(_TYPE[] seq, long start, int end) {
+    return slice(seq, (int)start, end);
+  }
+  /* pure */ public static _TYPE[] slice(_TYPE[] seq, int start, long end) {
+    return slice(seq, start, (int)end);
+  }
+  /* pure */ public static _TYPE[] slice(_TYPE[] seq, long start, long end) {
+    return slice(seq, (int)start, (int)end);
+  }
+
+
+  /** True iff all elements in arr equal elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] == elt
+   *
+   */
+  /* pure */ public static boolean eltsEqual(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (ne(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsEqual(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (ne(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff every element in arr does not equal elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] != elt
+   *
+   */
+  /* pure */ public static boolean eltsNotEqual(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (eq(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsNotEqual(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (eq(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+#ifdef NUMERIC
+
+  /** True iff every element in arr is greater than elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] > elt
+   *
+   */
+  /* pure */ public static boolean eltsGT(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (lte(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsGT(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (lte(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff every element in arr is greater than or equal to elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] >= elt
+   *
+   */
+  /* pure */ public static boolean eltsGTE(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (lt(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsGTE(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (lt(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff every element in arr is less than elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] < elt
+   *
+   */
+  /* pure */ public static boolean eltsLT(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (gte(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsLT(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (gte(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff every element in arr is less than or equal to elt.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..arr.length-1 } : arr[i] <= elt
+   *
+   */
+  /* pure */ public static boolean eltsLTE(_TYPE[] arr, _TYPE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (gt(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean eltsLTE(_TYPE[] arr, COMPATIBLE elt) {
+    if (arr == null) { return false; }
+    for (int i = 0 ; i < arr.length ; i++) {
+      if (gt(arr[i], elt)) { return false; }
+    }
+    return true;
+  }
+#endif
+
+#endif /* NUMERIC */
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] == seq2[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] == seq2[i]
+   *
+   */
+#if (defined(FLOAT) || defined(DOUBLE))
+  /* pure */ public static boolean pairwiseEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (_TYPE_WRAPPER_NAME.isNaN(seq1[i]) && _TYPE_WRAPPER_NAME.isNaN(seq2[i])) {
+        continue;
+      }
+      if (ne(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#else
+  /* pure */ public static boolean pairwiseEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+#if (defined(OBJECT) || defined(STRING))
+  /* pure */ public static boolean pairwiseEqual(java.util.AbstractCollection seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return pairwiseEqual(seq1.toArray(), seq2);
+  }
+
+  /* pure */ public static boolean pairwiseEqual(_TYPE[] seq1, java.util.AbstractCollection seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return pairwiseEqual(seq1, seq2.toArray());
+  }
+#endif
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseEqual(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (ne(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] != seq2[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] != seq2[i]
+   *
+   */
+  /* pure */ public static boolean pairwiseNotEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (eq(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseNotEqual(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (eq(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+#ifdef NUMERIC
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] < seq2[i].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] < seq2[i]
+   *
+   */
+  /* pure */ public static boolean pairwiseLT(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (gte(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseLT(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (gte(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] <= seq2[i].
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] <= seq2[i]
+   *
+   */
+  /* pure */ public static boolean pairwiseLTE(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseLTE(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] > seq2[i].
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] > seq2[i]
+   *
+   */
+  /* pure */ public static boolean pairwiseGT(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (lte(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseGT(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (lte(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+  /** True iff seq1 and seq2 have the same length, and every seq1[i] >= seq2[i].
+   * Meaning (in pseudo-FOL):
+   *
+   * /\ seq1.length == se2.length
+   * /\ forall i in { 0..seq1.length-1 } : seq1[i] >= seq2[i]
+   *
+   */
+  /* pure */ public static boolean pairwiseGTE(_TYPE[] seq1, _TYPE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean pairwiseGTE(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (! sameLength(seq1, seq2)) { return false; }
+    for (int i = 0 ; i < seq1.length ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+#endif /* NUMERIC */
+
+  /**
+   * Returns true iff seq1 is lexically equal to seq2.
+   * For equality, "lexically" and "pairwise" are the same.
+   */
+  /* pure */ public static boolean lexEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return pairwiseEqual(seq1, seq2);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexEqual(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return pairwiseEqual(seq1, seq2);
+  }
+#endif
+
+  /**
+   * Returns true iff seq1 is lexically not equal to seq2.
+   */
+  /* pure */ public static boolean lexNotEqual(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return !lexEqual(seq1, seq2);
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexNotEqual(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    return !lexEqual(seq1, seq2);
+  }
+#endif
+
+#ifdef NUMERIC
+
+  /**
+   * Returns true iff seq1 is lexically <  seq2.
+   */
+  /* pure */ public static boolean lexLT(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+      } else if (lt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length >= seq2.length) {
+      return false;
+    }
+    return true;
+  }
+
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexLT(_TYPE[] seq1, COMPATIBLE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+        } else if (lt(seq1[i], seq2[i])) {
+          return true;
+        }
+      }
+      if (seq1.length >= seq2.length) {
+        return false;
+      }
+      return true;
+    }
+#endif
+
+  /**
+   * Returns true iff seq1 is lexically <= to seq2.
+   */
+  /* pure */ public static boolean lexLTE(_TYPE[] seq1, _TYPE[] seq2) {
+    if (seq1 == null) { return false; }
+    if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+      } else if (lt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length > seq2.length) {
+      return false;
+    }
+    return true;
+  }
+
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexLTE(_TYPE[] seq1, COMPATIBLE[] seq2) {
+  if (seq1 == null) { return false; }
+  if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (gt(seq1[i], seq2[i])) {
+        return false;
+      } else if (lt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length > seq2.length) {
+      return false;
+    }
+    return true;
+  }
+#endif
+
+  /**
+   * Returns true iff seq1 is lexically > to seq2.
+   */
+  /* pure */ public static boolean lexGT(_TYPE[] seq1, _TYPE[] seq2) {
+  if (seq1 == null) { return false; }
+  if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      } else if (gt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length <= seq2.length) {
+      return false;
+    }
+    return true;
+  }
+
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexGT(_TYPE[] seq1, COMPATIBLE[] seq2) {
+  if (seq1 == null) { return false; }
+  if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      } else if (gt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length <= seq2.length) {
+      return false;
+    }
+    return true;
+  }
+#endif
+
+  /**
+   * Returns true iff seq1 is lexically >= to seq2.
+   */
+  /* pure */ public static boolean lexGTE(_TYPE[] seq1, _TYPE[] seq2) {
+  if (seq1 == null) { return false; }
+  if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      } else if (gt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length < seq2.length) {
+      return false;
+    }
+    return true;
+  }
+
+#ifdef COMPATIBLE
+  /* pure */ public static boolean lexGTE(_TYPE[] seq1, COMPATIBLE[] seq2) {
+  if (seq1 == null) { return false; }
+  if (seq2 == null) { return false; }
+    int minlength = (seq1.length < seq2.length) ? seq1.length : seq2.length;
+    for (int i = 0 ; i < minlength ; i++) {
+      if (lt(seq1[i], seq2[i])) {
+        return false;
+      } else if (gt(seq1[i], seq2[i])) {
+        return true;
+      }
+    }
+    if (seq1.length < seq2.length) {
+      return false;
+    }
+    return true;
+  }
+#endif
+
+#endif /* NUMERIC */
+
+  /** True iff for all applicable i, every seq[i] == seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] == seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseEqual(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (ne(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] != seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] != seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseNotEqual(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (eq(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+#ifdef NUMERIC
+
+  /** True iff for all applicable i, every seq[i] < seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] < seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseLT(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (gte(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] <= seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] <= seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseLTE(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (gt(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] > seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] > seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseGT(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (lte(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] >= seq[i+1].
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-2 } : seq[i] >= seq[i+1]
+   *
+   */
+  /* pure */ public static boolean eltwiseGTE(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (i < seq.length-1) {
+        if (lt(seq[i], seq[i+1])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+#endif
+
+#ifdef NUMERIC
+
+  /** True iff for all applicable i, every seq[i] == i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] == i
+   *
+   */
+  /* pure */ public static boolean eltsEqualIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (ne(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] != i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] != i
+   *
+   */
+  /* pure */ public static boolean eltsNotEqualIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (eq(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] < i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] < i
+   *
+   */
+  /* pure */ public static boolean eltsLtIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (gte(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] <= i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] <= i
+   *
+   */
+  /* pure */ public static boolean eltsLteIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (gt(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] > i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] > i
+   *
+   */
+  /* pure */ public static boolean  eltsGtIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (lte(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** True iff for all applicable i, every seq[i] >= i.
+   *
+   * Meaning (in pseudo-FOL):
+   *
+   * forall i in { 0..seq.length-1 } : seq[i] >= i
+   *
+   */
+  /* pure */ public static boolean eltsGteIndex(_TYPE[] seq) {
+  if (seq == null) { return false; }
+    for (int i = 0 ; i < seq.length ; i++) {
+      if (lt(seq[i], i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+#endif
+
+  /// Deferencing (accessing) fields
+
+  /**
+   * COLLECT_TYPE accepts an object and a list of fields (one of which is
+   * of array type, and the rest of which are not), and produces an array in
+   * which the original object has had the given fields accessed.
+   *
+   * Daikon creates invariants over "variables" such as the following.
+   *
+   * x.arr[].z   The result of collecting all elements y.z for all y's
+   *             in array x.arr.
+   * arr[].y.z   The result of collecting all elements x.y.z for all x's
+   *             in array arr.
+   * x.y.z[]     The result of collecting all elements in array x.y.z[]
+   *
+   * The COLLECT_TYPE() method does this collecting work.
+   *
+   * Given an object (x, arr, or x, correspondingly, in the above examples)
+   * and a "field string" (arr.z, y.z, or y.z, correspondingly, in the
+   * above example), the collect method collects the elements the result
+   * from following the fields, one of which is assumed to be an array.
+   *
+   * requires: fieldStr.length() > 0 and object != null
+   * requires: fieldStr contains only field names, no "[]" strings.
+   *
+   * requires: the method only works for field sequences with exactly
+   * one field representing an array. For example, the collection
+   * a[].b[].c will fail.
+   *
+   * If the resulting collection is of non-primitive type, then collect
+   * returns an array of type Object[].
+   *
+   * Returns null if any array or field access causes an exception.
+   */
+  /* pure */ public static _TYPE[] COLLECT_TYPE (Object object, String fieldStr) {
+
+    if (object == null) { return null; }
+    if (fieldStr == null) { return null; }
+
+    //Assert.assertTrue(fieldStr != null && !"".equals(fieldStr));
+    String[] fieldNames = fieldStr.split("\\.");
+    _TYPE[] retval = COLLECT_TYPE (object, fieldNames, 0);
+    //System.err.println("%%% fieldArray returned: " + utilMDE.ArraysMDE.toString(retval));
+    return retval;
+  }
+
+  /** Helper method for COLLECT_TYPE(Object, String).
+   * Operates on the fields specified in fields[fieldsStartIdx..].
+   * @see COLLECT_TYPE(Object, String)
+   */
+  /* pure */ private static _TYPE[] COLLECT_TYPE (Object object,
+                                                   String[] fields, int fieldsStartIdx) {
+
+    if (object == null) { return null; }
+    assert (fields != null);
+    assert (fieldsStartIdx >= 0 && fieldsStartIdx < fields.length);
+
+    Object fieldObj = null;
+    try {
+      Field field = (object instanceof java.lang.Class)
+        ? ((Class)object).getDeclaredField(fields[fieldsStartIdx])
+        : object.getClass().getDeclaredField(fields[fieldsStartIdx]);
+      field.setAccessible(true);
+      // Class cls = field.getType();
+      fieldObj = field.get(object);
+      //System.out.println("***fieldObj="+fieldObj);
+
+    } catch (Exception e) {
+      return null;
+#if 0
+      //  String exceptionMessage = null;
+      //  if (e instanceof NoSuchFieldException) {
+      //     exceptionMessage = "daikon.Quant.fieldArray: NoSuchFieldException: ";
+      //  } else if (e instanceof NullPointerException) {
+      //     exceptionMessage = "daikon.Quant.fieldArray: NoSuchFieldException: ";
+      //  } else if (e instanceof SecurityException) {
+      //     exceptionMessage = "daikon.Quant.fieldArray: SecurityException: ";
+      //  } else {
+      //     exceptionMessage = "daikon.Quant.fieldArray: Exception: ";
+      //  }
+      //  throw new RuntimeException(exceptionMessage);
+#endif
+    }
+
+    if (fieldObj == null) {
+      return null;
+    }
+
+    // base case: just accessed the last field
+    if (fields.length - 1 == fieldsStartIdx) {
+
+#if 0
+      // Omitted for non-Object non-String, because an AbstractCollection
+      // cannot hold primitive values.
+#endif
+#if (defined(OBJECT) || defined(STRING))
+
+      if (daikon.ProglangType.list_implementors.contains(fieldObj.getClass().getName())) {
+        // last field is the collection
+        @SuppressWarnings("unchecked")
+        java.util.AbstractCollection<_TYPE> ac = (java.util.AbstractCollection<_TYPE>)fieldObj;
+        return (ac).toArray(new _TYPE[]{});
+      } else
+#endif
+      if (fieldObj.getClass().isArray()) {
+        // last field is an array
+        return (_TYPE[])fieldObj;
+      } else {
+        // This hack should be removed in favor of, at "oneEltArray = ..."
+        // below, calling a version of COLLECT_TYPE_FIELD that throws an
+        // error.  Then, this case becomes a run-time error.  -MDE
+
+        // Just one element; return a one-element array.
+        //Assert.assertTrue(cls.equals(_TYPE_WRAPPER_NAME.TYPE));
+        return new _TYPE[] { GETVALUE(fieldObj) };
+      }
+    } else {
+      // recursive case: more fields to access after this one
+
+      if (daikon.ProglangType.list_implementors.contains(fieldObj.getClass().getName())) {
+
+        java.util.AbstractCollection collection = (java.util.AbstractCollection)fieldObj;
+        _TYPE[] intermediate = new _TYPE[collection.size()];
+        int index = 0;
+        for (Iterator i = collection.iterator() ; i.hasNext() ; ) {
+          _TYPE[] oneEltArray = COLLECT_TYPE (i.next(), fields, fieldsStartIdx + 1);
+          //Assert.assertTrue(oneEltArray.length == 1);
+          intermediate[index++] = oneEltArray[0];
+        }
+        return intermediate;
+
+      } else if (fieldObj.getClass().isArray()) {
+
+        // collect elements across array
+        _TYPE[] intermediate = new _TYPE[Array.getLength(fieldObj)];
+        for (int i = 0 ; i < intermediate.length ; i++) {
+          _TYPE[] oneEltArray = COLLECT_TYPE (Array.get(fieldObj, i),
+                                             fields, fieldsStartIdx + 1);
+          //Assert.assertTrue(oneEltArray.length == 1);
+          intermediate[i] = oneEltArray[0];
+        }
+        return intermediate;
+
+      } else {
+
+        return COLLECT_TYPE (fieldObj, fields, fieldsStartIdx + 1);
+      }
+    }
+  }
+
+  // Returns the results of dereferencing the fields specified in
+  // fields[fieldsStartIdx..] for 'object'.
+  // Returns a default value if any field access causes an exception.
+  /* pure */ public static _TYPE COLLECT_TYPE_FIELD (Object object, String fieldStr) {
+
+    if (object == null) { return BAD_VALUE; } // return default value
+    if (fieldStr == null) { return BAD_VALUE; } // return default value
+
+    String[] fieldNames = fieldStr.split("\\.");
+
+    // Holds the intermediate (and final) result
+    Object fieldObj = object;
+
+    for (int i = 0 ; i < fieldNames.length ; i++) {
+
+      String fieldName = fieldNames[i];
+
+      try {
+        Field field =
+          (fieldObj instanceof java.lang.Class)
+          ? ((Class)fieldObj).getDeclaredField(fieldName)
+          : fieldObj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        fieldObj = field.get(fieldObj);
+
+      } catch (Exception e) {
+        return BAD_VALUE; // return default value
+#if 0
+        //             String exceptionMessage = null;
+        //             if (e instanceof NoSuchFieldException) {
+        //                 exceptionMessage = "daikon.Quant: NoSuchFieldException: ";
+        //             } else if (e instanceof NullPointerException) {
+        //                 exceptionMessage = "daikon.Quant: NoSuchFieldException: ";
+        //             } else if (e instanceof SecurityException) {
+        //                 exceptionMessage = "daikon.Quant: SecurityException: ";
+        //             } else {
+        //                 exceptionMessage = "daikon.Quant: Exception: ";
+        //             }
+        //             throw new RuntimeException(exceptionMessage);
+#endif
+      }
+
+    }
+
+    return GETVALUE(fieldObj);
+
+  }

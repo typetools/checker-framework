@@ -1,0 +1,44 @@
+\htmlhr
+\section{Tainting checker\label{tainting-checker}}
+
+The tainting checker prevents certain kinds of trust errors.  If the
+checker issues no warning for a given program, then the program only
+uses trusted values and sanitizes all tainted references before use.
+
+Using tainted references before sanitizing them expose the application
+to security vulnerabilities.  For example, web applications that construct
+database queries with user input are venerable to
+\ahref{http://en.wikipedia.org/wiki/Sql_injection}{SQL injection}.
+
+Note: This does \emph{not} mean that your program is free from trust errors.
+(You might have forgotten to annotation a particular method requires trusted
+references only.)
+
+\subsection{Tainting annotations\label{tainting-annotations}}
+
+The Tainting type system uses one annotation:
+\code{@\refclass{tainting/quals}{Untainted}}.  The annotation indicates
+a type that includes only untainted trusted values.
+
+Any type not marked as \code{Untainted} is treated as tainted untrusted.
+
+\subsection{Writing \code{@Untainted} annotations\label{writing-untainted}}
+
+In order to use the tainting checker, you must annotate your code with
+\code{@\refclass{tainting/quals}{Untainted}} type annotation, to mark
+operations that require trusted operations.
+
+It is helpful to start annotating the secure kernel boundary entry
+points.  To secure against SQL injection attacks, it is useful to
+start annotating the \sunjavadoc{java/sql/Statement.html}{Statement}
+class; the execute operations may only operate on untainted queries
+(Section~\ref{annotating-libraries} describes how you can annotate
+external libraries)
+
+\begin{Verbatim}
+  public boolean execute(@Untainted String sql) throws SQLException;
+  public boolean executeUpdate(@Untainted String sql) throws SQLException; 
+\end{Verbatim}
+
+The Tainting checker, in turn, will verify that no untainted value may flow into
+any of these methods.
