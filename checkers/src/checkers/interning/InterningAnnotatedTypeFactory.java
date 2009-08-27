@@ -70,7 +70,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         @Override
         public Void visitDeclared(AnnotatedDeclaredType t, ElementKind p) {
 
-            // cases 2,3,5: Enum types, and the Enum class itself, are interned
+            // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
             if (elt.getKind() == ElementKind.ENUM)
