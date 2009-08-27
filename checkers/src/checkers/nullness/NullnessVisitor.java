@@ -249,7 +249,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
     /////////////// Utility methods //////////////////////////////
 
-    /** @return true if binary operation could cause unboxing operation */
+    /** @return true if binary operation could cause an unboxing operation */
     private final boolean isUnboxingOperation(BinaryTree tree) {
         if (tree.getKind() == Tree.Kind.EQUAL_TO
                 || tree.getKind() == Tree.Kind.NOT_EQUAL_TO)
