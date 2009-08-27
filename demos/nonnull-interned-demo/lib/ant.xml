@@ -9,6 +9,7 @@
     <attribute name="files"/>
     <attribute name="checker"/>
     <attribute name="lint" default=""/>
+    <attribute name="custom.lib" default=""/>
     <sequential>
       <java fork="true" failonerror="true"
             classpath="${compiler.lib}"
@@ -17,7 +18,7 @@
         <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
-        <arg line="-classpath ${deps.lib}:${checkers.lib}:${daikon.lib}"/>
+        <arg line="-classpath ${deps.lib}:${checkers.lib}:${daikon.lib}:@{custom.lib}"/>
         <jvmarg line="-Djsr308.imports='checkers.nullness.quals.*:checkers.interning.quals.*'"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>

@@ -178,6 +178,14 @@ public class PersonalBlogService {
         return posts;
     }
 
+    /**
+     * Constructs an untainted query from untainted strings.
+     * It is a simple concatination operation.
+     *
+     * This method is helpful only when using the Basic Checker,
+     * which cannot detect the type of string concatination, unlike
+     * the Tainting checker.
+     */
     @SuppressWarnings("untainted")
     private @Untainted String constructQuery(@Untainted String ...strings) {
     	StringBuilder sb = new StringBuilder();
