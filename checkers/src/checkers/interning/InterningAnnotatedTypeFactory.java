@@ -29,9 +29,10 @@ import com.sun.source.tree.*;
  * </ol>
  *
  * This factory extends {@link BasicAnnotatedTypeFactory} and inherits its
- * functionalities: flow-sensitive qualifier inference, qualifier polymorphism
- * (of {@link PolyInterned}), implicit annotations via {@link ImplicitFor}
- * (to handle cases 1, 4), and user-specified defaults via {@link DefaultQualifier}.
+ * functionality, including: flow-sensitive qualifier inference, qualifier
+ * polymorphism (of {@link PolyInterned}), implicit annotations via
+ * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 4), and
+ * user-specified defaults via {@link DefaultQualifier}.
  */
 public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<InterningChecker> {
 
@@ -69,7 +70,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         @Override
         public Void visitDeclared(AnnotatedDeclaredType t, ElementKind p) {
 
-            // cases 2,3,5: Enum types and class, interned
+            // cases 2,3,5: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
             if (elt.getKind() == ElementKind.ENUM)
