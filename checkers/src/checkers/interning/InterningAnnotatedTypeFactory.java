@@ -17,14 +17,16 @@ import com.sun.source.tree.*;
  * Interned type system. This type factory will add the {@link Interned}
  * annotation to a type if the input:
  *
- * 1. is a String literal
- * 2. is a class literal
- * 3. has an enum type
- * 4. has a primitive type
- * 5. has the type java.lang.Class
- * 6. is a call to the method {@link String#intern()}. The method is the only
- *    interning method in the JDK. This class hard-codes handling of it, so
- *    there is no need for an annotated JDK.
+ * <ol>
+ * <li value="1">is a String literal
+ * <li value="2">is a class literal
+ * <li value="3">has an enum type
+ * <li value="4">has a primitive type
+ * <li value="5">has the type java.lang.Class
+ * <li value="6">is a call to the method {@link String#intern()}.
+ *    That method is the only interning method in the JDK. This class
+ *    hard-codes handling of it, so there is no need for an annotated JDK.
+ * </ol>
  *
  * This factory extends {@link BasicAnnotatedTypeFactory} and inherits its
  * functionalities: flow-sensitive qualifier inference, qualifier polymorphism
@@ -83,7 +85,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         primitive.addAnnotation(INTERNED);
         return primitive;
     }
-    
+
     protected void annotateInheritedFromClass(@Mutable AnnotatedTypeMirror type) {
       InheritedFromClassAnnotator.INSTANCE.visit(type, this);
   }
