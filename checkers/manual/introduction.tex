@@ -420,7 +420,7 @@ statements for the annotations, then your code has a dependency on the
 annotation declarations.  You also will need to provide the annotation
 declarations as well, if you decide to distribute your project.
 
-For your convenience, inside the the checkers distribution \code{.zip} file
+For your convenience, inside the the Checker Framework distribution \code{.zip} file
 is a jar file,
 \code{checkers-quals.jar}, that only contains the distributed qualifiers.
 You may include the jar file in your distribution.
@@ -618,13 +618,12 @@ The plugin is available at
 \myurl{http://www.warski.org/checkersplugin.html}.
 
 
-\subsubsection{Intellij IDEA\label{intellij}}
+\subsubsection{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
 \ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
 the Type Annotations (JSR-308) syntax.
-
-http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/
+See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
 
 \subsubsection{Eclipse\label{eclipse}}
 
@@ -820,7 +819,7 @@ normal behavior.)
 
 If parameter \code{element} on line 141 were to be annotated, the correct
 annotation would be \code{@NonNull}.  Suppose a client has a reference to
-same Multiset \code{ms}.  The only way the clienc can be sure not to throw an exception is to pass
+same Multiset \code{ms}.  The only way the client can be sure not to throw an exception is to pass
 only non-\code{null} elements to \code{ms.add()}.  A particular class
 that implements Multiset could declare \code{add} to take a
 \code{@Nullable} parameter.  That still satisfies the original contract.
@@ -850,7 +849,7 @@ Then, the specification is more informative, and the Checker Framework is
 able to do more precise checking, than if line 141 has an annotation.
 
 It is a pleasant feature of the Checker Framework that in many cases, no
-annotations at all are needed on type parameters such as \code{E} in MultiSet.
+annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
 \subsubsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
@@ -919,7 +918,7 @@ In general, you should only use this syntax when you know that the cast is
 guaranteed to succeed.  An example from the IGJ checker
 (section~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
 @Mutable MyClass()>, where you know that every other reference to the class
-is annotated \<@Readonly>.
+is annotated \<@ReadOnly>.
 
 
 
@@ -937,4 +936,4 @@ is annotated \<@Readonly>.
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
-% LocalWords:  html
+% LocalWords:  html JCIP MultiSet

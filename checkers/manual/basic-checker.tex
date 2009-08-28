@@ -56,7 +56,7 @@ annotation, with the argument being the unqualified, uncapitalized name of
 any of the annotations passed to \code{-Aquals}.
 
 
-\subsection{Basic checker example\label{basic-example}}
+\subsection{Basic checker example\label{basic-example}\label{encrypted-example}}
 
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or
@@ -126,7 +126,7 @@ You may also need to add \code{@SuppressWarnings} annotations to the
 \item
   Invoke the compiler with the Basic checker, specifying the
   \code{@Encrypted} annotation using the \code{-Aquals} option.
-  You should add the \code{Encrypted} classfile in the processor classpath:
+  You should add the \code{Encrypted} classfile to the processor classpath:
 
 \begin{Verbatim}
 $ javac -processorpath myqualspath -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted YourProgram.java
@@ -142,5 +142,5 @@ required: @myquals.Encrypted java.lang.String
 
 
 % LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
-% LocalWords:  CharSequence classpath nullness quals SuppressWarnings
-% LocalWords:  uncapitalized
+% LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
+% LocalWords:  uncapitalized processorpath

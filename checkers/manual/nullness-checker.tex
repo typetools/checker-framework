@@ -25,7 +25,7 @@ options:
 
 \item
   \code{nulltest} (default: off) - option to warn against null checks when
-  the reference is guaranteed to be nonnull, as in \code{("m" == null)}.
+  the reference is guaranteed to be non-null, as in \code{("m" == null)}.
 
 \end{itemize}
 
@@ -274,7 +274,7 @@ possible but are not as useful.
 
 The Nullness Checker supports a form of conditional nullness types, via the
 \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}.  The annotation
-on a method declares that some expressions are nonnull, if the method
+on a method declares that some expressions are non-null, if the method
 returns true.
 
 Consider \sunjavadoc{java/io/File.html}{java.io.File}.
@@ -452,7 +452,28 @@ cannot ever be null at run time.
 \item
   Use the \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method.
 
-  TODO:  copy text from its documentation.
+The Nullness
+ Checker considers both the return value, and also the argument, to
+ be non-null after the method call.  Therefore, the
+ \<castNonNull> method can be used either as a cast expression or
+ as a statement.  The Nullness Checker issues no warnings in any of
+the following code:
+
+\begin{Verbatim}
+  // one way to use as a cast:
+  @NonNull String s = castNonNull(possiblyNull1);
+
+  // another way to use as a cast:
+  castNonNull(possiblyNull2).toString();
+
+  // one way to use as a statement:
+  castNonNull(possiblyNull3);
+  possiblyNull3.toString();`
+\end{Verbatim}
+
+  The method also throws \<AssertionError> if Java assertions are enabled and
+  the argument is \<null>.  However, it is not intended for general defensive
+  programming; see Section~\ref{defensive-programming}.
 
   A potential disadvantage of using the \<castNonNull> method is that your
   code becomes dependent on the Checker Framework at run time as well as at
@@ -460,12 +481,13 @@ cannot ever be null at run time.
   \<castNonNull> into your own code, and possibly renaming it if you do not
   like the name.  Be sure to retain the documentation that indicates that
   your copy is intended for use only to suppress warnings and not for
-  defensive programming.
+  defensive programming.  See Section~\ref{defensive-programming} for an
+  explanation of the distinction.
 
 \end{enumerate}
 
 
-\subsubsection{Suppressing warnings on nullness-checking routines}
+\subsubsection{Suppressing warnings on nullness-checking routines and defensive programming\label{defensive-programming}}
 
 %% Work this in
 % As explained in Section~\ref{annotate-normal-behavior}, annotations should
@@ -783,8 +805,8 @@ indicate a nullable variable that FindBugs should check.)  For example:
      @Nullable Object getObject() { ... }
 
      void myMethod() {
-       // FindBugs issues no warning about calling toString on a possibly-null reference
        @Nullable Object o = getObject();
+       // FindBugs issues no warning about calling toString on a possibly-null reference
        o.toString();
      }
 \end{Verbatim}
@@ -858,4 +880,5 @@ at the client use.  For example:
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
 % LocalWords:  inferencer utilMDE Nonnull CheckForNull UnknownNullness rawtypes
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
-% LocalWords:  Nullability typeargs
+% LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles
+% LocalWords:  isDirectory AssertionError
