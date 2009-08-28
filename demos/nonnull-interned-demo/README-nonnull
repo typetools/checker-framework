@@ -2,6 +2,7 @@ Notes for the NonNull demos.
 
 
 1. nonnull
+[Not in the Emacs bookmarks.]
 
 Open checkers/src/checkers/nonnull/NonNullAnnotatedTypeFactory.java:201.
 
@@ -16,7 +17,7 @@ a @Nullable Element to a @NonNull (by default) Element; the symbol() method,
 contrary to the programmer's understanding, returns a @Nullable Element.
 
 Add a @Nullable to the declaration of elt on 201, and re-run the checker. Now,
-the checker issues on error, since we're dereferencing "elt", which is
+the checker issues one error, since we're dereferencing "elt", which is
 @Nullable. We can fix it by adding an (elt != null) if in the if condition,
 and re-run the checker to ensure that there are no more nullness errors.
 
@@ -59,7 +60,7 @@ class InternalAnnotationScanner extends SimpleTreeVisitor<InternalAnnotationGrou
   required: @NonNull Object
 
 To fix it, do
-  touch $annotations/demos/nonnull-interned-demo/checkers/src/com/sun/source/util/SimpleTreeVisitor.java
+  touch $t/checker-framework/demos/nonnull-interned-demo/checkers/src/com/sun/source/util/SimpleTreeVisitor.java
 and the error will go away and will not recur.  (This is weird behavior
 that suggests there is a bug somewhere.)
 

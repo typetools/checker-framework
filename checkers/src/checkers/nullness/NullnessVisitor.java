@@ -89,7 +89,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     /** Case 5: Check for synchronizing locks */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
-        
+
         //checkForNullability(node.getExpression(), "locking.nullable");
         // raw is suffecient
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
@@ -246,8 +246,10 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             checker.report(Result.failure(errMsg, tree), tree);
     }
 
-    /////////////// Utilities methods //////////////////////////////
-    /** @return true if binary operation could cause unboxing operation */
+
+    /////////////// Utility methods //////////////////////////////
+
+    /** @return true if binary operation could cause an unboxing operation */
     private final boolean isUnboxingOperation(BinaryTree tree) {
         if (tree.getKind() == Tree.Kind.EQUAL_TO
                 || tree.getKind() == Tree.Kind.NOT_EQUAL_TO)
