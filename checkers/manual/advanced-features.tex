@@ -1,5 +1,7 @@
 \section{Advanced type system features\label{advanced-type-system-features}}
 
+This section describes features that are automatically supported by every
+checker written with the Checker Framework.
 You may wish to skim or skip this section on first reading.  After you have
 used a checker for a little while and want to be able to express more
 sophisticated and useful types, or to understand more about how the Checker
@@ -11,9 +13,10 @@ Framework works, you can return to it.
 \subsubsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
 The Checker Framework fully supports 
-qualified Java generic types (also known in the literature as ``parametric
-polymorphism'').  Before running a checker, we recommend that you eliminate
-raw types (e.g., \code{List} as opposed to \code{List<...>}) from your code.
+qualified Java generic types (also known in the research literature as ``parametric
+polymorphism'').  Before running any checker, we recommend that you eliminate
+raw types from your code (e.g., your code should use \code{List<...>} as
+opposed to \code{List}).
 Using generics helps prevent type errors just as using a pluggable
 type-checker does.
 % Should say why, or what are the consequences of violating this.
@@ -32,12 +35,13 @@ used for instantiating.  For example, given the declaration \code{class
 When using the Nullness checker (Section~\ref{nullness-checker}),
 programmers sometimes write \<extends @NonNull Object> even though it's the 
 default.
-The reason is that code with no extends clause, like 
+The reason is that Java code with no extends clause, like 
 
 \begin{Verbatim}
   class C<T> { ... }
 \end{Verbatim}
 
+\noindent
 typically means that class \<C> can be instantiated with any type argument at
 all.  But in the Nullness type system, to permit all type arguments, to
 obtain that effect one must write
@@ -106,12 +110,17 @@ qualifier for the Nullness type system:
 \end{Verbatim}
 
 A method written using a polymorphic qualifier conceptually has multiple
-versions, somewhat like a template in C++.  In each version, the
-polymorphic qualifier has been replaced by another qualifier from the
+versions, somewhat like a template in C++.  In each version, each instance
+of the polymorphic qualifier has been replaced by the same other qualifier
+from the
 hierarchy.  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
 
 The method body must type-check with all signatures.  A method call is
-type-correct if it type-checks under any signature.
+type-correct if it type-checks under any one of the signatures.  If a call
+matches multiple signatures, then the compiler uses the most specific
+matching signature for the purpose of type-checking.  This is just like
+Java's rule for resolving overriding methods, though there is no effect on
+run-time dispatch or behavior.
 
 Polymorphic qualifiers can be used within a method body.  They may not be
 used on classes or fields.
@@ -154,12 +163,12 @@ which is like writing
 \end{Verbatim}
 
 \noindent
-One way of thinking about which one of the two \code{max} variants is
+Another way of thinking about which one of the two \code{max} variants is
 selected is that the nullness annotations of (the declared types of) both
 arguments are \emph{unified} to a type that is a subtype of both.  If both
 arguments are \code{@NonNull}, their unification is \<@NonNull>, and the
-result is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
-then the result is \<@Nullable>.
+method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
+then the unification is \<@Nullable>, and so is the return type.
 
 
 %% I can't think of a non-clumsy way to say this.
@@ -191,8 +200,8 @@ which is no different than writing just
 \noindent
 The benefit of polymorphic qualifiers comes when one is used multiple times
 in a method, since then each instance turns into the same type qualifier.
-Most frequently, the polymorphic qualifier appears on both the return type
-and at least one formal parameter.  It can also be useful to have
+Most frequently, the polymorphic qualifier appears on at least one formal
+parameter and also on the return type.  It can also be useful to have 
 polymorphic qualifiers on (only) multiple formal parameters, especially if
 the method side-effects one of its arguments.
 For example, consider
@@ -204,7 +213,7 @@ void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
 \end{Verbatim}
 
 \noindent
-In this case, if it is acceptable to rewrite your code to use Java
+In this example, if it is acceptable to rewrite your code to use Java
 generics, the code can be even cleaner:
 
 \begin{Verbatim}
@@ -226,8 +235,8 @@ generics, the code can be even cleaner:
 \subsection{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
 
 Sometimes, the type of a field depends on the qualifier on the receiver.
-The Checker Framework supports two varieties of such a field:  fields that
-may not be used if the receiver has a given qualifier, and fields whose
+The Checker Framework supports two varieties of such a field:  a field that
+may not be used if the receiver has a given qualifier, and a fields whose
 qualifier changes based on the qualifier of the receiver.
 
 
@@ -280,7 +289,7 @@ non-\code{null} if the person is married.  We could declare this as
 
 Now, suppose that we have defined the qualifier hierarchy in which 
 \code{@Single} (meaning ``not married'') is a supertype of \code{@Married}.
-A more informative declaration would be
+A more informative declaration for \<Person> would be
 
 \begin{Verbatim}
   class Person {
@@ -306,9 +315,10 @@ If a person is known to be \code{@Married}, the
   }
 \end{Verbatim}
 
+\noindent
 Without the \code{@\refclass{quals}{Dependent}} annotation on the
 declaration of the \code{spouse} variable, the Nullness Checker would
-complain that \code{toString} was being invoked on a possibly-\code{null}
+complain that \code{toString} was invoked on a possibly-\code{null}
 value.
 
 An even better declaration is
@@ -341,6 +351,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
+In particular, qualifiers in method bodies are extremely rare.
 
   The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -410,7 +421,9 @@ rules are used in order, until one applies.
 \item
   Use \code{@\refclass{quals}{Unqualified}}, which the framework
   inserts to avoid ambiguity and simplify the programming interface for
-  type system designers.  Users do not have to worry about this detail.
+  type system designers.  Users do not have to worry about this detail,
+  but type system implementers can rely on the fact that some
+  qualifier is present.
 \end{itemize}
 
 % (Implementation detail:  setting defaults is implemented by the
@@ -477,11 +490,16 @@ from taking effect), or exclude class declarations from defaulting.
 
 \paragraph{When a default qualifier may not be specified}
 
+% TODO:  Move most of this to the section on defining the type system, with
+% a cross-reference from here saying that sometimes you are not permitted
+% to specify a default.
+
 Sometimes, the meaning of an unannotated reference is determined by the
 type system.  For example, in the Interning type system, each type is
 either unqualified, or it has the \<@\refclass{interning/quals}{Interned}>
-qualifier.  In such a case, specifying a default for unannotated types is
-not sensible.
+qualifier.  Another way of saying this is that the default is \<@Unqualified>.
+In such a case, it is not sensible for a user to specify a default for
+unannotated types via \<@DefaultQualifier>.
 
 In other cases, the type hierarchy has an explicit qualifier for every
 possible meaning.  For example, the Nullness type system has
@@ -489,9 +507,10 @@ possible meaning.  For example, the Nullness type system has
 \<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
 unannotated types; a user may specify a default qualifier.
 
-Permitting users to specify defaults is a reason you may wish to make your
+It is usually best for a type system designer to make the
 type hierarchy ``complete'', in the sense that there is a qualifier for
 every location in the hierarchy.
+The reason is that this permits users to specify defaults.
 
 
 \subsubsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
@@ -515,15 +534,20 @@ If you are curious or want more details about this feature, then read on.
 As an example, the Nullness checker (Section~\ref{nullness-checker}) can automatically
 determine that certain variables are non-null, even if they were explicitly
 or by default annotated as nullable.
-A variable or expression can be treated as \code{@\refclass{nullness/quals}{NonNull}}
-from the time that it is either
+The checker treats a variable or expression as \code{@\refclass{nullness/quals}{NonNull}}
+\begin{itemize}
+\item
+starting at the time that it is either
 assigned a non-null value or checked against null (e.g., via an assertion,
-\code{if} statement, or being dereferenced), until it might be re-assigned (e.g.,
+\code{if} statement, or being dereferenced)
+\item
+until it might be re-assigned (e.g.,
 via an assignment that might affect this variable, or via a method call
 that might affect this variable).
+\end{itemize}
 
 As with explicit annotations, the implicitly non-null types permit
-dereferences and assignments to explicitly non-null types, without
+dereferences and assignments to non-null types, without
 compiler warnings.
 
 Consider this code, along with comments indicating whether the
@@ -535,7 +559,7 @@ warning or not depending on its context.
   void parse(@NonNull String toParse) { ... }
 
   // Argument does NOT have a @NonNull type
-  void lex(String toLex) {
+  void lex(@Nullable String toLex) {
     parse(toLex);        // warning:  toLex might be null
     if (toLex != null) {
       parse(toLex);      // no warning:  toLex is known to be non-null
@@ -546,7 +570,7 @@ warning or not depending on its context.
   }
 \end{Verbatim}
 
-If you find instances where you think a value should be inferred to have
+If you find examples where you think a value should be inferred to have
 (or not have) a
 given annotation, but the checker does not do so, please submit a bug
 report (see Section~\ref{reporting-bugs}) that includes a small piece of
@@ -580,3 +604,5 @@ treated as a \code{@\refclass{nullness/quals}{NonNull}} one.  The inference neve
 a supertype of its declared type (e.g., an expression of \code{@\refclass{nullness/quals}{NonNull}}
 type is never inferred to be treated as possibly-null).
 
+
+% LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
