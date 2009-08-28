@@ -179,21 +179,21 @@ lacks.
 
 \subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
 
-If you try to write \code{List<@Nullable Object>}, or to use a nullable
-type parameter to 
-certain other collections (including \<AbstractCollection>, \<Collection>,
-\<List>, \<Map>, and \<Queue>), you will get a type error, because their
-type parameter is annotated as \<@NonNull>.
+If you try to write \code{List<@Nullable Object>}, you will get a type
+error, because \<List>'s type parameter is annotated as \<@NonNull>.
+You will also get an error if you try to use a nullable
+type parameter to certain other collections, including
+\<AbstractCollection>, \<Collection>, \<List>, \<Map>, and \<Queue>.
 
 This is in conformance with the Javadoc specification of those classes.
-The Javadoc contains text such as:
+The Javadoc for \<List> states:
 
 \begin{quote}
   Some list implementations have restrictions on the elements that they may
   contain. For example, some implementations prohibit null elements,
 \end{quote}
 
-For example, calling this method might result in a null pointer exception:
+In particular, calling this method might result in a null pointer exception:
 
 \begin{Verbatim}
   static void addNull(List l) {
@@ -219,8 +219,9 @@ A similar argument applies to \<Map>.
 For example, \<ConcurrentHashMap> and \<Hashtable> implement \<Map> but do
 not permit \<null> to be used as a key or value.
 
-If you know that any objects that can be passed as the parameter will
-definitely support null, then you can suppress the warning:
+Suppose your program has a list variable, and you know that any list referenced
+by that variable will
+definitely support null.  Then, you can suppress the warning:
 
 \begin{Verbatim}
   @SuppressWarnings("nullness:generic.argument")

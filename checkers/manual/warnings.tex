@@ -6,21 +6,23 @@
 Sometimes, you wish to type-check only part of your program.  
 You might focus on the most mission-critical or error-prone part of your
 code.  When you start to use a checker, you may not wish to annotate
-your entire program right away.  You may not have source code (or
-enough knowledge to annotate) the libraries that your program uses.
+your entire program right away.
+% Not having source code is *not* a reason.
+You may not have 
+enough knowledge to annotate poorly-documented libraries that your program uses.
 
 If annotated code uses unannotated code, then the checker may issue
 warnings.  For example, the Nullness checker (Section~\ref{nullness-checker}) will
 warn whenever an unannotated method result is used in a non-null context:
 
 \begin{Verbatim}
-  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return a null value
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
 \end{Verbatim}
 
-If the call can return null, you should fix the bug in your program by
+If the call \emph{can} return null, you should fix the bug in your program by
 removing the \code{@\refclass{nullness/quals}{NonNull}} annotation in your own program.
 
-If the library call never returns null,
+If the library call \emph{never} returns null,
 there are several ways to eliminate the compiler warnings.
 \begin{enumerate}
 \item Annotate \code{unannotated\_method} in full.  This approach provides the
@@ -38,7 +40,8 @@ there are several ways to eliminate the compiler warnings.
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
   choose the boundary between the annotated and unannotated code wisely,
-  then you only have to annotate the signatures of a few classes/methods
+  then you only have to annotate the signatures of a limited number of
+  classes/methods
   (e.g., the public interface to a library or package).
   
 \end{enumerate}
@@ -48,7 +51,7 @@ signatures when you do not have source code available.
 Section~\ref{suppressing-warnings} discusses suppressing warnings.
 
 
-If you annotate additional libraries, please share them with us so that we
+If you annotate a third-party library, please share it with us so that we
 can distribute the annotations with the Checker Framework; see
 Section~\ref{reporting-bugs}.
 
@@ -67,10 +70,15 @@ warnings via
 \item
   the \code{-AskipClasses} command-line option,
 \item
-  the javac \code{-Alint} command-line option, or
+  the javac \code{-Alint} command-line option,
 \item
-  not using the \code{-processor} switch to \code{javac}.
+  not using the \code{-processor} switch to \code{javac}, or
+\item
+  checker-specific mechanisms.
 \end{itemize}
+
+\noindent
+We now explain these mechanisms in turn.
 
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings("\emph{annotationname}")} annotation, for example
@@ -112,7 +120,7 @@ such compilations.
 
 Finally, some checkers have special rules.  For example, the Nullness
 checker (Section~\ref{nullness-checker}) uses \code{assert} statements that contain
-null checks to suppress warnings
+null checks, and the special \<castNonNull> method, to suppress warnings
 (Section~\ref{suppressing-warnings-with-assertions}).
 
 
@@ -120,16 +128,17 @@ null checks to suppress warnings
 \subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
 
 Sometimes, your code needs to be compilable by people who are not
-using the Type Annotations or Java 7 compiler.
+a Java 7 compiler.
 
 
 \subsubsection{Annotations in comments}
 
 A Java 4 compiler does not permit use of
 annotations, and a Java 5 compiler only permits annotations on
-declarations (but not on generic arguments, casts, method receiver, etc.).
+declarations (but not on generic arguments, casts, \<extends> clauses, method receiver, etc.).
 
-For compatibility with all Java versions, you may write any annotation inside a
+So that your code can be compiled by any Java compiler (for any version of
+the Java language), you may write any annotation inside a
 \code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
 The Type Annotations compiler treats the code exactly as if you had not written the
 \code{/*} and \code{*/}.
@@ -137,9 +146,9 @@ In other words, the Type Annotations compiler will recognize the
 annotation, but your code will still compile with any other Java compiler.
 
 (\textbf{Note:} This is a feature of the Type Annotations compiler that is
-distributed along with the Checker Framework.  It is not supported by the
+distributed along with the Checker Framework.  It is \emph{not} supported by the
 mainline OpenJDK compiler, which will ignore annotations written in
-comments.  This is the only difference between the Type Annotations
+comments.  This is the key difference between the Type Annotations
 compiler and the OpenJDK compiler.)
 %   For more details
 % about the differences, see file \code{README-jsr308.html} in the Type
@@ -168,51 +177,51 @@ inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
 
 
-\subsubsection{Import statements\label{implicit-import-statements}}
+\subsubsection{Implicit import statements\label{implicit-import-statements}}
 
 When writing source code with annotations, it is more convenient to write a
 short form such as \code{@NonNull} instead of
-\code{@checkers.nullness.quals.NonNull}.  There are two ways to do this.
+\code{@checkers.nullness.quals.NonNull}.
 
-\begin{itemize}
-\item
-  Write an import statement like: \code{import checkers.nullness.quals.*;}
+The traditional way to do this is to write an import statement like
+``\code{import checkers.nullness.quals.*;}''.  This works, but everyone who
+compiles the code (no matter what compiler they use, and even if the
+annotations are in comments) must have the annotation definitions (e.g.,
+the \code{checkers.jar} or \code{checkers-quals.jar} file) on their
+classpath.  The reason is that a Java compiler issues an error if an
+imported package is not on the classpath.  See Section~\ref{distributing}.
 
-  A disadvantage of this is that everyone who compiles the code
-  (even using a non-JSR-308 compiler) must have the annotation definitions
-  (e.g., the \code{checkers.jar} or \code{checkers-quals.jar} file) on
-  their classpath.  The reason is
-  that a Java compiler issues an error if an imported package is not on the
-  classpath.  See Section~\ref{distributing}.
+\label{jsr308_imports}
 
-\item
-  \label{jsr308_imports}
-  When you compile the code, set the shell environment variable
-  \code{jsr308\_imports}.  This permits your code to compile whether or not
-  the Type Annotations compiler is being used.
+An alternative is to set the shell environment variable
+\code{jsr308\_imports} When you compile the code.
+The Type Annotations compiler treats this as if the given packages were
+imported, but ofter compilers 
+ignore the
+\code{jsr308\_imports} environment variable --- they do not need it, since
+they do not support annotations in comments.  Thus, your code can compile
+whether or not the Type Annotations compiler is being used.
 
-  In bash, you could write \code{export
-    jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
-  command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
-  Alternately, you can set the system variable via the javac command line
-  argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
+You can specify multiple packages separated by the classpath separator
+(same as the file path separator:  \<;> for Windows, and \<:> for Unix and
+Mac.).  For example, to implicitly import the Nullness and Interning
+qualifiers, set \code{jsr308\_imports} to
+\code{checkers.nullness.quals.*:checkers.interning.quals.*}.
 
-  You can specify multiple packages separated by the classpath separator
-  (same as the file path separator:   \<;> for Windows, and \<:> for Unix
-  and Mac.).  For example, to
-  implicitly import the Nullness and Interning qualifiers,
-  set \code{jsr308\_imports} to
-  \code{checkers.nullness.quals.*:checkers.interning.quals.*}.  
-\end{itemize}
+In bash, you could write \code{export
+  jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
+command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
+Alternately, you can set the environment variable via the javac
+command-line argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
 
 
 \subsubsection{Migrating away from annotations in comments}
 
-If your codebase currently uses annotations in comments, but you are
-willing to use only compilers that support type annotations (such as any
-Java 7 compiler), then you can remove the comment characters around your
-annotations.  This Unix command will do so, for all Java files in the
-current working directory or any subdirectory.
+Suppose that your codebase currently uses annotations in comments, but you
+wish to remove the comment characters around your annotations, because in
+the future you will use only Java 7 compilers.  This Unix command removes
+the comment characters, for all Java files in the current
+working directory or any subdirectory.
 
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
@@ -239,3 +248,7 @@ If you are using implicit import statements
 explicit import statements into your code.
 
 
+
+% LocalWords:  quals skipClasses un AskipClasses Alint annotationname javac's
+% LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
+% LocalWords:  unselect checkbox classpath Djsr bak
