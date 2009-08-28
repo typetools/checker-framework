@@ -21,7 +21,6 @@ public final class NullnessUtils {
 
     /**
      * A method that suppresses warnings from the Nullness Checker.
-     * ("sw" in the name stands for "Suppress Warnings".)
      * <p>
      *
      * The method takes a possibly-null reference, unsafely casts it to
