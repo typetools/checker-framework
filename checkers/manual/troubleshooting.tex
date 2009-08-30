@@ -2,14 +2,15 @@
 
 \subsection{Common problems and solutions\label{common-problems}}
 
+\begin{itemize}
+
+\item
 To verify that you are using the compiler you think you are, you can add
 \code{-version} to the command line.  For instance, instead of running
 \code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
   MyFile.java}.  Then, javac will print out its version number in addition
 to doing its normal processing.
 
-
-\begin{itemize}
 
 \item
 If you get the error
@@ -58,7 +59,7 @@ If the annotations do not appear in the \code{.class} file, here are two
 ways to solve the problem:
 \begin{itemize}
 \item
-  Re-compile the method's class with the JSR 308 compiler.  This will
+  Re-compile the method's class with the Type Annotations compiler.  This will
   ensure that the type annotations are written to the class file, even if
   no type-checking happens during that execution.
 \item
@@ -69,7 +70,7 @@ ways to solve the problem:
 
 \item
 If the compiler reports that it cannot find a method that appears in the
-JDK or another external library, then maybe the skeleton file for that
+JDK or another external library, then maybe the stub/skeleton file for that
 class is incomplete.  You can edit it to add the missing method.  The
 libraries appear, for example, at \code{checkers/jdk/nullness/src/} for the
 Nullness checker.
@@ -161,23 +162,21 @@ helpful if you:
 
 \begin{itemize}
 \item
-  Add \code{-verbose} to the javac options.  This causes the compiler to output
-  a lot of debugging information.
+  Add \code{-version -verbose} to the javac options.  This causes the compiler to output
+  debugging information, including its version number.
 \item
-  Indicate exactly what you did.  Show the exact commands (don't merely
-  describe them in words).  Don't skip any steps.
+  Indicate exactly what you did.  Don't skip any steps, and don't merely
+  describe your actions in words.  Show the exact commands by attaching a
+  file or using cut-and-paste from your command shell;
 \item
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.
 \item
-  Indicate exactly what the result was (don't merely describe it in
+  Indicate exactly what the result was by attaching a fire or using
+  cut-and-paste from your command shell (don't merely describe it in
   words).  Also indicate what you expected the result to be --- remember, a
   bug is a difference between desired and actual outcomes.
-\item
-  Indicate which version of the JSR 308 compiler and Checker Framework you
-  are using.  You can determine the compiler version by running \code{javac
-    -version}.
 \end{itemize}
 
 
@@ -202,7 +201,7 @@ hg clone https://checker-framework.googlecode.com/hg/ checker-framework
 \end{Verbatim}
 
 
-The rest of this section discusses how to install the source release.
+The rest of this section discusses how to install the packaged source release.
 
 
 \subsubsection{The short instructions (for Linux only)}
@@ -434,7 +433,7 @@ Many users have provided valuable feedback, for which we are grateful.
 
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog-checkers.txt} file.  This file is included in the
-checkers distribution and is also available on the web at
+Checker Framework distribution and is also available on the web at
 \myurl{http://types.cs.washington.edu/checker-framework/current/changelog-checkers.txt}.
 
 
@@ -445,4 +444,4 @@ checkers distribution and is also available on the web at
 % LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
-% LocalWords:  MyFile
+% LocalWords:  MyFile buildfiles
