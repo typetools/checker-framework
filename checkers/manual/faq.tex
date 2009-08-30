@@ -129,6 +129,21 @@ Section~\ref{basic-example} explains this checker and tells
 you how to run it.
 
 
+\subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
+
+A type system implementer can declaratively specify the type qualifier
+hierarchy (Section~\ref{13.2.1}) and the type introduciton rules
+(Section~\ref{13.3.1}).  However, the Checker Framework does not offer a
+declarative syntox for specifying type-checking rules (Section~\ref{13.4}).
+A declarative syntox might be more  concise, more readable, and more
+verifiable than a procedural syntax.
+
+Unfortunately, researchers have not yet devised a declarative syntax that
+is adequate for realistic type systems.  A technical
+paper~\cite{PapiACPE2008} discusses some previous attempts.  When an
+adequate syntax exists, then the Checker Framework can be extended to
+support it.
+
 
 \subsection{Why not just use a bug detector (like FindBugs)?\label{faq-type-checking-vs-bug-detectors}}
 
