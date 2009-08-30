@@ -32,6 +32,7 @@ manual.html: manual.dvi
 	mv manual.html manual.html-with-htoc
 	retarget-hevea-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
+	perl -pi -e 's/\/&#XA0;/\/~/' manual.html
 	perl -pi -e 's/(<TT>http:\/\/types.cs.washington.edu\/checker-framework\/<\/TT><\/A>)/"$$1<BR>" . `date "+%B %e, %Y"`/e' manual.html
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
@@ -41,7 +42,7 @@ clean:
 
 .PHONY: checklink
 checklink:
-	${INV}/scripts/checklink -q -r -e `cat ${INV}/scripts/checklink-args.txt` manual.html
+	${INV}/scripts/checklink -q -e `cat ${INV}/scripts/checklink-args.txt` manual.html
 
 tags: TAGS
 TAGS: ${TEX_FILES}
