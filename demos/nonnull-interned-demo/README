@@ -54,8 +54,11 @@ don't appear in your Eclipse.]
    works.
 
 2b. If using Emacs:
-   Set font; on Mike's laptop, this is best:
+   Set font; try one of these:
      (set-default-font "10x20")
+     (set-default-font "-b&h-lucidatypewriter-medium-r-normal-sans-*-180-*-*-*-*-iso8859-1")
+     (set-frame-font "-b&h-lucidatypewriter-medium-r-normal-sans-*-130-*-*-*-*-iso8859-1")
+
    If C-x r l reveals that no bookmarks are in use, then
    evaluate this form, or do M-x bookmark-load:
      (if (null (bookmark-maybe-sort-alist)) (bookmark-load ".emacs.bmk"))
