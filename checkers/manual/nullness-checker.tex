@@ -169,15 +169,16 @@ You can suppress warnings related to partially-initialized objects with
 The Nullness checker issues an error if the constructor fails to initialize
 any non-null field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
-% Java does not require that fields are definitely 
 \urldef{\jlsdefiniteassignmenturl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/defAssign.html}
-This is different than Java's test for definite assignment  (see 
+\urldef{\jlsfinalvariablesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.12.4}
+This is different than Java's test for definite assignment (see 
 \ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since 
-which does not apply to fields because fields have a default value
-of null.
+which does not apply to fields (except blank final ones, defined in
+\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4})) because fields
+have a default value of null.
 
 
 Within the constructor,
