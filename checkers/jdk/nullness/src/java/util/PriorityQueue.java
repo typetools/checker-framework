@@ -16,7 +16,7 @@ public class PriorityQueue<E extends @NonNull Object> extends java.util.Abstract
   public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
+  public java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
   public java.util.Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }

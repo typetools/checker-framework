@@ -11,7 +11,7 @@ public interface List<E extends @NonNull Object> extends java.util.Collection<E>
   // Element annotation should be the same as that on the type parameter E.
   // It's @Nullable here because that is most lenient.
   // Eventually, figure out how to express this, or hard-code in the checker.
-  public abstract @Nullable java.lang.Object [] toArray();
+  public abstract java.lang.Object [] toArray();
   // @Nullable because, if there is room in the argument a1, the method
   // puts null after the elements of this.
   public abstract <T> @Nullable T [] toArray(T[] a1);
