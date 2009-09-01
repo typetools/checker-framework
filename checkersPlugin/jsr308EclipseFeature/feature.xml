@@ -5,7 +5,7 @@
       version="1.0.0"
       provider-name="JSR 308 Development Team">
 
-   <description url="http://groups.csail.mit.edu/pag/jsr308/">
+   <description url="http://types.cs.washington.edu/jsr308/">
       The Type Annotations (JSR 308) language feature
 permits annotations to appear in more places than Java 5 permits;
 one example is generic type arguments (List&lt;@NonNull Object&gt;).
@@ -14,7 +14,7 @@ changes to the Java language and classfile format. These changes are
 planned to be part of the Java 7 language.
    </description>
 
-   <copyright url="http://groups.csail.mit.edu/pag/jsr308/">
+   <copyright url="http://types.cs.washington.edu/jsr308/">
       Copyright JSR 308 Development Team
    </copyright>
 
@@ -372,7 +372,7 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </license>
 
    <url>
-      <update label="JSR 308 Checkers Eclipse Plugin" url="http://groups.csail.mit.edu/pag/jsr308/eclipse"/>
+      <update label="JSR 308 Checkers Eclipse Plugin" url="http://types.cs.washington.edu/jsr308/eclipse"/>
    </url>
 
    <requires>
