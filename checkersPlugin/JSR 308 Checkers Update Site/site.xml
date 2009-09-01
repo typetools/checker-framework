@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="http://groups.csail.mit.edu/pag/jsr308/eclipse">
+   <description url="http://types.cs.washington.edu/jsr308/eclipse">
       This is the update site for JSR 308 checkers.
    </description>
    <feature url="features/jsr308EclipseFeature_1.0.0.jar" id="jsr308EclipseFeature" version="1.0.0"/>
