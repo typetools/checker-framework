@@ -1,0 +1,15 @@
+:5: (generic.argument.invalid)
+:5: (generic.argument.invalid)
+
+:10: (type.incompatible)
+:18: (type.incompatible)
+:20: (type.incompatible)
+:23: (type.incompatible)
+
+:28: (generic.argument.invalid)
+:28: (generic.argument.invalid)
+
+:33: (type.incompatible)
+:41: (type.incompatible)
+:43: (type.incompatible)
+:46: (type.incompatible)
