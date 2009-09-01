@@ -8,7 +8,7 @@ public interface Set<E extends @NonNull Object> extends java.util.Collection<E> 
   public abstract boolean isEmpty();
   public abstract boolean contains(@Nullable java.lang.Object a1);
   public abstract java.util.Iterator<E> iterator();
-  public abstract @Nullable java.lang.Object [] toArray();
+  public abstract java.lang.Object [] toArray();
   public abstract <T> @Nullable T [] toArray(T[] a1);
   public abstract boolean add(E a1);
   public abstract boolean remove(@Nullable java.lang.Object a1);

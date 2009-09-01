@@ -37,6 +37,6 @@ public class ArrayDeque<E extends @NonNull Object> extends java.util.AbstractCol
   public boolean contains(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
+  public java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
 }

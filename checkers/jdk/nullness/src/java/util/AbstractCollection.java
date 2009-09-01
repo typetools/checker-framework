@@ -8,7 +8,7 @@ public abstract class AbstractCollection<E extends @NonNull Object> implements j
   public abstract int size();
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
+  public java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(@Nullable T [] a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
