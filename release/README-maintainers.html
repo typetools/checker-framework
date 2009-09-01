@@ -196,7 +196,7 @@ follows (e.g., <em>not</em> to the live JSR 308 site quite yet):</p>
 <code>~/public_html/jsr308test</code></li>
 <li><code>sanitycheck.url</code>: the URL to access the <code>releases</code>
 directory of your site copy, e.g.,
-<code>http://people.csail.mit.edu/${USER}/jsr308test/releases</code></li>
+<code>http://www.cs.washington.edu/homes/${USER}/jsr308test/releases</code></li>
 </ul>
 
 <p>(You'll do a dry-run of the release to your site copy, and will only
@@ -244,10 +244,10 @@ release.
 <ol>
 
 <li>
-<p>Run</p>
+<p>Run one of these:</p>
 
 <pre>
-$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://people.csail.mit.edu/${USER}/jsr308test/
+$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://www.cs.washington.edu/homes/${USER}/jsr308test/
 </pre>
 
 <p>
@@ -262,7 +262,7 @@ virtual machine, or as user <tt>paguser</tt> at CSAIL), follow the Checker
 Framework short installation instructions by executing these commands:</p>
 
 <pre>
-export JSR308_WEB=http://people.csail.mit.edu/<em>USERNAME</em>/jsr308test/current
+export JSR308_WEB=http://www.cs.washington.edu/homes/${USER}/jsr308test/current
 cd
 wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
 make -f Makefile-jsr308-install
@@ -280,7 +280,7 @@ the actual release:</p>
 
 <pre>
     web.root.dir=/afs/csail/group/pag/www/jsr308
-    sanitycheck.url=http://groups.csail.mit.edu/pag/jsr308/releases
+    sanitycheck.url=http://types.cs.washington.edu/jsr308/releases
 </pre></li>
 
 
@@ -329,7 +329,7 @@ the release process.</p>
 </li>
 
 <li><p>Send a release announcement to <a
-href="mailto:jsr308@lists.csail.mit.edu">jsr308@lists.csail.mit.edu</a>.
+href="mailto:jsr308-discuss@groups.google.com">jsr308-discuss@groups.google.com</a>.
 The announcement should indicate what is new in the release, and should
 include the changelogs at the end.</p></li>
 
