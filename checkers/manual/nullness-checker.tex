@@ -8,14 +8,6 @@ program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
 
-% Should some/all of this be moved into the flow-sensitive section, or a
-% general section about all the checkers?
-In addition to the standard set of lint options (Section~\ref{lint-options}),
-the Nullness checker recognizes one more extra check:
-
-\code{nulltest} (default: off), an option to warn against null checks when
-the reference is guaranteed to be non-null, as in \code{(``m'' == null)}.
-
 \subsection{Nullness annotations\label{nullness-annotations}}
 
 The Nullness checker uses two separate type hierarchies:  one for nullness,
@@ -60,7 +52,8 @@ The nullness hierarchy contains these qualifiers:
   method at a time), when a \code{LazyNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   LazyNonNull over Nullable is its different interaction with
-  flow-sensitive type qualifier refinement.  After a check of a LazyNonNull
+  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}.
+  After a check of a LazyNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
   access to the given field.
@@ -355,20 +348,31 @@ The checker issues a warning in two cases:
   \refclass{nullness}{NullnessVisitor}.
 
 \item
-  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type might become null, because it
+  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type
+  might become null, because it
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
+\item
+  \label{lint-nulltest}
+  When a null check is performed against a value that is guaranteed to be
+  non-null, as in \code{(``m'' == null)}, because this might indicate a
+  programmer error or misunderstanding, and is unnecessary.
+  This check is performed only if the \code{nulltest} lint option is
+  enabled (default: disabled).  The lint option is disabled by default
+  because sometimes such checks are part of ordinary defensive programming.
+
 \end{enumerate}
 
-This example shows both sorts of problems:
+This example illustrates the problems:
 
 \begin{Verbatim}
            Object   obj;  // might be null
   @NonNull Object nnobj;  // never null
   ...
-    obj.toString()  // checker warning:  dereference might cause null pointer exception
-  nnobj = obj;      // checker warning:  nnobj may become null
+    obj.toString()       // checker warning:  dereference might cause null pointer exception
+  nnobj = obj;           // checker warning:  nnobj may become null
+  if (nnobj == null) ... // checker warning:  redundant test
 \end{Verbatim}
 
 Parameter passing and return values are checked analogously to assignments.
