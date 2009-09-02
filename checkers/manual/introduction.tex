@@ -477,6 +477,32 @@ command-line option, but in that case no checking of the type
 annotations is performed.  The annotations are still written to the
 resulting \<.class> files, however.
 
+\subsubsection{Checker Options\label{lint-options}}
+
+You may customize some of the checks that the checkers perform through a
+lint option, analogous to \code{javac -Xlint} option.
+
+Each of the distributed checkers support the following optional checks:
+
+\begin{itemize}
+
+\item
+  \code{flow} (default: on) - option to perform flow-sensitive
+  analysis to infer the nullness of references
+
+\item
+  \code{cast} (default: on) - option to warn against unsafe casts due to
+  nullness, as in \code{((@NonNull String)null)}
+
+\item
+  \code{cast:redundant} (default: on) - option to warn against redundant
+  casts, as in \code{((@NonNull String)''m'')}
+\end{itemize}
+
+To activate such options, you can write \code{-Alint=} followed by a comma-delimited list of check names, e.g. \code{-Alint=flow,cast}.  If the check name is preceded by a hyphen (\code{-}), the check is disabled.
+
+For example to warn against regular unsafe casts, but no redundant casts, you
+can pass \code{-Alint=cast,-cast:redundant}.
 
 \subsubsection{Checker auto-discovery}
 
@@ -512,8 +538,6 @@ You can disable this auto-discovery mechanism by passing the
 %%     of mutability diagnostics.
 %%  2. The nullness and mutability checkers would issue lots of errors for
 %%     unannotated code, and that would be irritating.
-
-
 
 \subsubsection{Ant task\label{ant-task}}
 

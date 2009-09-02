@@ -70,7 +70,7 @@ warnings via
 \item
   the \code{-AskipClasses} command-line option,
 \item
-  the javac \code{-Alint} command-line option,
+  the javac \code{-Alint} command-line option (Section~\ref{lint-option}),
 \item
   not using the \code{-processor} switch to \code{javac}, or
 \item
@@ -103,16 +103,6 @@ should be suppressed.  For example, if you use
 \code{javac}, then the checkers will suppress all warnings within those
 classes, all warnings relating to invalid arguments, and all warnings
 relating to incorrect use of the return value.
-
-You can suppress an entire class of warnings via javac's \code{-Alint}
-command-line option.  The \code{-Alint} option uses the same syntax as
-javac's \code{-Xlint} option.
-Following \code{-Alint=}, write a list of option
-names.  If the option name is preceded by a hyphen (\code{-}), that
-disables the option; otherwise it enables it.  For example:
-\code{-Alint=-dotequals} causes the Interning checker
-(Section~\ref{interning-checker}) not to output advice about when \code{a.equals(b)}
-could be replaced by \code{a==b}.
 
 You can also compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during
