@@ -453,7 +453,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             else if (activeLints.contains(String.format("-%s", tofind)))
                 return false;
 
-            tofind = parentOfOption(name);
+            tofind = parentOfOption(tofind);
         }
 
         return def;
