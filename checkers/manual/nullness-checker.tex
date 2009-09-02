@@ -10,25 +10,11 @@ the guarantee and what is checked.
 
 % Should some/all of this be moved into the flow-sensitive section, or a
 % general section about all the checkers?
-You can control the behavior of the Nullness checker via these \code{-Alint}
-options:
+In addition to the standard set of lint options (Section~\ref{lint-options}),
+the Nullness checker recognizes one more extra check:
 
-\begin{itemize}
-
-\item
-  \code{flow} (default: on) - option to perform flow-sensitive
-  analysis to infer the nullness of references
-
-\item
-  \code{cast} (default: on) - option to warn against unsafe casts due to
-  nullness, as in \code{((@NonNull String)null)}
-
-\item
-  \code{nulltest} (default: off) - option to warn against null checks when
-  the reference is guaranteed to be non-null, as in \code{("m" == null)}.
-
-\end{itemize}
-
+\code{nulltest} (default: off), an option to warn against null checks when
+the reference is guaranteed to be non-null, as in \code{(``m'' == null)}.
 
 \subsection{Nullness annotations\label{nullness-annotations}}
 
