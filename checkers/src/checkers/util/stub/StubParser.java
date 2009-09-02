@@ -2,6 +2,7 @@ package checkers.util.stub;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -184,7 +185,39 @@ public class StubParser {
         result.put(elt, methodType);
     }
 
+    private List<AnnotatedTypeMirror> arrayList(AnnotatedArrayType atype) {
+        LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
+        
+        AnnotatedTypeMirror type = atype;
+        while (type.getKind() == TypeKind.ARRAY) {
+            arrays.addFirst(type);
+            
+            type = ((AnnotatedArrayType)type).getComponentType();
+        }
+        
+        arrays.add(type);
+        return arrays;
+    }
+
+    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {        
+        List<AnnotatedTypeMirror> arrayTypes = arrayList(atype);
+        assert typeDef.getArrayCount() == arrayTypes.size() - 1;
+        for (int i = 0; i < typeDef.getArrayCount(); ++i) {
+            List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
+            if (annotations != null) {
+                annotate(arrayTypes.get(i), annotations);
+            }
+        }
+        
+        // handle generic type on base
+        annotate(arrayTypes.get(arrayTypes.size() - 1), typeDef.getAnnotations());
+    }
+
     private void annotate(AnnotatedTypeMirror atype, Type typeDef) {
+        if (atype.getKind() == TypeKind.ARRAY) {
+            annotateAsArray((AnnotatedArrayType)atype, (ReferenceType)typeDef);
+            return;
+        }
         if (typeDef.getAnnotations() != null)
             annotate(atype, typeDef.getAnnotations());
         if (atype.getKind() == TypeKind.DECLARED
