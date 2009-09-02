@@ -1,5 +1,5 @@
 \htmlhr
-\section{How to create a new checker\label{writing-a-checker}}
+\chapter{How to create a new checker\label{writing-a-checker}}
 
 \newcommand{\TreeAPIBase}{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
@@ -24,7 +24,7 @@ public @interface Encrypted {}
 \end{Verbatim}
 
 This checker is so short because it builds on the Basic Checker
-(Section~\ref{basic-checker}).
+(Chapter~\ref{basic-checker}).
 See Section~\ref{basic-example} for more details about this particular checker.
 
 You can also customize a typestate checker.
@@ -50,7 +50,7 @@ know so we can mention it in the Checker Framework manual, link to
 it from the webpages, or include it in the Checker Framework distribution.
 
 
-\subsection{Relationship of the Checker Framework to other tools\label{tool-relationships}}
+\section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
 
 This table shows the relationship among various tools.
 All of the tools use the Type Annotations (JSR 308) syntax.
@@ -86,12 +86,12 @@ Other \par tools
 \end{center}
 
 \noindent
-(Strictly speaking, the specific checkers, such as the Nullness Checker, is
+(Strictly speaking, the specific checkers, such as the Nullness Checker, are
 built on top of the Basic Checker, which is built on top of the Checker
 Framework.)
 
 
-\subsection{The parts of a checker\label{parts-of-a-checker}}
+\section{The parts of a checker\label{parts-of-a-checker}}
 
 The Checker Framework provides abstract base classes (default
 implementations), and a specific checker overrides as little or as much of
@@ -125,7 +125,7 @@ the components of a type system as written using the Checker Framework:
   Subtyping rules related to the type hierarchy, such as that every
   assignment and pseudo-assignment satisfies a subtyping relationship.
   Your checker automatically inherits these subtyping rules from the Basic
-  Checker (Section~\ref{basic-checker}).
+  Checker (Chapter~\ref{basic-checker}).
 \item
   Additional rules that are specific to your particular checker.  For
   example, in the Nullness type system, only references with a
@@ -140,7 +140,7 @@ the components of a type system as written using the Checker Framework:
 \end{description}
 
 
-\subsection{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
+\section{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
 
 A type system designer specifies the qualifiers in the type system and
 the type hierarchy that relates them.
@@ -182,7 +182,7 @@ subclassing \refclass{types}{QualifierHierarchy} or
 \refclass{types}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
 
 
-\subsubsection{Declaratively defining the qualifier and type hierarchy\label{declarative-hierarchy}}
+\subsection{Declaratively defining the qualifier and type hierarchy\label{declarative-hierarchy}}
 
 Declaratively, the type system designer uses two meta-annotations (written
 on the declaration of qualifier annotations) to specify the qualifier
@@ -262,7 +262,7 @@ by overriding the \ahref{\isSubtypeURL}{\code{isSubtype}} method in the checker 
 However, the declarative mechanism is sufficient for most type systems.
 
 
-\subsubsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
+\subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
 
 \urldef{\createQualifierHierarchyURL}\url{doc/checkers/basetype/BaseTypeChecker.html#createQualifierHierarchy()}
 \urldef{\createTypeHierarchyURL}\url{doc/checkers/basetype/BaseTypeChecker.html#createTypeHierarchy()}
@@ -302,7 +302,7 @@ manner (e.g.,
 \code{List<@Mutable Date>} is a subtype of \code{List<@QReadOnly Date>}).
 
 
-\subsubsection{Defining a default annotation\label{typesystem-defaults}}
+\subsection{Defining a default annotation\label{typesystem-defaults}}
 
 % This paragraph is out of place.
 
@@ -331,7 +331,7 @@ from implicit annotations; see Sections~\ref{effective-qualifier}
 and~\ref{writing-type-introduction}.
 
 
-\subsubsection{Bottom qualifier\label{bottom-qualifier}}
+\subsection{Bottom qualifier\label{bottom-qualifier}}
 
 It is usually a good idea to have a bottom qualifier in your type hierarchy
 --- a qualifier that is a (direct or indirect) subtype of every other
@@ -357,7 +357,7 @@ You might write the bottom qualifier like this:
 
 
 
-\subsection{Type Factory: Implicit annotations\label{writing-type-introduction}}
+\section{Type Factory: Implicit annotations\label{writing-type-introduction}}
 
 For some types and expressions, a qualifier should be treated as present
 even if a programmer did not explicitly write it.  For example, every
@@ -366,7 +366,7 @@ literal (other than \<null>) has a \<@\refclass{nullness/quals}{NonNull}> type.
 The implicit annotations may be specified declaratively and/or procedurally.
 
 
-\subsubsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
+\subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
 
 The \<@\refclass{quals}{ImplicitFor}> meta-annotation indicates implicit annotations.
 When written on a qualifier, \refclass{quals}{ImplicitFor}
@@ -439,7 +439,7 @@ enums.  All the information you need is in the Javadoc, and
 Section~\ref{javac-tips} can help you get started.)
 
 
-\subsubsection{Procedurally specifying implicit annotations}
+\subsection{Procedurally specifying implicit annotations}
 
 
 The Checker Framework provides a representation of annotated types,
@@ -465,7 +465,7 @@ written one.  The type system designer may subclass
 such constructs.
 
 
-\subsection{Visitor: Type rules\label{extending-visitor}}
+\section{Visitor: Type rules\label{extending-visitor}}
 
 A type system's rules define which operations on values of a
 particular type are forbidden.
@@ -482,7 +482,7 @@ and it issues a warning whenever the type system is violated.
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
 override only a few methods in \refclass{basetype}{BaseTypeVisitor}.  For example, the
-visitor for the Nullness type system of Section~\ref{nullness-checker}
+visitor for the Nullness type system of Chapter~\ref{nullness-checker}
 contains a single 4-line method that warns if an expression of nullable type
 is dereferenced, as in:
 \begin{Verbatim}
@@ -536,10 +536,10 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 \end{itemize}
 
 
-\subsubsection{AST traversal\label{ast-traversal}}
+\subsection{AST traversal\label{ast-traversal}}
 
 The Checker Framework needs to do its own traversal of the AST even though
-it operates as an ordinary annotation processor~\cite{jsr269}.  Annotation
+it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
 processors can utilize a visitor for Java code, but that visitor only
 visits the public elements of Java code, such as classes, fields, methods,
 and method arguments --- it does not visit code bodies or various other
@@ -558,7 +558,7 @@ Framework and similar tools could be portable among different compilers and
 IDEs.
 
 
-\subsection{The checker class:  Compiler interface\label{writing-compiler-interface}}
+\section{The checker class:  Compiler interface\label{writing-compiler-interface}}
 
 A checker's entry point is a subclass of \refclass{basetype}{BaseTypeChecker}.  This entry
 point, which we call the checker class, serves two
@@ -620,7 +620,7 @@ the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
 
-\subsubsection{Bundling multiple checkers}
+\subsection{Bundling multiple checkers}
 
 To run a checker, a 
 users supplies the 
@@ -656,13 +656,13 @@ Now, users can pass a single \<-processor> argument on the command line:
 \end{Verbatim}
 
 
-\subsection{Testing framework\label{testing-framework}}
+\section{Testing framework\label{testing-framework}}
 
 [TODO: This section should discuss the testing framework that is used for
 testing the distributed checkers.]
 
 
-\subsection{Debugging options\label{debugging-options}}
+\section{Debugging options\label{debugging-options}}
 
 The Checker Framework provides debugging options that can be helpful when
 writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
@@ -715,7 +715,7 @@ to include the JSR308 langtools.
 
 
 %% Not relevant to most readers.  Can go in a README file in our repository.
-% \subsection{Putting your checker in the repository\label{writing-repository}}
+% \section{Putting your checker in the repository\label{writing-repository}}
 %
 % This section is relevant only if you wish to add your checker to the source code
 % repository for the Checker Framework --- for example, to include your
@@ -741,7 +741,7 @@ to include the JSR308 langtools.
 % \end{itemize}
 
 
-\subsection{javac implementation survival guide\label{javac-tips}}
+\section{javac implementation survival guide\label{javac-tips}}
 
 The implementation of Sun's javac compiler can be a bit daunting to a
 newcomer, and its documentation does not particularly help a newcomer to

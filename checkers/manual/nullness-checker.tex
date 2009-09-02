@@ -1,5 +1,5 @@
 \htmlhr
-\section{Nullness checker\label{nullness-checker}}
+\chapter{Nullness checker\label{nullness-checker}}
 
 If the Nullness checker issues no warnings for a given program, then
 running that program will never throw a null pointer exception.  This
@@ -8,7 +8,7 @@ program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
 
-\subsection{Nullness annotations\label{nullness-annotations}}
+\section{Nullness annotations\label{nullness-annotations}}
 
 The Nullness checker uses two separate type hierarchies:  one for nullness,
 and one for rawness (see Section~\ref{raw-partially-initialized}).
@@ -79,7 +79,7 @@ most type qualifiers, because the default annotation
 \end{figure}
 
 
-\subsubsection{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
+\subsection{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
 
 The rawness hierarchy indicates whether an object is fully initialized ---
 that is, whether its fields have all been assigned.  This is mostly
@@ -190,9 +190,9 @@ annotation has nothing to do with the raw types of Java Generics.
 
 
 
-\subsection{Writing nullness annotations\label{writing-nullness-annotations}}
+\section{Writing nullness annotations\label{writing-nullness-annotations}}
 
-\subsubsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
+\subsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
 
 As described in Section~\ref{effective-qualifier}, the Nullness checker
 adds implicit qualifiers, reducing the number of annotations that must
@@ -205,7 +205,7 @@ Javadoc for \refclass{nullness}{NullnessAnnotatedTypeFactory}.
 
 
 
-\subsubsection{Default annotation\label{null-defaults}}
+\subsection{Default annotation\label{null-defaults}}
 
 Unannotated references are treated as if they had a default annotation,
 using the NNEL (non-null except locals) rule described below.
@@ -250,7 +250,7 @@ possible but are not as useful.
 \end{sloppy}
 %END LATEX
 
-\subsubsection{Conditional nullness}
+\subsection{Conditional nullness}
 
 The Nullness Checker supports a form of conditional nullness types, via the
 \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}.  The annotation
@@ -289,7 +289,7 @@ can then de-reference \code{File.isDirectory} safely without any nullness check.
 \end{Verbatim}
 
 
-\subsubsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
+\subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
 
 It can be tedious to write annotations in your code.  Two tools exist that
 can automatically infer annotations and insert them in your source code.
@@ -332,7 +332,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 
 
-\subsection{What the Nullness checker checks\label{nullness-checks}}
+\section{What the Nullness checker checks\label{nullness-checks}}
 
 The checker issues a warning in two cases:
 
@@ -379,7 +379,7 @@ Parameter passing and return values are checked analogously to assignments.
 
 
 
-\subsection{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
+\section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
 
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
@@ -400,7 +400,7 @@ suppress warnings; see below.
 
 
 
-\subsubsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-with-assertions}}
+\subsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-with-assertions}}
 
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
@@ -478,7 +478,7 @@ the following code:
 \end{enumerate}
 
 
-\subsubsection{Suppressing warnings on nullness-checking routines and defensive programming\label{defensive-programming}}
+\subsection{Suppressing warnings on nullness-checking routines and defensive programming\label{defensive-programming}}
 
 %% Work this in
 % As explained in Section~\ref{annotate-normal-behavior}, annotations should
@@ -589,9 +589,9 @@ default).  This will prevent the checker from issuing a warning about the
 \<checkNotNull> call.
 
 
-\subsection{Examples\label{nullness-example}}
+\section{Examples\label{nullness-example}}
 
-\subsubsection{Tiny examples\label{nullness-tiny-examples}}
+\subsection{Tiny examples\label{nullness-tiny-examples}}
 
 To try the Nullness checker on a source file that uses the \code{@\refclass{nullness/quals}{NonNull}} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
@@ -617,7 +617,7 @@ The compiler will issue three warnings regarding violation of the semantics of
 % in the \code{NonNullExampleWithWarnings.java} file.
 
 
-\subsubsection{Annotated library\label{nullness-annotated-library}}
+\subsection{Annotated library\label{nullness-annotated-library}}
 
 Three libraries that or annotated with nullness qualifiers are:
 
@@ -661,7 +661,7 @@ directory.
 \end{itemize}
 
 
-\subsection{Other tools for nullness checking\label{nullness-related-work}}
+\section{Other tools for nullness checking\label{nullness-related-work}}
 
 \newcommand{\linktoNonNull}{\code{\refclass{nullness/quals}{NonNull}}}
 \newcommand{\linktoNullable}{\code{\refclass{nullness/quals}{Nullable}}}
@@ -754,7 +754,7 @@ imported.  Also, note FindBugs's non-standard meaning for
 \<@Nullable> (Section~\ref{findbugs-nullable}).
 
 
-\subsubsection{Which tool is right for you?\label{choosing-nullness-tool}}
+\subsection{Which tool is right for you?\label{choosing-nullness-tool}}
 
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
@@ -785,7 +785,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 
 
-\subsubsection{Compatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
+\subsection{Compatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
 
 FindBugs suppresses all warnings at uses of a \<@Nullable> variable.  (This
 inevitably surprises programmers!  You have to use \<@CheckForNull> to

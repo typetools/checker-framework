@@ -1,6 +1,5 @@
 \htmlhr
-% TODO this should eventually be expanded
-\section{Basic checker\label{basic-checker}}
+\chapter{Basic checker\label{basic-checker}}
 
 The Basic checker enforces only subtyping rules.  It operates over
 annotations specified by a user on the command line.  Thus, users can
@@ -8,7 +7,7 @@ create a simple type checker without writing any code beyond definitions of
 the type qualifier annotations.
 
 The Basic checker can accommodate all of the type system enhancements that
-can be declaratively specified (see Section~\ref{writing-a-checker}).
+can be declaratively specified (see Chapter~\ref{writing-a-checker}).
 This includes type introduction rules (implicit
 annotations, e.g., literals are implicitly considered \code{@\refclass{nullness/quals}{NonNull}}) via
 the \code{@\refclass{quals}{ImplicitFor}} meta-annotation, and other features such as
@@ -22,13 +21,13 @@ Framework.
 
 For type systems that require special checks (e.g., warning about
 dereferences of possibly-null values), you will need to write code and
-extend the framework as discussed in Section~\ref{writing-a-checker}.
+extend the framework as discussed in Chapter~\ref{writing-a-checker}.
 
 
-\subsection{Using the Basic checker\label{basic-using}}
+\section{Using the Basic checker\label{basic-using}}
 
 The Basic checker is used in the same way as other checkers (using the
-\code{-processor} option; see Section~\ref{using-a-checker}), except that it
+\code{-processor} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
 ``\code{-A}'' switch:
 
@@ -56,7 +55,7 @@ annotation, with the argument being the unqualified, uncapitalized name of
 any of the annotations passed to \code{-Aquals}.
 
 
-\subsection{Basic checker example\label{basic-example}\label{encrypted-example}}
+\section{Basic checker example\label{basic-example}\label{encrypted-example}}
 
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or

@@ -1,7 +1,8 @@
-\section{Handling warnings and legacy code\label{warnings-and-legacy}}
+\htmlhr
+\chapter{Handling warnings and legacy code\label{warnings-and-legacy}}
 
 
-\subsection{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
 
 Sometimes, you wish to type-check only part of your program.  
 You might focus on the most mission-critical or error-prone part of your
@@ -12,7 +13,7 @@ You may not have
 enough knowledge to annotate poorly-documented libraries that your program uses.
 
 If annotated code uses unannotated code, then the checker may issue
-warnings.  For example, the Nullness checker (Section~\ref{nullness-checker}) will
+warnings.  For example, the Nullness checker (Chapter~\ref{nullness-checker}) will
 warn whenever an unannotated method result is used in a non-null context:
 
 \begin{Verbatim}
@@ -28,7 +29,7 @@ there are several ways to eliminate the compiler warnings.
 \item Annotate \code{unannotated\_method} in full.  This approach provides the
   the strongest guarantees, but may require you to annotate additional
   methods that \code{unannotated\_method} calls.  See
-  Section~\ref{annotating-libraries} for a discussion of how to annotate
+  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
   libraries for which you have no source code.
 \item Annotate only the signature of \code{unannotated\_method}, and
   suppress warnings in its body.  Two ways to suppress the warnings are via a
@@ -46,7 +47,7 @@ there are several ways to eliminate the compiler warnings.
   
 \end{enumerate}
 
-Section~\ref{annotating-libraries} discusses adding annotations to
+Chapter~\ref{annotating-libraries} discusses adding annotations to
 signatures when you do not have source code available.
 Section~\ref{suppressing-warnings} discusses suppressing warnings.
 
@@ -56,7 +57,7 @@ can distribute the annotations with the Checker Framework; see
 Section~\ref{reporting-bugs}.
 
 
-\subsection{Suppressing warnings\label{suppressing-warnings}}
+\section{Suppressing warnings\label{suppressing-warnings}}
 
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
@@ -159,19 +160,19 @@ You can also compile parts of your code without use of the
 such compilations.
 
 Finally, some checkers have special rules.  For example, the Nullness
-checker (Section~\ref{nullness-checker}) uses \code{assert} statements that contain
+checker (Chapter~\ref{nullness-checker}) uses \code{assert} statements that contain
 null checks, and the special \<castNonNull> method, to suppress warnings
 (Section~\ref{suppressing-warnings-with-assertions}).
 
 
 
-\subsection{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
+\section{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
 
 Sometimes, your code needs to be compilable by people who are not
 a Java 7 compiler.
 
 
-\subsubsection{Annotations in comments}
+\subsection{Annotations in comments}
 
 A Java 4 compiler does not permit use of
 annotations, and a Java 5 compiler only permits annotations on
@@ -217,7 +218,7 @@ inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
 
 
-\subsubsection{Implicit import statements\label{implicit-import-statements}}
+\subsection{Implicit import statements\label{implicit-import-statements}}
 
 When writing source code with annotations, it is more convenient to write a
 short form such as \code{@NonNull} instead of
@@ -255,7 +256,7 @@ Alternately, you can set the environment variable via the javac
 command-line argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
 
 
-\subsubsection{Migrating away from annotations in comments}
+\subsection{Migrating away from annotations in comments}
 
 Suppose that your codebase currently uses annotations in comments, but you
 wish to remove the comment characters around your annotations, because in
