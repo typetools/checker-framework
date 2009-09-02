@@ -1651,10 +1651,10 @@ ConstructorDeclaration ConstructorDeclaration(Modifier modifier):
   <IDENTIFIER> { name = token.image; if(line==-1){line=token.beginLine; column=token.beginColumn;}} parameters = FormalParameters() 
   receiverAnnotations = Annotationsopt()
 [ "throws" throws_ = NameList() ]
-  "{" { bbLine=token.beginLine; bbColumn=token.beginColumn; }
+(  "{" { bbLine=token.beginLine; bbColumn=token.beginColumn; }
     [ LOOKAHEAD(ExplicitConstructorInvocation()) exConsInv = ExplicitConstructorInvocation() ]
     stmts = Statements()
-  "}"
+  "}" | ";" )
 
   {
   	if (exConsInv != null) {
