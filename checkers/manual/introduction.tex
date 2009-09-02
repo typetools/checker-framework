@@ -25,7 +25,7 @@ The Checker Framework comes with 6 checkers for specific types of errors:
   Section~\ref{javari-checker})
 \item
   \ahrefloc{lock-checker}{Lock checker} for concurrency and lock errors,
-  inspired by the Java Concurrency in Practice (JCIP) type system (see
+  inspired by the Java Concurrency in Practice (JCIP) annotations (see
   Section~\ref{lock-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting checker} for trust and security errors
@@ -477,34 +477,53 @@ command-line option, but in that case no checking of the type
 annotations is performed.  The annotations are still written to the
 resulting \<.class> files, however.
 
-\subsubsection{Checker Options\label{lint-options}}
+\subsubsection{Summary of command-line options\label{checker-options}}
 
-You may customize some of the checks that the checkers perform through a
-lint option, analogous to \code{javac -Xlint} option.
-
-Each of the distributed checkers support the following optional checks:
+You can pass command-line arguments to a checker via javac's standard \<-A>
+option (``\<A>'' stands for ``annotation'').  All of the distributed
+checkers support the following command-line options:
 
 \begin{itemize}
-
-\item
-  \code{flow} (default: on) - option to perform flow-sensitive
-  analysis to infer the nullness of references
-
-\item
-  \code{cast} (default: on) - option to warn against unsafe casts due to
-  nullness, as in \code{((@NonNull String)null)}
-
-\item
-  \code{cast:redundant} (default: on) - option to warn against redundant
-  casts, as in \code{((@NonNull String)''m'')}
+\item \<-Awarns> Treat checker errors as warnings; see Section~\ref{running}
+\item \<-AskipClasses> Suppress all errors and warnings at all uses of a
+  given class; see Section~\ref{suppressing-warnings}
+\item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
+\item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
+\item \<-Afilenames>, \<-Anomsgtext>, \<-Ashowchecks> Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \end{itemize}
 
-To activate such options, you can write \code{-Alint=} followed by a comma-delimited list of check names, e.g. \code{-Alint=flow,cast}.  If the check name is preceded by a hyphen (\code{-}), the check is disabled.
+\noindent
+Some checkers support additional options, such as \<-Aquals> for the Basic
+Checker to check; see Section~\ref{basic-checker}.
 
-For example to warn against regular unsafe casts, but no redundant casts, you
-can pass \code{-Alint=cast,-cast:redundant}.
 
-\subsubsection{Checker auto-discovery}
+Here are some standard javac command-line options that you may find useful.
+Many of them contain the word ``processor'', because in javac jargon, a
+checker is a type of ``annotation processor''.
+
+\begin{itemize}
+\item \<-processor> Names the checker to be
+  run; see Section~\ref{running}
+\item \<-processorpath> Indicates where to search for the
+  checker; should also contain any qualifiers used by the Basic
+  Checker; see Section~\ref{basic-example}
+\item \<-proc:>\{\<none>,\<only>\} Controls whether checking
+  happens; \<-proc:none>
+  means to skip checking; \<-proc:only> means to do only
+  checking, without any subsequent compilation; see
+  Section~\ref{checker-auto-discovery}
+\item \<-sourcepath> Indicates where to find the skeleton classes;
+  see Section~\ref{skeleton-using}
+\item \<-implicit:class> Enables processing for implicitly compiled files
+  (not named on the command line); see Section~\ref{ant-task}
+\item \<-XDTA:spacesincomments> parse annotation comments even when they
+  contain spaces; applicable only to the Type Annotations compiler; see Section~\ref{annotations-in-comments}
+\item \<-J> Supply an argument to the JVM that is running javac; example:
+  \<-J-Djsr308\_imports="checkers.nullness.quals.*">; see Section~\ref{implicit-import-statements}
+\end{itemize}
+
+
+\subsubsection{Checker auto-discovery\label{checker-auto-discovery}}
 
 ``Auto-discovery'' makes the \code{javac} compiler always run a checker
 plugin, even if you do not explicitly pass the \code{-processor}
@@ -529,7 +548,8 @@ Interning checkers automatically, the configuration file should contain:
 %END LATEX
 
 You can disable this auto-discovery mechanism by passing the
-\code{-proc:none} command-line option to \<javac>.
+\code{-proc:none} command-line option to \<javac>, which disables all
+annotation processing including all pluggable type-checking.
 
 %% Auto-discovering all the distributed checkers by default would be
 %% problematic.  So, leave it up to the user to enable auto-discovery.
