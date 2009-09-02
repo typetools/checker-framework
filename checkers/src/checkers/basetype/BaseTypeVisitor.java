@@ -442,7 +442,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     }
 
     protected void checkTypecastSafety(TypeCastTree node, P p) {
-        if (!checker.getLintOption("cast", true))
+        if (!checker.getLintOption("cast:unsafe", true))
             return;
 
         boolean isSubtype = false;
