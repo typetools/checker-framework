@@ -1,4 +1,4 @@
-\documentclass[10pt]{article}
+\documentclass[10pt]{report}
 \usepackage{pslatex}
 \usepackage{fullpage}
 \usepackage{graphicx}
@@ -102,13 +102,15 @@
 % \newcommand{\sunjavadoc}[2]{\ahref{http://java.sun.com/javase/6/docs/api/#1?is-external=true}{\<#2>}}
 \newcommand{\sunjavadoc}[2]{\ahref{http://java.sun.com/javase/6/docs/api/#1}{\<#2>}}
 
+\setcounter{page}{2}
+
 \noindent
 \textbf{For the impatient:}
 Section~\ref{installation} describes how to \textbf{install and use} pluggable
 type-checkers.
 
-\newcommand{\sectionpageref}[1]{Section~\ref{#1}, page~\pageref{#1}}
-%HEVEA \renewcommand{\sectionpageref}[1]{Section~\ref{#1}}
+\newcommand{\chapterpageref}[1]{Chapter~\ref{#1}, page~\pageref{#1}}
+%HEVEA \renewcommand{\chapterpageref}[1]{Chapter~\ref{#1}}
 
 %BEGIN LATEX
 \medskip
@@ -117,17 +119,17 @@ type-checkers.
 \noindent
 You can also jump directly to the documentation for a particular checker:
 \begin{itemize}
-\item Nullness checker: \sectionpageref{nullness-checker}
-\item Interning checker: \sectionpageref{interning-checker}
-\item IGJ (immutability) checker: \sectionpageref{igj-checker}
-\item Javari (immutability) checker: \sectionpageref{javari-checker}
-\item Lock checker: \sectionpageref{lock-checker}
-\item Tainting checker: \sectionpageref{tainting-checker}
-\item Basic checker: \sectionpageref{basic-checker}
+\item Nullness checker: \chapterpageref{nullness-checker}
+\item Interning checker: \chapterpageref{interning-checker}
+\item IGJ (immutability) checker: \chapterpageref{igj-checker}
+\item Javari (immutability) checker: \chapterpageref{javari-checker}
+\item Lock checker: \chapterpageref{lock-checker}
+\item Tainting checker: \chapterpageref{tainting-checker}
+\item Basic checker: \chapterpageref{basic-checker}
 \end{itemize}
 
 
-%HEVEA \setcounter{tocdepth}{2}
+%HEVEA \setcounter{tocdepth}{1}
 \tableofcontents
 \newpage
 

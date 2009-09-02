@@ -1,5 +1,5 @@
 \htmlhr
-\section{Lock checker\label{lock-checker}}
+\chapter{Lock checker\label{lock-checker}}
 
 The Lock checker prevents certain kinds of concurrency errors.  If the Lock
 checker issues no warnings for a given program, then the program holds the
@@ -15,7 +15,7 @@ program obeys its locking discipline is an easy and effective way to
 eliminate a common and important class of errors.
 
 
-\subsection{Lock annotations\label{lock-annotations}}
+\section{Lock annotations\label{lock-annotations}}
 
 The Lock checker uses two annotations.  One is a type qualifier, and the
 other is a method annotation.
@@ -37,7 +37,7 @@ other is a method annotation.
 
 \end{description}
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 Most often, field values are annotated with \code{@GuardedBy}, but other
 uses are possible.
@@ -91,7 +91,7 @@ A parameter may be annotated with \code{@GuardedBy}:
 
     
 
-\subsubsection{Discussion of \<@Holding>}
+\subsection{Discussion of \<@Holding>}
 
 A programmer might choose to use the \code{@Holding} method annotation in
 two different ways:  to specify a higher-level protocol, or to summarize
@@ -159,7 +159,7 @@ The advantages of the \<@Holding> annotation include:
 \end{itemize}
 
 
-\subsubsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
+\subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
 
 The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
 \ahref{http://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's

@@ -1,5 +1,5 @@
 # To regenerate this list, run:   latex-process-inputs.pl -list manual.tex
-TEX_FILES = manual.tex introduction.tex nullness-checker.tex interning-checker.tex igj-checker.tex javari-checker.tex lock-checker.tex tainting-checker.tex basic-checker.tex advanced-features.tex warnings.tex annotating-libraries.tex creating-a-checker.tex troubleshooting.tex
+TEX_FILES = manual.tex introduction.tex nullness-checker.tex interning-checker.tex igj-checker.tex javari-checker.tex lock-checker.tex tainting-checker.tex basic-checker.tex advanced-features.tex warnings.tex annotating-libraries.tex creating-a-checker.tex external-tools.tex faq.tex troubleshooting.tex
 
 all: figures-all doc manual.pdf manual.html
 
@@ -31,7 +31,7 @@ manual.html: manual.dvi
 	hevea -exec xxdate.exe urlhref.hva manual.tex
 	mv manual.html manual.html-with-htoc
 	retarget-hevea-crossrefs < manual.html-with-htoc > manual.html
-	\rm -f manual.html-with-htoc
+#	\rm -f manual.html-with-htoc
 	perl -pi -e 's/\/&#XA0;/\/~/' manual.html
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html

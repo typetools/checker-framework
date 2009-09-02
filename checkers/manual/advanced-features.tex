@@ -1,4 +1,5 @@
-\section{Advanced type system features\label{advanced-type-system-features}}
+\htmlhr
+\chapter{Advanced type system features\label{advanced-type-system-features}}
 
 This section describes features that are automatically supported by every
 checker written with the Checker Framework.
@@ -8,9 +9,9 @@ sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
 
 
-\subsection{Polymorphism and generics\label{polymorphism}}
+\section{Polymorphism and generics\label{polymorphism}}
 
-\subsubsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
+\subsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
 The Checker Framework fully supports 
 qualified Java generic types (also known in the research literature as ``parametric
@@ -32,7 +33,7 @@ used for instantiating.  For example, given the declaration \code{class
 \code{MyClass<@NonNull String>} but not \code{MyClass<@Nullable String>}.
 
 \emph{Style note:}
-When using the Nullness checker (Section~\ref{nullness-checker}),
+When using the Nullness checker (Chapter~\ref{nullness-checker}),
 programmers sometimes write \<extends @NonNull Object> even though it's the 
 default.
 The reason is that Java code with no extends clause, like 
@@ -93,7 +94,7 @@ In \code{MyClass2<@Interned String>},
 % \code{T}.
 
 
-\subsubsection{Qualifier polymorphism\label{qualifier-polymorphism}}
+\subsection{Qualifier polymorphism\label{qualifier-polymorphism}}
 
 The Checker Framework also supports type \emph{qualifier} polymorphism for methods,
 which permits a single method to have multiple different qualified type
@@ -232,7 +233,7 @@ generics, the code can be even cleaner:
 % Qualifier polymorphism is limited to a single qualifier variable per method.
 
 
-\subsection{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
 
 Sometimes, the type of a field depends on the qualifier on the receiver.
 The Checker Framework supports two varieties of such a field:  a field that
@@ -240,7 +241,7 @@ may not be used if the receiver has a given qualifier, and a fields whose
 qualifier changes based on the qualifier of the receiver.
 
 
-\subsubsection{Unused fields\label{unused-fields}}
+\subsection{Unused fields\label{unused-fields}}
 
 A Java subtype can have more fields than its supertype.  You can simulate
 the same effect for type qualifiers:  a given field may not be accessed via
@@ -254,7 +255,7 @@ on a field declares that the field may not be accessed via a receiver of
 the given qualified type (or any supertype).
 
 
-\subsubsection{Dependent types\label{dependent-types}}
+\subsection{Dependent types\label{dependent-types}}
 
 A variable has a \emph{dependent type} if its type depends on some other
 value or type.
@@ -273,7 +274,7 @@ When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
 should use it instead of \code{@Dependent}.
 
 
-\subsubsection{Example\label{dependent-types-example}}
+\subsection{Example\label{dependent-types-example}}
 
 Suppose we have a class \code{Person} and a field \code{spouse} that is
 non-\code{null} if the person is married.  We could declare this as
@@ -343,7 +344,7 @@ the \code{spouse} field may not be accessed:
 \end{Verbatim}
 
 
-\subsection{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
+\section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
 
 A checker sometimes treats a type as having a slightly different qualifier
 than what is written on the type --- especially if the programmer wrote no
@@ -403,7 +404,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 
 
-\subsubsection{Default qualifier for unannotated types\label{defaults}}
+\subsection{Default qualifier for unannotated types\label{defaults}}
 
 A type system designer, or an end-user programmer, can cause unannotated
 references to be treated as if they had a default annotation.
@@ -437,7 +438,7 @@ annotation, and its optional second argument indicates where the default
 applies.  If the second argument is omitted, the specified annotation is
 the default in all locations.  See the Javadoc of \refclass{quals}{DefaultQualifier} for details.
 
-For example, using the Nullness type system (Section~\ref{nullness-checker}):
+For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
 
 \begin{Verbatim}
 import checkers.quals.*;        // for DefaultQualifier[s]
@@ -513,7 +514,7 @@ every location in the hierarchy.
 The reason is that this permits users to specify defaults.
 
 
-\subsubsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
+\subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
 
 In order to reduce the burden of annotating types in your program, the
 checkers soundly treat certain variables and expressions as having a
@@ -531,7 +532,7 @@ unnecessarily general type in a declaration.
 
 If you are curious or want more details about this feature, then read on.
 
-As an example, the Nullness checker (Section~\ref{nullness-checker}) can automatically
+As an example, the Nullness checker (Chapter~\ref{nullness-checker}) can automatically
 determine that certain variables are non-null, even if they were explicitly
 or by default annotated as nullable.
 The checker treats a variable or expression as \code{@\refclass{nullness/quals}{NonNull}}
@@ -551,7 +552,7 @@ dereferences and assignments to non-null types, without
 compiler warnings.
 
 Consider this code, along with comments indicating whether the
-Nullness checker (Section~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
+Nullness checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
 warning or not depending on its context.
 
 \begin{Verbatim}

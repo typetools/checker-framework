@@ -1,8 +1,9 @@
-\section{Integration with external tools\label{external-tools}}
+\htmlhr
+\chapter{Integration with external tools\label{external-tools}}
 
 This section discusses how to run a checker from your favorite IDE\@.
 
-Or, if \emph{your} favorite isn't here, then customize how it runs the
+Or, if your favorite isn't here, you should customize how it runs the
 javac command on your behalf.  See the IDE documentation to learn how to
 customize it, adapting the instructions for javac in Section~\ref{running}.
 If you make another tool support running a checker, please 
@@ -16,7 +17,7 @@ This section also discusses type inference tools (see
 Section~\ref{type-inference-tools}).
 
 
-\subsection{Ant task\label{ant-task}}
+\section{Ant task\label{ant-task}}
 
 If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
@@ -112,21 +113,21 @@ code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
 
 
-\subsection{Maven plugin\label{maven-plugin}}
+\section{Maven plugin\label{maven-plugin}}
 
 Adam Warski has written a Maven2 plugin that runs a checker.
 The plugin is available at 
 \myurl{http://www.warski.org/checkersplugin.html}.
 
 
-\subsection{IntelliJ IDEA\label{intellij}}
+\section{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
 \ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
 the Type Annotations (JSR-308) syntax.
 See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
 
-\subsection{Eclipse\label{eclipse}}
+\section{Eclipse\label{eclipse}}
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
 or using an Eclipse plug-in.
@@ -170,13 +171,13 @@ experimental now, but some people have used it successfully (and we have fixed
 all bugs that have been reported so far).
 
 
-\subsection{tIDE\label{tide}}
+\section{tIDE\label{tide}}
 
 tIDE, an open-source Java IDE, supports the Checker Framework.  See its
 documentation at \myurl{http://tide.olympe-network.com/}.
 
 
-\subsection{Type inference tools\label{type-inference-tools}}
+\section{Type inference tools\label{type-inference-tools}}
 
 Sections~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.

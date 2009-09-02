@@ -1,5 +1,5 @@
 \htmlhr
-\section{Annotating libraries\label{annotating-libraries}}
+\chapter{Annotating libraries\label{annotating-libraries}}
 
 When annotated code uses an unannotated library, a checker may issue warnings.
 As described in Section~\ref{unannotated-code}, the best way to correct
@@ -50,7 +50,7 @@ to the checkers) in two ways.
 \end{itemize}
 
 
-\subsection{Using stub classes\label{stub}\label{stub-creating-and-using}}
+\section{Using stub classes\label{stub}\label{stub-creating-and-using}}
 
 A stub file contains ``stub classes'' that contain annotated signatures.  A
 checker uses those annotated signatures at compile time, instead of or in
@@ -67,7 +67,7 @@ is reproduced in Section~\ref{stub-format}.)
 % First, you must install the skeleton class generator
 % (Section~\ref{skeleton-installing}).
 
-\subsubsection{Creating a stub file\label{stub-creating}}
+\subsection{Creating a stub file\label{stub-creating}}
 
 \begin{enumerate}
 
@@ -107,7 +107,7 @@ add the following import statement at the beginning of the file:
 \end{enumerate}
 
 
-\subsubsection{Using a stub file\label{stub-using}}
+\subsection{Using a stub file\label{stub-using}}
 
   When you run \code{javac} with a given checker/processor, you can specify
   a list of the stub files or directories using
@@ -132,14 +132,14 @@ add the following import statement at the beginning of the file:
 %END LATEX
 
 
-\subsubsection{Stub file format\label{stub-format}}
+\subsection{Stub file format\label{stub-format}}
 
 The stub file format is designed for simplicity, readability, and
 compactness.  It reads like a Java file but contains only the
 necessary information for type checking.
 
 As an illustration, the stub file for the Interning type system
-(Section~\ref{interning-checker}) is as follows.  This file appears as
+(Chapter~\ref{interning-checker}) is as follows.  This file appears as
 \code{checkers/src/checkers/interning/jdk.astub} in the Checker Framework
 distribution.
 
@@ -197,7 +197,7 @@ ways:
 \end{description}
 
 
-\subsubsection{Known problems}
+\subsection{Known problems}
 
 
 The Checker Framework stub file reader has several limitations:
@@ -218,7 +218,7 @@ The Checker Framework stub file reader has several limitations:
 % Label "skeleton" is for old links from the Javarifier manual, to prevent
 % them from being broken links.
 
-\subsection{Using skeleton files (distributed annotated JDKs)\label{skeleton-using}\label{skeleton}}
+\section{Using skeleton files (distributed annotated JDKs)\label{skeleton-using}\label{skeleton}}
 
 The Checker Framework distribution contains 
 annotated JDKs at the path \<checkers/jdk/[checker-name]/src>.
@@ -267,7 +267,7 @@ files into stub files.
 
 
 
-% \subsection{Installing the skeleton class generator\label{skeleton-installing}}
+% \section{Installing the skeleton class generator\label{skeleton-installing}}
 %
 % Source code for the skeleton class generator tool is included in the
 % Checker Framework
