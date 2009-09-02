@@ -362,7 +362,13 @@ Section~\ref{writing-annotations}.
 \htmlhr
 \section{Using a checker\label{using-a-checker}}
 
-Finding bugs with a checker plugin is a two-step process:
+A pluggable type-checker enables you to certain detect bugs in your code,
+or to prove that they are not present.  The verification happens at compile
+time.
+
+
+Finding bugs, or verifying their absence, with a checker plugin is a two-step process, whose steps are
+described in Sections~\ref{writing-annotations} and \ref{running}.
 
 \begin{enumerate}
 
@@ -378,6 +384,21 @@ Finding bugs with a checker plugin is a two-step process:
 
 \end{enumerate}
 
+This section is structured as follows:
+\begin{itemize}
+\item Section~\ref{writing-annotations}: How to write annotations
+\item Section~\ref{running}:  How to run a checker
+\item Section~\ref{tips-about-writing-annotations}: Tips about writing annotations
+\item Section~\ref{checker-guarantees}: What the checker guarantees
+\end{itemize}
+
+Additional topics are covered later in the manual:
+\begin{itemize}
+\item Section~\ref{advanced-type-system-features}: Advanced type system features
+\item Section~\ref{warnings-and-legacy}: Handling warnings and legacy code
+\item Section~\ref{annotating-libraries}: Annotating libraries
+\item Section~\ref{writing-a-checker}: How to create a new checker
+\end{itemize}
 
 
 % The annotations have to be on your classpath even when you are not using
