@@ -50,6 +50,37 @@ know so we can mention it in the Checker Framework manual, link to
 it from the webpages, or include it in the Checker Framework distribution.
 
 
+\subsection{Relationship of the Checker Framework to other tools\label{tool-relationships}}
+
+This table shows the relationship among various tools.
+All of the tools use the Type Annotations (JSR 308) syntax.
+You use the Checker Framework to build pluggable type systems, and the
+Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
+
+\newlength{\bw}
+\setlength{\bw}{.5in}
+
+% Unfortunately, Hevea inserts a horizontal line between every pair of rows
+% regardless of whether there is a \hline or \cline.  So, make paragraphs.
+\begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
+\cline{1-3} \cline{5-7}
+\centering Nullness \par Checker &
+\centering Mutation \par Checker &
+\centering Tainting \par Checker &
+\centering \ldots &
+\centering Your \par Checker &
+\centering Type \par inference &
+Other \par tools
+\\ \hline
+\multicolumn{5}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
+\multicolumn{2}{p{3\bw}|}{\centering \ahref{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\\ \hline
+\multicolumn{7}{|p{8.5\bw}|}{\centering
+  \ahref{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
+  and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
+\end{tabular}
+
+
 \subsection{The parts of a checker\label{parts-of-a-checker}}
 
 The Checker Framework provides abstract base classes (default
