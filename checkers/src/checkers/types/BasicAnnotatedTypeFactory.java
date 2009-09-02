@@ -91,7 +91,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @param root the compilation unit to scan
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
-        this(checker, root, checker.getLintOption("flow", FLOW_BY_DEFAULT));
+        this(checker, root, FLOW_BY_DEFAULT);
     }
 
     // **********************************************************************
