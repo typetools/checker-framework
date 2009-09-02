@@ -51,7 +51,7 @@ run an additional typechecker as a plug-in to the javac compiler.  Your
 code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check only part of
-your program, and type inference tools exist to help you annotate your
+your program.  Type inference tools exist to help you annotate your
 code.
 
 
@@ -457,9 +457,14 @@ classes are loaded via reflection, which would be unusual).
 To run a checker plugin, run the compiler \code{javac} as usual,
 but pass the \code{-processor \emph{plugin\_class}} command-line
 option.
-(You might run the compiler from the command line as shown below, or your
-IDE might run the javac command on your behalf, in which case see the IDE
-documentation to learn how to customize it.)
+(You can run a checker from within your favorite IDE or build system.  See
+Section~\ref{external-tools} for details about
+Ant (Section~\ref{ant-task}),
+Maven (Section~\ref{maven-plugin}),
+IntelliJ IDEA (Section~\ref{intellij}),
+Eclipse (Section~\ref{eclipse}),
+and
+tIDE (Section~\ref{tide}), and about customizing other IDEs and build tools.)
 Remember that you must be using the
 Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
 
@@ -497,6 +502,8 @@ You can always compile the code without the \code{-processor}
 command-line option, but in that case no checking of the type
 annotations is performed.  The annotations are still written to the
 resulting \<.class> files, however.
+
+
 
 \subsubsection{Summary of command-line options\label{checker-options}}
 
@@ -580,164 +587,6 @@ annotation processing including all pluggable type-checking.
 %%  2. The nullness and mutability checkers would issue lots of errors for
 %%     unannotated code, and that would be irritating.
 
-\subsubsection{Ant task\label{ant-task}}
-
-If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
-your software, then you can add an Ant task that runs a checker.  We assume
-that your Ant file already contains a compilation target that uses the
-\code{javac} task.
-
-First, set the \code{jsr308javac} property:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  <!-- Boilerplate to set jsr308javac property. Is there a better way? -->
-  <property environment="env"/>
-  <condition property="isUnix">
-    <os family="unix" />
-  </condition>
-  <condition property="isWindows">
-    <os family="windows" />
-  </condition>
-  <target name="init-jsr308javac-unix" if="isUnix">
-    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac" />
-  </target>
-  <target name="init-jsr308javac-windows" if="isWindows">
-    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac.bat" />
-  </target>
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-The \code{property} target makes environment variables (such as your home
-directory) available to Ant.
-
-Next, duplicate the compilation target, then modify it slightly as
-indicated in this example, filling in each ellipsis (\ldots) from the
-original compilation target:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  <target name="check-nullness"
-          description="Check for nullness errors."
-          depends="clean,...,init-jsr308javac-unix,init-jsr308javac-windows">
-    <javac ...
-           fork="yes"
-           executable="${jsr308javac}">
-      <compilerarg value="-version"/>
-      <compilerarg line="-target 5"/>
-      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg line="-sourcepath ${env.CHECKERS}/jdk/nullness/src"/>
-      <compilerarg value="-implicit:class"/>
-      <classpath>
-        <pathelement location="${env.annotations}/checkers/checkers.jar"/>
-        ...
-      </classpath>
-      ...
-    </javac>
-  </target>
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-In the example, the target is named \code{check-nullness}, but you can
-name it whatever you like.
-
-The target assumes the existence of a \code{clean} target that removes all
-\code{.class} files.  That is necessary because Ant's \code{javac} target
-doesn't re-compile \code{.java} files for which a \code{.class} file
-already exists.
-
-The \code{executable} and \code{fork} fields of the \code{javac} task
-ensure that an external javac program is called.  Otherwise, Ant will run
-javac via a Java method call, and there is no guarantee that it will get
-the JSR 308 version that is distributed with the Checker Framework.
-
-The \code{-version} compiler argument is just for debugging; you may omit
-it.
-
-The \code{-target 5} compiler argument is optional, if you use Java 5 in
-ordinary compilation when not performing pluggable type-checking.
-
-The \code{-processor ...} compiler argument indicates which checker to
-run.  You can supply additional arguments to the checker as well.
-
-The \code{-implicit:class} compiler argument causes annotation processing
-to be performed on implicitly compiled files.  (An implicitly compiled file
-is one that was not specified on the command line, but for which the source
-code is newer than the \code{.class} file.)  This is the default, but
-supplying the argument explicitly suppresses a compiler warning.
-
-
-\subsubsection{Maven plugin\label{maven-task}}
-
-Adam Warski has written a Maven2 plugin that runs a checker.
-The plugin is available at 
-\myurl{http://www.warski.org/checkersplugin.html}.
-
-
-\subsubsection{IntelliJ IDEA\label{intellij}}
-
-IntelliJ IDEA (Maia release)
-\ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
-the Type Annotations (JSR-308) syntax.
-See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
-
-\subsubsection{Eclipse\label{eclipse}}
-
-There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plug-in.
-
-
-\paragraph{Using an Ant task}
-
-Add an Ant target as described in Section~\ref{ant-task}.  You can
-run the Ant target by executing the following steps
-(instructions copied from
-\myurl{http://www.eclipse.org/documentation/?topic=/org.eclipse.platform.doc.user/gettingStarted/qs-84_run_ant.htm}):
-
-\begin{enumerate}
-
-\item
-  Select \code{build.xml} in one of the navigation views and choose
-  {\bf Run As $>$ Ant Build...} from its context menu.
-
-\item
-  A launch configuration dialog is opened on a launch configuration
-  for this Ant buildfile.
-
-\item
-  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
-
-\item
-  Click {\bf Run}.
-
-\item
-  The Ant buildfile is run, and the output is sent to the Console view.
-
-\end{enumerate}
-
-\paragraph{Eclipse plug-in}
-
-A prototype Eclipse plug-in for running a checker is available at
-\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.  
-The website contains instructions for installing and using the plug-in.
-The plug-in is
-experimental now, but some people have used it successfully (and we have fixed
-all bugs that have been reported so far).
-
-
-\subsubsection{tIDE}
-
-tIDE, an open-source Java IDE, supports the Checker Framework.  See its
-documentation at \myurl{http://tide.olympe-network.com/}.
 
 
 \subsection{What the checker guarantees\label{checker-guarantees}}
@@ -1001,4 +850,5 @@ is annotated \<@ReadOnly>.
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
-% LocalWords:  html JCIP MultiSet
+% LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks
+% LocalWords:  Aquals processorpath
