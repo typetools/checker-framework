@@ -471,13 +471,13 @@ A type system's rules define which operations on values of a
 particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
 
-The framework provides a \textit{base visitor class},
+The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Sun's
 \ahref{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/index.html}{Tree
 API},
-and issues a warning whenever the type system is violated.
+and it issues a warning whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
@@ -534,6 +534,28 @@ similar to Java subtype rules, but taking the type qualifiers into account.
   receiver in the overridden method's declaration
 
 \end{itemize}
+
+
+\subsubsection{AST traversal\label{ast-traversal}}
+
+The Checker Framework needs to do its own traversal of the AST even though
+it operates as an ordinary annotation processor~\cite{jsr269}.  Annotation
+processors can utilize a visitor for Java code, but that visitor only
+visits the public elements of Java code, such as classes, fields, methods,
+and method arguments --- it does not visit code bodies or various other
+locations.  The Checker Framework hardly uses the built-in visitor --- as
+soon as the built-in visitor starts to visit a class, then the Checker
+Framework's visitor takes over and visits all of the class's source code.
+
+Because there is no standard API for the AST of Java code, the Checker
+Framework uses the javac implementation.  This is why the Checker Framework
+does not interoperate with Eclipse (see Section~\ref{eclipse}).  Actually,
+there is standard API for Java ASTs --- JSR 198 (Extension API for
+Integrated Development Environments)~\cite{JSR198} --- but apparently it
+has never been implemented.  If all major vendors were to implement it
+(which would require writing wrappers or adapters), then the Checker
+Framework and similar tools could be portable among different compilers and
+IDEs.
 
 
 \subsection{The checker class:  Compiler interface\label{writing-compiler-interface}}
@@ -741,7 +763,7 @@ In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
 Integrated Development Environments)~\cite{JSR198}, which gives access to
 the source code of a method.  But, at present Eclipse and IDEA do not
-implement JSR~198.
+implement JSR~198.  Also see Section~\ref{ast-traversal}.
 
 In short: a
 \refTreeclass{tree}{Tree}
