@@ -108,6 +108,7 @@ add the following import statement at the beginning of the file:
 
 
 \subsubsection{Using a stub file\label{stub-using}}
+
   When you run \code{javac} with a given checker/processor, you can specify
   a list of the stub files or directories using
   \code{-Astubs=\emph{file\_or\_path\_name}}.  The stub path entries
@@ -198,16 +199,18 @@ ways:
 
 \subsubsection{Known problems}
 
-% As of 9/27/2008.  Update as these bugs are fixed.
 
 The Checker Framework stub file reader has several limitations:
 
 \begin{itemize}
 \item
+  % Still a problem as of 9/2/2009.
   It does not handle \code{enum}s.
 \item
+  % Still a problem as of 9/2/2009.
   It does not handle non-type annotations (e.g. IGJ's \<Assignable>).
 \item
+  % Still a problem as of 9/2/2009.
   It does not handle arrays yet.
 \end{itemize}
 
