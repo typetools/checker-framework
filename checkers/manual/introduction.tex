@@ -1,4 +1,5 @@
-\section{Introduction\label{introduction}}
+\htmlhr
+\chapter{Introduction\label{introduction}}
 
 The Checker Framework enhances Java's type system to make it more powerful
 and useful.
@@ -11,25 +12,25 @@ The Checker Framework comes with 6 checkers for specific types of errors:
 
 \item
   \ahrefloc{nullness-checker}{Nullness checker} for null pointer errors
-  (see Section~\ref{nullness-checker})
+  (see Chapter~\ref{nullness-checker})
 \item
   \ahrefloc{interning-checker}{Interning checker} for errors in equality
-  testing and interning (see Section~\ref{interning-checker})
+  testing and interning (see Chapter~\ref{interning-checker})
 \item
   \ahrefloc{igj-checker}{IGJ checker} for mutation errors (incorrect
   side effects), based on the IGJ type system (see
-  Section~\ref{igj-checker})
+  Chapter~\ref{igj-checker})
 \item
   \ahrefloc{javari-checker}{Javari checker} for mutation errors
   (incorrect side effects), based on the Javari type system (see
-  Section~\ref{javari-checker})
+  Chapter~\ref{javari-checker})
 \item
   \ahrefloc{lock-checker}{Lock checker} for concurrency and lock errors,
   inspired by the Java Concurrency in Practice (JCIP) annotations (see
-  Section~\ref{lock-checker})
+  Chapter~\ref{lock-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting checker} for trust and security errors
-  (see Section~\ref{tainting-checker})
+  (see Chapter~\ref{tainting-checker})
 
 \end{enumerate}
 
@@ -38,10 +39,10 @@ These checkers are easy to use and are invoked as arguments to \<javac>.
 
 
 The Checker Framework also enables you to write new checkers of your
-own; see Sections~\ref{basic-checker} and~\ref{writing-a-checker}.
+own; see Chapters~\ref{basic-checker} and~\ref{writing-a-checker}.
 
 
-\subsection{How it works:  Pluggable types\label{pluggable-types}}
+\section{How it works:  Pluggable types\label{pluggable-types}}
 
 The Checker Framework supports adding
 pluggable type systems to the Java language in a backward-compatible way.
@@ -67,18 +68,18 @@ evaluate and deploy their type systems.
 
 % This manual is organized as follows.
 % \begin{itemize}
-% \item Section~\ref{introduction} overviews the Checker Framework and
-%   describes how to \ahrefloc{installation}{install} it (Section~\ref{installation}).
-% \item Section~\ref{using-a-checker} describes how to \ahrefloc{using-a-checker}{use a checker}.
+% \item Chapter~\ref{introduction} overviews the Checker Framework and
+%   describes how to \ahrefloc{installation}{install} it (Chapter~\ref{installation}).
+% \item Chapter~\ref{using-a-checker} describes how to \ahrefloc{using-a-checker}{use a checker}.
 % \item 
-%   The next sections are user manuals for the \ahrefloc{nullness-checker}{Nullness}
-%   (Section~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
-%   (Section~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Section~\ref{javari-checker}),
-%   \ahrefloc{igj-checker}{IGJ} (Section~\ref{igj-checker}), and \ahrefloc{basic-checker}{Basic}
-%   (Section~\ref{basic-checker}) checkers.
-% \item Section~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
+%   The next chapters are user manuals for the \ahrefloc{nullness-checker}{Nullness}
+%   (Chapter~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
+%   (Chapter~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Chapter~\ref{javari-checker}),
+%   \ahrefloc{igj-checker}{IGJ} (Chapter~\ref{igj-checker}), and \ahrefloc{basic-checker}{Basic}
+%   (Chapter~\ref{basic-checker}) checkers.
+% \item Chapter~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
 % libraries}.
-% \item Section~\ref{writing-a-checker} describes how to
+% \item Chapter~\ref{writing-a-checker} describes how to
 %   \ahrefloc{writing-a-checker}{write a new checker} using the Checker Framework.
 % \end{itemize}
 
@@ -92,7 +93,7 @@ This document uses the terms ``checker'', ``checker plugin'',
 synonyms.
 
 
-\subsection{Installation\label{installation}}
+\section{Installation\label{installation}}
 
 This section describes how to install the binary release of the Checker
 Framework.  The binary release contains everything that you need, both to
@@ -120,7 +121,7 @@ For Windows installation instructions, see Section~\ref{windows-installation}.
 %%% Note that much of this section is duplicated with the "Windows
 %%% installation" section.  That is better for users, even though it is
 %%% longer and makes the maintainers keep two versions in sync.
-\subsubsection{Unix/Linux/MacOS installation\label{unix-installation}}
+\subsection{Unix/Linux/MacOS installation\label{unix-installation}}
 
 These instructions assume that you use the bash or sh shell.  If you use a
 different shell, you may need to slightly adjust the commands.
@@ -177,10 +178,10 @@ The output should be:
 That's all there is to it!  Now you are ready to start using the checkers.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
-instructions for using a checker appear in Section~\ref{using-a-checker}.
+instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 
-\subsubsection{Windows installation\label{windows-installation}}
+\subsection{Windows installation\label{windows-installation}}
 
 \begin{enumerate}
 
@@ -272,11 +273,11 @@ The output should be:
 That's all there is to it!  Now you are ready to start using the checkers.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
-instructions for using a checker appear in Section~\ref{using-a-checker}.
+instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 
 
-\subsection{Example use:  detecting a null pointer bug\label{example-use}}
+\section{Example use:  detecting a null pointer bug\label{example-use}}
 
 To run a checker on a source file, just run javac as usual, passing the
 \<-processor> flag.  For instance, if you usually run the compiler like
@@ -360,7 +361,7 @@ Section~\ref{writing-annotations}.
 
 
 \htmlhr
-\section{Using a checker\label{using-a-checker}}
+\chapter{Using a checker\label{using-a-checker}}
 
 A pluggable type-checker enables you to certain detect bugs in your code,
 or to prove that they are not present.  The verification happens at compile
@@ -392,12 +393,12 @@ This section is structured as follows:
 \item Section~\ref{checker-guarantees}: What the checker guarantees
 \end{itemize}
 
-Additional topics are covered later in the manual:
+Additional topics that apply to all checkers are covered later in the manual:
 \begin{itemize}
-\item Section~\ref{advanced-type-system-features}: Advanced type system features
-\item Section~\ref{warnings-and-legacy}: Handling warnings and legacy code
-\item Section~\ref{annotating-libraries}: Annotating libraries
-\item Section~\ref{writing-a-checker}: How to create a new checker
+\item Chapter~\ref{advanced-type-system-features}: Advanced type system features
+\item Chapter~\ref{warnings-and-legacy}: Handling warnings and legacy code
+\item Chapter~\ref{annotating-libraries}: Annotating libraries
+\item Chapter~\ref{writing-a-checker}: How to create a new checker
 \end{itemize}
 
 
@@ -406,7 +407,7 @@ Additional topics are covered later in the manual:
 % the annotations.
 
 
-\subsection{Writing annotations\label{writing-annotations}}
+\section{Writing annotations\label{writing-annotations}}
 
 The syntax of type qualifier annotations in Java 7 is specified by
 \ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{jsr308}.  Ordinary
@@ -434,7 +435,7 @@ Section~\ref{annotations-in-comments}.
 
 
 
-\subsubsection{Distributing your annotated project\label{distributing}}
+\subsection{Distributing your annotated project\label{distributing}}
 
 If your code contains any annotations (outside of comments, see Section~\ref{annotations-in-comments}), or any import
 statements for the annotations, then your code has a dependency on the
@@ -452,13 +453,13 @@ don't require the annotations declarations (unless the annotation
 classes are loaded via reflection, which would be unusual).
 
 
-\subsection{Running a checker\label{running}}
+\section{Running a checker\label{running}}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
 but pass the \code{-processor \emph{plugin\_class}} command-line
 option.
 (You can run a checker from within your favorite IDE or build system.  See
-Section~\ref{external-tools} for details about
+Chapter~\ref{external-tools} for details about
 Ant (Section~\ref{ant-task}),
 Maven (Section~\ref{maven-plugin}),
 IntelliJ IDEA (Section~\ref{intellij}),
@@ -505,7 +506,7 @@ resulting \<.class> files, however.
 
 
 
-\subsubsection{Summary of command-line options\label{checker-options}}
+\subsection{Summary of command-line options\label{checker-options}}
 
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
@@ -522,7 +523,7 @@ checkers support the following command-line options:
 
 \noindent
 Some checkers support additional options, such as \<-Aquals> for the Basic
-Checker to check; see Section~\ref{basic-checker}.
+Checker to check; see Chapter~\ref{basic-checker}.
 
 
 Here are some standard javac command-line options that you may find useful.
@@ -551,7 +552,7 @@ checker is a type of ``annotation processor''.
 \end{itemize}
 
 
-\subsubsection{Checker auto-discovery\label{checker-auto-discovery}}
+\subsection{Checker auto-discovery\label{checker-auto-discovery}}
 
 ``Auto-discovery'' makes the \code{javac} compiler always run a checker
 plugin, even if you do not explicitly pass the \code{-processor}
@@ -589,12 +590,12 @@ annotation processing including all pluggable type-checking.
 
 
 
-\subsection{What the checker guarantees\label{checker-guarantees}}
+\section{What the checker guarantees\label{checker-guarantees}}
 
 A checker can guarantee that a particular property holds throughout the
-code.  For example, the Nullness checker (Section~\ref{nullness-checker})
+code.  For example, the Nullness checker (Chapter~\ref{nullness-checker})
 guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
-evaluates to null.  The Interning checker (Section~\ref{interning-checker})
+evaluates to null.  The Interning checker (Chapter~\ref{interning-checker})
 guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
 evaluates to an interned value.  The checker makes its guarantee by
 examining every part of your program and verifying that no part of the
@@ -648,9 +649,9 @@ If you find that a checker fails to issue a warning that it
 should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 
-\subsection{Tips about writing annotations\label{tips-about-writing-annotations}}
+\section{Tips about writing annotations\label{tips-about-writing-annotations}}
 
-\subsubsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
+\subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
 You should use annotations to indicate \emph{normal} behavior.  The
 annotation indicate all the values that you \emph{want} to flow to
@@ -694,7 +695,7 @@ as \code{@Nullable} would suppress such warnings, which is undesirable.
 % useful.)
 
 
-\subsubsection{Subclasses must respect superclass annotations\label{annotations-are-a-contract}}
+\subsection{Subclasses must respect superclass annotations\label{annotations-are-a-contract}}
 
 An annotation indicates a guarantee that a client can depend upon.  A subclass
 is not permitted to \emph{weaken} the contract; for example,
@@ -766,7 +767,7 @@ It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
-\subsubsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
+\subsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
 
 For some programming tasks, you can use either a Java subclass or a type
 qualifier.  For instance, suppose that your code currently uses
@@ -792,7 +793,7 @@ cannot be subclassed.
 
 Type qualifiers permit you to remove operations, with a compile-time
 guarantee.  An example is mutating methods that are forbidden by immutable
-types (see Sections~\ref{igj-checker} and~\ref{igj-checker}).  More
+types (see Chapters~\ref{igj-checker} and~\ref{javari-checker}).  More
 generally, type qualifiers permit creating a new supertype, not just a
 subtype, of an existing Java type.
 
@@ -803,7 +804,7 @@ or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
 
 
-\subsubsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
 
 %% I want to get rid of this syntax.
 
@@ -830,7 +831,7 @@ appears before the constructor name, for example:
 
 In general, you should only use this syntax when you know that the cast is
 guaranteed to succeed.  An example from the IGJ checker
-(section~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
+(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
 @Mutable MyClass()>, where you know that every other reference to the class
 is annotated \<@ReadOnly>.
 

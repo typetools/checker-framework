@@ -1,5 +1,5 @@
 \htmlhr
-\section{IGJ (immutability) checker\label{igj-checker}}
+\chapter{IGJ (immutability) checker\label{igj-checker}}
 
 IGJ is a Java language extension that helps programmers to avoid mutation errors
 (unintended side effects).
@@ -9,7 +9,7 @@ enables a programmer to detect and prevent mutation-related errors.
 (See Section~\ref{checker-guarantees} for caveats to the guarantee.)
 
 
-\subsection{IGJ and Mutability\label{igj-and-mutability}}
+\section{IGJ and Mutability\label{igj-and-mutability}}
 
 IGJ permits a
 programmer to express that a particular object should never be modified via any
@@ -37,7 +37,7 @@ which is slightly different dialect
 of IGJ than that described in the ESEC/FSE paper.
 
 
-\subsection{IGJ Annotations\label{igj-annotations}}
+\section{IGJ Annotations\label{igj-annotations}}
 
 Each object is either immutable (it can never be modified) or mutable (it
 can be modified).  The following qualifiers are part of the IGJ type system.
@@ -73,7 +73,7 @@ can be modified).  The following qualifiers are part of the IGJ type system.
 For additional details, see~\cite{ZibinPAAKE2007}.
 
 
-\subsection{What the IGJ checker checks\label{igj-checks}}
+\section{What the IGJ checker checks\label{igj-checks}}
 
 The IGJ checker issues an error whenever mutation happens through a
 readonly reference, when fields of a readonly reference which are not
@@ -87,7 +87,7 @@ mutability access of a reference.
 % the checker, see the Javadoc for \refclass{igj}{IGJVisitor}.
 
 
-\subsection{Implicit qualifiers\label{igj-implicit-qualifiers}}
+\section{Implicit qualifiers\label{igj-implicit-qualifiers}}
 
 As described in Section~\ref{effective-qualifier}, the IGJ checker
 adds implicit qualifiers, reducing the number of annotations that must
@@ -132,7 +132,7 @@ client code to type-check (otherwise a client could not write
 
 
 
-\subsection{Annotation IGJ Dialect\label{annotation-igj-dialect}}
+\section{Annotation IGJ Dialect\label{annotation-igj-dialect}}
 
 The IGJ checker supports the Annotation IGJ dialect of IGJ\@.  The syntax of
 Annotation IGJ is based on type annotations.
@@ -146,7 +146,7 @@ problems.
 The differences between the Annotation IGJ dialect and the original IGJ dialect
 are as follows.
 
-\subsubsection{Semantic Changes}
+\subsection{Semantic Changes}
 
 \begin{itemize}
 
@@ -173,7 +173,7 @@ are as follows.
 
 \end{itemize}
 
-\subsubsection{Syntax Changes}
+\subsection{Syntax Changes}
 
 \begin{itemize}
 
@@ -188,7 +188,7 @@ over immutability.  See Section~\ref{igj-templating}.
 \end{itemize}
 
 
-\subsubsection{Templating Over Immutability: \code{@I}\label{igj-templating}}
+\subsection{Templating Over Immutability: \code{@I}\label{igj-templating}}
 
 \code{@\refclass{igj/quals}{I}} is a template annotation over IGJ Immutability annotations. It acts
 similarly to type variables in Java's generic types, and the name
@@ -250,7 +250,7 @@ immutability type as the \emph{first} collection parameter:
 \end{Verbatim}
 
 
-\subsection{Examples\label{igj-example}}
+\section{Examples\label{igj-example}}
 
 To try the IGJ checker on a source file that uses the IGJ qualifier, use
 the following command (where \code{javac} is the JSR 308 compiler that

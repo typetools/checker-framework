@@ -1,7 +1,8 @@
-\section{Troubleshooting and getting help\label{troubleshooting}}
+\htmlhr
+\chapter{Troubleshooting and getting help\label{troubleshooting}}
 
-Please read the entire manual, including this section and the FAQ
-(Section~\ref{faq}, because the manual might already answer your question.
+Please read the entire manual, including this chapter and the FAQ
+(Chapter~\ref{faq}, because the manual might already answer your question.
 If not, you can use the mailing list,
 \code{checker-framework-discuss@googlegroups.com}, to ask other users for
 help.  For archives and to subscribe, see \url{http://groups.google.com/group/checker-framework-discuss}.
@@ -9,7 +10,7 @@ To report bugs, use the issue tracker at
 \url{http://code.google.com/p/checker-framework/issues/list}.
 
 
-\subsection{Common problems and solutions\label{common-problems}}
+\section{Common problems and solutions\label{common-problems}}
 
 \begin{itemize}
 
@@ -95,7 +96,7 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{itemize}
 
 
-\subsubsection{Known problems in the framework\label{known-problems}}
+\subsection{Known problems in the framework\label{known-problems}}
 
 \begin{itemize}
 
@@ -114,7 +115,7 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 
 \end{itemize}
 
-\subsubsection{Known problems in the Nullness checker}
+\subsection{Known problems in the Nullness checker}
 
 \begin{itemize}
 \item
@@ -153,7 +154,7 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 
 
 
-\subsection{How to report problems\label{reporting-bugs}}
+\section{How to report problems\label{reporting-bugs}}
 
 If you have a problem with any checker, or with the Checker Framework,
 please file a bug at 
@@ -189,7 +190,7 @@ helpful if you:
 \end{itemize}
 
 
-\subsection{Installing the source release\label{install-source}}
+\section{Installing the source release\label{install-source}}
 
 The binary release (Section~\ref{installation}) contains everything that
 most users need, both to use the distributed checkers and to write your own
@@ -213,7 +214,7 @@ hg clone https://checker-framework.googlecode.com/hg/ checker-framework
 The rest of this section discusses how to install the packaged source release.
 
 
-\subsubsection{The short instructions (for Linux only)}
+\subsection{The short instructions (for Linux only)}
 
 %%% This comment does not seem to be correct any longer.
 %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
@@ -244,7 +245,7 @@ Set some environment variables according to the instructions at the top of file
 \end{enumerate}
 
 
-\subsubsection{The longer instructions}
+\subsection{The longer instructions}
 
 The following instructions give detailed steps for installing the source
 release of the Checker Framework.
@@ -330,7 +331,7 @@ compiler, and you can use a checker as an external tool in an IDE.
 % then you should also disable Eclipse's on-the-fly syntax checking.
 
 
-\subsubsection{Building from source\label{building}}
+\subsection{Building from source\label{building}}
 
 Building (compiling) the checkers and framework from source creates the
 \code{checkers.jar} file.  A pre-compiled \code{checkers.jar} is included
@@ -358,7 +359,7 @@ ant
 \end{enumerate}
 
 
-\subsection{Learning more\label{learning-more}}
+\section{Learning more\label{learning-more}}
 
 The technical paper ``Practical pluggable types for Java''~\cite{PapiACPE2008}
 (\myurl{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008.pdf})
@@ -371,7 +372,7 @@ studies in which each of the checkers found
 previously-unknown errors in real software.
 
 
-\subsection{Comparison to other tools\label{other-tools}}
+\section{Comparison to other tools\label{other-tools}}
 
 A pluggable type-checker, such as those created by the Checker Framework,
 aims to help you prevent or detect all errors of a given variety.  An
@@ -420,7 +421,7 @@ nullness errors.  None of the other tools found any errors.
 
 
 
-\subsection{Credits and changelog\label{credits}}
+\section{Credits and changelog\label{credits}}
 
 The Checker Framework distribution was developed in the MIT Program Analysis
 Group, with prime contributions from Mahmood Ali, Telmo Correa, Michael

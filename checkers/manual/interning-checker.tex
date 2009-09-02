@@ -1,5 +1,5 @@
 \htmlhr
-\section{Interning checker\label{interning-checker}}
+\chapter{Interning checker\label{interning-checker}}
 
 If the Interning checker issues no warnings for a given program, then all
 reference equality tests (i.e., ``\code{==}'') in that program operate on
@@ -24,7 +24,7 @@ from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
 
 
-\subsection{Interning annotations\label{interning-annotations}}
+\section{Interning annotations\label{interning-annotations}}
 
 Two qualifiers are part of the Interning type system.
 
@@ -42,7 +42,7 @@ Two qualifiers are part of the Interning type system.
 \end{description}
 
 
-\subsection{Annotating your code with \code{@Interned}\label{annotating-with-interned}}
+\section{Annotating your code with \code{@Interned}\label{annotating-with-interned}}
 
 \begin{figure}
 \begin{center}
@@ -79,7 +79,7 @@ declaration or elsewhere.  For example, \code{enum} classes are implicitly
 so annotated.
 
 
-\subsubsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
+\subsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
 
 As described in Section~\ref{effective-qualifier}, the Interning checker
 adds implicit qualifiers, reducing the number of annotations that must
@@ -102,7 +102,7 @@ For a complete description of all implicit interning qualifiers, see the
 Javadoc for \refclass{interning}{InterningAnnotatedTypeFactory}.
 
 
-\subsection{What the Interning checker checks\label{interning-checks}}
+\section{What the Interning checker checks\label{interning-checks}}
 
 Objects of an \code{@\refclass{interning/quals}{Interned}} type may be safely compared using the ``\code{==}''
 operator.
@@ -142,7 +142,7 @@ For a complete description of all checks performed by
   \refclass{interning}{InterningVisitor}.
 
 
-\subsection{Examples\label{interning-example}}
+\section{Examples\label{interning-example}}
 
 To try the Interning checker on a source file that uses the \code{@\refclass{interning/quals}{Interned}} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
