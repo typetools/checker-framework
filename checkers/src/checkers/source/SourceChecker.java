@@ -80,6 +80,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** A regular expression for classes that should be skipped. */
     private Pattern skipPattern;
 
+    /** The chosent lint options that have been enabled by programmer */
+    private Set<String> activeLints;
+
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
@@ -156,6 +159,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return Pattern.compile(pattern);
     }
 
+    private Set<String> createActiveLints(Map<String, String> options) {
+        if (options.containsKey("lint"))
+            return Collections.emptySet();
+
+        String lintString = options.get("lint");
+        if (lintString == null) {
+            return Collections.singleton("all");
+        }
+
+        Set<String> activeLint = new HashSet<String>();
+        for (String s : lintString.split(",")) {
+            activeLint.add(s);
+            if (s.equals("none"))
+                activeLint.add("-all");
+        }
+
+        return activeLint;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -177,6 +199,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.messager = (JavacMessager) processingEnv.getMessager();
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
+        this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
     /**
@@ -420,21 +443,39 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (!this.getSupportedLintOptions().contains(name))
             throw new IllegalArgumentException("illegal lint option: " + name);
 
-        Map<String, /*@Nullable*/ String> options = this.env.getOptions();
-
-        @Nullable String lintString = options.get("lint");
-        if (lintString == null)
+        if (activeLints.isEmpty())
             return def;
 
-        Set<String> lintOptions = new HashSet<String>();
-        for (String s : lintString.split(","))
-            lintOptions.add(s);
+        String tofind = name;
+        while (tofind != null) {
+            if (activeLints.contains(tofind))
+                return true;
+            else if (activeLints.contains(String.format("-%s", tofind)))
+                return false;
 
-        if (lintOptions.contains(String.format("-%s", name)))
-            return false;
-        else if (lintOptions.contains(name))
-            return true;
-        else return def;
+            tofind = parentOfOption(name);
+        }
+
+        return def;
+    }
+
+    /**
+     * Helper method to find the parent of a lint key.  The lint hierarchy
+     * level is donated by a color ':'.  'all' is the root for all hierarchy.
+     *
+     * Example
+     *    cast:unsafe --> cast
+     *    cast        --> all
+     *    all         --> {@code null}
+     */
+    private String parentOfOption(String name) {
+        if (name.equals("all"))
+            return null;
+        else if (name.contains(":")) {
+            return name.substring(0, name.lastIndexOf(':'));
+        } else {
+            return "all";
+        }
     }
 
     /**
