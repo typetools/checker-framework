@@ -1,0 +1,204 @@
+\htmlhr
+\section{Lock checker\label{lock-checker}}
+
+The Lock checker prevents certain kinds of concurrency errors.  If the Lock
+checker issues no warnings for a given program, then the program holds the
+appropriate lock every time that it accesses a variable.
+
+Note:  This does \emph{not} mean that your program has no concurrency
+errors.  (You might have forgotten to annotate that a particular variable
+should only be accessed when a lock is held.  You might release and
+re-acquire the lock, when correctness requires you to hold it throughout a
+computation.  And, there are other concurrency errors that cannot, or
+should not, be solved with locks.)  However, ensuring that your program
+program obeys its locking discipline is an easy and effective way to
+eliminate a common and important class of errors.
+
+
+\subsection{Lock annotations\label{lock-annotations}}
+
+The Lock checker uses two annotations.  One is a type qualifier, and the
+other is a method annotation.
+
+\begin{description}
+
+\item[\code{@\refclass{lock/quals}{GuardedBy}}]
+  indicates a type whose value may be accessed only when the given lock is
+  held.  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
+    Javadoc} for an explanation of the argument.  The lock
+  acquisition and the value access may be arbitrarily far in the future;
+  or, if the value is never accessed, the lock never need be held.
+
+\item[\code{@\refclass{lock/quals}{Holding}}]
+  is a method annotation (not a  qualifier).  It indicates that when
+  the method is called, the given lock must be held by the caller.
+  In other words, the given lock is already held at the time the method is
+  called.
+
+\end{description}
+
+\subsubsection{Examples}
+
+Most often, field values are annotated with \code{@GuardedBy}, but other
+uses are possible.
+
+A return value may be annotated with \code{@GuardedBy}:
+
+\begin{Verbatim}
+  @GuardedBy("MyClass.myLock") Object myMethod() { ... }
+
+  // reassignments without holding the lock are OK.
+  @GuardedBy("MyClass.myLock") Object x = myMethod();
+  @GuardedBy("MyClass.myLock") Object y = x;
+  Object z = x;  // ILLEGAL (assuming no lock inference),
+                 // because z can be freely accessed.
+  x.toString() // ILLEGAL because the lock is not held
+  synchronized(MyClass.myLock) {
+    y.toString();  // OK: the lock is held
+  }
+\end{Verbatim}
+
+A parameter may be annotated with \code{@GuardedBy}:
+
+\begin{Verbatim}
+  void helper1(@GuardedBy("MyClass.myLock") Object a) {
+    a.toString(); // ILLEGAL: the lock is not held
+    synchronized(MyClass.myLock) {
+      a.toString();  // OK: the lock is held
+    }
+  }
+  @Holding("MyClass.myLock")
+  void helper2(@GuardedBy("MyClass.myLock") Object b) {
+    b.toString(); // OK: the lock is held
+  }
+  void helper3(Object c) {
+    c.toString(); // OK: no lock constraints
+  }
+  void helper4(@GuardedBy("MyClass.myLock") Object d) {
+    d.toString(); // ILLEGAL: the lock is not held
+  }
+  void myMethod2(@GuardedBy("MyClass.myLock") Object e) {
+    helper1(e);  // OK to pass to another routine without holding the lock
+    e.toString(); // ILLEGAL: the lock is not held
+    synchronized (MyClass.myLock) {
+      helper2(e);
+      helper3(e);
+      helper4(e); // OK, but helper4's body still does not type-check
+    }
+  }
+\end{Verbatim}
+
+
+    
+
+\subsubsection{Discussion of \<@Holding>}
+
+A programmer might choose to use the \code{@Holding} method annotation in
+two different ways:  to specify a higher-level protocol, or to summarize
+intended usage.  Both of these approaches are useful, and the Lock checker
+supports both.
+
+\paragraph{Higher-level synchronization protocol}
+
+  \code{@Holding} can specify a higher-level synchronization protocol that
+  is not expressible as locks over Java objects.  By requiring locks to be
+  held, you can create higher-level protocol primitives without giving up
+  the benefits of the annotations and checking of them.
+
+\paragraph{Method summary that simplifies reasoning}
+
+  \code{@Holding} can be a method summary that simplifies reasoning.  In
+  this case, the \code{@Holding} doesn't necessarily introduce a new
+  correctness constraint; the program might be correct even if the lock
+  were acquired later in the body of the method or in a method it calls, so
+  long as the lock is acquired before accessing the data it protects.
+
+  Rather, here \code{@Holding} expresses a fact about execution:  when
+  execution reaches this point, the following locks are already held.  This
+  fact enables people and tools to reason intra- rather than
+  inter-procedurally.
+
+  In Java, it is always legal to re-acquire a lock that is already held,
+  and the re-acquisition always works.  Thus, whenever you write 
+
+\begin{Verbatim}
+  @Holding("myLock")
+  void myMethod() {
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+it would be equivalent, from the point of view of which locks are held
+during the body, to write
+
+\begin{Verbatim}
+  void myMethod() {
+    synchronized (myLock) {   // no-op:  re-aquire a lock that is already held
+      ...
+    }
+  }
+\end{Verbatim}
+
+The advantages of the \<@Holding> annotation include:
+\begin{itemize}
+\item
+  The annotation documents the fact that the lock is intended to already be
+  held.
+\item
+  The Lock Checker enforces that the lock is held when the method is
+  called, rather than masking a programmer error by silently re-acquiring
+  the lock.
+\item
+  The \<synchronized> statement can deadlock if, due to a programmer error,
+  the lock is not already held.  The Lock Checker prevents this type of
+  error.
+\item
+  The annotation has no run-time overhead.  Even if the lock re-acquisition
+  succeeds, it still consumes time.
+\end{itemize}
+
+
+\subsubsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
+
+The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\ahref{http://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+\code{@GuardedBy} serves two related purposes:
+
+\begin{itemize}
+\item
+  When applied to a field, it means that the given lock must be held when
+  accessing the field.  The lock acquisition and the field access may be
+  arbitrarily far in the future.
+\item
+  When applied to a method, it means that the given lock must be held by
+  the caller at the time that the method is called --- in other words, at
+  the time that execution passes the \code{@GuardedBy} annotation.
+\end{itemize}
+
+One rationale for reusing the annotation name for both purposes in JCIP is
+that there are fewer annotations to learn.  Another rationale is
+that both variables and methods are ``members'' that can be ``accessed'';
+variables can be accessed by reading or writing them (putfield, getfield),
+and methods can be accessed by calling them (invokevirtual,
+invokeinterface).  In both cases, \code{@GuardedBy} creates preconditions
+for accessing so-annotated members.
+
+The Lock checker renames the method annotation to
+\code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
+\code{@\refclass{lock/quals}{GuardedBy}} annotation into a type qualifier
+that can apply not just to a field but to an arbitrary type (including the
+type of a parameter, return value, local variable, generic type parameter,
+etc.).  This makes the annotations more expressive and also more amenable
+to automated checking.  It also accommodates the distinct (though related)
+meanings of the two annotations.
+
+% It would not work to retain the name \code{@GuardedBy} but put it on the
+% receiver; an annotation on the receiver indicates what lock must be held
+% when it is accessed in the future, not what must have already been held
+% when the method was called.
+
+
+
+% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
+% LocalWords:  invokeinterface
