@@ -70,7 +70,7 @@ warnings via
 \item
   the \code{-AskipClasses} command-line option,
 \item
-  the javac \code{-Alint} command-line option (Section~\ref{lint-options}),
+  the javac \code{-Alint} command-line option,
 \item
   not using the \code{-processor} switch to \code{javac}, or
 \item
@@ -103,6 +103,56 @@ should be suppressed.  For example, if you use
 \code{javac}, then the checkers will suppress all warnings within those
 classes, all warnings relating to invalid arguments, and all warnings
 relating to incorrect use of the return value.
+
+
+\label{lint-options}
+
+The \code{-Alint} option enables or disables optional checks, analogously to 
+javac's \code{-Xlint} option.
+Each of the distributed checkers supports at least the following lint options:
+
+\begin{itemize}
+
+\item
+  \code{cast:unsafe} (default: on) warn about unsafe casts that are not
+  checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
+  are generally not necessary when flow-sensitive local type refinement is
+  enabled.
+
+\item
+  \code{cast:redundant} (default: on) warn about redundant
+  casts that are guaranteed to succeed at run time,
+  as in \code{((@NonNull String) "m")}.  Such casts are not necessary,
+  because the target expression of the cast already has the given type
+  qualifier.
+
+\item
+  \code{cast} Enable or disable all cast-related warnings.
+
+\item
+  \code{all} Enable or disable all lint warnings, including
+  checker-specific ones if any.  Examples include \code{nulltest} for the
+  Nullness Checker (see Section~\ref{lint-nulltest}) and \<dotequals> for
+  the Interning Checker (see Section~\ref{lint-dotequals}).  This option
+  does not enable/disable the checker's standard checks, just its optional
+  ones.
+
+\item
+  \code{none} The inverse of \<all>:  disable or enable all lint warnings,
+  including checker-specifc ones if any.
+
+\end{itemize}
+
+% This syntax is different from -Xlint that uses a colon instead of an
+% equals sign, because javac forces the use of the equals sign.
+
+\noindent
+To activate a lint option, write \code{-Alint=} followed by a
+comma-delimited list of check names.  If the option is preceded by a
+hyphen (\code{-}), the warning is disabled.  For example, to disable all
+lint options except redundant casts, you can pass
+\code{-Alint=-all,cast:redundant} on the command line.
+
 
 You can also compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during

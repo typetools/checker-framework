@@ -131,6 +131,8 @@ This example shows both sorts of problems:
   iobj = obj;               // checker warning: iobj's referent may no longer be interned
 \end{Verbatim}
 
+\label{lint-dotequals}
+
 The checker also issues a warning when \code{.equals} is used where
 \code{==} could be safely used.  You can disable this behavior via the
 javac \code{-Alint} command-line option, like so: \code{-Alint=-dotequals}.
