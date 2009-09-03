@@ -158,14 +158,15 @@ distribution.
 \end{Verbatim}
 
 
-You can use a regular Java file as a stub file.  However, you can omit
+You can use a regular Java file as a stub file.  Every valid Java file is a
+valid stub file.  However, you can omit
 information that is not relevant to pluggable type-checking; this makes the
 stub file smaller and easier for people to read and write.  You can also
 put annotated signatures for multiple classes in a single stub file.
 
 
-The stub file format differs from Java source code in the following
-ways:
+The stub file format is allowed to differ from Java source code in the
+following ways:
 \begin{description}
 
 \item{\textbf{Method bodies:}}
@@ -213,6 +214,27 @@ The Checker Framework stub file reader has several limitations:
   % Still a problem as of 9/2/2009.
   It does not handle arrays yet.
 \end{itemize}
+
+
+\subsection{Style tips for stub files}
+
+Every Java file is a stub file.  If you have access to the Java file, then
+it is usually best to use the Java file as the stub file, without removing
+any of the parts that the stub file format permits you to.  Just add
+annotations to the full source code.  This approach retains the original
+documentation and source code, making it easier for a programmer to
+double-check the annotations.  It also enables creation of diffs, easing
+the process of upgrading when a library adds new methods.  And, the
+annotations are in a format that the library maintainers can even
+incorporate.
+
+The downside of this approach is that the stub files are larger.  This can
+slow down parsing.  Furthermore, a programmer must search the stub file
+for a given method rather than just skimming one or two pages of signatures.
+
+If you do not have access to the library source code, then you can create a
+stub file from the Javadoc or the class file, and then annotate it.
+
 
 
 % Label "skeleton" is for old links from the Javarifier manual, to prevent
