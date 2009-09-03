@@ -489,29 +489,12 @@ put explicit qualifiers on class declarations (which prevents the default
 from taking effect), or exclude class declarations from defaulting.
 
 
-\paragraph{When a default qualifier may not be specified}
-
-% TODO:  Move most of this to the section on defining the type system, with
-% a cross-reference from here saying that sometimes you are not permitted
-% to specify a default.
-
-Sometimes, the meaning of an unannotated reference is determined by the
-type system.  For example, in the Interning type system, each type is
-either unqualified, or it has the \<@\refclass{interning/quals}{Interned}>
-qualifier.  Another way of saying this is that the default is \<@Unqualified>.
-In such a case, it is not sensible for a user to specify a default for
-unannotated types via \<@DefaultQualifier>.
-
-In other cases, the type hierarchy has an explicit qualifier for every
-possible meaning.  For example, the Nullness type system has
-\<@\refclass{nullness/quals}{Nullable}> types and
-\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
-unannotated types; a user may specify a default qualifier.
-
-It is usually best for a type system designer to make the
-type hierarchy ``complete'', in the sense that there is a qualifier for
-every location in the hierarchy.
-The reason is that this permits users to specify defaults.
+%% Don't even bother to bring this up; it will just sow confusion without
+%% being helpful.
+% For some type systems, a user may not specify a default qualifier, or doing
+% so prevents giving any other qualifier to any reference.  This is a
+% consequence of the design of the type system; see
+% Section~\ref{bottom-qualifier}.
 
 
 \subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}

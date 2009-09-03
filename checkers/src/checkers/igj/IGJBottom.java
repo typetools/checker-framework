@@ -16,7 +16,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
  * However, it is an implementation detail; hence, the package-scope.
  */
 @TypeQualifier
-@SubtypeOf({Mutable.class, Immutable.class, AssignsFields.class, ReadOnly.class, I.class})
+@SubtypeOf({Mutable.class, Immutable.class, I.class})
 @Target({})
 @ImplicitFor(
         trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
