@@ -709,10 +709,8 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 \end{smaller}
 %END LATEX
 
-You can use any standard debugger to observe the execution of your checker.
-Set the main class to \code{com.sun.tools.javac.Main} and the bootclasspath
-to include the JSR308 langtools.
-
+You can use any standard debugger to observe the execution of your checker.  Set the execution main class to \code{com.sun.tools.javac.Main}, and insert the JSR308 javac.jar (resides in \code{\$jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is recommended that you add \code{\$jsr308-langtools} as a project, so you can
+step into its source code if needed.
 
 %% Not relevant to most readers.  Can go in a README file in our repository.
 % \section{Putting your checker in the repository\label{writing-repository}}
@@ -800,9 +798,7 @@ which visits all subnodes recursively, and
 \refTreeclass{util}{TreePathScanner},
 which visits all subnodes recursively and stores the
 \refTreeclass{util}{TreePath}
-corresponding the the currently visited \<Tree>. (Also note that the
-iterator given by \<TreePath> used to have an implementation
-\ahref{http://bugs.sun.com/view_bug.do?bug_id=6473148}{bug}.)
+corresponding the the currently visited \<Tree>.
 
 In order to determine the kind of an object that extends \<Tree>, use
 the
@@ -834,8 +830,8 @@ the corresponding
 \refModelclass{type}{DeclaredType};
 \item
 \refModelclass{element}{TypeParameterElement}
-represents an element of a formal type parameter of a something with
-generics; and
+represents an element of a format type parameter of a generic class
+or method; and
 \item
 \refModelclass{element}{VariableElement}
 represents the element associated with a variable.
@@ -853,8 +849,8 @@ interfaces. There is a utility class for handling elements,
 the appropriate instance can be obtained by using the
 \sunjavadoc{javax/annotation/processing/ProcessingEnvironment.html#getElementUtils()}{getElementUtils{}}
 method on the \<ProcessingEnvironment> object visible on factories and
-checkers. The framework should do most of the element processing that
-requires \<Elements>, unless you are doing something non-trivial.
+checkers.  The use of \<Elements> should be limited, as type checkers
+should operate on annotated types rather than the elements themselves.
 
 A
 \refModelclass{type}{TypeMirror}
