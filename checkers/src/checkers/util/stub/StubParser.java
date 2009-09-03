@@ -236,10 +236,6 @@ public class StubParser {
                 }
             }
         }
-        if (atype.getKind() == TypeKind.TYPEVAR) {
-            System.out.println(atype);
-        }
-        // TODO: type bounds of type variables and wildcards
     }
 
     private void parseConstructor(ConstructorDeclaration decl,
