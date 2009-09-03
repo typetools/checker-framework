@@ -215,6 +215,15 @@ public class StubParser {
         annotate(arrayTypes.get(arrayTypes.size() - 1), typeDef.getAnnotations());
     }
 
+    private ClassOrInterfaceType unwrapDeclaredType(Type type) {
+        if (type instanceof ClassOrInterfaceType)
+            return (ClassOrInterfaceType)type;
+        else if (type instanceof ReferenceType
+                && ((ReferenceType)type).getArrayCount() == 0)
+            return unwrapDeclaredType(((ReferenceType)type).getType());
+        else
+            return null;
+    }
     private void annotate(AnnotatedTypeMirror atype, Type typeDef) {
         if (atype.getKind() == TypeKind.ARRAY) {
             annotateAsArray((AnnotatedArrayType)atype, (ReferenceType)typeDef);
@@ -222,10 +231,10 @@ public class StubParser {
         }
         if (typeDef.getAnnotations() != null)
             annotate(atype, typeDef.getAnnotations());
+        ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (atype.getKind() == TypeKind.DECLARED
-                && typeDef instanceof ClassOrInterfaceType) {
+                && declType != null) {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
-            ClassOrInterfaceType declType = (ClassOrInterfaceType)typeDef;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
                     && adeclType.isParameterized()) {
@@ -234,6 +243,14 @@ public class StubParser {
                     annotate(adeclType.getTypeArguments().get(i),
                             declType.getTypeArgs().get(i));
                 }
+            }
+        } else if (atype.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType)atype;
+            WildcardType wildcardDef = (WildcardType)typeDef;
+            if (wildcardDef.getExtends() != null) {
+                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtends());
+            } else if (wildcardDef.getSuper() != null) {
+                annotate(wildcardType.getSuperBound(), wildcardDef.getSuper());
             }
         }
     }
