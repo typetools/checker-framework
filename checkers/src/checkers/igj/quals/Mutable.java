@@ -28,7 +28,7 @@ import static java.lang.annotation.ElementType.*;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target( { FIELD, LOCAL_VARIABLE, CONSTRUCTOR, METHOD, PARAMETER, TYPE })
 @TypeQualifier
-@SubtypeOf( { ReadOnly.class, AssignsFields.class } )
+@SubtypeOf( { AssignsFields.class } )
 @ImplicitFor(
         trees = { Tree.Kind.NEW_CLASS },
         types = { TypeKind.ARRAY }
