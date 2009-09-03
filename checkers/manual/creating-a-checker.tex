@@ -88,7 +88,7 @@ Other \par tools
 \noindent
 (Strictly speaking, the specific checkers, such as the Nullness Checker, are
 built on top of the Basic Checker, which is built on top of the Checker
-Framework.)
+Framework.  The Basic Checker can also be used directly by users.)
 
 
 \section{The parts of a checker\label{parts-of-a-checker}}
@@ -331,30 +331,77 @@ from implicit annotations; see Sections~\ref{effective-qualifier}
 and~\ref{writing-type-introduction}.
 
 
-\subsection{Bottom qualifier\label{bottom-qualifier}}
+\subsection{Completeness of the type hierarchy\label{bottom-qualifier}}
 
+\paragraph{Bottom qualifier}
 It is usually a good idea to have a bottom qualifier in your type hierarchy
 --- a qualifier that is a (direct or indirect) subtype of every other
-qualifier.  The reason is that this is the natural type for the \code{null}
-value, which can be viewed as having any type at all.
-
+qualifier.  For instance, the hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
+a bottom qualifier, because there is no qualifier that is a subtype of both
+\<@Immutable> and \<@Mutable>.
+The bottom qualifier is the natural type for the \code{null}
+value, which can be viewed as having any type at all.  Without a bottom
+qualifier, type-checking becomes less precise.
 Users should never write the bottom qualifier explicitly; it is merely used
 for the \code{null} value.
 
-You might write the bottom qualifier like this:
+The actual IGJ hierarchy contains a (non-user-visible) bottom qualifier,
+defined like this:
 
 \begin{Verbatim}
-  package myTypeQuals;
-
-  import checkers.quals.*;
-  import com.sun.source.tree.Tree;
-
   @TypeQualifier
-  @SubtypeOf({Prototype.class, NonPrototype.class})
-  @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-  public @interface PrototypeBottom {}
+  @SubtypeOf({Mutable.class, Immutable.class, I.class})
+  @Target({})
+  @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
+               typeClasses = { AnnotatedPrimitiveType.class })
+  @interface IGJBottom { }
 \end{Verbatim}
 
+
+
+\paragraph{Top qualifier}
+Similarly, it is a good idea to have a top qualifier in your type hierarchy
+--- a qualifier that is a (direct or indirect) subtype of every other
+qualifier.  For instance, the \<@Encrypted> type system of
+Section~\ref{bottom-qualifier} lacks a top qualifier:
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf(Unqualified.class)
+  public @interface Encrypted {}
+\end{Verbatim}
+
+\noindent
+The interning type system of Section~\ref{interning-checker} also lacks a
+top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
+\<@\refclass{interning/quals}{Interned}>.
+
+When a type system lacks a top qualifier (or any other qualifier), then
+users lose flexibility in expressing defaults.  In the encryption example
+there is no top qualifier, and every type is either unqualified or has the
+\<@Encrypted> qualifier.  Another way of saying this is that the default is
+\<@Unqualified>.  In such a case, it is not sensible for a user to specify
+a default for unannotated types via the
+\code{@\refclass{quals}{DefaultQualifier}} meta-annotation
+(Section~\ref{defaults}), because there is no argument to pass to it.
+\<@Unqualified> is not appropriate, because it is not clear which type
+system it is intended to refer to.
+
+The ability to omit the top qualifier is a convenience
+when writing a type system, because it reduces the number of qualifiers
+that must be defined; this is especially convenient when using the Basic
+Checker (Section~\ref{basic-checker}).
+Omitting the top qualifier also restricts the user in ways that the type
+system designer may have intended.
+
+However, a type system designer should not frequently omit the top qualifier.
+% (It is appropriate in some cases, such as for the interning type system.)
+It is better for the 
+the type hierarchy has an explicit qualifier for every
+possible meaning.  For example, the Nullness type system has
+\<@\refclass{nullness/quals}{Nullable}> types and
+\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
+unannotated types; a user may specify a default qualifier.
 
 
 \section{Type Factory: Implicit annotations\label{writing-type-introduction}}
@@ -940,4 +987,5 @@ for visiting every node recursively.
 % LocalWords:  AnnotatedTypeVisitor SimpleAnnotatedTypeVisitor html langtools
 % LocalWords:  AnnotatedTypeScanner bootclasspath asType stringPatterns
 % LocalWords:  DefaultQualifierInHierarchy invocable wildcards novariant
-% LocalWords:  AggregateChecker getSupportedTypeCheckers
+% LocalWords:  AggregateChecker getSupportedTypeCheckers Uninterned
+% LocalWords:  DefaultQualifier
