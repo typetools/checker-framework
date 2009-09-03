@@ -1,9 +1,9 @@
 \htmlhr
 \chapter{How to create a new checker\label{writing-a-checker}}
 
-\newcommand{\TreeAPIBase}{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{http://download.java.net/jdk7/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{http://java.sun.com/javase/6/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{http://download.java.net/jdk7/docs/api/javax/lang/model}
 \newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This section describes how to create a checker
@@ -88,7 +88,7 @@ Other \par tools
 \noindent
 (Strictly speaking, the specific checkers, such as the Nullness Checker, are
 built on top of the Basic Checker, which is built on top of the Checker
-Framework.)
+Framework.  The Basic Checker can also be used directly by users.)
 
 
 \section{The parts of a checker\label{parts-of-a-checker}}
@@ -331,30 +331,77 @@ from implicit annotations; see Sections~\ref{effective-qualifier}
 and~\ref{writing-type-introduction}.
 
 
-\subsection{Bottom qualifier\label{bottom-qualifier}}
+\subsection{Completeness of the type hierarchy\label{bottom-qualifier}}
 
+\paragraph{Bottom qualifier}
 It is usually a good idea to have a bottom qualifier in your type hierarchy
 --- a qualifier that is a (direct or indirect) subtype of every other
-qualifier.  The reason is that this is the natural type for the \code{null}
-value, which can be viewed as having any type at all.
-
+qualifier.  For instance, the hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
+a bottom qualifier, because there is no qualifier that is a subtype of both
+\<@Immutable> and \<@Mutable>.
+The bottom qualifier is the natural type for the \code{null}
+value, which can be viewed as having any type at all.  Without a bottom
+qualifier, type-checking becomes less precise.
 Users should never write the bottom qualifier explicitly; it is merely used
 for the \code{null} value.
 
-You might write the bottom qualifier like this:
+The actual IGJ hierarchy contains a (non-user-visible) bottom qualifier,
+defined like this:
 
 \begin{Verbatim}
-  package myTypeQuals;
-
-  import checkers.quals.*;
-  import com.sun.source.tree.Tree;
-
   @TypeQualifier
-  @SubtypeOf({Prototype.class, NonPrototype.class})
-  @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-  public @interface PrototypeBottom {}
+  @SubtypeOf({Mutable.class, Immutable.class, I.class})
+  @Target({})
+  @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
+               typeClasses = { AnnotatedPrimitiveType.class })
+  @interface IGJBottom { }
 \end{Verbatim}
 
+
+
+\paragraph{Top qualifier}
+Similarly, it is a good idea to have a top qualifier in your type hierarchy
+--- a qualifier that is a (direct or indirect) subtype of every other
+qualifier.  For instance, the \<@Encrypted> type system of
+Section~\ref{bottom-qualifier} lacks a top qualifier:
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf(Unqualified.class)
+  public @interface Encrypted {}
+\end{Verbatim}
+
+\noindent
+The interning type system of Section~\ref{interning-checker} also lacks a
+top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
+\<@\refclass{interning/quals}{Interned}>.
+
+When a type system lacks a top qualifier (or any other qualifier), then
+users lose flexibility in expressing defaults.  In the encryption example
+there is no top qualifier, and every type is either unqualified or has the
+\<@Encrypted> qualifier.  Another way of saying this is that the default is
+\<@Unqualified>.  In such a case, it is not sensible for a user to specify
+a default for unannotated types via the
+\code{@\refclass{quals}{DefaultQualifier}} meta-annotation
+(Section~\ref{defaults}), because there is no argument to pass to it.
+\<@Unqualified> is not appropriate, because it is not clear which type
+system it is intended to refer to.
+
+The ability to omit the top qualifier is a convenience
+when writing a type system, because it reduces the number of qualifiers
+that must be defined; this is especially convenient when using the Basic
+Checker (Section~\ref{basic-checker}).
+Omitting the top qualifier also restricts the user in ways that the type
+system designer may have intended.
+
+However, a type system designer should not frequently omit the top qualifier.
+% (It is appropriate in some cases, such as for the interning type system.)
+It is better for the 
+the type hierarchy has an explicit qualifier for every
+possible meaning.  For example, the Nullness type system has
+\<@\refclass{nullness/quals}{Nullable}> types and
+\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
+unannotated types; a user may specify a default qualifier.
 
 
 \section{Type Factory: Implicit annotations\label{writing-type-introduction}}
@@ -687,7 +734,7 @@ The following example demonstrates how these options are used:
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-$ javac -processor checkers.interning.InterningChecker \
+\$ javac -processor checkers.interning.InterningChecker \
     examples/InternedExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
 
 [InterningChecker] InterningExampleWithWarnings.java
@@ -709,10 +756,8 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 \end{smaller}
 %END LATEX
 
-You can use any standard debugger to observe the execution of your checker.
-Set the main class to \code{com.sun.tools.javac.Main} and the bootclasspath
-to include the JSR308 langtools.
-
+You can use any standard debugger to observe the execution of your checker.  Set the execution main class to \code{com.sun.tools.javac.Main}, and insert the JSR308 javac.jar (resides in \code{\$jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is recommended that you add \code{\$jsr308-langtools} as a project, so you can
+step into its source code if needed.
 
 %% Not relevant to most readers.  Can go in a README file in our repository.
 % \section{Putting your checker in the repository\label{writing-repository}}
@@ -743,177 +788,111 @@ to include the JSR308 langtools.
 
 \section{javac implementation survival guide\label{javac-tips}}
 
-The implementation of Sun's javac compiler can be a bit daunting to a
-newcomer, and its documentation does not particularly help a newcomer to
-get oriented.  But do not lose heart!
-This section helps you to understand the small part of javac
-that you need in order to write a checker.
-Other useful resources include the Java Infrastructure Developer's guide at
-\url{http://wiki.netbeans.org/Java_DevelopersGuide} and the
-compiler mailing list archives at
+The Sun's javac compiler interfaces can be a bit daunting to a
+newcomer, and its documentation is a bit sparse. The Checker Framework
+aims to abstract a lot of these complexities.
+
+While understanding the implementation of javac is not necessary to
+build powerful and useful checkers, some basic understanding is quite
+helpful. This section details the important points we found to be
+helpful. Other useful resources include the Java Infrastructure
+Developer's guide at
+\url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
+mailing list archives at
 \url{http://news.gmane.org/gmane.comp.java.openjdk.compiler.devel}
-(subscribe at \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+(subscribe at
+\url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 
+\subsection{How Checker Processors Fit in Compiler}
 
-The Checker Framework uses Sun's Tree API to access a program's AST\@.
-The Tree API is specific to the Sun JDK, no the Checker Framework only
-works with Sun's javac, not with (say) Eclipse or IntelliJ IDEA\@.
-An implementation-neutral API would be preferable.
-In the future, the Checker Framework
-can be migrated to use the Java Model AST of JSR 198 (Extension API for
-Integrated Development Environments)~\cite{JSR198}, which gives access to
-the source code of a method.  But, at present Eclipse and IDEA do not
-implement JSR~198.  Also see Section~\ref{ast-traversal}.
+The Checker Framework builds on the Annotation Processing API
+introduced in Java 6. Type Annotation Processors (processors extending
+\refTreeclass{util}{AbstractTypeProcessor}, get run on each class
+source file after the compiler confirms the class is valid Java code.
 
-In short: a
-\refTreeclass{tree}{Tree}
-represents some snippet of code, an
-\refModelclass{element}{Element}
-represents some program element, and a
-\refModelclass{type}{TypeMirror}
-represents a Java type, but you usually should use
-\refclass{types}{AnnotatedTypeMirror},
-provided by the Checker Framework, instead of \<TypeMirror>, as our
-implementation carries along with the types the annotation information
-at every node level.  The
-\refclass{types}{AnnotatedTypeFactory}
-(or its extension on your framework plugin) is responsible for
-producing \<AnnotatedTypeMirror> objects for \<Tree> and \<Element>
-parameters it receives; those \<AnnotatedTypeMirror> objects are then
-processed by the visitor class and checked by the checker class of
-your checker plugin.
+\subsection{Checker access to compiler information}
 
+The compiler uses and exposes three hierarchies to model the Java
+source code and classfiles.
 
-A \refTreeclass{tree}{Tree} is an AST node; it represents an arbitrary code snippet such
-as a method definition, a block, a statement, etc.
+\subsubsection{Types - Java Language Model API}
 
-The \<Tree> interface has many subinterfaces, that specify what
-kind of node is being handled. Trees are usually processed by a class
-implementing the
-\refTreeclass{tree}{TreeVisitor}
-interface, through the \<accept> method on \<Tree>. Common
-implementations of \<TreeVisitor> that you may want to extend are
-\refTreeclass{util}{SimpleTreeVisitor},
-which visits a single node based on its type,
-\refTreeclass{util}{TreeScanner},
-which visits all subnodes recursively, and
-\refTreeclass{util}{TreePathScanner},
-which visits all subnodes recursively and stores the
-\refTreeclass{util}{TreePath}
-corresponding the the currently visited \<Tree>. (Also note that the
-iterator given by \<TreePath> used to have an implementation
-\ahref{http://bugs.sun.com/view_bug.do?bug_id=6473148}{bug}.)
+A \refModelclass{type}{TypeMirror} represents the Java type of each
+Java declaration, statement, or expression.
 
-In order to determine the kind of an object that extends \<Tree>, use
-the
-\ahref{\TreeAPIBase{}/tree/Tree.html#getKind()}{getKind()}
-method, as opposed to the \<instanceof> operator, since a \<Tree>
-implementation might opt to implement more than one interface from
-this API\@.  There is a utility class to perform operations on trees,
-\refTreeclass{util}{Trees},
-but the Checker Framework is intended to do all the low-level tree processing,
-so you probably do not need to use this class.
+There is a \code{TypeMirror} interface to represent each type kind,
+e.g. \code{PrimitiveType} for primitive types, \code{ExecutableType}
+for method types, \code{NullType} for type of \code{null} literals.
 
-An
-\refModelclass{element}{Element}
-represents a program element such as a package, class, or method.
-\<Element> has 5 subinterfaces:
-\begin{itemize}
-\item
-\refModelclass{element}{ExecutableElement}
-represents methods, constructors or initializers (anything invocable);
-\item
-\refModelclass{element}{PackageElement}
-represents package elements, and contain package information;
-\item
-\refModelclass{element}{TypeElement}
-represents the element of a class or an interface (note that
-\<TypeElement> is an \<Element>, not a \<Type>; 
-the corresponding
-\<Type> is represented by
-\refModelclass{type}{DeclaredType};
-\item
-\refModelclass{element}{TypeParameterElement}
-represents an element of a formal type parameter of a something with
-generics; and
-\item
-\refModelclass{element}{VariableElement}
-represents the element associated with a variable.
-\end{itemize}
- There is an
-\refModelclass{element}{ElementVisitor}
-interface for visiting objects that \<Element>, in a similar manner to the \<Tree> visitors, with similar
-provided implementations. Use the \<asType> method from \<Element> to obtain a \<TypeMirror> for the element.
+Checkers use \code{TypeMirror}s extensively.  However, the Framework
+provides a wrapper API \code{AnnotatedTypeMirror} that wraps the Java
+type and represent type annotations as well.
 
-Again, \<Element> is an interface, so use getKind() to obtain the kind
-of an \<Element>, as opposed to the \<instanceof> operator, since an
-implementation of \<Element> might also implement other element
-interfaces. There is a utility class for handling elements,
-\refModelclass{util}{Elements};
-the appropriate instance can be obtained by using the
-\sunjavadoc{javax/annotation/processing/ProcessingEnvironment.html#getElementUtils()}{getElementUtils{}}
-method on the \<ProcessingEnvironment> object visible on factories and
-checkers. The framework should do most of the element processing that
-requires \<Elements>, unless you are doing something non-trivial.
+\subsubsection{Elements - Java Language Model API}
 
-A
-\refModelclass{type}{TypeMirror}
-represents a Java type. It is yet another interface,
-with various subinterfaces, notable ones being
-\refModelclass{type}{DeclaredType}
-for class and interface types, and
-\refModelclass{type}{ExecutableType}
-for method, constructor and initializer types.
-As one could expect by this point, \<TypeMirror> is an interface, so
-use the appropriate getKind() method to distinguish the types, as
-opposed to the instanceof operator, since those are interfaces, and
-more than one can be implemented by a same object.
+A \refModelclass{element}{Element} represents a high-level model of
+Java constructs: classes, interfaces, methods, constructors, and
+fields. In other words, it represents those declarations that can be
+accessed elsewhere. The Elements represent elements found in source
+code and bytecode.
 
-You can resolve a tree into a type.
-A
-\refTreeclass{tree}{MethodTree}
-resolves into an \<ExecutableType>, while a
-\refTreeclass{tree}{MethodInvocationTree}
-resolves into a \<DeclaredType> if the return type is a class or an
-interface, an
-\refModelclass{type}{ArrayType}
-if the return type is an array, a
-\refModelclass{type}{NoType}
-if the return type is void, or a
-\refModelclass{type}{PrimitiveType}
-if the return type is primitive.
+There is an \code{Element} interface to represent each construct, e.g.
+\code{TypeElement} for class/interfaces, \code{ExecutableElement} for
+methods/constructors, \code{VariableElement} for local variables and
+method parameters.
 
-Not every \<Tree> corresponds to an \<Element> (such as a
-\<BlockTree>), not every \<Tree> corresponds to a \<TypeMirror>
-(again, such as a \<BlockTree>), and not every \<TypeMirror> has a
-corresponding \<Element> (such as primitive types or arrays).
+If you need to operate on declaration level, always use elements
+rather than trees. Allows the code to work on both source and bytecode
+elements.
 
-Note that the \<TypeMirror> API makes no guarantees that the same type
-will always be represented by the same object; use the method
-recommended by the API if you need to compare two types.
+Example: retrieve regular non-type annotations, check variable
+modifiers (e.g. \code{strictfp}, \code{synchronized})
 
-\refModelclass{type}{TypeVisitor}
-and implementations of visitors for \<TypeMirror> are provided, but
-a checker should not use or extend those classes, since all checker plugin classes are meant to visit
-\<AnnotatedTypeMirror> instead, modifying the annotations as needed.
-A
-\refModelclass{util}{Types}
-utility class is provided by the \<ProcessingEnvironment> as well, if
-you need to do more complex operations with types. In general, you
-should use \<AnnotatedTypeMirror> and its subclasses as opposed to
-using \<TypeMirror> and its subinterfaces.
+\subsubsection{Trees - Compiler Tree API}
 
-An \refclass{types}{AnnotatedTypeMirror}
-(defined in the Checker Framework, not in javac) represents an
-annotated type --- a type along with all its annotations.  It is
-modeled after Sun's
-\refModelclass{type}{TypeMirror}.
-The Checker Framework also has an
-\refclass{types/visitors}{AnnotatedTypeVisitor} interface, implemented by
-\refclass{types/visitors}{SimpleAnnotatedTypeVisitor}
-for visiting just one node, and by
-\refclass{types/visitors}{AnnotatedTypeScanner}
-for visiting every node recursively.
+A \refTreeclass{tree}{Tree} represents syntactic units in source code,
+like method declarations, statements, blocks, for etc. Trees only
+represent source code to be compiled (or found in \code{-sourcepath});
+and not available for classes read from bytecode.
+
+There is a Tree interface for each Java source structure, e.g.
+\code{ClassTree} for class declaration, \code{MethodInvocationTree}
+for method invocations, \code{ForEachTree} for enhanced-for-loop
+statement.
+
+You should limit your use of trees. Checkers use Trees mainly to
+traverse the source code, retrieve the types/elements corresponding to
+them, and perform any needed checks on the types/elements instead.
+
+\subsubsection{Using the APIs}
+
+The APIs use some common idioms and conventions that can ease the
+development and aid in understanding the code.
+
+\emph{Type-checking}:
+Using \code{instanceof} is \emph{not} necessarily a reliable idiom for
+determining the class of the object.  Use \code{getKind()} method
+instead.  The method returns \refModelclass{element}{ElementKind},
+\refModelclass{type}{TypeKind}, and \refTreeclass{tree}{Tree.Kind}.
+
+\emph{Visitors and Scanners}:
+The compiler and the Checker Framework uses the visitor pattern
+extensively. For example, visitors are used to traverse the source
+tree (\refclass{basetype}{BaseTypeVisitor} extends
+\refTreeclass{util}{TreePathScanner}), and a replacement for type
+checking (\refclass{types}{TreeAnnotator} implements
+\refTreeclass{tree}{TreeVisitor}.
+
+\emph{Utilities classes}:
+
+The APIs and the Checker Framework provide very useful utilities
+classes. The Sun convention is that the utilities for a \code{Foo}
+hierarchy is \code{Foos} (e.g. \refModelclass{util}{Elements},
+\refModelclass{util}{Types}, and \refTreeclass{util}{Trees}).
+The Checker Framework uses a common \code{Utils} post-fix instead
+(e.g. \refclass{util}{TreeUtils}, \refclass{util}{ElementUtils},
+\refclass{util}{TypesUtils}), with one notable exception:
+\refclass{types}{AnnotatedTypes}.
 
 
 
@@ -944,4 +923,5 @@ for visiting every node recursively.
 % LocalWords:  AnnotatedTypeVisitor SimpleAnnotatedTypeVisitor html langtools
 % LocalWords:  AnnotatedTypeScanner bootclasspath asType stringPatterns
 % LocalWords:  DefaultQualifierInHierarchy invocable wildcards novariant
-% LocalWords:  AggregateChecker getSupportedTypeCheckers
+% LocalWords:  AggregateChecker getSupportedTypeCheckers Uninterned sourcepath
+% LocalWords:  DefaultQualifier bytecode

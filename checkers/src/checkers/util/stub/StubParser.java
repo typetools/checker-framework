@@ -2,6 +2,7 @@ package checkers.util.stub;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -147,6 +148,7 @@ public class StubParser {
     private void parseType(ClassOrInterfaceDeclaration decl, TypeElement elt, Map<Element, AnnotatedTypeMirror> result) {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
+        annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
         annotateSupertypes(decl, type);
         result.put(elt, type);
     }
@@ -171,6 +173,7 @@ public class StubParser {
     private void parseMethod(MethodDeclaration decl, ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> result) {
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        annotateParameters(methodType.getParameterTypes(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
@@ -184,13 +187,54 @@ public class StubParser {
         result.put(elt, methodType);
     }
 
+    private List<AnnotatedTypeMirror> arrayList(AnnotatedArrayType atype) {
+        LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
+
+        AnnotatedTypeMirror type = atype;
+        while (type.getKind() == TypeKind.ARRAY) {
+            arrays.addFirst(type);
+
+            type = ((AnnotatedArrayType)type).getComponentType();
+        }
+
+        arrays.add(type);
+        return arrays;
+    }
+
+    private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {
+        List<AnnotatedTypeMirror> arrayTypes = arrayList(atype);
+        assert typeDef.getArrayCount() == arrayTypes.size() - 1;
+        for (int i = 0; i < typeDef.getArrayCount(); ++i) {
+            List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
+            if (annotations != null) {
+                annotate(arrayTypes.get(i), annotations);
+            }
+        }
+
+        // handle generic type on base
+        annotate(arrayTypes.get(arrayTypes.size() - 1), typeDef.getAnnotations());
+    }
+
+    private ClassOrInterfaceType unwrapDeclaredType(Type type) {
+        if (type instanceof ClassOrInterfaceType)
+            return (ClassOrInterfaceType)type;
+        else if (type instanceof ReferenceType
+                && ((ReferenceType)type).getArrayCount() == 0)
+            return unwrapDeclaredType(((ReferenceType)type).getType());
+        else
+            return null;
+    }
     private void annotate(AnnotatedTypeMirror atype, Type typeDef) {
+        if (atype.getKind() == TypeKind.ARRAY) {
+            annotateAsArray((AnnotatedArrayType)atype, (ReferenceType)typeDef);
+            return;
+        }
         if (typeDef.getAnnotations() != null)
             annotate(atype, typeDef.getAnnotations());
+        ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (atype.getKind() == TypeKind.DECLARED
-                && typeDef instanceof ClassOrInterfaceType) {
+                && declType != null) {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
-            ClassOrInterfaceType declType = (ClassOrInterfaceType)typeDef;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
                     && adeclType.isParameterized()) {
@@ -200,8 +244,15 @@ public class StubParser {
                             declType.getTypeArgs().get(i));
                 }
             }
+        } else if (atype.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType)atype;
+            WildcardType wildcardDef = (WildcardType)typeDef;
+            if (wildcardDef.getExtends() != null) {
+                annotate(wildcardType.getExtendsBound(), wildcardDef.getExtends());
+            } else if (wildcardDef.getSuper() != null) {
+                annotate(wildcardType.getSuperBound(), wildcardDef.getSuper());
+            }
         }
-        // TODO: type bounds of type variables and wildcards
     }
 
     private void parseConstructor(ConstructorDeclaration decl,
@@ -234,6 +285,21 @@ public class StubParser {
             AnnotationMirror annoMirror = this.annotations.get(annoName);
             if (annoMirror != null)
                 type.addAnnotation(annoMirror);
+        }
+    }
+
+    private void annotateParameters(List<AnnotatedTypeMirror> typeArguments,
+            List<TypeParameter> typeParameters) {
+        if (typeParameters == null)
+            return;
+
+        for (int i = 0; i < typeParameters.size(); ++i) {
+            TypeParameter param = typeParameters.get(i);
+            AnnotatedTypeVariable paramType = (AnnotatedTypeVariable)typeArguments.get(i);
+
+            if (param.getTypeBound().size() == 1) {
+                annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
+            }
         }
     }
 
