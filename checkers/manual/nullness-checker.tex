@@ -66,7 +66,7 @@ Nullness type system.
 
 \begin{figure}
 \begin{center}
-\resizebox{!}{2.5cm}{\includegraphics{figures/nullness}}
+\resizebox{!}{2.5cm}{\includegraphics{figures/nullness-and-raw}}
 \end{center}
 %BEGIN LATEX
 \vspace{-1.5\baselineskip}
@@ -74,7 +74,10 @@ Nullness type system.
 \caption{Partial type hierarchy for the Nullness type system.
 Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
 most type qualifiers, because the default annotation
-(Section~\ref{null-defaults}) is usually correct.}
+(Section~\ref{null-defaults}) is usually correct.  Also shown is the
+type hierarchy for rawness, which indicates whether
+initialization has completed.  The two type hierarchies are independent but
+inter-related, and the Nullness Checker verifies them both.}
 \label{fig:nonnull-hierarchy}
 \end{figure}
 
