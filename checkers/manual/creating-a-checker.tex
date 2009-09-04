@@ -809,10 +809,9 @@ There is a \code{TypeMirror} interface to represent each type kind,
 e.g., \code{PrimitiveType} for primitive types, \code{ExecutableType}
 for method types, and \code{NullType} for the type of the \code{null} literal.
 
-% Checkers use \code{TypeMirror}s extensively.
-The Checker Framework
-provides a wrapper API \code{AnnotatedTypeMirror} that wraps the Java
-type and represents type annotations as well.
+\code{TypeMirror} does not represent annotated types though.  Checkers should use the Framework types API \refclass{types}{AnnotatedTypeMirror} instead.  \code{AnnotatedTypeMirror} parallels the \code{TypeMirror} API, but also present the type annotations associated with the type.
+
+The Checker Framework and the Checkers use the types API extensively.
 
 
 \subsubsection{Elements - Java Language Model API\label{javac-elements}}
