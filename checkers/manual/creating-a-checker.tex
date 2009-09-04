@@ -803,12 +803,22 @@ mailing list archives at
 (subscribe at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 
-\subsection{How Checker Processors Fit in Compiler}
+\subsection{How Checker Processors Fit in the Compiler}
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6. Type Annotation Processors (processors extending
 \refTreeclass{util}{AbstractTypeProcessor}, get run on each class
 source file after the compiler confirms the class is valid Java code.
+
+The Checker Framework uses Sun's Tree API to access a program's AST\@.
+The Tree API is specific to the Sun JDK, no the Checker Framework only
+works with Sun's javac, not with (say) Eclipse or IntelliJ IDEA\@.
+An implementation-neutral API would be preferable.
+In the future, the Checker Framework
+can be migrated to use the Java Model AST of JSR 198 (Extension API for
+Integrated Development Environments)~\cite{JSR198}, which gives access to
+the source code of a method.  But, at present Eclipse and IDEA do not
+implement JSR~198.  Also see Section~\ref{ast-traversal}.
 
 \subsection{Checker access to compiler information}
 
