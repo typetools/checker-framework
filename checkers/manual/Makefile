@@ -31,7 +31,7 @@ manual.html: manual.dvi
 	hevea -exec xxdate.exe urlhref.hva manual.tex
 	mv manual.html manual.html-with-htoc
 	retarget-hevea-crossrefs < manual.html-with-htoc > manual.html
-#	\rm -f manual.html-with-htoc
+	\rm -f manual.html-with-htoc
 	perl -pi -e 's/\/&#XA0;/\/~/' manual.html
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
