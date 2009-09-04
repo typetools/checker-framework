@@ -297,7 +297,7 @@ public class StubParser {
             TypeParameter param = typeParameters.get(i);
             AnnotatedTypeVariable paramType = (AnnotatedTypeVariable)typeArguments.get(i);
 
-            if (param.getTypeBound().size() == 1) {
+            if (param.getTypeBound() != null && param.getTypeBound().size() == 1) {
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
             }
         }
