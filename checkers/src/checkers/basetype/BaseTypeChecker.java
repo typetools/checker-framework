@@ -170,6 +170,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
             new GraphQualifierHierarchy.Factory();
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
+            if (typeQualifier.equals(Unqualified.class)) {
+                factory.addQualifier(null);
+                continue;
+            }
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             factory.addQualifier(typeQualifierAnno);
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
