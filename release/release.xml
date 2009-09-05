@@ -384,10 +384,10 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
         <unzip src="${sanitycheck.ver.dir}/langtools.zip" dest="${sanitycheck.ver.dir}"/>
 
         <copy file="${langtools.make}/build.properties" 
-          todir="${sanitycheck.ver.dir}/langtools/make"
+          todir="${sanitycheck.ver.dir}/jsr308-langtools/make"
           overwrite="true"/>
 
-        <ant dir="${sanitycheck.ver.dir}/langtools"
+        <ant dir="${sanitycheck.ver.dir}/jsr308-langtools"
           antfile="make/build.xml">
             <target name="build-javac"/>
             <target name="build-javap"/>
