@@ -1,10 +1,23 @@
-Version 0.9.9, ?? Sep 2009
+Version 0.9.9, 4 Sep 2009
 
 Functionality
+  Added more optional lint checks (cast:unsafe, all)
   Nullness Checker supports @SuppressWarnings("nullness:generic.argument"),
     for suppressing warnings related to misuse of generic type arguments.
     This was already supported and documented, but had not been mentioned
     in the changelog.
+
+Bug fixes
+  Fixed many bugs related to Stub files causing parser to ignore
+    bodiless constructors
+    annotated arrays annotations
+    type parameter and wildcard bounds annotations
+
+Manual
+  Rewrote 'javac implementation survivor guide' (S 13.9)
+  Restructured 'Using a checker' (S 2)
+  Added 'Integration with external tools' (S 14)
+  Added new questions to the FAQ (S 15)
 
 ----------------------------------------------------------------------
 Version 0.9.8, 21 Aug 2009
