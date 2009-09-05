@@ -160,7 +160,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     private Set<String> createActiveLints(Map<String, String> options) {
-        if (options.containsKey("lint"))
+        if (!options.containsKey("lint"))
             return Collections.emptySet();
 
         String lintString = options.get("lint");
