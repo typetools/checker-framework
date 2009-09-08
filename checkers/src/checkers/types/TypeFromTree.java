@@ -557,8 +557,12 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror result = f.type(node); // use creator?
             AnnotatedTypeMirror atype = visit(node.getType(), f);
             result.addAnnotations(atype.getAnnotations());
-            assert result instanceof AnnotatedDeclaredType : node + " --> " + result;
-            ((AnnotatedDeclaredType)result).setTypeArguments(args);
+            // new ArrayList<>() type is AnnotatedExecutableType for some reason
+
+            if (result instanceof AnnotatedDeclaredType) {
+                assert result instanceof AnnotatedDeclaredType : node + " --> " + result;
+                ((AnnotatedDeclaredType)result).setTypeArguments(args);
+            }
             return result;
         }
 

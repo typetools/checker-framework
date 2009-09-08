@@ -81,4 +81,18 @@ public class LoopFlow {
         }
     }
 
+    void testContinue(@Nullable Object o) {
+        for (;;) {
+            o.toString();
+            if (true) continue;
+        }
+    }
+
+    void testBreak(@Nullable Object o) {
+        while (true) {
+            o.toString();
+            if (true) break;
+        }
+    }
+
 }
