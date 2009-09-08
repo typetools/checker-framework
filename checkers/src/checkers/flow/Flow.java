@@ -818,13 +818,15 @@ public class Flow extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitBreak(BreakTree node, Void p) {
-        alive = false;
+        //alive = false;
+        alive = true;
         return null;
     }
 
     @Override
     public Void visitContinue(ContinueTree node, Void p) {
-        alive = false;
+        //alive = false;
+        alive = true;
         return null;
     }
 
