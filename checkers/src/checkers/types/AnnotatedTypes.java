@@ -791,6 +791,7 @@ public class AnnotatedTypes {
                 }
 
                 addAnnotations(adts, subtypes);
+                this.addAnnotations(lub, adts);
             }
         } else {
             AnnotatedTypeMirror[] subtypes = new AnnotatedTypeMirror[types.length];
