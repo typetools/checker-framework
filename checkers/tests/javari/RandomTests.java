@@ -62,4 +62,9 @@ public class RandomTests {
         // javari bug
         //m.get(key);
     }
+
+    void testIntersection() {
+        java.util.Arrays.asList("m", 1);
+    }
+
 }
