@@ -560,6 +560,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             assert actualType.getKind() == type.getKind();
             type = (AnnotatedDeclaredType)atypes.asSuper(type, actualType);
+            if (type == null)
+                return Collections.emptyMap();
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
             Map<String, AnnotationMirror> result =
