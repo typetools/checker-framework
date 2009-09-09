@@ -204,9 +204,9 @@ public class AnnotatedTypeFactory {
             // Only add annotations from the class declaration if there
             // are no annotations already on the type.
             //
-            // TODO: this conflicts with non-type qualifiers; the factory
+            // TODO: this conflicts with declaration annotations; the factory
             // currently can't tell e.g. @SuppressWarnings from a legit
-            // qualifier
+            // type qualifier.
 
             if (classElt != null && type.getAnnotations().isEmpty()) {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
