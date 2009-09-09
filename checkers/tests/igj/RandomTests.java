@@ -60,4 +60,8 @@ public class RandomTests {
     public static <T> @I Iterator<T> filter(Iterator<T> unfiltered, List<? super T> predicate) {
         return null;
     }
+
+    void testIntersection() {
+        java.util.Arrays.asList("m", 1);
+    }
 }
