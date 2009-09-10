@@ -43,14 +43,14 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.lang.reflect.Field getDeclaredField(java.lang.String a1) throws java.lang.NoSuchFieldException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Method getDeclaredMethod(java.lang.String a1, java.lang.Class<?>[] a2) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<T> getDeclaredConstructor(java.lang.Class<?>[] a1) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.io.InputStream getResourceAsStream(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public java.net.URL getResource(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public @Nullable java.io.InputStream getResourceAsStream(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public @Nullable java.net.URL getResource(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public java.security.ProtectionDomain getProtectionDomain() { throw new RuntimeException("skeleton method"); }
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   public boolean isEnum() { throw new RuntimeException("skeleton method"); }
   public T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
   java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
-  public T cast(java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @PolyNull T cast(@PolyNull java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> java.lang.Class<? extends U> asSubclass(java.lang.Class<U> a1) { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(java.lang.Class<A> a1) { throw new RuntimeException("skeleton method"); }
   public boolean isAnnotationPresent(java.lang.Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
