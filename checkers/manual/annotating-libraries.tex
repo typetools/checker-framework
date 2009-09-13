@@ -180,9 +180,9 @@ following ways:
   its annotations from the library.  (If you are using a stub class, then
   typically the library's version is unannotated.)
 
-\item{\textbf{Non-type-related specifiers:}}
-  Non-type-related Java specifiers (e.g., \<public>, \<final>, \<volatile>)
-  may be omitted.
+\item{\textbf{Declaration specifiers:}}
+  Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
+  may be omitted, since they have nothing to do with types.
 
 \item{\textbf{Import statements:}}
   The only required import statements are the ones to import type
@@ -209,7 +209,7 @@ The Checker Framework stub file reader has several limitations:
   It does not handle \code{enum}s.
 \item
   % Still a problem as of 9/2/2009.
-  It does not handle non-type annotations (e.g. IGJ's \<Assignable>).
+  It only handles type annotations, not declaration annotations (e.g. IGJ's \<Assignable>).
 \end{itemize}
 
 

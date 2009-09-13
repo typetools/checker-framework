@@ -280,7 +280,10 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 \section{Example use:  detecting a null pointer bug\label{example-use}}
 
 To run a checker on a source file, just run javac as usual, passing the
-\<-processor> flag.  For instance, if you usually run the compiler like
+\<-processor> flag.  (You can also use an IDE or other build tool; see
+Chapter~\ref{external-tools}.)
+
+For instance, if you usually run the compiler like
 this:
 
 \begin{Verbatim}
@@ -399,6 +402,7 @@ Additional topics that apply to all checkers are covered later in the manual:
 \item Chapter~\ref{warnings-and-legacy}: Handling warnings and legacy code
 \item Chapter~\ref{annotating-libraries}: Annotating libraries
 \item Chapter~\ref{writing-a-checker}: How to create a new checker
+\item Chapter~\ref{external-tools}: Integration with external tools
 \end{itemize}
 
 
@@ -804,9 +808,52 @@ or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
 
 
+\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
+
+Annotating an entire existing program may seem like a daunting task.  But,
+if you approach it systematically and do a little bit at a time, you will
+find that it manageable.
+
+You should start with a property that matters to you, to achieve the best
+benefits.  It is easiest to add annotations if you know the code or the
+code contains documentation; you will find that you spend most of your time
+understanding the code, and very little time actually writing annotations
+or running the checker.
+
+It is best to annotate one package at a time, 
+% Upcoming fix that applies different defaults to annotated and unannotated
+% code will eliminate this reason.
+and to annotate the entire package so that you don't forget any classes,
+which can lead to unexpected results.
+Start as close to the leaves of the call tree as possible, because it is
+easiest to annotate a class if the code it calls has already been
+annotated.
+
+For each class, read its Javadoc.  For instance, if you are adding
+annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
+you can search the documentation for ``null'' and then add \<@Nullable>
+anywhere appropriate.  Do not read nor annotate the method bodies yet ---
+first, get the signatures and fields annotated.  If you are only annotating
+signatures (say, for a library you do not maintain and do not wish to
+check), you are now done.
+
+If you wish to check the implementation, then after the signatures are
+annotated, run the checker.  Then, add method body annotations (usually,
+few are necessary), fix bugs in code, and add annotations to signatures
+where necessary.  If signature annotations are necessary, then you may want
+to fix the documentation that did not indicate the property; but this isn't
+strictly necessary, since the annotations that you wrote provide that
+documentation.
+
+
+Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
+you are unable to eliminate checker warnings.
+
+
 \subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
 
 %% I want to get rid of this syntax.
+%% However, @Linear provides a compelling use case.
 
 In the checkers distributed with the Checker Framework, an annotation on a
 constructor invocation is equivalent to a cast on a constructor result.

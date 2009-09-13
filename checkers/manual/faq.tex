@@ -8,13 +8,35 @@ the answers, or other questions to include here.
 There is a separate FAQ for the type annotations syntax
 (\url{http://types.cs.washington.edu/jsr308/jsr308-faq.html}).
 
+% Not supported by Hevea, so don't bother; instead do by hand:
+% \minitoc
+
+%BEGIN LATEX
+~
+%END LATEX
+
+\noindent
+\textbf{Contents:} \\
+\ref{faq-ease-of-use}: Are type annotations easy to read and write? \\
+\ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
+\ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
+\ref{never-make-type-errors}: I don't make type errors, so pluggable type checking would not help me \\
+\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
+\ref{faq-create-a-checker}: How do I create a new checker? \\
+\ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
+\ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
+\ref{faq-jml}: How does pluggable type-checking compare with JML? \\
+\ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
+\ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
+
+
 
 % This FAQ also appears in the JSR 308 FAQ.
 \section{Are type annotations easy to read and write?\label{faq-ease-of-use}}
 
 The paper
-\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
-  pluggable types for Java}~\cite{PapiACPE2008} discusses case studies in
+\ahref{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html}{``Practical
+  pluggable types for Java''}~\cite{PapiACPE2008} discusses case studies in
 which programmers
 found type annotations to be natural to read and write.  The code
 continued to feel like Java, and the type-checking errors were easy to
@@ -97,6 +119,34 @@ possible class of problems), and increasing confidence in a piece of
 software.
 
 
+\section{I don't make type errors, so pluggable type checking would not help me\label{never-make-type-errors}}
+
+Occasionally, a developer says that he makes no errors that typechecking
+could catch, or that any such errors are unimportant because they have low
+impact and are easy to fix.  When I investigate the claim, I invariably
+find that the developer is mistaken.
+
+Very frequently, the developer has underestimated what typechecking can
+discover.  Not every type error leads to an exception being thrown; and
+even if an exception is thrown, it may not seem related to classical types.
+Remember that a type system can discover
+null pointer dereferences,
+incorrect side effects, 
+security errors such as information leakage or SQL injection,
+partially-initialized data,
+and many other errors.  Even where type-checking does not discover a
+problem directly, it can indicate code with bad smells, thus revealing
+problems, improving documentation, and making future maintenance easier.
+
+There are other ways to discover errors, including extensive testing and
+debugging.  But type-checking is a good complement to these.  It is more
+effective for some problems, and less effective for other problems.  It can
+reduce (but not eliminate) the time and effort that you spend on other
+approaches.  There are many important errors that type checking and other
+automated approaches cannot find; pluggable typechecking gives you more
+time to focus on those.
+
+
 \section{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
 
 In brief, use subtypes when you can, and use type qualifiers when you cannot
@@ -140,9 +190,9 @@ rules (Section~\ref{extending-visitor}).
 A declarative syntax might be more  concise, more readable, and more
 verifiable than a procedural syntax.
 
-Unfortunately, researchers have not yet devised a declarative syntax that
-is adequate for realistic type systems.  A technical
-paper~\cite{PapiACPE2008} discusses some previous attempts.  When an
+Previous attempts to devise a declarative syntax 
+for realistic type systems have failed; see a technical
+paper~\cite{PapiACPE2008} for a discussion.  When an
 adequate syntax exists, then the Checker Framework can be extended to
 support it.
 
@@ -263,7 +313,8 @@ at run time, code that was not checked (see
 Chapter~\ref{warnings-and-legacy} for reasons that code might not be
 checked).  An exception is the Nullness Checker, which has ways to
 dynamically check nullness via assertions and casts (the
-\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method).
+\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method); see
+Section~\ref{suppressing-warnings-with-assertions}.
 
 More general support would be an interesting and valuable project.  If you
 are able to add run-time verification functionality, we would gladly
