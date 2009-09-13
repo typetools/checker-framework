@@ -225,7 +225,7 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public T cast(Object obj) {
+    public @PolyRead T cast(@PolyRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
