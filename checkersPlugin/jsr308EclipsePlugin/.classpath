@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-sun-1.6.0.00"/>
+	<classpathentry kind="lib" path="lib/checkers/checkers.jar" sourcepath="lib/checkers/src"/>
+	<classpathentry kind="lib" path="lib/langtools/binary/javac.jar" sourcepath="lib/langtools/src"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
