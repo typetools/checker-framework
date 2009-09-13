@@ -134,7 +134,9 @@ ${build.version} of the 'javac.jar' library."/>
           </java>
       </target>
 
-    <target name="docs" depends="prep" description="Create Javadoc documentation">
+    <target name="docs" depends="javadoc"/>
+
+    <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
 	      classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
