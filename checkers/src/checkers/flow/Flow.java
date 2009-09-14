@@ -224,23 +224,27 @@ public class Flow extends TreePathScanner<Void, Void> {
         // always follow variable declarations
         AnnotationMirror flowResult = flowResults.get(loc);
 
-        if (!(tree instanceof ExpressionTree))
-            return flowResult;
-
-        AnnotatedTypeMirror t = factory.fromExpression((ExpressionTree)tree);
-        if (t.getAnnotations().isEmpty())
-            return flowResult;
-
-        if (annoRelations.isSubtype(Collections.singleton(flowResult), t.getAnnotations()))
-            return flowResult;
-
-        // I don't why I need this
-        Element e = InternalUtils.symbol(tree);
-        if (e != null) {
-            if (factory.fromElement(e).getAnnotations().isEmpty())
-                return flowResult;
-        }
-        return null;
+        // 09/11/2009 Mahmood
+        // I don't remember this why this code is here.
+        // remove code if no error is witnessed for a while
+        return flowResult;
+//        if (!(tree instanceof ExpressionTree))
+//            return flowResult;
+//
+//        AnnotatedTypeMirror t = factory.fromExpression((ExpressionTree)tree);
+//        if (t.getAnnotations().isEmpty())
+//            return flowResult;
+//
+//        if (annoRelations.isSubtype(Collections.singleton(flowResult), t.getAnnotations()))
+//            return flowResult;
+//
+//        // I don't why I need this
+//        Element e = InternalUtils.symbol(tree);
+//        if (e != null) {
+//            if (factory.fromElement(e).getAnnotations().isEmpty())
+//                return flowResult;
+//        }
+//        return flowResult;
     }
 
     /**
