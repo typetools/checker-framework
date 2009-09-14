@@ -1,0 +1,79 @@
+This directory contains Derivation objects (for derived variables).
+
+
+
+===========================================================================
+
+// I want to introduce some derived values and compute invariants over them
+// before deciding whether to introduce other derived values.  Therefore,
+// rather than having one function that introduces all the derived values,
+// there are several passes.  (Actually, each pass is a combination of a
+// number of highly-specialized introduction routines which are plugged into
+// a harness which calls them.)
+
+// all_numeric_invariants alternates between introducing new variables and
+// computing new invariants (among the new variables, and between a new
+// variable and old variables, but no recomputation is done among old old
+// variables).  It repeats this cycle until fixpoint (or until we are done
+// adding variables).
+
+
+
+// In my documentation, I several lists of derived variables:
+//  * by the type of derivees
+//  * by the type of derived
+//  * by what is required
+//  * ordering over these things
+
+// To simplify cross-reference, name derived variables according like so:
+//  EE.D.n
+// where the "E"s are the type of derivees,
+//       the "D" is the type of the derived value, and
+//       the "n" is a number added for uniqueness.
+//  The types are "Q" for sequence and "C" for scalar.
+
+
+// Derived variables:
+//  sequence:
+//   * scalars:
+//      * Q.C.1:  size
+//        restriction: not if derived subsequence of known (symbolic) length
+//      * Q.C.2:  element at each index, counting from front
+//       must know: bounds on size of array (Q.C.1)
+//        restriction: not sequences derived from prefix of another sequence
+//       caveat: maybe not the element at *each* index, but just extremal few.)
+//      * Q.C.3:  element at each index, counting from back
+//       must know: bounds on size of array (Q.C.1)
+//       restriction: not sequences of constant (literal) length
+//        restriction: not sequences derived from suffix of another sequence
+//              (that doesn't happen yet)
+//       caveat: maybe not the element at *each* index, but just extremal few.)
+//   * sequences:
+//      * Q.Q.1:  subsequence up to zero element, exclusive
+//        restriction: not sequences derived from prefix of another sequence
+//      * Q.Q.2:  subsequence up to zero element, inclusive
+//        restriction: not sequences derived from prefix of another sequence
+//  sequence, scalar:
+//   restriction: not sequences derived from prefix of another sequence
+//   restriction: scalar not (equal to) size of this sequence (Q.C.1)
+//   * scalars:
+//      * QC.C.1:  elt at that index
+//   * sequence:
+//      * QC.Q.1:  subsequence up to that index, inclusive
+//       restriction: not if that index is greater than or equal to size (Q.C.1)
+//      * QC.Q.2:  subsequence up to that index, exclusive
+//               (ie, prefix of that size)
+//       restriction: not if that index is greater than size (Q.C.1)
+//      * QC.Q.3:  subsequence up to that element, inclusive (if elt in sequence)
+//      * QC.Q.4:  subsequence up to that element, exclusive (if elt in sequence)
+
+// I also want to avoid checking certain invariants which are vacuously true
+// over derived values.
+// Avoid obvious invariants:
+//  * sequence membership:  an element of a sequence is a member of that
+//    sequence, or of some other sequence derived from it (or from which it
+//    was derived) which still covers that element.
+//  * subsequence:  a derived sequence is a subsequence of its larger
+//    containing sequence
+
+// Need a mapping from a sequence variable to the variable representing its size.
