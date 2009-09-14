@@ -16,6 +16,10 @@ import checkers.util.TypesUtils;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
+// Bug:  StubGenerator does not output "static" modifiers.  Here is an
+// example; see the "out" field (among others).
+//   java checkers.util.stub.StubGenerator java.lang.System > System.astub
+
 /**
  * Generates an index file.<br />
  *

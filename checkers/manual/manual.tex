@@ -6,6 +6,7 @@
 \usepackage{listings}
 \usepackage{url}
 \usepackage{alltt}
+% Not supported by Hevea, so don't bother: \usepackage{minitoc}
 
 \usepackage{relsize}
 % \def\codesize{\smaller}
@@ -110,8 +111,9 @@
 Section~\ref{installation} describes how to \textbf{install and use} pluggable
 type-checkers.
 
-\newcommand{\chapterpageref}[1]{Chapter~\ref{#1}, page~\pageref{#1}}
-%HEVEA \renewcommand{\chapterpageref}[1]{Chapter~\ref{#1}}
+\newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}
+%HEVEA \renewcommand{\refwithpage}[1]{\ref{#1}}
+\newcommand{\chapterpageref}[1]{Chapter~\refwithpage{#1}}
 
 %BEGIN LATEX
 \medskip
@@ -131,6 +133,7 @@ You can also jump directly to the documentation for a particular checker:
 
 
 %HEVEA \setcounter{tocdepth}{1}
+% Not supported by Hevea, so don't bother: \dominitoc
 \tableofcontents
 \newpage
 
