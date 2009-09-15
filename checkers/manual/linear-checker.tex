@@ -1,0 +1,120 @@
+\htmlhr
+\chapter{Linear checker\label{linear-checker}}
+
+The Linear Checker implements type-checking for a linear type system.  A
+linear type system prevents aliasing:  there is only one (usable) reference
+to a given object at any time.  Once a reference appears on the right-hand
+side of an assignment, it may not be used any more.  The same rule applies
+for pseudo-assignments such as procedure argument-passing or return.
+
+One way of thinking about this is that a value can only be used once, after
+which it is ``used up''.  This property is checked statically at compile
+time.  The use only refers to use in assignments, not ordinary field
+dereferencing.
+
+By forbidding aliasing, a linear type system can prevent problems such as
+unexpected modification (by an alias), or ineffectual modification (after a
+value has already been passed to, and used by, other code).
+
+
+% TODO: need better motivation.
+
+
+% TODO: perhaps the rules should relate to being on the  should 
+
+
+Here in an example of the Linear Checker's rules.
+
+\begin{Verbatim}
+class Pair {
+  Object a;
+  Object b;
+}
+
+void print(@Linear Object arg) {
+  System.out.println(arg);
+}
+
+@Linear Pair printAndReturn(@Linear Pair arg) {
+  System.out.println(arg.a);
+  System.out.println(arg.b);      // OK: field dereferencing does not use up the reference arg
+  return arg;
+}
+
+@Linear Object m(Object o, @Linear Pair lp) {
+  @Linear Object lo2 = o;         // WARNING: aliases may exist
+  @Linear Object lp3 = lp;          
+  @Linear Object lp4 = lp;        // ERROR: reference lp was already used
+  lp3.a;                            
+  lp3.b;                          // OK: field dereferencing does not use up the reference
+  @Linear Object lp5 = new Pair();
+  print(lp5);      
+  print(lp5);                     // ERROR: reference lo5 was already used
+  @Linear Object lp6 = new Pair();
+  // If you need a value back after passing it to a procedure, that
+  // procedure must return it to you.
+  lp6 = printAndReturn(lp6);
+  if (...) {
+    print(lp6);
+  }
+  if (...) {
+    return lp6;                   // ERROR: reference lp6 may have been used
+  } else {
+    return new Object();
+  }
+}
+\end{Verbatim}
+
+
+\section{Linear annotations\label{linear-annotations}}
+
+The linear type system uses one user-visible annotation:
+\code{@\refclass{linear/quals}{Linear}}.  The annotation indicates
+a type for which the values may only be used once.
+
+% Should draw a picture.
+
+The full qualifier hierarchy for the linear type system includes three
+types:
+\begin{itemize}
+\item
+\code{@UsedUp} is the type of values that have already been dereferenced;
+\item
+\code{@Linear} is the type of values that may be dereferenced at
+most once in the future
+\item
+unqualified 
+Java references may be dereferenced, and aliases made, as many times as
+desired.
+\end{itemize}
+
+\noindent
+\code{@UsedUp} is a supertype of \code{@Linear}, which is a
+supertype of unqualified references.
+
+
+
+\section{Limitations\label{linear-limitations}}
+
+The \<@Linear> annotation is supported and checked only on method
+parameters (including the receiver), return types, and local variables.
+Supporting \<@Linear> on fields would require a sophisticated alias
+analysis or type system, and is future work.
+% One could imagine "this-linear" for handling fields.
+
+No annotated libraries are provided for linear types.  Most libraries would
+not be able to use linear types in their purest form.  For example, you
+cannot put a linearly-typed object in a hashtable, because hashtable
+insertion calls \<hashCode>; \<hashCode> uses up the reference and does not
+return the object, even though it does not retain any pointers to the
+object.  For similar reasons, a collection of linearly-typed objects could
+not be sorted or searched.
+
+Our lightweight implementation is intended for use in the parts of your
+program where errors relating to aliasing and object reuse are most likely.
+You can use manual reasoning (and possibly an unchecked cast or warning
+suppression) when objects enter or exit those portions of your program, or
+when that portion of your program uses an unannotated library.
+
+
+% LocalWords:  quals UsedUp hashCode
