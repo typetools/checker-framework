@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Linear checker\label{linear-checker}}
+\chapter{Linear checker (single use to prevent aliasing)\label{linear-checker}}
 
 The Linear Checker implements type-checking for a linear type system.  A
 linear type system prevents aliasing:  there is only one (usable) reference
@@ -7,14 +7,15 @@ to a given object at any time.  Once a reference appears on the right-hand
 side of an assignment, it may not be used any more.  The same rule applies
 for pseudo-assignments such as procedure argument-passing or return.
 
-One way of thinking about this is that a value can only be used once, after
-which it is ``used up''.  This property is checked statically at compile
-time.  The use only refers to use in assignments, not ordinary field
-dereferencing.
+One way of thinking about this is that a reference can only be used once,
+after which it is ``used up''.  This property is checked statically at
+compile time.  The single-use property only applies to use in an
+assignment, which makes a new reference to the object; orditary field
+dereferencing does not use up a reference.
 
 By forbidding aliasing, a linear type system can prevent problems such as
 unexpected modification (by an alias), or ineffectual modification (after a
-value has already been passed to, and used by, other code).
+reference has already been passed to, and used by, other code).
 
 
 % TODO: need better motivation.
@@ -70,27 +71,30 @@ void print(@Linear Object arg) {
 
 The linear type system uses one user-visible annotation:
 \code{@\refclass{linear/quals}{Linear}}.  The annotation indicates
-a type for which the values may only be used once.
-
-% Should draw a picture.
+a type for which each value may only have a single reference ---
+equivalently, may only be used once on the right-hand side of an
+assignment.
 
 The full qualifier hierarchy for the linear type system includes three
 types:
 \begin{itemize}
 \item
-\code{@UsedUp} is the type of values that have already been dereferenced;
+\code{@UsedUp} is the type of references whose object has been assigned to
+another reference.  Users never need to write this qualifier.
 \item
-\code{@Linear} is the type of values that may be dereferenced at
-most once in the future
+\code{@Linear} is the type of references that may be dereferenced at
+most once in the future.
 \item
-unqualified 
-Java references may be dereferenced, and aliases made, as many times as
-desired.
+\code{@NonLinear} is the type of references may be dereferenced, and
+aliases made, as many times as desired.  This is the default, so users only
+need to write this if they change the default.
 \end{itemize}
+
+% TODO: Should draw a picture rather than leaving this as text.
 
 \noindent
 \code{@UsedUp} is a supertype of \code{@Linear}, which is a
-supertype of unqualified references.
+supertype of \code{@NonLinear}.
 
 
 
