@@ -1,26 +1,46 @@
 \htmlhr
 \chapter{Tainting checker\label{tainting-checker}}
 
-The tainting checker prevents certain kinds of trust errors.  If the
-checker issues no warning for a given program, then the program only
-uses trusted values and sanitizes all tainted references before use.
+The tainting checker prevents certain kinds of trust errors.
+A \emph{tainted}, or untrusted, value is one that comes from an arbitrary,
+possibly malicious source, such as user input or unvalidated data.
+Using a tainted value in certain parts of your application can compromise
+its integrity, causing it to crash, corrupt data, leak private data, etc.
 
-Using tainted references before sanitizing them expose the application
-to security vulnerabilities.  For example, web applications that construct
-database queries with user input are venerable to
-\ahref{http://en.wikipedia.org/wiki/Sql_injection}{SQL injection}.
+% Ought to have many more examples
 
-Note: This does \emph{not} mean that your program is free from trust errors.
-(You might have forgotten to annotation a particular method requires trusted
-references only.)
+For example, a user-supplied pointer, handle, or map key should be
+validated before being dereferenced.
+As another example, user-supplied strings should not be concatenated into a
+SQL query, program be subject to a 
+\ahref{http://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attack.
+A location in your program where malicious data could do damage is
+called a \emph{sensitive sink}.
+
+A program can ``sanitize'' or ``untaint'' a value in two ways:  by checking
+that it is innocuous/legal (e.g., it contains no characters that can be
+interpreted as SQL commands when pasted into a string context), or by
+transforming the value to be legal (e.g., quoting all the characters that
+can be interpreted as SQL commands).  A correct program must use one of
+these two techniques so that tainted values never flow to a sensitive sink.
+The Tainting Checker ensures that your program does so.
+
+If the Tainting Checker issues no warning for a given program, then no
+tainted value ever flows to a sensitive sink.  However, your program is not
+necessarily free from all trust errors.  As a simple example, you might
+have forgotten to annotate a sensitive sink as requiring an untainted type.
+
 
 \section{Tainting annotations\label{tainting-annotations}}
 
+% TODO: add both qualifiers explicitly, and then describe their relationship.
+
 The Tainting type system uses one annotation:
 \code{@\refclass{tainting/quals}{Untainted}}.  The annotation indicates
-a type that includes only untainted trusted values.
+a type that includes only untainted, trusted values.
 
-Any type not marked as \code{Untainted} is treated as tainted untrusted.
+Any type not marked as \code{Untainted} is treated as tainted, or untrusted.
+
 
 \section{Writing \code{@Untainted} annotations\label{writing-untainted}}
 
@@ -43,4 +63,4 @@ external libraries)
 The Tainting checker, in turn, will verify that no untainted value may flow into
 any of these methods.
 
-% LocalWords:  quals
+% LocalWords:  quals untaint
