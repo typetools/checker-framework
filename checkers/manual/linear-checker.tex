@@ -10,7 +10,7 @@ for pseudo-assignments such as procedure argument-passing or return.
 One way of thinking about this is that a reference can only be used once,
 after which it is ``used up''.  This property is checked statically at
 compile time.  The single-use property only applies to use in an
-assignment, which makes a new reference to the object; orditary field
+assignment, which makes a new reference to the object; ordinary field
 dereferencing does not use up a reference.
 
 By forbidding aliasing, a linear type system can prevent problems such as
@@ -121,4 +121,4 @@ suppression) when objects enter or exit those portions of your program, or
 when that portion of your program uses an unannotated library.
 
 
-% LocalWords:  quals UsedUp hashCode
+% LocalWords:  quals UsedUp hashCode NonLinear
