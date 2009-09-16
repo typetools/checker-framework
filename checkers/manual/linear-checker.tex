@@ -21,11 +21,10 @@ reference has already been passed to, and used by, other code).
 % TODO: need better motivation.
 
 
-% TODO: perhaps the rules should relate to being on the  should 
+Figure~\ref{fig:linear-example} gives an example of the Linear Checker's rules.
 
-
-Here in an example of the Linear Checker's rules.
-
+\begin{figure}
+\smaller
 \begin{Verbatim}
 class Pair {
   Object a;
@@ -43,28 +42,31 @@ void print(@Linear Object arg) {
 }
 
 @Linear Object m(Object o, @Linear Pair lp) {
-  @Linear Object lo2 = o;         // WARNING: aliases may exist
-  @Linear Object lp3 = lp;          
-  @Linear Object lp4 = lp;        // ERROR: reference lp was already used
+  @Linear Object lo2 = o;         // ERROR: aliases may exist
+  @Linear Pair lp3 = lp;          
+  @Linear Pair lp4 = lp;          // ERROR: reference lp was already used
   lp3.a;                            
   lp3.b;                          // OK: field dereferencing does not use up the reference
-  @Linear Object lp5 = new Pair();
-  print(lp5);      
-  print(lp5);                     // ERROR: reference lo5 was already used
-  @Linear Object lp6 = new Pair();
+  print(lp3);
+  lp3.a;                          // ERROR: reference lo3 was already used
+  print(lp3);                     // ERROR: reference lo3 was already used
+  lp3 = new Pair();               // OK to reassign to a used-up reference
   // If you need a value back after passing it to a procedure, that
   // procedure must return it to you.
-  lp6 = printAndReturn(lp6);
+  lp3 = printAndReturn(lp3);
   if (...) {
-    print(lp6);
+    print(lp3);
   }
   if (...) {
-    return lp6;                   // ERROR: reference lp6 may have been used
+    return lp3;                   // ERROR: reference lp3 may have been used
   } else {
     return new Object();
   }
 }
 \end{Verbatim}
+\caption{Example of Linear Checker rules.}
+\label{fig:linear-example}
+\end{figure}
 
 
 \section{Linear annotations\label{linear-annotations}}
@@ -80,10 +82,15 @@ types:
 \begin{itemize}
 \item
 \code{@UsedUp} is the type of references whose object has been assigned to
-another reference.  Users never need to write this qualifier.
+another reference.  The reference may not be used in any way, including
+having its fields dereferenced, being tested for equality with \<==>, or
+being assigned to another reference.  Users never need to write this
+qualifier.
 \item
-\code{@Linear} is the type of references that may be dereferenced at
-most once in the future.
+\code{@Linear} is the type of references that have no aliases, and that may
+be dereferenced at most once in the future.  The type of \<new \emph{T}()> is
+\code{@Linear \emph{T}} (the analysis does not account for the slim
+possibility that an alias to \<this> escapes the constructor).
 \item
 \code{@NonLinear} is the type of references that may be dereferenced, and
 aliases made, as many times as desired.  This is the default, so users only
@@ -93,9 +100,23 @@ need to write \code{@NonLinear} if they change the default.
 % TODO: Should draw a picture rather than leaving this as text.
 
 \noindent
-\code{@UsedUp} is a supertype of \code{@Linear}, which is a
-supertype of \code{@NonLinear}.
+\code{@UsedUp} is a supertype of \code{@NonLinear}, which is a
+supertype of \code{@Linear}.
 
+This hierarchy makes an assignment like
+
+\begin{Verbatim}
+  @Linear Object l = new Object();
+  @NonLinear Object nl = l;
+  @NonLinear Object nl2 = nl;
+\end{Verbatim}
+
+\noindent
+legal.  In other words, the fact that an object is referenced by a
+\<@Linear> type means that there is only one usable reference to it \emph{now},
+not that there will \emph{never} be multiple usable references to it.
+(The latter guarantee would be possible to enforce, but it is not what the
+Linear Checker does.)
 
 
 \section{Limitations\label{linear-limitations}}
