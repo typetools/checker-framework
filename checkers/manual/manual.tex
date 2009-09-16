@@ -38,6 +38,15 @@
 
 %HEVEA \newstyle{.lstframe}{margin:auto;margin-bottom:2em}
 
+% At least 80% of every float page must be taken up by
+% floats; there will be no page with more than 20% white space.
+\def\topfraction{.8}
+\def\dbltopfraction{\topfraction}
+\def\floatpagefraction{\topfraction}     % default .5
+\def\dblfloatpagefraction{\topfraction}  % default .5
+\def\textfraction{.2}
+
+
 % Left and right curly braces in tt font
 \newcommand{\ttlcb}{\texttt{\char "7B}}
 \newcommand{\ttrcb}{\texttt{\char "7D}}
