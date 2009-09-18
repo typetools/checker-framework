@@ -164,9 +164,7 @@ public class InternalUtils {
         final JCNewArray newArray = ((JCNewArray)node);
 
         if (level == -1) {
-            if (newArray.annotations != null)
-                return annotationsFromTypeAnnotationTrees(newArray.annotations);
-            return Collections.emptyList();
+            return annotationsFromTypeAnnotationTrees(newArray.annotations);
         }
 
         if (newArray.dimAnnotations.length() > 0
