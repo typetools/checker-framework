@@ -124,7 +124,7 @@ public class AnnotatedTypeFactory {
     // **********************************************************************
 
     /** Should cache? disable for better debugging */
-    private final static boolean SHOULD_CACHE = true;
+    private final static boolean SHOULD_CACHE = false;
 
     /** Various Caches **/
     /** Size of LRU cache **/
@@ -250,7 +250,6 @@ public class AnnotatedTypeFactory {
             type.addAnnotations(elt.getAnnotationMirrors());
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
-            ArrayConvention.applyArrayConvention(type);
 
             if (elt instanceof ExecutableElement
                     || elt instanceof VariableElement) {
@@ -331,16 +330,12 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        return fromTypeTree(tree, ArrayConvention.USED_CONVENTION);
-    }
-
-    public AnnotatedTypeMirror fromTypeTree(Tree tree, ArrayConvention conv) {
         if (fromTreeCache.containsKey(tree))
             return atypes.deepCopy(fromTreeCache.get(tree));
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTypeTree.INSTANCE, tree);
-        ArrayConvention.applyArrayConvention(result, conv);
+
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }
