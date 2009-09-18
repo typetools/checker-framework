@@ -51,7 +51,7 @@ import checkers.quals.SubtypeOf;
  * </li>
  * </ul>
  */
-@Target({ElementType.TYPE_USE})
+//@Target({ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuardedBy {
     String value();

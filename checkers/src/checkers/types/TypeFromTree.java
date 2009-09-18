@@ -31,16 +31,11 @@ abstract class TypeFromTree extends
 
     static void addAnnotationsToElt(AnnotatedTypeMirror type,
             List<? extends AnnotationMirror> annotations) {
-        if (!ArrayConvention.USED_CONVENTION.isArrays()
-                && ArrayConvention.USED_CONVENTION != ArrayConvention.CANONICAL) {
-            type.addAnnotations(annotations);
-        } else {
-            // Annotate the inner most array
-            AnnotatedTypeMirror innerType = type;
-            while (innerType.getKind() == TypeKind.ARRAY)
-                innerType = ((AnnotatedArrayType)innerType).getComponentType();
-            innerType.addAnnotations(annotations);
-        }
+        // Annotate the inner most array
+        AnnotatedTypeMirror innerType = type;
+        while (innerType.getKind() == TypeKind.ARRAY)
+            innerType = ((AnnotatedArrayType)innerType).getComponentType();
+        innerType.addAnnotations(annotations);
     }
 
     /**
@@ -73,8 +68,6 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
-
-            // TODO check multidimensional array accesses
 
             AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
             assert type instanceof AnnotatedArrayType;
@@ -215,21 +208,25 @@ abstract class TypeFromTree extends
             if (node.getType() == null) // e.g., byte[] b = {(byte)1, (byte)2};
                 return result;
 
-            if (ArrayConvention.USED_CONVENTION == ArrayConvention.CANONICAL)
-                annotateArrayAsCanonical(result, node, f);
-            else if (ArrayConvention.USED_CONVENTION.isArrays())
-                annotateArrayAsArray(result, node, f);
-            else
-                annotateArrayAsElts(result, node, f);
+            annotateArrayAsArray(result, node, f);
 
             return result;
         }
 
+        private AnnotatedTypeMirror descendBy(AnnotatedTypeMirror type, int depth) {
+            AnnotatedTypeMirror result = type;
+            while (depth > 0) {
+                result = ((AnnotatedArrayType)result).getComponentType();
+                depth--;
+            }
+            return result;
+        }
         private void annotateArrayAsArray(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
             // Copy annotations from the type.
-            AnnotatedTypeMirror treeElem = f.fromTypeTree(node.getType(), ArrayConvention.ARRAYS_PRE);
-            AnnotatedTypeMirror typeElem = result;
-//                ((AnnotatedArrayType)result).getComponentType();
+            AnnotatedTypeMirror treeElem = f.fromTypeTree(node.getType());
+            boolean hasInit = node.getInitializers() != null;
+            AnnotatedTypeMirror typeElem = descendBy(result,
+                    hasInit ? 1 : node.getDimensions().size());
             while (true) {
                 typeElem.addAnnotations(treeElem.getAnnotations());
                 if (!(treeElem instanceof AnnotatedArrayType)) break;
@@ -238,17 +235,18 @@ abstract class TypeFromTree extends
                 typeElem = ((AnnotatedArrayType)typeElem).getComponentType();
             }
             // Add all dimension annotations.
-            int idx = arrayDim(result) - 1;
+            //int idx = arrayDim(result) - 1;
+            int idx = 0;
             AnnotatedTypeMirror level = result;
             while (level.getKind() == TypeKind.ARRAY) {
                 AnnotatedArrayType array = (AnnotatedArrayType)level;
-                List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromArrayCreation(node, idx--);
+                List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromArrayCreation(node, idx++);
                 array.addAnnotations(annos);
                 level = array.getComponentType();
             }
 
             // Add top-level annotations.
-            addAnnotationsToElt(result, InternalUtils.annotationsFromArrayCreation(node, -1));
+            result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
         }
 
         private int arrayDim(AnnotatedArrayType array) {
@@ -261,37 +259,8 @@ abstract class TypeFromTree extends
             return result;
         }
 
-        private void annotateArrayAsElts(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
-
-            // Copy annotations from the type.
-            AnnotatedTypeMirror treeElem = f.fromTypeTree(node.getType());
-            AnnotatedTypeMirror typeElem =
-                ((AnnotatedArrayType)result).getComponentType();
-            while (true) {
-                typeElem.addAnnotations(treeElem.getAnnotations());
-                if (!(treeElem instanceof AnnotatedArrayType)) break;
-                assert typeElem instanceof AnnotatedArrayType;
-                treeElem = ((AnnotatedArrayType)treeElem).getComponentType();
-                typeElem = ((AnnotatedArrayType)typeElem).getComponentType();
-            }
-
-            // Add top-level annotations.
-            result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
-
-            // Add all dimension annotations.
-            int idx = 0;
-            AnnotatedTypeMirror level = result;
-            while (level.getKind() == TypeKind.ARRAY) {
-                AnnotatedArrayType array = (AnnotatedArrayType)level;
-                array.getComponentType().addAnnotations(
-                        InternalUtils.annotationsFromArrayCreation(node, idx++));
-                level = array.getComponentType();
-            }
-        }
-
         private void annotateArrayAsCanonical(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
             annotateArrayAsArray(result, node, f);
-            ArrayConvention.arraysToCanonical.visit(result, null);
         }
 
         @Override

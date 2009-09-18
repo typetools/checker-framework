@@ -33,7 +33,7 @@ import com.sun.source.tree.LiteralTree;
 @TypeQualifier
 @SubtypeOf({Unqualified.class})
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target(TYPE_USE)
 @ImplicitFor(
     treeClasses={LiteralTree.class},
     typeClasses={AnnotatedPrimitiveType.class})
