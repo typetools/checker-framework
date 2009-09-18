@@ -997,46 +997,6 @@ public abstract class AnnotatedTypeMirror {
 
         }
 
-        private String toStringAsEltsIn() {
-            StringBuilder sb = new StringBuilder();
-
-            AnnotatedArrayType array = this;
-            AnnotatedTypeMirror component;
-            while (true) {
-                component = array.getComponentType();
-                sb.append('[');
-                sb.append(formatAnnotationString(component.getAnnotations()).trim());
-                sb.append(']');
-                if (!(component instanceof AnnotatedArrayType)) {
-                    sb.insert(0, component.getUnderlyingType().toString());
-                    break;
-                }
-                array = (AnnotatedArrayType) component;
-            }
-            sb.insert(0, formatAnnotationString(this.getAnnotations()));
-            return sb.toString();
-        }
-
-        private String toStringAsEltsPre() {
-            StringBuilder sb = new StringBuilder();
-
-            AnnotatedArrayType array = this;
-            AnnotatedTypeMirror component;
-            while (true) {
-                component = array.getComponentType();
-                sb.append(' ');
-                sb.append(formatAnnotationString(component.getAnnotations()).trim());
-                sb.append(" []");
-                if (!(component instanceof AnnotatedArrayType)) {
-                    sb.insert(0, component.getUnderlyingType().toString());
-                    break;
-                }
-                array = (AnnotatedArrayType) component;
-            }
-            sb.insert(0, formatAnnotationString(this.getAnnotations()));
-            return sb.toString();
-        }
-
         public String toStringAsCanonical() {
             StringBuilder sb = new StringBuilder();
 
@@ -1057,42 +1017,9 @@ public abstract class AnnotatedTypeMirror {
             return sb.toString();
         }
 
-        private String toStringAsArraysIn() {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(getComponentType());
-            sb.append('[');
-            sb.append(formatAnnotationString(getAnnotations()).trim());
-            sb.append(']');
-            return sb.toString();
-        }
-
-        public String toStringAsArraysPre() {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(getComponentType());
-            sb.append(' ');
-            sb.append(formatAnnotationString(getAnnotations()).trim());
-            sb.append(" []");
-            return sb.toString();
-        }
-
         @Override
         public String toString() {
-            switch (ArrayConvention.USED_CONVENTION) {
-            case ELTS_IN:
-                return toStringAsEltsIn();
-            case ARRAYS_IN:
-                return toStringAsArraysIn();
-            case ELTS_PRE:
-                return toStringAsEltsPre();
-            case ARRAYS_PRE:
-                return toStringAsArraysPre();
-            case CANONICAL:
-                return toStringAsCanonical();
-            default:
-                throw new AssertionError("Cannot be here!");
-            }
+            return toStringAsCanonical();
         }
     }
 
