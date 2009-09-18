@@ -13,5 +13,5 @@ import checkers.quals.TypeQualifier;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf(Unusable.class)
+@SubtypeOf(Normal.class)
 public @interface Linear { }
