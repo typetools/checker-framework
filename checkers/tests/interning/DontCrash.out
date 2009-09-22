@@ -1,0 +1,4 @@
+:13: non-static variable this cannot be referenced from a static context
+:13: inner classes cannot have static declarations
+:13: non-static variable this cannot be referenced from a static context
+:13: inner classes cannot have static declarations
