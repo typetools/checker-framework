@@ -48,8 +48,8 @@ void print(@Linear Object arg) {
   lp3.a;                            
   lp3.b;                          // OK: field dereferencing does not use up the reference
   print(lp3);
-  lp3.a;                          // ERROR: reference lo3 was already used
   print(lp3);                     // ERROR: reference lo3 was already used
+  lp3.a;                          // ERROR: reference lo3 was already used
   lp3 = new Pair();               // OK to reassign to a used-up reference
   // If you need a value back after passing it to a procedure, that
   // procedure must return it to you.
