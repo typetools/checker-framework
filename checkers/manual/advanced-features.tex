@@ -126,6 +126,11 @@ run-time dispatch or behavior.
 Polymorphic qualifiers can be used on a method signature or body.
 They may not be used on classes or fields.
 
+%% I don't see why this is necessarily true; one could define @PolyNull1
+%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
+%% the point just makes type system bigots criticize the Checker Framework.
+% Qualifier polymorphism is limited to a single qualifier variable per method.
+
 
 \paragraph{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
 
@@ -172,12 +177,19 @@ method return type is \<@NonNull>.  But if even one of the arguments is \<@Nulla
 then the unification is \<@Nullable>, and so is the return type.
 
 
+\paragraph{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
+
 %% I can't think of a non-clumsy way to say this.
 % Each method containing a polymorphic qualifier is (conceptually) expanded
 % into multiple versions completely independently.
 
-It does not make sense to write only a single instance of a polymorphic
-qualifier in a method definition, as in
+Usually, it does not make sense to write only a single instance of a polymorphic
+qualifier in a method definition:  if you write one instance of (say)
+\<@PolyNull>, then you should use at least two.  (An exception is a a
+polymorphic qualifier an an array element type; this section ignores that
+case, but see below for further details.)
+
+For example, there is no point to writing
 
 \begin{Verbatim}
   void m(@PolyNull Object obj)
@@ -191,14 +203,13 @@ which expands to
   void m(@Nullable Object obj)
 \end{Verbatim}
 
-\noindent
-which is no different than writing just
+This is no different (in terms of which calls to the method will
+type-check) than writing just
 
 \begin{Verbatim}
   void m(@Nullable Object obj)
 \end{Verbatim}
 
-\noindent
 The benefit of polymorphic qualifiers comes when one is used multiple times
 in a method, since then each instance turns into the same type qualifier.
 Most frequently, the polymorphic qualifier appears on at least one formal
@@ -227,10 +238,35 @@ generics, the code can be even cleaner:
 %% It would be nice to give an example that isn't too contrived.
 
 
-%% I don't see why this is necessarily true; one could define @PolyNull1
-%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
-%% the point just makes type system bigots criticize the Checker Framework.
-% Qualifier polymorphism is limited to a single qualifier variable per method.
+\paragraph{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
+
+There is an exception to the general rule that a polymorphic qualifier
+should be used multiple times in a signature.  It can make sense to use a
+polymorphic qualifier just once, if it is on an array or generic element
+type.
+
+For example, consider a routine that returns the first index, in an array
+or collection, of a given element:
+
+\begin{Verbatim}
+  public static int indexOf(@PolyNull Object[] a, Object elt) { ... }
+
+  public static int indexOf(Collection<@PolyNull Object> a, Object elt) { ... }
+\end{Verbatim}
+
+If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
+some safe client calls would be rejected.
+
+Of course, it would be better style to use a generic method, as in either
+of these signatures (and likewise for the \<Collection> version):
+
+\begin{Verbatim}
+ public static <T> int indexOf(T[] a, /*@Nullable*/ Object elt) { ... }
+ public static <T> int indexOf(T[] a, T elt) { ... }
+\end{Verbatim}
+
+In conclusion, use of a single polymorphic qualifier may be necessary in
+legacy code, but can be avoided by use of better code style.
 
 
 \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
