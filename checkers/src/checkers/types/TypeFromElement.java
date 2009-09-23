@@ -112,7 +112,7 @@ public class TypeFromElement {
 
         VarSymbol symbol = (VarSymbol)element;
 
-        type.addAnnotations(symbol.getAnnotationMirrors());
+        addAnnotationsToElt(type, symbol.getAnnotationMirrors());
 
         for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
             TypeAnnotationPosition pos = anno.position;
@@ -196,7 +196,7 @@ public class TypeFromElement {
         MethodSymbol symbol = (MethodSymbol) element;
 
         // Add annotations on the return type
-        type.getReturnType().addAnnotations(symbol.getAnnotationMirrors());
+        addAnnotationsToElt(type.getReturnType(), symbol.getAnnotationMirrors());
 
         // Add annotations on the param raws
         final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
@@ -204,7 +204,7 @@ public class TypeFromElement {
         final List<AnnotatedTypeVariable> typeParams = type.getTypeVariables();
 
         for (int i = 0; i < params.size(); ++i)
-            params.get(i).addAnnotations(element.getParameters().get(i).getAnnotationMirrors());
+            addAnnotationsToElt(params.get(i), element.getParameters().get(i).getAnnotationMirrors());
 
         for (Attribute.TypeCompound typeAnno : symbol.typeAnnotations) {
             final TypeAnnotationPosition pos = typeAnno.position;
@@ -252,6 +252,15 @@ public class TypeFromElement {
                 break;
             }
         }
+    }
+
+    static void addAnnotationsToElt(AnnotatedTypeMirror type,
+            List<? extends AnnotationMirror> annotations) {
+        // Annotate the inner most array
+        AnnotatedTypeMirror innerType = type;
+        while (innerType.getKind() == TypeKind.ARRAY)
+            innerType = ((AnnotatedArrayType)innerType).getComponentType();
+        innerType.addAnnotations(annotations);
     }
 
     /**
