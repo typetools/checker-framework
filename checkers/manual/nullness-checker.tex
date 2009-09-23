@@ -386,7 +386,18 @@ Parameter passing and return values are checked analogously to assignments.
 
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
-Section~\ref{suppressing-warnings}).
+Section~\ref{suppressing-warnings}).  An example use is
+
+\begin{Verbatim}
+    // might return null
+    @Nullable Object getObject() { ... }
+
+    void myMethod() {
+      // The programmer knows that this partucular call never returns null.
+      @SuppressWarnings("nullness")
+      @NonNull o2 = getObject();
+\end{Verbatim}
+
 
 The Nullness Checker supports an additional warning suppression key, 
 \<nullness:collection-typeargs>.
@@ -407,7 +418,7 @@ suppress warnings; see below.
 
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
-not permit annotations to appear on statements.
+not permit annotations such as \<@SuppressWarnings> to appear on statements.
 
 For situations when the \<@SuppressWarnings> annotation is inconvenient,
 the Nullness Checker provides two additional ways to suppress warnings:
@@ -788,10 +799,21 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 
 
-\subsection{Compatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
+\subsection{Incompatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
 
-FindBugs suppresses all warnings at uses of a \<@Nullable> variable.  (This
-inevitably surprises programmers!  You have to use \<@CheckForNull> to
+Findbugs has a non-standard definition of \<@Nullable>.  FindBug's treatment is not
+documented in its own
+\ahref{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc},
+is different from every other tool for nullness analysis, and it inevitably
+surprises programmers, so it is detrimental rather than useful as documentation.
+In
+practice, your best bet is to not rely on FindBugs for nullness analysis,
+even if you find FindBugs useful for other purposes.
+
+You can skip the rest of this section unless you wish to learn more details.
+
+FindBugs suppresses all warnings at uses of a \<@Nullable> variable.  
+(You have to use \<@CheckForNull> to
 indicate a nullable variable that FindBugs should check.)  For example:
 
 \begin{Verbatim}
@@ -800,34 +822,33 @@ indicate a nullable variable that FindBugs should check.)  For example:
 
      void myMethod() {
        @Nullable Object o = getObject();
-       // FindBugs issues no warning about calling toString on a possibly-null reference
+       // FindBugs issues no warning about calling toString on a possibly-null reference!
        o.toString();
      }
 \end{Verbatim}
 
-The Checker Framework does not emulate this behavior of FindBugs, even if
-you are using FindBugs annotations.
+\noindent
+The Checker Framework does not emulate this non-standard behavior of
+FindBugs, even if the code uses FindBugs annotations.
+
 The Checker Framework will issue more warnings than FindBugs, and some of
 them may be about real bugs in your program.
 If you wish to suppress warnings at a
 specific client use where the value is known to be non-null, you should do that
-at the client use.  For example:
-% not at the definition site
+at the client use.  
+See Section~\ref{suppressing-warnings-nullness} for information about
+suppressing nullness warnings.
 
-\begin{Verbatim}
-     void myMethod() {
-       // Two ways to make the Checker Framework not issue a warning, if
-       // the programmer knows this particular invocation won't return null:
-
-       @Nullable Object o1 = getObject();
-       assert o1 != null;
-       o1.toString();
-
-       @SuppressWarnings("nullness")
-       @NonNull o2 = getObject();
-       o2.toString();
-     }
-\end{Verbatim}
+(FindBugs made a poor choice of names.  The choice of names should make a
+clear distinction between annotations that specify whether a reference is
+null, and annotations that suppress false warnings.  The choice of names
+should also have been consistent other tools, and intuitively clear to
+programmers.  The FindBugs choices make the FindBugs annotations less
+helpful to people, and much less useful for other tools.  The FindBugs
+analysis is also very imprecise.  It is best to stay away from the FindBugs
+nullness annotations, and use a more capable tool like the Checker
+Framework for type-related analyses, even if you use FindBugs for other
+purposes.)
 
 
 
