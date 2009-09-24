@@ -52,7 +52,7 @@ The nullness hierarchy contains these qualifiers:
   method at a time), when a \code{LazyNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   LazyNonNull over Nullable is its different interaction with
-  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}.
+  flow-sensitive type qualifier refinement (Section~\ref{type-refinement}).
   After a check of a LazyNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
@@ -395,7 +395,7 @@ Section~\ref{suppressing-warnings}).  An example use is
     void myMethod() {
       // The programmer knows that this partucular call never returns null.
       @SuppressWarnings("nullness")
-      @NonNull o2 = getObject();
+      @NonNull Object o2 = getObject();
 \end{Verbatim}
 
 
