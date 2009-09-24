@@ -317,8 +317,9 @@ make -f Makefile-jsr308-install
 
 </li>
 
-<li><p>Check any changes made to version numbers and dates as part of
-the release process.</p>
+<li><p>Check in any changes made to version numbers and dates as part of
+the release process.  (Should this be done before the release, so
+that its data is consistent?)</p>
 
 <pre>
     cd /scratch/$USER/jsr308-release/annotations
@@ -327,6 +328,15 @@ the release process.</p>
     svn commit
 </pre>
 </li>
+
+<li>
+Copy <tt>checkers.jar</tt> to some libraries that use it (set <i>XXX</i> properly!):
+<pre>
+  cp -pf .../checkers.jar ${inv}/java/lib
+  cvs commit ${inv}/java/lib/chekcers.jar -m "checkers.jar version <i>XXX</i>"
+  cp -pf .../checkers.jar ${inv}/java/utilMDE/lib
+  cvs commit ${inv}/java/utilMDE/lib/chekcers.jar -m "checkers.jar version <i>XXX</i>"
+</pre>
 
 <li><p>Send a release announcement to <a
 href="mailto:jsr308-discuss@groups.google.com">jsr308-discuss@groups.google.com</a>.
