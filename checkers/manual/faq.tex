@@ -252,6 +252,19 @@ You will also get an error if you try to use a nullable
 type parameter to certain other collections, including
 \<AbstractCollection>, \<Collection>, \<List>, \<Map>, and \<Queue>.
 
+% AbstractCollection has no documentation of its own regarding nullness,
+% but it implements Collection.
+
+% The JML specifications of the add() method says
+%       @   signals (NullPointerException)
+%       @             (* not allowed to add null *);
+%       ...
+%       @   signals (NullPointerException)
+%       @             (* not allowed to add null *);
+% In other words, the method might throw NullPointerException, but the JML
+% spec does not say under what circumstances.
+
+
 This is in conformance with the Javadoc specification of those classes.
 The Javadoc for \<List> states:
 
