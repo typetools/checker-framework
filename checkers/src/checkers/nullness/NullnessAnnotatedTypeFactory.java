@@ -5,11 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 
 import javax.lang.model.type.*;
-import javax.lang.model.util.ElementFilter;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.*;

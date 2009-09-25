@@ -54,4 +54,11 @@ public class Expressions {
   void testInersection() {
       java.util.Arrays.asList("m",1);
   }
+
+  Object obj;
+  void testRawness(@Raw Object obj) {
+      @SuppressWarnings("rawness")
+      @NonRaw Object nonRaw = obj;
+      this.obj = nonRaw;
+  }
 }

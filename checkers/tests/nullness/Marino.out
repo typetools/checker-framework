@@ -1,4 +1,4 @@
-#:20: (type.incompatible)
+:20: (type.incompatible)
 :22: (dereference.of.nullable)
 :24: (type.incompatible)
 :34: (dereference.of.nullable)
