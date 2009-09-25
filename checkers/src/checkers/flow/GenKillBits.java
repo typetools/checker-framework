@@ -32,7 +32,10 @@ public class GenKillBits<K> {
      * @see GenKillBits#GenKillBits(GenKillBits)
      */
     public static <K> GenKillBits<K> copy(GenKillBits<K> other) {
-        return new GenKillBits<K>(other);
+        if (other == null)
+            return null;
+        else
+            return new GenKillBits<K>(other);
     }
 
     /**

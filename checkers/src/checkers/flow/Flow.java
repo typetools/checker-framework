@@ -766,6 +766,9 @@ public class Flow extends TreePathScanner<Void, Void> {
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
         boolean pass = false;
         GenKillBits<AnnotationMirror> annoCond;
+        GenKillBits<AnnotationMirror> beforeTrue = GenKillBits.copy(annosWhenTrue);
+        GenKillBits<AnnotationMirror> beforeFalse = GenKillBits.copy(annosWhenFalse);
+        
         do {
             GenKillBits<AnnotationMirror> annoEntry = GenKillBits.copy(annos);
             scanCond(node.getCondition());
@@ -777,6 +780,8 @@ public class Flow extends TreePathScanner<Void, Void> {
             pass = true;
         } while (true);
         annos = annoCond;
+        annosWhenTrue = beforeTrue;
+        annosWhenFalse = beforeFalse;
         return null;
     }
 
