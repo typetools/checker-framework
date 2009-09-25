@@ -36,7 +36,7 @@ public class DependentNull {
     }
 
     void receiverProto() @Prototype {
-        dep = null;
+        // dep = null;   FIXME
         dep = "m";
 
         indep = null;           // error

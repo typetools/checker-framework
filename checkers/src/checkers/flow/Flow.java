@@ -343,6 +343,11 @@ public class Flow extends TreePathScanner<Void, Void> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = vars.indexOf(rElt);
 
+        if (!eltType.getAnnotations().isEmpty()
+            && !type.getAnnotations().isEmpty()
+            && !annoRelations.isSubtype(type.getAnnotations(), eltType.getAnnotations()))
+            return;
+
         for (AnnotationMirror annotation : annotations) {
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
