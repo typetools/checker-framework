@@ -5,7 +5,8 @@ The Linear Checker implements type-checking for a linear type system.  A
 linear type system prevents aliasing:  there is only one (usable) reference
 to a given object at any time.  Once a reference appears on the right-hand
 side of an assignment, it may not be used any more.  The same rule applies
-for pseudo-assignments such as procedure argument-passing or return.
+for pseudo-assignments such as procedure argument-passing (including as the
+receiver) or return.
 
 One way of thinking about this is that a reference can only be used once,
 after which it is ``used up''.  This property is checked statically at
@@ -29,6 +30,9 @@ Figure~\ref{fig:linear-example} gives an example of the Linear Checker's rules.
 class Pair {
   Object a;
   Object b;
+  public String toString() {
+    return "<" + String.valueOf(a) + "," + String.valueOf(b) + ">";
+  }
 }
 
 void print(@Linear Object arg) {
@@ -48,17 +52,20 @@ void print(@Linear Object arg) {
   lp3.a;                            
   lp3.b;                          // OK: field dereferencing does not use up the reference
   print(lp3);
-  print(lp3);                     // ERROR: reference lo3 was already used
-  lp3.a;                          // ERROR: reference lo3 was already used
-  lp3 = new Pair();               // OK to reassign to a used-up reference
+  print(lp3);                     // ERROR: reference lp3 was already used
+  lp3.a;                          // ERROR: reference lp3 was already used
+  @Linear Pair lp4 = new Pair(...);
+  lp4.toString();
+  lp4.toString();                 // ERROR: reference lp4 was already used
+  lp4 = new Pair();               // OK to reassign to a used-up reference
   // If you need a value back after passing it to a procedure, that
   // procedure must return it to you.
-  lp3 = printAndReturn(lp3);
+  lp4 = printAndReturn(lp4);
   if (...) {
-    print(lp3);
+    print(lp4);
   }
   if (...) {
-    return lp3;                   // ERROR: reference lp3 may have been used
+    return lp4;                   // ERROR: reference lp4 may have been used
   } else {
     return new Object();
   }
