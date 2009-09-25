@@ -354,8 +354,13 @@ public class AnnotatedTypes {
         if (dt == null)
             throw new IllegalArgumentException("Not iterable type: " + iterableType);
         else if (dt.getTypeArguments().isEmpty()) {
+            TypeElement e = env.getElementUtils().getTypeElement("java.lang.Object");
+            AnnotatedDeclaredType t = factory.fromElement(e);
+            t.clearAnnotations();
+            factory.annotateImplicit(e, t);
+            return t;
             // was erased
-            return factory.getAnnotatedType(env.getElementUtils().getTypeElement("java.lang.Object"));
+//            return factory.getAnnotatedType(env.getElementUtils().getTypeElement("java.lang.Object"));
         } else {
             return dt.getTypeArguments().get(0);
         }
