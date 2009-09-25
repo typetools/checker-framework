@@ -95,4 +95,39 @@ public class LoopFlow {
         }
     }
 
+    void testSimpleNull() {
+        String r1 = null;
+        while (r1 != null);
+        r1.toString();  // error
+    }
+
+    void testMulticheckNull() {
+        String r1 = null;
+        while (r1 != null && r1.equals("m"));
+        r1.toString();  // error
+    }
+
+    void testAssignInLoopSimple() {
+        String r1 = "";
+        while (r1 != null) {
+            r1 = null;
+        }
+        r1.toString();  // error
+    }
+
+    void testAssignInLoopMulti() {
+        String r1 = "";
+        while (r1 != null && r1.isEmpty()) {
+            r1 = null;
+        }
+        r1.toString();  // error
+    }
+
+    void testBreakWithCheck() {
+        String s = null;
+        while (true) {
+            if (s == null) break;
+            s.toString();
+        }
+    }
 }

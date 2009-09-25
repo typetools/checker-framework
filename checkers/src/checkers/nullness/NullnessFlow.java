@@ -152,7 +152,10 @@ class NullnessFlow extends Flow {
 
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-        super.visitBinary(node, p);
+        scan(node.getLeftOperand(), p);
+        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annos);
+        scan(node.getRightOperand(), p);
+        annos = before;
         Conditions conds = new Conditions();
         conds.visit(node, null);
         return null;
