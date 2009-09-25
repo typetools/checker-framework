@@ -16,7 +16,7 @@ public class Marino {
         }
         int i = 1;
         while (true){
-            // Checker doesn't catch that on second iteration, s is null.
+
             @NonNull String a = s;
             s = null;
             System.out.println("hi" + s.length());
