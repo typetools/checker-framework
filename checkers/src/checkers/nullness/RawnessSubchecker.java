@@ -2,7 +2,6 @@ package checkers.nullness;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
