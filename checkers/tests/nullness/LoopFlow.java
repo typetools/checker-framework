@@ -123,4 +123,11 @@ public class LoopFlow {
         r1.toString();  // error
     }
 
+    void testBreakWithCheck() {
+        String s = null;
+        while (true) {
+            if (s == null) break;
+            s.toString();
+        }
+    }
 }
