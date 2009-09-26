@@ -8,7 +8,7 @@
     <attribute name="srcpath"/>
     <attribute name="files"/>
     <attribute name="checker"/>
-    <attribute name="lint" default=""/>
+    <attribute name="lint" default="none"/>
     <attribute name="custom.lib" default=""/>
     <sequential>
       <java fork="true" failonerror="true"
@@ -36,7 +36,7 @@
     <attribute name="srcpath"/>
     <attribute name="files"/>
     <attribute name="checker" default="checkers.basic.BasicChecker"/>
-    <attribute name="lint" default=""/>
+    <attribute name="lint" default="none"/>
     <attribute name="quals" default=""/>
     <attribute name="custom.lib" default=""/>
     <sequential>
