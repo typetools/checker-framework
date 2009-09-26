@@ -275,6 +275,12 @@ public class Flow {
         nonNullArg(arg);        // no error
     }
 
+    void test() {
+        String[] s = null;
+        for (int i = 0; i < s.length; ++i) {    // error
+            String m = s[i];    // fine.. s cannot be null
+        }
+    }
 }
 
     // This might be useful: "if this routine has ever returned non-null

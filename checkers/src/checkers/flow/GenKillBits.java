@@ -142,4 +142,8 @@ public class GenKillBits<K> {
             bitsets.get(key).or(other.bitsets.get(key));
         }
     }
+
+    public String toString() {
+        return "[GenKill: " + bitsets + "]";
+    }
 }
