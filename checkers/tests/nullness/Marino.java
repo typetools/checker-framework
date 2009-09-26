@@ -17,7 +17,7 @@ public class Marino {
         int i = 1;
         while (true){
 
-            @NonNull String a = s;
+            @NonNull String a = s;  // s cannot be null here
             s = null;
             System.out.println("hi" + s.length());
             if (i > 2) break;
