@@ -18,11 +18,11 @@ import checkers.util.AggregateChecker;
  */
 public class NullnessChecker extends AggregateChecker {
 
-	@Override
-	protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-		Collection<Class<? extends SourceChecker>> checkers = new ArrayList<Class<? extends SourceChecker>>(2);
-		checkers.add(NullnessSubchecker.class);
-		checkers.add(RawnessSubchecker.class);
-		return checkers;
-	}
+    @Override
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<Class<? extends SourceChecker>>(2);
+        checkers.add(NullnessSubchecker.class);
+        checkers.add(RawnessSubchecker.class);
+        return checkers;
+    }
 }
