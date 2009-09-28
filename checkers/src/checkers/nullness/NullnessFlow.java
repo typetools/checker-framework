@@ -528,8 +528,8 @@ class NullnessFlow extends Flow {
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = node.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-        	if (methodParams.get(i).hasAnnotation(NONNULL))
-        		inferNullness(methodArgs.get(i));
+            if (methodParams.get(i).hasAnnotation(NONNULL))
+                inferNullness(methodArgs.get(i));
         }
 
         for (int i = 0; i < vars.size(); ++i) {

@@ -38,9 +38,9 @@
         <mkdir dir="${dist.doc}"/>
 
         <java fork="true"
-	      outputproperty="compiler.version"
-	      classpath="${compiler.lib}"
-	      classname="com.sun.tools.javac.Main">
+              outputproperty="compiler.version"
+              classpath="${compiler.lib}"
+              classname="com.sun.tools.javac.Main">
           <arg line="-version"/>
         </java>
 
@@ -99,8 +99,8 @@ ${build.version} of the 'javac.jar' library."/>
         </copy>
         <java fork="true"
               failonerror="true"
-	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}"
-	      classname="com.sun.tools.javac.Main">
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}"
+              classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
@@ -123,8 +123,8 @@ ${build.version} of the 'javac.jar' library."/>
           <mkdir dir="${javari.jdk.build}"/>
           <java fork="true"
                 failonerror="true"
-		classpath="${build}:${compiler.lib}"
-		classname="com.sun.tools.javac.Main">
+                classpath="${build}:${compiler.lib}"
+                classname="com.sun.tools.javac.Main">
              <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
              <arg value="-g"/>
              <arg line="-sourcepath ${javari.jdk.src}"/>
@@ -139,8 +139,8 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
-	      classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-	      classname="com.sun.tools.javac.Main">
+              classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
@@ -148,7 +148,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
         </java>
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
-		 executable="../../jsr308-langtools/dist/bin/javadoc"
+                 executable="../../jsr308-langtools/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
@@ -202,8 +202,8 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-	      classpath="${compiler.lib}:${tests.junit}:${build}"
-	      classname="com.sun.tools.javac.Main">
+              classpath="${compiler.lib}:${tests.junit}:${build}"
+              classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${tests}"/>
@@ -214,9 +214,9 @@ ${build.version} of the 'javac.jar' library."/>
 
     <target name="-run-tests" description="Generalized test runner">
         <java fork="${run.tests.should.fork}"
-	      failonerror="true"
-	      classpath="${compiler.lib}:${checkers.jar.file}:${build.tests}:${tests.junit}:${build}"
-	      classname="org.junit.runner.JUnitCore">
+              failonerror="true"
+              classpath="${compiler.lib}:${checkers.jar.file}:${build.tests}:${tests.junit}:${build}"
+              classname="org.junit.runner.JUnitCore">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <jvmarg line="-ea"/>
             <arg line="${param}"/>
@@ -304,9 +304,9 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
 
         <java fork="true"
-	      failonerror="true"
-	      classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${checkers.jar.file}"
-	      classname="com.sun.tools.javac.Main">
+              failonerror="true"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${checkers.jar.file}"
+              classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>

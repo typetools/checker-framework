@@ -318,7 +318,7 @@ public class AnnotatedTypeFactory {
                 TypeFromExpression.INSTANCE, tree);
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
-        	fromTreeCache.put(tree, atypes.deepCopy(result));
+            fromTreeCache.put(tree, atypes.deepCopy(result));
         return result;
     }
 
