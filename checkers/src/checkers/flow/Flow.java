@@ -782,6 +782,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             scanStat(node.getStatement());
             if (pass) break;
             annosWhenTrue.and(annoEntry);
+            annos.and(annoEntry);
             pass = true;
         } while (true);
         annos = annoCond;
@@ -824,6 +825,7 @@ public class Flow extends TreePathScanner<Void, Void> {
                 scanStat(tree);
             if (pass) break;
             annosWhenTrue.and(annoEntry);
+            annos.and(annoEntry);
             pass = true;
         } while (true);
         annos = annoCond;
@@ -832,15 +834,15 @@ public class Flow extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitBreak(BreakTree node, Void p) {
-        //alive = false;
-        alive = true;
+        alive = false;
+        //alive = true;
         return null;
     }
 
     @Override
     public Void visitContinue(ContinueTree node, Void p) {
-        //alive = false;
-        alive = true;
+        alive = false;
+        //alive = true;
         return null;
     }
 
