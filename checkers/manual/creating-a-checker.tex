@@ -31,12 +31,10 @@ building it declaratively on top of the Basic Checker, and then return to
 this chapter when you need more expressiveness or power than the Basic
 Checker affords.
 
-You can also customize a typestate checker.
-Two of these are available.  One is by Adam Warski:  
-\myurl{http://www.warski.org/typestate.html}.
-The other is by Daniel Wand:
-\myurl{http://typestate.ewand.de/}.
-
+You can also customize a typestate checker, which enables a variable's type
+to change --- for instance, a file might transition from the \<@Open> to
+the \<@Closed> state after the \<close()> method is called.
+For more details, see Chapter~\ref{typestate-checker}.
 
 The rest of this section contains many details for people who want to more write powerful
 checkers.
