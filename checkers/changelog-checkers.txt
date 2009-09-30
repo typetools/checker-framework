@@ -1,3 +1,20 @@
+Version 1.0.0, 30 Sep 2009
+
+Functionality
+  Added Linear Checker to restrict aliasing
+
+Bug fixes
+  Fixed flow erros related to loop controls and break/continue
+
+Manual
+  Adopt new term, "Declaration Annotation" instead of non-type annotations
+  Added new sections:
+    Linear Checker (S 9)
+    Inexpressible types (S 14.3)
+    How to get started annotating legacy code (S 2.4.4)
+  Expanded Tainting Checker section
+
+----------------------------------------------------------------------
 Version 0.9.9, 4 Sep 2009
 
 Functionality
