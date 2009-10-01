@@ -219,7 +219,7 @@ abstract public class CheckerTest {
         List<String> resultsList = new LinkedList<String>();
         for (/*@ReadOnly*/ Diagnostic<? extends JavaFileObject> d : actual_diagnostics) {
             String result = d.toString().trim();
-            // Ignore Xlint
+            // suppress Xlint warnings
             if (result.contains("uses unchecked or unsafe operations.") ||
                     result.contains("Recompile with -Xlint:unchecked for details."))
                 continue;

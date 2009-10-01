@@ -99,19 +99,25 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         return super.visitSynchronized(node, p);
     }
 
-    /**
-     * Case 6: Check for redundant nullness tests
-     * Case 7: unboxing case: primitive operations
-     */
+    // Variable to skip redundant nullness tests when in assert
+    private boolean isInAssert = false;
+
     @Override
-    public Void visitBinary(BinaryTree node, Void p) {
+    public Void visitAssert(AssertTree node, Void p) {
+        boolean beforeAssert = isInAssert;
+        try {
+            isInAssert = true;
+            return super.visitAssert(node, p);
+        } finally {
+            isInAssert = beforeAssert;
+        }
+    }
+
+    protected void checkForRedundantTests(BinaryTree node) {
+        if (isInAssert) return;
+
         final ExpressionTree leftOp = node.getLeftOperand();
         final ExpressionTree rightOp = node.getRightOperand();
-
-        if (isUnboxingOperation(node)) {
-            checkForNullability(leftOp, "unboxing.of.nullable");
-            checkForNullability(rightOp, "unboxing.of.nullable");
-        }
 
         // equality tests
         if ((node.getKind() == Tree.Kind.EQUAL_TO
@@ -126,6 +132,24 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                     && left.hasAnnotation(NONNULL))
                 checker.report(Result.warning("known.nonnull", leftOp.toString()), node);
         }
+    }
+
+    /**
+     * Case 6: Check for redundant nullness tests
+     * Case 7: unboxing case: primitive operations
+     */
+    @Override
+    public Void visitBinary(BinaryTree node, Void p) {
+        final ExpressionTree leftOp = node.getLeftOperand();
+        final ExpressionTree rightOp = node.getRightOperand();
+
+        if (isUnboxingOperation(node)) {
+            checkForNullability(leftOp, "unboxing.of.nullable");
+            checkForNullability(rightOp, "unboxing.of.nullable");
+        }
+
+        checkForRedundantTests(node);
+
         return super.visitBinary(node, p);
     }
 
