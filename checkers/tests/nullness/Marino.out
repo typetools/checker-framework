@@ -1,0 +1,6 @@
+#:20: (type.incompatible)   Not an error
+:22: (dereference.of.nullable)
+:24: (type.incompatible)
+:34: (dereference.of.nullable)
+:36: (dereference.of.nullable)
+:46: (type.incompatible)
