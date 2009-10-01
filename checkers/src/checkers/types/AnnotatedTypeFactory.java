@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
@@ -455,7 +456,7 @@ public class AnnotatedTypeFactory {
      * there are no annotations already present
      */
     protected void annotateInheritedFromClass(@Mutable AnnotatedTypeMirror type) {
-//        InheritedFromClassAnnotator.INSTANCE.visit(type, this);
+        InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 
     /**
@@ -496,7 +497,11 @@ public class AnnotatedTypeFactory {
             if (classElt != null && type.getAnnotations().isEmpty()) {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
                 assert classType != null;
-                type.addAnnotations(classType.getAnnotations());
+                for (AnnotationMirror anno : classType.getAnnotations()) {
+                    if (AnnotationUtils.hasInheritiedMeta(anno)) {
+                        type.addAnnotation(anno);
+                    }
+                }
             }
 
             return super.visitDeclared(type, p);

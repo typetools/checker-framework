@@ -6,7 +6,6 @@ import checkers.nullness.quals.NonNull;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -20,7 +19,6 @@ import org.junit.Test;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
-@Ignore
 public class AnnotationBuilderTest {
 
     private final ProcessingEnvironment env;
@@ -176,6 +174,8 @@ public class AnnotationBuilderTest {
         builder.setValue("value", Integer.class);
     }
 
+    // Failing test for now.  AnnotationBuilder is a bit permissive
+    // It doesn't not check type argument subtyping
     @Test(expected = IllegalArgumentException.class)
     @Ignore // bug for now
     public void testRetClassNegative() {

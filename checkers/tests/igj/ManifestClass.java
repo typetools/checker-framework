@@ -1,7 +1,7 @@
 import checkers.igj.quals.*;
 
 /**
- * @ignore
+ *
  */
 @Immutable
 class ManifestClass {
@@ -9,8 +9,6 @@ class ManifestClass {
 
     public int getValue() { return 0; }
     public ManifestClass getThis() { return this; }
-
-    public void mutate() @Mutable { } // should emit error
 
     public void mutate1() {
         i++;    // should emit error

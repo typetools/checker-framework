@@ -8,6 +8,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
 import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -890,5 +891,9 @@ public class AnnotationUtils {
             }
         }
         throw new IllegalArgumentException("No element with name " + name + " in annotation " + anno);
+    }
+
+    public static boolean hasInheritiedMeta(AnnotationMirror anno) {
+        return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
 }

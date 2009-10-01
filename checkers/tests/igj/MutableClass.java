@@ -1,7 +1,7 @@
 import checkers.igj.quals.*;
 
 /**
- * @ignore
+ *
  * This is a test class for the IGJ Checker framework
  *
  * This class tests the basic operations, such as:
@@ -103,7 +103,7 @@ public class MutableClass {
     }
 
     public void mutateOetherRO() @Mutable {
-        @ReadOnly MutableClass instance = new @Mutable MutableClass();
+        @ReadOnly MutableClass instance = new @ReadOnly MutableClass();
         instance.mutableRecieverInvoke(); //should emit error
         instance.mutableReassign(); //should emit error
         instance.field = 5; //should emit error
