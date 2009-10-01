@@ -31,6 +31,7 @@ import com.sun.source.tree.LiteralTree;
  */
 @Documented
 @TypeQualifier
+@Inherited
 @SubtypeOf({Unqualified.class})
 @Retention(RetentionPolicy.RUNTIME)
 //@Target(TYPE_USE)

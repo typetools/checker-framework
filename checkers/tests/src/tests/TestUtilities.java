@@ -21,9 +21,10 @@ public final class TestUtilities {
     }
 
     /**
-     * Returns true if the java file is a java file without
-     * that tag {@code @ignore} in the declaration comment of
-     * the file
+     * Checks if the given file is a java test file not to be ignored.
+     * 
+     * Returns true if it is a file and does not contain
+     * {@code @skip-test} in the declaration comment of the file.
      */
     public static boolean isJavaTestFile(File file) {
         if (!isJavaFile(file))
@@ -36,7 +37,7 @@ public final class TestUtilities {
         }
         while (in.hasNext()) {
             String nextLine = in.nextLine();
-            if (nextLine.contains("@ignore"))
+            if (nextLine.contains("@skip-test"))
                 return false;
             if (nextLine.contains("class")
                     || nextLine.contains("interface")
