@@ -37,7 +37,6 @@ public class FrameworkTest extends CheckerTest {
     // @Test public void testMissingSymbolCrash()          { test();  }
     @Test public void testMatrixBug()                   { test();  }
 
-    @Ignore
     @Test public void testClassAnnotations()            { test(); }
     @Test public void testSupertypes()                  { test(); }
 

@@ -303,15 +303,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         }
     }
 
-    /**
-     * Override the default behavior of implicitly adding annotations on the
-     * class type to the declared types within the passed type.
-     */
-    @Override
-    protected void annotateInheritedFromClass(AnnotatedTypeMirror type) {
-        // Do nothing
-    }
-
     @Override
     protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
         AnnotatedDeclaredType receiver = super.getImplicitReceiverType(tree);

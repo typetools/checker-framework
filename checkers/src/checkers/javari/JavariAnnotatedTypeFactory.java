@@ -210,19 +210,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     /**
-     * Does nothing.
-     *
-     * Don't use the framework to inherit annotations from classes;
-     * Javari behavior on annotation inheritance is ad hoc enough,
-     * so we instead implement it all on this class, and override this
-     * method with an empty method to remove the framework behavior.
-     */
-    @Override
-    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
-        // Do nothing
-    }
-
-    /**
      * Returns a singleton collection with the most restrictive immutability
      * annotation that is a supertype of the annotations on both collections.
      */
