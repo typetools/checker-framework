@@ -1,7 +1,6 @@
 import checkers.igj.quals.*;
-
+import java.util.*;
 /**
- * @ignore
  * This is a test class for the IGJ Checker framework
  *
  * This class tests the basic operations, such as:
@@ -105,7 +104,7 @@ public class GenericClass {
     }
 
     public void mutateOtherRO() @Mutable {
-        @ReadOnly GenericClass instance = new @Mutable GenericClass();
+        @ReadOnly GenericClass instance = new @ReadOnly GenericClass();
         instance.mutableRecieverInvoke(); //should emit error
         instance.mutableReassign(); //should emit error
         instance.field = 5; //should emit error

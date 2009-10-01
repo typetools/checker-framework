@@ -155,4 +155,8 @@ public class IGJTest extends CheckerTest {
     @Test public void testConstructors() {
         test();
     }
+
+    @Test public void testGenericClass() { test(); }
+    @Test public void testManifestClass()   { test(); }
+    @Test public void testMutableClass()    { test(); }
 }
