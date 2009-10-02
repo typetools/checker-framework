@@ -73,6 +73,7 @@
       depends="-prep-checkdiff,-prep-checkdev,-prep-build-checkers"
       description="Creates a zip archive for checkers.">
 
+        <chmod file="${checkers}/binary/javac" perm="+x"/>
         <zip destfile="${tmp.ver.dir}/${checkers.zip}">
             <zipfileset dir="${checkers}" prefix="checkers"
                 includesfile="release/checkers-includes"
