@@ -11,6 +11,7 @@
     <property name="tests" value="tests"/>
     <property name="tests.junit" value="${tests}/junit.jar"/>
     <property name="build" value="build"/>
+    <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
@@ -26,6 +27,7 @@
 
     <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
     <property name="run.tests.should.fork" value="true"/>
+    <property name="halt.on.test.failure" value="true"/>
 
     <path id="build.path">
         <pathelement location="${compiler.lib}"/>
@@ -213,14 +215,24 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="-run-tests" description="Generalized test runner">
-        <java fork="${run.tests.should.fork}"
-              failonerror="true"
-              classpath="${compiler.lib}:${checkers.jar.file}:${build.tests}:${tests.junit}:${build}"
-              classname="org.junit.runner.JUnitCore">
+        <mkdir dir="${build.reports}"/>
+        <junit fork="${run.tests.should.fork}"
+            printsummary="true"
+            haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <jvmarg line="-ea"/>
-            <arg line="${param}"/>
-        </java>
+
+            <classpath>
+                <pathelement path="${compiler.lib}"/>
+                <pathelement path="${checker.jar.file}"/>
+                <pathelement path="${build.tests}"/>
+                <pathelement path="${tests.junit}"/>
+                <pathelement path="${build}"/>
+            </classpath>
+            <formatter type="xml"/>
+
+            <test name="${param}" todir="${build.reports}"/>
+        </junit>
     </target>
 
     <!-- Note that this target ignores file src/tests/AllTests.java .
