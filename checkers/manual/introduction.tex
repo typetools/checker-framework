@@ -139,7 +139,7 @@ different shell, you may need to slightly adjust the commands.
 
 \begin{Verbatim}
   export JSR308=$HOME/jsr308
-  mkdir ${JSR308}
+  mkdir -p ${JSR308}
   cd ${JSR308}
   wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
   unzip checkers.zip
@@ -150,9 +150,9 @@ different shell, you may need to slightly adjust the commands.
   the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
   shipped with Java 7.  In order to use the updated compiler when you type
   \code{javac}, add the directory \code{.../checkers/binary} to your path.
-
-  Place the following commands in your \code{.bashrc} file (and also execute
-  it on the command line, or log out and back in):
+  To do so,
+  place the following commands in your \code{.bashrc} file (and also execute
+  them on the command line, or log out and back in):
 \begin{Verbatim}
   export JSR308=$HOME/jsr308
   export PATH=$JSR308/checkers/binary:${PATH}
