@@ -347,7 +347,7 @@ ${build.version} of the 'javac.jar' library."/>
       Binary release of the Checker Framework; it includes javac.
      -->
 
-    <property name="javac.lib" value="../../jsr308-langtools/dist/lib/javac.jar"/>
+    <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
     <property name="checkers.lib" value="checkers.jar"/>
     <property name="bindist.file" value="binary/jsr308-all.jar"/>
     <property name="temp.dir" value="binary/buildbin"/>
