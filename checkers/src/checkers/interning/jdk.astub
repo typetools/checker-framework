@@ -1,0 +1,11 @@
+import checkers.interning.quals.Interned;
+
+package java.lang;
+
+// All instances of Class are interned.
+@Interned class Class<T> { }
+
+class String {
+  // The only interning-related method in the JDK.
+  @Interned String intern();
+}
