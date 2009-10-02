@@ -11,10 +11,6 @@ public class NullnessTest extends CheckerTest {
         super("checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext");
     }
 
-    @Test public void testFail() {
-        throw new RuntimeException();
-    }
-
     /** Tests for expressions-sensitive analysis. */
     @Test public void testExpressions() {
         test();
