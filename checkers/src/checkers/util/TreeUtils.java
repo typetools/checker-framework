@@ -16,6 +16,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
 /**
  * A utility class made for helping to analyze a given {@code Tree}.
@@ -400,5 +401,17 @@ public final class TreeUtils {
             first = tree;
         }
         return first;
+    }
+
+    /**
+     * Returns true if the tree is of a diamond type
+     */
+    public static final boolean isDiamondTree(Tree tree) {
+        switch (tree.getKind()) {
+        case ANNOTATED_TYPE: return isDiamondTree(((AnnotatedTypeTree)tree).getUnderlyingType());
+        case PARAMETERIZED_TYPE: return ((ParameterizedTypeTree)tree).getTypeArguments().isEmpty();
+        case NEW_CLASS: return isDiamondTree(((NewClassTree)tree).getIdentifier());
+        default: return false;
+        }
     }
 }

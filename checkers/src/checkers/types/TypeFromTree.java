@@ -269,7 +269,7 @@ abstract class TypeFromTree extends
 
             // Use the annotated type of the part between "new" and the
             // constructor arguments.
-            AnnotatedDeclaredType type = (AnnotatedDeclaredType)f.fromTypeTree(node.getIdentifier());
+            AnnotatedDeclaredType type = f.fromNewClass(node);
             if (node.getClassBody() != null) {
                 DeclaredType dt = (DeclaredType)InternalUtils.typeOf(node);
                 AnnotatedDeclaredType anonType =
