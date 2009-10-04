@@ -713,7 +713,7 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedExecutableType constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = InternalUtils.constructor(tree);
-        AnnotatedTypeMirror type = fromTypeTree(tree.getIdentifier());
+        AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
         AnnotatedExecutableType con = atypes.asMemberOf(type, ctor);
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1) {
@@ -724,6 +724,16 @@ public class AnnotatedTypeFactory {
             con.setParameterTypes(actualParams);
         }
         return con;
+    }
+
+    public AnnotatedDeclaredType fromNewClass(NewClassTree tree) {
+        if (!TreeUtils.isDiamondTree(tree))
+            return (AnnotatedDeclaredType)fromTypeTree(tree.getIdentifier());
+
+        AnnotatedDeclaredType type = (AnnotatedDeclaredType)toAnnotatedType(((JCTree)tree).type);
+        if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE)
+            type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree));
+        return type;
     }
 
     /**
