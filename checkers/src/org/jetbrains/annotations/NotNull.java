@@ -17,6 +17,8 @@ package org.jetbrains.annotations;
 
 import java.lang.annotation.*;
 
+import checkers.quals.TypeQualifier;
+
 /**
  *
  * An element annotated with NutNull claims <code>null</code> value is <em>forbidden</em>
@@ -28,6 +30,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TypeQualifier
 public @interface NotNull {
   String value() default "";
 }
