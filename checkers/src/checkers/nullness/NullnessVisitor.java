@@ -113,6 +113,19 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         }
     }
 
+    @Override
+    public Void visitIf(IfTree node, Void p) {
+        boolean beforeAssert = isInAssert;
+        try {
+            isInAssert =
+                TreeUtils.firstStatement(node.getThenStatement()).getKind() == Tree.Kind.THROW
+                && node.getElseStatement() == null;
+            return super.visitIf(node, p);
+        } finally {
+            isInAssert = beforeAssert;
+        }
+    }
+
     protected void checkForRedundantTests(BinaryTree node) {
         if (isInAssert) return;
 
