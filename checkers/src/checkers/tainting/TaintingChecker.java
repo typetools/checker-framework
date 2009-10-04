@@ -2,9 +2,8 @@ package checkers.tainting;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.source.SuppressWarningsKey;
-import checkers.tainting.quals.Untainted;
+import checkers.tainting.quals.*;
 
 /**
  * A type-checker plug-in for the Tainting type system qualifier that finds
@@ -13,6 +12,6 @@ import checkers.tainting.quals.Untainted;
  * It verifies that only verified values are trusted and that user-input
  * is sanitized before use.
  */
-@TypeQualifiers({Untainted.class, Unqualified.class})
+@TypeQualifiers({Untainted.class, Tainted.class, PolyTainted.class})
 @SuppressWarningsKey("untainted")
 public class TaintingChecker extends BaseTypeChecker {}

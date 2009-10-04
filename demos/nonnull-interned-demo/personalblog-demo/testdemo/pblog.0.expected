@@ -1,7 +1,7 @@
 src/net/eyde/personalblog/service/PersonalBlogService.java:175: incompatible types.
                     "where post.category like '%", category,
                                                    ^
-  found   : String
+  found   : @Tainted String
   required: @Untainted String
 1 error
 
