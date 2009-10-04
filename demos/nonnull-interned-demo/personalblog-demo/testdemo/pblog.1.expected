@@ -1,7 +1,7 @@
 src/net/eyde/personalblog/struts/action/ReadAction.java:58: incompatible types.
                   	pblog.getPostsByCategory(reqCategory));
                   	                         ^
-  found   : String
+  found   : @Tainted String
   required: @Untainted String
 1 error
 
