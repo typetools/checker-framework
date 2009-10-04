@@ -5,7 +5,7 @@ syntax: glob
 .#*
 TAGS
 *.orig
-
+.DS_Store
 # Eclipse files
 .metadata
 .classpath
