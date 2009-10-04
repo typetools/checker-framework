@@ -100,6 +100,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         aliases.put(edu.umd.cs.findbugs.annotations.NonNull.class.getCanonicalName(), NONNULL);
         aliases.put(javax.annotation.Nonnull.class.getCanonicalName(), NONNULL);
         aliases.put(org.jetbrains.annotations.NotNull.class.getCanonicalName(), NONNULL);
+        aliases.put(org.netbeans.api.annotations.common.NonNull.class.getCanonicalName(), NONNULL);
 
         // aliases for nullable
         aliases.put(edu.umd.cs.findbugs.annotations.CheckForNull.class.getCanonicalName(), NULLABLE);
@@ -108,6 +109,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         aliases.put(javax.annotation.CheckForNull.class.getCanonicalName(), NULLABLE);
         aliases.put(javax.annotation.Nullable.class.getCanonicalName(), NULLABLE);
         aliases.put(org.jetbrains.annotations.Nullable.class.getCanonicalName(), NULLABLE);
+        aliases.put(org.netbeans.api.annotations.common.CheckForNull.class.getCanonicalName(), NULLABLE);
+        aliases.put(org.netbeans.api.annotations.common.NullAllowed.class.getCanonicalName(), NULLABLE);
+        aliases.put(org.netbeans.api.annotations.common.NullUnknown.class.getCanonicalName(), NULLABLE);
 
         collectionToArrayHeauristics = new CollectionToArrayHeauristics(env, this);
 
