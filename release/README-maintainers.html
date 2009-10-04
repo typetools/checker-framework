@@ -13,10 +13,6 @@ pre { background-color: #CCC; padding: 0.75em; }
 
 <body>
 
-<h1>This document is out of date!</h1>
-
-It refers to old pathnames and repositories, and must be updated.
-
 <h1>Releasing the JSR 308 langtools and checkers</h1>
 
 <p>This document explains how to make a public release of the JSR 308
@@ -46,12 +42,15 @@ site.</p>
 <ul>
 <li>JDK &ge; 6</li>
 <li>Apache ant &ge; 1.6.5</li>
-<li>access to AFS, and write permissions in <code>$pag/www/jsr308</code></li>
+<li>Access to <code>/cse/www2/types</code> html folder.</li>
+<li>Mercurial &ge; 1.2.1</li>
+<li>LaTeX (along with <code>hevea</code> and <code>bibtex</code>)</li>
 <li>a web-accessible directory like <code>public_html</code> (for
 testing the release)</li>
 </ul>
 
-<p>You should have all of the above if you use a PAG machine.</p>
+<p>You should have all of the above if you use a Washington CS machine
+(e.g. <code>godwit</code>).</p>
 
 
 <h2 id="Setup">Initial setup</h2>
@@ -61,7 +60,15 @@ testing the release)</li>
 <p>Add the <code>scripts</code> directory of the Daikon <code>invariants</code>
 repository to your <code>PATH</code> (see instructions for <a
 href="http://groups.csail.mit.edu/pag/daikon/mit/#getting-daikon">getting
-Daikon</a> if you don't have access to a checkout).</p>
+Daikon</a> if you don't have access to a checkout).  Mike has a (usually)
+fresh checkout at <code>~mernst/research/invariants/scripts</code></p>
+</li>
+
+<li>
+<p>Ensure that the various tools needed for the release are in your
+<code>PATH</code>.  The files are scattered around the following
+folders: <code>~mernst/bin/share</code>, <code>~mernst/bin/Linux-i686</code>,
+and <code>/uns/bin</code>.
 </li>
 
 <li>If you have never made a release before or no longer have a
@@ -70,9 +77,9 @@ prepared release directory, set up a release directory as follows:
 <ol>
 <li>
   
-<p>Create a new directory.  Place the directory in a non-AFS
+<p>Create a new directory.  Place the directory in a non-NFS
   location such as a scratch partition, because a local disk is faster than
-  AFS.</p>
+  NFS.</p>
   
 <pre>
     mkdir -p /scratch/$USER/jsr308-release
@@ -83,10 +90,10 @@ prepared release directory, set up a release directory as follows:
 <li>
 <p>Check out the (entire) annotations repository:</p>
 <pre>
-    svn co file:///afs/csail/group/pag/projects/annotations
-    cd annotations
-    hg clone /afs/csail/group/pag/projects/annotations/langtools
-    hg clone /afs/csail/group/pag/projects/annotations/langtools-unmodified
+    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+    hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
+    # Just to be in safe side
+    ln -s jsr308-langtools checker-framework/jsr308-langtools
 </pre>
 </li>
 
@@ -99,7 +106,7 @@ testing site:</p>
 </pre>
 
 <p>and answer the prompt accordingly. The site will be created in
-<code>~/public_html/jsr308test</code> by default.</p></li>
+<code>~/www/jsr308test</code> by default.</p></li>
 
 </ol>
 </li>
@@ -114,10 +121,10 @@ testing site:</p>
 
 
 
-<li><p>Edit the changelogs (<tt>$anno/langtools/changelog-jsr308.txt</tt> and
-<tt>$anno/checkers/changelog-checkers.txt</tt>) to indicate what has changed
-in this version.  (Hopefully, this has already been done by each person who
-made a recent change.)
+<li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
+<tt>$anno/checkers-framework/checkers/changelog-checkers.txt</tt>) to indicate
+what has changed in this version.  (Hopefully, this has already been done by
+each person who made a recent change.)
 The changelogs should focus on user-visible changes, or very significant
 implementation changes that may affect users.
 </p>
@@ -132,20 +139,20 @@ releases instead.)
 <p>Diff the manuals against the previous versions:</p>
 
 <pre>
-    cd $anno/checkers/manual
-    svn diff -r "{2008-06-09}" > ~/tmp/checkers-manual-diff
+    cd $anno/checkers-framework/checkers/manual
+    hg diff -r130 > ~/tmp/checkers-manual-diff
 
-    cd $anno/langtools
+    cd $anno/jsr308-langtools
     hg diff -r50 > ~/tmp/langtools-diff
 </pre>
 
 <p>Use the version control logs since the last release: </p>
 
 <pre>
-    cd $anno
-    svn log -v -r "{2008-06-09}:{2008-06-15}" > ~/tmp/annotations-log
+    cd $anno/checker-framework
+    hg log -v -r130:tip > ~/tmp/annotations-log
 
-    cd $anno/langtools
+    cd $anno/jsr308-langtools
     hg log -r50:tip > ~/tmp/langtools-log
     hg log -r50:tip --style changelog > ~/tmp/langtools-log-with-filenames
 </pre>
@@ -157,44 +164,23 @@ Again, make sure your checkouts are up-to-date and fully committed.
 <li><p>Update your release checkout:</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/annotations
-    svn up
-    cd langtools
-    hg pull
-    hg up
+    cd /scratch/$USER/jsr308-release/checker-framework
+    hg fetch    # eq to 'hg pull; hg up'
+    cd jsr308-langtools
+    hg fetch    # eq to 'hg pull; hg up'
 </pre>
 
 <p>There shouldn't be any conflicts, since the release scripts shouldn't
 make any serious local modifications (aside from version number
 changes, which you'll check in later in the process).</p></li>
 
-<li><p>Edit the release configuration in <code>release.properties</code> for
-the test release:</p>
-
-<ol>
-<li>For a development release, set:
-<pre>
-    release.is.dev=true
-    release.ver=dev-<em>yyyyMMDD</em>
-</pre>
-where <em>yyyyMMDD</em> is today's date, e.g., 20080307.
-</li>
-
-<li>For a stable release, set:
-<pre>
-    release.is.dev=false
-    release.ver=<em>x.y.z</em>
-</pre>
-where the version number omits <em>z</em> if 0, e.g., 0.5 not 0.5.0.
-</li>
-
-<li><p>Ensure that the properties for the release location are set as
-follows (e.g., <em>not</em> to the live JSR 308 site quite yet):</p>
+<li><p>Ensure that the properties for the dry-run release is set
+appropriately, set as follows:</p>
 
 <ul>  
-<li><code>web.root.dir</code>: the location of your site copy, e.g.,
-<code>~/public_html/jsr308test</code></li>
-<li><code>sanitycheck.url</code>: the URL to access the <code>releases</code>
+<li><code>web.dry.root.dir</code>: the location of your site copy, e.g.,
+<code>~/www/jsr308test</code></li>
+<li><code>sanitycheck.dry.url</code>: the URL to access the <code>releases</code>
 directory of your site copy, e.g.,
 <code>http://www.cs.washington.edu/homes/${USER}/jsr308test/releases</code></li>
 </ul>
@@ -202,23 +188,14 @@ directory of your site copy, e.g.,
 <p>(You'll do a dry-run of the release to your site copy, and will only
 update the live site after you've sanity-checked the release.)</p></li>
 
-<li><p>You probably don't need to worry about
-<code>repo.revision</code> and <code>repo.date</code> &mdash; whoever
-patches langtools should update these properties when they commit the
-patch.</p></li>
-
-<li><p>Also, ensure <tt>doc/Makefile-jsr308-install</tt> variables are
-up to date, especially <tt>JDK_7_BIN</tt> and build number in
-<tt>test-langtools</tt> target.</p></li>
-
 </ol>
 </li>
 
 <li><p>Do a dry-run of the release:</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/annotations/release
-    ant -f release.xml clean web sanitycheck
+    cd /scratch/$USER/jsr308-release/checker-framework/release
+    ant -f release.xml -Drelease.ver=&lt;release version> clean web checklinks sanitycheck
 </pre>
 
 <p>The <code>web</code> step will run <code>ant clean build-javac
@@ -243,22 +220,10 @@ release.
 
 <ol>
 
-<li>
-<p>Run one of these:</p>
-
-<pre>
-$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://www.cs.washington.edu/homes/${USER}/jsr308test/
-</pre>
-
-<p>
-where $INV is a checkout of Daikon's "invariants" repository.
-[This should be merged into the <tt>sanitycheck</tt> target.]
-</p>
-
 </li>
 
 <li><p>As a new user with no customizations (say, in a
-virtual machine, or as user <tt>paguser</tt> at CSAIL), follow the Checker
+virtual machine), follow the Checker
 Framework short installation instructions by executing these commands:</p>
 
 <pre>
@@ -275,20 +240,11 @@ make -f Makefile-jsr308-install
 </ol>
 </li>
 
-<li><p>Edit the release configuration in <code>release.properties</code> for
-the actual release:</p>
-
-<pre>
-    web.root.dir=/afs/csail/group/pag/www/jsr308
-    sanitycheck.url=http://types.cs.washington.edu/jsr308/releases
-</pre></li>
-
-
 <li>Make the final release:
 
 <pre>
-    cd /scratch/$USER/jsr308-release/annotations/release
-    ant -f release.xml clean web sanitycheck
+    cd /scratch/$USER/jsr308-release/checker-framework/release
+    ant -f release.xml -Drelease.ver=&lt;release version> -Drelease.is.dry=false clean web checklinks sanitycheck
 </pre>
 
 <p>The same process as in the dry-run occurs; chances are, if the
@@ -296,17 +252,7 @@ dry-run passed successfully, this step should pass as well.</p>
 
 </li>
 
-<li><a href="#sanity-check">Sanity-check</a> the release, following the
-  instructions above but slightly changing
-  the commands to be:
-<ol>
-<li>
-<pre>
-$INV/scripts/checklink -q -r -e `cat $INV/scripts/checklink-args.txt` http://types.cs.washington.edu/checker-framework/
-</pre>
-</li>
-
-<li>
+<li>Again test the simple installation instructions guideline:
 <pre>
 cd
 wget -nv -N http://types.cs.washington.edu/checker-framework/current/Makefile-jsr308-install
@@ -323,9 +269,9 @@ that its data is consistent?)</p>
 
 <pre>
     cd /scratch/$USER/jsr308-release/annotations
-    svn diff
-    # Review the changes output by "svn diff" before committing
-    svn commit
+    hg diff
+    # Review the changes output by "hg diff" before committing
+    hg commit; hg push
 </pre>
 </li>
 
