@@ -410,6 +410,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      */
     @Override
     public R visitParameterizedType(ParameterizedTypeTree node, P p) {
+        if (TreeUtils.isDiamondTree(node))
+            return super.visitParameterizedType(node, p);
 
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedTypeFromTypeTree(node);
 
