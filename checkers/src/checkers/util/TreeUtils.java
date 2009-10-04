@@ -387,4 +387,18 @@ public final class TreeUtils {
 
         return "this".contentEquals(TreeUtils.methodName(invocation));
     }
+
+    public static final Tree firstStatement(Tree tree) {
+        Tree first;
+        if (tree.getKind() == Tree.Kind.BLOCK) {
+            BlockTree block = (BlockTree)tree;
+            if (block.getStatements().isEmpty())
+                first = block;
+            else
+                first = block.getStatements().iterator().next();
+        } else {
+            first = tree;
+        }
+        return first;
+    }
 }
