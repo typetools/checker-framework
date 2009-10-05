@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright 2006-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2006-2009 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -26,7 +26,7 @@
 #
 
 mydir="`dirname $0`"
-mylib="$mydir"
+mylib="`dirname $mydir`"/lib
 
 # By default, put the jar file and its dependencies on the bootclasspath.
 # This is always required on a Mac, because the system langtools classes
@@ -36,29 +36,48 @@ mylib="$mydir"
 # Assume that the jar file being invoked lists all the necessary langtools
 # jar files in its Class-Path manifest entry, so there is no need to search
 # dependent jar files for additional dependencies.
+# Also add the current classpath (at the end).  This permits finding classes
+# used by annotation processors, for example.  It doesn't work to just put 
+# these in the regular classpath.
 
 if [ "$LANGTOOLS_USE_BOOTCLASSPATH" != "no" ]; then
-   cp=`unzip -c $mylib/jsr308-all.jar META-INF/MANIFEST.MF |
+   cp=`unzip -c "$mylib"/jsr308-all.jar META-INF/MANIFEST.MF |
        grep "Class-Path:" |
        sed -e 's|Class-Path: *||' -e 's|\([a-z]*\.jar\) *|'"$mylib"'/\1:|g'`
-   bcp="$mylib/jsr308-all.jar":$cp
+   bcp="$mylib/jsr308-all.jar":$cp:$CLASSPATH
 fi
 
-# javac currently assumes that assertions are enabled in the launcher
-ea=-ea:com.sun.tools
+# tools currently assumes that assertions are enabled in the launcher
+ea=-ea:com.sun.tools...
+
+# If user supplies no explicit -cp argument, use this, after the -jar
+# option (i.e., as an option to javac and not to java).
+# Otherwise, javac can't find classes on the classpath.
+cpOpt="-classpath ${CLASSPATH:-.}"
 
 # Any parameters starting with -J are passed to the JVM.
 # All other parameters become parameters of javac.
-for param in "$@"
-do
-  if [ `echo -n "$param" | grep "^\-J" | wc -l` -ne 0 ]
-  then
-    # Cutting the -J from the parameter
-    param=`echo -n "$param" | cut -b3-`
-    javaparams="$javaparams $param"
-  else
-    javacparams="$javacparams $param"
-  fi
-done
 
-"java" ${bcp:+-Xbootclasspath/p:"$bcp"} ${ea} ${javaparams} -jar "${mydir}"/jsr308-all.jar ${javacparams}
+# Separate out -J* options for the JVM
+# Unset IFS and use newline as arg separator to preserve spaces in args
+DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
+saveIFS="$IFS"
+nl='
+'
+for i in "$@" ; do
+   IFS=
+   case $i in
+   -J* )       javaOpts=$javaOpts$nl`echo $i | sed -e 's/^-J//'` ;;
+   *   )       toolOpts=$toolOpts$nl$i ;;
+   esac
+   if [ "$i" == "-cp" ]; then
+     cpOpt="";
+   fi
+   if [ "$i" == "-classpath" ]; then
+     cpOpt="";
+   fi
+   IFS="$saveIFS"
+done
+unset DUALCASE
+
+eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} -jar "${mydir}"/jsr308-all.jar ${cpOpt} ${toolOpts}
