@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.security.AccessController;
 import java.security.SecureRandom;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
-import sun.security.action.GetPropertyAction;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
+//import java.nio.file.attribute.FileAttribute;
 
 import checkers.javari.quals.*;
 
@@ -174,9 +173,9 @@ public class File implements Serializable, Comparable<File> {
     public static File createTempFile(String prefix, String suffix) {
         throw new RuntimeException("skeleton method");
     }
-    public static File createTemporaryFile(String prefix, String suffx, @ReadOnly FileAttribute<?>... attrs) {
-        throw new RuntimeException("skeleton method");
-    }
+//     public static File createTemporaryFile(String prefix, String suffx, @ReadOnly FileAttribute<?>... attrs) {
+//         throw new RuntimeException("skeleton method");
+//     }
     public int compareTo(@ReadOnly File pathname) @ReadOnly {
         throw new RuntimeException("skeleton method");
     }
@@ -189,8 +188,8 @@ public class File implements Serializable, Comparable<File> {
     public String toString() @ReadOnly {
         throw new RuntimeException("skeleton method");
     }
-    public Path toPath() @ReadOnly {
-        throw new RuntimeException("skeleton method");
-    }
+//     public Path toPath() @ReadOnly {
+//         throw new RuntimeException("skeleton method");
+//     }
 
 }
