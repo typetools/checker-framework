@@ -54,6 +54,8 @@ public class Skeleton implements ClassVisitor {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    private boolean isEnum = false;
+
     /**
      * Creates a new skeleton class generator.
      *
@@ -107,9 +109,9 @@ public class Skeleton implements ClassVisitor {
                 Skeleton.read(className, "", "  ", pw, new HashSet<String>());
                 System.out.println("Output : " + className);
                 } catch (Exception e) {
-                    System.out.println("Error " + className + " " + e.getMessage());
+                    e.printStackTrace();
                 } catch (Error e) {
-                    System.out.println("Error " + className + " " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
@@ -319,7 +321,8 @@ public class Skeleton implements ClassVisitor {
             buf.append("private ");
         if (((access & ~suppress) & Opcodes.ACC_PROTECTED) != 0)
             buf.append("protected ");
-        if (((access & ~suppress) & Opcodes.ACC_FINAL) != 0)
+        if (((access & ~suppress) & Opcodes.ACC_FINAL) != 0
+            && ((access & ~suppress) & Opcodes.ACC_ENUM) == 0)
             buf.append("final ");
         if (((access & ~suppress) & Opcodes.ACC_STATIC) != 0)
             buf.append("static ");
@@ -522,6 +525,7 @@ public class Skeleton implements ClassVisitor {
             this.aborted = true;
             return;
         }
+        isEnum = (access & Opcodes.ACC_ENUM) != 0;
         buf.setLength(0);
         buf.append(base);
         appendAccess(access, Opcodes.ACC_SYNCHRONIZED);
@@ -546,7 +550,7 @@ public class Skeleton implements ClassVisitor {
                 buf.append(" ");
             }
         }
-        buf.append("{");
+        buf.append("{\n");
         text.add(buf.toString());
     }
 
@@ -597,10 +601,12 @@ public class Skeleton implements ClassVisitor {
         if ((access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0) {
             buf.setLength(0);
             buf.append(base).append(tab);
-            appendAccess(access, 0);
+            if (!isEnum) {
+            appendAccess(access, Opcodes.ACC_FINAL);
             appendFieldType(access, desc);
             appendGenericsField(access, signature);
             buf.append(" ");
+            }
             appendName(name);
             if (value != null) {
                 buf.append(" = ");
@@ -609,7 +615,8 @@ public class Skeleton implements ClassVisitor {
                 else
                     buf.append(value);
             }
-            buf.append(';');
+
+            buf.append(isEnum ? ',' : ';');
             buf.append(LINE_SEPARATOR);
             text.add(buf.toString());
         }
@@ -628,6 +635,8 @@ public class Skeleton implements ClassVisitor {
             buf.setLength(0);
             buf.append(base).append(tab);
 
+             if (isEnum && (name.equals("values") || name.equals("valueOf")))
+                 buf.append("//");
             appendAccess(access, Opcodes.ACC_TRANSIENT | Opcodes.ACC_VOLATILE);
             appendMethodTypeParams(access, signature, desc);
 
@@ -669,6 +678,7 @@ public class Skeleton implements ClassVisitor {
         for (Object o : text)
             pw.print(o.toString());
         pw.flush();
+        isEnum = false;
     }
 
     protected String toClassName(final String name) {
