@@ -1615,10 +1615,11 @@ Parameter FormalParameter():
 	Modifier modifier;
 	Type type;
 	boolean isVarArg = false;
+	List varArgAnnotations = null;
 	VariableDeclaratorId id;
 }
 {
-  modifier = Modifiers() type = UnType() [ "..." { isVarArg = true;} ] id = VariableDeclaratorId()
+  modifier = Modifiers() type = UnType() [ LOOKAHEAD( Annotationsopt() "..." ) varArgAnnotations = Annotationsopt() "..." { isVarArg = true;} ] id = VariableDeclaratorId()
 
   {
     int line = modifier.beginLine;
@@ -1743,9 +1744,9 @@ ReferenceType ReferenceType():
 {
   annotations = Annotationsopt()
   (
-   type = UnPrimitiveType() ( LOOKAHEAD(2) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )+
+   type = UnPrimitiveType() ( LOOKAHEAD( Annotationsopt() "[" ) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )+
   |
-   type = UnClassOrInterfaceType() ( LOOKAHEAD(2) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )*
+   type = UnClassOrInterfaceType() ( LOOKAHEAD( Annotationsopt() "[" ) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )*
   )
   { ReferenceType ret = new ReferenceType(type.getBeginLine(), type.getBeginColumn(), token.endLine, token.endColumn, type, arrayCount, arrayAnnotations);
     ret.setAnnotations(annotations);
@@ -1887,9 +1888,9 @@ ReferenceType UnReferenceType():
 }
 {
   (
-   type = UnPrimitiveType() ( LOOKAHEAD(2) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )+
+   type = UnPrimitiveType() ( LOOKAHEAD( Annotationsopt() "[" ) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )+
   |
-   type = UnClassOrInterfaceType() ( LOOKAHEAD(2) levelAnn = Annotationsopt()"[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )*
+   type = UnClassOrInterfaceType() ( LOOKAHEAD( Annotationsopt() "[" ) levelAnn = Annotationsopt() "[" "]" { arrayCount++; arrayAnnotations.add(levelAnn); } )*
   )
   { return new ReferenceType(type.getBeginLine(), type.getBeginColumn(), token.endLine, token.endColumn, type, arrayCount, arrayAnnotations); }
 }
@@ -2404,7 +2405,7 @@ Expression PrimarySuffixWithoutSuper(Expression scope):
   (
   	"."
   	(
-  	// TODO: está deixando passar "this.this", verificar na JLS se é possível
+  	// TODO: estï¿½ deixando passar "this.this", verificar na JLS se ï¿½ possï¿½vel
 		"this" { ret = new ThisExpr(scope.getBeginLine(), scope.getBeginColumn(), token.endLine, token.endColumn, scope); }
 	  |
 	  	ret = AllocationExpression(scope)
