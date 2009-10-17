@@ -26,7 +26,8 @@
 #
 
 mydir="`dirname $0`"
-mylib="`dirname $mydir`"/lib
+# mylib="`dirname $mydir`"/lib
+mylib=$mydir
 
 # By default, put the jar file and its dependencies on the bootclasspath.
 # This is always required on a Mac, because the system langtools classes
@@ -70,10 +71,10 @@ for i in "$@" ; do
    -J* )       javaOpts=$javaOpts$nl`echo $i | sed -e 's/^-J//'` ;;
    *   )       toolOpts=$toolOpts$nl$i ;;
    esac
-   if [ "$i" == "-cp" ]; then
+   if [ "$i" = "-cp" ]; then
      cpOpt="";
    fi
-   if [ "$i" == "-classpath" ]; then
+   if [ "$i" = "-classpath" ]; then
      cpOpt="";
    fi
    IFS="$saveIFS"
