@@ -11,6 +11,8 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
+import checkers.util.AnnotationUtils.AnnotationBuilder;
 import static checkers.util.AnnotationUtils.elementValue;;
 
 // Disclaimer:
@@ -27,13 +29,13 @@ import static checkers.util.AnnotationUtils.elementValue;;
 public class LockAnnotatedTypeFactory
     extends BasicAnnotatedTypeFactory<LockChecker> {
 
-    List<String> heldLocks = new ArrayList<String>();
-    AnnotationMirror guardedBy;
+    private List<String> heldLocks = new ArrayList<String>();
+    private final AnnotationMirror GUARDED_BY;
 
     public LockAnnotatedTypeFactory(LockChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
-        guardedBy = annotations.fromClass(GuardedBy.class);
+        GUARDED_BY = annotations.fromClass(GuardedBy.class);
     }
 
     public void setHeldLocks(List<String> heldLocks) {
@@ -78,7 +80,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasAnnotation(guardedBy) || TreeUtils.isSelfAccess(expr))
+        if (!type.hasAnnotation(GUARDED_BY) || TreeUtils.isSelfAccess(expr))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
@@ -100,7 +102,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasAnnotation(guardedBy))
+        if (!type.hasAnnotation(GUARDED_BY))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
@@ -118,5 +120,17 @@ public class LockAnnotatedTypeFactory
         replaceThis(type, tree);
         replaceItself(type, tree);
         removeHeldLocks(type);
+    }
+
+    @Override
+    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
+                net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
+            AnnotationBuilder builder = new AnnotationBuilder(env, GuardedBy.class);
+            builder.setValue("value", AnnotationUtils.parseStringValue(a, "value"));
+            return builder.build();
+        } else {
+            return super.aliasedAnnotation(a);
+        }
     }
 }

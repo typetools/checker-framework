@@ -2,10 +2,12 @@ package checkers.lock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
 import com.sun.source.tree.*;
@@ -82,7 +84,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         List<String> prevLocks = atypeFactory.getHeldLock();
         List<String> locks = prevLocks;
         try {
-            Element method = TreeUtils.elementFromDeclaration(node);
+            ExecutableElement method = TreeUtils.elementFromDeclaration(node);
             if (method.getModifiers().contains(Modifier.SYNCHRONIZED)
                 || method.getKind() == ElementKind.CONSTRUCTOR) {
                 if (method.getModifiers().contains(Modifier.STATIC)) {
@@ -93,10 +95,10 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
                 }
             }
 
-            Holding holding = method.getAnnotation(Holding.class);
-            if (holding != null) {
+            List<String> methodLocks = methodHolding(method);
+            if (!methodLocks.isEmpty()) {
                 locks = new ArrayList<String>(locks);
-                locks.addAll(Arrays.asList(holding.value()));
+                locks.addAll(methodLocks);
             }
             atypeFactory.setHeldLocks(locks);
 
@@ -118,7 +120,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         // does it introduce new locks
-        Element methodElt = TreeUtils.elementFromUse(node);
+        ExecutableElement methodElt = TreeUtils.elementFromUse(node);
 
         String lock = receiver(node.getMethodSelect());
         if (methodElt.getSimpleName().contentEquals("lock")) {
@@ -131,11 +133,11 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         }
 
         // does it require holding a lock
-        Holding holding = methodElt.getAnnotation(Holding.class);
-        if (holding != null
-            && !atypeFactory.getHeldLock().containsAll(Arrays.asList(holding.value()))) {
+        List<String> methodLocks = methodHolding(methodElt);
+        if (!methodLocks.isEmpty()
+            && !atypeFactory.getHeldLock().containsAll(methodLocks)) {
             checker.report(Result.failure("unguarded.invocation",
-                    methodElt, Arrays.toString(holding.value())), node);
+                    methodElt, methodLocks), node);
         }
 
         return super.visitMethodInvocation(node, p);
@@ -146,30 +148,42 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
             AnnotatedExecutableType overridden,
             AnnotatedDeclaredType overriddenType,
             Void p) {
-        
-        Holding overriderHolding = TreeUtils.elementFromDeclaration(overriderTree).getAnnotation(Holding.class);
-        Holding overridenHolding = overridden.getElement().getAnnotation(Holding.class);
-        
-        boolean isValid = true;
 
-        if (overridenHolding != null) {
-            String[] overriderLocks = (overriderHolding == null) ? new String[] {} : overriderHolding.value();
-            String[] overridenLocks = overridenHolding.value();
-            
-            if (!Arrays.asList(overridenLocks).containsAll(Arrays.asList(overriderLocks))) {
-                checker.report(Result.failure("override.holding.invalid",
-                        TreeUtils.elementFromDeclaration(overriderTree), 
-                        enclosingType.getElement(), overridden.getElement(),
-                        overriddenType.getElement(),
-                        overriderHolding, overridenHolding), overriderTree);
-                isValid = false;
-            }
+        List<String> overriderLocks = methodHolding(TreeUtils.elementFromDeclaration(overriderTree));
+        List<String> overridenLocks = methodHolding(overridden.getElement());
+
+        boolean isValid = overridenLocks.containsAll(overriderLocks);
+
+        if (!isValid) {
+            checker.report(Result.failure("override.holding.invalid",
+                    TreeUtils.elementFromDeclaration(overriderTree),
+                    enclosingType.getElement(), overridden.getElement(),
+                    overriddenType.getElement(),
+                    overriderLocks, overridenLocks), overriderTree);
         }
 
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
     }
+
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         return true;
+    }
+
+    protected List<String> methodHolding(ExecutableElement element) {
+        Holding holding = element.getAnnotation(Holding.class);
+        net.jcip.annotations.GuardedBy guardedBy
+            = element.getAnnotation(net.jcip.annotations.GuardedBy.class);
+        if (holding == null && guardedBy == null)
+            return Collections.emptyList();
+
+        List<String> locks = new ArrayList<String>();
+
+        if (holding != null)
+            locks.addAll(Arrays.asList(holding.value()));
+        if (guardedBy != null)
+            locks.add(guardedBy.value());
+
+        return locks;
     }
 }
