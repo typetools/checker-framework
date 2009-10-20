@@ -10,9 +10,10 @@ public class LockTest extends CheckerTest {
         super("checkers.lock.LockChecker", "lock", "-Anomsgtext");
     }
 
-    @Test public void testConstructors() { test(); }
-    @Test public void testFields()  { test(); }
-    @Test public void testMethods() { test(); }
-    @Test public void testOverriding() { test(); }
+    @Test public void testConstructors()        { test(); }
+    @Test public void testFields()              { test(); }
+    @Test public void testMethods()             { test(); }
+    @Test public void testOverriding()          { test(); }
+    @Test public void testJCIPAnnotations()     { test(); }
 
 }
