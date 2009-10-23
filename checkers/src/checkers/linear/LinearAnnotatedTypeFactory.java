@@ -17,17 +17,14 @@ import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 /**
- * Adds implicit qualifiers to reference types:
+ * Adds {@link Unusable} qualifier to a type if it represents:
  * 
- * <b>Case 1</b>
- * Adds the {@link Unusable} qualifier to a type if it represents a reference
- * of type {@link Linear} once it is "used up".
- *
- * <b>Case 2</b>:
- * Also, it adds {@link Unusable} qualifier to types of the class declaration
- * trees, if no qualifier is present.  The type of the class declaration
- * element should contain the root qualifier, so it would permit all possible
- * types.
+ * <ol>
+ * <li value="1">Class declaration tree/element.  Such constructs usually
+ * requires the root qualifier.</li>
+ * 
+ * <li value="2">{@code Linear} reference once it is "used up"</li>
+ * </ol>
  *
  */
 public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<LinearChecker> {
@@ -38,7 +35,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
     }
 
     /**
-     * Case 2
+     * Case 1: type of class declaration
      */
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
@@ -75,7 +72,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
         }
 
         /**
-         * Case 1
+         * Case 2: add {@code Unusable} to node type, if it is {@code Linear}
          */
         public Void visitIdentifier(IdentifierTree node, Void p) {
             super.visitIdentifier(node, p);
