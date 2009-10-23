@@ -1,0 +1,34 @@
+<project name="IGJChecker" basedir=".">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+    
+    <target name="factory">
+        <run-demo checker="checkers.igj.IGJChecker" srcpath="src" 
+            files="${basedir}/src/checkers/types/AnnotatedTypeFactory.java"/>
+    </target>
+
+    <target name="check-factory">
+      <check-demo-common target="factory" step="0"/>
+      <check-demo-common target="factory" step="1"/>
+      <check-demo-common target="factory" step="2"/>
+      <echo message="factory demo works as expected" />
+    </target>
+
+    <target name="location">
+        <run-demo checker="checkers.igj.IGJChecker" srcpath="src" 
+            files="${basedir}/src/checkers/types/AnnotationLocation.java"/>
+    </target>
+
+    <target name="check-location">
+      <property name="target" value="location"/>
+      <check-demo-common target="location" step="0"/>
+      <check-demo-common target="location" step="1"/>
+      <echo message="location demo works as expected" />
+    </target>
+
+    <target name="check-demo" depends="check-location,check-factory">
+      <echo message="IGJChecker demo works as expected"/>
+    </target>
+</project>
