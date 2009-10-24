@@ -640,7 +640,8 @@ public class AnnotatedTypes {
             }
             AnnotatedDeclaredType pDeclared = (AnnotatedDeclaredType) asSuper(p, type);
             // if one of them is erased do nothing
-            if (type.getTypeArguments().isEmpty() || pDeclared.getTypeArguments().isEmpty())
+            if (type.getTypeArguments().isEmpty()
+                || pDeclared == null || pDeclared.getTypeArguments().isEmpty())
                 return Collections.emptyList();
             return visit(type.getTypeArguments(), pDeclared.getTypeArguments());
         }

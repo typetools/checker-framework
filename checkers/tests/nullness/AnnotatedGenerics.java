@@ -41,4 +41,10 @@ class AnnotatedGenerics {
       class MyComparable<T> {
         public int compareTo(@NonNull T a1) { return 0; }
       }
+
+      <T> T test(java.util.List<? super Iterable<?>> l) {
+          test(new java.util.ArrayList<Object>());
+          throw new Error();
+      }
+
 }
