@@ -39,7 +39,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      */
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        if (type.getAnnotations().isEmpty() && elt.getKind().isClass()) {
+        if (!type.isAnnotated() && elt.getKind().isClass()) {
             type.addAnnotation(Unusable.class);
         }
         super.annotateImplicit(elt, type);

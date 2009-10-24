@@ -202,6 +202,17 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns true if an annotation targets this type location.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     */
+    public boolean isAnnotated() {
+        return !annotations.isEmpty();
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * It does not include annotations in deep types (type arguments, array
@@ -1127,7 +1138,7 @@ public abstract class AnnotatedTypeMirror {
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, annotation);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (!type.getUpperBound().getAnnotations().isEmpty())
+            if (type.getUpperBound().isAnnotated())
                 type.setUpperBound(getUpperBound());
             return type;
         }
@@ -1180,8 +1191,14 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
+        public boolean isAnnotated() {
+            return (super.isAnnotated()
+                    || (getUpperBound() != null && getUpperBound().isAnnotated()));
+        }
+
+        @Override
         public Set<AnnotationMirror> getAnnotations() {
-            if (super.getAnnotations().isEmpty() && getUpperBound() != null)
+            if (!super.isAnnotated() && getUpperBound() != null)
                 return getUpperBound().getAnnotations();
             return super.getAnnotations();
         }
@@ -1508,8 +1525,14 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
+        public boolean isAnnotated() {
+            return (super.isAnnotated()
+                    || (getExtendsBound() != null && getExtendsBound().isAnnotated()));
+        }
+
+        @Override
         public Set<AnnotationMirror> getAnnotations() {
-            if (super.getAnnotations().isEmpty() && getExtendsBound() != null)
+            if (!super.isAnnotated() && getExtendsBound() != null)
                 return getExtendsBound().getAnnotations();
             return super.getAnnotations();
         }

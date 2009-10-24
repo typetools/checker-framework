@@ -247,7 +247,7 @@ public class QualifierDefaults {
 
             // Add the default annotation, but only if no other
             // annotation is present.
-            if (t.getAnnotations().isEmpty())
+            if (!t.isAnnotated())
                 t.addAnnotation(p);
 
             return super.scan(t, p);

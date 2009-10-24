@@ -84,7 +84,7 @@ public class TypeHierarchy {
                 && (lhsBase.getKind() == TypeKind.WILDCARD || lhsBase.getKind() == TypeKind.TYPEVAR)) {
         if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
             lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
-            if (lhsBase == null || lhsBase.getAnnotations().isEmpty())
+            if (lhsBase == null || !lhsBase.isAnnotated())
                 return true;
             visited.add(lhsBase.getElement());
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
@@ -92,7 +92,7 @@ public class TypeHierarchy {
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
             // I'm not quite sure if these are actually necessary for type variables
             lhsBase = ((AnnotatedTypeVariable)lhsBase).getUpperBound();
-            if (lhsBase.getAnnotations().isEmpty())
+            if (!lhsBase.isAnnotated())
                 return true;
             visited.add(lhsBase.getElement());
         }

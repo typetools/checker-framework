@@ -79,7 +79,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
 
-        if (type.getAnnotations().isEmpty()) {
+        if (!type.isAnnotated()) {
             if (typeKinds.containsKey(type.getKind()))
                 type.addAnnotation(typeKinds.get(type.getKind()));
             else if (!typeClasses.isEmpty()) {
