@@ -75,7 +75,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * Returns the annotation specifying the immutability type of {@code type}.
      */
     private AnnotationMirror getImmutabilityAnnotation(/*@ReadOnly*/ AnnotatedTypeMirror type) {
-       if (type.getAnnotations().isEmpty())
+       if (!type.isAnnotated())
             return null;
        return type.getAnnotations().iterator().next();
     }

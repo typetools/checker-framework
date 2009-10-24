@@ -224,27 +224,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         // always follow variable declarations
         AnnotationMirror flowResult = flowResults.get(loc);
 
-        // 09/11/2009 Mahmood
-        // I don't remember this why this code is here.
-        // remove code if no error is witnessed for a while
         return flowResult;
-//        if (!(tree instanceof ExpressionTree))
-//            return flowResult;
-//
-//        AnnotatedTypeMirror t = factory.fromExpression((ExpressionTree)tree);
-//        if (t.getAnnotations().isEmpty())
-//            return flowResult;
-//
-//        if (annoRelations.isSubtype(Collections.singleton(flowResult), t.getAnnotations()))
-//            return flowResult;
-//
-//        // I don't why I need this
-//        Element e = InternalUtils.symbol(tree);
-//        if (e != null) {
-//            if (factory.fromElement(e).getAnnotations().isEmpty())
-//                return flowResult;
-//        }
-//        return flowResult;
     }
 
     /**
@@ -343,8 +323,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = vars.indexOf(rElt);
 
-        if (!eltType.getAnnotations().isEmpty()
-            && !type.getAnnotations().isEmpty()
+        if (eltType.isAnnotated() && type.isAnnotated()
             && !annoRelations.isSubtype(type.getAnnotations(), eltType.getAnnotations()))
             return;
 
@@ -589,7 +568,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         super.visitTypeCast(node, p);
-        if (!factory.fromTypeTree(node.getType()).getAnnotations().isEmpty())
+        if (factory.fromTypeTree(node.getType()).isAnnotated())
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
         long pos = source.getStartPosition(root, node);
@@ -625,7 +604,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (init != null) {
             scanExpr(init);
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
-            if (!isNonFinalField(elem) /*&& type.getAnnotations().isEmpty()*/) {
+            if (!isNonFinalField(elem) /*&& !type.isAnnotated()*/) {
                 propagate(node, init);
                 recordBits(getCurrentPath());
             }

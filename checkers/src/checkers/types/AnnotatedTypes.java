@@ -844,7 +844,7 @@ public class AnnotatedTypes {
         for (AnnotatedTypeMirror type : types) {
             if (type == null)
                 continue;    // TODO: fix this
-            if (type.getKind() == TypeKind.NULL && type.getAnnotations().isEmpty()) continue;
+            if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
             if (isFirst)
                 unification = type.getAnnotations();
             else

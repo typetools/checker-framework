@@ -22,7 +22,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 
     @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        if (type.getAnnotations().isEmpty()
+        if (!type.isAnnotated()
             && tree.getKind() == Tree.Kind.STRING_LITERAL
             && isValidRegex((String)((LiteralTree)tree).getValue())) {
             type.addAnnotation(ValidRegex.class);
