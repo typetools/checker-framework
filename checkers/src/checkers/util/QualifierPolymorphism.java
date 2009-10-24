@@ -138,7 +138,7 @@ public class QualifierPolymorphism {
         protected Void scan(AnnotatedTypeMirror type, Void p) {
             if (type != null && type.hasAnnotation(polyQual))
                 type.removeAnnotation(polyQual);
-            if (rootQual != null && type != null && type.getAnnotations().isEmpty())
+            if (rootQual != null && type != null && !type.isAnnotated())
                 type.addAnnotation(rootQual);
             return super.scan(type, p);
         }
@@ -342,7 +342,7 @@ public class QualifierPolymorphism {
 
             if (dcType.hasAnnotation(polyQual)) {
                 AnnotationMirror typeQual =
-                    type.getAnnotations().isEmpty() ? null : type.getAnnotations().iterator().next();
+                    !type.isAnnotated() ? null : type.getAnnotations().iterator().next();
                 result.put(KEY, typeQual);
             }
 
@@ -377,7 +377,7 @@ public class QualifierPolymorphism {
 
             if (arType.hasAnnotation(polyQual)) {
                 AnnotationMirror typeQual =
-                    type.getAnnotations().isEmpty() ? null : type.getAnnotations().iterator().next();
+                    !type.isAnnotated() ? null : type.getAnnotations().iterator().next();
                 result.put(KEY, typeQual);
             }
 

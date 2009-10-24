@@ -313,10 +313,10 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 return super.scan(type, p);
 
             if (type.getKind() == TypeKind.TYPEVAR
-                    && type.getAnnotations().isEmpty())
+                    && !type.isAnnotated())
                 return super.scan(type, p);
 
-            if (type.getAnnotations().isEmpty())
+            if (!type.isAnnotated())
                 type.addAnnotation(NULLABLE);
             else if (type.hasAnnotation(RAW))
                 type.removeAnnotation(NONNULL);
@@ -331,7 +331,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 type.addAnnotation(NULLABLE);
             }
 
-            assert !type.getAnnotations().isEmpty() : type;
+            assert type.isAnnotated() : type;
 
             return super.scan(type, p);
         }
@@ -357,7 +357,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         public Void visitExecutable(AnnotatedExecutableType type, ElementKind p) {
 
             // Don't add implicit receiver annotations if some are already there.
-            if (!type.getReceiverType().getAnnotations().isEmpty())
+            if (type.getReceiverType().isAnnotated())
                 return super.visitExecutable(type, p);
 
             ExecutableElement elt = type.getElement();
@@ -417,7 +417,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         @Override
         public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            if (type.getAnnotations().isEmpty()) {
+            if (!type.isAnnotated()) {
                 AnnotatedTypeMirror exprType = getAnnotatedType(node.getExpression());
                 type.addAnnotations(exprType.getAnnotations());
             }
@@ -430,7 +430,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             // statement is nonnull by default, as all the fields
             // should be initialized by the first one
             AnnotatedExecutableType execType = (AnnotatedExecutableType)type;
-            if (execType.getReceiverType().getAnnotations().isEmpty()
+            if (!execType.getReceiverType().isAnnotated()
                     && TreeUtils.containsThisConstructorInvocation(node))
             execType.getReceiverType().addAnnotation(NONNULL);
 

@@ -696,6 +696,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      *          false otherwise
      */
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
-        return !type.getAnnotations().isEmpty();
+        return type.isAnnotated();
     }
 }

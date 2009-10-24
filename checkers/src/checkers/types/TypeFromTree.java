@@ -275,7 +275,7 @@ abstract class TypeFromTree extends
                 AnnotatedDeclaredType anonType =
                     (AnnotatedDeclaredType)AnnotatedTypeMirror.createType(dt, f.env, f);
                 anonType.setElement(type.getElement());
-                if (!type.getAnnotations().isEmpty()) {
+                if (type.isAnnotated()) {
                     List<AnnotatedDeclaredType> supertypes = Collections.singletonList(type);
                     anonType.setDirectSuperTypes(supertypes);
                     anonType.addAnnotations(type.getAnnotations());

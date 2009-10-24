@@ -494,7 +494,7 @@ public class AnnotatedTypeFactory {
             // Only add annotations from the class declaration if there
             // are no annotations already on the type.
 
-            if (classElt != null && type.getAnnotations().isEmpty()) {
+            if (classElt != null && !type.isAnnotated()) {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
                 assert classType != null;
                 for (AnnotationMirror anno : classType.getAnnotations()) {

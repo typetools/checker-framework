@@ -76,7 +76,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
 
-        if (!type.getAnnotations().isEmpty())
+        if (type.isAnnotated())
             return null;
 
         // If this tree's kind is in treeKinds, annotate the type.

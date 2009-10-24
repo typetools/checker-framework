@@ -41,7 +41,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (!type.getAnnotations().isEmpty()) {
+        if (type.isAnnotated()) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitIdentifier(node, p);
@@ -50,7 +50,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (!type.getAnnotations().isEmpty()) {
+        if (type.isAnnotated()) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitMemberSelect(node, p);

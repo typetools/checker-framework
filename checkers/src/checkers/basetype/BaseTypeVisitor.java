@@ -618,7 +618,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             if (typeVar.getUpperBound() != null)  {
                 // Framework does not enrich upper bounds with the root annotations
                 if (!(TypesUtils.isObject(typeVar.getUpperBound().getUnderlyingType())
-                        && typeVar.getUpperBound().getAnnotations().isEmpty())) {
+                        && !typeVar.getUpperBound().isAnnotated())) {
                     commonAssignmentCheck(typeVar.getUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
                             "generic.argument.invalid", p);
