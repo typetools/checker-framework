@@ -146,6 +146,42 @@ public class QualifierDefaults {
             applyDefaults(elt, type);
     }
 
+    private Map<Element, List<DefaultQualifier>> qualifierCache =
+        new IdentityHashMap<Element, List<DefaultQualifier>>();
+
+    private List<DefaultQualifier> defaultsAt(final Element elt) {
+        if (elt == null)
+            return Collections.emptyList();
+
+        if (qualifierCache.containsKey(elt))
+            return qualifierCache.get(elt);
+
+        List<DefaultQualifier> qualifiers = new ArrayList<DefaultQualifier>();
+
+        DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
+        if (d != null)
+            qualifiers.add(d);
+
+        DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
+        if (ds != null)
+            qualifiers.addAll(Arrays.asList(ds.value()));
+
+        Element parent;
+        if (elt.getKind() == ElementKind.PACKAGE)
+            parent = ((Symbol)elt).owner;
+        else
+            parent = elt.getEnclosingElement();
+
+        List<DefaultQualifier> parentDefaults = defaultsAt(parent);
+        if (qualifiers.isEmpty())
+            qualifiers = parentDefaults;
+        else
+            qualifiers.addAll(parentDefaults);
+
+        qualifierCache.put(elt, qualifiers);
+        return qualifiers;
+    }
+
     /**
      * Applies default annotations to a type from an {@link Element} by using
      * the {@link DefaultQualifier} annotation present on the element or any of its
@@ -157,24 +193,9 @@ public class QualifierDefaults {
      */
     private void applyDefaults(final Element elt, final AnnotatedTypeMirror type) {
 
-        Element e = elt;
-        while (e != null) {
-
-            DefaultQualifier d = e.getAnnotation(DefaultQualifier.class);
-            if (d != null)
-                applyDefault(elt, d, type);
-
-            DefaultQualifiers ds = e.getAnnotation(DefaultQualifiers.class);
-            if (ds != null) {
-                for (DefaultQualifier dq : ds.value())
-                    applyDefault(elt, dq, type);
-            }
-
-            if (e.getKind() == ElementKind.PACKAGE)
-                e = ((Symbol)e).owner;
-            else
-                e = e.getEnclosingElement();
-        }
+        List<DefaultQualifier> defaults = defaultsAt(elt);
+        for (DefaultQualifier dq : defaults)
+            applyDefault(elt, dq, type);
 
         if (this.absoluteDefaultAnno != null)
             new DefaultApplier(elt, this.absoluteDefaultLocs, type).scan(type, absoluteDefaultAnno);
