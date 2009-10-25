@@ -1,0 +1,9 @@
+import checkers.regex.ValidRegex;
+
+package java.util.regex;
+
+class Pattern {
+    Pattern compile(@ValidRegex String regex);
+    Pattern compile(@ValidRegex String regex, int flags);
+    boolean matches(String regex, CharSequence input);
+}
