@@ -87,10 +87,19 @@ warnings via
 We now explain these mechanisms in turn.
 
 You can suppress specific errors and warnings by use of the
-\code{@SuppressWarnings("\emph{annotationname}")} annotation, for example
-\code{@SuppressWarnings("interning")}.
-This may be placed on program elements such as a class, method, or local
-variable declaration.  It is good practice to suppress warnings in the
+\code{@SuppressWarnings("\emph{checkername}")} annotation, for example
+\code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
+This may be placed on program elements such as a local
+variable declaration, a method, or a class.  For instance, one common use is
+to suppress warnings at a cast that you know is safe.  Here is an example
+that uses the Tainting Checker (Section~\ref{tainting-checker}):
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting")
+  String myvar = (@Untainted String) expr;  // expr has type: @Tainted String
+\end{Verbatim}
+
+It is good practice to suppress warnings in the
 smallest possible scope.  For example, if a particular expression causes a
 false positive warning, you should extract that expression into a local variable
 and place a \code{@SuppressWarnings} annotation on the variable
