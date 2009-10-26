@@ -27,17 +27,19 @@ import javax.lang.model.util.Elements;
  * module, which may be found in {@code com.sun.tools.javac.comp.Flow} from 13
  * Sep 2007. It differs from that class in two ways:
  *
- * 1. It performs a GEN-KILL analysis for qualifiers that is similar to the
+ * <ol>
+ * <li value="1">
+ * It performs a GEN-KILL analysis for qualifiers that is similar to the
  * initialization/uninitialization analysis in {@code javac}'s {@code Flow}.
  * It does not perform exception analysis, and performs liveness analysis only
  * to the extent required for the GEN-KILL analysis.
  *
- * 2. Whenever possible, this implementation prefers the use of classes in the
+ * <li value="2">
+ * Whenever possible, this implementation prefers the use of classes in the
  * public API ({@link BitSet}, the Compiler Tree API) over those in
  * {@code com.sun.tools.javac} (for these reasons, examining a diff against that
  * class would not be particularly enlightening).
- *
- * <p>
+ * </ol>
  *
  * As in {@code javac}'s {@code Flow} class, methods named "visit*" perform
  * analysis for a particular type of tree node, while methods named "scan*"
