@@ -5,8 +5,7 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Indicates that a {@code String} is a valid Regular Expression String.
- *
+ * Indicates that a {@code String} is a valid regular expression.
  */
 @Documented
 @TypeQualifier

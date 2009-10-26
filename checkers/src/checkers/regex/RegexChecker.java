@@ -6,8 +6,7 @@ import checkers.quals.Unqualified;
 
 /**
  * A type-checker plug-in for the {@link ValidRegex} qualifier that finds
- * syntactically invalid regular expression in code.
- *
+ * syntactically invalid regular expressions.
  */
 @TypeQualifiers({ ValidRegex.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker { }
