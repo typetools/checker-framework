@@ -10,8 +10,8 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 
 /**
- * Adds {@link ValidRegex} to the type of {@code String} literals that are
- * syntactically String literals.
+ * Adds {@link ValidRegex} to the type of each {@code String} literal that is
+ * a syntactically valid regular expression.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
@@ -31,7 +31,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
     }
 
     /**
-     * Returns true iff {@code str} is a valid regular expression
+     * Returns true iff {@code str} is a valid regular expression.
      */
     private boolean isValidRegex(String str) {
         try {
