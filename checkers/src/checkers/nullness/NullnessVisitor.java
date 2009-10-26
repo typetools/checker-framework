@@ -176,7 +176,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     /** Case 7: unboxing case: primitive operation */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        // ignore String concatination
+        // ignore String concatenation
         if (!isString(node)) {
             checkForNullability(node.getVariable(), "unboxing.of.nullable");
             checkForNullability(node.getExpression(), "unboxing.of.nullable");
