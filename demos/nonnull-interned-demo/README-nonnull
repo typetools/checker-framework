@@ -103,7 +103,8 @@ that suggests there is a bug somewhere.)
 Open file JUnitTests.java.  Ask the audience what happens when you run the
 code:  does the test pass or does it fail?
 
-Now run the "test" task of build.xml.  JUnit itself throws a null pointer exception!
+Now run the "test" task of build.xml.
+JUnit itself throws a null pointer exception!
 
 
 Open junit/src/org/junit/Assert.java
