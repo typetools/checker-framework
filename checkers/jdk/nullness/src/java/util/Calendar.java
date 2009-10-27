@@ -88,5 +88,13 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   public abstract int getLeastMaximum(int a1);
   public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
+  private static final String[] FIELD_NAME = {
+        "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",
+        "DAY_OF_YEAR", "DAY_OF_WEEK", "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR",
+        "HOUR_OF_DAY", "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
+        "DST_OFFSET"
+  };
+  static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
 }
