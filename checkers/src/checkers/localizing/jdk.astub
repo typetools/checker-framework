@@ -1,0 +1,13 @@
+import checkers.localizing.quals.LocalizedString;
+
+package java.awt;
+
+class Button {
+	@LocalizedString String getLabel();
+	void setLabel(@LocalizedString String label);
+}
+
+class CheckBox {
+	@LocalizedString String getLabel();
+	void setLabel(@LocalizedString String label);
+}
