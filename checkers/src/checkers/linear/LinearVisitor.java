@@ -12,8 +12,10 @@ import checkers.util.TreeUtils;
 
 /**
  * A type-checking visitor for the Linear type system.  The visitor reports
- * errors ("unsafe.use") for the use of {@code Linear} references once
- * they have been "used up", i.e. use of references of {@link Unusable} type.
+ * an error ("unsafe.use") for any use of a reference of {@link Unusable}
+ * type.  In other words, it reports an error for any {@code Linear}
+ * references that is used more than once, or is used after it has been
+ * "used up".
  *
  * @see LinearChecker
  */
