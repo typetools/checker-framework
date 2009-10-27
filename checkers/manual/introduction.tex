@@ -141,9 +141,12 @@ different shell, you may need to slightly adjust the commands.
   export JSR308=$HOME/jsr308
   mkdir -p ${JSR308}
   cd ${JSR308}
-  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
   unzip checkers.zip
+  chmod +x checkers/binary/javac
 \end{Verbatim}
+
 
 \item
   The download includes an updated version of the javac compiler, called
