@@ -20,7 +20,7 @@ import checkers.util.TreeUtils;
  * Adds {@link Unusable} qualifier to a type if it represents:
  * 
  * <ol>
- * <li value="1">Class declaration tree/element.  Such constructs usually
+ * <li value="1">Class declaration tree/element.  Such a construct usually
  * requires the root qualifier.</li>
  * 
  * <li value="2">{@code Linear} reference once it is "used up"</li>
@@ -72,7 +72,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
         }
 
         /**
-         * Case 2: add {@code Unusable} to node type, if it is {@code Linear}
+         * Case 2: add {@code Unusable} to node type, if it is {@code Linear}.
          */
         public Void visitIdentifier(IdentifierTree node, Void p) {
             super.visitIdentifier(node, p);
