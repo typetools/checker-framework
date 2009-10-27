@@ -10,6 +10,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationUtils;
+import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
 /**
@@ -61,8 +62,7 @@ public class TaintingAnnotatedTypeFactory
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            if (tree.getKind() == Tree.Kind.PLUS
-                && TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.String")) {
+            if (TreeUtils.isStringConcatenation(tree)) {
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
                 if (lExpr.hasAnnotation(Untainted.class) && rExpr.hasAnnotation(Untainted.class))

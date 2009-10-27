@@ -414,4 +414,14 @@ public final class TreeUtils {
         default: return false;
         }
     }
+
+    /**
+     * Returns true if the tree represents a {@code String} concatenation
+     * operation
+     */
+    public static final boolean isStringConcatenation(Tree tree) {
+        return (tree.getKind() == Tree.Kind.PLUS
+                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
+                        String.class.getCanonicalName()));
+    }
 }
