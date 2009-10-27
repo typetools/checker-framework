@@ -1,7 +1,5 @@
 package checkers.tainting;
 
-import javax.lang.model.element.AnnotationMirror;
-
 import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
@@ -9,9 +7,7 @@ import checkers.tainting.quals.Untainted;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
-import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 /**
  * Adds implicit and default {@code Untainted} annotation, only if the user
