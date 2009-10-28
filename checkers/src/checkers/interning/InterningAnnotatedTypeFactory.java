@@ -30,6 +30,7 @@ import com.sun.source.tree.*;
  * polymorphism (of {@link PolyInterned}), implicit annotations via
  * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
  * user-specified defaults via {@link DefaultQualifier}.
+ * Case 5 is handled by the stub library.
  */
 public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<InterningChecker> {
 
