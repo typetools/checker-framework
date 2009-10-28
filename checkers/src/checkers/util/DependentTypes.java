@@ -16,7 +16,7 @@ public class DependentTypes {
     private final AnnotationUtils annoUtils;
 
     public DependentTypes(ProcessingEnvironment env, CompilationUnitTree root) {
-        this.factory = new AnnotatedTypeFactory(env, null, root);
+        this.factory = new AnnotatedTypeFactory(env, null, root, null);
         this.annoUtils = AnnotationUtils.getInstance(env);
     }
 

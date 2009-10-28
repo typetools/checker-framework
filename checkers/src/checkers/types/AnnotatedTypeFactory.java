@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
@@ -87,6 +86,8 @@ public class AnnotatedTypeFactory {
 
     private final Map<Element, AnnotatedTypeMirror> indexTypes;
 
+    private Class<? extends SourceChecker> checkerClass;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
@@ -103,12 +104,16 @@ public class AnnotatedTypeFactory {
     public AnnotatedTypeFactory(SourceChecker checker, @Nullable CompilationUnitTree root) {
         this(checker.getProcessingEnvironment(),
                 (checker instanceof BaseTypeChecker) ? ((BaseTypeChecker)checker).getQualifierHierarchy() : null,
-                root);
+                root,
+                checker == null ? null : checker.getClass());
     }
 
-    public AnnotatedTypeFactory(ProcessingEnvironment env, @Nullable QualifierHierarchy qualHierarchy, @Nullable CompilationUnitTree root) {
+    public AnnotatedTypeFactory(ProcessingEnvironment env,
+            @Nullable QualifierHierarchy qualHierarchy, @Nullable CompilationUnitTree root,
+            Class<? extends SourceChecker> checkerClass) {
         this.env = env;
         this.root = root;
+        this.checkerClass = checkerClass;
         this.trees = Trees.instance(env);
         this.annotations = AnnotationUtils.getInstance(env);
         this.elements = env.getElementUtils();
@@ -1211,7 +1216,9 @@ public class AnnotatedTypeFactory {
         Map<Element, AnnotatedTypeMirror> result =
             new HashMap<Element, AnnotatedTypeMirror>();
 
-        InputStream in = this.getClass().getResourceAsStream("jdk.astub");
+        InputStream in = null;
+        if (checkerClass != null)
+            in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
             StubParser stubParser = new StubParser(in, this, env);
             stubParser.parse(result);
