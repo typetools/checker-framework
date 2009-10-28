@@ -1,0 +1,126 @@
+<project name="macro-imports">
+
+  <!--
+       Macro for calling the JSR 308 Java compiler with a checker
+       for the demo code.
+  -->
+  <macrodef name="run-demo">
+    <attribute name="srcpath"/>
+    <attribute name="files"/>
+    <attribute name="checker"/>
+    <attribute name="lint" default="none"/>
+    <attribute name="custom.lib" default=""/>
+    <sequential>
+      <java fork="true" failonerror="true"
+            classpath="${compiler.lib}"
+            classname="com.sun.tools.javac.Main"
+            taskname="javac-jsr308">
+        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+        <!-- <arg value="-version"/> -->
+        <arg value="-g"/>
+        <arg line="-classpath ${deps.lib}:${checkers.lib}:${daikon.lib}:@{custom.lib}"/>
+        <jvmarg line="-Djsr308.imports='checkers.nullness.quals.*:checkers.interning.quals.*'"/>
+        <arg line="-sourcepath @{srcpath}"/>
+        <arg line="-processor @{checker}"/>
+        <arg line="-XDTAannotationsincomments"/>
+        <arg line="-implicit:none"/>
+        <arg line="-source 1.7"/>
+        <arg line="-Xprefer:newer"/>
+        <arg line="@{files}"/>
+        <arg line="-Alint=@{lint}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="run-demo-basic">
+    <attribute name="srcpath"/>
+    <attribute name="files"/>
+    <attribute name="checker" default="checkers.basic.BasicChecker"/>
+    <attribute name="lint" default="none"/>
+    <attribute name="quals" default=""/>
+    <attribute name="custom.lib" default=""/>
+    <sequential>
+      <java fork="true" failonerror="true"
+            classpath="${compiler.lib}"
+            classname="com.sun.tools.javac.Main"
+            taskname="javac-jsr308">
+        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+        <!-- <arg value="-version"/> -->
+        <arg value="-g"/>
+        <arg line="-classpath ${checkers.lib}:@{custom.lib}"/>
+        <arg line="-sourcepath @{srcpath}"/>
+        <arg line="-processor @{checker}"/>
+        <arg line="-XDTAannotationsincomments"/>
+        <arg line="-implicit:none"/>
+        <arg line="-source 1.7"/>
+        <arg line="-Xprefer:newer"/>
+        <arg line="@{files}"/>
+        <arg line="-Alint=@{lint}"/>
+        <arg line="-Aquals=@{quals}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="my-diff">
+    <attribute name="file1"/>
+    <attribute name="file2"/>
+    <attribute name="ignore-matching-lines"/>
+    <sequential>
+      <exec executable="diff" failonerror="yes">
+        <arg value="-q"/>
+        <arg line="-I '@{ignore-matching-lines}'"/>
+        <!-- ignore lint results -->
+        <arg line="-I 'Note:'"/>
+        <!-- ignore paths -->
+        <arg line="-I '.java'"/>
+        <arg line="-I '.xml'"/>
+        <arg line="@{file1}"/>
+        <arg line="@{file2}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="my-ant">
+    <attribute name="task" default=""/>
+    <attribute name="logfile" default=""/>
+    <sequential>
+      <exec executable="ant" failonerror="false">
+        <arg line="-Dcompiler.lib=${compiler.lib}"/>
+        <arg line="-Dcheckers.lib=${checkers.lib}"/>
+        <arg line="-Ddaikon.lib=${daikon.lib}"/>
+        <arg line="-Ddeps.lib=${deps.lib}"/>
+        <arg value="-q"/>
+        <arg value="-e"/>
+        <arg line="-l @{logfile}"/>
+        <arg line="@{task}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="check-demo">
+    <attribute name="patchfile"/>
+    <attribute name="task"/>
+    <attribute name="expected"/>
+    <sequential>
+      <!-- Apply the patch -->
+      <patch patchfile="@{patchfile}" quiet="yes" strip="0"/>
+      <my-ant task="@{task}" logfile="output.tmp"/>
+      <my-diff file1="@{expected}" file2="output.tmp"
+               ignore-matching-lines="Total time"/>
+      <delete file="output.tmp" quiet="true"/>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="check-demo-common">
+    <attribute name="target"/>
+    <attribute name="step"/>
+      <attribute name="dir" default="testdemo"/>
+      <sequential>
+        <check-demo
+            task="@{target}"
+            patchfile="@{dir}/@{target}.@{step}.patch"
+            expected="@{dir}/@{target}.@{step}.expected"/>
+      </sequential>
+  </macrodef>
+
+</project>
