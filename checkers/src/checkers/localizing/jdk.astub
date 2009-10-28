@@ -1,4 +1,14 @@
 import checkers.localizing.quals.LocalizedString;
+import checkers.localizing.quals.LocalizableKey;
+
+package java.util;
+
+class ResourceBundle {
+    @Localized Object getObject(@LocalizableKey String key);
+    @Localized String getString(@LocalizableKey String key);
+    @Localized String[] getStringArray(@LocalizableKey String key);
+    Set<@Localized String> keySet();
+}
 
 package java.awt;
 
