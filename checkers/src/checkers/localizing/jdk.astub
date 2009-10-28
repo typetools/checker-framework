@@ -11,3 +11,9 @@ class CheckBox {
 	@LocalizedString String getLabel();
 	void setLabel(@LocalizedString String label);
 }
+
+package java.io;
+
+class PrintStream {
+    void println(@LocalizedString String str);
+}
