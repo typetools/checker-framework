@@ -105,7 +105,7 @@ public class TypeOutputtingChecker extends SourceChecker {
             new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
         Elements elements = env.getElementUtils();
 
-        AnnotatedTypeFactory atypeFactory = new AnnotatedTypeFactory(env, null, null);
+        AnnotatedTypeFactory atypeFactory = new AnnotatedTypeFactory(env, null, null, null);
 
         for (String className : args) {
             TypeElement typeElt = elements.getTypeElement(className);
