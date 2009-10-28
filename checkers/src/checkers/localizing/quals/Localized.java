@@ -29,4 +29,4 @@ import checkers.quals.*;
 )
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface LocalizedString { }
+public @interface Localized { }
