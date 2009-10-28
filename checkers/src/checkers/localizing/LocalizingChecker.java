@@ -7,7 +7,7 @@ import checkers.quals.Unqualified;
 
 /**
  * A type-checker that checks that only localized {@Code String} are visible
- * to the user
+ * to the user.
  */
 @TypeQualifiers( {Localized.class, Unqualified.class} )
 public class LocalizingChecker extends BaseTypeChecker { }
