@@ -9,6 +9,10 @@ import checkers.nullness.quals.*;
   public abstract boolean isEmpty();
   public abstract boolean contains(@Nullable java.lang.Object a1);
   public abstract java.util.Iterator<E> iterator();
+  // The Nullness Checker does NOT use these signatures for either version
+  // of toArray; rather, the checker has hard-coded rules for those two
+  // methods, because the most useful type for toArray is not expressible
+  // in the surface syntax that the nullness annotations support.
   public abstract java.lang.Object [] toArray();
   public abstract <T> @Nullable T [] toArray(T[] a1);
   public abstract boolean add(E a1);
