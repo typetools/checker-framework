@@ -98,11 +98,13 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
     /**
      * Tests whether a method invocation is an invocation of
-     * {@link #equals} that overrides or hides  {@link Object#equals(Object)}.
+     * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
+     * <p>
      *
      * Returns true even if a method does not override {@link Object.equals},
-     * because of the common idiom of having equals method have a non-Object
-     * parameter.
+     * because of the common idiom of writing an equals method with a non-Object
+     * parameter, in addition to the equals method that overrides
+     * {@link Object.equals}.
      *
      * @param node a method invocation node
      * @return true iff {@code node} is a invocation of {@code equals()}
