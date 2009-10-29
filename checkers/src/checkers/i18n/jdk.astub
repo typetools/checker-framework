@@ -1,5 +1,5 @@
-import checkers.localizing.quals.LocalizedString;
-import checkers.localizing.quals.LocalizableKey;
+import checkers.i18n.quals.LocalizedString;
+import checkers.i18n.quals.LocalizableKey;
 
 package java.util;
 

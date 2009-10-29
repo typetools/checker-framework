@@ -1,7 +1,7 @@
-package checkers.localizing;
+package checkers.i18n;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.localizing.quals.Localized;
+import checkers.i18n.quals.Localized;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 
@@ -10,4 +10,4 @@ import checkers.quals.Unqualified;
  * to the user.
  */
 @TypeQualifiers( {Localized.class, Unqualified.class} )
-public class LocalizingChecker extends BaseTypeChecker { }
+public class SubI18Checker extends BaseTypeChecker { }
