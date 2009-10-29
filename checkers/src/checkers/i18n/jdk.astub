@@ -27,3 +27,7 @@ package java.io;
 class PrintStream {
   void println(@LocalizedString String str);
 }
+
+package javax.swing;
+
+// Lots of methods should be added to this stub file.
