@@ -1,28 +1,38 @@
 \htmlhr
-\chapter{RegEx checker\label{regex-checker}}
+\chapter{Regex checker\label{regex-checker}}
 
-The RegEx Checker implements a type-checker for a regular expression type
-system.  A regex type system prevents, at compile-time, from using erroneous
+The Regex Checker prevents, at compile-time, use of syntactically invalid
 regular expressions.
 
-Regular Expressions are a mechanism to identify strings of text in a concise
-and flexible manner.  Java supports regular expressions through the
-\sunjavadoc{java/util/regex/Pattern.html}{Pattern} class.  The class
-documentation explains the syntax and the format of such expressions.
+A regular expression, or regex, is a pattern for matching certain strings
+of text.  In Java, a programmer writes a regular expression as a string.
+At run time, the string is ``compiled'' into an efficient internal form
+(\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
+text-matching.
 
-The Checker also checks for unsupported RegEx features.  Java's
-implementation and support has some notable differences from
-other implementation, namely the Perl implementation.  This forms an
-obstacle for Java-new-comers who are proficient in Perl.  The
-\sunjavadoc{java/util/regex/Pattern.html}{Pattern} javadoc notes all
-of these differences.  The RegEx Checker warns against these usages at
-compile time as well.
+The syntax of regular expressions is complex, so it is easy to make a
+mistake.  It is also easy to accidentally use a regex feature from another
+language that is not supported by Java (see section ``Comparison to Perl
+5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
+Ordinarily, the programmer does not learn of these errors until run time.
+The Regex checker warns about these problems at compile time.
 
-\section{RegEx annotations}
 
-The RegEx Checker uses one annotation only:
+\section{Regex annotations\label{regex-annotations}}
+
+The Regex Checker uses one annotation only:
 \code{@\refclass{regex}{ValidRegex}}, to indicate valid regular expression
 \code{String}s.
 
-The Checker implicitly adds the \code{ValidRegex} qualifier to all
-regex \code{String} literals.
+The checker implicitly adds the \code{ValidRegex} qualifier to any
+\code{String} literal that is a valid regex.
+
+
+\section{Running the Regex Checker\label{regex-running}}
+
+The Regex Checker can be invoked by running the following command:
+
+\begin{Verbatim}
+  javac -processor checkers.regex.RegexChecker MyFile.java ...
+\end{Verbatim}
+
