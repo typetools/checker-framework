@@ -1,9 +1,10 @@
-package checkers.localizing;
+package checkers.i18n;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -13,7 +14,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.localizing.quals.LocalizableKey;
+import checkers.i18n.quals.LocalizableKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 
@@ -68,7 +69,7 @@ public class KeyLookupChecker extends BaseTypeChecker {
         if (options.containsKey("bundlename"))
             return keysOfResourceBundle(env.getOptions().get("bundlename"));
 
-        return null;
+        return Collections.emptySet();
     }
 
     private Set<String> keysOfPropertyFile(String name) {
@@ -91,11 +92,16 @@ public class KeyLookupChecker extends BaseTypeChecker {
             prop.load(in);
             return prop.stringPropertyNames();
         } catch (Exception e) { }
-        return null;
+        return Collections.emptySet();
     }
 
     private Set<String> keysOfResourceBundle(String bundleName) {
         ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
+        if (bundle == null) {
+            System.err.println("Couldn't find the bundle: <" + bundleName
+                    + "> for locale <" + Locale.getDefault() + ">");
+            return Collections.emptySet();
+        }
         return bundle.keySet();
     }
 

@@ -1,4 +1,4 @@
-package checkers.localizing;
+package checkers.i18n;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,16 +15,16 @@ import checkers.util.AggregateChecker;
  * bundles) get used as such.</li>
  * </ol>
  *
- * @see LocalizingChecker
+ * @see SubI18Checker
  * @see KeyLookupChecker
  */
-public class FullLocalizationChecker extends AggregateChecker {
+public class I18nChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
         Collection<Class<? extends SourceChecker>> checkers
             = new ArrayList<Class<? extends SourceChecker>>();
-        checkers.add(LocalizingChecker.class);
+        checkers.add(SubI18Checker.class);
         checkers.add(KeyLookupChecker.class);
         return checkers;
     }

@@ -1,4 +1,4 @@
-package checkers.localizing.quals;
+package checkers.i18n.quals;
 
 import static com.sun.source.tree.Tree.Kind.*;
 
