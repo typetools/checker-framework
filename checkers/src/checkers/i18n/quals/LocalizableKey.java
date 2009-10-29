@@ -1,4 +1,4 @@
-package checkers.localizing.quals;
+package checkers.i18n.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
