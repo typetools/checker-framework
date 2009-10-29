@@ -1,4 +1,4 @@
-package checkers.localizing;
+package checkers.i18n;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,7 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.localizing.quals.LocalizableKey;
+import checkers.i18n.quals.LocalizableKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 

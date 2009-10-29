@@ -1,4 +1,4 @@
-package checkers.localizing;
+package checkers.i18n;
 
 import java.util.Set;
 
@@ -7,7 +7,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.localizing.quals.LocalizableKey;
+import checkers.i18n.quals.LocalizableKey;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
