@@ -1,0 +1,65 @@
+\htmlhr
+\chapter{Internationalization checker\label{i18n-checker}}
+
+The Internationalization Checker implements a type-checker for detecting
+internationalization type system.  Internationalization is the process
+of making the software adopted to different languages and locales.  The
+Checker ensures that the project is localizable and that any user visible
+output has been localized into her language and locale.
+
+An Internationalization checker checks for violation (and verifies the
+absence) of two properties:
+
+\begin{enumerate}
+
+\item only proper localized text gets emitted to the user.  This property
+catches errors related to outputting \code{String} literals for example.
+
+\item only proper localizing keys are used.  This property catches errors
+related to misspellings of the localization keys, or using a localization
+key not found in the localization files.
+
+\end{enumerate}
+
+Java provides a convenient mechanism for localization through
+\sunjavadoc{java/util/ResourceBundle.html}{ResourceBundle}.  The ``Java
+Internationalization: Localization with ResourceBundles''
+ (\myurl{http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/}).
+
+\section{Internationalization annotations}
+
+The Internationalization Checker supports two annotations:
+
+\begin{enumerate}
+\item \code{@\refclass{i18n/quals}{Localized}}: indicates that the qualified
+\code{String} is message that has been localized and/or formatted with
+respect to the used locale.
+
+\item \code{@\refclass{i18n/quals}{LocalizableKey}}: indicates that the
+qualified \code{String} or \code{Object} is a valid key found in the
+localization resource files.
+\end{enumerate}
+
+\section{Running the Checker and options}
+
+The Internationalization checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+	javac -processor checkers.i18n.I18nChecker -Abundlename=MyResource <java files> ...
+\end{Verbatim}
+
+The Checker accepts two parameters (you should only specify one):
+
+\begin{enumerate}
+
+\item \code{-Abundlename=<resource\_name>}: where \code{resource\_name} is the
+name of the resource to be used with
+\sunjavadoc{java/util/ResourceBundle.html#getBundle(java.lang.String, java.util.Locale, java.lang.ClassLoader)}{ResourceBundle.getBundle()}.
+The checker uses the default \code{Locale} and \code{ClassLoader} in the
+compilation system.
+
+\item \code{-Apropfile=<prop\_file>}: where \code{prop\_file} is the name of
+the message properties file that maps localization keys to localized message.
+
+\end{enumerate}
