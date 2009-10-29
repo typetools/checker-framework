@@ -1,4 +1,4 @@
-package checkers.regex;
+package checkers.regex.quals;
 
 import java.lang.annotation.*;
 

@@ -1,5 +1,7 @@
 package checkers.regex;
 
+import checkers.regex.quals.ValidRegex;
+
 import java.util.regex.Pattern;
 
 import com.sun.source.tree.BinaryTree;
