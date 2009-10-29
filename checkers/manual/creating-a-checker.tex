@@ -598,13 +598,24 @@ Framework's visitor takes over and visits all of the class's source code.
 
 Because there is no standard API for the AST of Java code, the Checker
 Framework uses the javac implementation.  This is why the Checker Framework
-does not interoperate with Eclipse (see Section~\ref{eclipse}).  Actually,
+is not deeply integrated with Eclipse, but runs as an external tool (see
+Section~\ref{eclipse}).  Actually,
 there is standard API for Java ASTs --- JSR 198 (Extension API for
 Integrated Development Environments)~\cite{JSR198}.  If tools were to
 implement it
 (which would just require writing wrappers or adapters), then the Checker
 Framework and similar tools could be portable among different compilers and
 IDEs.
+
+
+\subsection{Avoid hardcoding\label{avoid-hardcoding}}
+
+It may be tempting to write a type-checking rule for method invocation,
+where your rule checks the name of the method being called and then treats
+the method in a special way.  This is usually the wrong approach.  It
+is better to write annotations, in a stub file
+(Chapter~\ref{annotating-libraries}), and leave the work to the standard
+type-checking rules.
 
 
 \section{The checker class:  Compiler interface\label{writing-compiler-interface}}
