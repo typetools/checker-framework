@@ -9,8 +9,6 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.*;
 
-import checkers.source.*;
-
 public class JSR308Worker{
 
     private static final String PATH_SEPARATOR = System.getProperty("path.separator");// This is : on unix
@@ -20,7 +18,7 @@ public class JSR308Worker{
         pm = monitor;
     }
 
-    public void work(IJavaProject project, Class<? extends SourceChecker> checkerClass) throws CoreException{
+    public void work(IJavaProject project, Class<?> checkerClass) throws CoreException{
         pm.beginTask("Running checker " + checkerClass.getName() + " on " + project.getElementName(), 10);
         pm.setTaskName("Removing old markers");
         MarkerUtil.removeMarkers(project.getResource());

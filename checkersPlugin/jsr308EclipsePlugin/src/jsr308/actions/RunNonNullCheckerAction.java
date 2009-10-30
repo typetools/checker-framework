@@ -1,9 +1,9 @@
 package jsr308.actions;
 
-import checkers.nonnull.*;
+import checkers.nullness.*;
 
 public class RunNonNullCheckerAction extends RunCheckerAction{
     public RunNonNullCheckerAction(){
-        super(NonNullChecker.class);
+        super(NullnessChecker.class);
     }
 }
