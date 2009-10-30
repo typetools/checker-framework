@@ -10,8 +10,6 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.ui.*;
 
-import checkers.source.*;
-
 /**
  * Superclass of all checker actions.
  */
@@ -23,9 +21,9 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
     /** true if this action is used from editor */
     protected boolean usedInEditor;
 
-    private final Class<? extends SourceChecker> checkerClass;
+    private final Class<?> checkerClass;
 
-    protected RunCheckerAction(Class<? extends SourceChecker> checker){
+    protected RunCheckerAction(Class<?> checker){
         super();
         this.checkerClass = checker;
     }
