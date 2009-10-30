@@ -3,6 +3,7 @@ package checkers.regex;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
+import checkers.regex.quals.ValidRegex;
 
 /**
  * A type-checker plug-in for the {@link ValidRegex} qualifier that finds
