@@ -1,4 +1,4 @@
-import checkers.regex.ValidRegex;
+import checkers.regex.quals.ValidRegex;
 
 package java.util.regex;
 
