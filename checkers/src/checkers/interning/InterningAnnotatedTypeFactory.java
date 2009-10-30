@@ -23,16 +23,14 @@ import com.sun.source.tree.*;
  * <li value="3">has an enum type
  * <li value="4">has a primitive type
  * <li value="5">has the type java.lang.Class
- * <li value="6">is a call to the method {@link String#intern()}.
- *    That method is the only interning method in the JDK. This class
- *    hard-codes handling of it, so there is no need for an annotated JDK.
  * </ol>
  *
  * This factory extends {@link BasicAnnotatedTypeFactory} and inherits its
  * functionality, including: flow-sensitive qualifier inference, qualifier
  * polymorphism (of {@link PolyInterned}), implicit annotations via
- * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 4), and
+ * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
  * user-specified defaults via {@link DefaultQualifier}.
+ * Case 5 is handled by the stub library.
  */
 public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<InterningChecker> {
 
