@@ -1,16 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: JSR 308 Checkers Plug-in
-Bundle-SymbolicName: jsr308EclipsePlugin; singleton:=true
-Bundle-Version: 1.0.0
-Bundle-Activator: jsr308.Activator
-Bundle-Vendor: JSR 308 Development Team
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.jdt.core,
- org.eclipse.jdt.launching
+Bundle-Name: Jsr308EclipsePlugin
+Bundle-SymbolicName: jsr308EclipsePlugin;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: lib/langtools/binary/javac.jar,lib/checkers/checkers.jar,.
+Bundle-Activator: jsr308eclipseplugin.Activator
+Export-Package: jsr308,
+ jsr308.actions,
+ jsr308.javac,
+ jsr308.marker,
+ jsr308.util,
+ jsr308eclipseplugin
+Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.core.resources,org.eclipse.jdt.core,org.eclipse.jdt.launching,
+ org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
-Bundle-ClassPath: lib/langtools/binary/javac.jar,
- lib/checkers/checkers.jar,
- .
