@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import checkers.quals.*;
 
 /**
- * Indicates that the {@Code String} type has been localized and
+ * Indicates that the {@code String} type has been localized and
  * formatted for the target output locale
  */
 @TypeQualifier
