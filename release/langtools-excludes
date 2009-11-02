@@ -1,6 +1,6 @@
 old-src/**
 build/**
-dist/**
+dist/bin/**
 .hg/**
 .hgignore
 .hgtags

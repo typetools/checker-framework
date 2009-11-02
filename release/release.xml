@@ -12,18 +12,22 @@
         <delete dir="${tmp.root.dir}"/>
     </target>
 
-    <target name="init-properties-dry" if="release.is.dry">
+    <target name="-init-properties-dry" unless="release.is.real">
         <property name="web.root.dir" value="${web.dry.root.dir}"/>
         <property name="sanity.url" value="${sanitycheck.dry.url}"/>
     </target>
 
-    <target name="init-properties-dry" unless="release.is.dry">
+    <target name="-init-properties-real" if="release.is.real">
         <property name="web.root.dir" value="${web.real.root.dir}"/>
         <property name="sanity.url" value="${sanitycheck.real.url}"/>
     </target>
 
     <target name="-init-properties"
         depends="-init-properties-dry,-init-properties-real">
+	<property name="web.jsr308.root.dir" value="${web.root.dir}/../jsr308"/>
+	<property name="web.release.dir" value="${web.root.dir}/releases"/>
+	<property name="web.ver.dir" value="${web.release.dir}/${release.ver}"/>
+    </target>
 
     <target name="-prep-checkdiff">
         <!-- Checks that TargetType is in sync in scene-lib & langtools. -->
@@ -59,7 +63,7 @@
             <target name="clean"/>
             <target name="dist"/>
             <target name="docs"/>
-            <target name="all-tests"/>
+            <!-- <target name="all-tests"/> -->
             <target name="bindist"/>
         </ant>
     </target>
@@ -79,6 +83,9 @@
             <zipfileset dir="${langtools}"
               includes="dist/lib/javap.jar"
               fullpath="jsr308-langtools/binary/javap.jar"/>
+
+	    <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+	      includes="dist/bin/**" filemode="755"/>
         </zip>
     </target>
 
@@ -91,6 +98,8 @@
             <zipfileset dir="${checkers}" prefix="checkers"
                 includesfile="release/checkers-includes"
                 excludesfile="release/checkers-excludes"/>
+	    <zipfileset dir="${checkers}" prefix="checkers"
+		includes="**/javac" filemode="755"/>
         </zip>
     </target>
 
