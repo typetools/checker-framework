@@ -1,4 +1,9 @@
-Version 1.0.1, 25 Oct 2009
+Version 1.0.1, 1 Nov 2009
+
+Checkers
+  Added new checkers:
+    RegEx checker to detect invalid regular expression use
+    Internationalization (I18n) checker to detect internationalization errors
 
 Functionality
   Added more performance optimizations
@@ -18,6 +23,9 @@ Bug fixes
 Manual
   Tweak installations instructions
   Reference units checkers
+  Added new sections for new checkers
+    RegEx checker (S 10)
+    Internationalization checker (S 11)
 
 ----------------------------------------------------------------------
 Version 1.0.0, 30 Sep 2009
