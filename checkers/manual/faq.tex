@@ -185,10 +185,13 @@ you how to run it.
 A type system implementer can declaratively specify the type qualifier
 hierarchy (Section~\ref{declarative-hierarchy}) and the type introduction rules
 (Section~\ref{declarative-type-introduction}).  However, the Checker
-Framework does not offer a declarative syntax for specifying type-checking
+Framework uses a procedural syntax for specifying type-checking
 rules (Section~\ref{extending-visitor}).
-A declarative syntax might be more  concise, more readable, and more
+A declarative syntax might be more concise, more readable, and more
 verifiable than a procedural syntax.
+
+We have not found the procedural syntax to be the most important impediment
+to writing a checker.
 
 Previous attempts to devise a declarative syntax 
 for realistic type systems have failed; see a technical
