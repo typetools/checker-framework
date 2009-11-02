@@ -6,4 +6,5 @@ tests/**/*.class
 .hgtags
 .jcheck/**
 binary/README
+binary/javac
 **/*.orig
