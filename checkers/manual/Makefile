@@ -37,7 +37,10 @@ manual.html: manual.dvi
 #	html-update-toc manual.html
 
 clean:
-	@\rm -f doc *.aux *.blg *.log *.pdf *.ps *.dvi *.idx *.ind *.ilg *.toc
+	@\rm -f doc *.aux *.blg *.haux *.htoc *.log *.pdf *.ps *.dvi *.idx *.ind *.ilg *.toc
+
+very_clean: clean
+	@\rm manual.html
 
 .PHONY: checklink
 checklink:
