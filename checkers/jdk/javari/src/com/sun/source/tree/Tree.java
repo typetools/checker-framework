@@ -82,6 +82,7 @@ public interface Tree {
         RIGHT_SHIFT_ASSIGNMENT(CompoundAssignmentTree.class),
         UNSIGNED_RIGHT_SHIFT_ASSIGNMENT(CompoundAssignmentTree.class),
         AND_ASSIGNMENT(CompoundAssignmentTree.class),
+        ANNOTATED_TYPE(AnnotatedTypeTree.class),
         XOR_ASSIGNMENT(CompoundAssignmentTree.class),
         OR_ASSIGNMENT(CompoundAssignmentTree.class),
         INT_LITERAL(LiteralTree.class),
