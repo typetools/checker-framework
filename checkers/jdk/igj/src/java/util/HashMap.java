@@ -19,4 +19,5 @@ public class HashMap<K, V> extends @I java.util.AbstractMap<K, V> implements @I 
   public @I java.util.Set<K> keySet() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public @I java.util.Collection<V> values() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public @I java.util.Set<@I java.util.Map.Entry<K, V>> entrySet() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

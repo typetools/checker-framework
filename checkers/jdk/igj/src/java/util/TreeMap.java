@@ -42,4 +42,5 @@ public class TreeMap<K, V> extends @I java.util.AbstractMap<K, V> implements @I 
   public @I java.util.SortedMap<K, V> subMap(K a1, K a2) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public @I java.util.SortedMap<K, V> headMap(K a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public @I java.util.SortedMap<K, V> tailMap(K a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

@@ -25,4 +25,5 @@ public class Hashtable<K, V> extends @I java.util.Dictionary<K, V> implements @I
   public @I java.util.Collection<V> values() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public synchronized boolean equals(@ReadOnly java.lang.Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public synchronized int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public synchronized @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

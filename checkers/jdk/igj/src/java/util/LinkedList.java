@@ -43,4 +43,5 @@ public class LinkedList<E> extends @I java.util.AbstractSequentialList<E> implem
   public @I java.util.Iterator<E> descendingIterator() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public java.lang.Object[] toArray() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public <T> T[] toArray(T[] a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

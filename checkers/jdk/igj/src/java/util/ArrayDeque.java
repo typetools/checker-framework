@@ -37,4 +37,5 @@ public class ArrayDeque<E> extends @I java.util.AbstractCollection<E> implements
   public void clear() @Mutable { throw new RuntimeException("skeleton method"); }
   public java.lang.Object[] toArray() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public <T> T[] toArray(T[] a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
 }

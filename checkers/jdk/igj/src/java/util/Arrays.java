@@ -2,6 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 public class Arrays{
+  protected Arrays() {}
   public static void sort(long @Mutable [] a1) { throw new RuntimeException("skeleton method"); }
   public static void sort(long @Mutable [] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static void sort(int @Mutable [] a1) { throw new RuntimeException("skeleton method"); }

@@ -28,6 +28,7 @@ public abstract class AbstractMap<K, V> implements @I java.util.Map<K, V> {
     public java.lang.String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
   }
 
+  protected AbstractMap() @ReadOnly {}
   public int size() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@ReadOnly java.lang.Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
