@@ -167,10 +167,10 @@ public class File implements Serializable, Comparable<File> {
     public long getUsableSpace() @ReadOnly {
         throw new RuntimeException("skeleton method");
     }
-    public static File createTempFile(String prefix, String suffix, File directory) {
+    public static File createTempFile(String prefix, String suffix, File directory) throws IOException {
         throw new RuntimeException("skeleton method");
     }
-    public static File createTempFile(String prefix, String suffix) {
+    public static File createTempFile(String prefix, String suffix) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 //     public static File createTemporaryFile(String prefix, String suffx, @ReadOnly FileAttribute<?>... attrs) {

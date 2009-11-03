@@ -19,4 +19,5 @@ public class IdentityHashMap<K, V> extends java.util.AbstractMap<K, V> implement
   public @PolyRead java.util.Set<K> keySet() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public @PolyRead java.util.Collection<V> values() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public @PolyRead java.util.Set<@PolyRead java.util.Map.Entry<K, V>> entrySet() @PolyRead { throw new RuntimeException(("skeleton method")); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

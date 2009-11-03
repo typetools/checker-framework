@@ -2,8 +2,8 @@ package java.io;
 
 import checkers.javari.quals.*;
 
-public interface ObjectInput {
-    public int available() @ReadOnly throws ClassNotFoundException, IOException;
+public interface ObjectInput extends java.io.DataInput {
+    public int available() @ReadOnly throws IOException;
     public void close() throws IOException;
     public int read() throws IOException;
     public int read(byte[] b) throws IOException;
