@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class BitSet{
+public class BitSet implements Cloneable, java.io.Serializable {
   public BitSet() { throw new RuntimeException("skeleton method"); }
   public BitSet(int a1) { throw new RuntimeException("skeleton method"); }
   public void flip(int a1) { throw new RuntimeException("skeleton method"); }

@@ -6,12 +6,13 @@ import checkers.nullness.quals.*;
 
 public final class Character implements java.io.Serializable, java.lang.Comparable<java.lang.Character> {
   private static final long serialVersionUID = 0;
-  public class Subset{
+  public static class Subset{
+    protected Subset() {}
     public final boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
     public final int hashCode() { throw new RuntimeException("skeleton method"); }
     public final java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   }
-  public final static class UnicodeBlock{
+  public final static class UnicodeBlock extends Subset{
     public final static java.lang.Character.UnicodeBlock BASIC_LATIN = new UnicodeBlock();
     public final static java.lang.Character.UnicodeBlock LATIN_1_SUPPLEMENT = new UnicodeBlock();
     public final static java.lang.Character.UnicodeBlock LATIN_EXTENDED_A = new UnicodeBlock();
@@ -141,6 +142,8 @@ public final class Character implements java.io.Serializable, java.lang.Comparab
     public static @Nullable java.lang.Character.UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
     public static @Nullable java.lang.Character.UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
     public final static java.lang.Character.UnicodeBlock forName(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+    
+    protected UnicodeBlock() {}
   }
   public final static int MIN_RADIX = 2;
   public final static int MAX_RADIX = 36;

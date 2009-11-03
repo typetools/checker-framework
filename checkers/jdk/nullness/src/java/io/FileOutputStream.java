@@ -10,7 +10,7 @@ public class FileOutputStream extends OutputStream {
   public FileOutputStream(java.io.File a1) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
   public FileOutputStream(java.io.File a1, boolean a2) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
   public FileOutputStream(java.io.FileDescriptor a1) { throw new RuntimeException("skeleton method"); }
-  public void write(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public native void write(int a1) throws java.io.IOException;
   public void write(byte[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void write(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void close() throws java.io.IOException { throw new RuntimeException("skeleton method"); }

@@ -4,7 +4,8 @@ import checkers.nullness.quals.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull Object> implements java.util.Map<K, V> {
-  public class SimpleEntry implements java.util.Map.Entry<K, V>, java.io.Serializable {
+  protected AbstractMap() {}
+  public class SimpleEntry<K, V> implements java.util.Map.Entry<K, V>, java.io.Serializable {
     private static final long serialVersionUID = 0;
     public SimpleEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleEntry(java.util.Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }

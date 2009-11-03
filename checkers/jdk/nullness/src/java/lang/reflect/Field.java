@@ -3,6 +3,7 @@ package java.lang.reflect;
 import checkers.nullness.quals.*;
 
 public final class Field extends AccessibleObject implements Member {
+  protected Field() {}
   public @NonNull Class<?> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
   public @NonNull String getName() { throw new RuntimeException("skeleton method"); }
   public int getModifiers() { throw new RuntimeException("skeleton method"); }
