@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public final class Formatter{
+public final class Formatter implements java.io.Closeable, java.io.Flushable {
   public enum BigDecimalLayoutForm {
       SCIENTIFIC, DECIMAL_FLOAT;
   }

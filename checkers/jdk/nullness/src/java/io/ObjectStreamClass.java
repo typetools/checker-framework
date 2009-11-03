@@ -6,6 +6,7 @@ import checkers.nullness.quals.*;
 
 public class ObjectStreamClass implements Serializable {
   private static final long serialVersionUID = 0;
+  protected ObjectStreamClass() {}
   public final static java.io.ObjectStreamField[] NO_FIELDS = {};
   public static @Nullable java.io.ObjectStreamClass lookup(java.lang.Class<?> a1) { throw new RuntimeException("skeleton method"); }
   public static java.io.ObjectStreamClass lookupAny(java.lang.Class<?> a1) { throw new RuntimeException("skeleton method"); }

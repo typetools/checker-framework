@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract class Reader implements Readable, Closeable {
+  protected Reader() {}
   public int read(java.nio.CharBuffer a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int read() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int read(char[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }

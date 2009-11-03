@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractCollection<E extends @NonNull Object> implements java.util.Collection<E> {
+  protected AbstractCollection() {}
   public abstract java.util.Iterator<E> iterator();
   public abstract int size();
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }

@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class SimpleTimeZone{
+public class SimpleTimeZone extends java.util.TimeZone{
   public final static int WALL_TIME = 0;
   public final static int STANDARD_TIME = 1;
   public final static int UTC_TIME = 2;
@@ -29,4 +29,6 @@ public class SimpleTimeZone{
   public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

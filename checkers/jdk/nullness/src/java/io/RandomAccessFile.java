@@ -14,7 +14,6 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
   public final void readFully(byte[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public final void readFully(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int skipBytes(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void write(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void write(byte[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void write(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void close() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
@@ -41,4 +40,12 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
   public final void writeBytes(java.lang.String a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public final void writeChars(java.lang.String a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public final void writeUTF(java.lang.String a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+
+  public native int read() throws java.io.IOException;
+  public native long getFilePointer() throws java.io.IOException;
+  public native long length() throws java.io.IOException;
+  public native void seek(long a1) throws java.io.IOException;
+  public native void setLength(long a1) throws java.io.IOException;
+  public native void write(int a1) throws java.io.IOException;
+
 }
