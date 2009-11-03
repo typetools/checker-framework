@@ -40,4 +40,8 @@ public final class Float extends java.lang.Number implements java.lang.Comparabl
   public static int floatToIntBits(float a1) { throw new RuntimeException("skeleton method"); }
   public int compareTo(java.lang.Float a1) { throw new RuntimeException("skeleton method"); }
   public static int compare(float a1, float a2) { throw new RuntimeException("skeleton method"); }
+
+  public static native float intBitsToFloat(int a1);
+  public static native int floatToRawIntBits(float a1);
+
 }

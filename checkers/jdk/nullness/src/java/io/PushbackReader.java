@@ -4,7 +4,7 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class PushbackReader extends Reader {
+public class PushbackReader extends FilterReader {
   public PushbackReader(java.io.Reader a1, int a2) { throw new RuntimeException("skeleton method"); }
   public PushbackReader(java.io.Reader a1) { throw new RuntimeException("skeleton method"); }
   public int read() throws java.io.IOException { throw new RuntimeException("skeleton method"); }

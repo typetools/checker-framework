@@ -41,4 +41,8 @@ public final class Double extends java.lang.Number implements java.lang.Comparab
   public static double longBitsToDouble(long bits) { throw new RuntimeException("skeleton method"); }
   public int compareTo(java.lang.Double a1) { throw new RuntimeException("skeleton method"); }
   public static int compare(double a1, double a2) { throw new RuntimeException("skeleton method"); }
+
+  public static native double longBitsToDouble(long a1);
+  public static native long doubleToRawLongBits(double a1);
+
 }

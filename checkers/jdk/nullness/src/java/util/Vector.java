@@ -49,5 +49,5 @@ public class Vector<E extends @Nullable Object> extends java.util.AbstractList<E
   public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
   public synchronized java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   public synchronized java.util.List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

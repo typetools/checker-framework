@@ -4,7 +4,7 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class DataOutputStream{
+public class DataOutputStream extends java.io.FilterOutputStream implements java.io.DataOutput {
   public DataOutputStream(java.io.OutputStream a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void write(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public synchronized void write(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }

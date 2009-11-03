@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract class Calendar implements java.io.Serializable, java.lang.Cloneable, java.lang.Comparable<java.util.Calendar> {
+  protected Calendar() {}
   public final static int ERA = 0;
   public final static int YEAR = 1;
   public final static int MONTH = 2;
@@ -97,4 +98,5 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

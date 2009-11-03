@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractList<E extends @NonNull Object> extends java.util.AbstractCollection<E> implements java.util.List<E> {
+  protected AbstractList() {}
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public abstract E get(int a1);
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }

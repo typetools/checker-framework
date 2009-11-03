@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class StrictMath{
+  protected StrictMath() {}
   public final static double E = 2.718281828459045;
   public final static double PI = 3.141592653589793;
   public static strictfp double toRadians(double a1) { throw new RuntimeException("skeleton method"); }
@@ -39,4 +40,28 @@ public final class StrictMath{
   public static float nextUp(float a1) { throw new RuntimeException("skeleton method"); }
   public static double scalb(double a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static float scalb(float a1, int a2) { throw new RuntimeException("skeleton method"); }
+
+  public static native double IEEEremainder(double a1, double a2);
+  public static native double acos(double a1);
+  public static native double asin(double a1);
+  public static native double atan(double a1);
+  public static native double atan2(double a1, double a2);
+  public static native double cbrt(double a1);
+  public static native double ceil(double a1);
+  public static native double cos(double a1);
+  public static native double cosh(double a1);
+  public static native double exp(double a1);
+  public static native double expm1(double a1);
+  public static native double floor(double a1);
+  public static native double hypot(double a1, double a2);
+  public static native double log(double a1);
+  public static native double log10(double a1);
+  public static native double log1p(double a1);
+  public static native double pow(double a1, double a2);
+  public static native double sin(double a1);
+  public static native double sinh(double a1);
+  public static native double sqrt(double a1);
+  public static native double tan(double a1);
+  public static native double tanh(double a1);
+
 }

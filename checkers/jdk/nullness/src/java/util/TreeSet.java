@@ -34,4 +34,5 @@ public class TreeSet<E extends @NonNull Object> extends java.util.AbstractSet<E>
   public @Nullable E higher(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollFirst() { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollLast() { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }
