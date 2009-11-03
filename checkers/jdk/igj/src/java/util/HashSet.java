@@ -14,4 +14,5 @@ public class HashSet<E> extends @I java.util.AbstractSet<E> implements @I java.u
   public boolean add(E a1) @Mutable { throw new RuntimeException("skeleton method"); }
   public boolean remove(@ReadOnly java.lang.Object a1) @Mutable { throw new RuntimeException("skeleton method"); }
   public void clear() @Mutable { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

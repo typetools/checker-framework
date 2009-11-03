@@ -47,6 +47,7 @@ public abstract class Calendar implements @I java.io.Serializable, @I java.lang.
   public final static int ALL_STYLES = 0;
   public final static int SHORT = 1;
   public final static int LONG = 2;
+  protected Calendar() @ReadOnly {}
   public static @I java.util.Calendar getInstance() { throw new RuntimeException("skeleton method"); }
   public static @I java.util.Calendar getInstance(@ReadOnly java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public static @I java.util.Calendar getInstance(@ReadOnly java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
@@ -89,4 +90,5 @@ public abstract class Calendar implements @I java.io.Serializable, @I java.lang.
   public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

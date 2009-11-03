@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class GregorianCalendar{
+public class GregorianCalendar extends @I java.util.Calendar{
   public final static int BC = 0;
   public final static int AD = 1;
   public GregorianCalendar() @AssignsFields  { throw new RuntimeException("skeleton method"); }
@@ -28,4 +28,5 @@ public class GregorianCalendar{
   public int getActualMaximum(int a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public @ReadOnly java.util.TimeZone getTimeZone() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(@ReadOnly java.util.TimeZone a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

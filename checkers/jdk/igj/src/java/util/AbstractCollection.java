@@ -4,6 +4,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class AbstractCollection<E> implements java.util.Collection<E> {
+  protected AbstractCollection() @ReadOnly {}
   public abstract @I java.util.Iterator<E> iterator() @ReadOnly;
   public abstract int size() @ReadOnly;
   public boolean isEmpty() @ReadOnly { throw new RuntimeException("skeleton method"); }
