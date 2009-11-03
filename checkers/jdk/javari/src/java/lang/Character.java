@@ -216,6 +216,7 @@ public final @ReadOnly class Character extends Object implements java.io.Seriali
         public static final UnicodeBlock YIJING_HEXAGRAM_SYMBOLS = null;
         public static final UnicodeBlock VARIATION_SELECTORS = null;
         public static final UnicodeBlock LINEAR_B_IDEOGRAMS = null;
+        public static final UnicodeBlock LINEAR_B_SYLLABARY = null;
         public static final UnicodeBlock AEGEAN_NUMBERS = null;
         public static final UnicodeBlock OLD_ITALIC = null;
         public static final UnicodeBlock GOTHIC = null;

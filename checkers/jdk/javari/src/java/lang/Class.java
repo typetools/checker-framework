@@ -159,17 +159,17 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public Method getMethod( String name,  Class ... parameterTypes)
+    public Method getMethod( String name,  Class<?> ... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
-    public Constructor<T> getConstructor( Class ... parameterTypes)
+    public Constructor<T> getConstructor( Class<?> ... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
-    public Class[] getDeclaredClasses() throws SecurityException {
+    public Class<?>[] getDeclaredClasses() throws SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -181,7 +181,7 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public Constructor[] getDeclaredConstructors() throws SecurityException {
+    public Constructor<?>[] getDeclaredConstructors() throws SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -190,12 +190,12 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public Method getDeclaredMethod(String name, Class ... parameterTypes)
+    public Method getDeclaredMethod(String name, Class<?> ... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
-    public Constructor<T> getDeclaredConstructor(Class ... parameterTypes)
+    public Constructor<T> getDeclaredConstructor(Class<?> ... parameterTypes)
         throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
