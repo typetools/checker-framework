@@ -4,7 +4,8 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class Package{
+public class Package implements java.lang.reflect.AnnotatedElement{
+  protected Package() {}
   public java.lang.String getName() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.String getSpecificationTitle() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.String getSpecificationVersion() { throw new RuntimeException("skeleton method"); }

@@ -6,6 +6,7 @@ import checkers.nullness.quals.*;
 
 public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
+  protected Class() {}
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   public static java.lang.Class<?> forName(java.lang.String a1) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public static java.lang.Class<?> forName(java.lang.String a1, boolean a2, @Nullable java.lang.ClassLoader a3) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
@@ -24,7 +25,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public @Nullable java.lang.Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public java.lang.String getSimpleName() { throw new RuntimeException("skeleton method"); }
   public native @Nullable Class<? super T> getSuperclass();
-  public native Class<? super T>[] getInterfaces();
+  public native Class<?>[] getInterfaces();
   public @Nullable java.lang.String getCanonicalName() { throw new RuntimeException("skeleton method"); }
   public boolean isAnonymousClass() { throw new RuntimeException("skeleton method"); }
   public boolean isLocalClass() { throw new RuntimeException("skeleton method"); }
@@ -41,8 +42,8 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.lang.reflect.Method[] getDeclaredMethods() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<?>[] getDeclaredConstructors() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Field getDeclaredField(java.lang.String a1) throws java.lang.NoSuchFieldException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method getDeclaredMethod(java.lang.String a1, java.lang.Class<?>[] a2) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<T> getDeclaredConstructor(java.lang.Class<?>[] a1) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method getDeclaredMethod(java.lang.String a1, java.lang.Class<?>... a2) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Constructor<T> getDeclaredConstructor(java.lang.Class<?>... a1) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
   public @Nullable java.io.InputStream getResourceAsStream(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable java.net.URL getResource(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public java.security.ProtectionDomain getProtectionDomain() { throw new RuntimeException("skeleton method"); }

@@ -17,6 +17,7 @@ import java.nio.channels.Channel;
 // import sun.reflect.annotation.AnnotationType;
 
 public final class System {
+  protected System() {}
   public final static InputStream in = nullInputStream();
   public final static PrintStream out = nullPrintStream();
   public final static PrintStream err = nullPrintStream();

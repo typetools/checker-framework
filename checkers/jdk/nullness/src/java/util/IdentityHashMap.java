@@ -22,4 +22,5 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
   public java.util.Set<K> keySet() { throw new RuntimeException("skeleton method"); }
   public java.util.Collection<V> values() { throw new RuntimeException("skeleton method"); }
   public java.util.Set<java.util.Map.Entry<K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

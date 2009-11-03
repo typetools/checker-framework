@@ -4,13 +4,12 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public final class StringBuffer implements java.io.Serializable, Appendable, CharSequence{
+public final class StringBuffer extends AbstractStringBuilder implements java.io.Serializable, CharSequence{
   static final long serialVersionUID = 0;
   public StringBuffer() { throw new RuntimeException("skeleton method"); }
   public StringBuffer(int a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(java.lang.CharSequence a1) { throw new RuntimeException("skeleton method"); }
-  public StringBuffer(java.lang.StringBuffer a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int length() { throw new RuntimeException("skeleton method"); }
   public synchronized int capacity() { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }

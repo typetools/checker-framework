@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public abstract class TimeZone{
+public abstract class TimeZone implements java.io.Serializable, java.lang.Cloneable{
   public final static int SHORT = 0;
   public final static int LONG = 1;
   public TimeZone() { throw new RuntimeException("skeleton method"); }
@@ -25,4 +25,5 @@ public abstract class TimeZone{
   public static java.util.TimeZone getDefault() { throw new RuntimeException("skeleton method"); }
   public static void setDefault(@Nullable java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(@Nullable java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

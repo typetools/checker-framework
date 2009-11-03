@@ -2,7 +2,8 @@ package java.util.regex;
 
 import checkers.nullness.quals.*;
 
-public final class Pattern{
+public final class Pattern implements java.io.Serializable{
+  protected Pattern() {}
   public final static int UNIX_LINES = 1;
   public final static int CASE_INSENSITIVE = 2;
   public final static int COMMENTS = 4;

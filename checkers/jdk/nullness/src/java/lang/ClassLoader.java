@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract class ClassLoader{
+  protected ClassLoader() {}
   public java.lang.Class<?> loadClass(java.lang.String a1) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   protected java.lang.Class<?> loadClass(java.lang.String a1, boolean a2) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public @Nullable java.net.URL getResource(java.lang.String a1) { throw new RuntimeException("skeleton method"); }

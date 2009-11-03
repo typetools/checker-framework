@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Collections {
+  protected Collections() {}
   @SuppressWarnings("rawtypes")
   public final static java.util.Set EMPTY_SET = new HashSet();
   @SuppressWarnings("rawtypes")
@@ -19,9 +20,9 @@ public class Collections {
   public static void swap(java.util.List<?> a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static <T> void fill(java.util.List<? super T> a1, T a2) { throw new RuntimeException("skeleton method"); }
   public static <T> void copy(java.util.List<? super T> a1, java.util.List<? extends T> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T extends java.lang.Comparable<? super T>> T min(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T extends Object & java.lang.Comparable<? super T>> T min(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> T min(java.util.Collection<? extends T> a1, @Nullable java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T extends java.lang.Comparable<? super T>> T max(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T extends Object & java.lang.Comparable<? super T>> T max(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> T max(java.util.Collection<? extends T> a1, @Nullable java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static void rotate(java.util.List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static <T> boolean replaceAll(java.util.List<T> a1, @Nullable T a2, T a3) { throw new RuntimeException("skeleton method"); }
@@ -58,7 +59,7 @@ public class Collections {
   public static <T> java.util.ArrayList<T> list(java.util.Enumeration<T> a1) { throw new RuntimeException("skeleton method"); }
   public static int frequency(java.util.Collection<?> a1, @Nullable java.lang.Object a2) { throw new RuntimeException("skeleton method"); }
   public static boolean disjoint(java.util.Collection<?> a1, java.util.Collection<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> boolean addAll(java.util.Collection<? super T> a1, T[] a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> boolean addAll(java.util.Collection<? super T> a1, T... a2) { throw new RuntimeException("skeleton method"); }
   public static <E> java.util.Set<E> newSetFromMap(java.util.Map<E, java.lang.Boolean> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.Queue<T> asLifoQueue(java.util.Deque<T> a1) { throw new RuntimeException("skeleton method"); }
 }

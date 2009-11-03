@@ -46,4 +46,5 @@ public class LinkedList<E extends @Nullable Object> extends java.util.AbstractSe
   public java.util.Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

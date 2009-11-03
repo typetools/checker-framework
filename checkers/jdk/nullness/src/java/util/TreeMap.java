@@ -44,4 +44,5 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public java.util.SortedMap<K, V> subMap(K a1, K a2) { throw new RuntimeException("skeleton method"); }
   public java.util.SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
   public java.util.SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

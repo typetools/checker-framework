@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public final class Locale{
+public final class Locale implements java.lang.Cloneable, java.io.Serializable {
   public final static java.util.Locale ENGLISH;
   public final static java.util.Locale FRENCH;
   public final static java.util.Locale GERMAN;
@@ -49,4 +49,5 @@ public final class Locale{
   public java.lang.String getDisplayName(java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }
