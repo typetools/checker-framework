@@ -35,4 +35,5 @@ public class Date implements @I java.io.Serializable, @I java.lang.Cloneable, @I
   public java.lang.String toLocaleString() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public java.lang.String toGMTString() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public int getTimezoneOffset() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

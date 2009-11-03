@@ -4,6 +4,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class AbstractList<E> extends @I java.util.AbstractCollection<E> implements @I java.util.List<E> {
+  protected AbstractList() @ReadOnly {}
   public boolean add(E a1) @Mutable { throw new RuntimeException("skeleton method"); }
   public abstract E get(int a1) @ReadOnly;
   public E set(int a1, E a2) @Mutable { throw new RuntimeException("skeleton method"); }

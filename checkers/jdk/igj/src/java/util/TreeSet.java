@@ -32,4 +32,5 @@ public class TreeSet<E> extends @I java.util.AbstractSet<E> implements @I java.u
   public E higher(E a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public E pollFirst() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public E pollLast() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

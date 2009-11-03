@@ -24,4 +24,5 @@ public class ArrayList<E> extends @I java.util.AbstractList<E> implements @I jav
   public void clear() @Mutable { throw new RuntimeException("skeleton method"); }
   public boolean addAll(@ReadOnly java.util.Collection<? extends E> a1) @Mutable { throw new RuntimeException("skeleton method"); }
   public boolean addAll(int a1, @ReadOnly java.util.Collection<? extends E> a2) @Mutable { throw new RuntimeException("skeleton method"); }
+  public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

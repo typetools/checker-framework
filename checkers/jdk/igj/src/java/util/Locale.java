@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @Immutable
-public final class Locale{
+public final class Locale implements @Immutable java.lang.Cloneable, @Immutable java.io.Serializable {
   public final static java.util.Locale ENGLISH;
   public final static java.util.Locale FRENCH;
   public final static java.util.Locale GERMAN;
@@ -49,4 +49,5 @@ public final class Locale{
   public java.lang.String getDisplayName(java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@ReadOnly java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Immutable Object clone() { throw new RuntimeException("skeleton method"); }
 }
