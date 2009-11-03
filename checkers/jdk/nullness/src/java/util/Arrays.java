@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Arrays{
+  protected Arrays() {}
   public static void sort(long[] a1) { throw new RuntimeException("skeleton method"); }
   public static void sort(long[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static void sort(int[] a1) { throw new RuntimeException("skeleton method"); }

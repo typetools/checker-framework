@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class Random{
+public class Random implements java.io.Serializable {
   public Random() { throw new RuntimeException("skeleton method"); }
   public Random(long a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void setSeed(long a1) { throw new RuntimeException("skeleton method"); }

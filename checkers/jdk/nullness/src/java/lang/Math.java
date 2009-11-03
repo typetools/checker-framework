@@ -7,6 +7,7 @@ import checkers.nullness.quals.*;
 public final class Math{
   public final static double E = 2.718281828459045;
   public final static double PI = 3.141592653589793;
+  protected Math() {}
   public static double sin(double a1) { throw new RuntimeException("skeleton method"); }
   public static double cos(double a1) { throw new RuntimeException("skeleton method"); }
   public static double tan(double a1) { throw new RuntimeException("skeleton method"); }

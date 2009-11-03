@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Runtime{
+  protected Runtime() {}
   public static java.lang.Runtime getRuntime() { throw new RuntimeException("skeleton method"); }
   public void exit(int a1) { throw new RuntimeException("skeleton method"); }
   public void addShutdownHook(java.lang.Thread a1) { throw new RuntimeException("skeleton method"); }

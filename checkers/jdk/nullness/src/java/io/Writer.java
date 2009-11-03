@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract class Writer implements Appendable, Closeable, Flushable {
+  protected Writer() {}
   public void write(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void write(char[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public abstract void write(char[] a1, int a2, int a3) throws java.io.IOException;

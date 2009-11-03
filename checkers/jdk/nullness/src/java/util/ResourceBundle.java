@@ -4,9 +4,10 @@ import checkers.nullness.quals.*;
 
 public abstract class ResourceBundle{
   public static class Control{
-      public final static java.util.List<java.lang.String> FORMAT_DEFAULT = new java.util.LinkedList<java.lang.String>();
-      public final static java.util.List<java.lang.String> FORMAT_CLASS = new java.util.LinkedList<java.lang.String>();
-      public final static java.util.List<java.lang.String> FORMAT_PROPERTIES = new java.util.LinkedList<java.lang.String>();
+    protected Control() {}
+    public final static java.util.List<java.lang.String> FORMAT_DEFAULT = new java.util.LinkedList<java.lang.String>();
+    public final static java.util.List<java.lang.String> FORMAT_CLASS = new java.util.LinkedList<java.lang.String>();
+    public final static java.util.List<java.lang.String> FORMAT_PROPERTIES = new java.util.LinkedList<java.lang.String>();
     public final static long TTL_DONT_CACHE = -1;
     public final static long TTL_NO_EXPIRATION_CONTROL = -2;
     public final static java.util.ResourceBundle.Control getControl(java.util.List<java.lang.String> a1) { throw new RuntimeException("skeleton method"); }

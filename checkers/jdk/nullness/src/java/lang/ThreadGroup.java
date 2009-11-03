@@ -4,7 +4,7 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class ThreadGroup{
+public class ThreadGroup implements java.lang.Thread.UncaughtExceptionHandler {
   public ThreadGroup(@Nullable java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public ThreadGroup(java.lang.ThreadGroup a1, @Nullable java.lang.String a2) { throw new RuntimeException("skeleton method"); }
   public final @Nullable java.lang.String getName() { throw new RuntimeException("skeleton method"); }

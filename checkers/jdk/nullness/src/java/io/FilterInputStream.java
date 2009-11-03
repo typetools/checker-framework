@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class FilterInputStream extends InputStream {
+  protected FilterInputStream() {}
   public int read() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int read(byte[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int read(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
