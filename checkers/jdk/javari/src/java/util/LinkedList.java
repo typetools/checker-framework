@@ -42,4 +42,5 @@ public class LinkedList<E> extends java.util.AbstractSequentialList<E> implement
   public @PolyRead java.util.Iterator<E> descendingIterator() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public java.lang.Object[] toArray() { throw new RuntimeException(("skeleton method")); }
   public <T> T[] toArray(T[] a1) { throw new RuntimeException(("skeleton method")); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

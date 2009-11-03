@@ -24,4 +24,5 @@ public class Hashtable<K, V> extends java.util.Dictionary<K, V> implements java.
   public @PolyRead java.util.Collection<V> values() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public synchronized boolean equals(@ReadOnly java.lang.Object a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
   public synchronized int hashCode() @ReadOnly { throw new RuntimeException(("skeleton method")); }
+  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

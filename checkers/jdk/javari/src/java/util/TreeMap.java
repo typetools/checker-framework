@@ -41,4 +41,5 @@ public class TreeMap<K, V> extends java.util.AbstractMap<K, V> implements java.u
   public @PolyRead java.util.SortedMap<K, V> subMap(K a1, K a2) @PolyRead { throw new RuntimeException(("skeleton method")); }
   public @PolyRead java.util.SortedMap<K, V> headMap(K a1) @PolyRead { throw new RuntimeException(("skeleton method")); }
   public @PolyRead java.util.SortedMap<K, V> tailMap(K a1) @PolyRead { throw new RuntimeException(("skeleton method")); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

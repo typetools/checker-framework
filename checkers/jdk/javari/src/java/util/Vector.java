@@ -46,4 +46,5 @@ public class Vector<E> extends java.util.AbstractList<E> implements java.util.Li
   public synchronized int hashCode() @ReadOnly { throw new RuntimeException(("skeleton method")); }
   public synchronized java.lang.String toString() @ReadOnly { throw new RuntimeException(("skeleton method")); }
   public synchronized @PolyRead java.util.List<E> subList(int a1, int a2) @PolyRead { throw new RuntimeException(("skeleton method")); }
+  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

@@ -17,4 +17,5 @@ public class EnumMap<K extends java.lang.Enum<K>, V> extends java.util.AbstractM
   public @PolyRead java.util.Collection<V> values() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public @PolyRead java.util.Set<java.util.Map.Entry<K, V>> entrySet() @PolyRead { throw new RuntimeException(("skeleton method")); }
   public boolean equals(@ReadOnly java.lang.Object a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
+  public EnumMap<K, V> clone() { throw new RuntimeException("skeleton method"); }
 }

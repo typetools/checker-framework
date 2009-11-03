@@ -36,4 +36,5 @@ public class ArrayDeque<E> extends java.util.AbstractCollection<E> implements ja
   public void clear() { throw new RuntimeException(("skeleton method")); }
   public java.lang.Object[] toArray() { throw new RuntimeException(("skeleton method")); }
   public <T> T[] toArray(T[] a1) { throw new RuntimeException(("skeleton method")); }
+  public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
 }
