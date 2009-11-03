@@ -5,7 +5,6 @@ import checkers.javari.quals.*;
 
 public interface NewClassTree extends ExpressionTree {
     @PolyRead ExpressionTree getEnclosingExpression() @PolyRead;
-    @PolyRead List<? extends ModifiersTree> getTypeArgumentsModifiers() @PolyRead;
     @PolyRead List<? extends Tree> getTypeArguments() @PolyRead;
     @PolyRead ModifiersTree getModifiers() @PolyRead;
     @PolyRead ExpressionTree getIdentifier() @PolyRead;

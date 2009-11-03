@@ -11,9 +11,8 @@ public interface MethodTree extends Tree {
     @PolyRead Tree getReturnType() @PolyRead;
     @PolyRead List<? extends TypeParameterTree> getTypeParameters() @PolyRead;
     @PolyRead List<? extends VariableTree> getParameters() @PolyRead;
-    @PolyRead List<? extends ModifiersTree> getThrowsModifiers() @PolyRead;
+    @PolyRead List<? extends AnnotationTree> getReceiverAnnotations() @PolyRead;
     @PolyRead List<? extends ExpressionTree> getThrows() @PolyRead;
-    @PolyRead ModifiersTree getReceiverModifiers() @PolyRead;
     @PolyRead BlockTree getBody() @PolyRead;
     @PolyRead Tree getDefaultValue() @PolyRead;
 }
