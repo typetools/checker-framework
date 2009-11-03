@@ -4,7 +4,7 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class Thread {
+public class Thread implements java.lang.Runnable {
   public enum State {
       NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING,TERMINATED;
   }
@@ -61,4 +61,8 @@ public class Thread {
   public static @Nullable java.lang.Thread.UncaughtExceptionHandler getDefaultUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
   public void setUncaughtExceptionHandler(@Nullable java.lang.Thread.UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
+
+  public static boolean holdsLock(Object a1) { throw new RuntimeException("skeleton method"); }
+  public final native boolean isAlive();
+  public native int countStackFrames();
 }

@@ -2,7 +2,8 @@ package java.util.regex;
 
 import checkers.nullness.quals.*;
 
-public final class Matcher{
+public final class Matcher implements java.util.regex.MatchResult {
+  protected Matcher() {}
   public @NonNull java.util.regex.Pattern pattern() { throw new RuntimeException("skeleton method"); }
   public @NonNull java.util.regex.MatchResult toMatchResult() { throw new RuntimeException("skeleton method"); }
   public @NonNull java.util.regex.Matcher usePattern(@NonNull java.util.regex.Pattern a1) { throw new RuntimeException("skeleton method"); }

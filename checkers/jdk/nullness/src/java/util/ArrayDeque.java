@@ -39,4 +39,6 @@ public class ArrayDeque<E extends @NonNull Object> extends java.util.AbstractCol
   public void clear() { throw new RuntimeException("skeleton method"); }
   public java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
+
+  public java.util.ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
 }

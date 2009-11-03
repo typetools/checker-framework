@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 // doesn't permit null elements
 public abstract class AbstractQueue<E extends @NonNull Object> extends java.util.AbstractCollection<E> implements java.util.Queue<E> {
+  protected AbstractQueue() {}
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public E remove() { throw new RuntimeException("skeleton method"); }
   public E element() { throw new RuntimeException("skeleton method"); }

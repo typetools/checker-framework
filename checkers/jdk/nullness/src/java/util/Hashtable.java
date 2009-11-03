@@ -27,6 +27,6 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> ext
   public java.util.Collection<V> values() { throw new RuntimeException("skeleton method"); }
   public synchronized boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 
 }

@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class GregorianCalendar{
+public class GregorianCalendar extends java.util.Calendar {
   public final static int BC = 0;
   public final static int AD = 1;
   public GregorianCalendar() { throw new RuntimeException("skeleton method"); }
@@ -28,4 +28,5 @@ public class GregorianCalendar{
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
   public java.util.TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public Object clone() { throw new RuntimeException("skeleton method"); }
 }

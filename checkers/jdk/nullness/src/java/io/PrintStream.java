@@ -39,7 +39,7 @@ public class PrintStream extends FilterOutputStream implements Appendable, Close
   public java.io.PrintStream printf(java.lang.String a1, @Nullable java.lang.Object ... a2) { throw new RuntimeException("skeleton method"); }
   public java.io.PrintStream printf(@Nullable java.util.Locale a1, java.lang.String a2, @Nullable java.lang.Object... a3) { throw new RuntimeException("skeleton method"); }
   public java.io.PrintStream format(java.lang.String a1, @Nullable java.lang.Object... a2) { throw new RuntimeException("skeleton method"); }
-  public java.io.PrintStream format(@Nullable java.util.Locale a1, java.lang.String a2, @Nullable java.lang.Object[] a3) { throw new RuntimeException("skeleton method"); }
+  public java.io.PrintStream format(@Nullable java.util.Locale a1, java.lang.String a2, @Nullable java.lang.Object... a3) { throw new RuntimeException("skeleton method"); }
   public java.io.PrintStream append(@Nullable java.lang.CharSequence a1) { throw new RuntimeException("skeleton method"); }
   public java.io.PrintStream append(@Nullable java.lang.CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public java.io.PrintStream append(@Nullable char a1) { throw new RuntimeException("skeleton method"); }
