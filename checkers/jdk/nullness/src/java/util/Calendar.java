@@ -98,5 +98,4 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
 }
