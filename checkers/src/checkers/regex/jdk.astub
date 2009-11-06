@@ -1,0 +1,52 @@
+import checkers.regex.quals.ValidRegex;
+
+package java.util.regex;
+
+class Pattern {
+    Pattern compile(@ValidRegex String regex);
+    Pattern compile(@ValidRegex String regex, int flags);
+    boolean matches(@ValidRegex String regex, CharSequence input);
+}
+
+package java.lang;
+
+class String {
+    public boolean matches(@ValidRegex String regex);
+    public String replaceFirst(@ValidRegex String regex, String replacement);
+    public String replaceAll(@ValidRegex String regex, String replacement);
+    public String[] split(@ValidRegex String regex, int limit);
+    public String[] split(@ValidRegex String regex);
+}
+
+package javax.swing.plaf.synth;
+
+class DefaultSynthStyleFactory extends SynthStyleFactory {
+    public synchronized void addStyle(DefaultSynthStyle style,
+                         @ValidRegex String path, int type) throws PatternSyntaxException;
+}
+
+package javax.swing;
+
+public abstract class RowFilter<M,I> {
+    public static <M,I> RowFilter<M,I> regexFilter(@ValidRegex String regex,
+                                                       int... indices);
+}
+
+package com.sun.org.apache.xerces.internal.impl.xpath.regex;
+
+public class RegularExpression implements java.io.Serializable {
+    public RegularExpression(@ValidRegex String regex) throws ParseException;
+    public RegularExpression(@ValidRegex String regex, String options) throws ParseException;
+    RegularExpression(@ValidRegex String regex, Token tok, int parens, boolean hasBackReferences, int options);
+}
+
+public final class REUtil {
+    static String stripExtendedComment(String regex);  // no @ValidRegex annotation needed
+    public static boolean matches(@ValidRegex String regex, String target) throws ParseException;
+    public static boolean matches(@ValidRegex String regex, String options, String target) throws ParseException;
+}
+
+class RegexParser {
+    synchronized Token parse(@ValidRegex String regex, int options) throws ParseException;
+    public RegularExpression createRegex(@ValidRegex String regex, int options) throws ParseException;
+}
