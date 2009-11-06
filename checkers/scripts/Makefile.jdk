@@ -13,7 +13,7 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
 clean:
-	rm -rf build
+	rm -rf build annotated jdk.jar
 
 build:
 	mkdir -p build
