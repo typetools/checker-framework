@@ -33,7 +33,10 @@
         <pathelement location="${compiler.lib}"/>
     </path>
 
-    <target name="prep" depends="touch-jdk" description="Create required directories">
+    <!-- Used to have:
+           depends="touch-jdk"
+         When is that truly necessary? -->
+    <target name="prep" description="Create required directories">
         <mkdir dir="${build}"/>
         <mkdir dir="${build.tests}"/>
         <mkdir dir="${build.tests}/testclasses"/>
@@ -79,7 +82,53 @@
         </delete>
     </target>
 
-    <target name="build" depends="prep" description="Compile files">
+    <target name="build.check.uptodate"
+            description="Set properties: filesets and build.uptodate">
+	<fileset id="src.files" dir="${src}">
+	    <include name="**/*.java"/>
+	    <exclude name="checkers/util/dist/**"/>
+	</fileset>
+	<fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
+
+	<!-- I can't figure out how to combine filesets (or even selectors)
+             to get just one *.uptodate property, so do them individually
+             and then combine with <condition>. -->
+        <!-- Probably should depend on a file rather than a directory. -->
+	<uptodate property="src.files.uptodate" targetfile="${build}">
+	  <srcfiles refid="src.files"/>
+	</uptodate>
+	<uptodate property="src.astub.files.uptodate" targetfile="${build}">
+	  <srcfiles refid="src.astub.files"/>
+	</uptodate>
+	<uptodate property="javaparser.lib.uptodate" targetfile="${build}" srcfile="${javaparser.lib}"/>
+
+	<condition property="build.uptodate">
+	  <and>
+	    <isset property="src.files.uptodate"/>
+	    <isset property="src.astub.files.uptodate"/>
+	    <isset property="javaparser.lib.uptodate"/>
+	  </and>
+	</condition>
+	<echo message="src.files.uptodate: ${src.files.uptodate}"/>
+	<echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
+	<echo message="javaparser.lib.uptodate: ${javaparser.lib.uptodate}"/>
+	<echo message="build.uptodate: ${build.uptodate}"/>
+
+	<fileset id="javari.jdk.src.files" dir=".">
+	    <include name="${javari.jdk.src}/**/*.java"/>
+        </fileset>
+
+	<!-- Probably will never be up to date, because of touch-jdk target. :-( -->
+	<uptodate property="javari.jdk.uptodate">
+	  <srcfiles refid="javari.jdk.src.files"/>
+          <mapper type="glob" from="${javari.jdk.src}/*.java" to="${javari.jdk.build}/*.class"/>
+        </uptodate>
+	<echo message="javari.jdk.uptodate: ${javari.jdk.uptodate}"/>
+
+    </target>
+
+    <target name="build" depends="prep,build.check.uptodate" unless="build.uptodate"
+            description="Compile files">
         <fail unless="compiler.exists"
             message="
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
@@ -87,7 +136,11 @@ but found version ${compiler.version} on your classpath.
 ${line.separator}${line.separator}
 Check that the 'compiler.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
-        <pathconvert pathsep=" " property="src.files">
+
+        <copy todir="${build}" preservelastmodified="true">
+            <fileset refid="src.astub.files"/>
+        </copy>
+        <pathconvert pathsep=" " property="src.files.spaceseparated">
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
@@ -95,10 +148,6 @@ ${build.version} of the 'javac.jar' library."/>
                 </fileset>
             </path>
         </pathconvert>
-        <copy todir="${build}">
-            <fileset dir="${src}" includes="**/*.properties"/>
-            <fileset dir="${src}" includes="**/*.astub"/>
-        </copy>
         <java fork="true"
               failonerror="true"
               classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}"
@@ -107,34 +156,39 @@ ${build.version} of the 'javac.jar' library."/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files}"/>
+            <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
+	<!--
+	Touch doesn't work on a directory, so can't do:
+   	<touch file="${build}"/>
+        Instead, create and remove a file, which modifies the directory.
+	-->
+	<touch file="${build}/.timestamp"/>
+	<delete file="${build}/.timestamp"/>
     </target>
 
-      <target name="build-javari-jdk" depends="build"
-          description="Compile Javari's annotated JDK.">
-          <pathconvert pathsep=" " property="javari.jdk.src.files">
-             <path>
-                <fileset dir="${javari.jdk.src}">
-                   <include name="**/*.java"/>
-                </fileset>
-             </path>
-      </pathconvert>
-          <mkdir dir="${javari.jdk.build}"/>
-          <java fork="true"
-                failonerror="true"
-                classpath="${build}:${compiler.lib}"
-                classname="com.sun.tools.javac.Main">
-             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
-             <arg value="-g"/>
-             <arg line="-sourcepath ${javari.jdk.src}"/>
-             <arg line="-d ${javari.jdk.build}"/>
-             <arg line="${javari.jdk.src.files}"/>
-             <arg line="-version"/>
-          </java>
-      </target>
+    <target name="build-javari-jdk" depends="build" unless="javari.jdk.uptodate"
+	description="Compile Javari's annotated JDK.">
+	<pathconvert pathsep=" " property="javari.jdk.src.files.spaceseparated">
+	   <path>
+	      <fileset refid="javari.jdk.src.files"/>
+	   </path>
+	</pathconvert>
+	<mkdir dir="${javari.jdk.build}"/>
+	<java fork="true"
+	      failonerror="true"
+	      classpath="${build}:${compiler.lib}"
+	      classname="com.sun.tools.javac.Main">
+	   <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+	   <arg value="-g"/>
+	   <arg line="-sourcepath ${javari.jdk.src}"/>
+	   <arg line="-d ${javari.jdk.build}"/>
+	   <arg line="${javari.jdk.src.files.spaceseparated}"/>
+	   <arg line="-version"/>
+	</java>
+    </target>
 
     <target name="docs" depends="javadoc"/>
 
@@ -346,6 +400,9 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <!-- This throws off dependency tracking and causes rebuilding.
+         When is it truly necessary? -->
+    <!-- Why all JDK files?  Why not just source files? -->
     <target name="touch-jdk"
             description="Update the date of all jdk files">
         <touch>
