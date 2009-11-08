@@ -96,6 +96,7 @@
         <!-- Probably should depend on a file rather than a directory. -->
 	<uptodate property="src.files.uptodate" targetfile="${build}">
 	  <srcfiles refid="src.files"/>
+          <mapper type="glob" from="*.java" to="${build}/*.class"/>
 	</uptodate>
 	<uptodate property="src.astub.files.uptodate" targetfile="${build}">
 	  <srcfiles refid="src.astub.files"/>
