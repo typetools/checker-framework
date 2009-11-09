@@ -114,13 +114,21 @@
   <macrodef name="check-demo-common">
     <attribute name="target"/>
     <attribute name="step"/>
-      <attribute name="dir" default="testdemo"/>
-      <sequential>
-        <check-demo
+    <attribute name="dir" default="testdemo"/>
+    <sequential>
+      <check-demo
             task="@{target}"
             patchfile="@{dir}/@{target}.@{step}.patch"
             expected="@{dir}/@{target}.@{step}.expected"/>
-      </sequential>
+    </sequential>
   </macrodef>
 
+  <macrodef name="revert-demo">
+      <attribute name="target"/>
+      <attribute name="step"/>
+      <attribute name="dir" default="testdemo"/>
+      <sequential>
+          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0"/>
+      </sequential>
+  </macrodef>
 </project>
