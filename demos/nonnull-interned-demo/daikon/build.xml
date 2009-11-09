@@ -13,6 +13,8 @@
       <check-demo-common target="varinfo" step="0"/>
       <check-demo-common target="varinfo" step="1"/>
       <echo message="varinfo demo works as expected" />
+      <revert-demo target="varinfo" step="1"/>
+      <revert-demo target="varinfo" step="0"/>
     </target>
 
     <target name="fileio">
@@ -24,6 +26,8 @@
       <check-demo-common target="fileio" step="0"/>
       <check-demo-common target="fileio" step="1"/>
       <echo message="fileio demo works as expected" />
+      <revert-demo target="fileio" step="1"/>
+      <revert-demo target="fileio" step="0"/>
     </target>
 
     <target name="check-demo" depends="check-varinfo,check-fileio">
