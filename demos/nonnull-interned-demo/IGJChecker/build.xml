@@ -14,6 +14,9 @@
       <check-demo-common target="factory" step="1"/>
       <check-demo-common target="factory" step="2"/>
       <echo message="factory demo works as expected" />
+      <revert-demo target="factory" step="2"/>
+      <revert-demo target="factory" step="1"/>
+      <revert-demo target="factory" step="0"/>
     </target>
 
     <target name="location">
@@ -26,6 +29,8 @@
       <check-demo-common target="location" step="0"/>
       <check-demo-common target="location" step="1"/>
       <echo message="location demo works as expected" />
+      <revert-demo target="location" step="1"/>
+      <revert-demo target="location" step="0"/>
     </target>
 
     <target name="check-demo" depends="check-location,check-factory">

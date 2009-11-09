@@ -24,6 +24,9 @@
       <check-demo-common target="pblog" step="1"/>
       <check-demo-common target="pblog" step="2"/>
       <echo message="pblog demo works as expected" />
+      <revert-demo target="pblog" step="2"/>
+      <revert-demo target="pblog" step="1"/>
+      <revert-demo target="pblog" step="0"/>
     </target>
 
     <target name="check-demo" depends="check-pblog">
