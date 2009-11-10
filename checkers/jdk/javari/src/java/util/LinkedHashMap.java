@@ -6,6 +6,7 @@ public class LinkedHashMap<K,V>
     extends HashMap<K,V>
     implements Map<K,V>
 {
+    private static final long serialVersionUID = 0L;
     public LinkedHashMap(int initialCapacity, float loadFactor) { throw new RuntimeException("skeleton method"); }
     public LinkedHashMap(int initialCapacity) { throw new RuntimeException("skeleton method"); }
     public LinkedHashMap() { throw new RuntimeException("skeleton method"); }

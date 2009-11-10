@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class LinkedList<E> extends java.util.AbstractSequentialList<E> implements java.util.List<E>, java.util.Deque<E>, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public LinkedList() { throw new RuntimeException(("skeleton method")); }
   public LinkedList(@PolyRead java.util.Collection<? extends E> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }
   public E getFirst() @ReadOnly { throw new RuntimeException(("skeleton method")); }

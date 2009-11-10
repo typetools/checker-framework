@@ -8,6 +8,8 @@ public class HashMap<K,V>
     extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
 
+    private static final long serialVersionUID = 0L;
+
     public HashMap(int initialCapacity, float loadFactor) { throw new RuntimeException("skeleton method"); }
     public HashMap(int initialCapacity) { throw new RuntimeException("skeleton method"); }
     public HashMap() { throw new RuntimeException("skeleton method"); }

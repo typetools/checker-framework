@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class TreeMap<K, V> extends java.util.AbstractMap<K, V> implements java.util.NavigableMap<K, V>, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public TreeMap() { throw new RuntimeException(("skeleton method")); }
   public TreeMap(java.util.Comparator<? super K> a1) { throw new RuntimeException(("skeleton method")); }
   public TreeMap(@PolyRead java.util.Map<? extends K, ? extends V> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }

@@ -2,6 +2,7 @@ package java.lang;
 import checkers.javari.quals.*;
 
 public class AssertionError extends Error {
+    private static final long serialVersionUID = 0L;
     public AssertionError() {
         throw new RuntimeException("skeleton method");
     }

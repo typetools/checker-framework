@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class ArrayDeque<E> extends java.util.AbstractCollection<E> implements java.util.Deque<E>, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public ArrayDeque() { throw new RuntimeException(("skeleton method")); }
   public ArrayDeque(int a1) { throw new RuntimeException(("skeleton method")); }
   public ArrayDeque(@PolyRead java.util.Collection<? extends E> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }

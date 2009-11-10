@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Locale;
 
 public final @ReadOnly class Character extends Object implements java.io.Serializable, Comparable<Character> {
+    private static final long serialVersionUID = 0L;
     public static final int MIN_RADIX = 2;
     public static final int MAX_RADIX = 36;
     public static final char   MIN_VALUE = '\u0000';
