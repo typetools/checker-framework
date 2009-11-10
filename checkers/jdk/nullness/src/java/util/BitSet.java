@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class BitSet implements Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public BitSet() { throw new RuntimeException("skeleton method"); }
   public BitSet(int a1) { throw new RuntimeException("skeleton method"); }
   public void flip(int a1) { throw new RuntimeException("skeleton method"); }

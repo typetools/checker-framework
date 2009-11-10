@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Throwable implements java.io.Serializable{
+    private static final long serialVersionUID = 0L;
   public Throwable() { throw new RuntimeException("skeleton method"); }
   public Throwable(@Nullable java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public Throwable(@Nullable java.lang.String a1, @Nullable java.lang.Throwable a2) { throw new RuntimeException("skeleton method"); }

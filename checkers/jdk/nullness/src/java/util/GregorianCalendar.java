@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class GregorianCalendar extends java.util.Calendar {
+    private static final long serialVersionUID = 0L;
   public final static int BC = 0;
   public final static int AD = 1;
   public GregorianCalendar() { throw new RuntimeException("skeleton method"); }

@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 public
 class IncompatibleClassChangeError extends LinkageError {
+    private static final long serialVersionUID = 0L;
     public IncompatibleClassChangeError () {
 	super();
     }
