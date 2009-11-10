@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class TreeSet<E> extends java.util.AbstractSet<E> implements java.util.NavigableSet<E>, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public TreeSet() { throw new RuntimeException(("skeleton method")); }
   public TreeSet(java.util.Comparator<? super E> a1) { throw new RuntimeException(("skeleton method")); }
   public TreeSet(@PolyRead java.util.Collection<? extends E> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }

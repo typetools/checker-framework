@@ -4,6 +4,7 @@ import checkers.javari.quals.*;
 public final @ReadOnly class Boolean implements java.io.Serializable,
                                       Comparable<Boolean>
 {
+    private static final long serialVersionUID = 0L;
     public static final Boolean TRUE = new Boolean(true);
     public static final Boolean FALSE = new Boolean(false);
     public static final Class<Boolean> TYPE = null;

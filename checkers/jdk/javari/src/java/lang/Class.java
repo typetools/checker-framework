@@ -34,7 +34,7 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
                   java.lang.reflect.GenericDeclaration,
                   java.lang.reflect.Type,
                               java.lang.reflect.AnnotatedElement {
-
+    private static final long serialVersionUID = 0L;                                 
     private Class() { throw new RuntimeException("skeleton method"); }
 
     public String toString() {

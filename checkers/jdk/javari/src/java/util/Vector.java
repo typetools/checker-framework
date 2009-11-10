@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class Vector<E> extends java.util.AbstractList<E> implements java.util.List<E>, java.util.RandomAccess, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public Vector(int a1, int a2) { throw new RuntimeException(("skeleton method")); }
   public Vector(int a1) { throw new RuntimeException(("skeleton method")); }
   public Vector() { throw new RuntimeException(("skeleton method")); }

@@ -29,6 +29,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
 
     public static class SimpleEntry<K,V>
     implements Entry<K,V>, java.io.Serializable {
+        private static final long serialVersionUID = 0L;
         public SimpleEntry(K key, V value) { throw new RuntimeException("skeleton method"); }
         public SimpleEntry(@ReadOnly Entry<? extends K, ? extends V> entry) { throw new RuntimeException("skeleton method"); }
         public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }
@@ -41,6 +42,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
 
     public static @ReadOnly class SimpleImmutableEntry<K,V>
     implements Entry<K,V>, java.io.Serializable {
+        private static final long serialVersionUID = 0L;
         public SimpleImmutableEntry(K key, V value) { throw new RuntimeException("skeleton method"); }
         public SimpleImmutableEntry(@ReadOnly Entry<? extends K, ? extends V> entry) { throw new RuntimeException("skeleton method"); }
         public K getKey() { throw new RuntimeException("skeleton method"); }

@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class EnumMap<K extends java.lang.Enum<K>, V> extends java.util.AbstractMap<K, V> implements java.io.Serializable, java.lang.Cloneable {
+    private static final long serialVersionUID = 0L;
   public EnumMap(java.lang.Class<K> a1) { throw new RuntimeException(("skeleton method")); }
   public EnumMap(@PolyRead java.util.EnumMap<K, ? extends V> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }
   public EnumMap(@PolyRead java.util.Map<K, ? extends V> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }

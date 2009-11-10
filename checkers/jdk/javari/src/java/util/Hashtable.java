@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class Hashtable<K, V> extends java.util.Dictionary<K, V> implements java.util.Map<K, V>, java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public Hashtable(int a1, float a2) { throw new RuntimeException(("skeleton method")); }
   public Hashtable(int a1) { throw new RuntimeException(("skeleton method")); }
   public Hashtable() { throw new RuntimeException(("skeleton method")); }

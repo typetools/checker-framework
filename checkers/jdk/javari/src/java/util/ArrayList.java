@@ -248,6 +248,7 @@ public class ArrayList<E> extends AbstractList<E>
      */
     public  Object clone() /*@ReadOnly*/ {
     try {
+        @SuppressWarnings("unchecked")
         ArrayList<E> v = (ArrayList<E>) super.clone();
         v.elementData = Arrays.copyOf(elementData, size);
         v.modCount = 0;
@@ -300,6 +301,7 @@ public class ArrayList<E> extends AbstractList<E>
      *         this list
      * @throws NullPointerException if the specified array is null
      */
+     @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) /*@ReadOnly*/ {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
@@ -319,6 +321,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element at the specified position in this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     public E get(int index) /*@ReadOnly*/ {
     RangeCheck(index);
 
@@ -337,6 +340,7 @@ public class ArrayList<E> extends AbstractList<E>
     public E set(int index, E element) {
     RangeCheck(index);
 
+    @SuppressWarnings("unchecked")
     E oldValue = (E) elementData[index];
     elementData[index] = element;
     return oldValue;
@@ -388,6 +392,7 @@ public class ArrayList<E> extends AbstractList<E>
     RangeCheck(index);
 
     modCount++;
+    @SuppressWarnings("unchecked")
     E oldValue = (E) elementData[index];
 
     int numMoved = size - index - 1;
