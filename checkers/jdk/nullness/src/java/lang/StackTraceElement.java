@@ -5,6 +5,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class StackTraceElement implements java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public StackTraceElement(java.lang.String a1, java.lang.String a2, @Nullable java.lang.String a3, int a4) { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.String getFileName() { throw new RuntimeException("skeleton method"); }
   public int getLineNumber() { throw new RuntimeException("skeleton method"); }

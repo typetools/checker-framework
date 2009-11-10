@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 public
 class StackOverflowError extends VirtualMachineError {
+    private static final long serialVersionUID = 0L;
     public StackOverflowError() {
 	super();
     }

@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 public
 class AbstractMethodError extends IncompatibleClassChangeError {
+    private static final long serialVersionUID = 0L;
     public AbstractMethodError() {
 	super();
     }

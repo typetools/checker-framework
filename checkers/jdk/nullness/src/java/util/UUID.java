@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class UUID implements java.io.Serializable, java.lang.Comparable<java.util.UUID> {
+    private static final long serialVersionUID = 0L;
   public UUID(long a1, long a2) { throw new RuntimeException("skeleton method"); }
   public static java.util.UUID randomUUID() { throw new RuntimeException("skeleton method"); }
   public static java.util.UUID nameUUIDFromBytes(byte[] a1) { throw new RuntimeException("skeleton method"); }
