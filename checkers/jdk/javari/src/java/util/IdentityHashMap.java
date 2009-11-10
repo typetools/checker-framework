@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class IdentityHashMap<K, V> extends java.util.AbstractMap<K, V> implements java.util.Map<K, V>, java.io.Serializable, java.lang.Cloneable {
+    private static final long serialVersionUID = 0L;
   public IdentityHashMap() { throw new RuntimeException(("skeleton method")); }
   public IdentityHashMap(int a1) { throw new RuntimeException(("skeleton method")); }
   public IdentityHashMap(@PolyRead java.util.Map<? extends K, ? extends V> a1) @PolyRead { throw new RuntimeException(("skeleton method")); }

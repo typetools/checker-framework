@@ -16,6 +16,7 @@ import java.security.SecureRandom;
 import checkers.javari.quals.*;
 
 public class File implements Serializable, Comparable<File> {
+    private static final long serialVersionUID = 0L;
 
     static private FileSystem fs = FileSystem.getFileSystem();
 

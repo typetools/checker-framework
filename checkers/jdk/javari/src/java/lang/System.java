@@ -115,6 +115,7 @@ public final class System {
 
     public static native String mapLibraryName(String libname);
 
+    @SuppressWarnings("rawtypes")
     static Class getCallerClass() {
         throw new RuntimeException("skeleton method");
     }

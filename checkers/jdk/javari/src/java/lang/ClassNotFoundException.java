@@ -2,6 +2,7 @@ package java.lang;
 import checkers.javari.quals.*;
 
 public class ClassNotFoundException extends Exception {
+    private static final long serialVersionUID = 0L;
     public ClassNotFoundException() {
         throw new RuntimeException("skeleton method");
     }

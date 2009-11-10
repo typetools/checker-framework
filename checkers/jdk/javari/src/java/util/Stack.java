@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class Stack<E> extends Vector<E> {
+    private static final long serialVersionUID = 0L;
     public Stack() { throw new RuntimeException("skeleton method"); }
     public E push(E item) { throw new RuntimeException("skeleton method"); }
     public synchronized E pop() { throw new RuntimeException("skeleton method"); }

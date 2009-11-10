@@ -2,6 +2,7 @@ package java.util;
 import checkers.javari.quals.*;
 
 public class PriorityQueue<E> extends java.util.AbstractQueue<E> implements java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public PriorityQueue() { throw new RuntimeException(("skeleton method")); }
   public PriorityQueue(int a1) { throw new RuntimeException(("skeleton method")); }
   public PriorityQueue(int a1, java.util.Comparator<? super E> a2) { throw new RuntimeException(("skeleton method")); }

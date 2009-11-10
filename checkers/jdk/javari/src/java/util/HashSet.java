@@ -5,6 +5,7 @@ public class HashSet<E>
     extends AbstractSet<E>
     implements Set<E>, Cloneable, java.io.Serializable
 {
+    private static final long serialVersionUID = 0L;
     public HashSet() { throw new RuntimeException("skeleton method"); }
     public HashSet(@ReadOnly Collection<? extends E> c) { throw new RuntimeException("skeleton method"); }
     public HashSet(int initialCapacity, float loadFactor) { throw new RuntimeException("skeleton method"); }

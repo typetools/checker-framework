@@ -43,11 +43,11 @@ public class Collections {
     public static <E> @PolyRead List<E> checkedList(@PolyRead List<E> list, Class<E> type) { throw new RuntimeException("skeleton method"); }
     public static <K, V> @PolyRead Map<K, V> checkedMap(@PolyRead Map<K, V> m, Class<K> keyType, Class<V> valueType) { throw new RuntimeException("skeleton method"); }
     public static <K,V> @PolyRead SortedMap<K,V> checkedSortedMap(@PolyRead SortedMap<K, V> m, Class<K> keyType, Class<V> valueType) { throw new RuntimeException("skeleton method"); }
-    public static final @ReadOnly Set EMPTY_SET = null;
+    @SuppressWarnings("rawtypes") public static final @ReadOnly Set EMPTY_SET = null;
     public static final <T> @ReadOnly Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
-    public static final @ReadOnly List EMPTY_LIST = null;
+    @SuppressWarnings("rawtypes") public static final @ReadOnly List EMPTY_LIST = null;
     public static final <T> @ReadOnly List<T> emptyList() { throw new RuntimeException("skeleton method"); }
-    public static final @ReadOnly Map EMPTY_MAP = null;
+    @SuppressWarnings("rawtypes") public static final @ReadOnly Map EMPTY_MAP = null;
     public static final <K,V>  @ReadOnly Map<K,V> emptyMap() { throw new RuntimeException("skeleton method"); }
     public static <T> @ReadOnly Set<T> singleton(T o) { throw new RuntimeException("skeleton method"); }
     public static <T> @ReadOnly List<T> singletonList(T o) { throw new RuntimeException("skeleton method"); }
