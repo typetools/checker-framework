@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class Hashtable<K, V> extends @I java.util.Dictionary<K, V> implements @I java.util.Map<K, V>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public Hashtable(int a1, float a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Hashtable(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Hashtable() @AssignsFields { throw new RuntimeException("skeleton method"); }

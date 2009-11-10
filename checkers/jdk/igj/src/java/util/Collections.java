@@ -3,8 +3,11 @@ import checkers.igj.quals.*;
 
 public class Collections{
   protected Collections() @ReadOnly {}
+  @SuppressWarnings("rawtypes")
   public final static @Immutable java.util.Set EMPTY_SET = null;
+@SuppressWarnings("rawtypes")
   public final static @Immutable java.util.List EMPTY_LIST = null;
+@SuppressWarnings("rawtypes")
   public final static @Immutable java.util.Map EMPTY_MAP = null;
   public static <T extends @ReadOnly java.lang.Comparable<? super T>> void sort(@Mutable java.util.List<T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> void sort(@Mutable java.util.List<T> a1, @ReadOnly java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }

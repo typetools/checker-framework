@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class Vector<E> extends @I java.util.AbstractList<E> implements @I java.util.List<E>, @I java.util.RandomAccess, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public Vector(int a1, int a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Vector(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Vector() @AssignsFields { throw new RuntimeException("skeleton method"); }

@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class Properties extends @I java.util.Hashtable<java.lang.Object, java.lang.Object> {
+    private static final long serialVersionUID = 0L;
   public Properties() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Properties(@ReadOnly java.util.Properties a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public synchronized Object setProperty(java.lang.String a1, java.lang.String a2) @Mutable { throw new RuntimeException("skeleton method"); }

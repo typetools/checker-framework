@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class ArrayList<E> extends @I java.util.AbstractList<E> implements @I java.util.List<E>, @I java.util.RandomAccess, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public ArrayList(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public ArrayList() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public ArrayList(@ReadOnly java.util.Collection<? extends E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }

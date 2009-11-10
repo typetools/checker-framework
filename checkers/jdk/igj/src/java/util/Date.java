@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class Date implements @I java.io.Serializable, @I java.lang.Cloneable, @I java.lang.Comparable<@ReadOnly java.util.Date> {
+    private static final long serialVersionUID = 0L;
   public Date() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Date(long a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Date(int a1, int a2, int a3) @AssignsFields { throw new RuntimeException("skeleton method"); }

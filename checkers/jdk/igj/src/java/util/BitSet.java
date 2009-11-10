@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class BitSet implements @I Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public BitSet() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public BitSet(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public void flip(int a1) @Mutable { throw new RuntimeException("skeleton method"); }

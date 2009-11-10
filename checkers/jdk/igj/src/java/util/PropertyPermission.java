@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @Immutable
 public final class PropertyPermission extends java.security.BasicPermission {
+    private static final long serialVersionUID = 0L;
   public PropertyPermission(java.lang.String a1, java.lang.String a2) @AssignsFields { super(a1); throw new RuntimeException("skeleton method"); }
   public boolean implies(java.security.Permission a1) { throw new RuntimeException("skeleton method"); }
   public boolean equals(@ReadOnly java.lang.Object a1) { throw new RuntimeException("skeleton method"); }

@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class GregorianCalendar extends @I java.util.Calendar{
+    private static final long serialVersionUID = 0L;
   public final static int BC = 0;
   public final static int AD = 1;
   public GregorianCalendar() @AssignsFields  { throw new RuntimeException("skeleton method"); }

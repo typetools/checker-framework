@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @Immutable
 public final class UUID implements java.io.Serializable, java.lang.Comparable<java.util.UUID> {
+    private static final long serialVersionUID = 0L;
   public UUID(long a1, long a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public static java.util.UUID randomUUID() { throw new RuntimeException("skeleton method"); }
   public static java.util.UUID nameUUIDFromBytes(byte @ReadOnly [] a1) { throw new RuntimeException("skeleton method"); }

@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class SimpleTimeZone extends java.util.TimeZone {
+    private static final long serialVersionUID = 0L;
   public final static int WALL_TIME = 0;
   public final static int STANDARD_TIME = 1;
   public final static int UTC_TIME = 2;
