@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @Immutable
 public final class Locale implements @Immutable java.lang.Cloneable, @Immutable java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public final static java.util.Locale ENGLISH;
   public final static java.util.Locale FRENCH;
   public final static java.util.Locale GERMAN;

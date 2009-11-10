@@ -6,6 +6,7 @@ import checkers.igj.quals.*;
 public abstract class AbstractMap<K, V> implements @I java.util.Map<K, V> {
   @I
   public static class SimpleEntry<K, V> implements @I java.util.Map.Entry<K, V>, @I java.io.Serializable {
+      private static final long serialVersionUID = 0L;
     public SimpleEntry(K a1, V a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
     public SimpleEntry(@I java.util.Map.Entry<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
     public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }
@@ -18,6 +19,7 @@ public abstract class AbstractMap<K, V> implements @I java.util.Map<K, V> {
 
   @Immutable
   public static class SimpleImmutableEntry<K, V> implements @Immutable java.util.Map.Entry<K, V>, @Immutable java.io.Serializable {
+      private static final long serialVersionUID = 0L;
     public SimpleImmutableEntry(K a1, V a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
     public SimpleImmutableEntry(java.util.Map.Entry<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
     public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }

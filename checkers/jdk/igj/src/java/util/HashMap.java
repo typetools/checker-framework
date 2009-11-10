@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class HashMap<K, V> extends @I java.util.AbstractMap<K, V> implements @I java.util.Map<K, V>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public HashMap(int a1, float a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public HashMap(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public HashMap() @AssignsFields { throw new RuntimeException("skeleton method"); }

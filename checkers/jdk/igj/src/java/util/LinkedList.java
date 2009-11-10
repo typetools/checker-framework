@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class LinkedList<E> extends @I java.util.AbstractSequentialList<E> implements @I java.util.List<E>, @I java.util.Deque<E>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public LinkedList() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public LinkedList(@ReadOnly java.util.Collection<? extends E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public E getFirst() @ReadOnly { throw new RuntimeException("skeleton method"); }
