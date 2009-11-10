@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class PriorityQueue<E> extends @I java.util.AbstractQueue<E> implements @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public PriorityQueue() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public PriorityQueue(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public PriorityQueue(int a1, @ReadOnly java.util.Comparator<? super E> a2) @AssignsFields { throw new RuntimeException("skeleton method"); }

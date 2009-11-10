@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class TreeSet<E> extends @I java.util.AbstractSet<E> implements @I java.util.NavigableSet<E>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public TreeSet() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public TreeSet(@ReadOnly java.util.Comparator<? super E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public TreeSet(@ReadOnly java.util.Collection<? extends E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }

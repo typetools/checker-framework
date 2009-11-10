@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class LinkedHashMap<K, V> extends @I java.util.HashMap<K, V> implements @I java.util.Map<K, V> {
+    private static final long serialVersionUID = 0L;
   public LinkedHashMap(int a1, float a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public LinkedHashMap(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public LinkedHashMap() @AssignsFields { throw new RuntimeException("skeleton method"); }

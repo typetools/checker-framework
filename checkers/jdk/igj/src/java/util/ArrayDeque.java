@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class ArrayDeque<E> extends @I java.util.AbstractCollection<E> implements @I java.util.Deque<E>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public ArrayDeque() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public ArrayDeque(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public ArrayDeque(@ReadOnly java.util.Collection<? extends E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }

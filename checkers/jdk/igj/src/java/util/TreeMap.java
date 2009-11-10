@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class TreeMap<K, V> extends @I java.util.AbstractMap<K, V> implements @I java.util.NavigableMap<K, V>, @I java.lang.Cloneable, @I java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public TreeMap() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public TreeMap(@ReadOnly java.util.Comparator<? super K> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public TreeMap(@ReadOnly java.util.Map<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }

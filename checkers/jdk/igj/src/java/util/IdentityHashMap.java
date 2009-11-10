@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class IdentityHashMap<K, V> extends @I java.util.AbstractMap<K, V> implements @I java.util.Map<K, V>, @I java.io.Serializable, @I java.lang.Cloneable {
+    private static final long serialVersionUID = 0L;
   public IdentityHashMap() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public IdentityHashMap(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public IdentityHashMap(@ReadOnly java.util.Map<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
