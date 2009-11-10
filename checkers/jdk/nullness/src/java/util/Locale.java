@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class Locale implements java.lang.Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 0L;
   public final static java.util.Locale ENGLISH;
   public final static java.util.Locale FRENCH;
   public final static java.util.Locale GERMAN;

@@ -3,6 +3,7 @@ package java.util.regex;
 import checkers.nullness.quals.*;
 
 public final class Pattern implements java.io.Serializable{
+    private static final long serialVersionUID = 0L;
   protected Pattern() {}
   public final static int UNIX_LINES = 1;
   public final static int CASE_INSENSITIVE = 2;

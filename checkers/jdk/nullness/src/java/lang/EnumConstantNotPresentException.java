@@ -40,7 +40,7 @@ public class EnumConstantNotPresentException extends RuntimeException {
     /**
      * The type of the missing enum constant.
      */
-    private Class<? extends Enum> enumType;
+    private Class<? extends Enum<?>> enumType;
 
     /**
      * The name of the missing enum constant.
@@ -54,7 +54,7 @@ public class EnumConstantNotPresentException extends RuntimeException {
      * @param enumType the type of the missing enum constant
      * @param constantName the name of the missing enum constant
      */
-    public EnumConstantNotPresentException(Class<? extends Enum> enumType,
+    public EnumConstantNotPresentException(Class<? extends Enum<?>> enumType,
                                            String constantName) {
         super(enumType.getName() + "." + constantName);
         this.enumType = enumType;
@@ -66,7 +66,7 @@ public class EnumConstantNotPresentException extends RuntimeException {
      *
      * @return the type of the missing enum constant
      */
-    public Class<? extends Enum> enumType() { return enumType; }
+    public Class<? extends Enum<?>> enumType() { return enumType; }
 
     /**
      * Returns the name of the missing enum constant.
