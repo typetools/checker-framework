@@ -1,0 +1,66 @@
+
+.SILENT:
+
+# Variables
+CHECKERS ?= ../..
+CHECKERS_JAR ?= $(CHECKERS)/checkers.jar
+
+LANGTOOLS ?= ../../../jsr308-langtools
+JAVADOCLIB ?= $(LANGTOOLS)/build/classes
+JAVAC ?= $(LANGTOOLS)/dist/bin/javac -Xlint
+JAVAP ?= $(LANGTOOLS)/dist/bin/javap
+
+RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+
+clean:
+	rm -rf build annotated jdk.jar
+
+build:
+	mkdir -p build
+
+
+############## Validate annotated jdk against missing methods ##############
+SOURCES = $(shell find src/java -name '*.java')
+CLASSES = $(patsubst src/%.java,build/%.class, $(SOURCES))
+DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
+
+.PHONY: classes
+classes: $(SOURCES)
+	echo "building the jdk..."
+	mkdir -p build
+	$(JAVAC) -cp $(CHECKERS_JAR):$(JAVADOCLIB) -d build $?
+
+build/%.class: src/%.java
+	$(JAVAC) -sourcepath src -cp $(CHECKERS_JAR):$(JAVADOCLIB) -d build $<
+
+build/%.expected: build/%.class
+	$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+
+build/%.actual: build/%.class
+	$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+
+build/%.diff: build/%.expected build/%.actual
+	echo "validating class:" $(subst /,.,$*)
+	diff $? > $@
+
+validate: classes $(DIFFS)
+
+############## Annotate the annotated jdk file ##############
+JAIFS = $(patsubst src/%.java,build/%.jaif, $(SOURCES))
+ANNOTATED = $(patsubst src/%.java,annotated/%.class, $(SOURCES))
+
+build/%.jaif: build/%.class
+	extract-annotations $<
+
+stubs: $(JAIFS)
+
+annotated/%.class: build/%.jaif
+	cd annotated; unzip $(RTJAR) $*.class > /dev/null
+	insert-annotations $@ $<
+
+annotated: $(ANNOTATED)
+
+jdk.jar: annotated
+	cd annotated; jar cf ../jdk.jar `find . -name '*.class'`
+
+jdk: jdk.jar
