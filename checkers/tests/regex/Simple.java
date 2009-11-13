@@ -1,4 +1,4 @@
-import checkers.regex.quals.ValidRegex;
+import checkers.regex.quals.Regex;
 
 import java.util.regex.Pattern;
 
@@ -10,8 +10,8 @@ public class Simple {
     }
 
     void validRegString() {
-        @ValidRegex String s1 = "validRegex";
-        @ValidRegex String s2 = "(InvalidRegex";    // error
+        @Regex String s1 = "validRegex";
+        @Regex String s2 = "(InvalidRegex";    // error
     }
 
     void compileCall() {
@@ -19,23 +19,23 @@ public class Simple {
         Pattern.compile("$test.*[^123");    // error
     }
 
-    void requireValidReg(@ValidRegex String reg, String nonReg) {
+    void requireValidReg(@Regex String reg, String nonReg) {
         Pattern.compile(reg);
         Pattern.compile(nonReg);    // error
     }
 
-    void testAddition(@ValidRegex String reg, String nonReg) {
-        @ValidRegex String s1 = reg;
-        @ValidRegex String s2 = reg + "d.*sf";
-        @ValidRegex String s3 = reg + reg;
+    void testAddition(@Regex String reg, String nonReg) {
+        @Regex String s1 = reg;
+        @Regex String s2 = reg + "d.*sf";
+        @Regex String s3 = reg + reg;
 
-        @ValidRegex String n1 = nonReg;     // error
-        @ValidRegex String n2 = reg + "(df";    // error
-        @ValidRegex String n3 = reg + nonReg;   // error
+        @Regex String n1 = nonReg;     // error
+        @Regex String n2 = reg + "(df";    // error
+        @Regex String n3 = reg + nonReg;   // error
 
-        @ValidRegex String o1 = nonReg;     // error
-        @ValidRegex String o2 = nonReg + "sdf";     // error
-        @ValidRegex String o3 = nonReg + reg;     // error
+        @Regex String o1 = nonReg;     // error
+        @Regex String o2 = nonReg + "sdf";     // error
+        @Regex String o3 = nonReg + reg;     // error
 
     }
 }
