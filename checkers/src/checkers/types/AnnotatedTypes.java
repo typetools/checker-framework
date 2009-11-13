@@ -521,6 +521,7 @@ public class AnnotatedTypes {
 
         // Find the un-annotated type
         AnnotatedTypeMirror returnType = factory.type(methodInvocation);
+        factory.annotateImplicit(methodInvocation, returnType);
         AnnotatedExecutableType methodType =
             asMemberOf(factory.getReceiver(methodInvocation), methodElt);
 
@@ -813,6 +814,8 @@ public class AnnotatedTypes {
                 else
                     subtypes[i] = asSuper(type, lub);
             }
+            if (subtypes.length > 0)
+                lub.clearAnnotations();
             addAnnotations(lub, subtypes);
         }
     }
