@@ -176,7 +176,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         // TODO: This is quite ugly
         if (!useFlow || finishedScanning
                 || tree.getKind() == Tree.Kind.METHOD
-                || tree.getKind() == Tree.Kind.CLASS) {
+                || tree.getKind() == Tree.Kind.CLASS
+                || tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
             defaults.annotate(tree, type);

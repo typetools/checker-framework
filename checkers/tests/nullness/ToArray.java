@@ -56,8 +56,8 @@ public class ToArray {
         for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size()]));
         for (@NonNull  String o : nonnullCol.toArray(new String[nonnullCol.size()]));
 
-        for (@Nullable String o : nonnullCol.toArray(new String[] {null}));
-        for (@NonNull  String o : nonnullCol.toArray(new String[] {null})); // error
+        for (@Nullable String o : nonnullCol.toArray(new @Nullable String[] {null}));
+        for (@NonNull  String o : nonnullCol.toArray(new @Nullable String[] {null})); // error
         for (@Nullable String o : nonnullCol.toArray(new String[1]));
         for (@NonNull  String o : nonnullCol.toArray(new String[1]));   // error
         for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() + 1]));
