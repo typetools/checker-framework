@@ -113,8 +113,8 @@ public class QualifierPolymorphism {
                 collector.visit(factory.getReceiver(tree), type.getReceiverType()));
         if (matchingMapping != null && !matchingMapping.isEmpty())
             replacer.visit(type, matchingMapping.values().iterator().next());
-        else
-            completer.visit(type);
+//        else
+//            completer.visit(type);
     }
 
     private AnnotatedTypeScanner<Void, AnnotationMirror> replacer
