@@ -55,8 +55,8 @@ public class CollectionToArrayHeauristics {
             
             // TODO: we need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays
-            if (!receiver && isArrayCreation)
-                setComponentNullness(receiver, method.getParameterTypes().get(0));
+            if (!receiver)
+                setComponentNullness(false, method.getParameterTypes().get(0));
         }
     }
 
@@ -73,9 +73,8 @@ public class CollectionToArrayHeauristics {
         NewArrayTree newArr = (NewArrayTree)argument;
 
         // case 1: empty array initializer
-        if (newArr.getInitializers() != null
-            && newArr.getInitializers().isEmpty())
-            return true;
+        if (newArr.getInitializers() != null)
+            return newArr.getInitializers().isEmpty();
 
         assert !newArr.getDimensions().isEmpty();
         Tree dimension = newArr.getDimensions().get(newArr.getDimensions().size() - 1);
