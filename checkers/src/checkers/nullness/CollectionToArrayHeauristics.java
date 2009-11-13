@@ -45,7 +45,7 @@ import com.sun.source.tree.Tree;
  * </ol>
  *
  * While checking for the second condition, requires a runtime check, we
- * provide heauristics to handle the most common cases of
+ * provide heuristics to handle the most common cases of
  * {@link Collection.toArray(T[])}, namely if the passed array is
  *
  * <ol>
@@ -83,7 +83,7 @@ public class CollectionToArrayHeauristics {
     }
 
     /**
-     * Apply the hearustics to the given method invocation and corresponding
+     * Apply the heuristics to the given method invocation and corresponding
      * {@link Collection#toArray()} type.
      *
      * If the method invocation is a call to {@code toArray}, then it
@@ -101,7 +101,7 @@ public class CollectionToArrayHeauristics {
         } else if (isMethod(tree, collectionToArrayE)) {
             assert !tree.getArguments().isEmpty() : tree;
             Tree argument = tree.getArguments().get(0);
-            boolean isArrayCreation = isArrayCreationOfSize(argument,
+            boolean isArrayCreation = isHandledArrayCreation(argument,
                     receiver(tree.getMethodSelect()));
             boolean receiver = isNonNullReceiver(tree);
             setComponentNullness(receiver && isArrayCreation, method.getReturnType());
@@ -113,6 +113,13 @@ public class CollectionToArrayHeauristics {
         }
     }
 
+    /**
+     * Sets the nullness of the component of the array type.
+     *
+     * @param isNonNull     indicates which annotation ({@code NonNull}
+     *                      or {@code Nullable}) should be inserted
+     * @param type          the array type
+     */
     private void setComponentNullness(boolean isNonNull, AnnotatedTypeMirror type) {
         assert type.getKind() == TypeKind.ARRAY;
         AnnotatedTypeMirror compType = ((AnnotatedArrayType)type).getComponentType();
@@ -120,7 +127,16 @@ public class CollectionToArrayHeauristics {
         compType.addAnnotation(isNonNull ? factory.NONNULL : factory.NULLABLE);
     }
 
-    private boolean isArrayCreationOfSize(Tree argument, String receiver) {
+    /**
+     * Returns true if {@code argument} is one of the array creation trees
+     * that the heuristic handles.
+     *
+     * @param argument  the tree passed to {@link Collection#toArray(T[])}
+     * @param receiver  the name of the receiver collection
+     * @return true if the argument is handled and assume to return nonnull
+     * elements
+     */
+    private boolean isHandledArrayCreation(Tree argument, String receiver) {
         if (argument.getKind() != Tree.Kind.NEW_ARRAY)
             return false;
         NewArrayTree newArr = (NewArrayTree)argument;
@@ -146,6 +162,11 @@ public class CollectionToArrayHeauristics {
         return false;
     }
 
+    /**
+     * Returns {@code true} if the method invocation tree receiver is
+     * collection who is known to contain non-null elements (i.e. its type
+     * argument is a {@code NonNull}.
+     */
     private boolean isNonNullReceiver(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = factory.getReceiver(tree);
@@ -158,11 +179,17 @@ public class CollectionToArrayHeauristics {
         return true;
     }
 
+    /**
+     * The name of the receiver object of the tree.
+     *
+     * @param tree either an identifier tree or a member select tree
+     */
+    // This method is quite sloppy, but works most of the time
     private String receiver(Tree tree) {
         if (tree.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)tree).getExpression().toString();
         else
-            return "null";
+            return "this";
     }
 
     // TODO: duplicated code from MapGetHeauristics
