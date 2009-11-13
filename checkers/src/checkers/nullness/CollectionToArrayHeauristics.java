@@ -1,5 +1,7 @@
 package checkers.nullness;
 
+import java.util.Collection;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -18,6 +20,45 @@ import com.sun.source.tree.Tree;
 /**
  * Handles calls to {@link java.util.Collection#toArray()} and determines
  * the appropriate nullness type of the returned value.
+ *
+ * <p>{@link Collection#toArray()} and {@link Collection#toArray(T[])} method
+ * semantics cannot be captured by the regular type system.
+ * Namely, the nullness of the returned array component depends on the
+ * receiver type argument.  So
+ *
+ * <pre>
+ *     Collection<@NonNull String> c1 = ...
+ *     c1.toArray();    // --> returns @NonNull Object []
+ *
+ *     Collection<@Nullable String> c2 = ...
+ *     c2.toArray();    // --> returns @Nullable Object []
+ * </pre>
+ *
+ * In the case of {@link Collection#toArray(T[])}, the type of the returned
+ * array depends on the passed parameter as well and its size.  In particular,
+ * the returned array component would of type {@code @NonNull} if the following
+ * conditions hold:
+ *
+ * <ol>
+ * <li value="1">The receiver collection type argument is {@code NonNull}</li>
+ * <li value="2">The passed array size is less than the collection size</li>
+ * </ol>
+ *
+ * While checking for the second condition, requires a runtime check, we
+ * provide heauristics to handle the most common cases of
+ * {@link Collection.toArray(T[])}, namely if the passed array is
+ *
+ * <ol>
+ * <li value="1">an empty array initializer, e.g.
+ * {@code c.toArray(new String[] { })},</li>
+ * <li value="2">array creation tree of size 0, e.g.
+ * {@code c.toArray(new String[0])}, or</li>
+ * <li value="3">array creation tree of the collection size method invocation
+ * {@code c.toArray(new String[c.size()])}</li>
+ * </ol>
+ *
+ * Note: The nullness of the returned array doesn't depend on the passed
+ * array nullness.
  */
 public class CollectionToArrayHeauristics {
     private final ProcessingEnvironment env;
@@ -41,8 +82,20 @@ public class CollectionToArrayHeauristics {
         this.collectionType = factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
     }
 
+    /**
+     * Apply the hearustics to the given method invocation and corresponding
+     * {@link Collection#toArray()} type.
+     *
+     * If the method invocation is a call to {@code toArray}, then it
+     * manipulates the returned type of {@code method} arg to contain the
+     * appropriate nullness.  Otherwise, it does nothing.
+     *
+     * @param tree      method invocation tree
+     * @param method    invoked method type
+     */
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
         if (isMethod(tree, collectionToArrayObject)) {
+            // simple case of collection.toArray()
             boolean receiver = isNonNullReceiver(tree);
             setComponentNullness(receiver, method.getReturnType());
         } else if (isMethod(tree, collectionToArrayE)) {
@@ -52,7 +105,7 @@ public class CollectionToArrayHeauristics {
                     receiver(tree.getMethodSelect()));
             boolean receiver = isNonNullReceiver(tree);
             setComponentNullness(receiver && isArrayCreation, method.getReturnType());
-            
+
             // TODO: we need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays
             if (!receiver)
@@ -79,10 +132,11 @@ public class CollectionToArrayHeauristics {
         assert !newArr.getDimensions().isEmpty();
         Tree dimension = newArr.getDimensions().get(newArr.getDimensions().size() - 1);
 
-        // case 2
+        // case 2: 0-length array creation
         if (dimension.toString().equals("0"))
             return true;
 
+        // case 3: size()-length array creation
         if (isMethod(dimension, size)) {
             MethodInvocationTree invok = (MethodInvocationTree)dimension;
             String invokReceiver = receiver(invok.getMethodSelect());
