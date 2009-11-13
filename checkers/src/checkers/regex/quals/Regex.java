@@ -12,4 +12,4 @@ import checkers.quals.*;
 @Inherited
 @SubtypeOf({Unqualified.class})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidRegex {}
+public @interface Regex {}
