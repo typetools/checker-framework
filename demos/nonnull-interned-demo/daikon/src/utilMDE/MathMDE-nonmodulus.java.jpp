@@ -1,0 +1,265 @@
+#if 0
+Do not attempt to compile this file with a Java compiler such as javac.
+You first need to preprocess it with cpp, the C preprocessor.
+The correct way to build the system is to run 'make'.
+#endif
+
+#include "MathMDE-help.java.jpp"
+
+
+  /**
+   * Return an array containing all the numbers *not* in its argument array
+   * but in the argument's range; that is, bigger than its argument's
+   * minimum value and smaller than its argument's maximum value.
+   * The result contains no duplicates and is in order.
+   **/
+  public static INT[] missing_numbers(INT[] nums) {
+    { // avoid modifying parameter
+      INT[] nums_copy = new INT[nums.length];
+      System.arraycopy(nums, 0, nums_copy, 0, nums.length);
+      nums = nums_copy;
+    }
+    Arrays.sort(nums);
+    INT min = nums[0];
+    INT max = nums[nums.length-1];
+    INT[] result = new INT[CastToInt(max - min + 1 - nums.length)];
+    int result_index = 0;
+    INT val = min;
+    for (int i=0; i<nums.length; i++) {
+      while (val < nums[i]) {
+        result[result_index] = val;
+        result_index++;
+        val++;
+      }
+      if (val == nums[i]) {
+        val++;
+      }
+    }
+    if (result_index == result.length) {
+      return result;
+    } else {
+      // There were duplicates in the nums array, so we didn't fill up
+      // the result array.
+      INT[] new_result = new INT[result_index];
+      System.arraycopy(result, 0, new_result, 0, result_index);
+      return new_result;
+    }
+  }
+
+
+  /**
+   * This iterator returns all the numbers *not* in its argument array
+   * but in the argument's range; that is, bigger than its argument's
+   * minimum value and smaller than its argument's maximum value.
+   * The result contains no duplicates and is in order.
+   * If boolean add_ends is set, then the bracketing endpoints are also
+   * returned; otherwise, all returned values are between the minimum and
+   * maximum of the original values.
+   **/
+  static final class MissingNumbersIteratorINT implements Iterator<INTEGER> {
+    INT[] nums;
+    Iterator<INTEGER> nums_itor;
+    INT current_nonmissing;
+    INT current_missing;
+    int current_index;
+    boolean add_ends;
+
+    MissingNumbersIteratorINT(INT[] nums, boolean add_ends) {
+      this.add_ends = add_ends;
+      { // avoid modifying parameter
+        INT[] nums_copy = new INT[nums.length];
+        System.arraycopy(nums, 0, nums_copy, 0, nums.length);
+        nums = nums_copy;
+      }
+      Arrays.sort(nums);
+      current_index = 0;
+      current_nonmissing = nums[current_index];
+      if (add_ends) {
+        current_missing = current_nonmissing - 1;
+      } else {
+        current_missing = current_nonmissing;
+      }
+      this.nums = nums;
+    }
+
+    // The argument iterator must return the Integers in sorted order
+    MissingNumbersIteratorINT(Iterator<INTEGER> nums_itor, boolean add_ends) {
+      this.add_ends = add_ends;
+      if (!nums_itor.hasNext())
+        throw new Error("No elements in nums_itor");
+      current_nonmissing = nums_itor.next().INTValue();
+      if (add_ends) {
+        current_missing = current_nonmissing - 1;
+      } else {
+        current_missing = current_nonmissing;
+      }
+      this.nums_itor = nums_itor;
+    }
+
+    public boolean hasNext() {
+      if (current_missing < current_nonmissing)
+        return true;
+      // This loop ("while" instead of "if") permits duplicates in nums.
+      while (current_missing == current_nonmissing) {
+        if (nums != null) {
+          current_index++;
+          if (current_index >= nums.length) {
+            if (add_ends) {
+              current_missing++;
+              return true;
+            } else {
+              return false;
+            }
+          }
+          current_nonmissing = nums[current_index];
+        } else if (nums_itor != null) {
+          if (!nums_itor.hasNext()) {
+            if (add_ends) {
+              current_missing++;
+              return true;
+            } else {
+              return false;
+            }
+          }
+          // prev_nonmissing is for testing only
+          INT prev_nonmissing = current_nonmissing;
+          current_nonmissing = nums_itor.next().INTValue();
+          if (! (prev_nonmissing < current_nonmissing))
+            throw new Error("Non-sorted Iterator supplied to " + stringify(MissingNumbersIteratorINT) + ": prev_nonmissing = " + prev_nonmissing + ", current_nonmissing = " + current_nonmissing);
+        } else {
+          throw new Error("Can't happen");
+        }
+        current_missing++;
+        return hasNext();
+      }
+      if (add_ends) {
+        return (current_missing == current_nonmissing + 1);
+      } else {
+        throw new Error("Can't happen: " + current_missing + " " + current_nonmissing);
+      }
+    }
+
+    public INTEGER next() {
+      if (!hasNext())
+        throw new NoSuchElementException();
+      INTEGER result = new INTEGER(current_missing);
+      current_missing++;
+      return result;
+    }
+
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+
+  /**
+   * Return a tuple of (r,m) where no number in NUMS is equal to r (mod
+   * m) but all missing numbers in their range are.
+   **/
+  public static INT[] nonmodulus_strict(INT[] nums) {
+    // This implementation is particularly inefficient; find a better way to
+    // compute this.  Perhaps obtain the new modulus numbers incrementally
+    // instead of all at once.
+    if (nums.length == 0)
+      return null;
+    INT range = ArraysMDE.element_range(nums);
+    if (range > 65536)
+      return null;
+    return nonmodulus_strict_INT_internal(new MissingNumbersIteratorINT(nums, true));
+  }
+
+  private static INT[] nonmodulus_strict_INT_internal(Iterator<INTEGER> missing) {
+    // Must not use regular modulus:  that can produce errors, eg
+    // nonmodulus_strict({1,2,3,5,6,7,9,11}) => {0,2}.  Thus, use
+    // modulus_strict.
+    UtilMDE.RemoveFirstAndLastIterator<INTEGER> missing_nums
+      = new UtilMDE.RemoveFirstAndLastIterator<INTEGER>(missing);
+    INT[] result = modulus_strict_INT(missing_nums, false);
+    if (result == null)
+      return result;
+    if (! check_first_and_last_nonmodulus(result, missing_nums))
+      return null;
+
+    return result;
+  }
+
+  private static boolean check_first_and_last_nonmodulus(INT[] rm, UtilMDE.RemoveFirstAndLastIterator<INTEGER> rfali) {
+    INT r = rm[0];
+    INT m = rm[1];
+    INT first = rfali.getFirst().INTValue();
+    INT last = rfali.getLast().INTValue();
+    return ((r != mod_positive(first, m))
+            && (r != mod_positive(last, m)));
+  }
+
+  /**
+   * Return a tuple of (r,m) where no number in NUMS is equal to r (mod
+   * m) but all missing numbers in their range are.
+   **/
+  public static INT[] nonmodulus_strict_INT(Iterator<INTEGER> nums) {
+    return nonmodulus_strict_INT_internal(new MissingNumbersIteratorINT(nums, true));
+  }
+
+
+  // Old, slightly less efficient implementation that uses the version of
+  // missing_numbers that returns an array instead of an Iterator.
+  // /**
+  //  * Return a tuple of (r,m) where no number in NUMS is equal to r (mod
+  //  * m) but all missing numbers in their range are.
+  //  */
+  // public static INT[] nonmodulus_strict(INT[] nums) {
+  //   // This implementation is particularly inefficient; find a better way to
+  //   // compute this.  Perhaps obtain the new modulus numbers incrementally
+  //   // instead of all at once.
+  //   if (nums.length == 0)
+  //     return null;
+  //   INT range = ArraysMDE.element_range(nums);
+  //   if (range > 65536)
+  //     return null;
+  //   return modulus(missing_numbers(nums));
+  // }
+
+  /**
+   * Return a tuple of (r,m) where no number in NUMS is equal to r (mod m)
+   * but for every number in NUMS, at least one is equal to every non-r remainder.
+   * The modulus is chosen as small as possible, but no greater than half the
+   * range of the input numbers (else null is returned).
+   **/
+  // This seems to give too many false positives (or maybe my probability
+  // model was wrong); use nonmodulus_strict instead.
+  public static INT[] nonmodulus_nonstrict(INT[] nums) {
+    if (nums.length < 4)
+      return null;
+    int max_modulus = CastToInt(Math.min(nums.length/2, ArraysMDE.element_range(nums)/2));
+
+    // System.out.println("nums.length=" + nums.length + ", range=" + ArraysMDE.element_range(nums) + ", max_modulus=" + max_modulus);
+
+    // no real sense checking 2, as common_modulus would have found it, but
+    // include it to make this function stand on its own
+    for (int m=2; m<=max_modulus; m++) {
+      // System.out.println("Trying m=" + m);
+      boolean[] has_modulus = new boolean[m]; // initialized to false?
+      int num_nonmodulus = m;
+      for (int i=0; i<nums.length; i++) {
+        int rem = CastToInt(mod_positive(nums[i], m));
+        if (!has_modulus[rem]) {
+          has_modulus[rem] = true;
+          num_nonmodulus--;
+          // System.out.println("rem=" + rem + " for " + nums[i] + "; num_nonmodulus=" + num_nonmodulus);
+          if (num_nonmodulus == 0)
+            // Quit as soon as we see every remainder instead of processing
+            // each element of the input list.
+            break;
+        }
+      }
+      // System.out.println("For m=" + m + ", num_nonmodulus=" + num_nonmodulus);
+      if (num_nonmodulus == 1) {
+        return new INT[] {ArraysMDE.indexOf(has_modulus, false), m};
+      }
+    }
+    return null;
+  }
+
+
+#include "MathMDE-helpend.java.jpp"
