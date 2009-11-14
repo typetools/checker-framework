@@ -34,7 +34,26 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{linear-checker}{Linear checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
+\item
+  \ahrefloc{regex-checker}{Regex checker} to prevent use of syntactically
+  invalid regular expressions (see \chapterpageref{regex-checker})
+\item
+  \ahrefloc{i18n-checker}{Internationalization checker} to ensure that code
+  is properly internationalized:  user-visible text is obtained from a
+  localization resource, and proper keys are used for a localization
+  resource (see \chapterpageref{i18n-checker})
+\item
+  \ahrefloc{basic-checker}{Basic checker} for customized checking without
+  writing any code (see \chapterpageref{basic-checker})
+\item
+  \ahrefloc{typestate-checker}{Typestate checker} to ensure operations are
+  performed on objects that are in the right state, such as only opened
+  files being read (see \chapterpageref{typestate-checker})
+\item
+  \ahrefloc{units-checker}{Units and dimensions checker} to prevent
+  mixing variables that measure different quantities (see \chapterpageref{units-checker})
 
+% Keep this list in sync with the list in manual.tex.
 \end{enumerate}
 
 \noindent
@@ -905,4 +924,4 @@ is annotated \<@ReadOnly>.
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks
-% LocalWords:  Aquals processorpath
+% LocalWords:  Aquals processorpath regex RegEx
