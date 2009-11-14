@@ -63,4 +63,20 @@ public class ConditionalNullness {
         field.toString();       // error
     }
 
+    public class PptTopLevel {
+        /** List of all of the splitters for this ppt. */
+        public @LazyNonNull Object splitters = null;
+
+        @AssertNonNullIfTrue("splitters")
+        public boolean has_splitters() {
+            return (splitters != null);
+        }
+    }
+
+    void testPptTopLevel(PptTopLevel ppt) {
+        if (!ppt.has_splitters())
+            return;
+        @NonNull Object s2 = ppt.splitters;
+    }
+
 }
