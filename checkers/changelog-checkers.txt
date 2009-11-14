@@ -1,3 +1,14 @@
+Version 1.0.2, ?? Nov 2009
+
+Checkers
+  Renamed RegEx ValidRegex to Regex annotation
+  Improved Collection.toArray() heauristics to be more sound
+
+Bug fixes
+  Fixed the annotated JDK to match OpenJDK 6
+    - Added missing methods and corrected class hierarchy
+
+----------------------------------------------------------------------
 Version 1.0.1, 1 Nov 2009
 
 Checkers

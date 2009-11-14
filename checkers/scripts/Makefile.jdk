@@ -7,7 +7,7 @@ CHECKERS_JAR ?= $(CHECKERS)/checkers.jar
 
 LANGTOOLS ?= ../../../jsr308-langtools
 JAVADOCLIB ?= $(LANGTOOLS)/build/classes
-JAVAC ?= $(LANGTOOLS)/dist/bin/javac
+JAVAC ?= $(LANGTOOLS)/dist/bin/javac -Xlint
 JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar

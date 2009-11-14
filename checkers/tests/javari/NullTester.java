@@ -7,7 +7,7 @@ public class NullTester {
     }
 
     void method() {
-        Object a = null;         // mutable
+        @Mutable Object a = null;         // mutable
 
         // ok
         a = a;
