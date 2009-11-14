@@ -110,10 +110,12 @@
 	    <isset property="javaparser.lib.uptodate"/>
 	  </and>
 	</condition>
+	<!--
 	<echo message="src.files.uptodate: ${src.files.uptodate}"/>
 	<echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
 	<echo message="javaparser.lib.uptodate: ${javaparser.lib.uptodate}"/>
 	<echo message="build.uptodate: ${build.uptodate}"/>
+	-->
 
 	<fileset id="javari.jdk.src.files" dir=".">
 	    <include name="${javari.jdk.src}/**/*.java"/>
@@ -124,7 +126,9 @@
 	  <srcfiles refid="javari.jdk.src.files"/>
           <mapper type="glob" from="${javari.jdk.src}/*.java" to="${javari.jdk.build}/*.class"/>
         </uptodate>
+	<!--
 	<echo message="javari.jdk.uptodate: ${javari.jdk.uptodate}"/>
+	-->
 
     </target>
 
