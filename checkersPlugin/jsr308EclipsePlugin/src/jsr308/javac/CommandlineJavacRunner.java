@@ -14,8 +14,8 @@ import org.osgi.framework.*;
  * Runs the compiler and parses the output.
  */
 public class CommandlineJavacRunner{
-    // private static final String CHECKERS_LOCATION = "lib/checkers/checkers.jar";
-    private static final String JAVAC_LOCATION = "lib/langtools/binary/javac.jar";
+    public static final String CHECKERS_LOCATION = "lib/checkers/checkers.jar";
+    public static final String JAVAC_LOCATION = "lib/langtools/binary/javac.jar";
     public static boolean VERBOSE = true;
 
     public List<JavacError> callJavac(List<String> fileNames, String processor, String classpath){
@@ -93,12 +93,19 @@ public class CommandlineJavacRunner{
 
     // This used to be used. Now we just scan the classpath. The checkers.jar must be on the classpath anyway.
     // XXX The problem is what to do if the checkers.jar on the classpath is different from the one in the plugin.
-    // private String checkersJARlocation() throws IOException{
-    // Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
-    //
-    // Path checkersJAR = new Path(CHECKERS_LOCATION);
-    // URL checkersJarURL = FileLocator.toFileURL(FileLocator.find(bundle, checkersJAR, null));
-    //
-    // return checkersJarURL.getPath();
-    // }
+    public static String checkersJARlocation(){
+        Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
+
+        Path checkersJAR = new Path(CHECKERS_LOCATION);
+        URL checkersJarURL;
+        try{
+            checkersJarURL = FileLocator.toFileURL(FileLocator.find(bundle, checkersJAR, null));
+        }catch (IOException e){
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return "";
+        }
+
+        return checkersJarURL.getPath();
+    }
 }
