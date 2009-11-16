@@ -10,9 +10,9 @@ import org.eclipse.jdt.core.*;
 
 /**
  * Eclipse-specific utilities.
- * 
+ *
  * Copied from FindBugs.
- * 
+ *
  * @author Phil Crosby
  * @author Peter Friese
  */
@@ -21,7 +21,7 @@ public class Util{
 
     /**
      * Checks whether the given resource is a Java source file.
-     * 
+     *
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a Java source file, <code>false</code> otherwise.
@@ -36,7 +36,7 @@ public class Util{
 
     /**
      * Checks whether the given resource is a Java class file.
-     * 
+     *
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a class file, <code>false</code> otherwise.
@@ -52,7 +52,7 @@ public class Util{
 
     /**
      * Checks whether the given resource is a Java artifact (i.e. either a Java source file or a Java class file).
-     * 
+     *
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a Java artifact. <code>false</code> otherwise.
@@ -76,7 +76,7 @@ public class Util{
 
     /**
      * Get all compilation units of a selection.
-     * 
+     *
      * @param javaElements
      *            the selected java elements
      * @return all compilation units containing and contained in elements from javaElements

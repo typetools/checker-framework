@@ -39,7 +39,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns the shared instance
-     * 
+     *
      * @return the shared instance
      */
     public static Activator getDefault(){
@@ -48,7 +48,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path
-     * 
+     *
      * @param path
      *            the path
      * @return the image descriptor
@@ -59,7 +59,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an exception.
-     * 
+     *
      * @param e
      *            the exception
      * @param message
@@ -71,7 +71,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an error.
-     * 
+     *
      * @param message
      *            error message
      */
@@ -81,7 +81,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log a warning.
-     * 
+     *
      * @param message
      *            warning message
      */
@@ -91,7 +91,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an informational message.
-     * 
+     *
      * @param message
      *            the informational message
      */
@@ -113,7 +113,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns the SWT Shell of the active workbench window or <code>null</code> if no workbench window is active.
-     * 
+     *
      * @return the SWT Shell of the active workbench window, or <code>null</code> if no workbench window is active
      */
     public static Shell getShell(){
