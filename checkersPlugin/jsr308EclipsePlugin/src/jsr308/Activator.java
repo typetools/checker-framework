@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.jface.resource.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.console.*;
 import org.eclipse.ui.plugin.*;
 import org.osgi.framework.*;
 
@@ -39,7 +40,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns the shared instance
-     *
+     * 
      * @return the shared instance
      */
     public static Activator getDefault(){
@@ -48,7 +49,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path
-     *
+     * 
      * @param path
      *            the path
      * @return the image descriptor
@@ -59,7 +60,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an exception.
-     *
+     * 
      * @param e
      *            the exception
      * @param message
@@ -71,7 +72,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an error.
-     *
+     * 
      * @param message
      *            error message
      */
@@ -81,7 +82,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log a warning.
-     *
+     * 
      * @param message
      *            warning message
      */
@@ -91,7 +92,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Log an informational message.
-     *
+     * 
      * @param message
      *            the informational message
      */
@@ -113,7 +114,7 @@ public class Activator extends AbstractUIPlugin{
 
     /**
      * Returns the SWT Shell of the active workbench window or <code>null</code> if no workbench window is active.
-     *
+     * 
      * @return the SWT Shell of the active workbench window, or <code>null</code> if no workbench window is active
      */
     public static Shell getShell(){
@@ -139,5 +140,19 @@ public class Activator extends AbstractUIPlugin{
             }
         });
         return window[0];
+    }
+
+    public static MessageConsole findConsole(){
+        String name = "Checkers Plugins";
+        ConsolePlugin plugin = ConsolePlugin.getDefault();
+        IConsoleManager conMan = plugin.getConsoleManager();
+        IConsole[] existing = conMan.getConsoles();
+        for (int i = 0; i < existing.length; i++)
+            if (name.equals(existing[i].getName()))
+                return (MessageConsole) existing[i];
+        // no console found, so create a new one
+        MessageConsole myConsole = new MessageConsole(name, null);
+        conMan.addConsoles(new IConsole[] { myConsole });
+        return myConsole;
     }
 }
