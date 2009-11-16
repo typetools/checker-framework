@@ -20,7 +20,7 @@ public final class MarkerUtil{
 
     /**
      * Remove all FindBugs problem markers for given resource.
-     * 
+     *
      * @param res
      *            the resource
      * @throws CoreException

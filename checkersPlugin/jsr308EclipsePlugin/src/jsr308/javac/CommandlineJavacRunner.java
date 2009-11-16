@@ -8,6 +8,7 @@ import jsr308.*;
 import jsr308.util.*;
 
 import org.eclipse.core.runtime.*;
+import org.eclipse.ui.console.*;
 import org.osgi.framework.*;
 
 /**
@@ -28,8 +29,19 @@ public class CommandlineJavacRunner{
 
             if (VERBOSE)
                 System.out.println(toStringNoCommas(cmd));
+
+            MessageConsoleStream out = Activator.findConsole().newMessageStream();
+            if (VERBOSE)
+                out.println(toStringNoCommas(cmd));
+
             Command.exec(cmd, ps);
-            return JavacError.parse(baos.toString());
+
+            String result = baos.toString();
+
+            if (VERBOSE)
+                out.println(result);
+
+            return JavacError.parse(result);
         }catch (IOException e){
             Activator.getDefault().logException(e, "Error calling javac");
             return null;
