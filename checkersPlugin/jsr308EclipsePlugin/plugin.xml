@@ -26,11 +26,11 @@
 			   tooltip="Run the Javari checker on the selected element."/>
 
 		<action
-			   class="jsr308.actions.RunNonNullCheckerAction"
+			   class="jsr308.actions.RunNullnessCheckerAction"
 			   id="jsr308.runCheckers.nonnull"
-			   label="Run NonNull Checker"
+			   label="Run Nullness Checker"
 			   menubarPath="jsr308/additions"
-			   tooltip="Run the NonNull checker on the selected element."/>
+			   tooltip="Run the Nullness checker on the selected element."/>
 
 		<action
 			   class="jsr308.actions.RunInternedCheckerAction"

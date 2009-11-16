@@ -27,6 +27,7 @@ public class JSR308Worker{
         String processor = checkerClass.getCanonicalName();
         pm.setTaskName("Running checker");
         String cp = getClasspathForJavac(project);
+
         // XXX it is very annoying that we run commandline javac rather than directly. But otherwise there's a classpath hell.
         List<JavacError> callJavac = new CommandlineJavacRunner().callJavac(javaFileNames, processor, cp);
         pm.worked(6);
@@ -73,6 +74,7 @@ public class JSR308Worker{
                 break;
             }
         }
+        classpath.append(PATH_SEPARATOR + CommandlineJavacRunner.checkersJARlocation());
         return classpath.toString();
     }
 

@@ -4,13 +4,12 @@ Bundle-Name: Jsr308EclipsePlugin
 Bundle-SymbolicName: jsr308EclipsePlugin;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: lib/langtools/binary/javac.jar,lib/checkers/checkers.jar,.
-Bundle-Activator: jsr308eclipseplugin.Activator
+Bundle-Activator: jsr308.Activator
 Export-Package: jsr308,
  jsr308.actions,
  jsr308.javac,
  jsr308.marker,
- jsr308.util,
- jsr308eclipseplugin
+ jsr308.util
 Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.core.resources,org.eclipse.jdt.core,org.eclipse.jdt.launching,
  org.eclipse.ui,
  org.eclipse.core.runtime
