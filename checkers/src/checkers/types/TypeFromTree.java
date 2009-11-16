@@ -559,15 +559,13 @@ abstract class TypeFromTree extends
                 bounds.add(bound);
             }
 
-            if (bounds.size() > 1)
-                throw new UnsupportedOperationException(
-                        "intersection types are not currently supported");
-
             AnnotatedTypeMirror result = f.type(node);
             result.addAnnotations(InternalUtils.annotationsFromTree(node));
             assert result instanceof AnnotatedTypeVariable;
-            if (!bounds.isEmpty())
+            if (!bounds.isEmpty()) {
+                // TODO: handle case with multiple bounds
                 ((AnnotatedTypeVariable)result).setUpperBound(bounds.get(0));
+            }
 
             return result;
         }
