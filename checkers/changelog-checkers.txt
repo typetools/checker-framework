@@ -2,7 +2,7 @@ Version 1.0.2, ?? Nov 2009
 
 Checkers
   Renamed RegEx ValidRegex to Regex annotation
-  Improved Collection.toArray() heauristics to be more sound
+  Improved Collection.toArray() heuristics to be more sound
 
 Bug fixes
   Fixed the annotated JDK to match OpenJDK 6

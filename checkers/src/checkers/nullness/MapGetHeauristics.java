@@ -19,7 +19,7 @@ import com.sun.source.util.TreePath;
 /**
  * Utilities class for handling {@code Map.get()} invocations.
  */
-/*package-scope*/ class MapGetHeauristics {
+/*package-scope*/ class MapGetHeuristics {
 
     private final ProcessingEnvironment env;
     private final Elements elements;
@@ -30,7 +30,7 @@ import com.sun.source.util.TreePath;
     private final ExecutableElement mapKeySet;
     private final ExecutableElement mapContains;
 
-    public MapGetHeauristics(ProcessingEnvironment env,
+    public MapGetHeuristics(ProcessingEnvironment env,
             NullnessAnnotatedTypeFactory factory) {
         this.env = env;
         this.elements = env.getElementUtils();
