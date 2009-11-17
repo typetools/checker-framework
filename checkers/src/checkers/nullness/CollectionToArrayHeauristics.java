@@ -60,7 +60,7 @@ import com.sun.source.tree.Tree;
  * Note: The nullness of the returned array doesn't depend on the passed
  * array nullness.
  */
-public class CollectionToArrayHeauristics {
+public class CollectionToArrayHeuristics {
     private final ProcessingEnvironment env;
     private final NullnessAnnotatedTypeFactory factory;
     private final AnnotatedTypes atypes;
@@ -70,7 +70,7 @@ public class CollectionToArrayHeauristics {
     private final ExecutableElement size;
     private final AnnotatedDeclaredType collectionType;
 
-    public CollectionToArrayHeauristics(ProcessingEnvironment env,
+    public CollectionToArrayHeuristics(ProcessingEnvironment env,
             NullnessAnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
@@ -192,7 +192,7 @@ public class CollectionToArrayHeauristics {
             return "this";
     }
 
-    // TODO: duplicated code from MapGetHeauristics
+    // TODO: duplicated code from MapGetHeuristics
     private boolean isMethod(Tree tree, ExecutableElement method) {
         if (!(tree instanceof MethodInvocationTree))
             return false;
