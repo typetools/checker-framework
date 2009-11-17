@@ -265,12 +265,12 @@ public class AnnotatedTypes {
         //      of passed type)
         // 3. Subsitute for type variables if any exist
         TypeElement owner = ElementUtils.enclosingClass(elem);
-        AnnotatedDeclaredType ownerType = factory.getAnnotatedType(owner);
 
         // TODO: Potential bug if Raw type is used
         if (ElementUtils.isStatic(elem) || owner.getTypeParameters().isEmpty())
             return factory.getAnnotatedType(elem);
 
+        AnnotatedDeclaredType ownerType = factory.getAnnotatedType(owner);
         AnnotatedDeclaredType base =
             (AnnotatedDeclaredType) asOuterSuper(t, ownerType);
 
