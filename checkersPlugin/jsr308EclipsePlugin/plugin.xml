@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+		 point="org.eclipse.ui.popupMenus">
+	  <objectContribution
+			id="jsr308.JavaElementActions"
+			objectClass="org.eclipse.jdt.core.IJavaProject">
+		 <menu
+			   id="jsr308"
+			   label="JSR 308"
+			   path="additions"/>
+		 <action
+			   class="jsr308.actions.ClearMarkersAction"
+			   id="jsr308.removeMarkers"
+			   label="Clear Checkers Markers"
+			   menubarPath="jsr308/additions"
+			   tooltip="Removes all JSR 308 chackers markers from the selected element."/>
+
+		<action
+			   class="jsr308.actions.RunJavariCheckerAction"
+			   id="jsr308.runCheckers.javari"
+			   label="Run Javari Checker"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the Javari checker on the selected element."/>
+
+		<action
+			   class="jsr308.actions.RunNullnessCheckerAction"
+			   id="jsr308.runCheckers.nonnull"
+			   label="Run Nullness Checker"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the Nullness checker on the selected element."/>
+
+		<action
+			   class="jsr308.actions.RunInternedCheckerAction"
+			   id="jsr308.runCheckers.interned"
+			   label="Run Interned Checker"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the Interned checker on the selected element."/>
+
+		<action
+			   class="jsr308.actions.RunIGJCheckerAction"
+			   id="jsr308.runCheckers.igj"
+			   label="Run IGJ Checker"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the IGJ checker on the selected element."/>
+<!--Commented out because you need an option to pass arguments. Custom checher want -Aquals
+		<action
+			   class="jsr308.actions.RunCustomCheckerAction"
+			   id="jsr308.runCheckers.igj"
+			   label="Run Custom Checker"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the custom checker on the selected element."/> -->
+			   
+	  </objectContribution>
+	  <!-- Special case context menu for simple projects that have java natures -->
+	  <objectContribution
+			objectClass="org.eclipse.core.resources.IProject"
+			id="jsr308.NavigatorActions">
+		 <menu
+			   id="jsr308"
+			   label="JSR 308"
+			   path="additions"/>
+		 <action
+			   class="jsr308.actions.ClearMarkersAction"
+			   id="jsr308.removeMarkers"
+			   label="Clear Checkers Markers"
+			   menubarPath="jsr308/additions"
+			   tooltip="Removes all JSR 308 chackers markers from the selected element.">
+		 <enablement>
+			<objectState
+				  name="nature"
+				  value="org.eclipse.jdt.core.javanature"/>
+		 </enablement>
+
+		 </action>
+		 <action
+			   class="jsr308.RunCheckersAction"
+			   id="jsr308.runCheckers"
+			   label="Run Checkers"
+			   menubarPath="jsr308/additions"
+			   tooltip="Run the JSR 308 checkers on the selected element.">
+		 <enablement>
+			<objectState
+				  name="nature"
+				  value="org.eclipse.jdt.core.javanature"/>
+		 </enablement>
+
+		 </action>
+	  </objectContribution>
+
+   </extension>
+      
+   <extension
+		 id="jsr308EclipsePlugin.jsr308marker"
+		 name="JSR 308 Problem"
+		 point="org.eclipse.core.resources.markers">
+	  <super type="org.eclipse.core.resources.problemmarker"/>
+	  <super type="org.eclipse.core.resources.textmarker"/>
+	  <persistent value="true"/>
+   </extension>
+   
+</plugin>

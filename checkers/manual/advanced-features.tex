@@ -1,0 +1,659 @@
+\htmlhr
+\chapter{Advanced type system features\label{advanced-type-system-features}}
+
+This section describes features that are automatically supported by every
+checker written with the Checker Framework.
+You may wish to skim or skip this section on first reading.  After you have
+used a checker for a little while and want to be able to express more
+sophisticated and useful types, or to understand more about how the Checker
+Framework works, you can return to it.
+
+
+\section{Polymorphism and generics\label{polymorphism}}
+
+\subsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
+
+The Checker Framework fully supports 
+qualified Java generic types (also known in the research literature as ``parametric
+polymorphism'').  Before running any checker, we recommend that you eliminate
+raw types from your code (e.g., your code should use \code{List<...>} as
+opposed to \code{List}).
+Using generics helps prevent type errors just as using a pluggable
+type-checker does.
+% Should say why, or what are the consequences of violating this.
+
+When instantiating a generic type, 
+clients supply the qualifier along with the type argument, as in
+\code{List<@NonNull String>}.
+
+The declaration (that is, the implementation) of a generic class may use
+the \code{extends} clause to restrict the types and qualifiers that may be
+used for instantiating.  For example, given the declaration \code{class
+  MyClass<T extends @NonNull Object> \ttlcb ...\ttrcb}, a client could use
+\code{MyClass<@NonNull String>} but not \code{MyClass<@Nullable String>}.
+
+\emph{Style note:}
+When using the Nullness checker (Chapter~\ref{nullness-checker}),
+programmers sometimes write \<extends @NonNull Object> even though it's the 
+default.
+The reason is that Java code with no extends clause, like 
+
+\begin{Verbatim}
+  class C<T> { ... }
+\end{Verbatim}
+
+\noindent
+typically means that class \<C> can be instantiated with any type argument at
+all.  But in the Nullness type system, to permit all type arguments, to
+obtain that effect one must write
+
+\begin{Verbatim}
+  class C<T extends @Nullable Object> { ... }
+\end{Verbatim}
+
+
+\paragraph{Type annotations on generic type variables}
+
+A type annotation on a generic type variable overrides/ignores any type
+qualifier (in the same type hierarchy) on the corresponding actual type
+argument.  For example,
+\code{@Nullable T} applies the type qualifier \code{@Nullable} to the
+(unqualified) Java type of the type argument \code{T}.
+
+Here is an example of applying a type annotation to a generic type
+variable:
+
+\begin{Verbatim}
+  class MyClass2<T> {
+    ...
+    @Nullable T = null;
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+The type annotation does not restrict how \code{MyClass2} may be instantiated
+(only the optional \code{extends} clause on the declaration of type
+variable \code{T} would do so).  In other words, both 
+\code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
+legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
+In \code{MyClass2<@Interned String>}, 
+\code{@Nullable T} means \code{@Nullable @Interned String}.
+
+% Note that a type annotation on a generic type variable does not act like
+% other type qualifiers.  In both cases the type annotation acts as a type
+% constructor, but as noted above they act slightly differently.
+
+
+% %% This isn't quite right because a type qualifier is itself a type
+% %% constructor.
+% More formally, a type annotation on a generic type variable acts as a type
+% constructor rather than a type qualifier.  Another example of a type
+% constructor is \code{[]}.  Just as \code{T[]} is not the same type as
+% \code{T}, \code{@Nullable T} is not (necessarily) the same type as
+% \code{T}.
+
+
+\subsection{Qualifier polymorphism\label{qualifier-polymorphism}}
+
+The Checker Framework also supports type \emph{qualifier} polymorphism for methods,
+which permits a single method to have multiple different qualified type
+signatures.
+
+A polymorphic qualifier's definition is marked with
+\<@\refclass{quals}{PolymorphicQualifier}>.  For example, 
+\<@\refclass{nullness/quals}{PolyNull}> is a polymorphic type
+qualifier for the Nullness type system:
+
+\begin{Verbatim}
+  @PolymorphicQualifier
+  public @interface PolyNull { }
+\end{Verbatim}
+
+A method written using a polymorphic qualifier conceptually has multiple
+versions, somewhat like a template in C++.  In each version, each instance
+of the polymorphic qualifier has been replaced by the same other qualifier
+from the
+hierarchy.  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
+
+The method body must type-check with all signatures.  A method call is
+type-correct if it type-checks under any one of the signatures.  If a call
+matches multiple signatures, then the compiler uses the most specific
+matching signature for the purpose of type-checking.  This is just like
+Java's rule for resolving overriding methods, though there is no effect on
+run-time dispatch or behavior.
+
+Polymorphic qualifiers can be used on a method signature or body.
+They may not be used on classes or fields.
+
+%% I don't see why this is necessarily true; one could define @PolyNull1
+%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
+%% the point just makes type system bigots criticize the Checker Framework.
+% Qualifier polymorphism is limited to a single qualifier variable per method.
+
+
+\paragraph{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
+
+As an example of the use of \<@PolyNull>, method \ahref{http://java.sun.com/javase/6/docs/api/java/lang/Class.html#cast(java.lang.Object)}{\<Class.cast>}
+returns null if and only if its argument is \<null>:
+
+\begin{Verbatim}
+  @PolyNull T cast(@PolyNull Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+This is like writing:
+
+\begin{Verbatim}
+   @NonNull T cast( @NonNull Object obj) { ... }
+  @Nullable T cast(@Nullable Object obj) { ... }
+\end{Verbatim}
+
+\noindent
+except that the latter is not legal Java, since it defines two
+methods with the same Java signature.
+
+
+As another example, consider
+
+\begin{Verbatim}
+  @PolyNull T max(@PolyNull T x, @PolyNull T y);
+\end{Verbatim}
+
+\noindent
+which is like writing
+
+\begin{Verbatim}
+   @NonNull T max( @NonNull T x,  @NonNull T y);
+  @Nullable T max(@Nullable T x, @Nullable T y);
+\end{Verbatim}
+
+\noindent
+Another way of thinking about which one of the two \code{max} variants is
+selected is that the nullness annotations of (the declared types of) both
+arguments are \emph{unified} to a type that is a subtype of both.  If both
+arguments are \code{@NonNull}, their unification is \<@NonNull>, and the
+method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
+then the unification is \<@Nullable>, and so is the return type.
+
+
+\paragraph{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
+
+%% I can't think of a non-clumsy way to say this.
+% Each method containing a polymorphic qualifier is (conceptually) expanded
+% into multiple versions completely independently.
+
+Usually, it does not make sense to write only a single instance of a polymorphic
+qualifier in a method definition:  if you write one instance of (say)
+\<@PolyNull>, then you should use at least two.  (An exception is a a
+polymorphic qualifier an an array element type; this section ignores that
+case, but see below for further details.)
+
+For example, there is no point to writing
+
+\begin{Verbatim}
+  void m(@PolyNull Object obj)
+\end{Verbatim}
+
+\noindent
+which expands to
+
+\begin{Verbatim}
+  void m(@NonNull Object obj)
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+This is no different (in terms of which calls to the method will
+type-check) than writing just
+
+\begin{Verbatim}
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+The benefit of polymorphic qualifiers comes when one is used multiple times
+in a method, since then each instance turns into the same type qualifier.
+Most frequently, the polymorphic qualifier appears on at least one formal
+parameter and also on the return type.  It can also be useful to have 
+polymorphic qualifiers on (only) multiple formal parameters, especially if
+the method side-effects one of its arguments.
+For example, consider
+
+\begin{Verbatim}
+void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+\noindent
+In this example, if it is acceptable to rewrite your code to use Java
+generics, the code can be even cleaner:
+
+\begin{Verbatim}
+<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+
+%% It would be nice to give an example that isn't too contrived.
+
+
+\paragraph{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
+
+There is an exception to the general rule that a polymorphic qualifier
+should be used multiple times in a signature.  It can make sense to use a
+polymorphic qualifier just once, if it is on an array or generic element
+type.
+
+For example, consider a routine that returns the first index, in an array
+or collection, of a given element:
+
+\begin{Verbatim}
+  public static int indexOf(@PolyNull Object[] a, Object elt) { ... }
+
+  public static int indexOf(Collection<@PolyNull Object> a, Object elt) { ... }
+\end{Verbatim}
+
+If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
+some safe client calls would be rejected.
+
+Of course, it would be better style to use a generic method, as in either
+of these signatures (and likewise for the \<Collection> version):
+
+\begin{Verbatim}
+ public static <T> int indexOf(T[] a, /*@Nullable*/ Object elt) { ... }
+ public static <T> int indexOf(T[] a, T elt) { ... }
+\end{Verbatim}
+
+In conclusion, use of a single polymorphic qualifier may be necessary in
+legacy code, but can be avoided by use of better code style.
+
+
+\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+
+Sometimes, the type of a field depends on the qualifier on the receiver.
+The Checker Framework supports two varieties of such a field:  a field that
+may not be used if the receiver has a given qualifier, and a fields whose
+qualifier changes based on the qualifier of the receiver.
+(Also see the discussion of typestate checkers, in
+Chapter~\ref{typestate-checker}.)
+
+
+\subsection{Unused fields\label{unused-fields}}
+
+A Java subtype can have more fields than its supertype.  You can simulate
+the same effect for type qualifiers:  a given field may not be accessed via
+a reference with a supertype qualifier, but can be accessed via a reference
+with a subtype qualifier.
+
+This permits you to restrict use of a field to certain contexts.
+
+The \code{@\refclass{quals}{Unused}} annotation
+on a field declares that the field may not be accessed via a receiver of
+the given qualified type (or any supertype).
+
+
+\subsection{Dependent types\label{dependent-types}}
+
+A variable has a \emph{dependent type} if its type depends on some other
+value or type.
+%  --- the type is dynamically, not statically, determined.
+% (Type-safety can still be statically determined, though.)
+
+The Checker Framework supports a form of dependent types, via the
+\code{@\refclass{quals}{Dependent}} annotation.
+This annotation changes the type of a field or variable, based on the
+qualified type of the receiver (\code{this}).  This can be viewed as a more
+expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
+also be seen as a way of linking the meanings of two type qualifier
+hierarchies.
+
+When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+should use it instead of \code{@Dependent}.
+
+
+\subsection{Example\label{dependent-types-example}}
+
+Suppose we have a class \code{Person} and a field \code{spouse} that is
+non-\code{null} if the person is married.  We could declare this as
+
+\begin{Verbatim}
+  class Person {
+    ...
+    // non-null if this person is married
+    @Nullable Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+Now, suppose that we have defined the qualifier hierarchy in which 
+\code{@Single} (meaning ``not married'') is a supertype of \code{@Married}.
+A more informative declaration for \<Person> would be
+
+\begin{Verbatim}
+  class Person {
+    ...
+    @Nullable @Dependent(result=NonNull.class, when=Married.class) Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+If a person is known to be \code{@Married}, the
+\code{spouse} field is known to be non-\code{null}:
+
+\begin{Verbatim}
+  class Person {
+    ...
+
+    void celebrateWeddingAnniversary() @Married {
+      System.out.println("Happy anniversary, "
+                         + spouse.toString()); // no possible null pointer exception
+    }
+
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+Without the \code{@\refclass{quals}{Dependent}} annotation on the
+declaration of the \code{spouse} variable, the Nullness Checker would
+complain that \code{toString} was invoked on a possibly-\code{null}
+value.
+
+An even better declaration is
+
+\begin{Verbatim}
+  class Person {
+    ...
+    @Unused(when=Single.class) @NonNull Person spouse;
+    ...
+  }
+\end{Verbatim}
+
+Then, if a person is known to be \code{@Married} (or more
+appropriately non-\code{@Single}), the \code{spouse} field is known to
+be non-\code{null}.  Also, if a person is known to be \code{@Single},
+the \code{spouse} field may not be accessed:
+ 
+\begin{Verbatim}
+  @Single Person person = ...;
+  Person spouse = person.spouse;  // invalid field access
+  ...
+\end{Verbatim}
+
+
+\section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
+
+A checker sometimes treats a type as having a slightly different qualifier
+than what is written on the type --- especially if the programmer wrote no
+qualifier at all.
+Most readers can skip this section on first reading, because you will
+probably find the system simply ``does what you mean'', without forcing
+you to write too many qualifiers in your program.
+In particular, qualifiers in method bodies are extremely rare.
+
+  The following steps determine the effective
+qualifier on a type --- the qualifier that the checkers treat as being present.
+
+\begin{enumerate}
+\item
+  The type system adds implicit qualifiers.  Implicit qualifiers can be
+  built into a type system (Section~\ref{writing-type-introduction}), in
+  which case the type system's documentation should explain all of the type
+  system's implicit qualifiers.  Or, a programmer may introduce an implicit
+  annotations on each use of class $C$ by writing a qualifier on the
+  declaration of class $C$.
+
+\begin{itemize}
+\item
+  Example 1 (built-in):  In the Nullness type system,
+  \<enum> values are never null, nor is a method receiver.
+\item
+  Example 2 (built-in):  In the Interning type system, string literals
+  and \<enum> values are always interned.
+\end{itemize}
+
+\item
+  If a type qualifier is present in the source code, that qualifier is used.
+
+  If the type has an implicit qualifier, then it is an error to write an
+  explicit qualifier that is equal to (redundant with) or a supertype of
+  (weaker than) the implicit qualifier.  A programmer may strengthen
+  (write a subtype of) an implicit qualifier, however.
+
+\item
+  If there is no implicit or explicit qualifier on a type, then a default
+  qualifier may be applied; see Section~\ref{defaults}.  
+
+  \smallskip
+
+  At this point, every type has a qualifier.
+
+\item
+  The type system may refine a qualified type on a local variable --- that
+  is, treat it as a subtype of how it was declared or defaulted.  This
+  refinement is always sound and has the effect of eliminating false
+  positive error messages.  See Section~\ref{type-refinement}.
+
+  % Type
+  % qualifier refinement is implemented by the \refclass{flow}{Flow} class.
+
+\end{enumerate}
+
+
+
+\subsection{Default qualifier for unannotated types\label{defaults}}
+
+A type system designer, or an end-user programmer, can cause unannotated
+references to be treated as if they had a default annotation.
+
+There are several defaulting mechanisms, for convenience and flexibility.
+When determining the default qualifier for a use of a type, the following
+rules are used in order, until one applies.
+\begin{itemize}
+\item
+  Use the innermost user-written \code{@DefaultQualifier}, as explained in
+  this section.
+\item
+  Use the default specified by the type system designer
+  (Section~\ref{typesystem-defaults}).
+\item
+  Use \code{@\refclass{quals}{Unqualified}}, which the framework
+  inserts to avoid ambiguity and simplify the programming interface for
+  type system designers.  Users do not have to worry about this detail,
+  but type system implementers can rely on the fact that some
+  qualifier is present.
+\end{itemize}
+
+% (Implementation detail:  setting defaults is implemented by the
+% \refclass{util}{QualifierDefaults} class.)
+
+
+The end-user programmer specifies a default qualifier by writing the \code{@\refclass{quals}{DefaultQualifier}}
+annotation on a package, class, method, or variable declaration.  The
+argument to \<@\refclass{quals}{DefaultQualifier}> is the fully qualified \code{String} name of an
+annotation, and its optional second argument indicates where the default
+applies.  If the second argument is omitted, the specified annotation is
+the default in all locations.  See the Javadoc of \refclass{quals}{DefaultQualifier} for details.
+
+For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
+
+\begin{Verbatim}
+import checkers.quals.*;        // for DefaultQualifier[s]
+
+@DefaultQualifier("checkers.nullness.quals.NonNull"),
+class MyClass {
+
+  public boolean compile(File myFile) { // myFile has type "@NonNull File"
+    if (!myFile.exists())          // no warning: myFile is non-null
+      return false;
+    @Nullable File srcPath = ...;  // must annotate to specify "@Nullable File"
+    ...
+    if (srcPath.exists())          // warning: srcPath might be null
+      ...
+  }
+
+  @DefaultQualifier("checkers.igj.quals.Nullable")
+  public boolean isJavaFile(File myfile) {  // myFile has type "@Nullable File"
+    ...
+  }
+}
+\end{Verbatim}
+
+If you wish to write multiple 
+\<@\refclass{quals}{DefaultQualifier}> annotations at a single location,
+use 
+\<@\refclass{quals}{DefaultQualifiers}> instead.  For example:
+
+\begin{Verbatim}
+@DefaultQualifiers({
+  @DefaultQualifier("checkers.nullness.quals.NonNull"),
+  @DefaultQualifier("checkers.igj.quals.Mutable")
+})
+\end{Verbatim}
+
+
+If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
+\<package-info.java> file), then it applies to the given package \emph{and}
+all subpackages.
+% This is slightly at odds with Java's treatment of packages of different
+% names as essentially unrelated, but is more intuitive and useful.
+
+Recall that an annotation on a class definition indicates an implicit
+qualifier (Section~\ref{effective-qualifier}) that can only be
+strengthened, not weakened.  This can lead to unexpected results when if
+the default qualifier applies to a class definition.  Thus, you may want to
+put explicit qualifiers on class declarations (which prevents the default
+from taking effect), or exclude class declarations from defaulting.
+
+
+%% Don't even bother to bring this up; it will just sow confusion without
+%% being helpful.
+% For some type systems, a user may not specify a default qualifier, or doing
+% so prevents giving any other qualifier to any reference.  This is a
+% consequence of the design of the type system; see
+% Section~\ref{bottom-qualifier}.
+
+
+\subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
+
+In order to reduce the burden of annotating types in your program, the
+checkers soundly treat certain variables and expressions as having a
+subtype of their declared or defaulted (Section~\ref{defaults})
+type.  This functionality
+never introduces unsoundness or causes an error to be missed:  it merely
+suppresses false positive warnings.
+
+By default, all checkers, including new checkers that you write, can take
+advantage of this functionality.  Most of the time, users don't have to
+think about, and may not even notice, this feature of the framework.  The
+checkers simply do the right thing even when a programmer forgets an
+annotation on a local variable, or when a programmers writes an
+unnecessarily general type in a declaration.
+
+If you are curious or want more details about this feature, then read on.
+
+As an example, the Nullness checker (Chapter~\ref{nullness-checker}) can automatically
+determine that certain variables are non-null, even if they were explicitly
+or by default annotated as nullable.
+The checker treats a variable or expression as \code{@\refclass{nullness/quals}{NonNull}}
+\begin{itemize}
+\item
+starting at the time that it is either
+assigned a non-null value or checked against null (e.g., via an assertion,
+\code{if} statement, or being dereferenced)
+\item
+until it might be re-assigned (e.g.,
+via an assignment that might affect this variable, or via a method call
+that might affect this variable).
+\end{itemize}
+
+As with explicit annotations, the implicitly non-null types permit
+dereferences and assignments to non-null types, without
+compiler warnings.
+
+Consider this code, along with comments indicating whether the
+Nullness checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
+warning or not depending on its context.
+
+\begin{Verbatim}
+  // Requires an argument of type @NonNull String
+  void parse(@NonNull String toParse) { ... }
+
+  // Argument does NOT have a @NonNull type
+  void lex(@Nullable String toLex) {
+    parse(toLex);        // warning:  toLex might be null
+    if (toLex != null) {
+      parse(toLex);      // no warning:  toLex is known to be non-null
+    }
+    parse(toLex);        // warning:  toLex might be null
+    toLex = new String(...);
+    parse(toLex);        // no warning:  toLex is known to be non-null
+  }
+\end{Verbatim}
+
+If you find examples where you think a value should be inferred to have
+(or not have) a
+given annotation, but the checker does not do so, please submit a bug
+report (see Section~\ref{reporting-bugs}) that includes a small piece of
+Java code that reproduces the problem.
+
+% Flow-sensitive non-null inference has been implemented for the following
+% varieties of expressions:
+%
+% \begin{itemize}
+% \item null checks in if/else statements
+% \item null checks in assert statements
+% \item null checks that result in a return or thrown exception, or call System.exit
+% \item assignments from new class/array expressions
+% \end{itemize}
+%
+% \emph{Note:} The items in the above list exclude complex null checks, i.e., not
+% of the form \code{x != null}. Support for these types of checks will be available in a
+% future release.
+
+
+% TODO:  Is NonNull inferred for any parameters or fields, or just for locals?
+
+Type inference is never performed for method parameters of non-private
+methods and for non-private fields, because unknown client code could use
+them in arbitrary ways.  The inferred information is never written to the
+\code{.class} file as user-written annotations are.
+
+The inference indicates when a variable can be treated as having a subtype
+of its declared type --- for instance, when an otherwise nullable type can be
+treated as a \code{@\refclass{nullness/quals}{NonNull}} one.  The inference never treats a variable as
+a supertype of its declared type (e.g., an expression of \code{@\refclass{nullness/quals}{NonNull}}
+type is never inferred to be treated as possibly-null).
+
+
+\section{Inexpressible types\label{inexpressible-types}}
+
+The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
+there are types that it cannot express.  An example is the type of 
+\<Collection.toArray()>, which returns an array of objects, where the
+objects have the same annotation as the elements of the receiver.
+
+A possible annotation would be 
+
+\begin{Verbatim}
+public @Polynull Object [] toArray() ArrayList<@PolyNull E> { ... }
+\end{Verbatim}
+
+\noindent
+except that this is illegal syntax:  ``\code{ArrayList<@PolyNull E>}'' is
+not legal in the receiver position.  (This is a motivation for
+\ahref{http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#receiver-type-parameter-annotations}{extending}
+the Type Annotations syntax.)
+
+The annotated libraries (Section~\ref{annotating-libraries}) contain a less-precise annotation for
+\code{toArray}.  The Nullness Checker special-cases \code{toArray} to
+act as if it had the above annotation.  The cases that
+are currently being handled are described in
+\refclass{nullness}{CollectionToArrayHeuristics}.
+This approach would be possible for other checkers and other methods as the
+need arises.
+
+
+% LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
+% LocalWords:  DefaultQualifiers
