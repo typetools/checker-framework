@@ -16,7 +16,7 @@ import org.eclipse.ui.*;
 
 /**
  * Remove all bug markers for the currently selected project.
- * 
+ *
  * XXX copied from FindBugs.
  */
 public class ClearMarkersAction implements IObjectActionDelegate{
@@ -26,7 +26,7 @@ public class ClearMarkersAction implements IObjectActionDelegate{
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.IObjectActionDelegate#setActivePart(org.eclipse.jface.action.IAction, org.eclipse.ui.IWorkbenchPart)
      */
     public final void setActivePart(final IAction action, final IWorkbenchPart targetPart){
@@ -35,7 +35,7 @@ public class ClearMarkersAction implements IObjectActionDelegate{
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
      */
     public final void selectionChanged(final IAction action, final ISelection selection){
@@ -44,7 +44,7 @@ public class ClearMarkersAction implements IObjectActionDelegate{
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
      */
     public final void run(final IAction action){
@@ -58,7 +58,7 @@ public class ClearMarkersAction implements IObjectActionDelegate{
 
     /**
      * Clear the markers on each project in the given selection, displaying a progress monitor.
-     * 
+     *
      * @param selection
      */
     private void work(final IStructuredSelection selection){

@@ -2,6 +2,7 @@ package jsr308.javac;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 import jsr308.util.*;
 
@@ -24,6 +25,9 @@ public class JavacError{
      * Parses javac output and converts to a list of errors.
      */
     // XXX very nasty code - needs cleanup
+    private static final Pattern errorCountPattern = Pattern.compile("^[0-9]+ errors*$");
+    private static final Pattern carrotPattern = Pattern.compile("^\\s*^.*$");
+
     public static List<JavacError> parse(String javacoutput){
         if (VERBOSE)
             System.out.println("javac output:\n" + javacoutput);
@@ -50,7 +54,7 @@ public class JavacError{
                 while (!foundNextEntry && iter.hasNext()){
                     line = iter.next();
                     foundNextEntry = line.split(":").length == 3 && new File(line.split(":")[0]).exists();
-                    if (!foundNextEntry && !line.matches("^[0-9]+ error*$")){ // don't include the last line
+                    if (!foundNextEntry && !errorCountPattern.matcher(line).matches() && !line.trim().equals("^")){
                         msg.append(Util.NL).append(line);
                     }
                 }

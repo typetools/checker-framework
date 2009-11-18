@@ -3,11 +3,11 @@ package jsr308.util;
 import java.io.*;
 import java.util.concurrent.*;
 
-//AK: XXX This code is copied and modified from somewhere. I don't remember from where.  
+//AK: XXX This code is copied and modified from somewhere. I don't remember from where.
 /**
  * The important method in this class is <code>exec(String[])</code>. It executes its argument and pipes both stdout and stderr to System.out. Each line in the piped output from stdout is prefixed
  * with "OUT>" and the output from stderr is prefixed with "ERR>"
- * 
+ *
  * <p>
  * Credit: Producer code modified (and augmented) from Michael Daconta's "Java Traps" column ("When Runtime.exec() won't"), found at http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html
  */
@@ -45,7 +45,7 @@ public class Command{
 
     /**
      * Helper class for Command. A StreamGobbler thread is Responsible for redirecting an InputStream, prefixing its redirected output with a user-specified String (see construtors for more details).
-     * 
+     *
      */
     public static class StreamGobbler extends Thread{
         InputStream is;
@@ -62,7 +62,7 @@ public class Command{
 
         /**
          * Redirects `is' to out, prefixing each line with the String `type'.
-         * 
+         *
          * @param doneSignal
          */
         StreamGobbler(InputStream is, String type, PrintStream out, CountDownLatch doneSignal, boolean gobbleChars){
@@ -150,7 +150,7 @@ public class Command{
 
     /**
      * Runs cmd, redirecting stdout and stderr to `out' and prefixing the output from stout with "OUT>" and the output from stderr with "ERR>".
-     * 
+     *
      * Returns whatever exit number is returned by the subprocess invoking the command.
      */
     // public static int exec(String cmd, PrintStream out) {
