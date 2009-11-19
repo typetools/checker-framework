@@ -1,4 +1,4 @@
-Version 1.0.2, ?? Nov 2009
+Version 1.0.2, 16 Nov 2009
 
 Checkers
   Renamed RegEx ValidRegex to Regex annotation
@@ -7,6 +7,7 @@ Checkers
 Bug fixes
   Fixed the annotated JDK to match OpenJDK 6
     - Added missing methods and corrected class hierarchy
+  Fixed a crash related to intersection types
 
 ----------------------------------------------------------------------
 Version 1.0.1, 1 Nov 2009
