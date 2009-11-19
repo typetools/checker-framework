@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Jsr308EclipsePlugin
-Bundle-SymbolicName: jsr308EclipsePlugin;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: jsr308.checkers
+Bundle-SymbolicName: jsr308.checkers;singleton:=true
+Bundle-Version: 0.0.3
 Bundle-ClassPath: lib/langtools/binary/javac.jar,lib/checkers/checkers.jar,.
 Bundle-Activator: jsr308.Activator
 Export-Package: jsr308,
