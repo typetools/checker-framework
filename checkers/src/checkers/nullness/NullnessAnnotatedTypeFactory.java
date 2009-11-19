@@ -76,8 +76,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
     Map<String, AnnotationMirror> aliases;
 
-    private final MapGetHeauristics mapGetHeauristics;
-    private final CollectionToArrayHeauristics collectionToArrayHeauristics;
+    private final MapGetHeuristics mapGetHeuristics;
+    private final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
     public NullnessAnnotatedTypeFactory(NullnessSubchecker checker,
@@ -86,7 +86,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
-        mapGetHeauristics = new MapGetHeauristics(env, this);
+        mapGetHeuristics = new MapGetHeuristics(env, this);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
@@ -113,7 +113,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         aliases.put(org.netbeans.api.annotations.common.NullAllowed.class.getCanonicalName(), NULLABLE);
         aliases.put(org.netbeans.api.annotations.common.NullUnknown.class.getCanonicalName(), NULLABLE);
 
-        collectionToArrayHeauristics = new CollectionToArrayHeauristics(env, this);
+        collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
         defaults = new QualifierDefaults(this, this.annotations);
         defaults.setAbsoluteDefaults(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
@@ -201,8 +201,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         poly.annotate(tree, method);
 //        poly.annotate(method.getElement(), method);
 
-        mapGetHeauristics.handle(tree, method);
-        collectionToArrayHeauristics.handle(tree, method);
+        mapGetHeuristics.handle(tree, method);
+        collectionToArrayHeuristics.handle(tree, method);
         return method;
     }
 

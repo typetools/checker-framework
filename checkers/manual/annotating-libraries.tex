@@ -285,33 +285,6 @@ files into stub files.
 \end{enumerate}
 
 
-\section{Inexpressible types\label{inexpressible-types}}
-
-The Type Annotations syntax is designed to be easy to read.  As a result,
-there are many types that it cannot express.  An example is the type of 
-\<Collection.toArray()>, which returs an array of objects, where the
-objects have the same annotation as the elements of the receiver.
-
-A possible annotation would be 
-
-\begin{Verbatim}
-public @Polynull Object [] toArray() ArrayList<@PolyNull E> { ... }
-\end{Verbatim}
-
-\noindent
-except that this is illegal syntax:  the \code{ArrayList<@PolyNull E>} in
-the receiver position is not legal.
-(This is a motivation for extending the Type Annotations syntax.)
-
-The annotated libraries contain a less-precise annotation for
-\code{toArray}, but the Checker Framework special-cases \code{toArray} so
-that it can act as if it had been annotated as above.  The cases that
-are currently being handled are described in
-\refclass{nullness}{CollectionToArrayHeauristics}
-This approach would be possible for other methods as the need arises.
-
-
-
 % \section{Installing the skeleton class generator\label{skeleton-installing}}
 %
 % Source code for the skeleton class generator tool is included in the
@@ -348,4 +321,5 @@ This approach would be possible for other methods as the need arises.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  IGJ's jdk Astubs skipClasses astub AskipClasses
+% LocalWords:  IGJ's jdk Astubs skipClasses astub AskipClasses toArray
+% LocalWords:  CollectionToArrayHeuristics
