@@ -14,12 +14,12 @@
 
     <target name="-init-properties-dry" unless="release.is.real">
         <property name="web.root.dir" value="${web.dry.root.dir}"/>
-        <property name="sanity.url" value="${sanitycheck.dry.url}"/>
+        <property name="sanitycheck.url" value="${sanitycheck.dry.url}"/>
     </target>
 
     <target name="-init-properties-real" if="release.is.real">
         <property name="web.root.dir" value="${web.real.root.dir}"/>
-        <property name="sanity.url" value="${sanitycheck.real.url}"/>
+        <property name="sanitycheck.url" value="${sanitycheck.real.url}"/>
     </target>
 
     <target name="-init-properties"
