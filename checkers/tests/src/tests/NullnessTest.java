@@ -180,6 +180,7 @@ public class NullnessTest extends CheckerTest {
 
     @Test public void testFindBugs() { test(); }
 
+    @Ignore
     @Test public void testConditionalNullness() { test(); }
 
     @Test public void testFlowNegation() { test(); }
