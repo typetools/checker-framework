@@ -17,6 +17,8 @@ import org.osgi.framework.*;
 public class CommandlineJavacRunner{
     public static final String CHECKERS_LOCATION = "lib/checkers/checkers.jar";
     public static final String JAVAC_LOCATION = "lib/langtools/binary/javac.jar";
+    public static final List<String> IMPLICIT_ARGS = Arrays.asList("checkers.nullness.quals.*", "checkers.igj.quals.*", "checkers.javari.quals.*", "checkers.interning.quals.*");
+
     public static boolean VERBOSE = true;
 
     public List<JavacError> callJavac(List<String> fileNames, String processor, String classpath){
@@ -65,11 +67,28 @@ public class CommandlineJavacRunner{
         return b.toString();
     }
 
+    private String implicitAnnotations(){
+        StringBuilder sb = new StringBuilder();
+
+        boolean isntFirst = false;
+        for (String s : IMPLICIT_ARGS){
+            if (isntFirst){
+                sb.append(File.pathSeparator);
+            }
+            sb.append(s);
+            isntFirst = true;
+        }
+        return sb.toString();
+    }
+
     private String[] options(List<String> fileNames, String processor, String classpath) throws IOException{
         List<String> opts = new ArrayList<String>();
         opts.add(javaVM());
         opts.add("-ea:com.sun.tools");
         opts.add("-Xbootclasspath/p:" + javacJARlocation());
+
+        opts.add("-Djsr308_imports=\"" + implicitAnnotations() + "\"");
+
         opts.add("-jar");
         opts.add(javacJARlocation());
         // if (VERBOSE)
