@@ -2,7 +2,7 @@
 <feature
       id="jsr308EclipseFeature"
       label="JSR 308 Checkers Feature"
-      version="1.0.0"
+      version="0.0.3"
       provider-name="JSR 308 Development Team">
 
    <description url="http://types.cs.washington.edu/jsr308/">
@@ -384,10 +384,10 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </requires>
 
    <plugin
-         id="jsr308EclipsePlugin"
-         download-size="15000"
-         install-size="15000"
-         version="1.0.0"
-         unpack="false"/>
+         id="jsr308.checkers"
+         download-size="34"
+         install-size="34"
+         version="0.0.3"
+         unpack="true"/>
 
 </feature>
