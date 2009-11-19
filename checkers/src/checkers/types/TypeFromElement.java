@@ -215,12 +215,12 @@ public class TypeFromElement {
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 
-            //case METHOD_RETURN:
+            case METHOD_RETURN:
             case METHOD_RETURN_GENERIC_OR_ARRAY:
                 annotate(type.getReturnType(), typeAnno);
                 break;
 
-            //case METHOD_PARAMETER:
+            case METHOD_PARAMETER:
             case METHOD_PARAMETER_GENERIC_OR_ARRAY:
                 if (pos.parameter_index >= 0 && pos.parameter_index < params.size())
                     annotate(params.get(pos.parameter_index), typeAnno);

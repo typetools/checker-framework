@@ -627,5 +627,33 @@ a supertype of its declared type (e.g., an expression of \code{@\refclass{nullne
 type is never inferred to be treated as possibly-null).
 
 
+\section{Inexpressible types\label{inexpressible-types}}
+
+The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
+there are types that it cannot express.  An example is the type of 
+\<Collection.toArray()>, which returns an array of objects, where the
+objects have the same annotation as the elements of the receiver.
+
+A possible annotation would be 
+
+\begin{Verbatim}
+public @Polynull Object [] toArray() ArrayList<@PolyNull E> { ... }
+\end{Verbatim}
+
+\noindent
+except that this is illegal syntax:  ``\code{ArrayList<@PolyNull E>}'' is
+not legal in the receiver position.  (This is a motivation for
+\ahref{http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#receiver-type-parameter-annotations}{extending}
+the Type Annotations syntax.)
+
+The annotated libraries (Section~\ref{annotating-libraries}) contain a less-precise annotation for
+\code{toArray}.  The Nullness Checker special-cases \code{toArray} to
+act as if it had the above annotation.  The cases that
+are currently being handled are described in
+\refclass{nullness}{CollectionToArrayHeuristics}.
+This approach would be possible for other checkers and other methods as the
+need arises.
+
+
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
 % LocalWords:  DefaultQualifiers

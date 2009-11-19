@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.jface.resource.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.console.*;
 import org.eclipse.ui.plugin.*;
 import org.osgi.framework.*;
 
@@ -139,5 +140,19 @@ public class Activator extends AbstractUIPlugin{
             }
         });
         return window[0];
+    }
+
+    public static MessageConsole findConsole(){
+        String name = "Checkers Plugins";
+        ConsolePlugin plugin = ConsolePlugin.getDefault();
+        IConsoleManager conMan = plugin.getConsoleManager();
+        IConsole[] existing = conMan.getConsoles();
+        for (int i = 0; i < existing.length; i++)
+            if (name.equals(existing[i].getName()))
+                return (MessageConsole) existing[i];
+        // no console found, so create a new one
+        MessageConsole myConsole = new MessageConsole(name, null);
+        conMan.addConsoles(new IConsole[] { myConsole });
+        return myConsole;
     }
 }

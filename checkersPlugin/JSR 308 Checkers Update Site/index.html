@@ -85,7 +85,8 @@ and click <b>OK</b>.</li>
 
 <li> Under <b> Sites to include in search</b>, you should see "JSR 308 Checkers".<br>
 Select the checkbox next to it and click <b>Finish</b>.</li>
-<li> Under <b> Select features to install</b>, you should see "JSR 308 Checkers Feature". <br>
+<li> Under <b> Select features to install</b>, you should see "JSR 308 Checkers" (for running the checkers)
+and "JSR 308 Skeleton Generator" (for generating skeleton files). <br>
 (You may have to expand the tree to make the feature visible.)<br>
 Select the checkbox next to it and click <b>Next</b>.</li>
 <li> Select the <b>I accept the terms in the licence agreement</b> option and click <b> Next</b>.</li>
@@ -94,14 +95,22 @@ The default (your workspace) should be fine. Click <b>Finish</b>.</li>
 <li>The plugin is not digitally signed. Install it anyway.</li>
 <li> Click <b> Yes </b> to restart Eclipse.</li>
 </ol>
-<b>How to use:</b><br>
+<b>How to use Checkers Feature:</b><br>
 First, you need to add <a href="lib/checkers.jar">checkers.jar</a> to your project's classpath.<br>
 (Eclipse may complain about unresolved classes referenced form a classfile. This does not affect the checking but if you want to make the warning go away, 
 add <a href="lib/javac.jar">javac.jar</a> to the project's classpath.)<br>
-To perform the checking, select the checker from the context menu of a Java project, for example <b>JSR 308</b> -&gt; <b>Run NonNull</b>.<br>
+To perform the checking, select the checker from the context menu of a Java project, for example <b>JSR 308</b> -&gt; <b>Run Nullness</b>.<br>
 The checker will run and warnings will be added to the Problems view.<br>
 To remove the warning markers, run <b>JSR 308</b> -&gt; <b>Remove Markers</b><br>
 <br>
+<b>How to use the Skeleton Generator Feature:</b><br>
+<ol>
+    <li>Create a new Eclipse project containing the desired packages. The plug-in performs in-place modifications to the files. They need to be in the source path (usually in <b>src</b> directory), but do not need to have the classpath configured properly.</li>
+    <li>Select (i.e. highlight) the packages (or individual source files) to be converted.</li>
+    <li>Choose <b>JSR308 Tools > Skeleton Files (With JavaDocs)</b> or <b>JSR308 Tools > Skeleton Files (No JavaDocs)</b> from their context menus. The documentation might be helpful when annotating the code.</li>
+    <li>The plug-in generates skeleton files in place of the input files.</li>
+</ol>
+
 <b>How to report problems:</b><br>
 Submit bug reports at <a href="http://code.google.com/p/jsr308-langtools/issues/list">http://code.google.com/p/jsr308-langtools/issues/list</a> <br> 
 <br>
