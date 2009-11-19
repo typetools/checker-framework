@@ -438,9 +438,9 @@ public class AnnotatedTypeFactory {
      * @see #fromExpression(ExpressionTree)
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-
         if (tree == null)
             throw new IllegalArgumentException("null tree");
+
         if (treeCache.containsKey(tree))
             return atypes.deepCopy(treeCache.get(tree));
         AnnotatedTypeMirror type;
