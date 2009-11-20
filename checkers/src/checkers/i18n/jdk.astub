@@ -1,0 +1,33 @@
+import checkers.i18n.quals.Localized;
+import checkers.i18n.quals.LocalizableKey;
+
+package java.util;
+
+class ResourceBundle {
+  @Localized Object getObject(@LocalizableKey String key);
+  @Localized String getString(@LocalizableKey String key);
+  @Localized String[] getStringArray(@LocalizableKey String key);
+  Set<@Localized String> keySet();
+}
+
+package java.awt;
+
+class Button {
+  @LocalizedString String getLabel();
+  void setLabel(@LocalizedString String label);
+}
+
+class CheckBox {
+  @LocalizedString String getLabel();
+  void setLabel(@LocalizedString String label);
+}
+
+package java.io;
+
+class PrintStream {
+  void println(@LocalizedString String str);
+}
+
+package javax.swing;
+
+// Lots of methods should be added to this stub file.
