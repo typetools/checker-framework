@@ -8,3 +8,5 @@
 :71: (type.incompatible)
 :73: (type.incompatible)
 :73: (generic.argument.invalid)
+:99: (type.incompatible)
+:101: (type.incompatible)

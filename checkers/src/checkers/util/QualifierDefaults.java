@@ -32,6 +32,8 @@ public class QualifierDefaults {
     private AnnotationMirror absoluteDefaultAnno;
     private Set<DefaultLocation> absoluteDefaultLocs;
 
+    private Map<String, String> qualifiedNameMap;
+
     /**
      * @param factory the factory for this checker
      * @param annoFactory an annotation factory, used to get annotations by name
@@ -39,6 +41,16 @@ public class QualifierDefaults {
     public QualifierDefaults(AnnotatedTypeFactory factory, AnnotationUtils annoFactory) {
         this.factory = factory;
         this.annoFactory = annoFactory;
+
+        qualifiedNameMap = new HashMap<String, String>();
+        for (Name name : factory.getQualifierHierarchy().getTypeQualifiers()) {
+            if (name == null)
+                continue;
+            String qualified = name.toString();
+            String unqualified = qualified.substring(qualified.lastIndexOf('.') + 1);
+            qualifiedNameMap.put(qualified, qualified);
+            qualifiedNameMap.put(unqualified, qualified);
+        }
     }
 
     /**
@@ -202,7 +214,10 @@ public class QualifierDefaults {
     }
 
     private void applyDefault(Element elt, DefaultQualifier d, AnnotatedTypeMirror type) {
-        AnnotationMirror anno = annoFactory.fromName(d.value());
+        String name = d.value();
+        if (qualifiedNameMap.containsKey(name))
+            name = qualifiedNameMap.get(name);
+        AnnotationMirror anno = annoFactory.fromName(name);
         if (anno == null)
             return;
         new DefaultApplier(elt, d.locations(), type).scan(type, anno);
