@@ -1,5 +1,5 @@
 import checkers.nullness.quals.*;
-
+import java.util.*;
 public class ConditionalNullness {
 
     @AssertNonNullIfTrue({"field", "method()"})
@@ -65,7 +65,7 @@ public class ConditionalNullness {
 
     public class PptTopLevel {
         /** List of all of the splitters for this ppt. */
-        public @LazyNonNull Object splitters = null;
+        public @LazyNonNull List<Object> splitters = null;
 
         @AssertNonNullIfTrue("splitters")
         public boolean has_splitters() {
