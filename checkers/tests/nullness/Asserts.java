@@ -1,3 +1,4 @@
+import checkers.nullness.quals.*;
 
 public class Asserts {
 
@@ -17,4 +18,14 @@ public class Asserts {
         assert s == null : s.getClass() + " suppress nullness";
         s.getClass();   // error
     }
+
+    class ArrayCell {
+        /*@Nullable*/ Object[] vals;
+    }
+
+    void assertComplexExpr (ArrayCell ac, int i) {
+        assert ac.vals[i] != null : "@SuppressWarnings(nullness)";
+        /*@NonNull*/ Object o = ac.vals[i];
+    }
+
 }
