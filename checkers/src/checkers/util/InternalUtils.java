@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import checkers.quals.DefaultQualifier;
 import checkers.nullness.quals.*;
 
 import javax.lang.model.element.*;
@@ -21,7 +20,6 @@ import com.sun.tools.javac.tree.JCTree.*;
  * methods in this class depend on the use of Sun javac internals; any procedure
  * in the Checker Framework that uses a non-public API should be placed here.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public class InternalUtils {
 
     private InternalUtils() {

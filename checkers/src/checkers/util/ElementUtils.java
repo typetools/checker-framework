@@ -16,7 +16,6 @@ import javax.lang.model.type.TypeMirror;
  * A Utility class for analyzing {@code Element}s
  *
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public class ElementUtils {
 
     // Cannot be instantiated

@@ -1,5 +1,5 @@
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.Nullable")
+@checkers.quals.DefaultQualifier("Nullable")
 public class FlowField {
 
     public @Nullable String s = null;

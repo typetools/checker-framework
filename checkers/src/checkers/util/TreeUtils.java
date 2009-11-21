@@ -1,6 +1,5 @@
 package checkers.util;
 
-import checkers.quals.DefaultQualifier;
 import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -22,7 +21,6 @@ import com.sun.tools.javac.tree.JCTree.JCTypeApply;
  * A utility class made for helping to analyze a given {@code Tree}.
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public final class TreeUtils {
 
     // Cannot be instantiated

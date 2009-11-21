@@ -28,7 +28,9 @@ import java.lang.annotation.Target;
 public @interface DefaultQualifier {
 
     /**
-     * The fully qualified name of the default annotation.
+     * The name of the default annotation.  It may be a short name like
+     * "NonNull", if an appropriate import statement exists.  Otherwise, it
+     * should be fully-qualified, like "checkers.nullness.quals.NonNull".
      * <p>
      *
      * To prevent affecting other type systems, always specify an annotation

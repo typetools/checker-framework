@@ -1,6 +1,5 @@
 package checkers.source;
 
-import checkers.quals.DefaultQualifier;
 import checkers.nullness.quals.*;
 
 import java.util.*;
@@ -14,7 +13,6 @@ import java.util.*;
  *
  * @see SourceChecker#report
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public final class Result {
 
     private static enum Type {
