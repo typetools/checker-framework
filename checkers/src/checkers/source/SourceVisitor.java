@@ -4,7 +4,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.*;
 
 import checkers.nullness.quals.*;
-import checkers.quals.DefaultQualifier;
 import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -14,7 +13,6 @@ import com.sun.source.util.*;
  * An AST visitor that provides a variety of compiler utilities and interfaces
  * to facilitate typechecking.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
     /** The {@link SourceChecker} to invoke on the input source tree. */

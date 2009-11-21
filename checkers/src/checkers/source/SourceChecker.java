@@ -12,7 +12,6 @@ import javax.tools.Diagnostic;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
-import checkers.quals.DefaultQualifier;
 import checkers.quals.TypeQualifiers;
 import checkers.types.*;
 import checkers.util.*;
@@ -48,7 +47,6 @@ import com.sun.tools.javac.processing.*;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public abstract class SourceChecker extends AbstractTypeProcessor {
 
     // TODO checkers should export themselves through a separate interface,
@@ -273,7 +271,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         String messageText = String.format(fmtString, args);
 
         // Replace '\n' with the proper line separator
-        if (LINE_SEPARATOR != "\n")
+        if (LINE_SEPARATOR != "\n") // interned
             messageText = messageText.replaceAll("\n", LINE_SEPARATOR);
 
         if (source instanceof Element)

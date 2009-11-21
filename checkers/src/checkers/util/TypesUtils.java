@@ -10,7 +10,6 @@ import checkers.quals.*;
  *
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public final class TypesUtils {
 
     // Cannot be instantiated
