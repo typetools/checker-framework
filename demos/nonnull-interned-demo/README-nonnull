@@ -115,7 +115,8 @@ explicitly and discuss it only if it comes up in the course of a question?
 Would it be possible to not override the defaults during the demo?
 A problem might be that that increases clutter. -MDE]
 
-These were all real problems in a previous version of JUnit.
+These were all real problems in a previous version of JUnit (4.3, I think).
+(They have since been corrected.)
 
 Run the checker.  There are three errors
  - at line 105 - expected parameter might be null

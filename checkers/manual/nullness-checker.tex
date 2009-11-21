@@ -448,6 +448,11 @@ cannot ever be null at run time.
   used for defensive programming, and it warns if the method might throw a
   nullness-related exception.
 
+  A downside of putting the string in the assertion message is that if the
+  assertion ever fails, then a user might see the string and be confused.
+  But the string should only be used if the programmer has reasoned that
+  the assertion can never fail.
+
 % (Another way of stating the Nullness checker's use of assertions is as an
 % additional caveat to the guarantees provided by a checker
 % (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
