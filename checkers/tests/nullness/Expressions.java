@@ -5,7 +5,7 @@ import java.util.regex.*;
 import java.io.*;
 import java.util.*;
 
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier("NonNull")
 public class Expressions {
 
     public static double[] returnDoubleArray() {

@@ -19,7 +19,6 @@ import javax.lang.model.util.*;
 /**
  * A utility class for working with annotations.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
 public class AnnotationUtils {
 
     private static AnnotationUtils instance;

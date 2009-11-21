@@ -226,7 +226,7 @@ possible but are not as useful.
   \code{@\refclass{nullness/quals}{Nullable}}:  Unannotated types are regarded as possibly-null, or
   nullable.  This default is backward-compatible with Java, which permits
   any reference to be null.  You can activate this default by writing
-  a \code{@DefaultQualifier("checkers.nullness.quals.Nullable")} annotation on a
+  a \code{@DefaultQualifier("Nullable")} annotation on a
   % package/
   class or method
   % /variable
@@ -236,13 +236,13 @@ possible but are not as useful.
   % This may leads to fewer annotations written in your code.
   You can activate this
   default via the
-  \code{@DefaultQualifier("checkers.nullness.quals.NonNull")} annotation.
+  \code{@DefaultQualifier("NonNull")} annotation.
 \item
   Non-null except locals (NNEL):  Unannotated types are treated as
   \code{@\refclass{nullness/quals}{NonNull}}, \emph{except} that the unannotated raw type of a local
   variable is treated as \code{@\refclass{nullness/quals}{Nullable}}.  (Any generic arguments to a
   local variable still default to \code{@\refclass{nullness/quals}{NonNull}}.)  You can activate this
-  default via the \code{@DefaultQualifier(value="checkers.nullness.quals.NonNull",
+  default via the \code{@DefaultQualifier(value="NonNull",
     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})} annotation.
 
   The NNEL default leads to the smallest number of explicit annotations in
