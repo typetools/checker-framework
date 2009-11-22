@@ -276,6 +276,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="-run-tests" description="Generalized test runner">
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
+		    dir="${basedir}"
             printsummary="true"
             haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
@@ -291,8 +292,6 @@ ${build.version} of the 'javac.jar' library."/>
             <formatter type="xml"/>
 
             <test name="${param}" todir="${build.reports}"/>
-			<sysproperty key="tests.outputDir" value="${basedir}/tests/build/testclasses" />
-			<sysproperty key="tests.classpath" value="${basedir}/tests/build" />
         </junit>
     </target>
 
