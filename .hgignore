@@ -51,6 +51,10 @@ manual004.png
 # release tmps
 tmp
 
+jsr308-langtools
+jsr308-langtools.basic
+langtools-ta
+
 syntax: regexp
 # Not a glob because it starts with # which looks like a comment.
 (^|/)\#.*\#$
