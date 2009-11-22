@@ -291,6 +291,8 @@ ${build.version} of the 'javac.jar' library."/>
             <formatter type="xml"/>
 
             <test name="${param}" todir="${build.reports}"/>
+			<sysproperty key="tests.outputDir" value="${basedir}/tests/build/testclasses" />
+			<sysproperty key="tests.classpath" value="${basedir}/tests/build" />
         </junit>
     </target>
 
