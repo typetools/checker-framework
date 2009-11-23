@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(MyParameterized.class)
+@RunWith(CheckerParameterized.class)
 public abstract class ParameterizedCheckerTest extends CheckerTest {
     private final String testName;
 

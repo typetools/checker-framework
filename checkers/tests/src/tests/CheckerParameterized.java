@@ -65,7 +65,7 @@ import org.junit.runners.model.TestClass;
  * <code>&#064;Parameters</code> method.
  * </p>
  */
-public class MyParameterized extends Suite {
+public class CheckerParameterized extends Suite {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
@@ -132,7 +132,7 @@ public class MyParameterized extends Suite {
     /**
      * Only called reflectively. Do not use programmatically.
      */
-    public MyParameterized(Class<?> klass) throws Throwable {
+    public CheckerParameterized(Class<?> klass) throws Throwable {
         super(klass, Collections.<Runner>emptyList());
         List<Object[]> parametersList= getParametersList(getTestClass());
         for (int i= 0; i < parametersList.size(); i++)
@@ -165,24 +165,4 @@ public class MyParameterized extends Suite {
         throw new Exception("No public static parameters method on class "
                 + testClass.getName());
     }
-
-    private String getName(TestClass klass)
-            throws Throwable {
-        return (String) getNameMethod(klass).invokeExplosively(null);
-    }
-
-    private FrameworkMethod getNameMethod(TestClass testClass)
-    throws Exception {
-        List<FrameworkMethod> methods= testClass
-            .getAnnotatedMethods(Name.class);
-        for (FrameworkMethod each : methods) {
-            int modifiers= each.getMethod().getModifiers();
-            if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers))
-                return each;
-        }
-
-        throw new Exception("No public static parameters method on class "
-                + testClass.getName());
-    }
-
 }
