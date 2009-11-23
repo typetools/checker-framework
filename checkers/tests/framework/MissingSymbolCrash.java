@@ -1,6 +1,10 @@
 import checkers.util.test.*;
 import java.util.*;
 
+/**
+ * @skip-test
+ *
+ */
 // TODO: update the ref output with the expected result (minus the crash)
 public class MissingSymbolCrash {
     public void test() {

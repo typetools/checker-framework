@@ -1,5 +1,5 @@
 import checkers.nullness.quals.*;
-
+// @skip-test
 public class FlowConstructor {
 
     String a;

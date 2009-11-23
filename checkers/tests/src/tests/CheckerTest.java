@@ -44,6 +44,14 @@ abstract public class CheckerTest {
      * named testZZZ, this method uses an expected outfile called "ZZZ.out"
      * and a Java source file called "ZZZ.java".
      */
+    protected void test(String test) {
+        final String javaTestFileName = test + ".java";
+        final String expectedFileName = test + ".out";
+        final File expectedFile = new File(checkerDir + File.separator + expectedFileName);
+        boolean shouldSucceed = TestUtilities.shouldSucceed(expectedFile);
+        runTest(expectedFileName, shouldSucceed, javaTestFileName);        
+    }
+
     protected void test() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         assert stack.length >= 3;
@@ -51,13 +59,8 @@ abstract public class CheckerTest {
         if (!method.startsWith("test"))
             throw new AssertionError("caller's name is invalid");
         String[] parts = method.split("test");
-        String test = parts[parts.length - 1];
-
-        final String javaTestFileName = test + ".java";
-        final String expectedFileName = test + ".out";
-        final File expectedFile = new File(checkerDir + File.separator + expectedFileName);
-        boolean shouldSucceed = TestUtilities.shouldSucceed(expectedFile);
-        runTest(expectedFileName, shouldSucceed, javaTestFileName);
+        String testName = parts[parts.length - 1];
+        test(testName);
     }
 
     /**
