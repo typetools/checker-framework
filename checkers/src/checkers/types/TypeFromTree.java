@@ -545,26 +545,32 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node,
                 AnnotatedTypeFactory f) {
 
-            List<AnnotatedTypeMirror> bounds
-                = new LinkedList<AnnotatedTypeMirror>();
+            List<AnnotatedDeclaredType> bounds
+                = new LinkedList<AnnotatedDeclaredType>();
             for (Tree t : node.getBounds()) {
-                AnnotatedTypeMirror bound;
+                AnnotatedDeclaredType bound;
                 if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory)
-                    bound = visitedBounds.get(t);
+                    bound = (AnnotatedDeclaredType)visitedBounds.get(t);
                 else {
                     visitedBounds.put(t, f.type(t));
-                    bound = visit(t, f);
+                    bound = (AnnotatedDeclaredType)visit(t, f);
                     visitedBounds.put(t, bound);
                 }
                 bounds.add(bound);
             }
 
-            AnnotatedTypeMirror result = f.type(node);
+            AnnotatedTypeVariable result = (AnnotatedTypeVariable)f.type(node);
             result.addAnnotations(InternalUtils.annotationsFromTree(node));
             assert result instanceof AnnotatedTypeVariable;
-            if (!bounds.isEmpty()) {
-                // TODO: handle case with multiple bounds
-                ((AnnotatedTypeVariable)result).setUpperBound(bounds.get(0));
+            switch (bounds.size()) {
+            case 0: break;
+            case 1:
+                result.setUpperBound(bounds.get(0));
+                break;
+            default:
+                AnnotatedDeclaredType upperBound = (AnnotatedDeclaredType)result.getUpperBound();
+                assert TypesUtils.isAnonymousType(upperBound.getUnderlyingType());
+                upperBound.setDirectSuperTypes(bounds);
             }
 
             return result;
