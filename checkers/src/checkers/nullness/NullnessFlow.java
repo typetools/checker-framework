@@ -465,29 +465,72 @@ class NullnessFlow extends Flow {
             return null;
         }
 
-        private String receiver(MethodInvocationTree node) {
-            ExpressionTree sel = node.getMethodSelect();
-            if (sel.getKind() == Tree.Kind.IDENTIFIER)
-                return "";
-            else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
-                return ((MemberSelectTree)sel).getExpression().toString() + ".";
-            throw new AssertionError("Cannot be here");
-        }
-
         @Override
         public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
             super.visitMethodInvocation(node, p);
 
-            ExecutableElement method = TreeUtils.elementFromUse(node);
-            if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
-                AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
-                String receiver = receiver(node);
-                for (String s : anno.value()) {
-                    this.nonnullExpressions.add(receiver + s);
-                }
-            }
+            String nullnessAsserted = shouldInferNullness(node);
+            if (nullnessAsserted != null)
+                this.nonnullExpressions.add(nullnessAsserted);
+
             return null;
         }
+    }
+
+    private String receiver(MethodInvocationTree node) {
+        ExpressionTree sel = node.getMethodSelect();
+        if (sel.getKind() == Tree.Kind.IDENTIFIER)
+            return "";
+        else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
+            return ((MemberSelectTree)sel).getExpression().toString() + ".";
+        throw new AssertionError("Cannot be here");
+    }
+
+    private String shouldInferNullness(ExpressionTree node) {
+        if (node.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            MethodInvocationTree methodInvok = (MethodInvocationTree)node;
+            ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+            if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
+                AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
+                String receiver = receiver(methodInvok);
+                for (String s : anno.value()) {
+                    return receiver + s;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitAssert(AssertTree node, Void p) {
+        super.visitAssert(node, p);
+
+        String nullnessAsserted = shouldInferNullness(node.getCondition());
+        if (nullnessAsserted != null)
+            this.nnExprs.add(nullnessAsserted);
+
+        return null;
+    }
+
+    @Override
+    public Void visitIf(IfTree node, Void p) {
+        super.visitIf(node, p);
+
+        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
+        if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
+            Tree firstStmt = TreeUtils.firstStatement(node.getThenStatement());
+            switch (firstStmt.getKind()) {
+            case THROW:
+            case RETURN:
+            case BREAK:
+            case CONTINUE:
+                String nullnessAsserted =
+                    shouldInferNullness(((UnaryTree)cond).getExpression());
+                if (nullnessAsserted != null)
+                    this.nnExprs.add(nullnessAsserted);
+            }
+        }
+        return null;
     }
 
     @Override
