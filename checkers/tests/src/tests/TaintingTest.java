@@ -1,13 +1,15 @@
 package tests;
 
-import org.junit.Test;
+import java.util.Collection;
 
-public class TaintingTest extends CheckerTest {
+import org.junit.runners.Parameterized.Parameters;
 
-    public TaintingTest() {
-        super("checkers.tainting.TaintingChecker", "tainting", "-Anomsgtext");
+public class TaintingTest extends ParameterizedCheckerTest {
+
+    public TaintingTest(String testName) {
+        super(testName, "checkers.tainting.TaintingChecker", "tainting", "-Anomsgtext");
     }
 
-    @Test
-    public void testSimple()                 { test(); }
+    @Parameters
+    public static Collection<Object[]> data() { return testFiles("tainting"); }
 }

@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 
 import checkers.util.test.SuperQual;
 import checkers.util.test.SubQual;
-
+// @skip-test
 public class DependentTypes {
 
   // A trivial error, so there is at least one in the output.

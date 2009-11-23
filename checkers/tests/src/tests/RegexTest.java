@@ -1,13 +1,15 @@
 package tests;
 
-import org.junit.Test;
+import java.util.Collection;
 
-public class RegexTest extends CheckerTest {
+import org.junit.runners.Parameterized.Parameters;
 
-    public RegexTest() {
-        super("checkers.regex.RegexChecker", "regex", "-Anomsgtext");
+public class RegexTest extends ParameterizedCheckerTest {
+
+    public RegexTest(String testName) {
+        super(testName, "checkers.regex.RegexChecker", "regex", "-Anomsgtext");
     }
 
-    @Test
-    public void testSimple()                 { test(); }
+    @Parameters
+    public static Collection<Object[]> data() { return testFiles("regex"); }
 }

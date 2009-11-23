@@ -1,7 +1,7 @@
 // This code is illegal (javac issues an error), but nonetheless the
 // checkers shouldn't crash.  (Maybe they shouldn't run at all if javac
 // issues any errors?)
-
+// @skip-test
 import checkers.interning.quals.*;
 
 import java.util.*;
