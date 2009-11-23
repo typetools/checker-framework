@@ -362,7 +362,8 @@ public class AnnotatedTypeFactory {
             }
         }
         annotateInheritedFromClass(result);
-        fromTreeCache.put(tree, atypes.deepCopy(result));
+        if (SHOULD_CACHE)
+            fromTreeCache.put(tree, atypes.deepCopy(result));
         return result;
     }
     /**

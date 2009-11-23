@@ -18,6 +18,7 @@ import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import checkers.nullness.quals.NonNull;
 import checkers.quals.TypeQualifier;
@@ -657,11 +658,19 @@ public abstract class AnnotatedTypeMirror {
             // Why is this the case? The following was necessary to get the
             // Interning checker's Generics test case to work. -MP
 
-            List<AnnotatedTypeMirror> typeArgs = new LinkedList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror t : getTypeArguments())
                 typeArgs.add(t.substitute(mapping));
             type.setTypeArguments(typeArgs);
 
+            if (TypesUtils.isAnonymousType(actualType)
+                && this.supertypes != null) {
+                // watch need to copy upper bound as well
+                List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
+                for (AnnotatedDeclaredType t : directSuperTypes())
+                    supertypes.add((AnnotatedDeclaredType)t.substitute(mapping));
+                type.setDirectSuperTypes(supertypes);
+            }
             return type;
         }
 
