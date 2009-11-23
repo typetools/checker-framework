@@ -469,9 +469,7 @@ class NullnessFlow extends Flow {
         public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
             super.visitMethodInvocation(node, p);
 
-            String nullnessAsserted = shouldInferNullness(node);
-            if (nullnessAsserted != null)
-                this.nonnullExpressions.add(nullnessAsserted);
+            this.nonnullExpressions.addAll(shouldInferNullness(node));
 
             return null;
         }
@@ -486,28 +484,28 @@ class NullnessFlow extends Flow {
         throw new AssertionError("Cannot be here");
     }
 
-    private String shouldInferNullness(ExpressionTree node) {
-        if (node.getKind() == Tree.Kind.METHOD_INVOCATION) {
-            MethodInvocationTree methodInvok = (MethodInvocationTree)node;
-            ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
-            if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
-                AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
-                String receiver = receiver(methodInvok);
-                for (String s : anno.value()) {
-                    return receiver + s;
-                }
+    private List<String> shouldInferNullness(ExpressionTree node) {
+        if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return Collections.emptyList();
+
+        List<String> asserts = new ArrayList<String>();
+        MethodInvocationTree methodInvok = (MethodInvocationTree)node;
+        ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
+            AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
+            String receiver = receiver(methodInvok);
+            for (String s : anno.value()) {
+                asserts.add(receiver + s);
             }
         }
-        return null;
+        return asserts;
     }
 
     @Override
     public Void visitAssert(AssertTree node, Void p) {
         super.visitAssert(node, p);
 
-        String nullnessAsserted = shouldInferNullness(node.getCondition());
-        if (nullnessAsserted != null)
-            this.nnExprs.add(nullnessAsserted);
+        this.nnExprs.addAll(shouldInferNullness(node.getCondition()));
 
         return null;
     }
@@ -524,10 +522,9 @@ class NullnessFlow extends Flow {
             case RETURN:
             case BREAK:
             case CONTINUE:
-                String nullnessAsserted =
-                    shouldInferNullness(((UnaryTree)cond).getExpression());
-                if (nullnessAsserted != null)
-                    this.nnExprs.add(nullnessAsserted);
+                List<String> nullnessAsserted = shouldInferNullness(
+                        ((UnaryTree)cond).getExpression());
+                this.nnExprs.addAll(nullnessAsserted);
             }
         }
         return null;
