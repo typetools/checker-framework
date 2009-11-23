@@ -27,4 +27,26 @@ class PptTopLevel {
             @NonNull Object s2 = ppt.splitters;
         }
     }
+
+    // False tests
+    static void testFalse(PptTopLevel ppt) {
+        ppt.splitters.toString();   // error
+    }
+
+    static void testFalseNoAssertion(PptTopLevel ppt) {
+        ppt.has_splitters();
+        ppt.splitters.toString();    // error
+    }
+
+    static void testFalseIf(PptTopLevel ppt) {
+        if (ppt.has_splitters())
+            return;
+        ppt.splitters.toString();   // error
+    }
+
+    static void testFalseIfBody(PptTopLevel ppt) {
+        if (!ppt.has_splitters()) {
+            ppt.splitters.toString();   // error
+        }
+    }
 }
