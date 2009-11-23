@@ -3,6 +3,8 @@ package tests;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -22,7 +24,7 @@ public final class TestUtilities {
 
     /**
      * Checks if the given file is a java test file not to be ignored.
-     * 
+     *
      * Returns true if it is a file and does not contain
      * {@code @skip-test} in the declaration comment of the file.
      */
@@ -105,5 +107,35 @@ public final class TestUtilities {
         }
 
         return javaFiles;
+    }
+
+    public static List<String> expectedDiagnostics(File file) {
+        List<String> expected = new ArrayList<String>();
+
+        try {
+            LineNumberReader reader = new LineNumberReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("//::")) {
+                    int errorLine = reader.getLineNumber() + 1;
+                    String msg = line.replace("//::", ":" + errorLine + ":");
+                    expected.add(msg);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return expected;
+    }
+
+    public static List<String> expectedDiagnostics(String prefix, String[] files) {
+        List<String> expected = new ArrayList<String>();
+
+        for (String file : files)
+            expected.addAll(expectedDiagnostics(new File(prefix + file)));
+
+        return expected;
     }
 }
