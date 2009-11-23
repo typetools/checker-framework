@@ -1,3 +1,4 @@
+/* @skip-test */
 public final class ArraysMDETest {
 
   public static @PolyInterned Object[] subarray(@PolyInterned Object[] a, int startindex, int length) {

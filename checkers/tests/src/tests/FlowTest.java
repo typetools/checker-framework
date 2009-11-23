@@ -1,16 +1,17 @@
 package tests;
 
-import org.junit.*;
+import java.util.Collection;
+
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class FlowTest extends CheckerTest {
+public class FlowTest extends ParameterizedCheckerTest {
 
-    public FlowTest() {
-        super("checkers.util.test.FlowTestChecker", "flow");
+    public FlowTest(String testName) {
+        super(testName, "checkers.util.test.FlowTestChecker", "flow");
     }
 
-    @Test public void testBasic() { test(); }
-    @Test public void testFields() { test(); }
-    @Test public void testMoreFields() { test(); }
+    @Parameters
+    public static Collection<Object[]> data() { return testFiles("flow"); }
 }
