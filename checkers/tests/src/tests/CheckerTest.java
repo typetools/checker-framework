@@ -114,7 +114,7 @@ abstract public class CheckerTest {
         String expectedPath = this.checkerDir + File.separator + expectedFileName;
         File expectedFile = new File(expectedPath);
         if (expectedFile.exists()) {
-            checkTestResult(run, expectedFile, true, joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
+            checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
         } else {
             List<String> expectedErrors = TestUtilities.expectedDiagnostics(this.checkerDir + File.separator, javaFiles);
             checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
