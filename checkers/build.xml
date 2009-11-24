@@ -327,6 +327,7 @@ ${build.version} of the 'javac.jar' library."/>
                   
                   <!-- Framework classes -->
                   <exclude name="**/CheckerTest.java"/>
+                  <exclude name="**/ParameterizedCheckerTest"/>
               </fileset>
           </batchtest>
       </junit>
