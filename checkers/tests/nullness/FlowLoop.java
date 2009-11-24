@@ -1,6 +1,6 @@
 import checkers.nullness.quals.*;
 
-public class LoopFlow {
+public class FlowLoop {
     void simpleWhileLoop() {
         String s = "m";
 
