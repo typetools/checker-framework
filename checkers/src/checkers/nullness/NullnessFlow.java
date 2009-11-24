@@ -503,7 +503,6 @@ class NullnessFlow extends Flow {
 
     @Override
     public Void visitAssert(AssertTree node, Void p) {
-        super.visitAssert(node, p);
 
         ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
         this.nnExprs.addAll(shouldInferNullness(cond));
@@ -514,6 +513,7 @@ class NullnessFlow extends Flow {
             ExpressionTree expr = ((BinaryTree)cond).getLeftOperand();
             this.nnExprs.add(TreeUtils.skipParens(expr).toString());
         }
+        super.visitAssert(node, p);
 
         return null;
     }
@@ -567,6 +567,17 @@ class NullnessFlow extends Flow {
 
         return null;
     }
+
+    @Override
+    public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+        super.visitArrayAccess(node, p);
+
+        if (nnExprs.contains(node.toString()))
+            markTree(node, NONNULL);
+
+        return null;
+    }
+
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
