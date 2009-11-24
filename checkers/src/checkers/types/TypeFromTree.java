@@ -4,6 +4,7 @@ import java.util.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.swing.event.ListSelectionEvent;
 
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
@@ -545,15 +546,14 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node,
                 AnnotatedTypeFactory f) {
 
-            List<AnnotatedDeclaredType> bounds
-                = new LinkedList<AnnotatedDeclaredType>();
+            List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
             for (Tree t : node.getBounds()) {
-                AnnotatedDeclaredType bound;
+                AnnotatedTypeMirror bound;
                 if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory)
-                    bound = (AnnotatedDeclaredType)visitedBounds.get(t);
+                    bound = visitedBounds.get(t);
                 else {
                     visitedBounds.put(t, f.type(t));
-                    bound = (AnnotatedDeclaredType)visit(t, f);
+                    bound = visit(t, f);
                     visitedBounds.put(t, bound);
                 }
                 bounds.add(bound);
@@ -570,7 +570,9 @@ abstract class TypeFromTree extends
             default:
                 AnnotatedDeclaredType upperBound = (AnnotatedDeclaredType)result.getUpperBound();
                 assert TypesUtils.isAnonymousType(upperBound.getUnderlyingType());
-                upperBound.setDirectSuperTypes(bounds);
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                List<AnnotatedDeclaredType> superBounds = (List)bounds;
+                upperBound.setDirectSuperTypes(superBounds);
             }
 
             return result;
