@@ -660,7 +660,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         return null;
     }
 
-    private static boolean containsKey(Tree tree, Collection<String> keys) {
+    protected static boolean containsKey(Tree tree, Collection<String> keys) {
         if (tree == null)
             return false;
 
