@@ -505,9 +505,24 @@ class NullnessFlow extends Flow {
     public Void visitAssert(AssertTree node, Void p) {
         super.visitAssert(node, p);
 
-        this.nnExprs.addAll(shouldInferNullness(node.getCondition()));
+        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
+        this.nnExprs.addAll(shouldInferNullness(cond));
+
+        if (containsKey(node.getDetail(), checker.getSuppressWarningsKey())
+            && cond.getKind() == Tree.Kind.NOT_EQUAL_TO
+            && ((BinaryTree)cond).getRightOperand().getKind() == Tree.Kind.NULL_LITERAL) {
+            ExpressionTree expr = ((BinaryTree)cond).getLeftOperand();
+            this.nnExprs.add(TreeUtils.skipParens(expr).toString());
+        }
 
         return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void p) {
+        // clean nnExprs when they are reassigned
+        this.nnExprs.remove(node.getVariable().toString());
+        return super.visitAssignment(node, p);
     }
 
     @Override
