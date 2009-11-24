@@ -9,7 +9,7 @@
 
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
-    <property name="tests.junit" value="${tests}/junit.jar"/>
+    <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
@@ -290,6 +290,7 @@ ${build.version} of the 'javac.jar' library."/>
                 <pathelement path="${build}"/>
             </classpath>
             <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
 
             <test name="${param}" todir="${build.reports}"/>
         </junit>
