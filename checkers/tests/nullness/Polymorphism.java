@@ -35,13 +35,4 @@ public class Polymorphism {
         @NonNull Object nonnull2 = staticIdentity(nonnull);
     }
 
-    public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, int start, int end) {
-        if (seq == null) { return null; }
-        return new boolean[] { };
-    }
-
-    public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, long start, int end) {
-        return slice(seq, (int)start, end);
-    }
-
 }
