@@ -9,7 +9,7 @@
 
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
-    <property name="tests.junit" value="${tests}/junit.jar"/>
+    <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
@@ -290,6 +290,7 @@ ${build.version} of the 'javac.jar' library."/>
                 <pathelement path="${build}"/>
             </classpath>
             <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
 
             <test name="${param}" todir="${build.reports}"/>
         </junit>
@@ -298,9 +299,39 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- Note that this target ignores file src/tests/AllTests.java .
          We should perhaps eliminate either that file or this target.
      -->
-    <target name="all-tests"
-      depends="basic-tests,flow-tests,framework-tests,igj-tests,interning-tests,javari-tests,nullness-tests"
-      description="Run tests for all checkers"/>
+    <target name="all-tests" depends="jar,build-tests"
+      description="Run tests for all checkers">
+      <!-- Copied from -run-tests target -->
+      <mkdir dir="${build.reports}"/>
+      <junit fork="${run.tests.should.fork}"
+		    dir="${basedir}"
+          printsummary="true"
+          haltonfailure="${halt.on.test.failure}">
+          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+          <jvmarg line="-ea"/>
+
+          <classpath>
+              <pathelement path="${compiler.lib}"/>
+              <pathelement path="${checker.jar.file}"/>
+              <pathelement path="${build.tests}"/>
+              <pathelement path="${tests.junit}"/>
+              <pathelement path="${build}"/>
+          </classpath>
+          <formatter type="xml"/>
+          <formatter type="brief" usefile="false"/>
+
+          <batchtest todir="${build.reports}">
+              <fileset dir="${tests}/src">
+                  <include name="**/*Test.java"/>
+                  <exclude name="**/AllTests.java"/>
+                  
+                  <!-- Framework classes -->
+                  <exclude name="**/CheckerTest.java"/>
+                  <exclude name="**/ParameterizedCheckerTest.java"/>
+              </fileset>
+          </batchtest>
+      </junit>
+  </target>
 
     <target name="annotation-builder-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
