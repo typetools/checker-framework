@@ -20,12 +20,12 @@ public class Asserts {
     }
 
     class ArrayCell {
-        /*@Nullable*/ Object[] vals;
+        @Nullable Object[] vals;
     }
 
     void assertComplexExpr (ArrayCell ac, int i) {
         assert ac.vals[i] != null : "@SuppressWarnings(nullness)";
-        /*@NonNull*/ Object o = ac.vals[i];
+        @NonNull Object o = ac.vals[i];
     }
 
 }
