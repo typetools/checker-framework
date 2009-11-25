@@ -20,8 +20,9 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-ease-of-use}: Are type annotations easy to read and write? \\
 \ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
-\ref{never-make-type-errors}: I don't make type errors, so pluggable type checking would not help me \\
+\ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
 \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
+\ref{faq-run-on-all-files}: How do I run a checker on all my source files? \\
 \ref{faq-create-a-checker}: How do I create a new checker? \\
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
 \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
@@ -119,7 +120,7 @@ possible class of problems), and increasing confidence in a piece of
 software.
 
 
-\section{I don't make type errors, so pluggable type checking would not help me\label{never-make-type-errors}}
+\section{I don't make type errors, so would pluggable type checking help me?\label{never-make-type-errors}}
 
 Occasionally, a developer says that he makes no errors that typechecking
 could catch, or that any such errors are unimportant because they have low
@@ -152,6 +153,15 @@ time to focus on those.
 In brief, use subtypes when you can, and use type qualifiers when you cannot
 use subtypes.
 For more details, see section~\ref{when-to-use-type-qualifiers}.
+
+
+\section{How do I run a checker on all my source files?\label{faq-run-on-all-files}}
+
+The \code{javac} compiler halts compilation as soon as it processes a
+source file with an error, including an error issued by a pluggable
+type-checker.  Section~\ref{running} describes the \<-Awarns> command-line
+option that turns checker errors into warnings, permitting \<javac> to
+continue past the first erroneous source file.
 
 
 \section{How do I create a new checker?\label{faq-create-a-checker}}
