@@ -11,7 +11,7 @@ enables a programmer to detect and prevent mutation-related errors.
 
 \section{IGJ and Mutability\label{igj-and-mutability}}
 
-IGJ permits a
+IGJ~\cite{ZibinPAAKE2007} permits a
 programmer to express that a particular object should never be modified via any
 reference (object immutability), or that a reference should never be used to
 modify its referent (reference immutability). Once a programmer has expressed
@@ -29,9 +29,9 @@ bugs or to guarantee that the code contains no such bugs.
 \label{fig:igj-hierarchy}
 \end{figure}
 
-To learn the details of the IGJ language and type system, please see the
-ESEC/FSE 2007 paper ``Object and reference immutability using Java
-generics''~\cite{ZibinPAAKE2007}.
+To learn more details of the IGJ language and type system, please see the
+ESEC/FSE 2007 paper ``\ahref{http://www.cs.washington.edu/homes/mernst/pubs/immutability-generics-fse2007-abstract.html}{Object and reference immutability using Java
+generics}''~\cite{ZibinPAAKE2007}.
 The IGJ checker supports Annotation IGJ (Section~\ref{annotation-igj-dialect}),
 which is slightly different dialect
 of IGJ than that described in the ESEC/FSE paper.

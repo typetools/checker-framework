@@ -526,7 +526,9 @@ The javac compiler halts compilation as soon as an error is found in a
 source file.  You can pass \code{-Awarns} in the command-line to
 treat checker errors as warnings.  This option allows you to see all
 the type-checking errors at once, rather than just the errors in the first
-file that contains errors.
+file that contains errors.  You may wish to also supply 
+\code{-Xmaxwarns 10000}, because by default \<javac> prints at most 100
+warnings.
 
 You can always compile the code without the \code{-processor}
 command-line option, but in that case no checking of the type
