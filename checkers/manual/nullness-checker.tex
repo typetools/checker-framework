@@ -808,11 +808,12 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 Findbugs has a non-standard definition of \<@Nullable>.  FindBug's treatment is not
 documented in its own
-\ahref{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc},
-is different from every other tool for nullness analysis, and it inevitably
-surprises programmers, so it is detrimental rather than useful as documentation.
-In
-practice, your best bet is to not rely on FindBugs for nullness analysis,
+\ahref{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+it is different from the definition of \<@Nullable> in every other tool for
+nullness analysis; it means tho same thing as \<@NonNull> when applied to a
+formal parameter; and it inevitably surprises programmers.  Thus, FindBugs's
+\<@Nullable> is detrimental rather than useful as documentation.
+In practice, your best bet is to not rely on FindBugs for nullness analysis,
 even if you find FindBugs useful for other purposes.
 
 You can skip the rest of this section unless you wish to learn more details.
@@ -850,10 +851,9 @@ null, and annotations that suppress false warnings.  The choice of names
 should also have been consistent other tools, and intuitively clear to
 programmers.  The FindBugs choices make the FindBugs annotations less
 helpful to people, and much less useful for other tools.  The FindBugs
-analysis is also very imprecise.  It is best to stay away from the FindBugs
-nullness annotations, and use a more capable tool like the Checker
-Framework for type-related analyses, even if you use FindBugs for other
-purposes.)
+analysis is also very imprecise.  For type-related analyses, it is best to
+stay away from the FindBugs nullness annotations, and use a more capable
+tool like the Checker Framework.)
 
 
 
