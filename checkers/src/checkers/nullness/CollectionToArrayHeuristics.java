@@ -21,10 +21,11 @@ import com.sun.source.tree.Tree;
  * Handles calls to {@link java.util.Collection#toArray()} and determines
  * the appropriate nullness type of the returned value.
  *
- * <p>{@link Collection#toArray()} and {@link Collection#toArray(T[])} method
- * semantics cannot be captured by the regular type system.
- * Namely, the nullness of the returned array component depends on the
- * receiver type argument.  So
+ * <p>
+ * {@link Collection#toArray()} and {@link Collection#toArray(Object[])
+ * Collection.toArray(T[])} method semantics cannot be captured by the
+ * regular type system.  Namely, the nullness of the returned array
+ * component depends on the receiver type argument.  So
  *
  * <pre>
  *     Collection<@NonNull String> c1 = ...
@@ -34,9 +35,10 @@ import com.sun.source.tree.Tree;
  *     c2.toArray();    // --> returns @Nullable Object []
  * </pre>
  *
- * In the case of {@link Collection#toArray(T[])}, the type of the returned
- * array depends on the passed parameter as well and its size.  In particular,
- * the returned array component would of type {@code @NonNull} if the following
+ * In the case of {@link Collection#toArray(Object[])
+ * Collection.toArray(T[])}, the type of the returned array depends on the
+ * passed parameter as well and its size.  In particular, the returned
+ * array component would of type {@code @NonNull} if the following
  * conditions hold:
  *
  * <ol>
@@ -45,8 +47,9 @@ import com.sun.source.tree.Tree;
  * </ol>
  *
  * While checking for the second condition, requires a runtime check, we
- * provide heuristics to handle the most common cases of
- * {@link Collection.toArray(T[])}, namely if the passed array is
+ * provide heuristics to handle the most common cases of {@link
+ * Collection#toArray(Object[]) Collection.toArray(T[])}, namely if the
+ * passed array is
  *
  * <ol>
  * <li value="1">an empty array initializer, e.g.
@@ -131,7 +134,7 @@ public class CollectionToArrayHeuristics {
      * Returns true if {@code argument} is one of the array creation trees
      * that the heuristic handles.
      *
-     * @param argument  the tree passed to {@link Collection#toArray(T[])}
+     * @param argument  the tree passed to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
      * @param receiver  the name of the receiver collection
      * @return true if the argument is handled and assume to return nonnull
      * elements
