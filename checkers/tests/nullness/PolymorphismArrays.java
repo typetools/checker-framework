@@ -24,6 +24,12 @@ public class PolymorphismArrays {
             result.elts[i] = intern(elts[i].clone());
         }
         return result;
-  }
+    }
+
+    public void simplified() {
+        String[][] elts = new String[0][0];
+        String[][] clone = elts.clone();
+        String[] results = intern(elts[0].clone());
+    }
 
 }
