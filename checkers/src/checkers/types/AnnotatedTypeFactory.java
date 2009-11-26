@@ -130,7 +130,7 @@ public class AnnotatedTypeFactory {
     // **********************************************************************
 
     /** Should cache? disable for better debugging */
-    private final static boolean SHOULD_CACHE = true;
+    private final static boolean SHOULD_CACHE = false;
 
     /** Various Caches **/
     /** Size of LRU cache **/

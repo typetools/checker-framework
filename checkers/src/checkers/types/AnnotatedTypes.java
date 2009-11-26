@@ -252,6 +252,13 @@ public class AnnotatedTypes {
             return asMemberOf(((AnnotatedTypeVariable) t).getUpperBound(),
                     elem);
 
+        if (t.getKind() == TypeKind.ARRAY
+                && elem.getKind() == ElementKind.METHOD
+                && elem.getSimpleName().contentEquals("clone")) {
+                AnnotatedExecutableType method = (AnnotatedExecutableType)factory.getAnnotatedType(elem);
+                return method.substitute(Collections.singletonMap(method.getReturnType(), t));
+        }
+
         // I cannot think of why it wouldn't be a declared type!
         // Defensive Programming
         if (t.getKind() != TypeKind.DECLARED) {
