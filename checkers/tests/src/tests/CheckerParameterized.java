@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,9 +26,9 @@ import org.junit.runners.model.TestClass;
  * When running a parameterized test class, instances are created for the
  * cross-product of the test methods and the test data elements.
  * </p>
- * 
+ *
  * For example, to test a Fibonacci function, write:
- * 
+ *
  * <pre>
  * &#064;RunWith(Parameterized.class)
  * public class FibonacciTest {
@@ -38,16 +39,16 @@ import org.junit.runners.model.TestClass;
  *              { { 0, 0 }, { 1, 1 }, { 2, 1 }, { 3, 2 }, { 4, 3 }, { 5, 5 },
  *                      { 6, 8 } } });
  *  }
- * 
+ *
  *  private int fInput;
- * 
+ *
  *  private int fExpected;
- * 
+ *
  *  public FibonacciTest(int input, int expected) {
  *      fInput= input;
  *      fExpected= expected;
  *  }
- * 
+ *
  *  &#064;Test
  *  public void test(@HeresHowYouGetValue Type value) {
  *      assertAnswerKey(new Object[][] {
@@ -58,7 +59,7 @@ import org.junit.runners.model.TestClass;
  *  }
  * }
  * </pre>
- * 
+ *
  * <p>
  * Each instance of <code>FibonacciTest</code> will be constructed using the
  * two-argument constructor and the data values in the
@@ -102,9 +103,14 @@ public class CheckerParameterized extends Suite {
         }
 
         String testCaseName() {
-            return fParameterList.get(fParameterSetNumber)[0].toString();
+            File file = (File)fParameterList.get(fParameterSetNumber)[0];
+            String name = file.getPath().replace(".java", "").replace("tests/", "");
+            if (name.contains("/"))
+                return name.substring(name.indexOf("/") + 1);
+            else
+                return name;
         }
-        
+
         @Override
         protected String getName() {
             return String.format("[%s]", testCaseName());
