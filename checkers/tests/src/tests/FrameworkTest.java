@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
@@ -11,8 +12,8 @@ import checkers.util.test.*;
  */
 public class FrameworkTest extends ParameterizedCheckerTest {
 
-    public FrameworkTest(String testName) {
-        super(testName, "checkers.util.test.TestChecker", "framework", "-Anomsgtext");
+    public FrameworkTest(File testFile) {
+        super(testFile, "checkers.util.test.TestChecker", "framework", "-Anomsgtext");
     }
 
     @Parameters

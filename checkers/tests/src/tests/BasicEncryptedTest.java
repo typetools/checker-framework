@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
@@ -13,8 +14,8 @@ import checkers.util.test.Encrypted;
  */
 public class BasicEncryptedTest extends ParameterizedCheckerTest {
 
-    public BasicEncryptedTest(String testName) {
-        super(testName,
+    public BasicEncryptedTest(File testFile) {
+        super(testFile,
                 BasicChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",

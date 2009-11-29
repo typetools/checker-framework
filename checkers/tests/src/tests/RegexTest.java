@@ -1,13 +1,14 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
 public class RegexTest extends ParameterizedCheckerTest {
 
-    public RegexTest(String testName) {
-        super(testName, "checkers.regex.RegexChecker", "regex", "-Anomsgtext");
+    public RegexTest(File testFile) {
+        super(testFile, "checkers.regex.RegexChecker", "regex", "-Anomsgtext");
     }
 
     @Parameters

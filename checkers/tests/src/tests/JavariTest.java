@@ -2,6 +2,7 @@ package tests;
 
 import org.junit.runners.Parameterized.Parameters;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -9,8 +10,8 @@ import java.util.*;
  */
 public class JavariTest extends ParameterizedCheckerTest {
 
-    public JavariTest(String testName) {
-        super(testName, "checkers.javari.JavariChecker", "javari", "-Anomsgtext");
+    public JavariTest(File testFile) {
+        super(testFile, "checkers.javari.JavariChecker", "javari", "-Anomsgtext");
     }
 
     @Parameters

@@ -10,24 +10,25 @@ import org.junit.runner.RunWith;
 
 @RunWith(CheckerParameterized.class)
 public abstract class ParameterizedCheckerTest extends CheckerTest {
-    private final String testName;
+    private final File testFile;
 
-    public ParameterizedCheckerTest(String testName,
+    public ParameterizedCheckerTest(File testFile,
             String checkerName, String checkerDir, String... checkerOptions) {
         super(checkerName, checkerDir, checkerOptions);
-        this.testName = testName;
+        this.testFile = testFile;
     }
 
-    @Test public void run()     { test(testName); }
+    @Test public void run()     {
+        test(testFile);
+    }
 
     protected static Collection<Object[]> testFiles(String folder) {
         File dir = new File("tests" + File.separator + folder);
-        List<File> javaFiles = TestUtilities.enclosedJavaTestFiles(dir);
+        List<File> javaFiles = TestUtilities.deeplyEnclosedJavaTestFiles(dir);
         Collection<Object[]> arguments = new ArrayList<Object[]>(javaFiles.size());
 
         for (File javaFile : javaFiles) {
-            String testName = javaFile.getName().replace(".java", "");
-            arguments.add(new Object[] { testName });
+            arguments.add(new Object[] { javaFile });
         }
         return arguments;
     }
