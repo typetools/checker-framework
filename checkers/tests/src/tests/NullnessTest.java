@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
@@ -9,8 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessTest extends ParameterizedCheckerTest {
 
-    public NullnessTest(String testName) {
-        super(testName, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext");
+    public NullnessTest(File testFile) {
+        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext");
     }
 
     @Parameters

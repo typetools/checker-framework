@@ -44,10 +44,10 @@ abstract public class CheckerTest {
      * named testZZZ, this method uses an expected outfile called "ZZZ.out"
      * and a Java source file called "ZZZ.java".
      */
-    protected void test(String test) {
-        final String javaTestFileName = test + ".java";
-        final String expectedFileName = test + ".out";
-        runTest(expectedFileName, javaTestFileName);
+    protected void test(File testFile) {
+        final String expectedFileName = testFile.getPath().replace(".java", ".out");
+        File expectedFile = new File(expectedFileName);
+        runTest(expectedFile, testFile);
     }
 
     protected void test() {
@@ -58,7 +58,7 @@ abstract public class CheckerTest {
             throw new AssertionError("caller's name is invalid");
         String[] parts = method.split("test");
         String testName = parts[parts.length - 1];
-        test(testName);
+        test(new File(this.checkerDir + File.separator + testName + ".java"));
     }
 
     /**
@@ -109,10 +109,8 @@ abstract public class CheckerTest {
      * @param expectedFile  the expected result for compilation
      * @param javaFiles  the Java files to be compiled
      */
-    protected void runTest(String expectedFileName, String ... javaFiles) {
+    protected void runTest(File expectedFile, File ... javaFiles) {
         TestRun run = getTest(javaFiles);
-        String expectedPath = this.checkerDir + File.separator + expectedFileName;
-        File expectedFile = new File(expectedPath);
         if (expectedFile.exists()) {
             checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
         } else {

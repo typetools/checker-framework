@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
@@ -9,8 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class InterningTest extends ParameterizedCheckerTest {
 
-    public InterningTest(String testName) {
-        super(testName, "checkers.interning.InterningChecker", "interning", "-Anomsgtext");
+    public InterningTest(File testFile) {
+        super(testFile, "checkers.interning.InterningChecker", "interning", "-Anomsgtext");
     }
 
     @Parameters

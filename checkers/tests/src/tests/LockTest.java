@@ -1,5 +1,6 @@
 package tests;
 
+import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
@@ -8,8 +9,8 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class LockTest extends ParameterizedCheckerTest {
 
-    public LockTest(String testName) {
-        super(testName, "checkers.lock.LockChecker", "lock", "-Anomsgtext");
+    public LockTest(File testFile) {
+        super(testFile, "checkers.lock.LockChecker", "lock", "-Anomsgtext");
     }
 
     @Parameters
