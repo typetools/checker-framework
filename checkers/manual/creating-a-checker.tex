@@ -1,0 +1,967 @@
+\htmlhr
+\chapter{How to create a new checker\label{writing-a-checker}}
+
+\newcommand{\TreeAPIBase}{http://download.java.net/jdk7/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+\newcommand{\ModelAPIBase}{http://download.java.net/jdk7/docs/api/javax/lang/model}
+\newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+
+This section describes how to create a checker
+--- a type-checking compiler plugin that detects bugs or verifies their
+absence.  After a programmer annotates a program,
+the checker plugin verifies that the code is consistent
+with the annotations.
+If you only want to \emph{use} a checker, you do not need to read this
+section.
+
+Writing a simple checker is easy!  For example, here is a complete, useful
+type checker:
+
+\begin{Verbatim}
+@TypeQualifier
+@SubtypeOf(Unqualified.class)
+public @interface Encrypted {}
+\end{Verbatim}
+
+This checker is so short because it builds on the Basic Checker
+(Chapter~\ref{basic-checker}).
+See Section~\ref{basic-example} for more details about this particular checker.
+When you wish to create a new checker, it is sometimes easiest to begin by
+building it declaratively on top of the Basic Checker, and then return to
+this chapter when you need more expressiveness or power than the Basic
+Checker affords.
+
+You can also customize a typestate checker, which enables a variable's type
+to change --- for instance, a file might transition from the \<@Open> to
+the \<@Closed> state after the \<close()> method is called.
+For more details, see Chapter~\ref{typestate-checker}.
+
+The rest of this section contains many details for people who want to more write powerful
+checkers.
+You do not need all of the details, at least at first.
+In addition to reading this section of the manual, you may find it helpful
+to examine the implementations of the checkers that are distributed with
+the Checker Framework.  You can even create your checker by modifying one
+of those.
+The Javadoc documentation of the framework and the checkers is in the
+distribution and is also available online at
+\myurl{http://types.cs.washington.edu/checker-framework/current/doc/}.
+
+If you write a new checker and wish to advertise it to the world, let us
+know so we can mention it in the Checker Framework manual, link to
+it from the webpages, or include it in the Checker Framework distribution.
+
+
+\section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
+
+This table shows the relationship among various tools.
+All of the tools use the Type Annotations (JSR 308) syntax.
+You use the Checker Framework to build pluggable type systems, and the
+Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
+
+\newlength{\bw}
+\setlength{\bw}{.5in}
+
+%% Strictly speaking, "Basic Checker" should sit on top of Checker
+%% Framework and below all the specific checkers.  But omit it for simplicity.
+
+% Unfortunately, Hevea inserts a horizontal line between every pair of rows
+% regardless of whether there is a \hline or \cline.  So, make paragraphs.
+\begin{center}
+\begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
+\cline{1-3} \cline{5-7}
+\centering Nullness \par Checker &
+\centering Mutation \par Checker &
+\centering Tainting \par Checker &
+\centering \ldots &
+\centering Your \par Checker &
+\centering Type \par inference &
+Other \par tools
+\\ \hline
+\multicolumn{5}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
+\multicolumn{2}{p{3\bw}|}{\centering \ahref{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\\ \hline
+\multicolumn{7}{|p{8.5\bw}|}{\centering
+  \ahref{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
+  and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
+\end{tabular}
+\end{center}
+
+\noindent
+(Strictly speaking, the specific checkers, such as the Nullness Checker, are
+built on top of the Basic Checker, which is built on top of the Checker
+Framework.  The Basic Checker can also be used directly by users.)
+
+
+\section{The parts of a checker\label{parts-of-a-checker}}
+
+The Checker Framework provides abstract base classes (default
+implementations), and a specific checker overrides as little or as much of
+the default implementations as necessary.
+%
+Sections~\ref{writing-typequals}--\ref{writing-compiler-interface} describe
+the components of a type system as written using the Checker Framework:
+
+\begin{description}
+
+\item{\ref{writing-typequals}}
+  \textbf{Type qualifiers and hierarchy.}  You define the annotations for
+  the type system and the subtyping relationships among qualified types
+  (for instance, that \<@NonNull Object> is a subtype of \<@Nullable
+  Object>).
+
+\item{\ref{writing-type-introduction}}
+  \textbf{Type introduction rules.}  For some types and
+  expressions, a qualifier should be treated as implicitly present even if a
+  programmer did not explicitly write it.  For example, in the Nullness
+  type system every literal
+  other than \<null> has a \<@\refclass{nullness/quals}{NonNull}> type;
+  examples of literals include \<"some string"> and \<java.util.Date.class>.
+
+\item{\ref{extending-visitor}}
+  \textbf{Type rules.}  You specify the the type system semantics (type
+  rules), violation of which yields a type error.  There are two types of
+  rules.
+\begin{itemize}
+\item
+  Subtyping rules related to the type hierarchy, such as that every
+  assignment and pseudo-assignment satisfies a subtyping relationship.
+  Your checker automatically inherits these subtyping rules from the Basic
+  Checker (Chapter~\ref{basic-checker}).
+\item
+  Additional rules that are specific to your particular checker.  For
+  example, in the Nullness type system, only references with a
+  \<@\refclass{nullness/quals}{NonNull}> type may be dereferenced.  You
+  write these additional rules yourself.
+\end{itemize}
+
+\item{\ref{writing-compiler-interface}}
+  \textbf{Interface to the compiler.}  The compiler interface indicates
+  which annotations are part of the type system, which command-line options
+  and \<@SuppressWarnings> annotations the checker recognizes, etc.
+\end{description}
+
+
+\section{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
+
+A type system designer specifies the qualifiers in the type system and
+the type hierarchy that relates them.
+
+%% True, but seems irrelevant here, so it detracts from the message.
+% Each qualifier restricts the values that
+% a type can represent.  For example \<@NonNull String> type can only
+% represent non-null values, indicating that the variable may not hold
+% \<null> values.
+
+Type qualifiers are defined as Java annotations~\cite{JSR269}.  In Java, an
+annotation is defined using the Java \code{@interface} keyword.
+Write the \<@\refclass{quals}{TypeQualifier}> annotation on the annotation definition
+to indicate that the annotation represents a type qualifier
+and should be processed by the checker.  For example:
+
+\begin{Verbatim}
+  // Define an annotation for the @NonNull type qualifier.
+  @TypeQualifier
+  public @interface NonNull { }
+\end{Verbatim}
+
+\noindent
+(An annotation that is written on an annotation
+definition, such as \<@\refclass{quals}{TypeQualifier}>, is called a \emph{meta-annotation}.)
+
+% \noindent
+% The \<@TypeQualifier> meta-annotation
+% distinguishes it from an ordinary
+% annotation that applies to a declaration (e.g., \<@Deprecated> or
+% \<@Override>).
+% The framework ignores any annotation whose
+% declaration does not bear the \<@TypeQualifier> meta-annotation (with minor
+% exceptions, such as \<@SuppressWarnings>).
+
+The type hierarchy induced by the qualifiers can be defined either
+declaratively via meta-annotations (Section~\ref{declarative-hierarchy}), or procedurally through
+subclassing \refclass{types}{QualifierHierarchy} or
+\refclass{types}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
+
+
+\subsection{Declaratively defining the qualifier and type hierarchy\label{declarative-hierarchy}}
+
+Declaratively, the type system designer uses two meta-annotations (written
+on the declaration of qualifier annotations) to specify the qualifier
+hierarchy.
+
+\begin{itemize}
+
+\item \code{@\refclass{quals}{SubtypeOf}} denotes that a qualifier is a subtype of
+  another qualifier or qualifiers, specified as an array of class
+  literals.  For example, for any type $T$,
+  \code{@\refclass{nullness/quals}{NonNull}} $T$ is a subtype of \code{@\refclass{nullness/quals}{Nullable}} $T$:
+
+  \begin{Verbatim}
+    @TypeQualifier
+    @SubtypeOf( { Nullable.class } )
+    public @interface NonNull { }
+  \end{Verbatim}
+
+  % (The actual definition of \refclass{nullness/quals}{NonNull} is slightly more complex.)
+
+
+  %% True, but a distraction.  Move to Javadoc?
+  % (It would be more natural to use Java subtyping among the qualifier
+  % annotations, but Java forbids annotations from subtyping one another.)
+  %
+  \<@\refclass{quals}{SubtypeOf}> accepts multiple annotation classes as an argument,
+  permitting the type hierarchy to be an arbitrary DAG\@.  For example,
+  in the IGJ type system (Section~\ref{igj-annotations}), \<@\refclass{igj/quals}{Mutable}>
+  and \<@\refclass{igj/quals}{Immutable}> induce two mutually exclusive subtypes of the
+  \<@\refclass{igj/quals}{ReadOnly}> qualifier.
+
+  All type qualifiers, except for polymorphic qualifiers (see below and
+  also Section~\ref{qualifier-polymorphism}), need to be
+  properly annotated with \refclass{quals}{SubtypeOf}.
+
+  The root qualifier should be annotated with
+  \<@Subtype( \{ \} )>.  The root qualifier is the qualifier that is
+  a supertype of all other qualifiers.  For example, \<@\refclass{nullness/quals}{Nullable}>
+  is the root of the Nullness type system, hence is defined as:
+
+  \begin{Verbatim}
+    @TypeQualifier
+    @SubtypeOf( { } )
+    public @interface Nullable { }
+  \end{Verbatim}
+
+  If the root of the hierarchy is the unqualified type, then its children
+  will use \code{@SubtypeOf(Unqualified.class)}, but no \code{@SubtypeOf(
+    \{ \} )} annotation on the root is necessary.  For an example, see the
+  \<Encrypted> type system of Section~\ref{encrypted-example}.
+
+\item \<@\refclass{quals}{PolymorphicQualifier}> denotes that a qualifier is a
+  polymorphic qualifier.  For example:
+
+  \begin{Verbatim}
+    @TypeQualifier
+    @PolymorphicQualifier
+    public @interface PolyNull { }
+  \end{Verbatim}
+
+  For a description of polymorphic qualifiers, see
+  Section~\ref{qualifier-polymorphism}.  A polymorphic qualifier needs
+  no \<@\refclass{quals}{SubtypeOf}> meta-annotation and need not be
+  mentioned in any other \<@\refclass{quals}{SubtypeOf}>
+  meta-annotation.
+
+\end{itemize}
+
+\urldef{\isSubtypeURL}\url{doc/checkers/basetype/BaseTypeChecker.html#isSubtype(checkers.types.AnnotatedTypeMirror,%20checkers.types.AnnotatedTypeMirror)}
+
+The declarative and procedural mechanisms for specifying the hierarchy can
+be used together.  In particular, when using the \<@\refclass{quals}{SubtypeOf}>
+meta-annotation, further customizations may be
+performed procedurally (Section~\ref{procedural-hierarchy})
+by overriding the \ahref{\isSubtypeURL}{\code{isSubtype}} method in the checker class
+(Section~\ref{writing-compiler-interface}).
+However, the declarative mechanism is sufficient for most type systems.
+
+
+\subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
+
+\urldef{\createQualifierHierarchyURL}\url{doc/checkers/basetype/BaseTypeChecker.html#createQualifierHierarchy()}
+\urldef{\createTypeHierarchyURL}\url{doc/checkers/basetype/BaseTypeChecker.html#createTypeHierarchy()}
+
+While the declarative syntax suffices for many cases, more complex
+type hierarchies can be expressed by overriding, in \refclass{basetype}{BaseTypeChecker},
+either \ahref{\createQualifierHierarchyURL}{\<createQualifierHierarchy>} or \ahref{\createTypeHierarchyURL}{\<createTypeHierarchy>} (typically
+only one of these needs to be overridden).
+For more details, see the Javadoc of those methods and of the classes
+\refclass{types}{QualifierHierarchy} and \refclass{types}{TypeHierarchy}.
+
+The \refclass{types}{QualifierHierarchy} class represents the qualifier hierarchy (not the
+type hierarchy), e.g., \refclass{igj/quals}{Mutable}
+is a subtype of \refclass{igj/quals}{ReadOnly}.  A type-system designer may subclass
+\refclass{types}{QualifierHierarchy} to express customized qualifier
+relationships (e.g., relationships based on annotation
+arguments).
+
+The \refclass{types}{TypeHierarchy} class represents the type hierarchy ---
+that is, relationships between
+annotated types, rather than merely type qualifiers, e.g., \<@Mutable
+Date> is a subtype of \<@ReadOnly Date>.  The default \refclass{types}{TypeHierarchy} uses
+\refclass{types}{QualifierHierarchy} to determine all subtyping relationships.
+The default \refclass{types}{TypeHierarchy} handles
+generic type arguments, array components, type variables, and
+wildcards in a similar manner to the Java standard subtype
+relationship but with taking qualifiers into consideration.  Some type
+systems may need to override that behavior.  For instance, the Java
+Language Specification specifies that two generic types are subtypes only
+if their type arguments are identical:  for example,
+\code{List<Date>} is not a subtype of \code{List<Object>}, or of any other
+generic \code{List}.
+(In the technical jargon, the generic arguments are ``invariant'' or ``novariant''.)
+The Javari type system overrides this
+behavior to allow some type arguments to change covariantly in a type-safe
+manner (e.g.,
+\code{List<@Mutable Date>} is a subtype of \code{List<@QReadOnly Date>}).
+
+
+\subsection{Defining a default annotation\label{typesystem-defaults}}
+
+% This paragraph is out of place.
+
+\urldef{\setAbsoluteDefaultsURL}\url{doc/checkers/util/QualifierDefaults.html#setAbsoluteDefaults(javax.lang.model.element.AnnotationMirror,%20java.util.Set)}
+
+A type system designer may set a default annotation.  A user may override
+the default; see Section~\ref{defaults}.
+
+The type system designer may specify a default annotation declaratively,
+using the \code{@\refclass{quals}{DefaultQualifierInHierarchy}}
+meta-annotation.
+Note that the default will apply to any source code that the checker reads,
+including stub libraries, but will not apply to compiled \code{.class}
+files that the checker reads.
+
+Alternately, the type system designer may specify a default procedurally,
+by calling the
+\ahref{\setAbsoluteDefaultsURL}{\<QualifierDefaults.setAbsoluteDefaults>}
+method.  You may do this even if you have declaratively defined the
+qualifier hierarchy; see the Nullness checker's implementation for an
+example.
+
+
+Recall that defaults are distinct
+from implicit annotations; see Sections~\ref{effective-qualifier}
+and~\ref{writing-type-introduction}.
+
+
+\subsection{Completeness of the type hierarchy\label{bottom-qualifier}\label{top-qualifier}}
+
+\paragraph{Bottom qualifier}
+It is usually a good idea to have a bottom qualifier in your type hierarchy
+--- a qualifier that is a (direct or indirect) subtype of every other
+qualifier.  For instance, the hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
+a bottom qualifier, because there is no qualifier that is a subtype of both
+\<@Immutable> and \<@Mutable>.
+The bottom qualifier is the natural type for the \code{null}
+value, which can be viewed as having any type at all.  Without a bottom
+qualifier, type-checking becomes less precise.
+Users should never write the bottom qualifier explicitly; it is merely used
+for the \code{null} value.
+
+The actual IGJ hierarchy contains a (non-user-visible) bottom qualifier,
+defined like this:
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf({Mutable.class, Immutable.class, I.class})
+  @Target({})
+  @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
+               typeClasses = { AnnotatedPrimitiveType.class })
+  @interface IGJBottom { }
+\end{Verbatim}
+
+
+
+\paragraph{Top qualifier}
+Similarly, it is a good idea to have a top qualifier in your type hierarchy
+--- a qualifier that is a (direct or indirect) subtype of every other
+qualifier.  For instance, the \<@Encrypted> type system of
+Section~\ref{bottom-qualifier} lacks a top qualifier:
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf(Unqualified.class)
+  public @interface Encrypted {}
+\end{Verbatim}
+
+\noindent
+The interning type system of Section~\ref{interning-checker} also lacks a
+top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
+\<@\refclass{interning/quals}{Interned}>.
+
+When a type system lacks a top qualifier (or any other qualifier), then
+users lose flexibility in expressing defaults.  In the encryption example
+there is no top qualifier, and every type is either unqualified or has the
+\<@Encrypted> qualifier.  Another way of saying this is that the default is
+\<@Unqualified>.  In such a case, it is not sensible for a user to specify
+a default for unannotated types via the
+\code{@\refclass{quals}{DefaultQualifier}} meta-annotation
+(Section~\ref{defaults}), because there is no argument to pass to it.
+\<@Unqualified> is not appropriate, because it is not clear which type
+system it is intended to refer to.
+
+The ability to omit the top qualifier is a convenience
+when writing a type system, because it reduces the number of qualifiers
+that must be defined; this is especially convenient when using the Basic
+Checker (Section~\ref{basic-checker}).
+Omitting the top qualifier also restricts the user in ways that the type
+system designer may have intended.
+
+However, a type system designer should not frequently omit the top qualifier.
+% (It is appropriate in some cases, such as for the interning type system.)
+It is better for the 
+the type hierarchy has an explicit qualifier for every
+possible meaning.  For example, the Nullness type system has
+\<@\refclass{nullness/quals}{Nullable}> types and
+\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
+unannotated types; a user may specify a default qualifier.
+
+
+\section{Type factory: Implicit annotations\label{writing-type-introduction}}
+
+For some types and expressions, a qualifier should be treated as present
+even if a programmer did not explicitly write it.  For example, every
+literal (other than \<null>) has a \<@\refclass{nullness/quals}{NonNull}> type.
+
+The implicit annotations may be specified declaratively and/or procedurally.
+
+
+\subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
+
+The \<@\refclass{quals}{ImplicitFor}> meta-annotation indicates implicit annotations.
+When written on a qualifier, \refclass{quals}{ImplicitFor}
+specifies the trees (AST nodes) and types for which the framework should
+automatically add that qualifier.
+
+In short, the types and trees can be
+specified via any combination of five fields:
+
+  \begin{itemize}
+  \item \code{trees}: an array of
+    \ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
+    \code{NEW\_ARRAY} or \code{METHOD\_INVOCATION}
+  \item \code{types}: an array of
+    \refModelclass{type}{TypeKind}, e.g., \code{ARRAY}
+    or \code{BOOLEAN}
+  \item \code{treeClasses}: an array of class literals for classes
+    implementing \refTreeclass{tree}{Tree}, e.g.,
+    \code{LiteralTree.class} or \code{ExpressionTree.class}
+  \item \code{typeClasses}: an array of class literals for classes
+    implementing \code{javax.lang.model.type.TypeMirror}, e.g.,
+    \code{javax.lang.model.type.PrimitiveType}.  Often you should use
+    a subclass of \refclass{types}{AnnotatedTypeMirror}.
+  \item \code{stringPatterns}: an array of regular expressions that will
+    be matched against
+    string literals, e.g., \code{"[01]+"} for a binary number.  Useful
+    for annotations that indicate the format of a string.
+  \end{itemize}
+
+For example, consider the definitions of the \<@\refclass{nullness/quals}{NonNull}> and \<@\refclass{nullness/quals}{Nullable}>
+type qualifiers:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf( { Nullable.class } )
+  @ImplicitFor(
+    types={TypeKind.PACKAGE},
+    typeClasses={AnnotatedPrimitiveType.class},
+    trees={
+      Tree.Kind.NEW_CLASS,
+      Tree.Kind.NEW_ARRAY,
+      Tree.Kind.PLUS,
+      // All literals except NULL_LITERAL:
+      Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL, Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
+      Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL
+    })
+  public @interface NonNull {  }
+
+
+  @TypeQualifier
+  @SubtypeOf({})
+  @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+  public @interface Nullable { }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+For more details, see the Javadoc for the \refclass{quals}{ImplicitFor}
+  annotation, and the Javadoc for the javac classes that are linked from
+it.  (You only need to understand a small amount about the javac AST, such
+as the
+\ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
+and
+\refModelclass{type}{TypeKind}
+enums.  All the information you need is in the Javadoc, and
+Section~\ref{javac-tips} can help you get started.)
+
+
+\subsection{Procedurally specifying implicit annotations}
+
+
+The Checker Framework provides a representation of annotated types,
+\refclass{types}{AnnotatedTypeMirror}, that extends the standard \<TypeMirror>
+interface but integrates a representation of the annotations into a
+type representation.  A checker's \emph{type factory} class, given an AST
+node, returns the annotated type of that expression.  The Checker
+Framework's abstract
+\emph{base type factory} class, \refclass{types}{AnnotatedTypeFactory},
+supplies a uniform, Tree-API-based interface
+for querying the annotations on a program element, regardless of
+whether that element is declared in a source file or in a class file.
+It also handles default annotations, and it optionally performs
+flow-sensitive local type inference.
+
+\refclass{types}{AnnotatedTypeFactory} inserts the qualifiers that the programmer
+explicitly inserted in the code.  Yet, certain constructs should be
+treated as having a type qualifier even when the programmer has not
+written one.  The type system designer may subclass
+\refclass{types}{AnnotatedTypeFactory} and override
+\code{annotateImplicit(Tree,AnnotatedTypeMirror)} and
+\code{annotateImplicit(Element,AnnotatedTypeMirror)} to account for
+such constructs.
+
+
+\section{Visitor: Type rules\label{extending-visitor}}
+
+A type system's rules define which operations on values of a
+particular type are forbidden.
+These rules must be defined procedurally, not declaratively.
+
+The Checker Framework provides a \textit{base visitor class},
+\refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
+source file's AST\@.  It uses the visitor design pattern to traverse
+Java syntax trees as provided by Sun's
+\ahref{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/index.html}{Tree
+API},
+and it issues a warning whenever the type system is violated.
+
+A checker's visitor overrides one method in the base visitor for each special
+rule in the type qualifier system.  Most type-checkers
+override only a few methods in \refclass{basetype}{BaseTypeVisitor}.  For example, the
+visitor for the Nullness type system of Chapter~\ref{nullness-checker}
+contains a single 4-line method that warns if an expression of nullable type
+is dereferenced, as in:
+\begin{Verbatim}
+  myObject.hashCode();  // invalid dereference
+\end{Verbatim}
+
+
+
+By default, \refclass{basetype}{BaseTypeVisitor} performs subtyping checks that are
+similar to Java subtype rules, but taking the type qualifiers into account.
+\refclass{basetype}{BaseTypeVisitor} issues these errors:
+
+\begin{itemize}
+
+\item invalid assignment (type.incompatible) when an assignment from
+  an expression type to an incompatible type.  The assignment may be a
+  simple assignment, or pseudo-assignment like return expressions or
+  argument passing in a method invocation
+
+  In particular, in every assignment and pseudo-assignment, the
+  left-hand side of the assignment is a supertype of (or the same type
+  as) the right-hand side.  For example, this assignment is not
+  permitted:
+
+  \begin{Verbatim}
+    @Nullable Object myObject;
+    @NonNull Object myNonNullObject;
+    ...
+    myNonNullObject = myObject;  // invalid assignment
+  \end{Verbatim}
+
+\item invalid generic argument (generic.argument.invalid) when a type
+  is bound to an incompatible generic type variable
+
+\item invalid method invocation (method.invocation.invalid) when a
+  method is invoked on an object whose type is incompatible with the
+  method receiver type
+
+\item invalid overriding parameter type (override.parameter.invalid)
+  when a parameter in a method declaration is incompatible with that
+  parameter in the overridden method's declaration
+
+\item invalid overriding return type (override.return.invalid) when a
+  parameter in a method declaration is incompatible with that
+  parameter in the overridden method's declaration
+
+\item invalid overriding receiver type (override.receiver.invalid)
+  when a receiver in a method declaration is incompatible with that
+  receiver in the overridden method's declaration
+
+\end{itemize}
+
+
+\subsection{AST traversal\label{ast-traversal}}
+
+The Checker Framework needs to do its own traversal of the AST even though
+it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
+processors can utilize a visitor for Java code, but that visitor only
+visits the public elements of Java code, such as classes, fields, methods,
+and method arguments --- it does not visit code bodies or various other
+locations.  The Checker Framework hardly uses the built-in visitor --- as
+soon as the built-in visitor starts to visit a class, then the Checker
+Framework's visitor takes over and visits all of the class's source code.
+
+Because there is no standard API for the AST of Java code, the Checker
+Framework uses the javac implementation.  This is why the Checker Framework
+is not deeply integrated with Eclipse, but runs as an external tool (see
+Section~\ref{eclipse}).  Actually,
+there is standard API for Java ASTs --- JSR 198 (Extension API for
+Integrated Development Environments)~\cite{JSR198}.  If tools were to
+implement it
+(which would just require writing wrappers or adapters), then the Checker
+Framework and similar tools could be portable among different compilers and
+IDEs.
+
+
+\subsection{Avoid hardcoding\label{avoid-hardcoding}}
+
+It may be tempting to write a type-checking rule for method invocation,
+where your rule checks the name of the method being called and then treats
+the method in a special way.  This is usually the wrong approach.  It
+is better to write annotations, in a stub file
+(Chapter~\ref{annotating-libraries}), and leave the work to the standard
+type-checking rules.
+
+
+\section{The checker class:  Compiler interface\label{writing-compiler-interface}}
+
+A checker's entry point is a subclass of \refclass{basetype}{BaseTypeChecker}.  This entry
+point, which we call the checker class, serves two
+roles:  an interface to the compiler and a factory for constructing
+type-system classes.
+
+Because the Checker Framework provides reasonable defaults, oftentimes the
+checker class has no work to do.  Here are the complete definitions of the
+checker classes for the Interning and Nullness checkers:
+
+\begin{Verbatim}
+  @TypeQualifiers({ Interned.class, PolyInterned.class })
+  @SupportedLintOptions({"dotequals"})
+  public final class InterningChecker extends BaseTypeChecker { }
+
+  @TypeQualifiers({ Nullable.class, Raw.class, NonNull.class, PolyNull.class })
+  @SupportedLintOptions({"flow", "cast", "cast:redundant"})
+  public class NullnessChecker extends BaseTypeChecker { }
+\end{Verbatim}
+
+
+\urldef{\getSupportedTypeQualifiersURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
+
+The checker class must be annotated by
+\code{@\refclass{quals}{TypeQualifiers}}, which lists the annotations
+that make up the type hierarchy for this checker (including
+polymorphic qualifiers), provided as an array of class literals.  Each
+one is a type qualifier whose definition bears the
+\code{@\refclass{quals}{TypeQualifier}} meta-annotation (or is
+returned by the
+\ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
+method).
+
+\urldef{\reportURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
+
+The checker class bridges between the compiler and the checker plugin.  It
+invokes the type-rule check visitor on every Java source file being
+compiler, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
+errors using the compiler error reporting mechanism.
+
+Also, the checker class follows the factory method pattern to
+construct the concrete classes (e.g., visitor, factory) and annotation
+hierarchy representation.  It is a convention that, for
+a type system named Foo, the compiler
+interface (checker), the visitor, and the annotated type factory are
+named as \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
+\refclass{basetype}{BaseTypeChecker} uses the convention to
+reflectively construct the components.  Otherwise, the checker writer
+must specify the component classes for construction.
+
+A checker can customize the default error messages through a
+\sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
+\<messages.properties> that appears in the same directory as the checker class.
+The property file keys are the strings passed to \ahref{\reportURL}{\<report>}
+(like \code{type.incompatible}) and the values are the strings to be
+printed (\code{"cannot assign ..."}).
+The \<messages.properties> file only need to mention the new messages that
+the checker defines.
+It is also allowed to override messages defined in superclasses, but this
+is rarely needed.
+
+\subsection{Bundling multiple checkers}
+
+To run a checker, a 
+users supplies the 
+\<-processor>  command-line option.  When multiple related
+checkers need to be run together as a unit, users can pass
+multiple \<-processor> arguments, like:
+
+\begin{Verbatim}
+  javac -processor DistanceUnitChecker -processor SpeedUnitChecker ... files ...
+\end{Verbatim}
+
+\noindent
+This is verbose, and it is also error-prone, since a user might omit one of
+several related checkers that are designed to be run together.
+
+Alternatively, you can define an aggregate checker class that combines
+multiple checkers.  Extend \refclass{util}{AggregateChecker} and override
+the \<getSupportedTypeCheckers> method, like the following:
+
+\begin{Verbatim}
+  public class UnitCheckers extends AggregateChecker {
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+      return Arrays.asList(DistanceUnitChecker.class, SpeedUnitChecker.class);
+    }
+  }
+\end{Verbatim}
+
+\noindent
+Now, users can pass a single \<-processor> argument on the command line:
+
+\begin{Verbatim}
+  javac -processor UnitCheckers ... files ...
+\end{Verbatim}
+
+
+\section{Testing framework\label{testing-framework}}
+
+[TODO: This section should discuss the testing framework that is used for
+testing the distributed checkers.]
+
+
+\section{Debugging options\label{debugging-options}}
+
+The Checker Framework provides debugging options that can be helpful when
+writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
+switch, which is used to pass options to an annotation processor.
+
+\begin{itemize}
+
+\item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
+rather than full message text when reporting errors or warnings
+
+\item \code{-Ashowchecks}: print debugging information for each
+pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; see Section
+\ref{extending-visitor} above)
+
+\item \code{-Afilenames}: print the name of each file before type-checking it
+
+\end{itemize}
+
+The following example demonstrates how these options are used:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+$ javac -processor checkers.interning.InterningChecker \
+    examples/InternedExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
+
+[InterningChecker] InterningExampleWithWarnings.java
+ success (line  18): STRING_LITERAL "foo"
+     actual: DECLARED @checkers.interning.quals.Interned java.lang.String
+   expected: DECLARED @checkers.interning.quals.Interned java.lang.String
+ success (line  19): NEW_CLASS new String("bar")
+     actual: DECLARED java.lang.String
+   expected: DECLARED java.lang.String
+examples/InterningExampleWithWarnings.java:21: (not.interned)
+    if (foo == bar)
+            ^
+ success (line  22): STRING_LITERAL "foo == bar"
+     actual: DECLARED @checkers.interning.quals.Interned java.lang.String
+   expected: DECLARED java.lang.String
+1 error
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+You can use any standard debugger to observe the execution of your checker.  Set the execution main class to \code{com.sun.tools.javac.Main}, and insert the JSR308 javac.jar (resides in \code{\$jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is recommended that you add \code{\$jsr308-langtools} as a project, so you can
+step into its source code if needed.
+
+%% Not relevant to most readers.  Can go in a README file in our repository.
+% \section{Putting your checker in the repository\label{writing-repository}}
+%
+% This section is relevant only if you wish to add your checker to the source code
+% repository for the Checker Framework --- for example, to include your
+% checker in the Checker Framework distribution.
+%
+% The checkers appear in directory \code{annotations/checkers/} of
+% the \code{annotations} repository.  It contains the following relevant
+% subdirectories:
+% \begin{itemize}
+% \item
+%   \code{manual/}: Documentation for your checker goes here.
+% \item
+%   \code{src/checkers/\emph{annotation\_name}/}: Code for the checker,
+%   in a directory that is a sibling of of \code{quals/}, \code{nonnull/},
+%   etc.
+% \item
+%   \code{jdk/\emph{annotation\_name}/}: Annotated ``skeleton class''
+%   versions of the JDK and other libraries (see Section~\ref{skeleton}).
+% \item
+%   \code{tests/\emph{annotation\_name}/}: Inputs and outputs for the test
+%   suite for the checker.  A single top-level test suite class goes in
+%   \code{tests/src/tests/}.
+% \end{itemize}
+
+
+\section{javac implementation survival guide\label{javac-tips}}
+
+A checker built using the Checker Framework makes use of a few interfaces
+from the underlying compiler.  This section describes those interfaces.
+
+
+
+
+\subsection{Checker access to compiler information}
+
+The compiler uses and exposes three hierarchies to model the Java
+source code and classfiles.
+
+
+\subsubsection{Types - Java Language Model API\label{javac-types}}
+
+A \refModelclass{type}{TypeMirror} represents a Java type.
+% Java declaration, statement, or expression.
+
+There is a \code{TypeMirror} interface to represent each type kind,
+e.g., \code{PrimitiveType} for primitive types, \code{ExecutableType}
+for method types, and \code{NullType} for the type of the \code{null} literal.
+
+\code{TypeMirror} does not represent annotated types though.  Checkers should use the Framework types API \refclass{types}{AnnotatedTypeMirror} instead.  \code{AnnotatedTypeMirror} parallels the \code{TypeMirror} API, but also present the type annotations associated with the type.
+
+The Checker Framework and the Checkers use the types API extensively.
+
+
+\subsubsection{Elements - Java Language Model API\label{javac-elements}}
+
+An \refModelclass{element}{Element} represents a potentially-public
+declaration that can be accessed from elsewhere:  classes, interfaces, methods, constructors, and
+fields.  \<Element> represents elements found in both source
+code and bytecode.
+
+There is an \code{Element} interface to represent each construct, e.g.
+\code{TypeElement} for class/interfaces, \code{ExecutableElement} for
+methods/constructors, \code{VariableElement} for local variables and
+method parameters.
+
+If you need to operate on the declaration level, always use elements rather
+than trees (Section~\ref{javac-trees}).  This allows the code to work on
+both source and bytecode elements.
+
+Example: retrieve declaration annotations, check variable
+modifiers (e.g. \code{strictfp}, \code{synchronized})
+
+
+\subsubsection{Trees - Compiler Tree API\label{javac-trees}}
+
+A \refTreeclass{tree}{Tree} represents a syntactic units in the source code,
+like method declarations, statements, blocks, \<for> loop etc. Trees only
+represent source code to be compiled (or found in \code{-sourcepath});
+no tree is available for classes read from bytecode.
+
+There is a Tree interface for each Java source structure, e.g.
+\code{ClassTree} for class declaration, \code{MethodInvocationTree}
+for method invocations, \code{ForEachTree} for enhanced-for-loop
+statement.
+
+You should limit your use of trees. Checkers use Trees mainly to
+traverse the source code, retrieve the types/elements corresponding to
+them, and perform any needed checks on the types/elements instead.
+
+
+\subsubsection{Using the APIs}
+
+The three APIs use some common idioms and conventions; knowing them will
+help you to create your checker.
+
+\emph{Type-checking}:
+Do not use \code{instanceof} to determining the class of the object,
+because you cannot necessarily predict the run-time type of the object that
+implements an interface.  Instead, use the \code{getKind()} method.  The
+method returns \refModelclass{type}{TypeKind},
+\refModelclass{element}{ElementKind}, and \refTreeclass{tree}{Tree.Kind}
+for the three interfaces, respectively.
+
+\emph{Visitors and Scanners}:
+The compiler and the Checker Framework use the visitor pattern
+extensively. For example, visitors are used to traverse the source tree
+(\refclass{basetype}{BaseTypeVisitor} extends
+\refTreeclass{util}{TreePathScanner}) and for type
+checking (\refclass{types}{TreeAnnotator} implements
+\refTreeclass{tree}{TreeVisitor}).
+
+\emph{Utility classes}:
+Some useful methods appear in a utility class.  The Sun convention is that
+the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
+\refModelclass{util}{Types}, \refModelclass{util}{Elements}, and
+\refTreeclass{util}{Trees}).  The Checker Framework uses a common
+\code{Utils} post-fix instead (e.g. \refclass{util}{TypesUtils},
+\refclass{util}{TreeUtils}, \refclass{util}{ElementUtils}), with one
+notable exception: \refclass{types}{AnnotatedTypes}.
+
+
+\subsection{How a checker fits in the compiler as an annotation processor}
+
+The Checker Framework builds on the Annotation Processing API
+introduced in Java 6.  A type annotation processors is one that extends
+\refTreeclass{util}{AbstractTypeProcessor}; these get run on each class
+source file after the compiler confirms that the class is valid Java code.
+
+The Checker Framework uses Sun's Tree API to access a program's AST\@.
+The Tree API is specific to the Sun JDK, so the Checker Framework only
+works with Sun's javac, not with Eclipse's compiler ecj or with
+\ahref{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
+the integration of the Checker Framework into other IDEs such as \ahref{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
+An implementation-neutral API would be preferable.
+In the future, the Checker Framework
+can be migrated to use the Java Model AST of JSR 198 (Extension API for
+Integrated Development Environments)~\cite{JSR198}, which gives access to
+the source code of a method.  But, at present no tools
+implement JSR~198.  Also see Section~\ref{ast-traversal}.
+
+
+
+\subsubsection{Learning more about javac}
+
+Sun's javac compiler interfaces can be daunting to a
+newcomer, and its documentation is a bit sparse. The Checker Framework
+aims to abstract a lot of these complexities.
+You do not have to understand the implementation of javac to
+build powerful and useful checkers.
+Beyond this section, 
+other useful resources include the Java Infrastructure
+Developer's guide at
+\url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
+mailing list archives at
+\url{http://news.gmane.org/gmane.comp.java.openjdk.compiler.devel}
+(subscribe at
+\url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+
+
+
+% LocalWords:  plugin javac's SourceChecker AbstractProcessor getMessages quals
+% LocalWords:  getSourceVisitor SourceVisitor getFactory AnnotatedTypeFactory
+% LocalWords:  SupportedAnnotationTypes SupportedSourceVersion TreePathScanner
+% LocalWords:  TreeScanner visitAssignment AssignmentTree AnnotatedClassTypes
+% LocalWords:  SubtypeChecker SubtypeVisitor NonNull isSubtype getClass nonnull
+% LocalWords:  AnnotatedClassType isAnnotatedWith hasAnnotationAt TODO src jdk
+% LocalWords:  processor NullnessChecker InterningChecker Nullness Nullable igj
+% LocalWords:  AnnotatedTypeMirrors BaseTypeChecker BaseTypeVisitor basetype
+% LocalWords:  Aqual Anqual java CharSequence getAnnotatedType UseLovely IGJ
+% LocalWords:  AnnotatedTypeMirror LovelyChecker Anomsgtext Ashowchecks enums
+% LocalWords:  Afilenames dereferenced SuppressWarnings declaratively SubtypeOf
+% LocalWords:  TypeQualifier TypeHierarchy GraphQualifierHierarchy ReadOnly Foo
+% LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
+% LocalWords:  createTypeHierarchy QReadOnly ImplicitFor treeClasses TypeMirror
+% LocalWords:  LiteralTree ExpressionTree typeClasses annotateImplicit nullable
+% LocalWords:  TypeQualifiers getSupportedTypeQualifiers FooChecker nullness
+% LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
+% LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
+% LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
+% LocalWords:  SimpleTreeVisitor TreePath instanceof subinterfaces TypeElement
+% LocalWords:  ExecutableElement PackageElement DeclaredType VariableElement
+% LocalWords:  TypeParameterElement ElementVisitor javax getElementUtils NoType
+% LocalWords:  ProcessingEnvironment ExecutableType MethodTree ArrayType Warski
+% LocalWords:  MethodInvocationTree PrimitiveType BlockTree TypeVisitor blog
+% LocalWords:  AnnotatedTypeVisitor SimpleAnnotatedTypeVisitor html langtools
+% LocalWords:  AnnotatedTypeScanner bootclasspath asType stringPatterns Foos
+% LocalWords:  DefaultQualifierInHierarchy invocable wildcards novariant Utils
+% LocalWords:  AggregateChecker getSupportedTypeCheckers Uninterned sourcepath
+% LocalWords:  DefaultQualifier bytecode NullType strictfp ClassTree TypesUtils
+% LocalWords:  ForEachTree ElementKind TreeAnnotator TreeUtils ElementUtils ecj
+% LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj
