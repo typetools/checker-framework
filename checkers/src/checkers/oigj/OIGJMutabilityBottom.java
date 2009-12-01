@@ -4,7 +4,7 @@ import java.lang.annotation.Target;
 
 import com.sun.source.tree.Tree.Kind;
 
-import checkers.igj.quals.*;
+import checkers.oigj.quals.*;
 import checkers.quals.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
