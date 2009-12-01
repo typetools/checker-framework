@@ -14,7 +14,7 @@ import javax.lang.model.type.*;
 
 import com.sun.source.tree.*;
 
-import checkers.igj.quals.*;
+import checkers.oigj.quals.*;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
