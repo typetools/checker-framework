@@ -831,12 +831,12 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         AnnotatedTypeMirror receiver = plainFactory.getReceiver(tree);
 
-        if (!isAccessAllowed(elem, receiver)) {
+        if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);
         }
     }
 
-    protected boolean isAccessAllowed(Element field, AnnotatedTypeMirror receiver) {
+    protected boolean isAccessAllowed(Element field, AnnotatedTypeMirror receiver, ExpressionTree accessTree) {
         Unused unused = field.getAnnotation(Unused.class);
         if (unused == null)
             return true;

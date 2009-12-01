@@ -1,4 +1,4 @@
-package checkers.igj;
+package checkers.oigj;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -83,7 +83,7 @@ import checkers.util.*;
 // To ease dealing with libraries, this inserts the bottom qualifier
 // rather than immutable in many cases, like all literals.
 // Should change that
-public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecker> {
+public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<ImmutabilitySubchecker> {
 
     static {  FLOW_BY_DEFAULT = true;  }
 
@@ -101,7 +101,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      * @param root  the compilation unit the annotation processor is
      *              processing currently
      */
-    public IGJAnnotatedTypeFactory(IGJChecker checker,
+    public ImmutabilityAnnotatedTypeFactory(ImmutabilitySubchecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
@@ -114,7 +114,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     }
 
     @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
+    protected Set<AnnotationMirror> createFlowQualifiers(ImmutabilitySubchecker checker) {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
         Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
@@ -126,12 +126,12 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator(IGJChecker checker) {
+    protected TreeAnnotator createTreeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTreePreAnnotator(checker);
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator(IGJChecker checker) {
+    protected TypeAnnotator createTypeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTypePostAnnotator(checker);
     }
 
@@ -143,7 +143,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      * Helper class for annotating unannotated types.
      */
     private class IGJTypePostAnnotator extends TypeAnnotator {
-        public IGJTypePostAnnotator(IGJChecker checker) {
+        public IGJTypePostAnnotator(ImmutabilitySubchecker checker) {
             super(checker);
         }
 
@@ -267,7 +267,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      */
     private class IGJTreePreAnnotator extends TreeAnnotator {
 
-        public IGJTreePreAnnotator(IGJChecker checker) {
+        public IGJTreePreAnnotator(ImmutabilitySubchecker checker) {
             super(checker);
         }
 
