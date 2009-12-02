@@ -9,8 +9,8 @@ import java.lang.annotation.*;
  *
  * <p><b>Example:</b>
  * Consider a field, {@code lock}, that is only initialized if the
- * enclosing object, receiver, is marked as {@code ThreadSafe}.  Such a field
- * can be declared as:
+ * enclosing object (the receiver), is marked as {@code ThreadSafe}.
+ * Such a field can be declared as:
  *
  * <pre><code>
  *   private @Nullable @Dependent(result=NonNull.class, when=ThreadSafe.class)
