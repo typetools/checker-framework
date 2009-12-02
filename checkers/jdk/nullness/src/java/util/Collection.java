@@ -2,9 +2,8 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to contain
-// nonnull references
-  public interface Collection<E extends /*@NonNull*/ Object> extends java.lang.Iterable<E> {
+// Subclasses of this interface/class may opt to contain nonnull references.
+public interface Collection<E extends /*@NonNull*/ Object> extends java.lang.Iterable<E> {
   public abstract int size();
   public abstract boolean isEmpty();
   public abstract boolean contains(@Nullable java.lang.Object a1);
