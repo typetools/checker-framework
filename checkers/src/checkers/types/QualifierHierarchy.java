@@ -32,6 +32,11 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getRootAnnotation();
 
     /**
+     * @returns the botton type qualifier in the hierarchy
+     */
+    public abstract AnnotationMirror getBottomQualifier();
+
+    /**
      * Returns the names of all type qualifiers in this type qualifier
      * hierarchy
      *

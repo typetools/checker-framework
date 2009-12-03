@@ -138,12 +138,14 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesMap;
     /** the root of all the qualifiers **/
     private final AnnotationMirror root;
+    private final AnnotationMirror bottom;
 
     private GraphQualifierHierarchy(Factory f) {
         // // no need for copying as f.supertypes has no mutable references to it
         this.supertypesGraph = f.supertypes;
         this.supertypesMap = buildFullMap(f.supertypes);
         this.root = findRoot(this.supertypesMap, null);
+        this.bottom = findBottom(this.supertypesMap, null);
     }
 
     protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
@@ -151,6 +153,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         this.supertypesMap = h.supertypesMap;
         this.root = h.root;
         this.lubs = h.lubs;
+        this.bottom = h.bottom;
     }
 
     /**
@@ -162,6 +165,11 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getRootAnnotation() {
         return root;
+    }
+
+    @Override
+    public AnnotationMirror getBottomQualifier() {
+        return this.bottom;
     }
 
     private Set<Name> typeQualifiers = null;
@@ -235,6 +243,15 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
         assert possibleRoots.size() == 1 : possibleRoots;
         return possibleRoots.get(0);
+    }
+
+    private static AnnotationMirror
+    findBottom(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes, AnnotationMirror ignore) {
+        Set<AnnotationMirror> bottoms = findBottoms(supertypes, ignore);
+        if (bottoms.size() == 1)
+            return bottoms.iterator().next();
+        else
+            return null;
     }
 
     /**
