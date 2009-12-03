@@ -1,0 +1,105 @@
+[This file needs to say what to do if the favorites for the run targets
+don't appear in your Eclipse.]
+
+=== Running the NonNull/Interned demo ===
+
+0. If you will use Eclipse, then set up the workspace in the current
+   working directory:
+
+        $ jar xf workspace.jar
+
+    This turns the current working directory (which is the demo checkout)
+    into an Eclipse workspace by adding a .metadata directory.
+
+    You must redo this step whenever workspace.jar changes!
+
+
+1. Create a ~/.jsr308-demos.properties file containing a line
+   setting jsr308.home, like the first line in file demo.properties .
+   You never have to redo this step.
+
+   (Alternately, you can edit demo.properties directly, but that is bad
+   style and shows up as a change in your repository that will distract you
+   when you do a diff and that you might accidentally check in.)
+
+1. [need to renumber]
+   run
+     ant touch-files
+
+2a. If using Eclipse:
+   Launch Eclipse, and switch to the demo workspace (File -> Switch Workspace
+   -> Other..., and select the directory in which you unjarred workspace.jar;
+   on subsequent runs you need only do File -> Switch Workspace and pick the
+   workspace from the list).
+
+   You'll see bookmarks at the bottom left; numbering is from the OOPSLA demo.
+   General process:
+    * double-click bookmark 1
+    * run launch config 1 (click the arrow next to the green arrow with
+      toolbox in the top toolbar, or "Run -> External Tools")
+    * make fixes
+    * re-run launch config 1
+   Repeat for other bookmarks, possibly going back to slides in between.
+
+   Single-click a bookmark name to rename it; use Run -> External Tools ->
+   Organize Favorites to reorder in the launch config.
+
+   When you run the checker for the demo, you can click on the filenames in the
+   error output to jump to the error (though this apparently only works if you
+   have the absolute filename there, which the Ant scripts emit for you).
+
+   So as to avoid getting errors from eclipsec, the src folders for each
+   project are not on the build path. This means that you can't use F3 to
+   jump to a declaration, but the outline (side pane, or Ctrl + O) still
+   works.
+
+2b. If using Emacs:
+   Set font; try one of these:
+     (set-frame-font "Inconsolata 10")
+     (set-default-font "10x20")
+     (set-default-font "-b&h-lucidatypewriter-medium-r-normal-sans-*-180-*-*-*-*-iso8859-1")
+     (set-frame-font "-b&h-lucidatypewriter-medium-r-normal-sans-*-130-*-*-*-*-iso8859-1")
+
+   If C-x r l reveals that no bookmarks are in use, then
+   evaluate this form, or do M-x bookmark-load:
+     (if (null (bookmark-maybe-sort-alist)) (bookmark-load ".emacs.bmk"))
+   and if you modify the bookmarks, re-save them with M-x bookmark-write.
+   To see all the bookmarks,
+     C-x r l
+   To go to a bookmark,
+     C-x r b
+
+   General process:
+    * go to bookmark 1
+    * compile with C-c C-c
+    * make fixes
+    * re-compile
+   Repeat for other bookmarks, possibly going back to slides in between.
+
+
+A few things to note:
+
+- Matt's slides from the Java User's Group:  "checkers-demo-papi200710/" subdirectory here.
+- OOPSLA 2007 demo slides:  in SVN annotations/papers/oopsla07-nonnull/demo-slides/
+- J-Spring 2008 slides:  in this directory as checkers-demo-jspring2008.ppt
+- ISSTA 2008 & other non-demo slides: in SVN annotations/papers/checker-framework/
+- The picture of the website with the NullPointerException comes from
+  http://tinyurl.com/6l6y5o
+
+- In Eclipse, you can switch to Emacs keybindings (so incremental search is C-s instead of
+  Eclipse's C-j) by doing Window -> Preferences -> General -> Keys ->
+  Scheme : Emacs.
+
+- Some of the checkers take up to 10 seconds to run (on mangold).
+
+- Each subfolder (checkers, daikon, lookup) contains an Ant file you can use in
+  case of Eclipse issues.
+
+- In Eclipse, the demo doesn't use the Eclipse JSR 308 plugin.  It seems
+  like you can only run the JSR 308 plugin on a whole project (not just a
+  single file) which will cause the checker to issue errors for every file
+  (there are lots).
+
+- To test that the demos work, run
+    ant -e check-demo
+  from this directory.
