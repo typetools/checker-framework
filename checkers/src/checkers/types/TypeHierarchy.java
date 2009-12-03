@@ -83,6 +83,10 @@ public class TypeHierarchy {
         while (lhsBase.getKind() != rhs.getKind()
                 && (lhsBase.getKind() == TypeKind.WILDCARD || lhsBase.getKind() == TypeKind.TYPEVAR)) {
         if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
+            if (wildcard.getSuperBound() != null
+                && isSubtypeImpl(rhs, wildcard.getSuperBound()))
+                return true;
             lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
             if (lhsBase == null || !lhsBase.isAnnotated())
                 return true;
