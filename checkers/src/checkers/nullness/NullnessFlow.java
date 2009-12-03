@@ -657,11 +657,19 @@ class NullnessFlow extends Flow {
                     annos.clear(NONNULL, i);
             }
         }
+        List<String> prevNnExprs = new ArrayList<String>(nnExprs);
+
+        Element elem = TreeUtils.elementFromDeclaration(node);
+        if (elem.getAnnotation(NonNullVariable.class) != null) {
+            String[] fields = elem.getAnnotation(NonNullVariable.class).value();
+            this.nnExprs.addAll(Arrays.asList(fields));
+        }
 
         try {
             return super.visitMethod(node, p);
         } finally {
             annos = prev;
+            this.nnExprs = prevNnExprs;
         }
     }
 
