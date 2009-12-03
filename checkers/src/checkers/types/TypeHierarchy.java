@@ -90,13 +90,8 @@ public class TypeHierarchy {
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
             if (!lhsBase.annotations.isEmpty())
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
-//            // I'm not quite sure if these are actually necessary for type variables
-//            lhsBase = ((AnnotatedTypeVariable)lhsBase).getUpperBound();
-//            if (!lhsBase.isAnnotated())
-//                return true;
             return qualifierHierarchy.getBottomQualifier() != null
                    && rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
-//            visited.add(lhsBase.getElement());
         }
         }
 
