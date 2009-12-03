@@ -366,8 +366,6 @@ public class AnnotatedTypes {
             t.clearAnnotations();
             factory.annotateImplicit(e, t);
             return t;
-            // was erased
-//            return factory.getAnnotatedType(env.getElementUtils().getTypeElement("java.lang.Object"));
         } else {
             return dt.getTypeArguments().get(0);
         }
@@ -528,7 +526,6 @@ public class AnnotatedTypes {
 
         // Find the un-annotated type
         AnnotatedTypeMirror returnType = factory.type(methodInvocation);
-        factory.annotateImplicit(methodInvocation, returnType);
         AnnotatedExecutableType methodType =
             asMemberOf(factory.getReceiver(methodInvocation), methodElt);
 
@@ -670,8 +667,14 @@ public class AnnotatedTypes {
         public List<AnnotatedTypeMirror>
         visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
             Element elem = type.getUnderlyingType().asElement();
-            if (elem.equals(typeToFind.getUnderlyingType().asElement()))
-                return Collections.singletonList(p);
+            if (elem.equals(typeToFind.getUnderlyingType().asElement())) {
+                if (p.getKind() == TypeKind.TYPEVAR
+                    && !p.isAnnotated()) {
+                    return Collections.singletonList((AnnotatedTypeMirror)type);
+                } else {
+                    return Collections.singletonList(p);
+                }
+            }
             return Collections.emptyList();
         }
 
