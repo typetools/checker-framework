@@ -920,13 +920,11 @@ public class Flow extends TreePathScanner<Void, Void> {
 
         // Intraprocedural, so save and restore bits.
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
-        pushNewLevel();
         try {
             super.visitMethod(node, p);
             return null;
         } finally {
             annos = prev;
-            popLastLevel();
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
