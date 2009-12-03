@@ -725,6 +725,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         boolean result = true;
 
+        if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
+            overridden = overridden.getErased();
+        }
         String overriderMeth = overrider.getElement().toString();
         String overriderTyp = enclosingType.getUnderlyingType().asElement().toString();
         String overridenMeth = overridden.getElement().toString();
