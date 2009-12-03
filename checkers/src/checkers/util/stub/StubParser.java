@@ -173,13 +173,19 @@ public class StubParser {
     private void parseMethod(MethodDeclaration decl, ExecutableElement elt,
             Map<Element, AnnotatedTypeMirror> result) {
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotateParameters(methodType.getParameterTypes(), decl.getTypeParameters());
+        annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
             Parameter param = decl.getParameters().get(i);
-            annotate(paramType, param.getType());
+            if (param.isVarArgs()) {
+                // workaround
+                assert paramType.getKind() == TypeKind.ARRAY;
+                annotate(((AnnotatedArrayType)paramType).getComponentType(), param.getType());
+            } else {
+                annotate(paramType, param.getType());
+            }
         }
 
         annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
@@ -288,7 +294,7 @@ public class StubParser {
         }
     }
 
-    private void annotateParameters(List<AnnotatedTypeMirror> typeArguments,
+    private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
             List<TypeParameter> typeParameters) {
         if (typeParameters == null)
             return;
