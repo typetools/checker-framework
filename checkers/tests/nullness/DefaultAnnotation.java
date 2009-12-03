@@ -45,7 +45,7 @@ public class DefaultAnnotation {
         }
 
         public <T extends @Nullable Object> T getNull(T t) {
-            return null;                                // valid
+            return null;                                // invalid
         }
 
         public <T extends @NonNull Object> T getNonNull(T t) {
