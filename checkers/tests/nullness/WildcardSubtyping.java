@@ -21,15 +21,6 @@ class Utils {
         };
     }
 
-    public static <A extends @Nullable Object>
-    Consumer<A> cast(final Consumer<? super A> consumer) {
-        return new Consumer<A>() {
-            @Override public void consume(A object) {
-                consumer.consume(object);   // error 1: see issue 28 for details
-            }
-        };
-    }
-
     public static <A extends @Nullable Object> Consumer<A> 
     getConsumer(Consumer<@Nullable Object> nullConsumer) {
         return Utils.<A>cast(nullConsumer);
