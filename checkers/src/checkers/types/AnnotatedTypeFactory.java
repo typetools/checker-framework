@@ -288,7 +288,7 @@ public class AnnotatedTypeFactory {
         return result;
     }
 
-    private Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
+    protected Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
 
     /**
      * Determines the annotated type of a variable or method declaration.
