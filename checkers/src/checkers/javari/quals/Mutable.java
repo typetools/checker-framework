@@ -27,7 +27,7 @@ import static java.lang.annotation.ElementType.*;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
 @TypeQualifier
-@SubtypeOf(ThisMutable.class)
+@SubtypeOf({ThisMutable.class, QReadOnly.class})
 public @interface Mutable {
 
 }
