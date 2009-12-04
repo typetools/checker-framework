@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="jsr308EclipseFeature"
-      label="JSR 308 Checkers Feature"
+      label="Checker Framework Feature"
       version="0.0.3"
-      provider-name="JSR 308 Development Team">
+      provider-name="Checker Framework Development Team">
 
    <description url="http://types.cs.washington.edu/jsr308/">
       The Type Annotations (JSR 308) language feature
@@ -372,7 +372,7 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </license>
 
    <url>
-      <update label="JSR 308 Checkers Eclipse Plugin" url="http://types.cs.washington.edu/jsr308/eclipse"/>
+      <update label="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/jsr308/eclipse"/>
    </url>
 
    <requires>
