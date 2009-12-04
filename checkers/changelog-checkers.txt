@@ -1,7 +1,7 @@
 Version 1.0.2, 16 Nov 2009
 
 Checkers
-  Renamed RegEx ValidRegex to Regex annotation
+  Renamed Regex checker's @ValidRegex annotation to @Regex
   Improved Collection.toArray() heuristics to be more sound
 
 Bug fixes
@@ -33,7 +33,7 @@ Bug fixes
   Fixed few bugs in skeleton file generators
 
 Manual
-  Tweak installations instructions
+  Tweak installation instructions
   Reference units checkers
   Added new sections for new checkers
     RegEx checker (S 10)
@@ -73,7 +73,7 @@ Bug fixes
     type parameter and wildcard bounds annotations
 
 Manual
-  Rewrote 'javac implementation survivor guide' (S 13.9)
+  Rewrote 'javac implementation survival guide' (S 13.9)
   Restructured 'Using a checker' (S 2)
   Added 'Integration with external tools' (S 14)
   Added new questions to the FAQ (S 15)
