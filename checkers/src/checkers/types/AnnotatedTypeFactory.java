@@ -88,6 +88,8 @@ public class AnnotatedTypeFactory {
 
     private Class<? extends SourceChecker> checkerClass;
 
+    private final boolean annotatedTypeParams;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
@@ -123,6 +125,18 @@ public class AnnotatedTypeFactory {
         this.qualHierarchy = qualHierarchy;
         this.supportedQuals = getSupportedQualifiers();
         this.indexTypes = buildIndexTypes();
+        this.annotatedTypeParams = env.getOptions().containsKey("annotatedTypeParams");
+    }
+
+    /**
+     * For an annotated type parameter or wildcard (e.g.
+     * {@code <@Nullable T>}, it returns
+     * {@code true} if the annotation should target the type parameter itself,
+     * otherwise the annotation should target the extends clause, i.e.
+     * the declaration should be treated as {@code <T extends @Nullable Object>}
+     */
+    public boolean canHaveAnnotatedTypeParameters() {
+        return this.annotatedTypeParams;
     }
 
     // **********************************************************************
