@@ -16,7 +16,7 @@
 			   id="jsr308.removeMarkers"
 			   label="Clear Checkers Markers"
 			   menubarPath="jsr308/additions"
-			   tooltip="Removes all JSR 308 chackers markers from the selected element."/>
+			   tooltip="Removes all Checker Framework markers from the selected element."/>
 
 		<action
 			   class="jsr308.actions.RunJavariCheckerAction"
@@ -67,7 +67,7 @@
 			   id="jsr308.removeMarkers"
 			   label="Clear Checkers Markers"
 			   menubarPath="jsr308/additions"
-			   tooltip="Removes all JSR 308 chackers markers from the selected element.">
+			   tooltip="Removes all Checker Framework markers from the selected element.">
 		 <enablement>
 			<objectState
 				  name="nature"
@@ -80,7 +80,7 @@
 			   id="jsr308.runCheckers"
 			   label="Run Checkers"
 			   menubarPath="jsr308/additions"
-			   tooltip="Run the JSR 308 checkers on the selected element.">
+			   tooltip="Run a checker on the selected element.">
 		 <enablement>
 			<objectState
 				  name="nature"
