@@ -13,7 +13,7 @@ Framework works, you can return to it.
 
 \subsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
-The Checker Framework fully supports 
+The Checker Framework fully supports
 qualified Java generic types (also known in the research literature as ``parametric
 polymorphism'').  Before running any checker, we recommend that you eliminate
 raw types from your code (e.g., your code should use \code{List<...>} as
@@ -22,43 +22,129 @@ Using generics helps prevent type errors just as using a pluggable
 type-checker does.
 % Should say why, or what are the consequences of violating this.
 
-When instantiating a generic type, 
+When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
 
-The declaration (that is, the implementation) of a generic class may use
-the \code{extends} clause to restrict the types and qualifiers that may be
-used for instantiating.  For example, given the declaration \code{class
-  MyClass<T extends @NonNull Object> \ttlcb ...\ttrcb}, a client could use
-\code{MyClass<@NonNull String>} but not \code{MyClass<@Nullable String>}.
 
-\emph{Style note:}
-When using the Nullness checker (Chapter~\ref{nullness-checker}),
-programmers sometimes write \<extends @NonNull Object> even though it's the 
-default.
-The reason is that Java code with no extends clause, like 
+\paragraph{Restricting instantiation of a generic class}
+
+There are two ways to restrict the type qualifiers that that may be used on
+the actual type argument when instantiating a generic class.
+
+The first technique is the standard Java approach of using the
+\code{extends} or \code{super} clause to supply an upper or lower bound.
+For example:
 
 \begin{Verbatim}
-  class C<T> { ... }
+  MyClass<T extends @NonNull Object> { ... }
+
+  MyClass<@NonNull String> m1;       // OK
+  MyClass<@Nullable String> m2;      // error
+\end{Verbatim}
+
+The second technique is to write a type annotation on the declaration of a
+generic type parameter, which specifies the exact annotation that is
+required on the actual type argument, rather than just a bound.  For example:
+
+\begin{Verbatim}
+  class MyClassNN<@NonNull T> { ... }
+  class MyClassNble<@Nullable T> { ... }
+
+  MyClassNN<@NonNull Number> v1;     // OK
+  MyClassNN<@Nullable Number> v2;    // error
+  MyClassNble<@NonNull Number> v4;   // error
+  MyClassNble<@Nullable Number> v3;  // OK
+\end{Verbatim}
+
+A way to view a type annotation on a generic type parameter declaration is
+as syntactic sugar for the annotation on both the \<extends> and the
+\<super> clauses of the declaration.  For example, these two declarations
+have the same effect:
+
+\begin{Verbatim}
+  class MyClassNN<@NonNull T> { ... }
+  class MyClassNN<T extends @NonNull Object super @NonNull void> { ... }
 \end{Verbatim}
 
 \noindent
-typically means that class \<C> can be instantiated with any type argument at
-all.  But in the Nullness type system, to permit all type arguments, to
-obtain that effect one must write
+except that the latter is not legal Java syntax.  The syntactic sugar is
+necessary for two reasons:  it is illegal to specify both the upper and the
+lower bound, and it is impossible to specify a type annotation for a lower
+bound without also specifying a type (use of \<void> is illegal).
+
+If a type parameter declaration is annotated with \code{@A}, and bounds are
+also given, then the annotation applies everywhere that there is no
+explicit annotation.  For example, the following pairs of declarations are
+identical.
+
+\begin{Verbatim}
+  class MyClassNN<@A T> { ... }
+  class MyClassNN<T extends @A Object super @A void> { ... }
+
+  class MyClassNN<@A T extends Number> { ... }
+  class MyClassNN<T extends @A Number super @A void> { ... }
+
+  class MyClassNN<@A T extends @B Number> { ... }
+  class MyClassNN<T extends @B Number super @A void> { ... }
+
+  class MyClassNN<@A T super Number> { ... }
+  class MyClassNN<T extends @A Object super @A Number> { ... }
+
+  class MyClassNN<@A T super @B Number> { ... }
+  class MyClassNN<T extends @A Object super @B Number> { ... }
+\end{Verbatim}
+
+
+
+\paragraph{Defaults for bounds}
+Ordinarily, a type parameter declaration with no extends clause means the
+type parameter can be instantiated with any type argument at all.  For
+example:
+
+\begin{Verbatim}
+  class C<T> { ... }
+  class C<T extends Object> { ... }  // identical to previous line
+\end{Verbatim}
+
+\noindent
+However, instantiation may be restricted if a default qualifier is in
+effect (see Section~\ref{defaults}).  For example, the Nullness checker
+(Chapter~\ref{nullness-checker}) uses a (configurable) default of
+\<@NonNull> (see Section~\ref{null-defaults}).  That means that either
+declaration above is interpreted as
+
+\begin{Verbatim}
+  class C<T extends @NonNull Object> { ... }
+\end{Verbatim}
+
+\noindent
+and an instantiation such as \code{C<@Nullable Number>} is illegal.
+In such a case, to permit all type arguments, the programmer would write
 
 \begin{Verbatim}
   class C<T extends @Nullable Object> { ... }
 \end{Verbatim}
 
 
-\paragraph{Type annotations on generic type variables}
+TODO:
+It is possible to set the default qualifier for upper bounds separately
+from other default qualifiers.  This is useful [when?].
+
+
+
+
+
+
+
+
+\paragraph{Type annotations on a use of a generic type variable}
 
 A type annotation on a generic type variable overrides/ignores any type
 qualifier (in the same type hierarchy) on the corresponding actual type
-argument.  For example,
-\code{@Nullable T} applies the type qualifier \code{@Nullable} to the
-(unqualified) Java type of the type argument \code{T}.
+argument.  For example, suppose that \code{T} is a formal type parameter.
+Then using \code{@Nullable T} within the scope of \code{T} applies the type
+qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}.
 
 Here is an example of applying a type annotation to a generic type
 variable:
@@ -74,10 +160,10 @@ variable:
 \noindent
 The type annotation does not restrict how \code{MyClass2} may be instantiated
 (only the optional \code{extends} clause on the declaration of type
-variable \code{T} would do so).  In other words, both 
+variable \code{T} would do so).  In other words, both
 \code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
 legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
-In \code{MyClass2<@Interned String>}, 
+In \code{MyClass2<@Interned String>},
 \code{@Nullable T} means \code{@Nullable @Interned String}.
 
 % Note that a type annotation on a generic type variable does not act like
@@ -101,7 +187,7 @@ which permits a single method to have multiple different qualified type
 signatures.
 
 A polymorphic qualifier's definition is marked with
-\<@\refclass{quals}{PolymorphicQualifier}>.  For example, 
+\<@\refclass{quals}{PolymorphicQualifier}>.  For example,
 \<@\refclass{nullness/quals}{PolyNull}> is a polymorphic type
 qualifier for the Nullness type system:
 
@@ -213,7 +299,7 @@ type-check) than writing just
 The benefit of polymorphic qualifiers comes when one is used multiple times
 in a method, since then each instance turns into the same type qualifier.
 Most frequently, the polymorphic qualifier appears on at least one formal
-parameter and also on the return type.  It can also be useful to have 
+parameter and also on the return type.  It can also be useful to have
 polymorphic qualifiers on (only) multiple formal parameters, especially if
 the method side-effects one of its arguments.
 For example, consider
@@ -326,7 +412,7 @@ non-\code{null} if the person is married.  We could declare this as
   }
 \end{Verbatim}
 
-Now, suppose that we have defined the qualifier hierarchy in which 
+Now, suppose that we have defined the qualifier hierarchy in which
 \code{@Single} (meaning ``not married'') is a supertype of \code{@Married}.
 A more informative declaration for \<Person> would be
 
@@ -374,7 +460,7 @@ Then, if a person is known to be \code{@Married} (or more
 appropriately non-\code{@Single}), the \code{spouse} field is known to
 be non-\code{null}.  Also, if a person is known to be \code{@Single},
 the \code{spouse} field may not be accessed:
- 
+
 \begin{Verbatim}
   @Single Person person = ...;
   Person spouse = person.spouse;  // invalid field access
@@ -423,7 +509,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \item
   If there is no implicit or explicit qualifier on a type, then a default
-  qualifier may be applied; see Section~\ref{defaults}.  
+  qualifier may be applied; see Section~\ref{defaults}.
 
   \smallskip
 
@@ -504,9 +590,9 @@ class MyClass {
 }
 \end{Verbatim}
 
-If you wish to write multiple 
+If you wish to write multiple
 \<@\refclass{quals}{DefaultQualifier}> annotations at a single location,
-use 
+use
 \<@\refclass{quals}{DefaultQualifiers}> instead.  For example:
 
 \begin{Verbatim}
@@ -537,6 +623,24 @@ from taking effect), or exclude class declarations from defaulting.
 % so prevents giving any other qualifier to any reference.  This is a
 % consequence of the design of the type system; see
 % Section~\ref{bottom-qualifier}.
+
+
+When a programmer omits an \<extends> clause at a declaration of a type
+parameter, the default still applies to the implicit upper bound.  For
+example, consider these two declarations:
+
+\begin{Verbatim}
+  class C<T> { ... }
+  class C<T extends Object> { ... }  // identical to previous line
+\end{Verbatim}
+
+\noindent
+The two declarations are treated identically by Java, and the default
+qualifier applies to the \<Object> upper bound whether it is implicit or
+explicit.  (The @NonNull default annotation applies only to the upper bound
+in the \<extends> clause, not to the lower bound in the inexpressible
+implicit \<super void> clause.)
+
 
 
 \subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
@@ -634,11 +738,11 @@ type is never inferred to be treated as possibly-null).
 \section{Inexpressible types\label{inexpressible-types}}
 
 The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
-there are types that it cannot express.  An example is the type of 
+there are types that it cannot express.  An example is the type of
 \<Collection.toArray()>, which returns an array of objects, where the
 objects have the same annotation as the elements of the receiver.
 
-A possible annotation would be 
+A possible annotation would be
 
 \begin{Verbatim}
 public @Polynull Object [] toArray() ArrayList<@PolyNull E> { ... }
@@ -660,4 +764,4 @@ need arises.
 
 
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
-% LocalWords:  DefaultQualifiers
+% LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics
