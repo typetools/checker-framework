@@ -93,7 +93,7 @@ prepared release directory, set up a release directory as follows:
     hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
     # Just to be in safe side
-    ln -s jsr308-langtools checker-framework/jsr308-langtools
+    cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
 </pre>
 </li>
 
