@@ -182,18 +182,18 @@ independently, such as a 2.0 method that returns a value that allows the
 \end{quote}
 
 Both of these are type properties and should be specified with type
-annotations.  In particular, the method annotation should be a type
-annotation on the \emph{receiver} of the method.  The desired effect is to
-restrict the method call by requiring that the receiver has a certain
-property.  This is most naturally done by annotating the receiver.
-(Slightly more formally, the property being checked is compatibility
-between the annotation on the type of the formal parameter receiver and the
-annotation on the type of the actual receiver.)
+annotations.  No method annotation is necessary or desirable.  The best way
+to require that the receiver has a certain property is to use a type
+annotation on the receiver of the method.  (Slightly more formally, the
+property being checked is compatibility between the annotation on the type
+of the formal parameter receiver and the annotation on the type of the
+actual receiver.)
 
 
-Another example is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As
-discussed in Section~\ref{jcip-annotations}, it means two unrelated things
-when applied to a field or a method.  To reduce confusion and increase
+Another example of a type-and-declaration annotation that represents poor
+design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
+in Section~\ref{jcip-annotations}, it means two different things when
+applied to a field or a method.  To reduce confusion and increase
 expressiveness, the Lock Checker (see Section~\ref{lock-checker}) uses the
 \<@Holding> annotation for one of these meanings, rather than overloading
 \<@GuardedBy> with two distinct meanings.
@@ -400,5 +400,5 @@ welcome it as a contribution to the Checker Framework.
 
 
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
-% LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns
-% LocalWords:  ElementType
+% LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
+% LocalWords:  ElementType nullness bytecodes JLint Hashtable SuppressWarnings
