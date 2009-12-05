@@ -185,11 +185,10 @@ Both of these are type properties and should be specified with type
 annotations.  In particular, the method annotation should be a type
 annotation on the \emph{receiver} of the method.  The desired effect is to
 restrict the method call by requiring that the receiver has a certain
-property, just as can be done for the method's formal parameters.  This is
-most naturally done by annotating the receiver, and no annotation belongs
-on the method itself.  (Slightly more formally, the property being checked
-is compatibility between the annotation on the type of the formal parameter
-receiver and the annotation on the type of the actual receiver.)
+property.  This is most naturally done by annotating the receiver.
+(Slightly more formally, the property being checked is compatibility
+between the annotation on the type of the formal parameter receiver and the
+annotation on the type of the actual receiver.)
 
 
 Another example is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As
