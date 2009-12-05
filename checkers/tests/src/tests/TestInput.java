@@ -15,7 +15,11 @@ public class TestInput {
     private Iterable<String> processors;
     private List<String> options;
 
-    public TestInput(Iterable<? extends JavaFileObject> files,
+    private static final String OUTDIR = System.getProperty("tests.outputDir",
+            "tests" + File.separator + "build" + File.separator + "testclasses");
+    static { ensureExistance(OUTDIR); }
+
+    public TestInput(Iterable<? extends JavaFileObject> files,    		
                      Iterable<String> processors, String[] options) {
 
         this.compiler = ToolProvider.getSystemJavaCompiler();
@@ -25,8 +29,6 @@ public class TestInput {
         this.processors = processors;
         this.options = new LinkedList<String>();
 
-        String outputDir = System.getProperty("tests.outputDir",
-                "tests" + File.separator + "build" + File.separator + "testclasses");
         String classpath = System.getProperty("tests.classpath",
                 "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
@@ -35,12 +37,18 @@ public class TestInput {
         this.options.add("9999");
         this.options.add("-g");
         this.options.add("-d");
-        this.options.add(outputDir);
+        this.options.add(OUTDIR);
         this.options.add("-classpath");
         this.options.add("build" + File.pathSeparator + "junit.jar"
                 + File.pathSeparator + classpath + File.pathSeparator
                 + globalclasspath);
         this.options.addAll(Arrays.asList(options));
+    }
+
+    private static void ensureExistance(String path) {
+    	File file = new File(path);
+    	if (!file.exists())
+    		file.mkdirs();
     }
 
     public TestRun run() {
