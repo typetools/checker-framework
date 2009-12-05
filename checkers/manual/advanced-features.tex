@@ -73,7 +73,7 @@ necessary for two reasons:  it is illegal to specify both the upper and the
 lower bound, and it is impossible to specify a type annotation for a lower
 bound without also specifying a type (use of \<void> is illegal).
 
-If a type parameter declaration is annotated with \code{@A}, and bounds are
+If a type parameter declaration is annotated with \code{@A}, and a bound is
 also given, then the annotation applies everywhere that there is no
 explicit annotation.  For example, the following pairs of declarations are
 identical.
@@ -94,6 +94,18 @@ identical.
   class MyClassNN<@A T super @B Number> { ... }
   class MyClassNN<T extends @A Object super @B Number> { ... }
 \end{Verbatim}
+
+Note that these types mean different things:
+\begin{Verbatim}
+  class MyList1<T extends @Nullable Object> { ... }
+  class MyList2<@NonNull T> { ... }
+\end{Verbatim}
+
+In each case, only a non-null object could be placed in the list.  However,
+\code{null} could be extracted from an instance of \<MyList1>, whereas any
+element extracted from \<MyList2> is non-null.  The differences are more
+significant when the qualifier hierarchy is more complicated than just
+\<@Nullable> and \<@NonNull>.
 
 
 
@@ -759,3 +771,5 @@ need arises.
 
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
 % LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics
+% LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
+% LocalWords:  QualifierDefaults nullable
