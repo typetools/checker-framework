@@ -563,8 +563,7 @@ abstract class TypeFromTree extends
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
             if (f.canHaveAnnotatedTypeParameters())
                 result.addAnnotations(annotations);
-            else
-                result.getUpperBound().addAnnotations(annotations);
+            result.getUpperBound().addAnnotations(annotations);
             assert result instanceof AnnotatedTypeVariable;
             switch (bounds.size()) {
             case 0: break;
