@@ -1,5 +1,7 @@
 annotation-file-utilities/**
-eclipse/**
-specification/**
-*.html
-*.pdf
+checker-framework/eclipse/**
+checker-framework/specification/**
+checker-framework/*.html
+checker-framework/*.pdf
+jsr308/*.html
+jsr308/*pdf
