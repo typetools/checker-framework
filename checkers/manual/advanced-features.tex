@@ -127,9 +127,12 @@ In such a case, to permit all type arguments, the programmer would write
 \end{Verbatim}
 
 
-TODO:
 It is possible to set the default qualifier for upper bounds separately
-from other default qualifiers.  This is useful [when?].
+from other default qualifiers.  This is useful [TODO:  when?  get answer
+from mailing list].
+
+You can do so with an annotation such as
+\<@DefaultQualifier(value="Nullable", locations={DefaultLocation.UPPER\_BOUNDS})>.
 
 
 
