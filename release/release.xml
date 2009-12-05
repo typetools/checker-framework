@@ -63,7 +63,7 @@
             <target name="clean"/>
             <target name="dist"/>
             <target name="docs"/>
-            <!-- <target name="all-tests"/> -->
+            <target name="all-tests"/>
             <target name="bindist"/>
         </ant>
     </target>
@@ -319,7 +319,8 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
               includesfile="release/site-copy-includes"
               excludesfile="release/site-copy-excludes"/>
         </copy>
-        <symlink link="${site-copy.to.dir}/index.html" resource="jsr308-webpage.html" />
+        <symlink overwrite="true"
+                link="${site-copy.to.dir}/index.html" resource="jsr308-webpage.html" />
     </target>
 
 
