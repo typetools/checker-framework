@@ -22,7 +22,7 @@ import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.*;
 
 /**
- * Adds implicit and default IGJ annotations, only if the user does not
+ * Adds implicit and default OIGJ annotations, only if the user does not
  * annotate the type explicitly.  The default annotations are designed
  * to minimize the number of {@code Immutable} or {@code ReadOnly}
  * appearing in the source code.
@@ -30,7 +30,7 @@ import checkers.util.*;
  *
  * Implicit Annotations for literals:<br/>
  * Immutable  -  any primitive literal (e.g. integer, long, boolean, etc.)<br/>
- * IGJBottom  -  a null literal
+ * OIGJMutabilityBottom  -  a null literal
  * <p>
  *
  * However, due to the default setting being similar to the implicit
@@ -57,7 +57,7 @@ import checkers.util.*;
  * <li value="5">supertype of a wildcard/type parameter in a class/method declaration
  * </ol>
  *
- * It will add {@link IGJBottom}, a special bottom annotation to a type if
+ * It will add {@link OIGJMutabilityBottom}, a special bottom annotation to a type if
  * the input can be assigned to anything, like the following cases:
  * <ol>
  * <li value="6">(*)the input is a {@code null} literal

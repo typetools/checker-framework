@@ -32,7 +32,7 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getRootAnnotation();
 
     /**
-     * @returns the botton type qualifier in the hierarchy
+     * @return the botton type qualifier in the hierarchy
      */
     public abstract AnnotationMirror getBottomQualifier();
 
