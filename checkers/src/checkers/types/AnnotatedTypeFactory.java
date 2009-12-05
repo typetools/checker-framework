@@ -125,7 +125,7 @@ public class AnnotatedTypeFactory {
         this.qualHierarchy = qualHierarchy;
         this.supportedQuals = getSupportedQualifiers();
         this.indexTypes = buildIndexTypes();
-        this.annotatedTypeParams = env.getOptions().containsKey("annotatedTypeParams");
+        this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
 
     /**

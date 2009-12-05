@@ -1205,6 +1205,10 @@ public abstract class AnnotatedTypeMirror {
                     || (getUpperBound() != null && getUpperBound().isAnnotated()));
         }
 
+        public Set<AnnotationMirror> getAnnotationsOnTypeVar() {
+            return super.getAnnotations();
+        }
+
         @Override
         public Set<AnnotationMirror> getAnnotations() {
             if (!super.isAnnotated() && getUpperBound() != null)

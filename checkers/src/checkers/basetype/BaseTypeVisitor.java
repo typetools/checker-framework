@@ -624,6 +624,13 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                             "generic.argument.invalid", p);
                 }
             }
+            
+            if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
+                if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
+                    checker.report(Result.failure("generic.argument.invalid"), typeargTrees.get(typeargs.indexOf(typearg)));
+                }
+            }
+
         }
     }
 
