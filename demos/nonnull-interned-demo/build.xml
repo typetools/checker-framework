@@ -1,0 +1,30 @@
+<!-- script to test all demos -->
+<project name="checkers-demos" basedir="." default="test-all">
+
+  <macrodef name="test-project">
+    <attribute name="project"/>
+    <attribute name="task" default="check-demo"/>
+    <sequential>
+      <ant dir="@{project}" target="@{task}"/>
+    </sequential>
+  </macrodef>
+
+  <target name="check-demo" depends="touch-files">
+    <test-project project="IGJChecker"/>
+    <test-project project="checkers"/>
+    <test-project project="daikon"/>
+    <test-project project="junit"/>
+    <test-project project="lookup"/>
+    <test-project project="personalblog-demo"/>
+    <echo message="All demos work properly"/>
+  </target>
+
+  <target name="touch-files">
+    <touch>
+      <fileset dir=".">
+        <include name="**/*"/>
+      </fileset>
+    </touch>
+  </target>
+
+</project>
