@@ -192,7 +192,7 @@ update the live site after you've sanity-checked the release.)</p></li>
 
 <pre>
     cd /scratch/$USER/jsr308-release/checker-framework/release
-    ant -f release.xml -Drelease.ver=&lt;release version> clean web checklinks sanitycheck
+    ant -f release.xml -Drelease.ver=&lt;release version> clean web sanitycheck
 </pre>
 
 <p>The <code>web</code> step will run <code>ant clean build-javac
@@ -222,7 +222,7 @@ virtual machine), follow the Checker
 Framework short installation instructions by executing these commands:</p>
 
 <pre>
-export JSR308_WEB=http://www.cs.washington.edu/homes/${USER}/jsr308test/current
+export JSR308_WEB=http://www.cs.washington.edu/homes/${USER}/jsr308test/jsr308
 cd
 wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
 make -f Makefile-jsr308-install
@@ -249,7 +249,7 @@ dry-run passed successfully, this step should pass as well.</p>
 <li>Again test the simple installation instructions guideline:
 <pre>
 cd
-wget -nv -N http://types.cs.washington.edu/checker-framework/current/Makefile-jsr308-install
+wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
 make -f Makefile-jsr308-install
 </pre>
 </li>
