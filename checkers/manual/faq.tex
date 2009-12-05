@@ -154,15 +154,20 @@ time to focus on those.
 It is bad style for an annotation to apply to both types and declarations.
 In other words, every annotation should have a \<@Target> meta-annotation,
 and the \<@Target> meta-annotation should list either only declaration
-locations or only type annotations.  (It's OK for it to list both
-\<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no other
-declaration location along with \<ElementType.TYPE\_USE>.)
+locations or only type annotations.  (It's OK for an annotation to target
+both \<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no
+other declaration location along with \<ElementType.TYPE\_USE>.)
 
 Sometimes, it may seem tempting for an annotation to apply to both type
 uses and (say) method declarations.  Here is a hypothetical example:
 
 \begin{quote}
-``A \<@Version> annotation could be written like so:
+  ``Each \<Widget> type may have a \<@Version> annotation.
+  I wish to prove that versions of widgets don't get assigned to
+  incompatible variables, and that older code does not call newer code (to
+  avoid problems when backporting).
+
+  A \<@Version> annotation could be written like so:
 
 \begin{Verbatim}
   @Version("2.0") Widget createWidget(String value) { ... }
@@ -176,16 +181,15 @@ independently, such as a 2.0 method that returns a value that allows the
 1.0 API method invocations.''
 \end{quote}
 
-The goal property is that versions of widgets don't get assigned to
-incompatible variables, and that older code does not call newer code (to
-avoid problems when backporting).
-
 Both of these are type properties and should be specified with type
 annotations.  In particular, the method annotation should be a type
-annotation on the \emph{receiver} of the method.  The property being
-checked is that the annotation on the type of the actual receiver is
-compatible with the annotation on the type of the formal parameter
-receiver.  No annotation belongs on the method itself.
+annotation on the \emph{receiver} of the method.  The desired effect is to
+restrict the method call by requiring that the receiver has a certain
+property, just as can be done for the method's formal parameters.  This is
+most naturally done by annotating the receiver, and no annotation belongs
+on the method itself.  (Slightly more formally, the property being checked
+is compatibility between the annotation on the type of the formal parameter
+receiver and the annotation on the type of the actual receiver.)
 
 
 Another example is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As
@@ -398,3 +402,4 @@ welcome it as a contribution to the Checker Framework.
 
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns
+% LocalWords:  ElementType
