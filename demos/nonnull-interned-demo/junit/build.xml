@@ -90,6 +90,8 @@
       <check-demo-common target="assert" step="0"/>
       <check-demo-common target="assert" step="1"/>
       <echo message="assert demo works as expected" />
+      <revert-demo target="assert" step="1"/>
+      <revert-demo target="assert" step="0"/>
     </target>
 
     <target name="check-demo" depends="check-assert">
