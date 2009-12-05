@@ -182,7 +182,8 @@ that both variables and methods are ``members'' that can be ``accessed'';
 variables can be accessed by reading or writing them (putfield, getfield),
 and methods can be accessed by calling them (invokevirtual,
 invokeinterface).  In both cases, \code{@GuardedBy} creates preconditions
-for accessing so-annotated members.
+for accessing so-annotated members.  This informal intuition is
+inappropriate for a tool that requires precise semantics.
 
 The Lock checker renames the method annotation to
 \code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
