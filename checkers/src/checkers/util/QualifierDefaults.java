@@ -260,6 +260,11 @@ public class QualifierDefaults {
                     && t == type)
                 return super.scan(t, p);
 
+            if (locations.contains(DefaultLocation.UPPER_BOUNDS)
+                && locations.size() == 1
+                && !this.isTypeVarExtends) {
+                return super.scan(t, p);
+            }
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!t.isAnnotated())
@@ -278,6 +283,25 @@ public class QualifierDefaults {
 //            scanAndReduce(t.getThrownTypes(), p, null);
 //            scanAndReduce(t.getTypeVariables(), p, null);
 //            return null;
+        }
+
+        private boolean isTypeVarExtends = false;
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror p) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            Void r = scan(type.getLowerBound(), p);
+            visitedNodes.put(type, r);
+            boolean prevIsTypeVarExtends = isTypeVarExtends;
+            isTypeVarExtends = true;
+            try {
+                r = scanAndReduce(type.getUpperBound(), p, r);
+            } finally {
+                isTypeVarExtends = prevIsTypeVarExtends;
+            }
+            visitedNodes.put(type, r);
+            return r;
         }
     }
 }
