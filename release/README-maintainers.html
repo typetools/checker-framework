@@ -13,7 +13,7 @@ pre { background-color: #CCC; padding: 0.75em; }
 
 <body>
 
-<h1>Releasing the JSR 308 langtools and checkers</h1>
+<h1>Releasing the JSR 308 langtools and the Checker Framework</h1> <!-- omit from toc -->
 
 <p>This document explains how to make a public release of the JSR 308
 langtools and checkers.</p>
@@ -25,14 +25,11 @@ site.</p>
 
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
-<ul>
-  <li>
     <ul>
       <li><a href="#Requirements">Requirements</a></li>
       <li><a href="#Setup">Initial setup</a></li>
       <li><a href="#Release">Making a release</a></li>
-    </ul></li>
-</ul>
+    </ul>
 <!-- end toc -->
 
 <h2 id="Requirements">Requirements</h2>
@@ -42,14 +39,14 @@ site.</p>
 <ul>
 <li>JDK &ge; 6</li>
 <li>Apache ant &ge; 1.6.5</li>
-<li>Access to <code>/cse/www2/types</code> html folder.</li>
+<li>Access to <code>/cse/www2/types</code> directory on a cs.washington.edu machine</li>
 <li>Mercurial &ge; 1.2.1</li>
 <li>LaTeX (along with <code>hevea</code> and <code>bibtex</code>)</li>
 <li>a web-accessible directory like <code>public_html</code> (for
 testing the release)</li>
 </ul>
 
-<p>You should have all of the above if you use a Washington CS machine
+<p>You should have all of the above if you use a Washington CSE machine
 (e.g. <code>godwit</code>).</p>
 
 
@@ -88,11 +85,11 @@ prepared release directory, set up a release directory as follows:
 </li>
 
 <li>
-<p>Check out the (entire) annotations repository:</p>
+<p>Check out the jsr308-langtools and checker-framework repositories:</p>
 <pre>
     hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
-    # Just to be in safe side
+    # Just to be on the safe side.
     cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
 </pre>
 </li>
