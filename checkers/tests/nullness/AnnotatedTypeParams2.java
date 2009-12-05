@@ -3,6 +3,9 @@ import java.util.*;
 
 class MyClass<@Nullable T> {
     T get() { throw new RuntimeException(); }
+}
+
+class OtherClass {
 
     void testPositive() {
         MyClass<@Nullable String> l = new MyClass<@Nullable String>();
@@ -14,4 +17,5 @@ class MyClass<@Nullable T> {
         //:: (generic.argument.invalid)
         MyClass<@NonNull String> l;
     }
+
 }
