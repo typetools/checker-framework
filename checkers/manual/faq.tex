@@ -22,6 +22,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
 \ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
 \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
+\ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
 \ref{faq-run-on-all-files}: How do I run a checker on all my source files? \\
 \ref{faq-create-a-checker}: How do I create a new checker? \\
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
@@ -146,6 +147,54 @@ reduce (but not eliminate) the time and effort that you spend on other
 approaches.  There are many important errors that type checking and other
 automated approaches cannot find; pluggable typechecking gives you more
 time to focus on those.
+
+
+\section{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
+
+It is bad style for an annotation to apply to both types and declarations.
+In other words, every annotation should have a \<@Target> meta-annotation,
+and the \<@Target> meta-annotation should list either only declaration
+locations or only type annotations.  (It's OK for it to list both
+\<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no other
+declaration location along with \<ElementType.TYPE\_USE>.)
+
+Sometimes, it may seem tempting for an annotation to apply to both type
+uses and (say) method declarations.  Here is a hypothetical example:
+
+\begin{quote}
+``A \<@Version> annotation could be written like so:
+
+\begin{Verbatim}
+  @Version("2.0") Widget createWidget(String value) { ... }
+\end{Verbatim}
+
+\<@Version("2.0")> on the method could mean that the \<createWidget> method
+only appears in the 2.0 version.  \<@Version("2.0")> on the return type
+could mean that the returned \<Widget> should only be used by code that
+uses the 2.0 API of \<Widget>.  It should be possible to specify these
+independently, such as a 2.0 method that returns a value that allows the
+1.0 API method invocations.''
+\end{quote}
+
+The goal property is that versions of widgets don't get assigned to
+incompatible variables, and that older code does not call newer code (to
+avoid problems when backporting).
+
+Both of these are type properties and should be specified with type
+annotations.  In particular, the method annotation should be a type
+annotation on the \emph{receiver} of the method.  The property being
+checked is that the annotation on the type of the actual receiver is
+compatible with the annotation on the type of the formal parameter
+receiver.  No annotation belongs on the method itself.
+
+
+Another example is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As
+discussed in Section~\ref{jcip-annotations}, it means two unrelated things
+when applied to a field or a method.  To reduce confusion and increase
+expressiveness, the Lock Checker (see Section~\ref{lock-checker}) uses the
+\<@Holding> annotation for one of these meanings, rather than overloading
+\<@GuardedBy> with two distinct meanings.
+
 
 
 \section{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
@@ -348,4 +397,4 @@ welcome it as a contribution to the Checker Framework.
 
 
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
-% LocalWords:  castNonNull
+% LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns
