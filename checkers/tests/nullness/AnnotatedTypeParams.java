@@ -15,3 +15,18 @@ class MyClass<@Nullable T> {
         MyClass<@NonNull String> l;
     }
 }
+
+class OtherClass {
+
+    void testPositive() {
+        MyClass<@Nullable String> l = new MyClass<@Nullable String>();
+        //:: (dereference.of.nullable)
+        l.get().toString();
+    }
+
+    void testInvalidParam() {
+        //:: (generic.argument.invalid)
+        MyClass<@NonNull String> l;
+    }
+
+}

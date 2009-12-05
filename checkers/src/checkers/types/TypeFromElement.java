@@ -147,7 +147,10 @@ public class TypeFromElement {
             switch(pos.type) {
             case CLASS_TYPE_PARAMETER:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParameters.size()) {
-                    typeParameters.get(pos.parameter_index).addAnnotation(anno);
+                    AnnotatedTypeMirror typeParam = typeParameters.get(pos.parameter_index);
+                    typeParam.addAnnotation(anno);
+                    if (typeParam.getKind() == TypeKind.TYPEVAR)
+                        ((AnnotatedTypeVariable)typeParam).getUpperBound().addAnnotation(anno);
                 }
                 break;
             case CLASS_TYPE_PARAMETER_BOUND:
