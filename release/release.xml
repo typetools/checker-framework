@@ -7,6 +7,11 @@
     <property file="release/release.properties"/>
     <property file="${user.home}/.jsr308-release.properties"/>
 
+    <tstamp>
+        <format property="date" pattern="yyyymmdd" locale="en,US"/>
+    </tstamp>
+    <property name="release.ver" value="daily-${date}" />
+
     <target name="clean" depends="-prep-releasedir"
       description="deletes the temporary release directory">
         <delete dir="${tmp.root.dir}"/>
@@ -60,6 +65,7 @@
         <!-- Runs "ant clean dist all-tests" for checkers. -->
 
         <ant dir="${checkers}" inheritAll="false">
+            <property name="halt.on.test.failure" value="${halt.on.test.failure}"/>
             <target name="clean"/>
             <target name="dist"/>
             <target name="docs"/>
