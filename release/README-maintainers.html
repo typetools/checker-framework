@@ -112,14 +112,25 @@ testing site:</p>
 <h2 id="Release">Making a release</h2>
 
 <ol>
-<li><p>Ensure that your checkouts are up to date, you don't have any
-    uncommitted changes, and all regression tests pass.</p>
-</li>
-
 <li>Set the <tt>anno</tt> environment variable.  For example,
 <pre>
   export anno=$HOME/research/types
 </pre>
+
+<li><p>Ensure that your checkouts are up to date and you don't have any
+    uncommitted changes.  Each one of these <tt>hg</tt> commands should
+    print "no changes found":</p>
+<pre>
+  cd $anno/checker-framework
+  hg fetch
+  hg outgoing
+  cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+</pre>
+</li>
+
+<li><p>Ensure that all regression tests pass.</p>
 
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
@@ -150,7 +161,7 @@ and setting environment variables accordingly:
 </pre>
 
 <pre>
-    # Diff the manuals against the previous versions:</p>
+    # Diff the manuals against the previous versions:
     cd $anno/checker-framework/checkers/manual
     hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
     cd $anno/jsr308-langtools
@@ -165,7 +176,19 @@ and setting environment variables accordingly:
     hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
 </pre>
 
-Again, make sure your checkouts are up-to-date and fully committed.
+</li>
+
+<li><p>Ensure that your checkouts are up to date and you don't have any
+    uncommitted changes.  Each one of these <tt>hg</tt> commands should
+    print "no changes found":</p>
+<pre>
+  cd $anno/checker-framework
+  hg fetch
+  hg outgoing
+  cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+</pre>
 </li>
 
 
