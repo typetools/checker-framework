@@ -7,7 +7,7 @@ figures-all:
 	${MAKE} -C figures all
 
 doc:
-	ln -s ../doc doc
+	ln -sf ../doc doc
 
 manual.dvi: ${TEX_FILES}
 	$(MAKE) -C figures
