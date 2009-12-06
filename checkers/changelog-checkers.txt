@@ -1,11 +1,15 @@
 Version 1.0.3, 5 Dec 2009
 
 Checkers
-  Added eclipse project and launch configuration files in repository
-  Added limited flow support for array accesses
-  Added support for simple names in DefaultQualifier (e.g. @DefaultQualifier("Nullable"))
-  Added support for UPPER_BOUND default in DefaultQualifier locations
-  Fixed bugs related to
+  New location UPPER_BOUND for DefaultQualifier permits setting the default
+    for upper bounds, such as Object in "? extends Object".
+  @DefaultQualifier accepts simple names, like @DefaultQualifier("Nullable"),
+    rather than requiring @DefaultQualifier("checkers.nullness.quals.Nullable").
+  Local variable type inference has improved support for array accesses.
+  The repository contains Eclipse project and launch configuration files.
+    This is helpful too people who want to build a checker, not to people
+    who merely want to run a checker.
+  Many bug fixes, including:
     handling wildcard subtyping rules
     stub files and vararg methods being ignored
     nullness and spurious rawness errors
@@ -13,8 +17,11 @@ Checkers
     multibound type parameters (e.g. <T extends @A Number & @B Cloneable>)
 
 Manual
-  Defined the behavior of annotations on type parameter declarations
-  
+  Documented the behavior of annotations on type parameter declarations.
+  New FAQ item:
+    How to collect warnings from multiple files
+    Why a qualifier shouldn't apply to both types and declarations
+
 ----------------------------------------------------------------------
 Version 1.0.2, 16 Nov 2009
 
