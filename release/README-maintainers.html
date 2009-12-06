@@ -116,10 +116,13 @@ testing site:</p>
     uncommitted changes, and all regression tests pass.</p>
 </li>
 
-
+<li>Set the <tt>anno</tt> environment variable.  For example,
+<pre>
+  export anno=$HOME/research/types
+</pre>
 
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
-<tt>$anno/checkers-framework/checkers/changelog-checkers.txt</tt>) to indicate
+<tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
 what has changed in this version.  (Hopefully, this has already been done by
 each person who made a recent change.)
 The changelogs should focus on user-visible changes, or very significant
@@ -127,31 +130,39 @@ implementation changes that may affect users.
 </p>
 
 <p>
-Here are two ways to determine what has changed.
-(Irritatingly, you may need to do "hg log" to figure out the right revision
-number as of the date of the last release; yuck.  We should tag
-releases instead.)
+To double-check that the changelogs are adequate, run the following
+commands, and read the files in <tt>~/tmp</tt> that they create:
+
+<p>
+Determine the revision number for the previous release (Yuck; we should
+tag releases instead) by examining the output of
 </p>
-
-<p>Diff the manuals against the previous versions:</p>
-
 <pre>
-    cd $anno/checkers-framework/checkers/manual
-    hg diff -r130 > ~/tmp/checkers-manual-diff
-
-    cd $anno/jsr308-langtools
-    hg diff -r50 > ~/tmp/langtools-diff
+  (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
+  (cd $anno/jsr308-langtools; hg log /doc/changelog-jsr308.txt)
+</pre>
+<p>
+and setting environment variables accordingly:
+</p>
+<pre>
+  export CF_PREV_REVISION=463
+  export JL_PREV_REVISION=1059
 </pre>
 
-<p>Use the version control logs since the last release: </p>
-
 <pre>
-    cd $anno/checker-framework
-    hg log -v -r130:tip > ~/tmp/annotations-log
-
+    # Diff the manuals against the previous versions:</p>
+    cd $anno/checker-framework/checkers/manual
+    hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
     cd $anno/jsr308-langtools
-    hg log -r50:tip > ~/tmp/langtools-log
-    hg log -r50:tip --style changelog > ~/tmp/langtools-log-with-filenames
+    hg diff -w -r$JL_PREV_REVISION README-jsr308.html > ~/tmp/langtools-manual-diff
+
+    # Use the version control logs since the last release:
+    # In Emacs, it's useful to do:  (delete-matching-paragraphs "automated merge with " nil nil t)
+    cd $anno/checker-framework
+    hg log -v -r$CF_PREV_REVISION:tip > ~/tmp/checkers-log
+    cd $anno/jsr308-langtools
+    hg log -r$JL_PREV_REVISION:tip > ~/tmp/langtools-log
+    hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
 </pre>
 
 Again, make sure your checkouts are up-to-date and fully committed.
