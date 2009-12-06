@@ -112,12 +112,15 @@ testing site:</p>
 <h2 id="Release">Making a release</h2>
 
 <ol>
-<li>Set the <tt>anno</tt> environment variable.  For example,
+<li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
+<tt>CFVERSION</tt> is for the version being released.
+For example,
 <pre>
   export anno=$HOME/research/types
+  export CFVERSION=1.0.3
 </pre>
 
-<li><p>Ensure that your checkouts are up to date and you don't have any
+<li><p>Ensure that your checkouts are up to date and you have no
     uncommitted changes.  Each one of these <tt>hg</tt> commands should
     print "no changes found":</p>
 <pre>
@@ -178,7 +181,7 @@ and setting environment variables accordingly:
 
 </li>
 
-<li><p>Ensure that your checkouts are up to date and you don't have any
+<li><p>Ensure that your checkouts are up to date and you have no
     uncommitted changes.  Each one of these <tt>hg</tt> commands should
     print "no changes found":</p>
 <pre>
@@ -197,7 +200,7 @@ and setting environment variables accordingly:
 <pre>
     cd /scratch/$USER/jsr308-release/checker-framework
     hg fetch    # eq to 'hg pull; hg up'
-    cd jsr308-langtools
+    cd ../jsr308-langtools
     hg fetch    # eq to 'hg pull; hg up'
 </pre>
 
@@ -206,7 +209,8 @@ make any serious local modifications (aside from version number
 changes, which you'll check in later in the process).</p></li>
 
 <li><p>Ensure that the properties for the dry-run release is set
-appropriately, set as follows:</p>
+appropriately in <tt>checker-framework/release/release.properties</tt>, set
+as follows:</p>
 
 <ul>  
 <li><code>web.dry.root.dir</code>: the location of your site copy, e.g.,
@@ -223,7 +227,7 @@ update the live site after you've sanity-checked the release.)</p></li>
 
 <pre>
     cd /scratch/$USER/jsr308-release/checker-framework/release
-    ant -f release.xml -Drelease.ver=&lt;release version> clean web sanitycheck
+    ant -f release.xml -Drelease.ver=$CFVERSION clean web sanitycheck
 </pre>
 
 <p>The <code>web</code> step will run <code>ant clean build-javac
@@ -249,11 +253,11 @@ release.
 <ul>
 
 <li><p>As a new user with no customizations (say, in a
-virtual machine), follow the Checker
+virtual machine; Mike uses <tt>ssh test@localhost</tt>), follow the Checker
 Framework short installation instructions by executing these commands:</p>
 
 <pre>
-export JSR308_WEB=http://www.cs.washington.edu/homes/${USER}/jsr308test/jsr308
+export JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/jsr308
 cd
 wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
 make -f Makefile-jsr308-install
@@ -269,7 +273,7 @@ make -f Makefile-jsr308-install
 
 <pre>
     cd /scratch/$USER/jsr308-release/checker-framework/release
-    ant -f release.xml -Drelease.ver=&lt;release version> -Drelease.is.real=true clean web checklinks sanitycheck
+    ant -f release.xml -Drelease.ver=$CFVERSION -Drelease.is.real=true clean web checklinks sanitycheck
 </pre>
 
 <p>The same process as in the dry-run occurs; chances are, if the
@@ -290,26 +294,40 @@ the release process.  (Should this be done before the release, so
 that its data is consistent?)</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/annotations
+    cd /scratch/$USER/jsr308-release/jsr308-langtools
     hg diff
-    # Review the changes output by "hg diff" before committing
-    hg commit; hg push
+    # As always, review the changes output by "hg diff" before committing.
+    # Typical commit message:
+    hg commit -m "Update version number to $CFVERSION"
+    hg push
+
+    cd /scratch/$USER/jsr308-release/checker-framework
+    hg diff
+    # As always, review the changes output by "hg diff" before committing.
+    # Typical commit message:
+    hg commit -m "Update version number to $CFVERSION"
+    hg push
 </pre>
 </li>
 
 <li>
-Copy <tt>checkers.jar</tt> to some libraries that use it (set <i>XXX</i> properly!):
+Copy <tt>checkers.jar</tt> to some libraries that use it:
 <pre>
   cp -pf .../checkers.jar ${inv}/java/lib
-  cvs commit ${inv}/java/lib/chekcers.jar -m "checkers.jar version <i>XXX</i>"
+  cvs commit ${inv}/java/lib/checkers.jar -m "checkers.jar version $CFVERSION"
   cp -pf .../checkers.jar ${inv}/java/utilMDE/lib
-  cvs commit ${inv}/java/utilMDE/lib/chekcers.jar -m "checkers.jar version <i>XXX</i>"
+  cvs commit ${inv}/java/utilMDE/lib/checkers.jar -m "checkers.jar version $CFVERSION"
 </pre>
 
 <li><p>Send a release announcement to <a
 href="mailto:jsr308-discuss@groups.google.com">jsr308-discuss@groups.google.com</a>.
 The announcement should indicate what is new in the release, and should
-include the changelogs at the end.</p></li>
+include the changelog entries from
+<pre>
+  checker-framework/checkers/changelog-checkers.txt
+  jsr308-langtools/doc/changelog-jsr308.txt
+</pre>
+</li>
 
 </ol>
 
