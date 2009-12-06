@@ -257,10 +257,10 @@ virtual machine; Mike uses <tt>ssh test@localhost</tt>), follow the Checker
 Framework short installation instructions by executing these commands:</p>
 
 <pre>
-export JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-framework/current
 cd
 wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
-make -f Makefile-jsr308-install
+JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-framework/current \
+    make -f Makefile-jsr308-install
 </pre>
 
 <p>
@@ -285,8 +285,7 @@ dry-run passed successfully, this step should pass as well.</p>
 <pre>
 cd
 wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
-JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-framework/current \
-  make -f Makefile-jsr308-install
+make -f Makefile-jsr308-install
 </pre>
 </li>
 
