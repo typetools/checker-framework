@@ -627,7 +627,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
-                    checker.report(Result.failure("generic.argument.invalid"), typeargTrees.get(typeargs.indexOf(typearg)));
+                    checker.report(Result.failure("generic.argument.invalid",
+                            typearg, typeVar),
+                            typeargTrees.get(typeargs.indexOf(typearg)));
                 }
             }
 
