@@ -20,6 +20,7 @@ type checker:
 \begin{Verbatim}
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface Encrypted {}
 \end{Verbatim}
 
@@ -155,13 +156,17 @@ the type hierarchy that relates them.
 
 Type qualifiers are defined as Java annotations~\cite{JSR269}.  In Java, an
 annotation is defined using the Java \code{@interface} keyword.
-Write the \<@\refclass{quals}{TypeQualifier}> annotation on the annotation definition
+Write the \<@\refclass{quals}{TypeQualifier}> meta-annotation on the annotation definition
 to indicate that the annotation represents a type qualifier
-and should be processed by the checker.  For example:
+and should be processed by the checker.
+Also write a \<@\sunjavadoc{java/lang/annotation/Target.html}{Target}>
+meta-annotation to indicate where the annotation may be written.
+For example:
 
 \begin{Verbatim}
   // Define an annotation for the @NonNull type qualifier.
   @TypeQualifier
+  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
   public @interface NonNull { }
 \end{Verbatim}
 
@@ -199,6 +204,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     @SubtypeOf( { Nullable.class } )
     public @interface NonNull { }
   \end{Verbatim}
@@ -227,6 +233,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     @SubtypeOf( { } )
     public @interface Nullable { }
   \end{Verbatim}
@@ -241,6 +248,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     @PolymorphicQualifier
     public @interface PolyNull { }
   \end{Verbatim}
@@ -353,7 +361,7 @@ defined like this:
 \begin{Verbatim}
   @TypeQualifier
   @SubtypeOf({Mutable.class, Immutable.class, I.class})
-  @Target({})
+  @Target({}) // forbids a programmer from writing it in a program
   @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
                typeClasses = { AnnotatedPrimitiveType.class })
   @interface IGJBottom { }
@@ -370,6 +378,7 @@ Section~\ref{bottom-qualifier} lacks a top qualifier:
 \begin{Verbatim}
   @TypeQualifier
   @SubtypeOf(Unqualified.class)
+  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
   public @interface Encrypted {}
 \end{Verbatim}
 
@@ -465,12 +474,14 @@ type qualifiers:
       Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL, Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
       Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL
     })
+  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
   public @interface NonNull {  }
 
 
   @TypeQualifier
   @SubtypeOf({})
   @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
   public @interface Nullable { }
 \end{Verbatim}
 %BEGIN LATEX
