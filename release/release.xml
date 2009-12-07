@@ -8,9 +8,9 @@
     <property file="${user.home}/.jsr308-release.properties"/>
 
     <tstamp>
-        <format property="date" pattern="yyyymmdd" locale="en,US"/>
+        <format property="date" pattern="yyyyMMdd" locale="en,US"/>
     </tstamp>
-    <property name="release.ver" value="daily-${date}" />
+    <property name="release.ver" value="ea-${date}" />
 
     <target name="clean" depends="-prep-releasedir"
       description="deletes the temporary release directory">
