@@ -903,7 +903,8 @@ appears before the constructor name, for example:
   }
 \end{Verbatim}
 
-In general, you should only use this syntax when you know that the cast is
+In general, you should only use an annotation on a constructor invocation
+when you know that the cast is
 guaranteed to succeed.  An example from the IGJ checker
 (Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
 @Mutable MyClass()>, where you know that every other reference to the class
