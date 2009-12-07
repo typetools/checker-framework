@@ -187,7 +187,7 @@ abstract public class CheckerTest {
      * @param run the test run to check
      */
     protected void assertFailure(/*@ReadOnly*/ TestRun run) {
-        assertFalse("the test run was expected to issue errors/warnings, but it did not", run.getResult());
+        assertFalse("The test run was expected to issue errors/warnings, but it did not.", run.getResult());
     }
 
     /**
