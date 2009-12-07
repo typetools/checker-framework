@@ -1,6 +1,5 @@
-To add a new file to the test suite, edit one of these files:
-  ../src/tests/BasicEncryptedTest.java
-  ../src/tests/BasicSuperSubTest.java
+To add a new file to the test suite, see
+  ../README
 
 To run the tests, do
   ant -e -find build.xml basic-tests
