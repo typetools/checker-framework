@@ -6,8 +6,8 @@ import checkers.util.test.SubQual;
 // @skip-test
 public class DependentTypes {
 
-  // A trivial error, so there is at least one in the output.
   @SuperQual Object supero = null;
+  // A trivial error, so there is at least one in the output.
   @SubQual Object subo = supero;
 
 
