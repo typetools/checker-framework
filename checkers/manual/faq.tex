@@ -235,6 +235,7 @@ is an example of a complete, useful type checker.
 \begin{Verbatim}
   @TypeQualifier
   @SubtypeOf(Unqualified.class)
+  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
   public @interface Encrypted { }
 \end{Verbatim}
 

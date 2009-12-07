@@ -82,6 +82,7 @@ import checkers.quals.*;
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface Encrypted {}
 \end{Verbatim}
 
