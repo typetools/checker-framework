@@ -17,7 +17,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
  */
 @TypeQualifier
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
-@Target({})
+@Target({}) // empty target prevents programmers from writing this in a program
 @ImplicitFor(
         trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
         typeClasses = { AnnotatedPrimitiveType.class }
