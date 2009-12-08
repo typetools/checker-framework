@@ -1,6 +1,6 @@
 import java.util.*;
 
-import checkers.util.test.Encrypted;
+import checkers.util.test.Critical;
 
 abstract class ThrowCatch {
 
@@ -8,8 +8,8 @@ abstract class ThrowCatch {
     throw new Exception();
   }
 
-  void throwsEncrypted() throws @Encrypted Exception {
-    throw new @Encrypted Exception();
+  void throwsCritical() throws @Critical Exception {
+    throw new @Critical Exception();
   }
 
   void catches() {
@@ -21,17 +21,17 @@ abstract class ThrowCatch {
     try {
       throwsUnencrypted();
     //:: (type.incompatible)
-    } catch (@Encrypted Exception e) {
+    } catch (@Critical Exception e) {
     }
 
     try {
-      throwsEncrypted();
+      throwsCritical();
     } catch (Exception e) {
     }
 
     try {
-      throwsEncrypted();
-    } catch (@Encrypted Exception e) {
+      throwsCritical();
+    } catch (@Critical Exception e) {
     }
   }
 
