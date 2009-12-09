@@ -4,7 +4,7 @@ import checkers.util.test.Critical;
 
 abstract class ThrowCatch {
 
-  void throwsUnencrypted() throws Exception {
+  void throwsNoncritical() throws Exception {
     throw new Exception();
   }
 
@@ -14,12 +14,12 @@ abstract class ThrowCatch {
 
   void catches() {
     try {
-      throwsUnencrypted();
+      throwsNoncritical();
     } catch (Exception e) {
     }
 
     try {
-      throwsUnencrypted();
+      throwsNoncritical();
     //:: (type.incompatible)
     } catch (@Critical Exception e) {
     }
