@@ -1251,6 +1251,10 @@ public class AnnotatedTypeFactory {
         String[] stubArray = stubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
             try {
+                // Handle case when running in jtreg
+                String base = System.getProperty("test.src");
+                if (base != null)
+                    stubPath = base + "/" + stubPath;
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
