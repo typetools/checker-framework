@@ -624,7 +624,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                             "generic.argument.invalid", p);
                 }
             }
-            
+
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
                     checker.report(Result.failure("generic.argument.invalid",
@@ -820,6 +820,17 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             return null;
     }
 
+    protected Tree enclosingStatement(Tree tree) {
+        TreePath path = this.getCurrentPath();
+        while (path != null && path.getLeaf() != tree)
+            path = path.getParentPath();
+
+        if (path != null)
+            return path.getParentPath().getLeaf();
+        else
+            return null;
+    }
+
     public R visitIdentifier(IdentifierTree node, P p) {
         checkAccess(node, p);
         return super.visitIdentifier(node, p);
@@ -857,7 +868,16 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             unused.when();
         } catch (MirroredTypeException exp) {
             Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            return receiver.getAnnotation(whenName) == null;
+            if (receiver.getAnnotation(whenName) == null)
+                return true;
+
+            Tree tree = this.enclosingStatement(accessTree);
+
+            // assigning unused to null is OK
+            return (tree != null
+                    && tree.getKind() == Tree.Kind.ASSIGNMENT
+                    && ((AssignmentTree)tree).getVariable() == accessTree
+                    && ((AssignmentTree)tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
         }
 
         assert false : "Cannot be here";

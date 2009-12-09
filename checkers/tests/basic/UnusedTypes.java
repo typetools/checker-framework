@@ -10,7 +10,7 @@ public class UnusedTypes {
   @SubtypeOf({})
   public @interface Prototype {}
 
-  /*@Unused(when=Prototype.class)*/
+  @Unused(when=Prototype.class)
   public Object ppt;
 
   protected @Prototype UnusedTypes() {

@@ -2,6 +2,12 @@ import java.util.*;
 
 import checkers.util.test.Critical;
 
+/**
+ * Tests the symantics for throwable exception
+ *
+ * @on-hold
+ * @skip-test
+ */
 abstract class ThrowCatch {
 
   void throwsNoncritical() throws Exception {
