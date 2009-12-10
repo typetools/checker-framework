@@ -214,10 +214,13 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
             Set<VariableElement> oldFields = nonInitializedFields;
             try {
-                nonInitializedFields = getUninitializedFields(node);
+                nonInitializedFields = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()));
                 return super.visitMethod(node, p);
             } finally {
                 if (!nonInitializedFields.isEmpty()) {
+                    if (checker.getLintOption("uninitialized", false)) {
+                        checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
+                    }
                     // TODO: warn against uninitialized fields
                 }
                 nonInitializedFields = oldFields;
@@ -227,16 +230,26 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     }
 
     @Override
+    protected void checkDefaultConstructor(ClassTree node) {
+        if (!checker.getLintOption("uninitialized", false))
+            return;
+
+        Set<VariableElement> fields = getUninitializedFields(node);
+        if (!fields.isEmpty()) {
+            checker.report(Result.warning("fields.uninitialized", fields), node);
+        }
+    }
+
+    @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
         if (nonInitializedFields != null)
             nonInitializedFields.remove(InternalUtils.symbol(node.getVariable()));
         return super.visitAssignment(node, p);
     }
 
-    private Set<VariableElement> getUninitializedFields(MethodTree node) {
+    private Set<VariableElement> getUninitializedFields(ClassTree classTree) {
         Set<VariableElement> fields = new HashSet<VariableElement>();
 
-        ClassTree classTree = TreeUtils.enclosingClass(getCurrentPath());
         for (Tree member : classTree.getMembers()) {
             if (!(member instanceof VariableTree))
                 continue;
