@@ -353,6 +353,15 @@ public class QualifierPolymorphism {
         }
 
         @Override
+        public Map<String, AnnotationMirror> visitNull(
+                AnnotatedNullType type, AnnotatedTypeMirror actualType) {
+            if (actualType.hasAnnotation(polyQual)) {
+                AnnotationMirror typeQual = !type.isAnnotated() ? null : type.getAnnotations().iterator().next();
+                return Collections.singletonMap(KEY, typeQual);
+            }
+            return super.visitNull(type, actualType);
+        }
+        @Override
         public Map<String, AnnotationMirror> visitArray(
                 AnnotatedArrayType type, AnnotatedTypeMirror actualType) {
 
