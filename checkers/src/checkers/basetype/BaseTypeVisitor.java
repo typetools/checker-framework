@@ -11,6 +11,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -117,6 +118,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         return super.scan(tree, p);
     }
 
+    private boolean hasExplicitConstructor(ClassTree node) {
+        TypeElement elem = TreeUtils.elementFromDeclaration(node);
+        return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
+    }
+
     @Override
     public R visitClass(ClassTree node, P p) {
         AnnotatedDeclaredType preACT = visitorState.getClassType();
@@ -130,6 +136,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         visitorState.setMethodTree(null);
 
         try {
+            if (!hasExplicitConstructor(node)) {
+                checkDefaultConstructor(node);
+            }
 
             return super.visitClass(node, p);
         } finally {
@@ -139,6 +148,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             this.visitorState.setMethodTree(preMT);
         }
     }
+
+    protected void checkDefaultConstructor(ClassTree node) { }
 
     /**
      * Performs pseudo-assignment check: checks that the method obeys override
