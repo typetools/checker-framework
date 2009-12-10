@@ -7,6 +7,7 @@
 import checkers.nullness.quals.*;
 
 class NonDefaultConstructor {
+  Object nonNull = 4;
   Object nullObject;
   @LazyNonNull Object lazyField;
 
