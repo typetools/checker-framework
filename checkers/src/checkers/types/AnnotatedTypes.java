@@ -844,6 +844,8 @@ public class AnnotatedTypes {
         // TODO: fix this
         boolean isFirst = true;
         // get rid of wildcards
+        if (alub.getKind() == TypeKind.WILDCARD)
+            alub = ((AnnotatedWildcardType)alub).getExtendsBound();
         for (int i = 0; i < types.length; ++i) {
             if (types[i] == null)
                 continue;     // TODO: fix this
