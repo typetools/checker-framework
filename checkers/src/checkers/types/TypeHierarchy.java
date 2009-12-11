@@ -91,6 +91,8 @@ public class TypeHierarchy {
             if (lhsBase == null || !lhsBase.isAnnotated())
                 return true;
             visited.add(lhsBase.getElement());
+        } else if (rhs.getKind() == TypeKind.WILDCARD) {
+            rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
             if (!lhsBase.annotations.isEmpty())
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
