@@ -2,7 +2,7 @@
 /*
  * @test
  * @summary Test that the stub files get invoked
- * @compile/fail/ref=DefaultConstructor.out -Anomsgtext -processor checkers.nullness.NullnessChecker -Alint DefaultConstructor.java
+ * @compile/ref=NonDefaultConstructor.out -processor checkers.nullness.NullnessChecker -Alint NonDefaultConstructor.java
  */
 import checkers.nullness.quals.*;
 
