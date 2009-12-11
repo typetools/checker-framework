@@ -1216,6 +1216,12 @@ public abstract class AnnotatedTypeMirror {
             return super.getAnnotations();
         }
 
+        @Override
+        public void addAnnotation(AnnotationMirror anno) {
+            super.addAnnotation(anno);
+            this.getUpperBound().addAnnotation(anno);
+        }
+
         // Style taken from Type
         boolean isPrintingBound = false;
         @Override
