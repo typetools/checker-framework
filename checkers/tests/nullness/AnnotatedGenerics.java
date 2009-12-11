@@ -20,7 +20,7 @@ class AnnotatedGenerics {
         for (String s : n.get());
     }
 
-    static class MyClass<T> implements java.util.Iterator<@Nullable T> {
+    static class MyClass<T> implements MyIterator<@Nullable T> {
         public boolean hasNext() { return true; }
         public @Nullable T next() { return null; }
         public void remove() { }
@@ -45,6 +45,12 @@ class AnnotatedGenerics {
       <T> T test(java.util.List<? super Iterable<?>> l) {
           test(new java.util.ArrayList<Object>());
           throw new Error();
+      }
+
+      public interface MyIterator<E extends @Nullable Object> {
+          boolean hasNext();
+          E next();
+          void remove();
       }
 
 }
