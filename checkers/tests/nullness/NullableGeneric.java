@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 
 public class NullableGeneric<T> {
 
-  public static class Pair<T1,T2> {
+  public static class Pair<T1 extends @Nullable Object,T2 extends @Nullable Object> {
     public @Nullable T1 a;
     public @Nullable T2 b;
     public Pair(T1 a, T2 b) {
