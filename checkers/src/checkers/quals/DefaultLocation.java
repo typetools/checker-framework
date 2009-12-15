@@ -18,6 +18,8 @@ public enum DefaultLocation {
      * explicit ones in <tt>extends</tt> clauses, and implicit upper bounds
      * when no explicit <tt>extends</tt> or <tt>super</tt> clause is
      * present. */
+    // Especially useful for parametrized classes that provide a lot of
+    // static methods with the same generic parameters as the class.
     UPPER_BOUNDS;    
 
 }
