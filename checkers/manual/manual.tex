@@ -115,14 +115,16 @@
 
 \setcounter{page}{2}
 
-\noindent
-\textbf{For the impatient:}
-Section~\ref{installation} describes how to \textbf{install and use} pluggable
-type-checkers.
-
 \newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}
 %HEVEA \renewcommand{\refwithpage}[1]{\ref{#1}}
+\newcommand{\refwithpageparen}[1]{\ref{#1} (page~\pageref{#1})}
+%HEVEA \renewcommand{\refwithpageparen}[1]{\ref{#1}}
 \newcommand{\chapterpageref}[1]{Chapter~\refwithpage{#1}}
+
+\noindent
+\textbf{For the impatient:}
+Section~\refwithpageparen{installation}
+describes how to \textbf{install and use} pluggable type-checkers.
 
 % %BEGIN LATEX
 % \medskip
