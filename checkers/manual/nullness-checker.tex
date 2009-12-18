@@ -781,8 +781,8 @@ imported.  Also, note FindBugs's non-standard meaning for
 Different tools are appropriate in different circumstances.  Here is a
 brief comparison with FindBugs, but similar points apply to other tools.
 
-The reason you might want to use the Checker Framework instead of FindBugs
-is that FindBugs has a less powerful nullness analysis that reports fewer
+Checker Framework has a more powerful nullness analysis; FindBugs misses
+some real
 errors.  However, FindBugs does not require you to annotate your code as
 thoroughly as the Checker Framework does.  Depending on the importance of
 your code, you may wish to do no nullness checking; the cursory checking of
@@ -809,7 +809,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 \subsection{Incompatibility note about FindBugs \tt{@Nullable}\label{findbugs-nullable}}
 
-Findbugs has a non-standard definition of \<@Nullable>.  FindBug's treatment is not
+FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
 \ahref{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
@@ -840,11 +840,17 @@ indicate a nullable variable that FindBugs should check.)  For example:
 The Checker Framework does not emulate this non-standard behavior of
 FindBugs, even if the code uses FindBugs annotations.
 
-The Checker Framework will issue more warnings than FindBugs, and some of
-them may be about real bugs in your program.
-If you wish to suppress warnings at a
-specific client use where the value is known to be non-null, you should do that
-at the client use.  
+FindBugs takes the approach of annotating a declaration, and thus
+suppressing checking at \emph{all} client uses, even the places that you
+want to check.
+It is better to suppress warnings at only the specific client uses
+where the value is known to be non-null; the Checker Framework supports
+this, if you write \<@SuppressWarnings> at the client uses.
+The Checker Framework also supports suppressing checking at all client uses,
+by writing a \<@SuppressWarnings> annotation at the declaration site.
+
+In general, the Checker Framework will issue more warnings than FindBugs,
+and some of them may be about real bugs in your program.
 See Section~\ref{suppressing-warnings-nullness} for information about
 suppressing nullness warnings.
 
