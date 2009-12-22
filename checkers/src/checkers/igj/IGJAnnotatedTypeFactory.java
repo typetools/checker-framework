@@ -179,6 +179,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     // case 9: class or interface declaration
                     type.addAnnotation(BOTTOM_QUAL);
                 else if (p.isField()
+                        && type.getElement() != null // We don't know the field context here
                         && getAnnotatedType(ElementUtils.enclosingClass(type.getElement())).hasAnnotation(IMMUTABLE)) {
                     type.addAnnotation(IMMUTABLE);
                 }

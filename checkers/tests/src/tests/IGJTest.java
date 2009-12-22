@@ -159,4 +159,5 @@ public class IGJTest extends CheckerTest {
     @Test public void testGenericClass() { test(); }
     @Test public void testManifestClass()   { test(); }
     @Test public void testMutableClass()    { test(); }
+    @Test public void testUnannoFieldArrayAccess() { test(); }
 }
