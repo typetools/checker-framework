@@ -312,11 +312,20 @@ lacks.
 
 \section{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
 
-If you try to write \code{List<@Nullable Object>}, you will get a type
-error, because \<List>'s type parameter is annotated as \<@NonNull>.
-You will also get an error if you try to use a nullable
-type parameter to certain other collections, including
-\<AbstractCollection>, \<Collection>, \<List>, \<Map>, and \<Queue>.
+The annotation on \<java.util.Collection> only allows non-null elements:
+
+\begin{Verbatim}
+  public interface Collection<E extends @NonNull Object> {
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+Thus, you will get a type error if you write code like
+\code{Collection<@Nullable Object>}.
+A nullable
+type parameter is also forbidden for certain other collections, including
+\<AbstractCollection>, \<List>, \<Map>, and \<Queue>.
 
 % AbstractCollection has no documentation of its own regarding nullness,
 % but it implements Collection.
@@ -330,27 +339,80 @@ type parameter to certain other collections, including
 % In other words, the method might throw NullPointerException, but the JML
 % spec does not say under what circumstances.
 
-
-This is in conformance with the Javadoc specification of those classes.
-The Javadoc for \<List> states:
+The \<extends @NonNull Object> bound is a direct consequence of the design
+of the collections classes; it merely formalizes the Javadoc specification.
+The Javadoc for \<Collection> states:
 
 \begin{quote}
   Some list implementations have restrictions on the elements that they may
-  contain. For example, some implementations prohibit null elements,
+  contain. For example, some implementations prohibit null elements, \ldots
 \end{quote}
 
-In particular, calling this method might result in a null pointer exception:
+Here are some consequences of the requirement to detect all nullness errors
+at compile time.  If even one subclass of a given collection class may
+prohibit null, then the collection class and all its subclasses must
+prohibit null.  Conversely, if a collection class is specified to accept
+null, then all its subclasses must honor that specification.
+
+The Checker Framework's annotations make apparent a flaw in the JDK
+design, and helps you to avoid problems that might be caused by that flaw.
+
+
+\paragraph{Justification from type theory}
+Suppose \<B> is a subtype of \<A>.
+Then an overriding method in \<B> must have a stronger (or equal) signature
+than the overridden method in~\<A>.  In a stronger signature, the formal
+parameter types may be supertypes, and the return type may be a subtype.
+Here are examples:
 
 \begin{Verbatim}
-  static void addNull(List l) {
+  class A           {  @NonNull Object Number m1( @NonNull Object arg) { ... } }
+  class B extends A { @Nullable Object Number m1( @NonNull Object arg) { ... } } // error!
+  class C extends A {  @NonNull Object Number m1(@Nullable Object arg) { ... } } // OK
+  class D           { @Nullable Object Number m2(@Nullable Object arg) { ... } }
+  class E extends D {  @NonNull Object Number m2(@Nullable Object arg) { ... } } // OK
+  class F extends D { @Nullable Object Number m2( @NonNull Object arg) { ... } } // error!
+\end{Verbatim}
+
+According to these rules, since some subclasses of \<Collection> do not
+permit nulls, then \<Collection> cannot either:
+
+\begin{Verbatim}
+  // does not permit null elements
+  class PriorityQueue<E> implements Collection<E> {
+    boolean add(E);
+    ...
+  }
+  // must not permit null elements, or PriorityQueue would not be not a subtype of Collection
+  interface Collection<E> {
+    boolean add(E);    
+    ...
+  }
+\end{Verbatim}
+
+
+\paragraph{Justification from checker behavior}
+
+Suppose that you changed the bound in the \<Collection> declaration to
+\<extends @Nullable Object>.  Then, the checker would issue no warning for
+this method:
+
+\begin{Verbatim}
+  static void addNull(Collection l) {
     l.add(null);
   }
 \end{Verbatim}
 
-The Checker Framework is designed to warn you whenever your code might
-throw a null pointer exception.  If you want to be safe, you will never put
-\<null> in a \<List> of unknown provenance, because that \<List> might not
-accept null.
+\noindent
+However, calling this method \emph{can} result in a null pointer exception,
+for instance caused by the following code:
+
+\begin{Verbatim}
+  addNull(new PriorityQueue());
+\end{Verbatim}
+
+\noindent
+Therefore, the bound must remain as \<extends @NonNull Object>.
 
 By contrast, this code is OK because \<ArrayList> is documented to support
 null elements:
@@ -361,13 +423,37 @@ null elements:
   }
 \end{Verbatim}
 
-A similar argument applies to \<Map>.
-For example, \<ConcurrentHashMap> and \<Hashtable> implement \<Map> but do
-not permit \<null> to be used as a key or value.
+\noindent
+Any subclass of \<ArrayList> must also support null elements.
+
+
+
+
+% Every implementation of List seems to permit null.
+% Examples of Collection that do not permit null:
+% BlockingQueue family:
+%   BlockingQueue, BlockingDeque, ArrayBlockingQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, PriorityBlockingQueue, SynchronousQueue 
+% PriorityQueue
+% probably lots of other queues.
+
+% A similar argument applies to \<Map>.
+% For example, \<ConcurrentHashMap> and \<Hashtable> implement \<Map> but do
+% not permit \<null> to be used as a key or value.  Therefore, \<Map> must
+% not permit \<null> to be used as a key or value
+
+
+% The Checker Framework is designed to warn you whenever your code might
+% throw a null pointer exception.  If you want to be safe, you will never put
+% \<null> in a \<List> of unknown provenance, because that \<List> might not
+% accept null.
+
+
+
+\paragraph{Suppressing warnings}
 
 Suppose your program has a list variable, and you know that any list referenced
-by that variable will
-definitely support null.  Then, you can suppress the warning:
+by that variable will definitely support null.  Then, you can suppress the
+warning:
 
 \begin{Verbatim}
   @SuppressWarnings("nullness:generic.argument")
@@ -382,7 +468,9 @@ whenever you use a collection that may contain \<null> elements in
 contradiction to its documentation.  Fortunately, such uses are relatively
 rare.
 
-For more details, see Section~\ref{suppressing-warnings-nullness}.
+
+For more details on suppressing nullness warnings, see
+Section~\ref{suppressing-warnings-nullness}.
 
 
 \section{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
