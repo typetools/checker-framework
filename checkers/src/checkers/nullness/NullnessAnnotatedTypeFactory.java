@@ -69,11 +69,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final QualifierPolymorphism poly;
     private final DependentTypes dependentTypes;
     /*package*/ final AnnotatedTypeFactory rawnessFactory;
+    private final AnnotatedTypeFactory plainFactory;
 
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
     /** Represents the Nullness Checker qualifiers */
     protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
+    protected final AnnotationMirror UNUSED;
     Map<String, AnnotationMirror> aliases;
 
     private final MapGetHeuristics mapGetHeuristics;
@@ -84,6 +86,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             CompilationUnitTree root) {
         super(checker, root);
 
+        plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
         mapGetHeuristics = new MapGetHeuristics(env, this);
@@ -93,6 +96,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         RAW = this.annotations.fromClass(Raw.class);
         NULLABLE = this.annotations.fromClass(Nullable.class);
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
+        UNUSED = this.annotations.fromClass(Unused.class);
 
         aliases = new HashMap<String, AnnotationMirror>();
 
@@ -151,6 +155,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         defaults.annotate(tree, type);
 
         substituteRaw(tree, type);
+        substituteUnused(tree, type);
 
         dependentTypes.handle(tree, type);
         final AnnotationMirror inferred = flow.test(tree);
@@ -211,6 +216,35 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         AnnotatedExecutableType constructor = super.constructorFromUse(tree);
         dependentTypes.handleConstructor(tree, constructor);
         return constructor;
+    }
+
+    private boolean substituteUnused(Tree tree, AnnotatedTypeMirror type) {
+        if (tree.getKind() != Tree.Kind.MEMBER_SELECT
+            && tree.getKind() != Tree.Kind.IDENTIFIER)
+            return false;
+
+        Element field = InternalUtils.symbol(tree);
+        if (field == null || field.getKind() != ElementKind.FIELD)
+            return false;
+
+        Unused unused = field.getAnnotation(Unused.class);
+        if (unused == null)
+            return false;
+
+        try {
+            unused.when();
+            assert false : "Cannot be here";
+            return false;
+        } catch (MirroredTypeException exp) {
+            Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
+            AnnotatedTypeMirror receiver = plainFactory.getReceiver((ExpressionTree)tree);
+            if (receiver == null || receiver.getAnnotation(whenName) == null) {
+                return false;
+            }
+            type.clearAnnotations();
+            type.addAnnotation(NULLABLE);
+            return true;
+        }
     }
 
     /**

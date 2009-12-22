@@ -1,3 +1,16 @@
+Version 1.0.4, 19 Dec 2009
+
+Bug Fixes
+  wildcards not recognized as subtypes of type variables
+    e.g. '? extends A' and 'A'
+  PolyNull methods not accepting null literal value arguments
+  spurious unexpected Raw warnings
+
+Manual
+  Clarified FAQ item regarding why List's type parameter is
+    "extends @NonNull Object"  
+
+----------------------------------------------------------------------
 Version 1.0.3, 5 Dec 2009
 
 Checkers
