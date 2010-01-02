@@ -58,15 +58,14 @@
 <div id="data"><!-- this is where the transformed data goes --></div>
 <b>What it is:</b><br>
 <a href="http://types.cs.washington.edu/checker-framework/">Pluggable type-checkers</a>
-are bug-finding and verification tools 
-for preventing and detecting null pointer errors, incorrect uses of equality operations, and side effect errors. <br> 
-The checkers demonstrate the usefulness of the
-<a href="http://types.cs.washington.edu/jsr308/">type annotations</a>. 
+are bug-finding and verification tools.
+They help you to detect and prevent null pointer errors, incorrect uses of
+equality operations, and side effect errors (and other errors).
 <br>
 <br>
 <b>Requirements:</b><br>
-For the plugin to work, your Eclipse must be running on a Java 6 VM or newer.<br>
 The plugin has been tested on Linux, Eclipse 3.3.2 and Java 6.<br> 
+Your Eclipse must be running on a Java 6 VM or newer.<br>
 To see what Java VM and Eclipse is running on, select from the menu <b>Help</b> -&gt; <b>About Eclipse Platform</b> -&gt; <b>Configuration Details</b>.<br>
 Depending on your installation, the menu may be <b>Help</b> -&gt; <b>About Eclipse SDK</b> -&gt; <b>Configuration Details</b>.<br>
 <!-- On the Mac, the menu <b>Eclipse</b> -&gt; <b>About Eclipse SDK</b> -&gt; <b>Configuration Details</b>.<br> -->
@@ -96,8 +95,9 @@ The default (your workspace) should be fine. Click <b>Finish</b>.</li>
 <li> Click <b> Yes </b> to restart Eclipse.</li>
 </ol>
 <b>How to use Checkers Feature:</b><br>
-First, you need to add <a href="lib/checkers.jar">checkers.jar</a> to your project's classpath.<br>
-(Eclipse may complain about unresolved classes referenced form a classfile. This does not affect the checking but if you want to make the warning go away, 
+First, add <a href="lib/checkers.jar">checkers.jar</a> to your project's classpath.<br>
+(Eclipse may complain about unresolved classes referenced from a classfile.
+This does not affect the checking, but to make the warning go away, 
 add <a href="lib/javac.jar">javac.jar</a> to the project's classpath.)<br>
 To perform the checking, select the checker from the context menu of a Java project, for example <b>JSR 308</b> -&gt; <b>Run Nullness</b>.<br>
 The checker will run and warnings will be added to the Problems view.<br>
