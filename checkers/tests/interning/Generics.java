@@ -93,4 +93,29 @@ public class Generics {
         ArrayList lst = null;
         Collections.sort(lst);
     }
+
+    public static class Pair<T1,T2> {
+        public T1 a;
+        public T2 b;
+
+        public Pair(T1 a, T2 b) {
+            this.a = a;
+            this.b = b;
+        }
+
+        /** Factory method with short name and no need to name type parameters. */
+        public static <A, B> Pair<A, B> of(A a, B b) {
+            return new Pair<A, B>(a, b);
+        }
+    }
+        
+    static class C<T> {
+        T next1;
+
+        private Pair<T,T> return1() {
+            Pair<T,T> result = Pair.of(next1, (T)null);
+            return result;
+        }
+    }
+
 }
