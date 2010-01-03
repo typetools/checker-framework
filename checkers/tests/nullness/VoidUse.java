@@ -8,4 +8,9 @@ public class VoidUse {
       return null;
   }
 
+  public static abstract class VoidTestNode<T> { }
+
+  public static class VoidTestInvNode extends VoidTestNode<Void> { }
+
 }
+
