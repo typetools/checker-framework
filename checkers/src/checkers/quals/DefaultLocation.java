@@ -20,6 +20,6 @@ public enum DefaultLocation {
      * present. */
     // Especially useful for parametrized classes that provide a lot of
     // static methods with the same generic parameters as the class.
-    UPPER_BOUNDS;    
+    UPPER_BOUNDS;
 
 }
