@@ -337,7 +337,7 @@ public final class TreeUtils {
             throw new IllegalArgumentException("Tree not use: " + node.getKind());
         }
     }
-    
+
     public static final ExecutableElement elementFromUse(NewClassTree node) {
         return (ExecutableElement)((JCNewClass)node).constructor;
     }

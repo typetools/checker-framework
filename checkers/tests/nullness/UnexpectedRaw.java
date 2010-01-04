@@ -12,7 +12,7 @@ class Utils {
   }
 
 
-  public static <A extends @Nullable Object> Consumer<A> 
+  public static <A extends @Nullable Object> Consumer<A>
       getConsumer() {
     // null for simplicity, but could be anything
     Consumer<@Nullable Object> nullConsumer = null;

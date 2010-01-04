@@ -108,7 +108,7 @@ public class Generics {
             return new Pair<A, B>(a, b);
         }
     }
-        
+
     static class C<T> {
         T next1;
 

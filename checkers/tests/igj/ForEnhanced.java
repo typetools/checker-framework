@@ -90,7 +90,7 @@ class ForEnhanced {
         for (@Mutable ForEnhanced str : new @Mutable ForEnhancedList());    // should emit error
         for (@Mutable ForEnhanced str : new @Mutable ForEnhancedList());    // should emit error
     }
-    
+
     void test() {
         for (;;) { }
     }

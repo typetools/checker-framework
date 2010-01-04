@@ -15,7 +15,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
  * A type-checking visitor for the IGJ type
  * qualifier that uses the {@link BaseTypeVisitor} implementation. This visitor
  * reports errors or warnings for violations for the following cases:
- * 
+ *
  * <ol>
  * <li value="1">constructing an infeasible type
  * </ol>

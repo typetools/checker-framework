@@ -754,7 +754,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits<AnnotationMirror> annoCond;
         GenKillBits<AnnotationMirror> beforeTrue = GenKillBits.copy(annosWhenTrue);
         GenKillBits<AnnotationMirror> beforeFalse = GenKillBits.copy(annosWhenFalse);
-        
+
         do {
             GenKillBits<AnnotationMirror> annoEntry = GenKillBits.copy(annos);
             scanCond(node.getCondition());
