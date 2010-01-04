@@ -10,7 +10,7 @@ public class VoidUse {
 
   public static abstract class VoidTestNode<T> { }
 
-  public static class VoidTestInvNode extends VoidTestNode<Void> { }
+  public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> { }
 
 }
 
