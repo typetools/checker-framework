@@ -21,7 +21,7 @@ class Utils {
         };
     }
 
-    public static <A extends @Nullable Object> Consumer<A> 
+    public static <A extends @Nullable Object> Consumer<A>
     getConsumer(Consumer<@Nullable Object> nullConsumer) {
         return Utils.<A>cast(nullConsumer);
     }
