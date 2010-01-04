@@ -10,6 +10,14 @@ public class FlowInterning {
             : (a.equals(b)));
   }
 
+  public void testAppendingChar() {
+      String arg = "";
+      arg += ' ';
+
+      // Interning checker should NOT suggest == here.
+      if (!arg.equals (""));
+    }
+
   public String[] parse (String args) {
 
     // Split the args string on whitespace boundaries accounting for quoted
