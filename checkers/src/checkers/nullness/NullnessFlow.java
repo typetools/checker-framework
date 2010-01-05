@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
 
@@ -484,6 +485,7 @@ class NullnessFlow extends Flow {
         throw new AssertionError("Cannot be here");
     }
 
+    private static final Pattern parameterPtn = Pattern.compile("#\\d+");
     private List<String> shouldInferNullness(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
@@ -493,9 +495,17 @@ class NullnessFlow extends Flow {
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
         if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
             AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
+
             String receiver = receiver(methodInvok);
             for (String s : anno.value()) {
-                asserts.add(receiver + s);
+                if (parameterPtn.matcher(s).matches()) {
+                    int param = Integer.valueOf(s.substring(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else {
+                    asserts.add(receiver + s);
+                }
             }
         }
         return asserts;
