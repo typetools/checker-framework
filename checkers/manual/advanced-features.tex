@@ -29,7 +29,7 @@ clients supply the qualifier along with the type argument, as in
 
 \paragraph{Restricting instantiation of a generic class}
 
-There are two ways to restrict the type qualifiers that that may be used on
+There are two ways to restrict the type qualifiers that may be used on
 the actual type argument when instantiating a generic class.
 
 The first technique is the standard Java approach of using the
@@ -278,8 +278,8 @@ then the unification is \<@Nullable>, and so is the return type.
 
 Usually, it does not make sense to write only a single instance of a polymorphic
 qualifier in a method definition:  if you write one instance of (say)
-\<@PolyNull>, then you should use at least two.  (An exception is a a
-polymorphic qualifier an an array element type; this section ignores that
+\<@PolyNull>, then you should use at least two.  (An exception is a
+polymorphic qualifier on an array element type; this section ignores that
 case, but see below for further details.)
 
 For example, there is no point to writing
@@ -494,7 +494,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   built into a type system (Section~\ref{writing-type-introduction}), in
   which case the type system's documentation should explain all of the type
   system's implicit qualifiers.  Or, a programmer may introduce an implicit
-  annotations on each use of class $C$ by writing a qualifier on the
+  annotation on each use of class $C$ by writing a qualifier on the
   declaration of class $C$.
 
 \begin{itemize}

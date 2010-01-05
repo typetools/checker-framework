@@ -190,7 +190,7 @@ superclass constructor has been called, then \code{this} has type
 The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.  
 A better name might have been ``not yet initialized'' or ``partially
-initialized'', but the term ``raw'' in now well-known.
+initialized'', but the term ``raw'' is now well-known.
 The \code{@\refclass{nullness/quals}{Raw}}
 annotation has nothing to do with the raw types of Java Generics.
 
@@ -272,7 +272,7 @@ true.  You can declare this relationship in the following way:
 \begin{Verbatim}
   class File {
 
-    @AssertNonNullIfTrue("list()'', "listFiles()")
+    @AssertNonNullIfTrue("list()", "listFiles()")
     public boolean isDirectory() { ... }
 
     public File @Nullable [] listFiles();
@@ -340,7 +340,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 \section{What the Nullness checker checks\label{nullness-checks}}
 
-The checker issues a warning in two cases:
+The checker issues a warning in three cases:
 
 \begin{enumerate}
 
@@ -543,7 +543,7 @@ programmer is 100\% sure that the application invariant holds.
   A programmer might write it to \textbf{suppress} false positive
   \textbf{warning messages} from a checker.  A programmer would use an
   assertion this way if the programmer is 100\% sure that the application
-  invariant holds, and the can never be null at run time.
+  invariant holds, and the reference can never be null at run time.
 
 \end{enumerate}
 
@@ -857,7 +857,7 @@ suppressing nullness warnings.
 (FindBugs made a poor choice of names.  The choice of names should make a
 clear distinction between annotations that specify whether a reference is
 null, and annotations that suppress false warnings.  The choice of names
-should also have been consistent other tools, and intuitively clear to
+should also have been consistent for other tools, and intuitively clear to
 programmers.  The FindBugs choices make the FindBugs annotations less
 helpful to people, and much less useful for other tools.  The FindBugs
 analysis is also very imprecise.  For type-related analyses, it is best to

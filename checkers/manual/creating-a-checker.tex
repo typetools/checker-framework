@@ -37,7 +37,7 @@ to change --- for instance, a file might transition from the \<@Open> to
 the \<@Closed> state after the \<close()> method is called.
 For more details, see Chapter~\ref{typestate-checker}.
 
-The rest of this section contains many details for people who want to more write powerful
+The rest of this section contains many details for people who want to write more powerful
 checkers.
 You do not need all of the details, at least at first.
 In addition to reading this section of the manual, you may find it helpful
@@ -120,7 +120,7 @@ the components of a type system as written using the Checker Framework:
   examples of literals include \<"some string"> and \<java.util.Date.class>.
 
 \item{\ref{extending-visitor}}
-  \textbf{Type rules.}  You specify the the type system semantics (type
+  \textbf{Type rules.}  You specify the type system semantics (type
   rules), violation of which yields a type error.  There are two types of
   rules.
 \begin{itemize}
@@ -227,7 +227,7 @@ hierarchy.
   properly annotated with \refclass{quals}{SubtypeOf}.
 
   The root qualifier should be annotated with
-  \<@Subtype( \{ \} )>.  The root qualifier is the qualifier that is
+  \<@SubtypeOf( \{ \} )>.  The root qualifier is the qualifier that is
   a supertype of all other qualifiers.  For example, \<@\refclass{nullness/quals}{Nullable}>
   is the root of the Nullness type system, hence is defined as:
 
@@ -371,7 +371,7 @@ defined like this:
 
 \paragraph{Top qualifier}
 Similarly, it is a good idea to have a top qualifier in your type hierarchy
---- a qualifier that is a (direct or indirect) subtype of every other
+--- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.  For instance, the \<@Encrypted> type system of
 Section~\ref{bottom-qualifier} lacks a top qualifier:
 
@@ -407,7 +407,7 @@ system designer may have intended.
 
 However, a type system designer should not frequently omit the top qualifier.
 % (It is appropriate in some cases, such as for the interning type system.)
-It is better for the 
+It is better if
 the type hierarchy has an explicit qualifier for every
 possible meaning.  For example, the Nullness type system has
 \<@\refclass{nullness/quals}{Nullable}> types and
@@ -557,7 +557,7 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 
 \begin{itemize}
 
-\item invalid assignment (type.incompatible) when an assignment from
+\item invalid assignment (type.incompatible) for an assignment from
   an expression type to an incompatible type.  The assignment may be a
   simple assignment, or pseudo-assignment like return expressions or
   argument passing in a method invocation
@@ -667,7 +667,7 @@ method).
 
 The checker class bridges between the compiler and the checker plugin.  It
 invokes the type-rule check visitor on every Java source file being
-compiler, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
+compiled, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
 errors using the compiler error reporting mechanism.
 
 Also, the checker class follows the factory method pattern to
@@ -798,7 +798,7 @@ step into its source code if needed.
 %   \code{manual/}: Documentation for your checker goes here.
 % \item
 %   \code{src/checkers/\emph{annotation\_name}/}: Code for the checker,
-%   in a directory that is a sibling of of \code{quals/}, \code{nonnull/},
+%   in a directory that is a sibling of \code{quals/}, \code{nonnull/},
 %   etc.
 % \item
 %   \code{jdk/\emph{annotation\_name}/}: Annotated ``skeleton class''
