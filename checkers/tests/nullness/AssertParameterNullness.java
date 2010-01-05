@@ -1,12 +1,9 @@
-import checkers.nullness.quals.AssertNonNullIfTrue;
+import checkers.nullness.quals.*;
 
-//
-// @skip-test:  check Issue 46
-//
 public class AssertParameterNullness {
 
     /** True iff both sequences are non-null and have the same length. */
-    @AssertNonNullIfTrue({"seq1", "seq2"})
+    @AssertNonNullIfTrue({"#0", "#1"})
     /* pure */ public static boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         return ((seq1 != null)
                 && (seq2 != null)
@@ -18,9 +15,9 @@ public class AssertParameterNullness {
             boolean b1 = seq3[0];
             boolean b2 = seq4[0];
         } else {
-            //:: (dereference.of.nullable)
+            //:: (accessing.nullable)
             boolean b1 = seq3[0];
-            //:: (dereference.of.nullable)
+            //:: (accessing.nullable)
             boolean b2 = seq4[0];
         }
         return true;
