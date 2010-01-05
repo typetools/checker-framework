@@ -31,7 +31,7 @@ removing the \code{@\refclass{nullness/quals}{NonNull}} annotation in your own p
 If the library call \emph{never} returns null,
 there are several ways to eliminate the compiler warnings.
 \begin{enumerate}
-\item Annotate \code{unannotated\_method} in full.  This approach provides the
+\item Annotate \code{unannotated\_method} in full.  This approach provides
   the strongest guarantees, but may require you to annotate additional
   methods that \code{unannotated\_method} calls.  See
   Chapter~\ref{annotating-libraries} for a discussion of how to annotate
@@ -249,9 +249,9 @@ imported package is not on the classpath.  See Section~\ref{distributing}.
 \label{jsr308_imports}
 
 An alternative is to set the shell environment variable
-\code{jsr308\_imports} When you compile the code.
+\code{jsr308\_imports} when you compile the code.
 The Type Annotations compiler treats this as if the given packages were
-imported, but ofter compilers 
+imported, but other compilers
 ignore the
 \code{jsr308\_imports} environment variable --- they do not need it, since
 they do not support annotations in comments.  Thus, your code can compile
