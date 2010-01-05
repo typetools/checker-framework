@@ -91,7 +91,7 @@ and the places that untrusted data is read, the Tainting Checker will
 ensure that all your other annotations are correct and that no undesired
 information flows exist.
 
-An an example, suppose that you wish to prevent SQL injection attacks.  You
+As an example, suppose that you wish to prevent SQL injection attacks.  You
 would start by annotating the
 \sunjavadoc{java/sql/Statement.html}{Statement} class to indicate that the
 \code{execute} operations may only operate on untainted queries

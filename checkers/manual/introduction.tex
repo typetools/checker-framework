@@ -391,7 +391,7 @@ Section~\ref{writing-annotations}.
 \htmlhr
 \chapter{Using a checker\label{using-a-checker}}
 
-A pluggable type-checker enables you to certain detect bugs in your code,
+A pluggable type-checker enables you to detect certain bugs in your code,
 or to prove that they are not present.  The verification happens at compile
 time.
 
@@ -471,7 +471,7 @@ statements for the annotations, then your code has a dependency on the
 annotation declarations.  You also will need to provide the annotation
 declarations as well, if you decide to distribute your project.
 
-For your convenience, inside the the Checker Framework distribution \code{.zip} file
+For your convenience, inside the Checker Framework distribution \code{.zip} file
 is a jar file,
 \code{checkers-quals.jar}, that only contains the distributed qualifiers.
 You may include the jar file in your distribution.
@@ -810,7 +810,7 @@ foolproof to use the Java class.  We do not encourage you to use type
 qualifiers as a poor substitute for classes.  However, sometimes type
 qualifiers are a better choice.
 
-Using a new class may your code incompatible with existing libraries or
+Using a new class may make your code incompatible with existing libraries or
 clients.  Brian Goetz expands on this issues in an article on the
 pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
 is not a concern, a code change may introduce bugs, whereas adding
@@ -830,7 +830,7 @@ subtype, of an existing Java type.
 
 % This is the least important reason.
 A final reason is efficiency.  Type qualifiers can be more
-efficient, since there is no no run-time representation such as a wrapper
+efficient, since there is no run-time representation such as a wrapper
 or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
 
@@ -839,7 +839,7 @@ could otherwise be statically dispatched.
 
 Annotating an entire existing program may seem like a daunting task.  But,
 if you approach it systematically and do a little bit at a time, you will
-find that it manageable.
+find that it is manageable.
 
 You should start with a property that matters to you, to achieve the best
 benefits.  It is easiest to add annotations if you know the code or the

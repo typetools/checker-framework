@@ -33,7 +33,7 @@ To learn more details of the IGJ language and type system, please see the
 ESEC/FSE 2007 paper ``\ahref{http://www.cs.washington.edu/homes/mernst/pubs/immutability-generics-fse2007-abstract.html}{Object and reference immutability using Java
 generics}''~\cite{ZibinPAAKE2007}.
 The IGJ checker supports Annotation IGJ (Section~\ref{annotation-igj-dialect}),
-which is slightly different dialect
+which is a slightly different dialect
 of IGJ than that described in the ESEC/FSE paper.
 
 
@@ -87,15 +87,15 @@ mutability access of a reference.
 % the checker, see the Javadoc for \refclass{igj}{IGJVisitor}.
 
 
-\section{Implicit qualifiers\label{igj-implicit-qualifiers}}
+\section{Implicit and default qualifiers\label{igj-implicit-qualifiers}}
 
 As described in Section~\ref{effective-qualifier}, the IGJ checker
 adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 % For example, ...
 
-For a complete description of all implicit nullness qualifiers, see the
-Javadoc for \refclass{nullness}{NullnessAnnotatedTypeFactory}.
+For a complete description of all implicit IGJ qualifiers, see the
+Javadoc for \refclass{igj}{IGJAnnotatedTypeFactory}.
 
 The default annotation (for types that are unannotated and not given an
 implicit qualifier) is as follows:
@@ -164,6 +164,20 @@ are as follows.
                             <:  Vector<ReadOnly, Number>
                             <:  Vector<ReadOnly, Object>
 \end{Verbatim}
+
+is valid in IGJ, but in Annotation IGJ, only
+
+\begin{Verbatim}
+  @Mutable Vector<Integer>  <:  @ReadOnly Vector<Integer>
+\end{Verbatim}
+
+holds and the other two subtype relations do not hold
+
+\begin{Verbatim}
+  @ReadOnly Vector<Integer> </:  @ReadOnly Vector<Number>
+                            </:  @ReadOnly Vector<Object>
+\end{Verbatim}
+
 
 \item
   Annotation IGJ supports array immutability. The original IGJ dialect did
