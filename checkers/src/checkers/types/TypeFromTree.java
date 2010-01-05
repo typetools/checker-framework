@@ -1,5 +1,7 @@
 package checkers.types;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.*;
 
 import javax.lang.model.element.*;
@@ -34,7 +36,35 @@ abstract class TypeFromTree extends
             List<? extends AnnotationMirror> annotations) {
         // Annotate the inner most array
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
+        for (AnnotationMirror anno : annotations) {
+            if (isTypeAnnotation(anno))
+                innerType.addAnnotation(anno);
+            else
+                type.addAnnotation(anno);
+        }
+    }
+
+    private static Map<TypeElement, Boolean> isTypeCache = new IdentityHashMap<TypeElement, Boolean>();
+    private static boolean isTypeAnnotation(AnnotationMirror anno) {
+        TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
+        if (isTypeCache.containsKey(elem))
+            return isTypeCache.get(elem);
+
+        boolean result = isTypeAnnotationImpl(elem);
+        isTypeCache.put(elem, result);
+        return result;
+
+    }
+
+    private static boolean isTypeAnnotationImpl(TypeElement type) {
+        Target target = type.getAnnotation(Target.class);
+        if (target == null)
+            return true;
+        for (ElementType et : target.value()) {
+            if (et == ElementType.TYPE_USE)
+                return true;
+        }
+        return false;
     }
 
     /**
