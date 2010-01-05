@@ -635,8 +635,19 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (!(var instanceof IdentifierTree))
             scanExpr(var);
         scanExpr(expr);
-        propagate(var, expr);
+        // TODO: Handle cases of compound assignment
+        clearAnnos(var);
         return null;
+    }
+
+    private void clearAnnos(Tree tree) {
+        Element elt = InternalUtils.symbol(tree);
+        if (elt == null)
+            return;
+        int idx = vars.indexOf(elt);
+        for (AnnotationMirror anno : annotations) {
+            annos.clear(anno, idx);
+        }
     }
 
     @Override
