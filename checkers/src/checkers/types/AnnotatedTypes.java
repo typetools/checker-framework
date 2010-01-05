@@ -668,12 +668,7 @@ public class AnnotatedTypes {
         visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
             Element elem = type.getUnderlyingType().asElement();
             if (elem.equals(typeToFind.getUnderlyingType().asElement())) {
-                if (p.getKind() == TypeKind.TYPEVAR
-                    && !p.isAnnotated()) {
-                    return Collections.singletonList((AnnotatedTypeMirror)type);
-                } else {
-                    return Collections.singletonList(p);
-                }
+                return Collections.singletonList(p);
             }
             return Collections.emptyList();
         }
