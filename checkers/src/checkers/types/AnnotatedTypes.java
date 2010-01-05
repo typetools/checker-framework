@@ -969,4 +969,11 @@ public class AnnotatedTypes {
     public boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
         return t1.toString().equals(t2.toString());
     }
+
+    public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
+        AnnotatedTypeMirror inner = t;
+        while (inner.getKind() == TypeKind.ARRAY)
+            inner = ((AnnotatedArrayType)inner).getComponentType();
+        return inner;
+    }
 }
