@@ -2,7 +2,7 @@ import checkers.quals.*;
 import checkers.util.test.*;
 
 class ExtendsDefault {
-    
+
     @DefaultQualifier(value="Odd", locations={DefaultLocation.UPPER_BOUNDS})
     class MyOddDefault<T> { }
     class MyNonOddDefault<T> { }

@@ -19,7 +19,7 @@ public class TestInput {
             "tests" + File.separator + "build" + File.separator + "testclasses");
     static { ensureExistance(OUTDIR); }
 
-    public TestInput(Iterable<? extends JavaFileObject> files,    		
+    public TestInput(Iterable<? extends JavaFileObject> files,
                      Iterable<String> processors, String[] options) {
 
         this.compiler = ToolProvider.getSystemJavaCompiler();
@@ -46,9 +46,9 @@ public class TestInput {
     }
 
     private static void ensureExistance(String path) {
-    	File file = new File(path);
-    	if (!file.exists())
-    		file.mkdirs();
+        File file = new File(path);
+        if (!file.exists())
+            file.mkdirs();
     }
 
     public TestRun run() {

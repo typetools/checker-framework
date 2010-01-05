@@ -668,12 +668,7 @@ public class AnnotatedTypes {
         visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
             Element elem = type.getUnderlyingType().asElement();
             if (elem.equals(typeToFind.getUnderlyingType().asElement())) {
-                if (p.getKind() == TypeKind.TYPEVAR
-                    && !p.isAnnotated()) {
-                    return Collections.singletonList((AnnotatedTypeMirror)type);
-                } else {
-                    return Collections.singletonList(p);
-                }
+                return Collections.singletonList(p);
             }
             return Collections.emptyList();
         }
@@ -973,5 +968,12 @@ public class AnnotatedTypes {
 
     public boolean areSame(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
         return t1.toString().equals(t2.toString());
+    }
+
+    public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
+        AnnotatedTypeMirror inner = t;
+        while (inner.getKind() == TypeKind.ARRAY)
+            inner = ((AnnotatedArrayType)inner).getComponentType();
+        return inner;
     }
 }

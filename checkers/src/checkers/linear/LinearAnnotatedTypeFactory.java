@@ -18,11 +18,11 @@ import checkers.util.TreeUtils;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
- * 
+ *
  * <ol>
  * <li value="1">Class declaration tree/element.  Such a construct usually
  * requires the root qualifier.</li>
- * 
+ *
  * <li value="2">{@code Linear} reference once it is "used up"</li>
  * </ol>
  *
