@@ -96,7 +96,7 @@ The resulting \<.class> file should either be on your classpath, or on the
 processor path (set via the \<-processorpath> command-line option to javac).
 
 \item 
-  Write \code{@Encrypted} annotations in your program:
+  Write \code{@Encrypted} annotations in your program (YourProgram.java):
 
 \begin{Verbatim}
 import myquals.Encrypted;
@@ -135,7 +135,8 @@ capability of any realistic type system.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
 \begin{Verbatim}
-$ javac -processorpath myqualspath -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted YourProgram.java
+$ javac -processorpath myqualspath -processor checkers.basic.BasicChecker \
+        -Aquals=myquals.Encrypted YourProgram.java
 
 YourProgram.java:42: incompatible types.
 found   : java.lang.String
@@ -200,7 +201,7 @@ incomparable --- neither is a subtype of the other.  A typestate analysis
 can specify that the \<close()> operation converts an \<@Open File> into a
 \<@Closed File>.  By contrast, flow-sensitive type refinement can only give
 a new type that is a subtype of the declared type --- for flow-sensitive
-type refinement to be effective, \<@Closed> would need to be child of
+type refinement to be effective, \<@Closed> would need to be a child of
 \<@Open> in the qualifier hierarchy (and \<close()> would need to be
 treated specially by the checker).
 
