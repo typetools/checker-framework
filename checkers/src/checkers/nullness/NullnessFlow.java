@@ -536,6 +536,13 @@ class NullnessFlow extends Flow {
     }
 
     @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        super.visitCompoundAssignment(node, p);
+        inferNullness(node.getVariable());
+        return null;
+    }
+
+    @Override
     public Void visitIf(IfTree node, Void p) {
         super.visitIf(node, p);
 
