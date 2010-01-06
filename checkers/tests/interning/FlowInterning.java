@@ -4,11 +4,13 @@ import java.util.*;
 
 public class FlowInterning {
 
-  public boolean isSame(Object a, Object b) {
-    return ((a == null)
-            ? (a == b)
-            : (a.equals(b)));
-  }
+    // @skip-test
+    // Look at issue 47
+//  public boolean isSame(Object a, Object b) {
+//    return ((a == null)
+//            ? (a == b)
+//            : (a.equals(b)));
+//  }
 
   public void testAppendingChar() {
       String arg = "";
