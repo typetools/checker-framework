@@ -285,11 +285,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
-     * Determines whether one of the annotations in the given set of {@link
-     * AnnotationMirror}s is a {@link SuppressWarnings} annotation with the
-     * SuppressWarnings key corresponding to this checker.
+     * Determines if an error (whose error key is {@code err}), should
+     * be suppressed according to the user explicitly written
+     * {@code anno} Suppress annotation.
+     *
+     * A suppress warnings value may be of the following pattern:
+     *
+     * <ol>
+     * <li>{@code "suppress-key"}, where suppress-key is a supported warnings key, as
+     * specified by {@link #getSuppressWarningsKey()},
+     * e.g. {@code "nullness"} for nullness, {@code "igj"} for igj
+     * test</li>
+     *
+     * <li>{@code "suppress-key:error-key}, where the suppress-key
+     * is as above, and error-key being the prefix of the errors
+     * that it may suppress.  So "nullness:generic.argument", would
+     * suppress any errors in nullness checker related to
+     * generic.argument.
      *
      * @param annos the annotations to search
+     * @param err   the error key the checker is emitting
      * @return true if one of {@code annos} is a {@link SuppressWarnings}
      *         annotation with the key returned by {@link
      *         SourceChecker#getSuppressWarningsKey}
