@@ -29,4 +29,21 @@ class FlowCompound {
   }
 
 
+  public static void testCompoundAssignmentWithString() {
+      String s = "m";
+      s += "n";
+      s.toString();
+  }
+
+  public static void testCompoundAssignmentWithChar() {
+      String s = "m";
+      s += 'n';
+      s.toString();
+  }
+
+  public static void testCompoundAssignWithNull() {
+      String s = "m";
+      s += null;
+      s.toString();
+  }
 }

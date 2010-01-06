@@ -422,4 +422,14 @@ public final class TreeUtils {
                 && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
                         String.class.getCanonicalName()));
     }
+
+    /**
+     * Returns true if the compound assignment tree is a string concatenation
+     */
+    public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
+        return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
+                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
+                        String.class.getCanonicalName()));
+    }
 }
+
