@@ -9,7 +9,7 @@ public final class Field extends AccessibleObject implements Member {
   public int getModifiers() { throw new RuntimeException("skeleton method"); }
   public boolean isEnumConstant() { throw new RuntimeException("skeleton method"); }
   public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-  public @NonNull Class<? extends @NonNull Object> getType() { throw new RuntimeException("skeleton method"); }
+  public @NonNull Class<? /*extends @NonNull Object*/> getType() { throw new RuntimeException("skeleton method"); }
   public @NonNull java.lang.reflect.Type getGenericType() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
