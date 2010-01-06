@@ -204,10 +204,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Type-check the code with Java specifications and then runs the Checker
      * Rule Checking visitor on the processed source.
      *
-     * The {@link Processor} is invoked in the annotation processing phase,
-     * before the code is type-checked by the compiler.  This method ensures
-     * that only Java valid code is processed by the Rule Checking visitor.
-     *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
