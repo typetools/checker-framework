@@ -1,5 +1,5 @@
 
-#.SILENT:
+.SILENT:
 
 # Variables
 CHECKERS ?= ../..
@@ -11,6 +11,10 @@ JAVAC ?= $(LANGTOOLS)/dist/bin/javac -Xlint
 JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+
+AFU ?= $(HOME)/research/annotation-tools/annotation-file-utilities/scripts
+
+PATH := $(PATH):$(AFU)
 
 MAKE ?= make
 
