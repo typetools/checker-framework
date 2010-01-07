@@ -1,5 +1,5 @@
 
-.SILENT:
+#.SILENT:
 
 # Variables
 CHECKERS ?= ../..
@@ -12,16 +12,26 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
+MAKE ?= make
+
+all:
+	$(MAKE) clean
+	$(MAKE) build
+	$(MAKE) classes
+	$(MAKE) stubs
+	$(MAKE) annotated
+	$(MAKE) jdk.jar
+
 clean:
 	rm -rf build annotated jdk.jar
 
 build:
-	mkdir -p build
+	mkdir -p build annotated
 
 
 ############## Validate annotated jdk against missing methods ##############
 SOURCES = $(shell find src/java -name '*.java')
-CLASSES = $(patsubst src/%.java,build/%.class, $(SOURCES))
+CLASSES = $(shell find src/java -name '*.class')
 DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 
 .PHONY: classes
@@ -46,21 +56,22 @@ build/%.diff: build/%.expected build/%.actual
 validate: classes $(DIFFS)
 
 ############## Annotate the annotated jdk file ##############
-JAIFS = $(patsubst src/%.java,build/%.jaif, $(SOURCES))
-ANNOTATED = $(patsubst src/%.java,annotated/%.class, $(SOURCES))
+BUILD_CLASSES = $(shell find build/java -name '*.class')
+JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
+ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
 build/%.jaif: build/%.class
-	extract-annotations $<
+	extract-annotations '$<'
 
 stubs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
-	cd annotated; unzip $(RTJAR) $*.class > /dev/null
-	insert-annotations $@ $<
+	cd annotated; unzip $(RTJAR) '$*.class'
+	insert-annotations '$@' '$<'
 
 annotated: $(ANNOTATED)
 
 jdk.jar: annotated
-	cd annotated; jar cf ../jdk.jar `find . -name '*.class'`
+	cd annotated; jar cf ../jdk.jar .
 
 jdk: jdk.jar
