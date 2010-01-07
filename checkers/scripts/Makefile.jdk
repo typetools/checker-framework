@@ -70,7 +70,7 @@ build/%.jaif: build/%.class
 stubs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
-	cd annotated; unzip $(RTJAR) '$*.class'
+	cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
 	insert-annotations '$@' '$<'
 
 annotated: $(ANNOTATED)
