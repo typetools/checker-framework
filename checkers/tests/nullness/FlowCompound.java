@@ -46,4 +46,10 @@ class FlowCompound {
       s += null;
       s.toString();
   }
+
+  public static void testPrimitiveArray() {
+      int[] a = {0};
+      a[0] += 2;
+      System.out.println(a[0]);
+  }
 }
