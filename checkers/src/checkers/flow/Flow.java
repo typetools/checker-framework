@@ -636,7 +636,8 @@ public class Flow extends TreePathScanner<Void, Void> {
             scanExpr(var);
         scanExpr(expr);
         // TODO: Handle cases of compound assignment
-        clearAnnos(var);
+        if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
+            clearAnnos(var);
         return null;
     }
 
