@@ -725,11 +725,17 @@ public class Flow extends TreePathScanner<Void, Void> {
             GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
             annos = beforeElse;
             scanStat(elseStmt);
-            alive &= aliveAfter;
-            if (!alive)
+
+            if (!alive) {
+                alive = aliveAfter;
                 annos = GenKillBits.copy(after);
-            else
+            } else if (!aliveAfter) {
+                annos = annos;  // NOOP
+            } else {
+                // both branches are alive
+                alive = true;
                 annos.and(after);
+            }
         } else {
             alive &= aliveBefore;
             if (!alive)
