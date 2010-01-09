@@ -645,8 +645,10 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (elt == null)
             return;
         int idx = vars.indexOf(elt);
-        for (AnnotationMirror anno : annotations) {
-            annos.clear(anno, idx);
+        if (idx >= 0) {
+            for (AnnotationMirror anno : annotations) {
+                annos.clear(anno, idx);
+            }
         }
     }
 
