@@ -104,7 +104,7 @@ class NullnessFlow extends Flow {
     @Override
     protected void pushNewLevel() {
         levelnnExprs.push(nnExprs);
-        nnExprs = new ArrayList<String>();
+        nnExprs = new ArrayList<String>(nnExprs);
     }
 
     @Override
