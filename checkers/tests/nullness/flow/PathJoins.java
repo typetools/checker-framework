@@ -1,6 +1,5 @@
 import checkers.nullness.quals.*;
 
-// @skip-test
 public class PathJoins {
 
     public void testJoiningMultipleBranches() {
