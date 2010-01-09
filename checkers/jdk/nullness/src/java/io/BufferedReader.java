@@ -11,6 +11,7 @@ public class BufferedReader extends Reader {
   public int read(char[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.String readLine() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public long skip(long a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  @AssertNonNullIfTrue("readLine()")
   public boolean ready() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public boolean markSupported() { throw new RuntimeException("skeleton method"); }
   public void mark(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
