@@ -526,6 +526,7 @@ public class AnnotatedTypes {
 
         // Find the un-annotated type
         AnnotatedTypeMirror returnType = factory.type(methodInvocation);
+        factory.annotateImplicit(methodInvocation, returnType);
         AnnotatedExecutableType methodType =
             asMemberOf(factory.getReceiver(methodInvocation), methodElt);
 
@@ -818,7 +819,9 @@ public class AnnotatedTypes {
                 if (type == null)
                     return;
                 if (type.getKind() == TypeKind.WILDCARD)
-                    subtypes[i] = lub;
+                    subtypes[i] = lub.getCopy(true);
+                else if (asSuper(type, lub) == null)
+                    subtypes[i] = lub.getCopy(true);
                 else
                     subtypes[i] = asSuper(type, lub);
             }
