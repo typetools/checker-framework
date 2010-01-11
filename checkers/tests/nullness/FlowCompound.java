@@ -52,4 +52,9 @@ class FlowCompound {
       a[0] += 2;
       System.out.println(a[0]);
   }
+
+  public static void testPrimitive() {
+      Integer i = 1;
+      i -= 2;
+  }
 }

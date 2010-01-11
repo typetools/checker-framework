@@ -632,8 +632,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
-        if (!(var instanceof IdentifierTree))
-            scanExpr(var);
+        scanExpr(var);
         scanExpr(expr);
         // TODO: Handle cases of compound assignment
         if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
