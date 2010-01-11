@@ -303,5 +303,24 @@ public class QualifierDefaults {
             visitedNodes.put(type, r);
             return r;
         }
+
+        @Override
+        public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror p) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            Void r;
+            boolean prevIsTypeVarExtends = isTypeVarExtends;
+            isTypeVarExtends = true;
+            try {
+                r = scan(type.getExtendsBound(), p);
+            } finally {
+                isTypeVarExtends = prevIsTypeVarExtends;
+            }
+            visitedNodes.put(type, r);
+            r = scanAndReduce(type.getSuperBound(), p, r);
+            visitedNodes.put(type, r);
+            return r;
+        }
     }
 }
