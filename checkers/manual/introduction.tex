@@ -505,14 +505,14 @@ Two concrete examples (using the Nullness checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker MyFile.java
-  javac -processor checkers.nullness.NullnessChecker -sourcepath checkers/jdk/nullness/src MyFile.java
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/nullness/jdk.jar MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
-For a discussion of the \code{-sourcepath} argument, see
+For a discussion of the \code{-Xbootclasspath/p} argument, see
 Section~\ref{skeleton-using}.
 
 The checker is run only on the Java files specified on the command line (or
@@ -572,8 +572,8 @@ checker is a type of ``annotation processor''.
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
   Section~\ref{checker-auto-discovery}
-\item \<-sourcepath> Indicates where to find the skeleton classes; skeleton
-  files are being phased out; see Section~\ref{skeleton-using}
+\item \<-Xbootclasspath/p:> Indicates where to find the annotated jdk classes;
+  see Section~\ref{skeleton-using}
 \item \<-implicit:class> Enables processing for implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-XDTA:spacesincomments> parse annotation comments even when they
