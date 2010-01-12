@@ -8,12 +8,11 @@ public class VoidUse {
       return null;
   }
 
-  // @test-skipped
   // Void is treated as Nullable.  Is there a value on having it be
   // NonNull?
-//  public static abstract class VoidTestNode<T> { }
-//
-//  public static class VoidTestInvNode extends VoidTestNode<Void> { }
+  public static abstract class VoidTestNode<T> { }
+
+  public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> { }
 
 }
 

@@ -357,14 +357,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             else if (type.hasAnnotation(NONNULL))
                 type.removeAnnotation(NULLABLE);
 
-            // case 13: type of Void is nullable
-            if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
-                    // Hack: Special case Void.class
-                    && (type.getElement() == null || !type.getElement().getKind().isClass())) {
-                type.clearAnnotations();
-                type.addAnnotation(NULLABLE);
-            }
-
             assert type.isAnnotated() : type;
 
             return super.scan(type, p);
@@ -405,6 +397,18 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 type.getReceiverType().addAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
+        }
+
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
+            // case 13: type of Void is nullable
+            if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
+                    // Hack: Special case Void.class
+                    && (type.getElement() == null || !type.getElement().getKind().isClass())) {
+                type.addAnnotation(NULLABLE);
+            }
+
+            return super.visitDeclared(type, p);
         }
     }
 
