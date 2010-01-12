@@ -215,11 +215,22 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             return true;
         if (areSameIgnoringValues(anno1, anno2))
             return areSame(anno1, anno2);
-        if (!supertypesMap.containsKey(anno1))
-            throw new IllegalArgumentException("unrecognized qualifier: " + anno1);
-        if (!supertypesMap.containsKey(anno2))
-            throw new IllegalArgumentException("unrecognized qualifier: " + anno2);
+        checkAnnoInGraph(anno1);
+        checkAnnoInGraph(anno2);
         return this.supertypesMap.get(anno1).contains(anno2);
+    }
+
+    private final void checkAnnoInGraph(AnnotationMirror a) {
+        if (supertypesMap.containsKey(a))
+            return;
+        
+        if (a == null)
+            throw new IllegalArgumentException(
+                    "Found an Unqualified type.  Please ensure that\n" +
+                    "your implicit rules cover all cases and/or\n" +
+                    "use @DefaulQualifierInHierarchy annotaiton");
+        else
+            throw new IllegalArgumentException("unrecognized qualifier: " + a);
     }
 
     /**
