@@ -344,7 +344,7 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
 
     <target name="checklinks" depends="-init-properties">
         <exec executable="make" dir="${doc}" failonerror="true" taskname="make">
-            <arg line="jsr308_www=${web.jsr308.root.dir}"/>
+            <arg line="jsr308_www_online=${web.jsr308.root.dir}"/>
             <arg line="checklinks"/>
             <env key="PERL5LIB" value="${perl5.lib}"/>
         </exec>
