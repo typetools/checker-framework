@@ -1,3 +1,17 @@
+Version 1.0.5, 12 Jan 2009
+
+Checkers
+  Added support for annotated jdk jars
+  Improved readability of some failure messages
+  Added AssertNonNullIfTrue support for method parameter references
+  Fixed a bug related to LazyNonNull and array fields
+  Fixed a bug related to inference and compound assignments (e.g. +=)
+  nullness: permit the type of @NonNull Void
+
+Manual
+  Updated annotating-libraries chapter regarding annotated jdk
+
+----------------------------------------------------------------------
 Version 1.0.4, 19 Dec 2009
 
 Bug Fixes
