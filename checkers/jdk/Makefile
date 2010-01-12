@@ -3,7 +3,7 @@
 .PHONEY: all clean
 
 MAKE ?= make
-dirs = nullness igj javari
+dirs = nullness igj
 jdks = $(patsubst %,%/jdk.jar, $(dirs))
 
 all: clean $(jdks)
