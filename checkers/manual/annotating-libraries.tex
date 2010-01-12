@@ -237,13 +237,10 @@ stub file from the Javadoc or the class file, and then annotate it.
 % Label "skeleton" is for old links from the Javarifier manual, to prevent
 % them from being broken links.
 
-\section{Using skeleton files (distributed annotated JDKs)\label{skeleton-using}\label{skeleton}}
+\section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
 
-The Checker Framework distribution contains 
-annotated JDKs at the path \<checkers/jdk/[checker-name]/src>.
-These are in another format called
-``skeleton classes''.  We are currently working on converting the skeleton
-files into stub files.
+The Checker Framework distribution contains
+annotated JDKs at the path \<checkers/jdk/[checker-name]/jdk.jar>.
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must
@@ -257,30 +254,28 @@ files into stub files.
 \begin{enumerate}
 
 \item
-  When you run \code{javac}, add a \code{-sourcepath} argument to indicate
-  where to find the skeleton classes.
-  Supply \code{-sourcepath} in addition to whatever other arguments you
+  When you run \code{javac}, add a \code{-bootclasspath/p:} argument to indicate
+  where to find the annotated jdk classes.
+  Supply \code{-bootclasspath/p} in addition to whatever other arguments you
   usually use, including \code{-classpath}.
 
-  The \code{-sourcepath} argument causes the compiler to read annotations
-  from annotated skeleton classes in preference to the unannotated original
-  library classes.  However, the compiler will use the originals on the
-  classpath if no file is available on the sourcepath.
+  The \code{-bootclasspath/p:} argument causes the compiler to read annotations
+  from annotated jdk classes in preference to the unannotated original
+  library classes.
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -sourcepath checkers/jdk/nullness/src my_source_files
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/nullness/jdk.jar my_source_files
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \item
-  Run the compiled code as usual.  Do \emph{not} include the skeleton files
-  on the classpath.  If a skeleton method is called instead of the true
-  library method, then your program will throw a \code{RuntimeException}.
+  Run the compiled code as usual.  The annotated JDK does not need to be
+  in your classpath.
 
 \end{enumerate}
 

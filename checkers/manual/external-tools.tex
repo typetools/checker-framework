@@ -70,7 +70,7 @@ original compilation target:
       <compilerarg value="-version"/>
       <compilerarg line="-target 5"/>
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg line="-sourcepath ${env.CHECKERS}/jdk/nullness/src"/>
+      <compilerarg line="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
       <compilerarg value="-implicit:class"/>
       <classpath>
         <pathelement location="${env.annotations}/checkers/checkers.jar"/>
