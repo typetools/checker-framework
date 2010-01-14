@@ -4,8 +4,14 @@ import checkers.nullness.quals.*;
 
 /**
  * Utilities class for the Nullness Checker.
+ * <p>
+ *
+ * To avoid the need to write the NullnessUtils class name, do:
+ * <pre>import static checkers.nullness.NullnessUtils.castNonNull;</pre>
+ * <p>
  *
  * <b>Runtime Dependency</b>
+ * <p>
  *
  * Please note that using this class introduces a Runtime dependency.
  * This means that if you need to distribute (or link to) the Checker
@@ -17,7 +23,7 @@ import checkers.nullness.quals.*;
 public final class NullnessUtils {
 
     private NullnessUtils()
-    { throw new AssertionError("shouldn't be intiantiated"); }
+    { throw new AssertionError("shouldn't be instantiated"); }
 
     /**
      * A method that suppresses warnings from the Nullness Checker.
