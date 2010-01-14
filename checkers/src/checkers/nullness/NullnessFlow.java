@@ -427,9 +427,25 @@ class NullnessFlow extends Flow {
 
                 mark(var, true);
 
+                // Handle Pure methods
+                if (isNull(right) && isPure(left))
+                    this.nonnullExpressions.add(left.toString());
+                else if (isNull(left) && isPure(right))
+                    this.nonnullExpressions.add(right.toString());
             }
 
             return null;
+        }
+
+        /**
+         * Returns true if it's a method invocation of pure
+         */
+        private boolean isPure(Tree tree) {
+            tree = TreeUtils.skipParens(tree);
+            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+                return false;
+            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+            return (method.getAnnotation(Pure.class)) != null;
         }
 
         @Override
@@ -493,6 +509,7 @@ class NullnessFlow extends Flow {
         List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)node;
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        // Handle AssertNonNullIfTrue
         if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
             AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
 
@@ -508,6 +525,7 @@ class NullnessFlow extends Flow {
                 }
             }
         }
+
         return asserts;
     }
 
