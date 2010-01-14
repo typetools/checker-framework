@@ -247,6 +247,8 @@ class NullnessFlow extends Flow {
                 ExpressionTree expr = ((InstanceOfTree)TreeUtils.skipParens(node.getExpression())).getExpression();
                 this.excludes.remove(var(expr));
             }
+
+            nnExprs.addAll(shouldInferNullness(node));
             return null;
         }
 
@@ -427,9 +429,25 @@ class NullnessFlow extends Flow {
 
                 mark(var, true);
 
+                // Handle Pure methods
+                if (isNull(right) && isPure(left))
+                    this.nonnullExpressions.add(left.toString());
+                else if (isNull(left) && isPure(right))
+                    this.nonnullExpressions.add(right.toString());
             }
 
             return null;
+        }
+
+        /**
+         * Returns true if it's a method invocation of pure
+         */
+        private boolean isPure(Tree tree) {
+            tree = TreeUtils.skipParens(tree);
+            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+                return false;
+            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+            return (method.getAnnotation(Pure.class)) != null;
         }
 
         @Override
@@ -485,14 +503,22 @@ class NullnessFlow extends Flow {
         throw new AssertionError("Cannot be here");
     }
 
-    private static final Pattern parameterPtn = Pattern.compile("#\\d+");
     private List<String> shouldInferNullness(ExpressionTree node) {
+        List<String> result = new ArrayList<String>();
+        result.addAll(shouldInferNullnessIfTrue(node));
+        result.addAll(shouldInferNullnessIfFalse(node));
+        return result;
+    }
+
+    private static final Pattern parameterPtn = Pattern.compile("#\\d+");
+    private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
 
         List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)node;
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        // Handle AssertNonNullIfTrue
         if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
             AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
 
@@ -508,6 +534,36 @@ class NullnessFlow extends Flow {
                 }
             }
         }
+
+        return asserts;
+    }
+
+    private List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
+        if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT
+            || ((UnaryTree)node).getExpression().getKind() != Tree.Kind.METHOD_INVOCATION) {
+            return Collections.emptyList();
+        }
+
+        List<String> asserts = new ArrayList<String>();
+        MethodInvocationTree methodInvok = (MethodInvocationTree)((UnaryTree)node).getExpression();
+        ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        // Handle AssertNonNullIfTrue
+        if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
+            AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
+
+            String receiver = receiver(methodInvok);
+            for (String s : anno.value()) {
+                if (parameterPtn.matcher(s).matches()) {
+                    int param = Integer.valueOf(s.substring(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else {
+                    asserts.add(receiver + s);
+                }
+            }
+        }
+
         return asserts;
     }
 
