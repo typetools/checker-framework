@@ -1,26 +1,45 @@
 import checkers.nullness.quals.*;
 
 class PureTest {
-    @Pure @Nullable Object a(@Nullable Object a) {
+    @Pure @Nullable Object puremethod(@Nullable Object a) {
         return a;
     }
 
     public void test() {
         //:: (dereference.of.nullable)
-        a(null).toString();
-        
-        if (a(null) == null) {
+        puremethod(null).toString();
+
+        if (puremethod(null) == null) {
             //:: (dereference.of.nullable)
-            a(null).toString();
-        }
-        
-        if (a("m") != null) {
-            a("m").toString();
+            puremethod(null).toString();
         }
 
-        if (a("m") != null) {
-            //:: (dereference.of.nullable)
-            a(null).toString();
+        if (puremethod("m") != null) {
+            puremethod("m").toString();
         }
+
+        if (puremethod("m") != null) {
+            //:: (dereference.of.nullable)
+            puremethod(null).toString();
+        }
+
+        if (puremethod("m") != null) {
+            //:: (dereference.of.nullable)
+            puremethod("n").toString();
+        }
+
+        Object x = new Object();
+
+        if (puremethod(x) == null) {
+            return;
+        }
+
+        puremethod(x).toString();
+        puremethod(x).toString();
+
+        x = new Object();
+        //:: (dereference.of.nullable)
+        puremethod("n").toString();
+
     }
 }
