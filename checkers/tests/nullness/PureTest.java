@@ -35,6 +35,7 @@ class PureTest {
         }
 
         puremethod(x).toString();
+        //:: (dereference.of.nullable)
         puremethod(x).toString();
 
         x = new Object();
@@ -42,4 +43,23 @@ class PureTest {
         puremethod("n").toString();
 
     }
+
+    public @Pure @Nullable Object getSuperclass() {
+        return null;
+    }
+
+    static void shortCircuitAnd(PureTest pt) {
+        if ((pt.getSuperclass() != null)
+            && pt.getSuperclass().toString().equals("java.lang.Enum")) {
+            // empty body
+        }
+    }
+
+    static void testInstanceof(PureTest pt) {
+        if (pt.getSuperclass() instanceof Object) {
+            return;
+        }
+        pt.getSuperclass().toString();
+    }
+
 }
