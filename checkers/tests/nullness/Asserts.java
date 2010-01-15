@@ -37,11 +37,18 @@ public class Asserts {
         return true;
       }
 
-      @AssertNonNullIfTrue({"#0", "#1"})
-      boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
-          return true;
-      }
+    @AssertNonNullIfTrue({"#0", "#1"})
+        boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
+        return true;
+    }
 
-      static boolean ne(boolean a, boolean b) { return true; }
+    static boolean ne(boolean a, boolean b) { return true; }
+
+    private void assertTwice() {
+       String methodDeclaration = null;
+       assert methodDeclaration != null : "@SuppressWarnings(nullness)";
+       assert methodDeclaration != null : "@SuppressWarnings(nullness)";
+       methodDeclaration = null;
+    }
 
 }
