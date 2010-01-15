@@ -57,11 +57,12 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public boolean isAnnotationPresent(java.lang.Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
-  public native @Nullable java.lang.Class<?> getComponentType();
+  public native @Pure @Nullable java.lang.Class<?> getComponentType();
   public native java.lang.Object @Nullable [] getSigners();
   public native @Nullable java.lang.Class<?> getDeclaringClass();
   public native boolean isPrimitive();
-  public native boolean isArray();
+  @AssertNonNullIfTrue("getComponentType()")
+  public native @Pure boolean isArray();
 
   public native boolean isAssignableFrom(Class<?> cls);
   public native boolean isInterface();
