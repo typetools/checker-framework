@@ -24,7 +24,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public @Nullable java.lang.reflect.Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public java.lang.String getSimpleName() { throw new RuntimeException("skeleton method"); }
-  public native @Nullable Class<? super T> getSuperclass();
+  public native @Pure @Nullable Class<? super T> getSuperclass();
   public native Class<?>[] getInterfaces();
   public @Nullable java.lang.String getCanonicalName() { throw new RuntimeException("skeleton method"); }
   public boolean isAnonymousClass() { throw new RuntimeException("skeleton method"); }
