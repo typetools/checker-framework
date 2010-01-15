@@ -61,8 +61,23 @@ class PureTest {
         }
     }
 
-    static void testInstanceof(PureTest pt) {
+    static void testInstanceofNegative(PureTest pt) {
         if (pt.getSuperclass() instanceof Object) {
+            return;
+        }
+        //:: (dereference.of.nullable)
+        pt.getSuperclass().toString();
+    }
+
+    static void testInstanceofPositive(PureTest pt) {
+        if (!(pt.getSuperclass() instanceof Object)) {
+            return;
+        }
+        pt.getSuperclass().toString();
+    }
+
+    static void testInstanceofString(PureTest pt) {
+        if (!(pt.getSuperclass() instanceof String)) {
             return;
         }
         pt.getSuperclass().toString();
