@@ -35,7 +35,6 @@ class PureTest {
         }
 
         puremethod(x).toString();
-        //:: (dereference.of.nullable)
         puremethod(x).toString();
 
         x = new Object();
