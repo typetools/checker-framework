@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to prohibit null elements
+// Subclasses of this interface/class may opt to prohibit null elements.
 public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull Object> implements java.util.Map<K, V> {
   protected AbstractMap() {}
   public class SimpleEntry<K, V> implements java.util.Map.Entry<K, V>, java.io.Serializable {
