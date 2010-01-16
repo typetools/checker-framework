@@ -10,7 +10,9 @@ import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -439,17 +441,6 @@ class NullnessFlow extends Flow {
             return null;
         }
 
-        /**
-         * Returns true if it's a method invocation of pure
-         */
-        private boolean isPure(Tree tree) {
-            tree = TreeUtils.skipParens(tree);
-            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
-                return false;
-            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
-            return (method.getAnnotation(Pure.class)) != null;
-        }
-
         @Override
         public Void visitIdentifier(final IdentifierTree node, final Void p) {
             final Element e = TreeUtils.elementFromUse(node);
@@ -507,6 +498,7 @@ class NullnessFlow extends Flow {
         List<String> result = new ArrayList<String>();
         result.addAll(shouldInferNullnessIfTrue(node));
         result.addAll(shouldInferNullnessIfFalse(node));
+        result.addAll(shouldInferNullnessPureNegation(node));
         return result;
     }
 
@@ -567,6 +559,32 @@ class NullnessFlow extends Flow {
         return asserts;
     }
 
+    private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
+        if (node.getKind() == Tree.Kind.EQUAL_TO) {
+            BinaryTree binary = (BinaryTree)node;
+            if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
+                return Collections.emptyList();
+            
+            if (isNull(binary.getLeftOperand())
+                && isPure(binary.getRightOperand())) {
+                return Collections.singletonList(binary.getRightOperand().toString());
+            } else if (isNull(binary.getRightOperand())
+                && isPure(binary.getLeftOperand())) {
+                return Collections.singletonList(binary.getLeftOperand().toString());
+            } else
+                return Collections.emptyList();
+        } else if (node.getKind() == Tree.Kind.LOGICAL_COMPLEMENT
+           && (TreeUtils.skipParens(((UnaryTree)node).getExpression()).getKind() == Tree.Kind.INSTANCE_OF)) {
+            InstanceOfTree ioTree = (InstanceOfTree)TreeUtils.skipParens(((UnaryTree)node).getExpression());
+            if (isPure(ioTree.getExpression()))
+                return Collections.singletonList(ioTree.getExpression().toString());
+            else
+                return Collections.emptyList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     @Override
     public Void visitAssert(AssertTree node, Void p) {
 
@@ -598,22 +616,28 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+    private boolean isTerminating(StatementTree stmt) {
+        Tree firstStmt = TreeUtils.firstStatement(stmt);
+        switch (firstStmt.getKind()) {
+        case THROW:
+        case RETURN:
+        case BREAK:
+        case CONTINUE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     @Override
     public Void visitIf(IfTree node, Void p) {
         super.visitIf(node, p);
 
         ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
-            Tree firstStmt = TreeUtils.firstStatement(node.getThenStatement());
-            switch (firstStmt.getKind()) {
-            case THROW:
-            case RETURN:
-            case BREAK:
-            case CONTINUE:
-                List<String> nullnessAsserted = shouldInferNullness(
-                        ((UnaryTree)cond).getExpression());
-                this.nnExprs.addAll(nullnessAsserted);
-            }
+        if (isTerminating(node.getThenStatement())) {
+            if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT)
+                this.nnExprs.addAll(shouldInferNullness(((UnaryTree)cond).getExpression()));
+            this.nnExprs.addAll(shouldInferNullnessPureNegation(cond));
         }
         return null;
     }
@@ -803,4 +827,16 @@ class NullnessFlow extends Flow {
             //                        + tree.getKind());
         }
     }
+
+    /**
+     * Returns true if it's a method invocation of pure
+     */
+    private boolean isPure(Tree tree) {
+        tree = TreeUtils.skipParens(tree);
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return false;
+        ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+        return (method.getAnnotation(Pure.class)) != null;
+    }
+
 }
