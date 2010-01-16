@@ -19,4 +19,12 @@ class GenericArgs2 {
     collection.add(null); // valid
   }
   // No "<F super Object>" version of the above, as that is illegal in Java.
+
+  static class InvariantFilter { }
+  static class Invariant { }
+
+  HashMap<Class<? extends InvariantFilter>,Map<Class<? extends Invariant>,Integer>> filter_map1;
+  MyMap<@Nullable Class<? extends InvariantFilter>,Map<Class<? extends Invariant>,Integer>> filter_map2;
+
+  class MyMap<K extends @Nullable Object, V extends @Nullable Object> {}
 }

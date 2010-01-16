@@ -10,7 +10,9 @@ import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -183,6 +185,7 @@ class NullnessFlow extends Flow {
         private BitSet nullable = new BitSet(0);
         public boolean isNullPolyNull = false;
         public List<String> nonnullExpressions = new LinkedList<String>();
+        public List<String> nullableExpressions = new LinkedList<String>();
 
         private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
@@ -294,9 +297,11 @@ class NullnessFlow extends Flow {
                     int idx = vars.indexOf(e);
                     if (idx >= 0) {
                         if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
-                            long position = source.getStartPosition(root, node);
-                            flowResults.put(new Location(position, node), NONNULL);
+                            markTree(node, NONNULL);
                         }
+                    }
+                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
+                        markTree(node, NONNULL);
                     }
                 }
 
@@ -314,6 +319,13 @@ class NullnessFlow extends Flow {
                     return super.visitMemberSelect(node, p);
                 }
 
+                @Override
+                public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
+                        markTree(node, NONNULL);
+                    }
+                    return super.visitMethodInvocation(node, p);
+                }
             }.scan(right, null);
 
             nonnull = (BitSet)nonnullOld.clone();
@@ -417,6 +429,11 @@ class NullnessFlow extends Flow {
                         mark(var(left), true);
                 }
 
+                if (isNull(right) && isPure(left))
+                    this.nullableExpressions.add(left.toString());
+                else if (isNull(left) && isPure(right))
+                    this.nullableExpressions.add(right.toString());
+
             } else if (oper == Tree.Kind.NOT_EQUAL_TO) {
                 visit(left, p);
                 visit(right, p);
@@ -437,17 +454,6 @@ class NullnessFlow extends Flow {
             }
 
             return null;
-        }
-
-        /**
-         * Returns true if it's a method invocation of pure
-         */
-        private boolean isPure(Tree tree) {
-            tree = TreeUtils.skipParens(tree);
-            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
-                return false;
-            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
-            return (method.getAnnotation(Pure.class)) != null;
         }
 
         @Override
@@ -507,6 +513,7 @@ class NullnessFlow extends Flow {
         List<String> result = new ArrayList<String>();
         result.addAll(shouldInferNullnessIfTrue(node));
         result.addAll(shouldInferNullnessIfFalse(node));
+        result.addAll(shouldInferNullnessPureNegation(node));
         return result;
     }
 
@@ -567,6 +574,60 @@ class NullnessFlow extends Flow {
         return asserts;
     }
 
+    private List<String> shouldInferNullnessIfFalseNullable(ExpressionTree node) {
+        if (node.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            return Collections.emptyList();
+        }
+
+        List<String> asserts = new ArrayList<String>();
+        MethodInvocationTree methodInvok = (MethodInvocationTree)node;
+        ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        // Handle AssertNonNullIfTrue
+        if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
+            AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
+
+            String receiver = receiver(methodInvok);
+            for (String s : anno.value()) {
+                if (parameterPtn.matcher(s).matches()) {
+                    int param = Integer.valueOf(s.substring(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else {
+                    asserts.add(receiver + s);
+                }
+            }
+        }
+
+        return asserts;
+    }
+
+    private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
+        if (node.getKind() == Tree.Kind.EQUAL_TO) {
+            BinaryTree binary = (BinaryTree)node;
+            if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
+                return Collections.emptyList();
+            
+            if (isNull(binary.getLeftOperand())
+                && isPure(binary.getRightOperand())) {
+                return Collections.singletonList(binary.getRightOperand().toString());
+            } else if (isNull(binary.getRightOperand())
+                && isPure(binary.getLeftOperand())) {
+                return Collections.singletonList(binary.getLeftOperand().toString());
+            } else
+                return Collections.emptyList();
+        } else if (node.getKind() == Tree.Kind.LOGICAL_COMPLEMENT
+           && (TreeUtils.skipParens(((UnaryTree)node).getExpression()).getKind() == Tree.Kind.INSTANCE_OF)) {
+            InstanceOfTree ioTree = (InstanceOfTree)TreeUtils.skipParens(((UnaryTree)node).getExpression());
+            if (isPure(ioTree.getExpression()))
+                return Collections.singletonList(ioTree.getExpression().toString());
+            else
+                return Collections.emptyList();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     @Override
     public Void visitAssert(AssertTree node, Void p) {
 
@@ -598,22 +659,29 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+    private boolean isTerminating(StatementTree stmt) {
+        Tree firstStmt = TreeUtils.firstStatement(stmt);
+        switch (firstStmt.getKind()) {
+        case THROW:
+        case RETURN:
+        case BREAK:
+        case CONTINUE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     @Override
     public Void visitIf(IfTree node, Void p) {
         super.visitIf(node, p);
 
         ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
-            Tree firstStmt = TreeUtils.firstStatement(node.getThenStatement());
-            switch (firstStmt.getKind()) {
-            case THROW:
-            case RETURN:
-            case BREAK:
-            case CONTINUE:
-                List<String> nullnessAsserted = shouldInferNullness(
-                        ((UnaryTree)cond).getExpression());
-                this.nnExprs.addAll(nullnessAsserted);
-            }
+        if (isTerminating(node.getThenStatement())) {
+            if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT)
+                this.nnExprs.addAll(shouldInferNullness(((UnaryTree)cond).getExpression()));
+            this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
+            this.nnExprs.addAll(shouldInferNullnessPureNegation(cond));
         }
         return null;
     }
@@ -803,4 +871,16 @@ class NullnessFlow extends Flow {
             //                        + tree.getKind());
         }
     }
+
+    /**
+     * Returns true if it's a method invocation of pure
+     */
+    private boolean isPure(Tree tree) {
+        tree = TreeUtils.skipParens(tree);
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return false;
+        ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+        return (method.getAnnotation(Pure.class)) != null;
+    }
+
 }
