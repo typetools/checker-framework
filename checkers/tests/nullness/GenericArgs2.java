@@ -24,6 +24,7 @@ class GenericArgs2 {
   static class Invariant { }
 
   HashMap<Class<? extends InvariantFilter>,Map<Class<? extends Invariant>,Integer>> filter_map1;
-  HashMap</*@Nullable*/ Class<? extends InvariantFilter>,Map<Class<? extends Invariant>,Integer>> filter_map2;
+  MyMap<@Nullable Class<? extends InvariantFilter>,Map<Class<? extends Invariant>,Integer>> filter_map2;
 
+  class MyMap<K extends @Nullable Object, V extends @Nullable Object> {}
 }
