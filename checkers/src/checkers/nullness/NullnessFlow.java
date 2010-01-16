@@ -305,12 +305,14 @@ class NullnessFlow extends Flow {
                 @Override
                 public Void visitIdentifier(IdentifierTree node, Void p) {
                     Element e = TreeUtils.elementFromUse(node);
+                    NullnessFlow.this.nnExprs.addAll(nonnullExpressions);
                     record(e, node);
                     return super.visitIdentifier(node, p);
                 }
 
                 @Override
                 public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                    NullnessFlow.this.nnExprs.addAll(nonnullExpressions);
                     Element e = TreeUtils.elementFromUse(node);
                     record(e, node);
                     return super.visitMemberSelect(node, p);
@@ -559,6 +561,34 @@ class NullnessFlow extends Flow {
         return asserts;
     }
 
+    private List<String> shouldInferNullnessIfFalseNullable(ExpressionTree node) {
+        if (node.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            return Collections.emptyList();
+        }
+
+        List<String> asserts = new ArrayList<String>();
+        MethodInvocationTree methodInvok = (MethodInvocationTree)node;
+        ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        // Handle AssertNonNullIfTrue
+        if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
+            AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
+
+            String receiver = receiver(methodInvok);
+            for (String s : anno.value()) {
+                if (parameterPtn.matcher(s).matches()) {
+                    int param = Integer.valueOf(s.substring(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else {
+                    asserts.add(receiver + s);
+                }
+            }
+        }
+
+        return asserts;
+    }
+
     private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
         if (node.getKind() == Tree.Kind.EQUAL_TO) {
             BinaryTree binary = (BinaryTree)node;
@@ -637,6 +667,7 @@ class NullnessFlow extends Flow {
         if (isTerminating(node.getThenStatement())) {
             if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT)
                 this.nnExprs.addAll(shouldInferNullness(((UnaryTree)cond).getExpression()));
+            this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
             this.nnExprs.addAll(shouldInferNullnessPureNegation(cond));
         }
         return null;

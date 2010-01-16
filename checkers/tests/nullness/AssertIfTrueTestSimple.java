@@ -2,10 +2,10 @@ import checkers.nullness.quals.*;
 
 public class AssertIfTrueTestSimple {
 
-  protected int /*@Nullable*/ [] values;
+  protected int @Nullable [] values;
 
-  /*@AssertNonNullIfTrue("values")*/
-  /*@Pure*/
+  @AssertNonNullIfFalse("values")
+  @Pure
   public boolean repNulled() {
     return values == null;
   }
