@@ -15,7 +15,7 @@ class NullnessAssertion {
         assertNonNull(o);
     }
 
-    @AssertNonNull // the method an throws exception if any argument is null
+    @AssertParametersNonNull // the method an throws exception if any argument is null
     void assertNonNull(@Nullable Object o) {
         if (o == null)
             throw new NullPointerException();
