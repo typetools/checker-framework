@@ -4,6 +4,13 @@ public class AssertIfTrueTestSimple {
 
   protected int @Nullable [] values;
 
+  @AssertNonNullIfTrue("values")
+  @Pure
+  public boolean repNulledBAD() {
+    //:: (some.error.here)
+    return values == null;
+  }
+
   @AssertNonNullIfFalse("values")
   @Pure
   public boolean repNulled() {
