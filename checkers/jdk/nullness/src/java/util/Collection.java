@@ -6,7 +6,7 @@ import checkers.nullness.quals.*;
 public interface Collection<E extends @NonNull Object> extends java.lang.Iterable<E> {
   public abstract int size();
   public abstract boolean isEmpty();
-  // not true, because map could contain nulls:  AssertNonNull("get(#0)")
+  // not true, because map could contain nulls:  AssertParametersNonNull("get(#0)")
   public abstract boolean contains(@Nullable java.lang.Object a1);
   public abstract java.util.Iterator<E> iterator();
   // The Nullness Checker does NOT use these signatures for either version
