@@ -185,6 +185,7 @@ class NullnessFlow extends Flow {
         private BitSet nullable = new BitSet(0);
         public boolean isNullPolyNull = false;
         public List<String> nonnullExpressions = new LinkedList<String>();
+        public List<String> nullableExpressions = new LinkedList<String>();
 
         private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
@@ -296,28 +297,35 @@ class NullnessFlow extends Flow {
                     int idx = vars.indexOf(e);
                     if (idx >= 0) {
                         if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
-                            long position = source.getStartPosition(root, node);
-                            flowResults.put(new Location(position, node), NONNULL);
+                            markTree(node, NONNULL);
                         }
+                    }
+                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
+                        markTree(node, NONNULL);
                     }
                 }
 
                 @Override
                 public Void visitIdentifier(IdentifierTree node, Void p) {
                     Element e = TreeUtils.elementFromUse(node);
-                    NullnessFlow.this.nnExprs.addAll(nonnullExpressions);
                     record(e, node);
                     return super.visitIdentifier(node, p);
                 }
 
                 @Override
                 public Void visitMemberSelect(MemberSelectTree node, Void p) {
-                    NullnessFlow.this.nnExprs.addAll(nonnullExpressions);
                     Element e = TreeUtils.elementFromUse(node);
                     record(e, node);
                     return super.visitMemberSelect(node, p);
                 }
 
+                @Override
+                public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
+                        markTree(node, NONNULL);
+                    }
+                    return super.visitMethodInvocation(node, p);
+                }
             }.scan(right, null);
 
             nonnull = (BitSet)nonnullOld.clone();
@@ -420,6 +428,11 @@ class NullnessFlow extends Flow {
                     if (rightType.hasAnnotation(NONNULL) && !leftType.hasAnnotation(NONNULL))
                         mark(var(left), true);
                 }
+
+                if (isNull(right) && isPure(left))
+                    this.nullableExpressions.add(left.toString());
+                else if (isNull(left) && isPure(right))
+                    this.nullableExpressions.add(right.toString());
 
             } else if (oper == Tree.Kind.NOT_EQUAL_TO) {
                 visit(left, p);
