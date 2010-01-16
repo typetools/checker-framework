@@ -726,7 +726,7 @@ class NullnessFlow extends Flow {
         super.visitMethodInvocation(node, p);
 
         ExecutableElement method = TreeUtils.elementFromUse(node);
-        if (method.getAnnotation(AssertNonNull.class) != null) {
+        if (method.getAnnotation(AssertParametersNonNull.class) != null) {
             for (ExpressionTree arg : node.getArguments())
                 inferNullness(arg);
         }

@@ -19,10 +19,10 @@ import checkers.nullness.NullnessChecker;
  *
  * @see NonNull
  * @see NullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #defensive-programming Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-public @interface AssertNonNull {
+public @interface AssertParametersNonNull {
 }
