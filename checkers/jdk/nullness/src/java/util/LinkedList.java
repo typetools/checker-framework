@@ -21,7 +21,7 @@ public class LinkedList<E extends @Nullable Object> extends java.util.AbstractSe
   public boolean addAll(java.util.Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(int a1, java.util.Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public E get(int a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }
