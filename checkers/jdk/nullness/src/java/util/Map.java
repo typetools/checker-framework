@@ -22,7 +22,7 @@ public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
   // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
   // collections).  Some other implementation do accept nulls and aro so
   // annotatied (see ArrayList, LinkedList, HashMap).
-  public abstract @Nullable V get(@Nullable java.lang.Object a1);
+  public abstract @Pure @Nullable V get(@Nullable java.lang.Object a1);
   public abstract @Nullable V put(K a1, V a2);
   public abstract @Nullable V remove(@Nullable java.lang.Object a1);
   public abstract void putAll(java.util.Map<? extends K, ? extends V> a1);

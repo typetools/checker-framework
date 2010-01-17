@@ -10,7 +10,7 @@ public class LinkedHashMap<K, V> extends java.util.HashMap<K, V> implements java
   public LinkedHashMap(java.util.Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public LinkedHashMap(int a1, float a2, boolean a3) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   protected boolean removeEldestEntry(java.util.Map.Entry<K, V> entry) { throw new RuntimeException("skeleton method"); }
 }
