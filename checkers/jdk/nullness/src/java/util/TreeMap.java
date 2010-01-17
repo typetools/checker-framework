@@ -12,7 +12,7 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public int size() { throw new RuntimeException("skeleton method"); }
   public boolean containsKey(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public java.util.Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
   public @Nullable K firstKey() { throw new RuntimeException("skeleton method"); }
   public @Nullable K lastKey() { throw new RuntimeException("skeleton method"); }

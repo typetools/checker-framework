@@ -57,7 +57,7 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   public final void setTime(java.util.Date a1) { throw new RuntimeException("skeleton method"); }
   public long getTimeInMillis() { throw new RuntimeException("skeleton method"); }
   public void setTimeInMillis(long a1) { throw new RuntimeException("skeleton method"); }
-  public int get(int a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure int get(int a1) { throw new RuntimeException("skeleton method"); }
   public void set(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public final void set(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public final void set(int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
