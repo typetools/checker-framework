@@ -17,7 +17,7 @@ public class ArrayList<E extends @Nullable Object> extends java.util.AbstractLis
   public int lastIndexOf(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
-  public E get(int a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }

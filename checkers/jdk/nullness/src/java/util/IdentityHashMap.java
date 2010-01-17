@@ -10,7 +10,7 @@ public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Obj
   public IdentityHashMap(java.util.Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  public V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure V get(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsKey(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }

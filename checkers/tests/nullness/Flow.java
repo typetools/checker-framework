@@ -281,15 +281,20 @@ public class Flow {
             String m = s[i];    // fine.. s cannot be null
         }
     }
-}
 
-    // This might be useful: "if this routine has ever returned non-null
-    // before, it will never return null again".  But hold off on the effort
-    // of implementing there is a demostrated need.
-    // @LazyNonNull Object returnLazyNonNull() {
-    //     return null;
-    // }
-    // void testLazyNonNullCall() {
-    //     if (returnLazyNonNull() != null)
-    //         returnLazyNonNull().toString();
-    // }
+    /*@LazyNonNull*/
+    private double [] intersect = null;
+
+    public void add_modified(double[] a, int count) {
+        // System.out.println ("common: " + ArraysMDE.toString (a));
+        if (a == null) {
+            return;
+        } else if (intersect==null) {
+            intersect = a;
+            return;
+        }
+
+        double[] tmp = new double[intersect.length];
+    }
+
+}
