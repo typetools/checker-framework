@@ -33,7 +33,7 @@ public class Vector<E extends @Nullable Object> extends java.util.AbstractList<E
   public synchronized void removeAllElements() { throw new RuntimeException("skeleton method"); }
   public synchronized @Nullable java.lang.Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public synchronized <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized E get(int a1) { throw new RuntimeException("skeleton method"); }
+  public synchronized @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
