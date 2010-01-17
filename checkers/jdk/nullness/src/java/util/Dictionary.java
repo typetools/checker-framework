@@ -9,7 +9,7 @@ public abstract class Dictionary<K extends /*@NonNull*/ Object, V extends /*@Non
   public abstract boolean isEmpty();
   public abstract java.util.Enumeration<K> keys();
   public abstract java.util.Enumeration<V> elements();
-  public abstract @Nullable V get(@Nullable java.lang.Object a1);
+  public abstract @Pure @Nullable V get(@Nullable java.lang.Object a1);
   public abstract @Nullable V put(K a1, V a2);
   public abstract @Nullable V remove(java.lang.Object a1);
 }

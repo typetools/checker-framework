@@ -25,7 +25,7 @@ public interface List<E extends @NonNull Object> extends java.util.Collection<E>
   public abstract void clear();
   public abstract boolean equals(@Nullable java.lang.Object a1);
   public abstract int hashCode();
-  public abstract E get(int a1);
+  public abstract @Pure E get(int a1);
   public abstract E set(int a1, E a2);
   public abstract void add(int a1, E a2);
   public abstract E remove(int a1);
