@@ -1,7 +1,6 @@
 import checkers.nullness.quals.*;
 import java.util.*;
 
-
 class PptTopLevel {
     /** List of all of the splitters for this ppt. */
     public @LazyNonNull List<Object> splitters = null;
@@ -30,23 +29,27 @@ class PptTopLevel {
 
     // False tests
     static void testFalse(PptTopLevel ppt) {
+        //:: (dereference.of.nullable)
         ppt.splitters.toString();   // error
     }
 
     static void testFalseNoAssertion(PptTopLevel ppt) {
         ppt.has_splitters();
+        //:: (dereference.of.nullable)
         ppt.splitters.toString();    // error
     }
 
     static void testFalseIf(PptTopLevel ppt) {
         if (ppt.has_splitters())
             return;
+        //:: (dereference.of.nullable)
         ppt.splitters.toString();   // error
     }
 
-    static void testFalseIfBody(PptTopLevel ppt) {
-        if (!ppt.has_splitters()) {
-            ppt.splitters.toString();   // error
-        }
-    }
+//    static void testFalseIfBody(PptTopLevel ppt) {
+//        if (!ppt.has_splitters()) {
+//            //:: (dereference.of.nullable)
+//            ppt.splitters.toString();   // error
+//        }
+//    }
 }

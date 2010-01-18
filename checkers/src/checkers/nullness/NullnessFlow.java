@@ -243,7 +243,6 @@ class NullnessFlow extends Flow {
                 nullable.clear();
             }
             isNullPolyNull = false;
-            nnExprs = new ArrayList<String>();
 
             // the false branch of a logic complement of instance is nonnull!
             if (TreeUtils.skipParens(node.getExpression()).getKind() == Tree.Kind.INSTANCE_OF) {
@@ -339,7 +338,7 @@ class NullnessFlow extends Flow {
             } else {
                 nonnullSplit.or(nonnull);
                 nullableSplit.or(nullable);
-                nnExprs.clear();
+//                nnExprs.clear();
             }
 
             nonnull = nonnullOld;
