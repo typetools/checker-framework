@@ -14,4 +14,12 @@ public class AssertTwice {
         methodDeclaration = null;
     }
 
+    private void assertTwiceWithUse() {
+        String methodDeclaration = null;
+        assert methodDeclaration != null : "@SuppressWarnings(nullness)";
+        methodDeclaration.toString();
+        assert methodDeclaration != null : "@SuppressWarnings(nullness)";
+        methodDeclaration = null;
+    }
+
 }
