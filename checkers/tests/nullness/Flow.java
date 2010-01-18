@@ -282,7 +282,7 @@ public class Flow {
         }
     }
 
-    /*@LazyNonNull*/
+    @LazyNonNull
     private double [] intersect = null;
 
     public void add_modified(double[] a, int count) {
