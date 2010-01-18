@@ -1,5 +1,10 @@
 import checkers.nullness.quals.*;
 
+/*
+ * @skip-test
+ * This tests ensure that Pure and AssertNonNullIfTrue methods
+ * are verified
+ */
 public class AssertIfTrueTestSimple {
 
   protected int @Nullable [] values;
