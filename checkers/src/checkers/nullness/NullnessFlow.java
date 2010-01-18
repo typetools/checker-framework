@@ -607,7 +607,7 @@ class NullnessFlow extends Flow {
             BinaryTree binary = (BinaryTree)node;
             if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
                 return Collections.emptyList();
-            
+
             if (isNull(binary.getLeftOperand())
                 && isPure(binary.getRightOperand())) {
                 return Collections.singletonList(binary.getRightOperand().toString());
@@ -638,7 +638,9 @@ class NullnessFlow extends Flow {
             && cond.getKind() == Tree.Kind.NOT_EQUAL_TO
             && ((BinaryTree)cond).getRightOperand().getKind() == Tree.Kind.NULL_LITERAL) {
             ExpressionTree expr = ((BinaryTree)cond).getLeftOperand();
-            this.nnExprs.add(TreeUtils.skipParens(expr).toString());
+            String s = TreeUtils.skipParens(expr).toString();
+            if (!nnExprs.contains(s))
+                nnExprs.add(s);
         }
         super.visitAssert(node, p);
 
