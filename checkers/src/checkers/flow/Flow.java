@@ -727,6 +727,7 @@ public class Flow extends TreePathScanner<Void, Void> {
 
             if (!alive) {
                 alive = aliveAfter;
+                after.or(annos);
                 annos = GenKillBits.copy(after);
             } else if (!aliveAfter) {
                 annos = annos;  // NOOP
@@ -736,7 +737,6 @@ public class Flow extends TreePathScanner<Void, Void> {
                 annos.and(after);
             }
         } else {
-            alive &= aliveBefore;
             if (!alive)
                 annos = GenKillBits.copy(beforeElse);
             else
