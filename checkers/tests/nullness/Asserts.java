@@ -44,11 +44,4 @@ public class Asserts {
 
     static boolean ne(boolean a, boolean b) { return true; }
 
-    private void assertTwice() {
-       String methodDeclaration = null;
-       assert methodDeclaration != null : "@SuppressWarnings(nullness)";
-       assert methodDeclaration != null : "@SuppressWarnings(nullness)";
-       methodDeclaration = null;
-    }
-
 }
