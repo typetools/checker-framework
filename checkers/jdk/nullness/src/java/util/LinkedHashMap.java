@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class LinkedHashMap<K, V> extends java.util.HashMap<K, V> implements java.util.Map<K, V> {
+public class LinkedHashMap<K extends @Nullable Object, V extends @Nullable Object> extends java.util.HashMap<K, V> implements java.util.Map<K, V> {
   private static final long serialVersionUID = 0;
   public LinkedHashMap(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public LinkedHashMap(int a1) { throw new RuntimeException("skeleton method"); }
