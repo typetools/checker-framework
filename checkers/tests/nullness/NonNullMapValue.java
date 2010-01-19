@@ -124,4 +124,14 @@ public class NonNullMapValue {
     return map.get(key);
   }
 
+  public static Object testThrow(Map<Object, Object> map, Object key) {
+      if (!map.containsKey(key)) {
+          if (true) {
+              return "m";
+          } else {
+              throw new RuntimeException();
+          }
+      }
+      return map.get(key);
+  }
 }
