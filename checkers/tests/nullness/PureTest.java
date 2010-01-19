@@ -83,4 +83,13 @@ class PureTest {
         pt.getSuperclass().toString();
     }
 
+    static void testContinue(PureTest pt) {
+        for (;;) {
+            if (pt.getSuperclass() == null) {
+                System.out.println("m");
+                continue;
+            }
+            pt.getSuperclass().toString();
+        }
+    }
 }

@@ -571,7 +571,7 @@ class NullnessFlow extends Flow {
                     int param = Integer.valueOf(matcher.group(1));
                     if (param < methodInvok.getArguments().size()) {
                         String rep = methodInvok.getArguments().get(param).toString();
-                        
+
                         String val = matcher.replaceAll(rep);
                         asserts.add(receiver + val);
                     }
@@ -671,9 +671,20 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+    private boolean isTerminating(BlockTree stmt) {
+        for (StatementTree tr : stmt.getStatements()) {
+            if (isTerminating(tr))
+                return true;
+        }
+        return false;
+    }
+
     private boolean isTerminating(StatementTree stmt) {
-        Tree firstStmt = TreeUtils.firstStatement(stmt);
-        switch (firstStmt.getKind()) {
+        if (stmt instanceof BlockTree) {
+            return isTerminating((BlockTree)stmt);
+        }
+
+        switch (stmt.getKind()) {
         case THROW:
         case RETURN:
         case BREAK:
