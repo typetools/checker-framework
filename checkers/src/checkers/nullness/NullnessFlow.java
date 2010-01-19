@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
@@ -516,7 +517,7 @@ class NullnessFlow extends Flow {
         return result;
     }
 
-    private static final Pattern parameterPtn = Pattern.compile("#\\d+");
+    private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
     private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
@@ -563,6 +564,16 @@ class NullnessFlow extends Flow {
                     int param = Integer.valueOf(s.substring(1));
                     if (param < methodInvok.getArguments().size()) {
                         asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } if (parameterPtn.matcher(s).find()) {
+                    Matcher matcher = parameterPtn.matcher(s);
+                    matcher.find();
+                    int param = Integer.valueOf(matcher.group(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        String rep = methodInvok.getArguments().get(param).toString();
+                        
+                        String val = matcher.replaceAll(rep);
+                        asserts.add(receiver + val);
                     }
                 } else {
                     asserts.add(receiver + s);
