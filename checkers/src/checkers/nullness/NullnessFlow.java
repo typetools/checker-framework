@@ -519,6 +519,14 @@ class NullnessFlow extends Flow {
 
     private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
     private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
+        node = TreeUtils.skipParens(node);
+        if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
+            BinaryTree bin = (BinaryTree)node;
+            List<String> asserts = new ArrayList<String>();
+            asserts.addAll(shouldInferNullnessIfTrue(bin.getLeftOperand()));
+            asserts.addAll(shouldInferNullnessIfTrue(bin.getRightOperand()));
+            return asserts;
+        }
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
 
