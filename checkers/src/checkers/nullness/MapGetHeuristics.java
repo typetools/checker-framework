@@ -173,6 +173,24 @@ import com.sun.source.util.TreePath;
         return false;
     }
 
+    private boolean isTerminating(StatementTree tree) {
+        StatementTree first = firstStatement(tree);
+        if (first instanceof ThrowTree)
+            return true;
+        if (first instanceof ReturnTree)
+            return true;
+
+        if (first instanceof IfTree) {
+            IfTree ifTree = (IfTree)first;
+            if (ifTree.getElseStatement() != null
+                && isTerminating(ifTree.getThenStatement())
+                && isTerminating(ifTree.getElseStatement()))
+                return true;
+        }
+
+        return false;
+    }
+
     /**
      * Case 4: get() is preceded with explicit assertion
      */
@@ -193,8 +211,7 @@ import com.sun.source.util.TreePath;
                     if (st instanceof IfTree) {
                         IfTree ifTree = (IfTree)st;
                         if (isNotContained(key, map, ifTree.getCondition())) {
-                            StatementTree first = firstStatement(ifTree.getThenStatement());
-                            if (first instanceof ThrowTree)
+                            if (isTerminating(ifTree.getThenStatement()))
                                 return true;
                         }
                     }
