@@ -135,7 +135,8 @@ public class NonNullMapValue {
       return map.get(key);
   }
 
-  public static int mapGetSize(Map<Object,List<Object>> covered, Object file) {
+  // Map.get should be annotated as @Pure
+  public static int mapGetSize(Map<Object,@Nullable List<Object>> covered, Object file) {
     return (covered.get(file) == null) ? 0 : covered.get(file).size();
   }
 
