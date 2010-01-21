@@ -191,106 +191,102 @@ helpful if you:
 \end{itemize}
 
 
-\section{Installing the source release\label{install-source}}
+\section{Building from source\label{build-source}}
 
-The binary release (Section~\ref{installation}) contains everything that
+The Checker Framework release (Section~\ref{installation}) contains everything that
 most users need, both to use the distributed checkers and to write your own
-checkers.  This section describes how to install from source.  Doing
-so permits you to examine and modify the implementation of the distributed
-checkers and of the checker framework.  It may also help you to debug
-problems more effectively.
+checkers.  This section describes how to re-build its binaries from source.
+% Doing
+% so permits you to examine and modify the implementation of the distributed
+% checkers and of the checker framework.  It may also help you to debug
+% problems more effectively.
 
-% TODO:  We should perhaps later reduce the number of options to just 1...
-You have two options.  You can obtain the source code from its version
-control repository, or you can obtain a packaged source release.
 
-To obtain the source code from the version control repository, do
+\subsection{Obtain the source}
+
+Obtain the latest source code from the version control repository:
 
 \begin{Verbatim}
-mkdir -p ~/jsr308
+export JSR308=$HOME/jsr308
+mkdir -p $JSR308
+cd $JSR308
+hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
 hg clone https://checker-framework.googlecode.com/hg/ checker-framework
 \end{Verbatim}
 
+\noindent
+(Alternately, you could use the version of the source code that is packaged
+in the Checker Framework release.)
 
-The rest of this section discusses how to install the packaged source release.
 
-
-\subsection{The short instructions (for Linux only)}
-
-%%% This comment does not seem to be correct any longer.
-%% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
-%% so if you change either one, change the other also!
-
-The following commands install
-the JSR 308 \code{javac} compiler and the Checker
-Framework, or update an existing installation.
-It currently works only on \textbf{Linux}.
-For more details, or if anything goes wrong, see the comments in the 
-\code{Makefile-jsr308-install} file.
+\subsection{Build the Type Annotations compiler}
 
 \begin{enumerate}
-
 \item
-  Execute the following commands:
+Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or 7 installation. Most likely it is already set for Ant to work.
+\item
+Compile the Type Annotations javac compiler and the javap tool:
 
 \begin{Verbatim}
-  cd
-  wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
-  make -f Makefile-jsr308-install
+  cd $JSR308/jsr308-langtools/make
+  ant clean build-javac build-javap
 \end{Verbatim}
 
 \item
-Set some environment variables according to the instructions at the top of file
-\code{Makefile-jsr308-install}.
+ Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
+  Example command:
+
+\begin{Verbatim}
+  export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
+\end{Verbatim}
 
 \end{enumerate}
 
+% JSR 308 extends the Java language to permit annotations to appear on types,
+% as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
+% This change will be part of the Java 7 language.  We recommend that you
+% write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
+% Section~\ref{annotations-in-comments}).  The JSR 308 compiler still reads
+% such annotations, but this syntax permits you to use a compiler other than
+% the JSR 308 compiler.  For example, you can compile your code with a Java 5
+% compiler, and you can use a checker as an external tool in an IDE.
 
-\subsection{The longer instructions}
 
-The following instructions give detailed steps for installing the source
-release of the Checker Framework.
+\subsection{Build the Checker Framework\label{building}}
+
+% Building (compiling) the checkers and framework from source creates the
+% \code{checkers.jar} file.  A pre-compiled \code{checkers.jar} is included
+% in the distribution, so building it is optional.  It is mostly useful for
+% people who are developing compiler plug-ins (type-checkers).  If you only
+% want to \emph{use} the compiler and existing plug-ins, it is sufficient to
+% use the pre-compiled version.
 
 \begin{enumerate}
+% \item
+% Edit \code{checkers/build.properties} file so that the
+% \code{compiler.lib} property specifies the location of the JSR 308
+% \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
+% source, and you made the \code{checkers} and \code{jsr308-langtools} directories
+% siblings, then you don't need to edit \code{checkers/build.properties}.)
 
-\item Download and install the JSR 308 implementation; follow the instructions at
-% alternative: \urldef{\JsrInstallingUrl}\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
-{\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
-This creates a \code{jsr308-langtools} directory.
-
-\item Download the Checker Framework distribution zipfile from
-\myurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip},
-and unzip it to create a \code{checkers} directory.  We recommend that the
-\code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
-Example commands:
+\item
+Run \code{ant} to create \<checkers.jar>:
 
 \begin{Verbatim}
-  cd $JSR308
-  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
-  unzip checkers.zip
+  cd $JSR308/checker-framework/checkers
+  ant
 \end{Verbatim}
 
-You will also need to adjust the path to \<javac> in any Ant buildfiles,
-etc.
-
-\item Optionally edit property \code{compiler.lib} in file
-  \code{checkers/build.properties}.  You don't have to do this if the
-  \code{checkers} directory and the \code{jsr308-langtools} directory are
-  siblings.
-
-\item Add to your classpath:
-  \code{\$JSR308/jsr308-langtools/lib/tools.jar} and
-  \code{\$JSR308/checkers/checkers.jar}.
+\item Add \code{tools.jar} and \code{checkers.jar} to your classpath
   (If you do not do this, you will have to supply the \code{-cp} option
-  whenever you run \code{javac} and use a checker plugin.)  Example
-  commands:
+  whenever you run \code{javac} and use a checker plugin.)
+  Example command:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  export JSR308=${HOME}/jsr308
-  export CLASSPATH=${CLASSPATH}:$JSR308/jsr308-langtools/lib/tools.jar:$JSR308/checkers/checkers.jar
+  export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checkers/checkers.jar
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -308,20 +304,46 @@ ant all-tests
 \end{Verbatim}
 
   \item Run the Nullness checker examples (see
-    Section~\ref{nullness-example}).
+    Section~\refwithpage{nullness-example}).
 
   \end{itemize}
 
 \end{enumerate}
 
-JSR 308 extends the Java language to permit annotations to appear on types,
-as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-This change will be part of the Java 7 language.  We recommend that you
-write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
-Section~\ref{annotations-in-comments}).  The JSR 308 compiler still reads
-such annotations, but this syntax permits you to use a compiler other than
-the JSR 308 compiler.  For example, you can compile your code with a Java 5
-compiler, and you can use a checker as an external tool in an IDE.
+% \subsection{Adjust classpath}
+
+% Building the Checker Framework requires use of a Java 7 compiler.  You may
+% use either the OpenJDK compiler or the JSR 308 compiler.  The latter has a
+% few extra features and tends to get bug fixes more quickly.
+
+% The following instructions give detailed steps for installing the source
+% release of the Checker Framework.
+
+
+% \item Download and install the JSR 308 implementation; follow the instructions at
+% % alternative: \urldef{\JsrInstallingUrl}\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
+% {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
+% This creates a \code{jsr308-langtools} directory.
+% 
+% \item Download the Checker Framework distribution zipfile from
+% \myurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip},
+% and unzip it to create a \code{checkers} directory.  We recommend that the
+% \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
+% Example commands:
+% 
+% \begin{Verbatim}
+%   cd $JSR308
+%   wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+%   unzip checkers.zip
+% \end{Verbatim}
+% 
+% You will also need to adjust the path to \<javac> in any Ant buildfiles,
+% etc.
+
+% \item Optionally edit property \code{compiler.lib} in file
+%   \code{checkers/build.properties}.  You don't have to do this if the
+%   \code{checkers} directory and the \code{jsr308-langtools} directory are
+%   siblings.
 
 
 % (A checkers implementation builds on
@@ -332,32 +354,38 @@ compiler, and you can use a checker as an external tool in an IDE.
 % then you should also disable Eclipse's on-the-fly syntax checking.
 
 
-\subsection{Building from source\label{building}}
 
-Building (compiling) the checkers and framework from source creates the
-\code{checkers.jar} file.  A pre-compiled \code{checkers.jar} is included
-in the distribution, so building it is optional.  It is mostly useful for
-people who are developing compiler plug-ins (type-checkers).  If you only
-want to \emph{use} the compiler and existing plug-ins, it is sufficient to
-use the pre-compiled version.
 
-\begin{enumerate}
-\item
-Edit \code{checkers/build.properties} file so that the
-\code{compiler.lib} property specifies the location of the JSR 308
-\code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-source, and you made the \code{checkers} and \code{jsr308-langtools} directories
-siblings, then you don't need to edit \code{checkers/build.properties}.)
+% \subsection{TO DO:  The short instructions (for Linux only)}
+% 
+% %%% This comment does not seem to be correct any longer.
+% %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
+% %% so if you change either one, change the other also!
+% 
+% The following commands install
+% the JSR 308 \code{javac} compiler and the Checker
+% Framework, or update an existing installation.
+% It currently works only on \textbf{Linux}.
+% For more details, or if anything goes wrong, see the comments in the 
+% \code{Makefile-jsr308-install} file.
+% 
+% \begin{enumerate}
+% 
+% \item
+%   Execute the following commands:
+% 
+% \begin{Verbatim}
+%   cd
+%   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
+%   make -f Makefile-jsr308-install
+% \end{Verbatim}
+% 
+% \item
+% Set some environment variables according to the instructions at the top of file
+% \code{Makefile-jsr308-install}.
+% 
+% \end{enumerate}
 
-\item
-Run \code{ant} in the \code{checkers} directory:
-
-\begin{Verbatim}
-cd checkers
-ant
-\end{Verbatim}
-
-\end{enumerate}
 
 
 \section{Learning more\label{learning-more}}
@@ -424,9 +452,8 @@ nullness errors.  None of the other tools found any errors.
 
 \section{Credits and changelog\label{credits}}
 
-The Checker Framework distribution was developed in the MIT Program Analysis
-Group, with prime contributions from Mahmood Ali, Telmo Correa, Michael
-D. Ernst, and Matthew M. Papi.
+The key developers of the Checker Framework are Mahmood Ali, Telmo Correa,
+Michael D. Ernst, and Matthew M. Papi.
 Many users have provided valuable feedback, for which we are grateful.
 
 %% Not so accurate, since Mahmood is really an author of the nullness and

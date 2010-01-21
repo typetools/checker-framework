@@ -228,6 +228,7 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates checkers.jar -->
     <target name="jar" depends="build,checkers-quals-jar"
             description="Create jar file">
+	<delete dir="${build.reports}"/>
         <jar destfile="${checkers.jar.file}" basedir="${build}"/>
     </target>
 
