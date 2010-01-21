@@ -136,8 +136,11 @@ public class NonNullMapValue {
   }
 
   // Map.get should be annotated as @Pure
-  public static int mapGetSize(Map<Object,@Nullable List<Object>> covered, Object file) {
+  public static int mapGetSize(MyMap<Object, List<Object>> covered, Object file) {
     return (covered.get(file) == null) ? 0 : covered.get(file).size();
   }
 
+  interface MyMap<K, V> extends Map<K, V> {
+    @Pure public V get(Object o);
+  }
 }

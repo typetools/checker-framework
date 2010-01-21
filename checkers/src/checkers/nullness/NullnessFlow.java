@@ -152,6 +152,7 @@ class NullnessFlow extends Flow {
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
+        nnExprsWhenFalse.addAll(conds.nullableExpressions);
     }
 
     @Override
@@ -912,6 +913,31 @@ class NullnessFlow extends Flow {
             return false;
         ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
         return (method.getAnnotation(Pure.class)) != null;
+    }
+
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node,
+            Void p) {
+
+        // Split and merge as for an if/else.
+        scanCond(node.getCondition());
+
+        List<String> prevNNExprs = new ArrayList<String>(nnExprs);
+
+        GenKillBits<AnnotationMirror> before = annosWhenFalse;
+        annos = annosWhenTrue;
+
+        nnExprs = nnExprsWhenTrue;
+        scanExpr(node.getTrueExpression());
+        GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
+        annos = before;
+
+        nnExprs = nnExprsWhenFalse;
+        scanExpr(node.getFalseExpression());
+        annos.and(after);
+
+        nnExprs = prevNNExprs;
+        return null;
     }
 
 }
