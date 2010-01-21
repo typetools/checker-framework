@@ -119,9 +119,8 @@ synonyms.
 
 This section describes how to install the binary release of the Checker
 Framework.  The binary release contains everything that you need, both to
-run checkers and to write your own checkers.  As an alternative, the source
-release (Section~\ref{install-source}) is useful if you wish to examine or
-modify the implementation of checkers or of the framework itself.
+run checkers and to write your own checkers.  As an alternative, you can
+build from source (Section~\refwithpage{build-source}).
 
 % Not "\ahrefurl" because it looks bad in the printed manual.
 \textbf{Requirement:} 
@@ -572,7 +571,7 @@ checker is a type of ``annotation processor''.
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
   Section~\ref{checker-auto-discovery}
-\item \<-Xbootclasspath/p:> Indicates where to find the annotated jdk classes;
+\item \<-Xbootclasspath/p:> Indicates where to find the annotated JDK classes;
   see Section~\ref{skeleton-using}
 \item \<-implicit:class> Enables processing for implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
@@ -927,4 +926,4 @@ is annotated \<@ReadOnly>.
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks
-% LocalWords:  Aquals processorpath regex RegEx
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath
