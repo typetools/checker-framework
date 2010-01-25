@@ -300,7 +300,7 @@ abstract public class CheckerTest {
 
     }
 
-    // Lifted from utilMDE.UtilMDE
+    // Lifted from plume.UtilMDE
     /**
      * Concatenate the string representations of the objects, placing the
      * delimiter between them.
