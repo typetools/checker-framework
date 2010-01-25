@@ -72,6 +72,7 @@ original compilation target:
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
       <compilerarg line="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
       <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
       <classpath>
         <pathelement location="${env.annotations}/checkers/checkers.jar"/>
         ...
@@ -111,6 +112,10 @@ to be performed on implicitly compiled files.  (An implicitly compiled file
 is one that was not specified on the command line, but for which the source
 code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
+
+The \code{-Awarns ...} compiler argument is optional, and causes the checker to
+treat errors as warnings so that you can see all errors in all files rather
+than only the errors in the first file; see Section~\ref{running}.
 
 
 \section{Maven plugin\label{maven-plugin}}
