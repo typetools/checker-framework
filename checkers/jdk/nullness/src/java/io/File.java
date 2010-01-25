@@ -15,7 +15,7 @@ public class File implements java.io.Serializable, java.lang.Comparable<java.io.
   public File(@Nullable java.io.File a1, java.lang.String a2) { throw new RuntimeException("skeleton method"); }
   public File(java.net.URI a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.String getName() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.String getParent() { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable java.lang.String getParent() { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable java.io.File getParentFile() { throw new RuntimeException("skeleton method"); }
   public java.lang.String getPath() { throw new RuntimeException("skeleton method"); }
   public boolean isAbsolute() { throw new RuntimeException("skeleton method"); }

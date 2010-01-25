@@ -18,7 +18,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public @Nullable java.lang.ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.TypeVariable<java.lang.Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.Package getPackage() { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable java.lang.Package getPackage() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }

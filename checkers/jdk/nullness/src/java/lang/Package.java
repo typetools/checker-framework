@@ -16,8 +16,8 @@ public class Package implements java.lang.reflect.AnnotatedElement{
   public boolean isSealed() { throw new RuntimeException("skeleton method"); }
   public boolean isSealed(java.net.URL a1) { throw new RuntimeException("skeleton method"); }
   public boolean isCompatibleWith(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static @Nullable java.lang.Package getPackage(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.Package[] getPackages() { throw new RuntimeException("skeleton method"); }
+  public static @Pure @Nullable java.lang.Package getPackage(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public static @Pure java.lang.Package[] getPackages() { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(java.lang.Class<A> a1) { throw new RuntimeException("skeleton method"); }
