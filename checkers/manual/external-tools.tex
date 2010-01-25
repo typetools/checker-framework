@@ -72,6 +72,7 @@ original compilation target:
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
       <compilerarg line="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
       <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
       <classpath>
         <pathelement location="${env.annotations}/checkers/checkers.jar"/>
         ...
@@ -111,6 +112,10 @@ to be performed on implicitly compiled files.  (An implicitly compiled file
 is one that was not specified on the command line, but for which the source
 code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
+
+The \code{-Awarns ...} compiler argument is optional, and causes the checker to
+treat errors as warnings so that you can see all errors in all files rather
+than only the errors in the first file; see Section~\ref{running}.
 
 
 \section{Maven plugin\label{maven-plugin}}
@@ -163,12 +168,24 @@ run the Ant target by executing the following steps
 
 \paragraph{Eclipse plug-in}
 
+There are two choices for Eclipse support for type annotations.
+
 A prototype Eclipse plug-in for running a checker is available at
 \myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.  
 The website contains instructions for installing and using the plug-in.
 The plug-in is
 experimental now, but some people have used it successfully (and we have fixed
 all bugs that have been reported so far).
+
+Another prototype version of Type Annotations support for Eclipse is
+available from the Eclipse project.  Use the following information to check
+out the CVS repository:
+\begin{description}
+\item[Host:]                 dev.eclipse.org
+\item[Repository path:] /cvsroot/eclipse
+\item[Module name:]    org.eclipse.jdt.core
+\item[Branch:]             JSR\_308
+\end{description}
 
 
 \section{tIDE\label{tide}}
