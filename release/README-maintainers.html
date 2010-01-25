@@ -311,12 +311,12 @@ that its data is consistent?)</p>
 </li>
 
 <li>
-Copy <tt>checkers.jar</tt> to some libraries that use it:
+Copy <tt>checkers-quals.jar</tt> to some libraries that use it:
 <pre>
-  cp -pf .../checkers.jar ${inv}/java/lib
-  cvs commit ${inv}/java/lib/checkers.jar -m "checkers.jar version $CFVERSION"
-  cp -pf .../checkers.jar ${inv}/java/utilMDE/lib
-  cvs commit ${inv}/java/utilMDE/lib/checkers.jar -m "checkers.jar version $CFVERSION"
+  cp -pf .../checkers-quals.jar ${inv}/java/lib
+  cvs commit ${inv}/java/lib/checkers-quals.jar -m "checkers-quals.jar version $CFVERSION"
+  cp -pf .../checkers-quals.jar ${pl}/java/lib
+  hg commit ${pl}/java/lib/checkers-quals.jar -m "checkers-quals.jar version $CFVERSION"
 </pre>
 
 <li><p>Send a release announcement to <a
