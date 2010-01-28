@@ -138,19 +138,19 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream printf(String format, @ReadOnly Object ... args) {
+    public PrintStream printf(String format, @ReadOnly Object @ReadOnly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream printf(Locale l, String format, @ReadOnly Object ... args) {
+    public PrintStream printf(Locale l, String format, @ReadOnly Object @ReadOnly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream format(String format, @ReadOnly Object ... args) {
+    public PrintStream format(String format, @ReadOnly Object @ReadOnly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream format(Locale l, String format, @ReadOnly Object ... args) {
+    public PrintStream format(Locale l, String format, @ReadOnly Object @ReadOnly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
