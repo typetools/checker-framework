@@ -7,6 +7,9 @@
 :48: (type.incompatible)
 :52: (type.incompatible)
 :71: (type.incompatible)
+# At present, this .out file cannot be converted to the "//::" inline style
+# because the testing framework does not support multiple expected warnings
+# on a single line of code.
 :73: (type.incompatible)
 :73: (generic.argument.invalid)
 :99: (type.incompatible)
