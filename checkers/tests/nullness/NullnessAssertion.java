@@ -11,6 +11,7 @@ class NullnessAssertion {
 
     void test2() {
         Object o = null;
+        //:: (dereference.of.nullable)
         o.toString();
         assertNonNull(o);
     }

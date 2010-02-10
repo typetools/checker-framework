@@ -8,12 +8,14 @@ public class FlowLoop {
             s.toString();
             s = null;
         }
+        //:: (dereference.of.nullable)
         s.toString();   // error
     }
 
     void whileConditionError() {
         String s = "m";
 
+        //:: (dereference.of.nullable)
         while (s.toString() == "m") {  // error
             s.toString();
             s = null;
@@ -29,6 +31,7 @@ public class FlowLoop {
 
     void forLoopConditionError() {
         for (String s = "m";
+             //:: (dereference.of.nullable)
              s.toString() != "m";   // error
              s = null) {
             s.toString();
@@ -51,6 +54,7 @@ public class FlowLoop {
     void multipleRuns() {
         String s = "m";
         while (true) {
+            //:: (dereference.of.nullable)
             s.toString();   // error
             s = null;
         }
@@ -59,6 +63,7 @@ public class FlowLoop {
     void multipleRunsDo() {
         String s = "m";
         do {
+            //:: (dereference.of.nullable)
             s.toString();   // error
             s = null;
         } while (true);
@@ -69,13 +74,16 @@ public class FlowLoop {
         for (s = null; s != null; s = "m") {
             s.toString();   // ok
         }
+        //:: (dereference.of.nullable)
         s.toString();   // error
     }
 
     public void badIterator () {
         Class<?> opt_doc1 = null;
+        //:: (dereference.of.nullable)
         opt_doc1.getInterfaces();
         Class<?> opt_doc2 = null;
+        //:: (dereference.of.nullable)
         for (Class<?> fd : opt_doc2.getInterfaces()) {
             // empty loop body
         }
@@ -83,6 +91,7 @@ public class FlowLoop {
 
     void testContinue(@Nullable Object o) {
         for (;;) {
+            //:: (dereference.of.nullable)
             o.toString();
             if (true) continue;
         }
@@ -90,6 +99,7 @@ public class FlowLoop {
 
     void testBreak(@Nullable Object o) {
         while (true) {
+            //:: (dereference.of.nullable)
             o.toString();
             if (true) break;
         }
@@ -98,12 +108,14 @@ public class FlowLoop {
     void testSimpleNull() {
         String r1 = null;
         while (r1 != null);
+        //:: (dereference.of.nullable)
         r1.toString();  // error
     }
 
     void testMulticheckNull() {
         String r1 = null;
         while (r1 != null && r1.equals("m"));
+        //:: (dereference.of.nullable)
         r1.toString();  // error
     }
 
@@ -112,6 +124,7 @@ public class FlowLoop {
         while (r1 != null) {
             r1 = null;
         }
+        //:: (dereference.of.nullable)
         r1.toString();  // error
     }
 
@@ -120,6 +133,7 @@ public class FlowLoop {
         while (r1 != null && r1.isEmpty()) {
             r1 = null;
         }
+        //:: (dereference.of.nullable)
         r1.toString();  // error
     }
 

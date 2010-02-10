@@ -38,11 +38,13 @@ public class NonNullMapValue {
 
   void testMyMap(String key) {
     @NonNull String value;
+    //:: (type.incompatible)
     value = myMap.get(key);    // should issue warning
     if (myMap.containsKey(key)) {
       value = myMap.get(key);
     }
     for (String keyInMap : myMap.keySet()) {
+      //:: (type.incompatible)
       value = myMap.get(key); // should issue warning
     }
     for (String keyInMap : myMap.keySet()) {

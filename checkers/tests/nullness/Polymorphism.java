@@ -11,6 +11,7 @@ public class Polymorphism {
         String nullable = null;
         @NonNull String nonNull = "m";
 
+        //:: (type.incompatible)
         nonNull = identity(nullable); // invalid
         nonNull = identity(nonNull);
 
@@ -22,6 +23,7 @@ public class Polymorphism {
     // Test within a method
     @PolyNull String random(@PolyNull String m) {
         if (m == "d")
+            //:: (type.incompatible)
             return null;    // invalid
         return "m";         // valid
     }
