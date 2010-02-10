@@ -5,6 +5,7 @@ public class Synchronization {
     // Plain
     public void bad() {
         Object o = null;
+        //:: (locking.nullable)
         synchronized(o) { }   // should emit error
     }
 
@@ -19,6 +20,7 @@ public class Synchronization {
         o = "m";
         synchronized(o) { }; // valid
         o = null;
+        //:: (locking.nullable)
         synchronized(o) { }; // invalid
     }
 

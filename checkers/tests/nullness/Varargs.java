@@ -26,11 +26,13 @@ public class Varargs {
 
     public void format1(java.lang.String a1, @Nullable java.lang.Object... a2) {
         int x = a2.length;           // no warning
+        //:: (type.incompatible)
         for (@NonNull Object p : a2) // warning
             System.out.println(p);
     }
 
     public void format2(java.lang.String a1, java.lang.Object @Nullable ... a2) {
+        //:: (dereference.of.nullable)
         int x = a2.length;           // warning
         for (@NonNull Object p : a2) // no warning
             System.out.println(p);
