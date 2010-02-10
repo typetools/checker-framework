@@ -14,7 +14,14 @@ class RawSuper {
             mRA(this);
             mA(this);
         }
+        A(int ignore) {
+            this.raw();
+            afield = new Object();
+        }
+        void raw() @Raw { }
+        void nonRaw() { }
     }
+
     class B extends A {
         @NonNull Object bfield;
         B() {
@@ -29,7 +36,11 @@ class RawSuper {
             mRB(this);
             mB(this);
         }
+        void raw() @Raw {
+            super.nonRaw();    // legal, because "@Raw" means "@Raw B @NonRaw A"
+        }
     }
+    // This test may be extraneous
     class C extends B {
         @NonNull Object cfield;
         C() {
