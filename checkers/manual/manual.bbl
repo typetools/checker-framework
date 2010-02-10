@@ -70,7 +70,7 @@ David Hovemeyer and William Pugh.
   and Applications (OOPSLA 2004)}, pages 132--136, Vancouver, BC, Canada,
   October~26--28, 2004.
 
-\bibitem[HSP05]{HovemeyerSP2006}
+\bibitem[HSP05]{HovemeyerSP2005}
 David Hovemeyer, Jaime Spacco, and William Pugh.
 \newblock Evaluating and tuning a static analysis to find null pointer bugs.
 \newblock In {\em ACM SIGPLAN/SIGSOFT Workshop on Program Analysis for Software
