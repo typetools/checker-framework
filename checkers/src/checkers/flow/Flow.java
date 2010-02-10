@@ -1,6 +1,7 @@
 package checkers.flow;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.nullness.quals.Pure;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -895,10 +896,11 @@ public class Flow extends TreePathScanner<Void, Void> {
 
         final String methodPackage = elements.getPackageOf(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
+        boolean isPure = method.getAnnotation(Pure.class) != null;
         for (int i = 0; i < vars.size(); i++) {
             Element var = vars.get(i);
             for (AnnotationMirror a : annotations)
-                if (!isJDKMethod && isNonFinalField(var) && !varDefHasAnnotation(a, var))
+                if (!isJDKMethod && isNonFinalField(var) && !varDefHasAnnotation(a, var) && !isPure)
                     annos.clear(a, i);
         }
 
