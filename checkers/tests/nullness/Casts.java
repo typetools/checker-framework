@@ -8,12 +8,15 @@ public class Casts {
 
         String nullable = null;
         Object lc2 = (Object) nullable;
+        //:: (dereference.of.nullable)
         lc2.toString(); // error
     }
 
     void testBoxing() {
         Integer b = null;
+        //:: (type.incompatible)
         int i = b;
+        //:: (unboxing.of.nullable)
         Object o = (int)b;
     }
 }
