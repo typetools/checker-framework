@@ -13,22 +13,29 @@ public class ConditionalNullness {
         if (checkNonNull()) {
             field.toString();
             method().toString();
+            //:: (dereference.of.nullable)
             other.field.toString(); // error
+            //:: (dereference.of.nullable)
             other.method().toString();  // error
         }
+        //:: (dereference.of.nullable)
         method().toString();   // error
     }
 
     void testSelfWithoutCheck() {
+        //:: (dereference.of.nullable)
         field.toString();       // error
+        //:: (dereference.of.nullable)
         method().toString();    // error
     }
 
     void testSelfWithCheckNegation() {
         if (checkNonNull()) { }
         else {
+            //:: (dereference.of.nullable)
             field.toString();   // error
         }
+        //:: (dereference.of.nullable)
         field.toString();       // error
     }
 
@@ -37,18 +44,26 @@ public class ConditionalNullness {
         if (other.checkNonNull()) {
             other.field.toString();
             other.method().toString();
+            //:: (dereference.of.nullable)
             field.toString();   // error
+            //:: (dereference.of.nullable)
             method().toString(); // error
         }
+        //:: (dereference.of.nullable)
         other.method().toString();  // error
+        //:: (dereference.of.nullable)
         method().toString();   // error
     }
 
     void testOtherWithoutCheck() {
         ConditionalNullness other = new ConditionalNullness();
+        //:: (dereference.of.nullable)
         other.field.toString();     // error
+        //:: (dereference.of.nullable)
         other.method().toString();  // error
+        //:: (dereference.of.nullable)
         field.toString();       // error
+        //:: (dereference.of.nullable)
         method().toString();    // error
     }
 
@@ -56,10 +71,14 @@ public class ConditionalNullness {
         ConditionalNullness other = new ConditionalNullness();
         if (other.checkNonNull()) { }
         else {
+            //:: (dereference.of.nullable)
             other.field.toString();     // error
+            //:: (dereference.of.nullable)
             other.method().toString();  // error
+            //:: (dereference.of.nullable)
             field.toString();   // error
         }
+        //:: (dereference.of.nullable)
         field.toString();       // error
     }
 
