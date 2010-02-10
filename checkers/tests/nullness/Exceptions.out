@@ -1,0 +1,5 @@
+:5: (dereference.of.nullable)
+:17: (dereference.of.nullable)
+:24: (throwing.nullable)
+:27: (throwing.nullable)
+:37: (type.incompatible)
