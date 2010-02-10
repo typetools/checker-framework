@@ -4,6 +4,7 @@ public class Boxing {
         Integer i1 = 3;
         int i1u = i1 + 2;         // valid
         Integer i2 = null;
+        //:: (unboxing.of.nullable)
         int i2u = i2 + 2;         // invalid
     }
 
@@ -11,6 +12,7 @@ public class Boxing {
         Integer i1 = 5;
         int i1u = i1;
         Integer i2 = null;
+        //:: (type.incompatible)
         int i2u = i2;       // invalid
     }
 
@@ -24,7 +26,9 @@ public class Boxing {
     void invalidWithinUnary() {
         // within blocks to stop flow
         Integer i1 = null, i2 = null, i3 = null, i4 = null;
+        //:: (unboxing.of.nullable)
         ++i1;       // invalid
+        //:: (unboxing.of.nullable)
         i2++;       // invalid
     }
 
@@ -38,17 +42,21 @@ public class Boxing {
 
     void invalidCompoundAssignmentsAsVariable() {
         Integer i = null;
+        //:: (unboxing.of.nullable)
         i += 1;         // invalid
         Boolean b = null;
+        //:: (unboxing.of.nullable)
         b &= true;      // invalid
     }
 
     void invalidCompoundAssignmentAsValue() {
         @NonNull Integer var = 3;
         Integer val = null;
+        //:: (unboxing.of.nullable)
         var += val;
         Boolean b1 = null;
         boolean b2 = true;
+        //:: (unboxing.of.nullable)
         b2 &= b1;     // invalid
     }
 
@@ -71,7 +79,9 @@ public class Boxing {
         System.out.println(u1 == u1);
         System.out.println(u1 != u1);
 
+        //:: (unboxing.of.nullable)
         System.out.println(bN == u1); // invalid
+        //:: (unboxing.of.nullable)
         System.out.println(bN != u1); // invalid
     }
 
@@ -79,12 +89,15 @@ public class Boxing {
         Integer bN = null;
         Integer b1 = 1;
         int u1 = 1;
+        //:: (unboxing.of.nullable)
         System.out.println(bN + bN); // invalid
+        //:: (unboxing.of.nullable)
         System.out.println(bN + b1); // invalid
 
         System.out.println(u1 + b1);
         System.out.println(u1 + u1);
 
+        //:: (unboxing.of.nullable)
         System.out.println(bN + u1); // invalid
     }
 
@@ -94,6 +107,7 @@ public class Boxing {
         int u1 = 1;
 
         println(bN);
+        //:: (unboxing.of.nullable)
         println((int)bN); // invalid
 
         println(b1);

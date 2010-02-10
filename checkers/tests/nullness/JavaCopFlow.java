@@ -11,6 +11,7 @@ class Flow {
         }
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -22,6 +23,7 @@ class Flow {
             a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -36,6 +38,7 @@ class Flow {
         }
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -49,6 +52,7 @@ class Flow {
             a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -63,6 +67,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -77,6 +82,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -91,6 +97,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -105,6 +112,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -116,6 +124,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -128,6 +137,7 @@ class Flow {
         }
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -140,6 +150,7 @@ class Flow {
         }
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -149,6 +160,7 @@ class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: (type.incompatible)
         @NonNull String b = str;
     }
 
@@ -177,6 +189,7 @@ class Flow {
 
         int i = 0;
         while (true) {
+          //:: (type.incompatible)
             @NonNull String a = str;
             str = null;
             i++;
@@ -186,14 +199,17 @@ class Flow {
         str = null;
         @NonNull String b = "hi";
         try{
+          //:: (type.incompatible)
             b = str;
             methodThatThrowsRuntime();
             str = "bar";
         }finally{
+          //:: (type.incompatible)
             b = str;
         }
 
         str = null;
+        //:: (type.incompatible)
         b = str;
 
         str = "hi";
