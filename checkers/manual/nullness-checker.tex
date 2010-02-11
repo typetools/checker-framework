@@ -63,6 +63,11 @@ The nullness hierarchy contains these qualifiers:
 Figure~\ref{fig:nonnull-hierarchy} shows part of the type hierarchy for the
 Nullness type system.
 
+The Nullness Checker also supports a rawness annotation that indicates
+whether an object is fully initialized --- that is, whether its fields have
+all been assigned.  For details, see
+Section~\ref{raw-partially-initialized}.
+
 
 \begin{figure}
 \begin{center}
@@ -75,125 +80,12 @@ Nullness type system.
 Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
 most type qualifiers, because the default annotation
 (Section~\ref{null-defaults}) is usually correct.  Also shown is the
-type hierarchy for rawness, which indicates whether
+type hierarchy for rawness (Section~\ref{raw-partially-initialized}), which
+indicates whether
 initialization has completed.  The two type hierarchies are independent but
 inter-related, and the Nullness Checker verifies them both.}
 \label{fig:nonnull-hierarchy}
 \end{figure}
-
-
-\subsection{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
-
-The rawness hierarchy indicates whether an object is fully initialized ---
-that is, whether its fields have all been assigned.  This is mostly
-relevant within the constructor, or for references to \code{this} that
-escape the constructor.  The rawness hierarchy contains these qualifiers:
-
-\begin{description}
-
-\item[\code{@\refclass{nullness/quals}{Raw}}]
-  indicates a type that contains a partially-initialized object.  In a
-  partially-initialized object, fields that are annotated as
-  \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
-  has not yet been assigned.  Within the constructor,
-  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
-  the fields have been assigned.
-
-% Cut this?
-\item[\code{@\refclass{nullness/quals}{NonRaw}}]
-  indicates a type that contains a fully-initialized object.  \code{NonRaw}
-  is the default, so there is little need for a programmer to write this
-  explicitly.
-
-\item[\code{@\refclass{nullness/quals}{PolyRaw}}]
-  indicates qualifier polymorphism over rawness (see
-  Section~\ref{qualifier-polymorphism}).
-
-\end{description}
-
-During execution of a constructor, every field of non-primitive type starts
-out with the value \code{null}.  If the field has
-\code{@\refclass{nullness/quals}{NonNull}} type, its initial value \code{null}
-violates the \code{@NonNull} type qualifier.  In other words, during
-construction, the object is in an illegal state.
-
-% However, if the constructor makes
-% a method call (passing \code{this} as a parameter or the receiver), then
-% the called method could observe the object in an illegal state.
-
-The \code{@\refclass{nullness/quals}{Raw}} type annotation represents a
-partially-initialized object.  If a reference has
-\code{@Raw} type, then all of its \code{@NonNull} fields are treated as
-\code{@\refclass{nullness/quals}{LazyNonNull}}:  when read, they are
-treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
-written, they are treated as being
-\code{@\refclass{nullness/quals}{NonNull}}.
-
-
-The rawness hierarchy is \textbf{orthogonal} to the nullness hierarchy.  It
-is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
-\<@NonNull @NonRaw>, or \<@Nullable @NonRaw>.  The nullness hierarchy tells
-you about the reference itself:  might the reference be null?
-The rawness hierarchy tells you about the fields in the referred-to object:
-might those fields be null?
-
-
-% Does our implementation handle static fields soundly?
-
-
-You can suppress warnings related to partially-initialized objects with
-\<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
-\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!)
-
-
-\paragraph{How an object becomes non-raw}
-
-The Nullness checker issues an error if the constructor fails to initialize
-any non-null field.  This ensures that the object is in a legal (non-raw)
-state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/defAssign.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.12.4}
-This is different than Java's test for definite assignment (see 
-\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
-% , which requires that local
-% variables (and blank \code{final} fields) must be assigned.  Java does not
-% require that non-\code{final} fields be assigned, since 
-which does not apply to fields (except blank final ones, defined in
-\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4})) because fields
-have a default value of null.
-
-
-Within the constructor,
-\code{this} has \code{@\refclass{nullness/quals}{Raw}} type.
-As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
-have been initialized, then \code{this} is treated as non-raw.
-
-% and can only be passed to methods when the corresponding parameter is
-% annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
-% restrictions apply to assigning \code{this} to a field.
-
-Suppose that class C extends class B, which extends class A.  Within the C
-constructor, until the superclass constructor is called, \code{this} has
-type \code{@Raw C} and also \code{@Raw B} and \code{@Raw A}.  After the
-superclass constructor has been called, then \code{this} has type
-\code{@Raw C} and also \code{@NonRaw B} and \code{@NonRaw A}.
-% \urldef{\jlsconstructorbodyurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.8.7}
-% (Recall that the superclass constructor is called on the first line, or is
-% inserted automatically by the compiler before the first line, see 
-% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
-
-
-
-% Should we change the terminology?
-\paragraph{A note about the terminology ``raw''}
-
-The name ``raw'' comes from a research paper that proposed this
-approach~\cite{FahndrichL2003}.  
-A better name might have been ``not yet initialized'' or ``partially
-initialized'', but the term ``raw'' is now well-known.
-The \code{@\refclass{nullness/quals}{Raw}}
-annotation has nothing to do with the raw types of Java Generics.
-
 
 
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
@@ -383,6 +275,9 @@ This example illustrates the problems:
 
 Parameter passing and return values are checked analogously to assignments.
 
+The Nullness Checker also checks the correctness, and correct use, of
+rawness annotations for checking initialization.  See
+Section~\ref{raw-partially-initialized}.
 
 
 \section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
@@ -611,6 +506,163 @@ default).  This will prevent the checker from issuing a warning about the
 \<checkNotNull> call.
 
 
+\section{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
+
+The rawness hierarchy indicates whether an object is fully initialized ---
+that is, whether its fields have all been assigned.  This is mostly
+relevant within the constructor, or for references to \code{this} that
+escape the constructor.  Most readers can skip this section on first
+reading; you can return to it once you have mastered the rest of the
+nullness checker.
+
+The rawness hierarchy is independent of the
+nullness hierarchy, and is shown in Figure~\ref{fig:nonnull-hierarchy}.
+The rawness hierarchy contains these qualifiers:
+
+\begin{description}
+
+\item[\code{@\refclass{nullness/quals}{Raw}}]
+  indicates a type that contains a partially-initialized object.  In a
+  partially-initialized object, fields that are annotated as
+  \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
+  has not yet been assigned.  Within the constructor,
+  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
+  the fields have been assigned.
+
+% Cut this?
+\item[\code{@\refclass{nullness/quals}{NonRaw}}]
+  indicates a type that contains a fully-initialized object.  \code{NonRaw}
+  is the default, so there is little need for a programmer to write this
+  explicitly.
+
+\item[\code{@\refclass{nullness/quals}{PolyRaw}}]
+  indicates qualifier polymorphism over rawness (see
+  Section~\ref{qualifier-polymorphism}).
+
+\end{description}
+
+Suppose a class contains a field ``\code{@\refclass{nullness/quals}{NonNull}
+  Date d;}''.  Java executes the class's constructor by first setting \<d> to
+\code{null}.  The constructor sets field \<d> to its final value, either
+directly or by calling helper methods.  Before the constructor sets field
+\<d>, its initial value \code{null} violates its type \code{@NonNull Date}.
+In general, code can depend on \<d> not being null, but not for a
+partially-initialized object.  A partially-initialized object (\code{this}
+in a constructor) may be passed to a 
+
+% However, if the constructor makes
+% a method call (passing \code{this} as a parameter or the receiver), then
+% the called method could observe the object in an illegal state.
+
+The \code{@\refclass{nullness/quals}{Raw}} type annotation represents a
+partially-initialized object.  If a reference has
+\code{@Raw} type, then all of its \code{@NonNull} fields are treated as
+\code{@\refclass{nullness/quals}{LazyNonNull}}:  when read, they are
+treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
+written, they are treated as being
+\code{@\refclass{nullness/quals}{NonNull}}.
+
+
+The rawness hierarchy is orthogonal to the nullness hierarchy.  It
+is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
+\<@NonNull @NonRaw>, or \<@Nullable @NonRaw>.  The nullness hierarchy tells
+you about the reference itself:  might the reference be null?
+The rawness hierarchy tells you about the fields in the referred-to object:
+might those fields be null?
+
+
+% Does our implementation handle static fields soundly?
+
+
+You can suppress warnings related to partially-initialized objects with
+\<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
+\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!)
+
+
+\paragraph{How an object becomes non-raw}
+
+Within the constructor,
+\code{this} has \code{@\refclass{nullness/quals}{Raw}} type.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+have been initialized, then \code{this} is treated as non-raw.
+
+The Nullness checker issues an error if the constructor fails to initialize
+any non-null field.  This ensures that the object is in a legal (non-raw)
+state by the time that the constructor exits.
+\urldef{\jlsdefiniteassignmenturl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/defAssign.html}
+\urldef{\jlsfinalvariablesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.12.4}
+This is different than Java's test for definite assignment (see 
+\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
+% , which requires that local
+% variables (and blank \code{final} fields) must be assigned.  Java does not
+% require that non-\code{final} fields be assigned, since 
+which does not apply to fields (except blank final ones, defined in
+\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4})) because fields
+have a default value of null.
+
+
+% and can only be passed to methods when the corresponding parameter is
+% annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
+% restrictions apply to assigning \code{this} to a field.
+
+\paragraph{Invoking the superclass constructor; rawness of the superclass reference}
+
+Suppose that class C extends class B.  Within the C
+constructor, until the B superclass constructor is called, \code{this} has
+type \code{@Raw C} and also \code{@Raw B}.  After the
+superclass constructor has been called, then \code{this} has type
+\code{@Raw C} and also \code{@NonRaw B}.
+By the time that the constructor exits, \<this> has type \<@NonRaw C> and
+also \<@NonRaw B>.
+
+When you write \<@Raw>, the annotation applies only to the given class, not
+to any superclass.  For instance, the checker interprets \<@Raw C> as
+``\code{@Raw C} and also \code{{\bfseries @NonRaw} B}'', rather than
+``\code{@Raw C} and also \code{@Raw B}'', which would be less useful.  The
+only exception is when a method overriding relationship forces the
+superclass to also be raw.  For example:
+
+\begin{Verbatim}
+  class A extends Object {
+    // receiver is "@NonRaw A"
+    void nonRawAReceiver() { }
+    // annotation forces receiver to be "@Raw A"; also is "@NonRaw Object"
+    void rawAReciever() @Raw { }
+  }
+
+  class B extends A {
+    // annotation forces receiver to be "@Raw B", method overriding forces "@Raw A"
+    void rawAReceiver() @Raw {
+      super.nonRawAReceiver();  // illegal!  rawness of A does not match
+    }
+    // annotation forces receiver to be "@Raw B"; also is "@NonRaw A"
+    void rawBReceiver() @Raw {
+      super.nonRawAReceiver();  // OK
+    }
+  }
+\end{Verbatim}
+
+
+
+
+% \urldef{\jlsconstructorbodyurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.8.7}
+% (Recall that the superclass constructor is called on the first line, or is
+% inserted automatically by the compiler before the first line, see 
+% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+
+
+
+% Should we change the terminology?
+\paragraph{A note about the terminology ``raw''}
+
+The name ``raw'' comes from a research paper that proposed this
+approach~\cite{FahndrichL2003}.  
+A better name might have been ``not yet initialized'' or ``partially
+initialized'', but the term ``raw'' is now well-known.
+The \code{@\refclass{nullness/quals}{Raw}}
+annotation has nothing to do with the raw types of Java Generics.
+
+
 \section{Examples\label{nullness-example}}
 
 \subsection{Tiny examples\label{nullness-tiny-examples}}
@@ -765,7 +817,7 @@ side of Figure~\ref{fig:findbugs-refactoring}.
 
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
-the Checker Framework aims at soundness:  never failing to report a possible
+the Checker Framework aims at soundness:  it aims to never miss a possible
 null dereference, while at the same time limiting false reports.
 
 Because some of the names are the same (\<NonNull>, \<Nullable>), it is
@@ -907,7 +959,8 @@ tool like the Checker Framework.)
 % LocalWords:  DefaultLocation Nullness PolyNull nullness AnnotateNullable JLS
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
-% LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes
+% LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles
-% LocalWords:  isDirectory AssertionError
+% LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
+% LocalWords:  FindBugs's getObject
