@@ -607,18 +607,18 @@ have a default value of null.
 
 \paragraph{Invoking the superclass constructor; rawness of the superclass reference}
 
-Suppose that class C extends class B.  Within the C
-constructor, until the B superclass constructor is called, \code{this} has
-type \code{@Raw C} and also \code{@Raw B}.  After the
+Suppose that class B extends class A.  Within the B
+constructor, until the A superclass constructor is called, \code{this} has
+type \code{@Raw B} and also \code{@Raw A}.  After the
 superclass constructor has been called, then \code{this} has type
-\code{@Raw C} and also \code{@NonRaw B}.
-By the time that the constructor exits, \<this> has type \<@NonRaw C> and
-also \<@NonRaw B>.
+\code{@Raw B} and also \code{@NonRaw A}.
+By the time that the constructor exits, \<this> has type \<@NonRaw B> and
+also \<@NonRaw A>.
 
 When you write \<@Raw>, the annotation applies only to the given class, not
-to any superclass.  For instance, the checker interprets \<@Raw C> as
-``\code{@Raw C} and also \code{{\bfseries @NonRaw} B}'', rather than
-``\code{@Raw C} and also \code{@Raw B}'', which would be less useful.  The
+to any superclass.  For instance, the checker interprets \<@Raw B> as
+``\code{@Raw B} and also \code{{\bfseries @NonRaw} A}'', rather than
+``\code{@Raw B} and also \code{@Raw A}'', which would be less useful.  The
 only exception is when a method overriding relationship forces the
 superclass to also be raw.  For example:
 
