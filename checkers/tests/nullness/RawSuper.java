@@ -36,8 +36,10 @@ class RawSuper {
             mRB(this);
             mB(this);
         }
+        // "@Raw" means "@Raw B @NonRaw A", but method overrides take precedence.
         void raw() @Raw {
-            super.nonRaw();    // legal, because "@Raw" means "@Raw B @NonRaw A"
+            //:: (type.incompatible)
+            super.nonRaw();
         }
     }
     // This test may be extraneous
