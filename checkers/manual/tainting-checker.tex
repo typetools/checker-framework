@@ -48,7 +48,7 @@ The Tainting type system uses the following annotations:
 \item
   \code{@\refclass{tainting/quals}{Tainted}} indicates
   a type that may include only tainted, untrusted values.
-  \code{@Tainted} is a subtype of \code{@Untainted}.
+  \code{@Tainted} is a supertype of \code{@Untainted}.
 \item
   \code{@\refclass{tainting/quals}{PolyTainted}} is a qualifier that is
   polymorphic over tainting (see Section~\ref{qualifier-polymorphism}).
@@ -65,7 +65,7 @@ computations.
 
 In some programs, the area outside the boundary is very small:  values are
 sanitized as soon as they are received from an external source.  In other
-programs, the area inside the boundary is very large:  values are sanitized
+programs, the area inside the boundary is very small:  values are sanitized
 only immediately before being used at a sensitive sink.  Either approach
 can work, so long as every possibly-tainted value is sanitized before it
 reaches a sensitive sink.
@@ -139,5 +139,7 @@ the Tainting Checker to create a new annotation and checker with a more
 specific name and semantics.  See Chapter~\ref{writing-a-checker} for more
 details.
 
+% TODO: one could add a String[] value to @Untainted to distinguish different
+% values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 
 % LocalWords:  quals untaint PolyTainted mis untainting sanitization

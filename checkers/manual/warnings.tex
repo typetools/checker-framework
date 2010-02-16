@@ -115,9 +115,10 @@ regular expression that matches classes for which warnings and errors
 should be suppressed.  For example, if you use
 ``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
-\code{javac}, then the checkers will suppress all warnings within those
-classes, all warnings relating to invalid arguments, and all warnings
-relating to incorrect use of the return value.
+\code{javac}, then the checkers will suppress all warnings within
+classes whose fully-qualified name starts with \codesize\verb|java.|, all
+warnings relating to invalid arguments, and all warnings relating to incorrect
+use of the return value.
 
 
 \label{lint-options}
