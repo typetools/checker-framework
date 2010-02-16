@@ -156,15 +156,18 @@ The annotation on a method declares that some expressions are non-null, if
 the method returns true.
 
 Consider \sunjavadoc{java/io/File.html}{java.io.File}.
+Method
 \sunjavadoc{java/io/File.html#listFiles()}{File.listFiles()} may
-return null, but is specified to return non-null value if
+return null, but is specified to return a non-null value if
 \sunjavadoc{java/io/File.html#isDirectory()}{File.isDirectory()} is
-true.  You can declare this relationship in the following way:
+true.  The same holds for method
+\sunjavadoc{java/io/File.html#listFiles()}{File.list()}.
+You can declare this relationship in the following way:
 
 \begin{Verbatim}
   class File {
 
-    @AssertNonNullIfTrue("list()", "listFiles()")
+    @AssertNonNullIfTrue({"list()", "listFiles()"})
     public boolean isDirectory() { ... }
 
     public File @Nullable [] listFiles();
@@ -240,7 +243,7 @@ The checker issues a warning in three cases:
   When an expression of non-\code{@\refclass{nullness/quals}{NonNull}} type
   is dereferenced, because it might cause a null pointer exception.
   Dereferences occur not only when a field is accessed, but when an array
-  is indexed, an exception is caught, a lock is taken in a synchronized
+  is indexed, an exception is thrown, a lock is taken in a synchronized
   block, and more.  For a complete description of all checks performed by
   the Nullness checker, see the Javadoc for
   \refclass{nullness}{NullnessVisitor}.
@@ -303,13 +306,14 @@ Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress only those warnings related to misuse of generic type
 arguments.  One use for this key is when a class is declared to take only
 \<@NonNull> type arguments, but you want to instantiate the class with a
-\<@NonNull> type argument, as in \code{List<@Nullable Object>}.  For a more
+\<@Nullable> type argument, as in \code{List<@Nullable Object>}.  For a more
 complete explanation of this example, see
 Section~\ref{faq-list-map-nonnull-typeargs}.
 
 The Nullness Checker also permits you to use assertions or method calls to
 suppress warnings; see below.
 
+% TODO: check whether the SuppressWarnings keys are correct.
 
 
 \subsection{Suppressing warnings with assertions and method calls\label{suppressing-warnings-with-assertions}}
@@ -702,7 +706,7 @@ The Nullness checker itself.
 \item
 The 
 \ahref{http://groups.csail.mit.edu/pag/daikon/}{Daikon invariant detector}.
-Run the command \code{make check-nullness}.
+Run the command \code{make check-nullness} in the Daikon distribution.
 
 \item
 The annotation scene library.
@@ -758,17 +762,31 @@ Figure~\ref{fig:findbugs-refactoring}.
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
 % in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~javax.annotation.Nonnull~ \\ \hline
+ ~org.jetbrains.annotations.NotNull~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~checkers.nullness.quals.NonNull~
+\\
+\ 
+\\
 \begin{tabular}{|l|l|}
 \hline
- ~edu.umd.cs.findbugs.annotations.NonNull~ & ~checkers.nullness.quals.NonNull~ \\ \hline
- ~javax.annotation.Nonnull~ & ~checkers.nullness.quals.NonNull~ \\ \hline
- ~org.jetbrains.annotations.NotNull~ & ~checkers.nullness.quals.NonNull~ \\ \hline \hline
- ~edu.umd.cs.findbugs.annotations.Nullable~ & ~checkers.nullness.quals.Nullable~ \\ \hline
- ~edu.umd.cs.findbugs.annotations.CheckForNull~ & ~checkers.nullness.quals.Nullable~ \\ \hline
- ~edu.umd.cs.findbugs.annotations.UnknownNullness~ & ~checkers.nullness.quals.Nullable~ \\ \hline
- ~javax.annotation.Nullable~ & ~checkers.nullness.quals.Nullable~ \\ \hline
- ~javax.annotation.CheckForNull~ & ~checkers.nullness.quals.Nullable~ \\ \hline
- ~org.jetbrains.annotations.Nullable~ & ~checkers.nullness.quals.Nullable~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~javax.annotation.Nullable~ \\ \hline
+ ~javax.annotation.CheckForNull~ \\ \hline
+ ~org.jetbrains.annotations.Nullable~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~checkers.nullness.quals.Nullable~
 \end{tabular}
 \end{center}
 %BEGIN LATEX

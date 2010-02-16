@@ -58,6 +58,10 @@ can be modified).  The following qualifiers are part of the IGJ type system.
   for the referent to change via an aliasing mutable reference, even though
   the referent cannot be changed via the readonly reference.
 
+\item[\code{@\refclass{igj/quals}{Assignable}}]
+  The annotated field may be re-assigned regardless of the
+  immutability of the enclosing class or object instance.
+
 \item[\code{@\refclass{igj/quals}{AssignsFields}}]
   is similar to \<@Mutable>, but permits only limited mutation ---
   assignment of fields --- and is intended for use by constructor helper
@@ -78,7 +82,7 @@ For additional details, see~\cite{ZibinPAAKE2007}.
 The IGJ checker issues an error whenever mutation happens through a
 readonly reference, when fields of a readonly reference which are not
 explicitly marked with \code{@\refclass{igj/quals}{Assignable}} are
-reassigned, or when a readonly expression is assigned to a mutable
+reassigned, or when a readonly reference is assigned to a mutable
 variable.  The checker also emits a warning when casts increase the
 mutability access of a reference.
 
@@ -214,9 +218,9 @@ variables \code{<I>} and \code{<J>}.
 
 \paragraph{Usage on classes\label{igj-usage-on-classes}}
 
-A class annotated with \code{@\refclass{igj/quals}{I}} could be declared with any IGJ
-Immutability annotation.  The actual immutability that \code{@\refclass{igj/quals}{I}} is
-resolved to dictates the immutability type for all the non-static
+A class declaration annotated with \code{@\refclass{igj/quals}{I}} can then be
+used with any IGJ Immutability annotation.  The actual immutability that
+\code{@\refclass{igj/quals}{I}} is resolved to dictates the immutability type for all the non-static
 appearances of \code{@\refclass{igj/quals}{I}} with the same value as the class declaration.
 
   Example:
