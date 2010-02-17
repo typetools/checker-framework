@@ -1,6 +1,9 @@
 import checkers.nullness.quals.*;
 import java.util.*;
 
+// @skip-test
+// This test is broken as it uses multiple classes.  Javac halts
+// when seeing the first error
 class RawSuper {
 
     class A {
