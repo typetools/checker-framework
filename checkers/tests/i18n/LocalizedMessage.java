@@ -6,11 +6,13 @@ class LocalizedMessage {
     void any(String s) { }
 
     void stringLiteral() {
+        //:: (type.incompatible)
         localized("ldskjfldj"); // error
         any("lksjdflkjdf");
     }
 
     void stringRef(String ref) {
+        //:: (type.incompatible)
         localized(ref);   // error
         any(ref);
     }
@@ -26,12 +28,18 @@ class LocalizedMessage {
     }
 
     void concatenation(@Localized String s1, String s2) {
+        //:: (type.incompatible)
         localized(s1 + s1);     // error
+        //:: (type.incompatible)
         localized(s1 + "m");    // error
+        //:: (type.incompatible)
         localized(s1 + s2);     // error
 
+        //:: (type.incompatible)
         localized(s2 + s1);     // error
+        //:: (type.incompatible)
         localized(s2 + "m");    // error
+        //:: (type.incompatible)
         localized(s2 + s2);     // error
 
         any(s1 + s1);

@@ -14,7 +14,9 @@ public class NullTester {
         a = identity(a);
 
         // errors
+        //:: (type.incompatible)
         a = (@ReadOnly Object) a;
+        //:: (type.incompatible)
         a = identity((@ReadOnly Object)a);
 
         // ok

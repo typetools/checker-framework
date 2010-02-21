@@ -49,28 +49,44 @@ class Assignments2 {
     }
 
     public void cannotDo() {
+        //:: (primitive.ro)
         @ReadOnly int j = 0;   // primitive cannot be annotated as readonly
+        //:: (type.incompatible)
         a = b;                 // cannot assign readonly to mutable
+        //:: (ro.field)
         b.y = i;               // readonly field behave as final
+        //:: (ro.field)
         b.y = 3;               // readonly field behave as final
+        //:: (ro.field)
         b.x = a.y;             // readonly field behave as final
 
+        //:: (type.incompatible)
         mString = isPolyRead(roString);  // polyread resolved as readonly
 
+        //:: (ro.field)
         roc.cell = roc;            // readonly field behave as final
+        //:: (method.invocation.invalid)
         roc.mutateInternal(mc);    // readonly instance is readonly
+        //:: (type.incompatible)
         roc.requiresMutableParameter(roc); // requires mutable parameter
+        //:: (type.incompatible)
         mc.cell = roc;             // cannot assign readonly to mutable
+        //:: (type.incompatible)
         mc.cell = roc.cell;        // cannot assign readonly to mutable
+        //:: (type.incompatible)
         mc.cell = roc.getCell();   // cannot assign readonly to mutable
 
         // cannot assign readonly to mutable
+        //:: (type.incompatible)
         mString = isReadOnly();
 
+        //:: (type.incompatible)
         mString = aMutable.isReadOnly();
         mString = aReadOnly.isStillMutable();
+        //:: (type.incompatible)
         mString = aReadOnly.isReadOnly();
 
+        //:: (ro.field)
         roc.x = 2;                 // readonly primitive field is final
     }
 
