@@ -14,8 +14,10 @@ public class JCIPAnnotations {
 
     void testUnguardedAccess() {
         this.unguardedField.toString();
+        //:: (unguarded.access)
         this.guardedField.toString();   // error
         this.unguardedMethod();
+        //:: (unguarded.invocation)
         this.guardedMethod();   // error
     }
 

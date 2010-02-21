@@ -16,6 +16,7 @@ public class Overriding {
 
     class SubClass extends SuperClass {
         @Holding({"a", "b"})  // error
+          //:: (override.holding.invalid)
         @Override void guardedByOne() { }
 
         @Holding({"a", "b"})

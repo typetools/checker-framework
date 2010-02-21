@@ -79,10 +79,13 @@ class Arrays {
 
     void test3() {
         @Odd Object o1 = new @Odd Object @Odd [] @Odd [] {};
+        //:: (type.incompatible)
         @Odd Object o2 = new @Odd Object [] @Odd [] {};             // ERROR
 
         @Odd Object @Odd [] o3 = (new @Odd Object [] @Odd [] {})[0];
+        //:: (type.incompatible)
         @Odd Object @Odd [] o4 = (new Object @Odd [][] {})[0];      // ERROR
+        //:: (type.incompatible)
         @Odd Object @Odd [] o5 = (new @Odd Object[][] {})[0];      // ERROR
 
         Object @Odd [] o6 = (new Object [] @Odd [] {})[0];
@@ -103,7 +106,9 @@ class Arrays {
 //      @Odd String [] ara1 = { null, null };
         @Odd String [] ara2 = new @Odd String [] { null, null };
 
+        //:: (type.incompatible)
         @Odd String [] arb1 = { null, "m" };
+        //:: (type.incompatible)
         @Odd String [] arb2 = new @Odd String [] { null, "m" };
     }
 }

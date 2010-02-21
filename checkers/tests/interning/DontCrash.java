@@ -10,6 +10,10 @@ public class DontCrash {
 
     // from VarInfoAux
     static class VIA {
+        //:: non-static variable this cannot be referenced from a static context
+        //:: inner classes cannot have static declarations
+        //:: non-static variable this cannot be referenced from a static context
+        //:: inner classes cannot have static declarations
         private static VIA theDefault = new VIA();
         private Map<@Interned String, @Interned String> map;
 

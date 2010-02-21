@@ -7,10 +7,12 @@ public class Fields {
 
     synchronized void wrongLocks() {
         // without locking
+        //:: (unguarded.access)
         locked.toString();    // error
 
         // locking over wrong lock
         synchronized(this) {
+            //:: (unguarded.access)
             locked.toString();    // error
         }
     }
@@ -21,6 +23,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
+        //:: (unguarded.access)
         locked.toString();    // error
     }
 
@@ -33,9 +36,11 @@ public class Fields {
 
     void wrongLocksb() {
         // without locking
+        //:: (unguarded.access)
         lockedByThis.toString();    // error
 
         synchronized(Fields.class) {
+            //:: (unguarded.access)
             lockedByThis.toString();    // error
         }
     }
@@ -46,6 +51,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
+        //:: (unguarded.access)
         lockedByThis.toString();    // error
     }
 
@@ -60,18 +66,24 @@ public class Fields {
 
         synchronized(this) {
             lockedByThis.toString();
+            //:: (unguarded.access)
             a.lockedByThis.toString();  // error
+            //:: (unguarded.access)
             b.lockedByThis.toString();  // error
         }
 
         synchronized(a) {
+            //:: (unguarded.access)
             lockedByThis.toString();    // error
             a.lockedByThis.toString();
+            //:: (unguarded.access)
             b.lockedByThis.toString();  // error
         }
 
         synchronized(b) {
+            //:: (unguarded.access)
             lockedByThis.toString();    // error
+            //:: (unguarded.access)
             a.lockedByThis.toString();  // error
             b.lockedByThis.toString();
         }
