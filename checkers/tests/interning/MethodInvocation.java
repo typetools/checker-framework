@@ -5,15 +5,18 @@ public class MethodInvocation {
     MethodInvocation nonInterned;
     void nonInternedMethod() {
         nonInternedMethod();
+        //:: (method.invocation.invalid)
         internedMethod();   // should emit error
 
         this.nonInternedMethod();
+        //:: (method.invocation.invalid)
         this.internedMethod();      // should emit error
 
         interned.nonInternedMethod();
         interned.internedMethod();
 
         nonInterned.nonInternedMethod();
+        //:: (method.invocation.invalid)
         nonInterned.internedMethod();   // should emit error
     }
 
@@ -28,6 +31,7 @@ public class MethodInvocation {
         interned.internedMethod();
 
         nonInterned.nonInternedMethod();
+        //:: (method.invocation.invalid)
         nonInterned.internedMethod();   // should emit error
     }
 

@@ -8,15 +8,18 @@ public class DependentTypes {
 
   @SuperQual Object supero = null;
   // A trivial error, so there is at least one in the output.
+  //:: (type.incompatible)
   @SubQual Object subo = supero;
 
 
   // This signature is a type error.  A client of the supertype (SuperQual)
   // can set publicDepSubQual to null, but a client of the subtype cannot.
+  //:: (type.incompatible)
   public @NonNull @Dependent(result = Nullable.class, when=SuperQual.class) String publicDepSubQual;
   // This signature is a type error.  A client of the supertype need not
   // handle null as a value of publicDepSuperQual, but the subtype might
   // contain that.
+  //:: (type.incompatible)
   public @Nullable @Dependent(result = NonNull.class, when=SuperQual.class) String publicDepSuperQual;
 
 
@@ -31,6 +34,7 @@ public class DependentTypes {
   }
   // This signature is a type error.  Clients of the supertype
   // (SuperQual) can pass in null, but clients of the subtype cannot.
+  //:: (type.incompatible)
   public void setDepSubQualBAD(@NonNull @Dependent(result = Nullable.class, when=SuperQual.class) String s) {
     privateDepSubQual = s;
   }
@@ -43,6 +47,7 @@ public class DependentTypes {
 
   // This signature is a type error.  Clients of the supertype need not
   // handle null as a return value, but the subtype may return null.
+  //:: (type.incompatible)
   public @Nullable @Dependent(result = NonNull.class, when=SuperQual.class) String getDepSuperQualBAD() {
     return privateDepSuperQual;
   }

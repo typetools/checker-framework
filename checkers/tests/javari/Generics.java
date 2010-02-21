@@ -14,17 +14,25 @@ public class Generics {
 
         // Assignments test
         rr = rr;
+        //:: (type.incompatible)
         rr = rm;    // error
+        //:: (type.incompatible)
         rr = rq;    // error
         rr = mr;
+        //:: (type.incompatible)
         rr = mm;    // error
+        //:: (type.incompatible)
         rr = mq;    // error
 
+        //:: (type.incompatible)
         rm = rr;    // error
         rm = rm;
+        //:: (type.incompatible)
         rm = rq;    // error
+        //:: (type.incompatible)
         rm = mr;    // error
         rm = mm;
+        //:: (type.incompatible)
         rm = mq;    // error
 
         rq = rr;
@@ -34,22 +42,35 @@ public class Generics {
         rq = mm;
         rq = mq;
 
+        //:: (type.incompatible)
         mr = rr;    // error
+        //:: (type.incompatible)
         mr = rm;    // error
+        //:: (type.incompatible)
         mr = rq;    // error
         mr = mr;
+        //:: (type.incompatible)
         mr = mm;    // error
+        //:: (type.incompatible)
         mr = mq;    // error
 
+        //:: (type.incompatible)
         mm = rr;    // error
+        //:: (type.incompatible)
         mm = rm;    // error
+        //:: (type.incompatible)
         mm = rq;    // error
+        //:: (type.incompatible)
         mm = mr;    // error
         mm = mm;
+        //:: (type.incompatible)
         mm = mq;    // error
 
+        //:: (type.incompatible)
         mq = rr;    // error
+        //:: (type.incompatible)
         mq = rm;    // error
+        //:: (type.incompatible)
         mq = rq;    // error
         mq = mr;
         mq = mm;

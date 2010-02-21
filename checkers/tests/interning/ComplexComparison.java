@@ -33,6 +33,7 @@ public class ComplexComparison {
         String e = new String("foo");
         String f = new String("bar");
 
+        //:: (not.interned)
         if (e != null && f != null && e == f) {
             System.out.println("yes");
         } else {

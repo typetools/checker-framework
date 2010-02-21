@@ -19,6 +19,7 @@ public class DeepOverrideAbstract {
         public @Odd String interfaceMethod() {
             return null;
         }
+        //:: (override.return.invalid)
         public String abstractMethod() {
             return "";
         }

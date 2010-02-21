@@ -16,8 +16,10 @@ class ForEnhanced {
 
     void testMutable() {
         for (Object o : mm);
+        //:: (type.incompatible)
         for (Object o : mr);  // error
         for (Object o : rm);
+        //:: (type.incompatible)
         for (Object o : rr);  // error
         for (@ReadOnly Object o : mm);
         for (@ReadOnly Object o : mr);
@@ -25,17 +27,22 @@ class ForEnhanced {
         for (@ReadOnly Object o : rr);
 
         for (Object o : mma);
+        //:: (type.incompatible)
         for (Object o : mra);  // error
         for (Object o : rma);
+        //:: (type.incompatible)
         for (Object o : rra);  // error
         for (@ReadOnly Object o : mma);
         for (@ReadOnly Object o : mra);
         for (@ReadOnly Object o : rma);
         for (@ReadOnly Object o : rra);
 
+        //:: (type.incompatible)
         for (List<@ReadOnly Object> w : rrm);   // error
 
+        //:: (type.incompatible)
         for (@ReadOnly List<@ReadOnly Object> rr2 : rrm) { // error
+            //:: (type.incompatible)
             for (Object no : rr2);                // error
             for (@ReadOnly Object yes : rr2);
         }
@@ -52,9 +59,11 @@ class ForEnhanced {
     public Object[] getMMA() { return mma; }
 
     void testMethods() {
+        //:: (type.incompatible)
         for (Object o : getMR()); //error
         for (@ReadOnly Object o : getMR());
 
+        //:: (type.incompatible)
         for (Object o : getRRA()); // error
         for (@ReadOnly Object o : getRRA());
 

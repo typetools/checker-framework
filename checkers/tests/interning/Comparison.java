@@ -27,12 +27,14 @@ public class Comparison {
         String c = new String("foo");
         String d = new String("bar");
 
+        //:: (not.interned)
         if (c == d) {
             System.out.println("yes");
         } else {
             System.out.println("no");
         }
 
+        //:: (not.interned)
         if (c != d) {
             System.out.println("no");
         } else {

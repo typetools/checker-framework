@@ -16,6 +16,7 @@ public class DeepOverrideInterface {
     }
 
     public static class C extends B {
+        //:: (override.return.invalid)
         public String interfaceMethod() {
             return "";
         }
