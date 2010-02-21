@@ -7,6 +7,8 @@ import java.io.*;
 
 public class TestInput {
 
+    public boolean debug = false;
+
     private JavaCompiler compiler;
 
     private StandardJavaFileManager fileManager;
@@ -55,6 +57,11 @@ public class TestInput {
         StringWriter output = new StringWriter();
         DiagnosticCollector<JavaFileObject> diagnostics = new
             DiagnosticCollector<JavaFileObject>();
+
+        if (debug) {
+            System.out.printf("TestInput.run:%n  options: %s%n  processors: %s%n  files: %s%n",
+                              this.options, this.processors, this.files);
+        }
 
         JavaCompiler.CompilationTask task = compiler.getTask(output, fileManager,
               diagnostics, this.options, this.processors, this.files);
