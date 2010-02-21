@@ -33,8 +33,7 @@ abstract public class CheckerTest {
     public CheckerTest(String checkerName, String checkerDir, String... checkerOptions) {
         this.checkerName = checkerName;
         this.checkerDir = "tests" + File.separator + checkerDir;
-        this.checkerOptions = Arrays.copyOf(checkerOptions, checkerOptions.length + 1);
-        this.checkerOptions[checkerOptions.length] = "-XDTAannotationsincomments";
+        this.checkerOptions = Arrays.copyOf(checkerOptions, checkerOptions.length);
     }
 
     /**
