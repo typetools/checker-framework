@@ -22,7 +22,6 @@
         <jvmarg line="-Djsr308.imports='checkers.nullness.quals.*:checkers.interning.quals.*'"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>
-        <arg line="-XDTAannotationsincomments"/>
         <arg line="-implicit:none"/>
         <arg line="-source 1.7"/>
         <arg line="-Xprefer:newer"/>
@@ -50,7 +49,6 @@
         <arg line="-classpath ${checkers.lib}:@{custom.lib}"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>
-        <arg line="-XDTAannotationsincomments"/>
         <arg line="-implicit:none"/>
         <arg line="-source 1.7"/>
         <arg line="-Xprefer:newer"/>
