@@ -600,12 +600,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 receiver.addAnnotation(getImmutabilityAnnotation(owner));
             }
 
-            for (AnnotatedTypeMirror t : type.getParameterTypes())
-                if (!hasImmutabilityAnnotation(t)
-                    && !t.getKind().isPrimitive()
-                    && t.getKind() != TypeKind.TYPEVAR)
-                    t.addAnnotation(MUTABLE);
-
             AnnotatedTypeMirror returnType = type.getReturnType();
             if (!hasImmutabilityAnnotation(returnType)
                 && !returnType.getKind().isPrimitive()
