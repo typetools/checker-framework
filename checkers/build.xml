@@ -177,7 +177,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="build-javari-jdk" depends="build" unless="javari.jdk.uptodate"
-    description="Compile Javari's annotated JDK.">
+    description="Compile Javari's annotated JDK into directory ${javari.jdk.build}.">
     <pathconvert pathsep=" " property="javari.jdk.src.files.spaceseparated">
        <path>
           <fileset refid="javari.jdk.src.files"/>
