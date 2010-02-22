@@ -1,8 +1,14 @@
-This directory contains annotated versions of "skeleton" library classes
-(such as the JDK) to use with the appropriate type-checker.
+This directory contains annotated versions of library classes (such as the
+JDK).
 
-See the JSR 308 Checkers documentation for information on using these
-classes (essentially, invoke the compiler with the "-sourcepath" option).
+See chapter "Annotating libraries" in the Checker Framework manual for
+information on using these classes.
 
-If you annotate more library classes, please share them with us via email
-at checker-framework-dev@googlegroups.com.
+Some generated .jar files are checked into the repository, because
+generating them requires external dependencies (the Annotation File
+Utilities) and because it prevents bugs related to different people using
+different versions of the JDK.
+
+If you annotate more library classes -- in the JDK or another library --
+please share them with us via email at checker-framework-dev@googlegroups.com.
+Thanks!
