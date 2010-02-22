@@ -2,13 +2,6 @@ package java.util;
 import checkers.javari.quals.*;
 
 public interface NavigableMap<K, V> extends java.util.SortedMap<K, V> {
-  public interface Entry<K, V> {
-    public abstract K getKey() @ReadOnly;
-    public abstract V getValue() @ReadOnly;
-    public abstract V setValue(V a1);
-    public abstract boolean equals(@ReadOnly java.lang.Object a1) @ReadOnly;
-    public abstract int hashCode() @ReadOnly;
-  }
   public abstract @PolyRead java.util.Map.Entry<K, V> lowerEntry(K a1) @PolyRead;
   public abstract K lowerKey(K a1) @ReadOnly;
   public abstract @PolyRead java.util.Map.Entry<K, V> floorEntry(K a1) @PolyRead;
