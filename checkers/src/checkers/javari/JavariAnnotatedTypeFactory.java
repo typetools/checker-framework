@@ -664,14 +664,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 type.getExtendsBound().addAnnotation(READONLY);
             return super.visitWildcard(type, p);
         }
-
-        @Override
-        public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            if (!hasImmutabilityAnnotation(type)) {
-                type.addAnnotation(READONLY);
-            }
-            return super.visitPrimitive(type, p);
-        }
     }
 
 
