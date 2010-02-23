@@ -5,6 +5,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
+import com.sun.mirror.util.Types;
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
 
@@ -600,6 +601,12 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 receiver.addAnnotation(getImmutabilityAnnotation(owner));
             }
 
+            for (AnnotatedTypeMirror t : type.getParameterTypes())
+                if (!hasImmutabilityAnnotation(t)
+                    && !t.getKind().isPrimitive()
+                    && t.getKind() != TypeKind.TYPEVAR)
+                    t.addAnnotation(MUTABLE);
+
             AnnotatedTypeMirror returnType = type.getReturnType();
             if (!hasImmutabilityAnnotation(returnType)
                 && !returnType.getKind().isPrimitive()
@@ -657,6 +664,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                     && !hasImmutabilityAnnotation(type.getExtendsBound()))
                 type.getExtendsBound().addAnnotation(READONLY);
             return super.visitWildcard(type, p);
+        }
+
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
+            if (!hasImmutabilityAnnotation(type)) {
+                type.addAnnotation(READONLY);
+            }
+            return super.visitPrimitive(type, p);
         }
     }
 
