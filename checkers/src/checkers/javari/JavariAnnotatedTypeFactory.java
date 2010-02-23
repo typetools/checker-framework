@@ -5,7 +5,6 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
-import com.sun.mirror.util.Types;
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
 
