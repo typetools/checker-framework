@@ -1,0 +1,151 @@
+
+This file describes how to merge the changes on the ENGINE_V2_PATCHES
+branch of the $inv/java/daikon part of the repository into the trunk
+(which is version 3 of Daikon).
+
+(1) Ensure that your V2 checkout is up to date, and builds:
+    Commit if the last command shows any diffs.
+
+  cd $inv/java
+  make use-ver2
+  cvs -q update
+  make
+  cvs -q diff --brief
+
+(2) Ensure that your V2 checkout passes tests.
+    Fix problems if there are any non-zero-size diffs, and start over.
+    Commit if the "cvs diff" command shows any diffs.
+
+  cd $inv/tests
+  cvs -q update
+  cvs -q diff --brief
+  make diffs
+
+(3) Ensure that your V3 checkout is up to date, and builds.
+    Commit if the last command shows any diffs.
+
+  cd $inv/java
+  make use-ver3
+  cvs -q update
+  make
+  cvs -q diff --brief
+
+(4) Ensure that your V3 checkout passes tests.
+    Fix problems if there are any non-zero-size diffs, and start over.
+    Commit if the "cvs diff" command shows any diffs.
+
+  cd $inv/tests
+  cvs -q update
+  cvs -q diff --brief
+  make diffs
+
+(5) Make a backup of your current version of the trunk.
+
+  cd $inv
+  tar cfz daikon.ver3.tar.gz daikon.ver3/
+
+(6) Update V3 using cvs.  Construct the date token for the first -j
+    switch using the topmost (most recent) entry from the merge
+    history at the end of this document.
+
+  cd $inv/daikon.ver3
+  cvs up -j "ENGINE_V2_PATCHES:DD-MMM-YYYY HH:MM:SS" -j ENGINE_V2_PATCHES
+  make tags
+  date +"%d-%b-%Y %H:%M:%S"
+
+(7) Add a line to the top of the merge history (at the bottom of this
+    file) noting the precise time you ran the cvs command in step 6 (that
+    is, the output of the "date" command).
+
+(8) Use PCL-CVS (or some other, less-capable tool) to fix all
+    conflicts created during the merge, so that the project compiles.
+    Do "M-x cvs-examine RET $inv/java/daikon RET" or
+      (cvs-examine (substitute-in-file-name "$inv/java/daikon") nil)
+    then for each conflict:
+     * "d E" (uses imerge)
+     * "d e" (uses ediff)
+     * or edit new version (containing conflict markers) directly
+    In imerge/ediff, "MINE" is V3, and "OTHER" is V2.
+
+    If you wish to see what V2 looked like at the time of the last merge
+    (for example, to see what changed between then an now in V2), run the
+    following in a temporary directory:
+      cvs -q -d /g4/projects/invariants/.CVS co -r ENGINE_V2_PATCHES -D 2003/06/09 invariants/java/daikon
+
+(9) Examine any modified files you think are deserving before you run tests
+    or commit.
+
+(10) Edit the code and tests until all tests pass.  Each of the below
+     commands should succeed.
+
+  cd $inv/java
+  make
+
+  cd $inv/tests
+  make diffs
+
+(11) Commit the files under $inv/daikon.ver3 and $inv/tests.ver3 to CVS,
+     using a log message that communicates the time you ran step 6
+     (which is the same as the time at the top of the merge history).
+     Be sure to commit your changes to this file (merging.txt), as well.
+
+
+==========================================================================
+**** Merge history ****
+(Add entries at the top of the list)
+
+13-Oct-2003 13:26:21 by MDE
+03-Oct-2003 14:50:26 by MDE
+30-Sep-2003 12:29:54 by JHP
+20-Sep-2003 18:49:06 by MST
+02-Sep-2003 21:53:50 by JHP
+12-Aug-2003 11:49:19 by MST
+06-Aug-2003 20:42:21 by MDE
+26-Jul-2003 11:43:46 by MDE
+22-Jul-2003 10:57:27 by JHP
+10-Jun-2003 19:43:18 by MDE
+10-Jun-2003 08:03:44 by MDE
+29-May-2003 15:13:24 by JHP
+13-May-2003 08:46:50 by MDE
+25-Apr-2003 13:42:18 by JHP
+20-Apr-2003 08:05:46 by MDE
+23-Jan-2003 01:29:52 by SMcC
+20-Jan-2003 19:38:39 by AMD
+18-Jan-2003 12:32:43 by MDE
+09-Jan-2003 05:28:20 by MDE
+06-Jan-2003 13:05:53 by MDE
+02-Jan-2003 17:59:44 by MDE
+29-Dec-2002 21:13:03 by MDE
+02-Dec-2002 09:13:55 by MDE
+23-Nov-2002 21:10:50 by MDE
+Sun Nov 17 13:37:54 EST 2002 by MDE
+Fri Nov  8 09:42:51 EST 2002 by MDE
+Mon Jul 29 13:22:02 EDT 2002 by MDE
+Mon Jul 15 11:26:41 EDT 2002 by MDE
+Sun Jul 14 18:04:45 EDT 2002 by MDE
+Thu Jul 11 14:26:15 EDT 2002 by MDE
+Fri Jul  5 12:02:42 EDT 2002 by MDE
+Tue Jul  2 12:46:46 EDT 2002 by MDE
+Mon Jul  1 10:25:12 EDT 2002 by MDE
+Thu Jun 27 09:43:03 EDT 2002 by MDE
+Wed Jun 26 08:28:58 EDT 2002 by MDE
+Fri Jun 14 16:41:28 EDT 2002 by MDE
+Wed Jun  5 15:01:52 EDT 2002 by TNW (renamed files in branch and trunk)
+Tue Jun  4 11:12:51 EDT 2002 by MDE
+Mon May 20 18:15:44 EDT 2002 by JWN
+Tue Apr 30 19:02:54 EDT 2002 by JWN
+Thu Apr  4 17:02:37 EST 2002 by JWN
+Mon Apr  1 11:18:12 EST 2002 by JWN
+Mon Mar 25 17:00:38 EST 2002 by JWN
+Merged  5:16pm Mar 16  by JWN
+Merged  3:56pm Mar  6  by JWN
+Merged  4:33pm Feb 26  by JWN
+Merged  7:40am Feb 24  by JWN
+Merged  5:27pm Feb 17  by JWN
+Merged  3:09pm Feb 13  by JWN
+Merged  2:31pm Feb 05  by JWN
+Merged 12:40am Jan 30  by JWN
+Merged 00:45am Jan 27  by JWN
+Merged  2:10pm Jan 24  by JWN
+Merged  3:10am Jan 20  by JWN
+Merged 12:30am Jan 10  by JWN
