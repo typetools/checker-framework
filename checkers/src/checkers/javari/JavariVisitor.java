@@ -75,7 +75,8 @@ public class JavariVisitor extends BaseTypeVisitor<Void, Void> {
         if (variableLocalField && !inConstructor && !mReceiver.hasAnnotation(MUTABLE))
             checker.report(Result.failure("ro.field"), varTree);
 
-        if (varTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+        if (varTree.getKind() == Tree.Kind.MEMBER_SELECT
+            && !TreeUtils.isSelfAccess((ExpressionTree)varTree)) {
             AnnotatedTypeMirror receiver = atypeFactory.getReceiver((ExpressionTree)varTree);
             if (receiver != null && !receiver.hasAnnotation(MUTABLE))
                 checker.report(Result.failure("ro.field"), varTree);
