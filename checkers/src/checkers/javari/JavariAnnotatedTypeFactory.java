@@ -390,30 +390,13 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (receiverType.hasAnnotation(POLYREAD)) {
             // if MemberSelectTree, we can just look at the expression tree
             ExpressionTree exprTree = tree.getMethodSelect();
-            if (exprTree.getKind() == Tree.Kind.MEMBER_SELECT) {
-                MemberSelectTree mst = (MemberSelectTree) exprTree;
-                AnnotatedTypeMirror referenceType = getAnnotatedType(mst.getExpression());
-
-                if (referenceType.hasAnnotation(READONLY)) {
-                    allMutable = false;
-                    allThisMutable = false;
-                    allPolyRead = false;
-                } else if (referenceType.hasAnnotation(POLYREAD)) {
-                    allMutable = false;
-                }
-
-            } else {
-                // not MemberSelectTree, get context from method's enclosing class
-                AnnotatedTypeMirror classType
-                    = fromElement(executableElt.getEnclosingElement());
-                if (classType.hasAnnotation(READONLY)) {
-                    allMutable = false;
-                    allThisMutable = false;
-                    allPolyRead = false;
-                } else if (classType.hasAnnotation(POLYREAD)) {
-                    allMutable = false;
-                    allThisMutable = false;
-                }
+            AnnotatedTypeMirror exprReceiver = this.getReceiver(exprTree);
+            if (exprReceiver.hasAnnotation(READONLY)) {
+                allMutable = false;
+                allThisMutable = false;
+                allPolyRead = false;
+            } else if (exprReceiver.hasAnnotation(POLYREAD)) {
+                allMutable = false;
             }
         }
 
@@ -460,7 +443,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 new AnnotatedTypeReplacer(THISMUTABLE, ownerAnno).visit(type);
         }
     }
-
 
     /**
      * A visitor to get annotations from a tree.
