@@ -520,20 +520,12 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             return super.visitLiteral(node, p);
         }
 
-        /**
-         * Combines annotations obtained from constructor declaration
-         * and local user annotations.
-         */
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
             assert p.getKind() == TypeKind.DECLARED;
-            AnnotatedTypeMirror receiverType =
-                ((AnnotatedExecutableType) constructorFromUse(node)).getReceiverType();
-            Collection<AnnotationMirror> receiverAnn = receiverType.getAnnotations(),
-                pAnn = p.getAnnotations();
-            Collection<AnnotationMirror> unified = unify(pAnn, receiverAnn);
-            p.removeAnnotations(pAnn);
-            p.addAnnotations(unified);
+            if (!hasImmutabilityAnnotation(p)) {
+                p.addAnnotation(MUTABLE);
+            }
 
             return super.visitNewClass(node, p);
         }

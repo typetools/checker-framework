@@ -6,4 +6,8 @@ public class ReadOnlyConstructor {
     ReadOnlyConstructor() @ReadOnly {
         this.i = 3;
     }
+
+    void test() {
+        @Mutable ReadOnlyConstructor c = new ReadOnlyConstructor();
+    }
 }
