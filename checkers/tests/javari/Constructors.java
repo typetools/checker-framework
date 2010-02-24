@@ -1,5 +1,8 @@
 import checkers.javari.quals.*;
 
+/*
+ * @skip-test   -  return value of readonly constructors is readonly
+ */
 class Constructors {
 
     @Mutable String mString;
