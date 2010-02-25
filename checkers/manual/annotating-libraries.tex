@@ -240,7 +240,7 @@ stub file from the Javadoc or the class file, and then annotate it.
 \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
 
 The Checker Framework distribution contains
-annotated JDKs at the path \<checkers/jdk/[checker-name]/jdk.jar>.
+annotated JDKs at the path \<checkers/jdk/\emph{checkername}/jdk.jar>.
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must
@@ -255,12 +255,12 @@ annotated JDKs at the path \<checkers/jdk/[checker-name]/jdk.jar>.
 
 \item
   When you run \code{javac}, add a \code{-bootclasspath/p:} argument to indicate
-  where to find the annotated jdk classes.
+  where to find the annotated JDK classes.
   Supply \code{-bootclasspath/p} in addition to whatever other arguments you
   usually use, including \code{-classpath}.
 
   The \code{-bootclasspath/p:} argument causes the compiler to read annotations
-  from annotated jdk classes in preference to the unannotated original
+  from annotated JDK classes in preference to the unannotated original
   library classes.
 
 %BEGIN LATEX
@@ -275,7 +275,7 @@ annotated JDKs at the path \<checkers/jdk/[checker-name]/jdk.jar>.
 
 \item
   Run the compiled code as usual.  The annotated JDK does not need to be
-  in your classpath.
+  in your classpath at run time.
 
 \end{enumerate}
 
