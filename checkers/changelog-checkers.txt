@@ -1,3 +1,23 @@
+Version 1.0.6, 24 Feb 2009
+
+Checkers
+
+Nullness Checker
+  Added support for new annotations:
+    Pure - indicates that the method, given the same parameters, return the
+            same values
+    AssertNonNullIfFalse - indicates that a field is NonNull if the method
+            returns false
+  Renamed AssertNonNull to AssertParametersNonNull
+  Updated the annotated jdk
+
+Javari Checker
+  Fixed many bugs:
+    handle implicit dereferencing of this (e.g. `field` in place of
+      `this.field`)
+    apply default annotations to method parameters
+
+----------------------------------------------------------------------
 Version 1.0.5, 12 Jan 2009
 
 Checkers
