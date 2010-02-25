@@ -74,13 +74,27 @@ DEFAULT_PATHS = (
     '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
     '/homes/gws/mernst/bin/Linux-i686',
+    '/homes/gws/mernst/research/constjava/daikon/scripts',
     '/uns/bin',
+    '.',
 )
 
-def append_to_PATH(paths=DEFAULT_PATHS):
+PERL_PATHS = (
+    '/homes/gws/mernst/research/invariants/scripts',
+    '/homes/gws/mernst/bin/src/plume-lib/bin',
+)
+
+def append_to_PATH(paths=DEFAULT_PATHS, perl_paths=PERL_PATHS):
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH
+
+    current_PERL = os.getenv('PERL5LIB')
+    if current_PERL:
+        new_PERL = current_PERL + ':' + ':'.join(perl_paths)
+    else:
+        new_PERL = ':'.join(perl_paths)
+    os.environ['PERL5LIB'] = new_PERL
 
 REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
 PROJECT_ROOTS = (
@@ -111,22 +125,26 @@ def make_release(version, real=False, sanitycheck=True):
         'sanitycheck' if sanitycheck else '',
     )
     print("Actually making the release")
-    execute(command)
+    return execute(command)
 
 def execute(command_args):
     import shlex
     if isinstance(command_args, str):
         arg = shlex.split(command_args)
-        subprocess.call(arg)
+        return subprocess.call(arg)
     else:
-        subprocess.call(command_args)
+        return subprocess.call(command_args)
 
 
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+USER = os.getlogin()
+DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
+
 def main(argv=None):
+    append_to_PATH()
     print("Making a new release of the Checker Framework!")
     
     # Infer version
@@ -145,7 +163,25 @@ def main(argv=None):
     edit_langtools_changelog()
 
     # Making the first release
-    make_release(next_version)
+    r = make_release(next_version)
+    if r:
+        print >> sys.stderr, 'Experienced an error'
+        return 1
+
+    print("Pushed to %s" % DRY_RUN_LINK)
+    raw_input("Please check the site.  DONE?")
+
+    # Making the real release
+    r = make_release(next_version, real=True)
+    if r:
+        print >> sys.stderr, 'Experienced an error with the real release'
+        return 1
+
+    print("Pushed to %s" % DEFAULT_SITE)
+    raw_input("Please check the site.  DONE?")
+
+    print("You have just made the release.  Please announce it to the world")
 
 if __name__ == "__main__":
     sys.exit(main())
+
