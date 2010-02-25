@@ -178,7 +178,8 @@ def make_release(version, real=False, sanitycheck=True):
 
 def checklinks(site_url=None):
     execute('make -f %s checklinks' %
-        os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'))
+        os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'),
+        halt_if_fail=False)
 
 def execute(command_args, halt_if_fail=True):
     import shlex
