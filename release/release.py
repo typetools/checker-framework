@@ -41,7 +41,7 @@ def increment_version(version):
     """
     Returns a recommendation of the next incremental version based on the
     passed one.
-    
+
     >>> increment_version('1.0.3')
     '1.0.3'
     >>> increment_version('1.0.9')
@@ -65,15 +65,22 @@ def increment_version(version):
 def site_copy():
     execute('ant -f release.xml site-copy')
 
+def site_copy_if_needed():
+    dry_path = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
+    if not os.path.exists(dry_path):
+        return site_copy()
+    return True
+
 def check_command(command):
-    p = execute(['which', command])
+    p = execute(['which', command], halt_if_fail=False)
     if p:
-        raise AssertionError('command not found: %s' % command)    
+        raise AssertionError('command not found: %s' % command)
 
 DEFAULT_PATHS = (
     '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
     '/homes/gws/mernst/bin/Linux-i686',
+    # the following is needed for update-link-dates
     '/homes/gws/mernst/research/constjava/daikon/scripts',
     '/uns/bin',
     '.',
@@ -104,18 +111,60 @@ PROJECT_ROOTS = (
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
         execute('hg -R %s pull -u' % path)
+        print("Checking changes")
+        execute('hg -R %s outgoing')
+
+def commit_and_push(version, paths=PROJECT_ROOTS):
+    for path in PROJECT_ROOTS:
+        execute('hg -R %s commit -m "new release %s"' % (path, version))
+        execute('hg -R %s push' % path)
+
+def file_contains(path, text):
+    f = open(path, 'r')
+    contents = f.read()
+    f.close()
+    return text in contents
+
+def file_prepend(path, text):
+    f = open(path)
+    contents = f.read()
+    f.close()
+
+    f = open(path, 'w')
+    f.write(text)
+    f.write(contents)
+    f.close()
 
 EDITOR = 'vim'
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
-def edit_checkers_changelog(path=CHECKERS_CHANGELOG):
+def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
     raw_input("About to edit the Checker Framework changelog.  OK?")
+    if not file_contains(path, version):
+        import datetime
+        today = datetime.datetime.now().strftime("%d %b %Y")
+        file_prepend(path,"""Version %s, %s
+
+----------------------------------------------------------------------
+""" % (version, today))
+
     execute([EDITOR, path])
 
 LANGTOOLS_CHANGELOG = os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'changelog-jsr308.txt')
-def edit_langtools_changelog(path=LANGTOOLS_CHANGELOG):
+def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
     raw_input("About to edit the JSR308 langtools changelog.  OK?")
+    if not file_contains(path, version):
+        import datetime
+        today = datetime.datetime.now().strftime("%d %b %Y")
+        file_prepend(path, """Version %s, %s
+
+Base build
+  Updated to OpenJDK langtools build b%s
+
+----------------------------------------------------------------------
+""" % (version, today, latest_jdk))
+
     execute([EDITOR, path])
 
 def make_release(version, real=False, sanitycheck=True):
@@ -127,14 +176,16 @@ def make_release(version, real=False, sanitycheck=True):
     print("Actually making the release")
     return execute(command)
 
-def execute(command_args):
+def execute(command_args, halt_if_fail=True):
     import shlex
     if isinstance(command_args, str):
         arg = shlex.split(command_args)
-        return subprocess.call(arg)
+        r = subprocess.call(arg)
     else:
-        return subprocess.call(command_args)
-
+        r = subprocess.call(command_args)
+    if halt_if_fail and r:
+        raise Error('Found an error')
+    return r
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -146,7 +197,7 @@ DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
 def main(argv=None):
     append_to_PATH()
     print("Making a new release of the Checker Framework!")
-    
+
     # Infer version
     curr_version = current_distribution()
     print("Current release is %s" % curr_version)
@@ -158,28 +209,24 @@ def main(argv=None):
 
     # Update repositories
     update_projects()
-    
-    edit_checkers_changelog()
-    edit_langtools_changelog()
+
+    edit_checkers_changelog(version=next_version)
+    edit_langtools_changelog(version=next_version)
 
     # Making the first release
-    r = make_release(next_version)
-    if r:
-        print >> sys.stderr, 'Experienced an error'
-        return 1
+    site_copy_if_needed()
+    make_release(next_version)
 
     print("Pushed to %s" % DRY_RUN_LINK)
     raw_input("Please check the site.  DONE?")
 
     # Making the real release
-    r = make_release(next_version, real=True)
-    if r:
-        print >> sys.stderr, 'Experienced an error with the real release'
-        return 1
+    make_release(next_version, real=True)
 
     print("Pushed to %s" % DEFAULT_SITE)
     raw_input("Please check the site.  DONE?")
 
+    commit_and_push()
     print("You have just made the release.  Please announce it to the world")
 
 if __name__ == "__main__":
