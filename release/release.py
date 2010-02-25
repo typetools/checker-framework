@@ -80,8 +80,6 @@ DEFAULT_PATHS = (
     '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
     '/homes/gws/mernst/bin/Linux-i686',
-    # the following is needed for update-link-dates
-    '/homes/gws/mernst/research/constjava/daikon/scripts',
     '/uns/bin',
     '.',
 )
