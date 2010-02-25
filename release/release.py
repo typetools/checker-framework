@@ -176,6 +176,10 @@ def make_release(version, real=False, sanitycheck=True):
     print("Actually making the release")
     return execute(command)
 
+def checklinks(site_url=None):
+    execute('make -f %s checklinks' %
+        os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'))
+
 def execute(command_args, halt_if_fail=True):
     import shlex
     if isinstance(command_args, str):
@@ -184,7 +188,7 @@ def execute(command_args, halt_if_fail=True):
     else:
         r = subprocess.call(command_args)
     if halt_if_fail and r:
-        raise Error('Found an error')
+        raise Exception('Found an error: %s' % r)
     return r
 
 class Usage(Exception):
@@ -216,12 +220,14 @@ def main(argv=None):
     # Making the first release
     site_copy_if_needed()
     make_release(next_version)
+    checklinks(DRY_RUN_LINK)
 
     print("Pushed to %s" % DRY_RUN_LINK)
     raw_input("Please check the site.  DONE?")
 
     # Making the real release
     make_release(next_version, real=True)
+    checklinks(DEFAULT_SITE)
 
     print("Pushed to %s" % DEFAULT_SITE)
     raw_input("Please check the site.  DONE?")
