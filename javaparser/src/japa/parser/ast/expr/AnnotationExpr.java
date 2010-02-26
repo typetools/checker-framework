@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Julio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -26,11 +26,21 @@ package japa.parser.ast.expr;
  */
 public abstract class AnnotationExpr extends Expression {
 
+    protected NameExpr name;
+
     public AnnotationExpr() {
     }
 
     public AnnotationExpr(int beginLine, int beginColumn, int endLine, int endColumn) {
         super(beginLine, beginColumn, endLine, endColumn);
+    }
+
+    public NameExpr getName() {
+        return name;
+    }
+
+    public void setName(NameExpr name) {
+        this.name = name;
     }
 
 }
