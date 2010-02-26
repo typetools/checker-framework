@@ -1,0 +1,17 @@
+src/checkers/types/AnnotatedTypeFactory.java:484: incompatible types.
+            return elementCache.get(elt);
+                                   ^
+  found   : @Immutable AnnotatedTypeMirror
+  required: @Mutable AnnotatedTypeMirror
+src/checkers/types/AnnotatedTypeFactory.java:487: incompatible types.
+        elementCache.put(elt, type);
+                              ^
+  found   : @Mutable AnnotatedTypeMirror
+  required: @Immutable AnnotatedTypeMirror
+2 errors
+
+BUILD FAILED
+build.xml:9: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 5 seconds
