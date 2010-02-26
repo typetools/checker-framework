@@ -1,7 +1,5 @@
 package checkers.nullness.quals;
 
-import static java.lang.annotation.ElementType.*;
-
 import java.lang.annotation.*;
 
 import javax.lang.model.type.TypeKind;
@@ -27,7 +25,7 @@ import com.sun.source.tree.Tree;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( LazyNonNull.class )
 @ImplicitFor(
