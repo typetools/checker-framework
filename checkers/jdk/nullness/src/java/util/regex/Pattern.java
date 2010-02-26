@@ -13,14 +13,14 @@ public final class Pattern implements java.io.Serializable{
   public final static int DOTALL = 32;
   public final static int UNICODE_CASE = 64;
   public final static int CANON_EQ = 128;
-  public static @NonNull java.util.regex.Pattern compile(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.util.regex.Pattern compile(java.lang.String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public java.lang.String pattern() { throw new RuntimeException("skeleton method"); }
-  public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-  public @NonNull java.util.regex.Matcher matcher(java.lang.CharSequence a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Pattern compile(String a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Pattern compile(String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public String pattern() { throw new RuntimeException("skeleton method"); }
+  public String toString() { throw new RuntimeException("skeleton method"); }
+  public @NonNull Matcher matcher(CharSequence a1) { throw new RuntimeException("skeleton method"); }
   public int flags() { throw new RuntimeException("skeleton method"); }
-  public static boolean matches(java.lang.String a1, java.lang.CharSequence a2) { throw new RuntimeException("skeleton method"); }
-  public java.lang.String[] split(java.lang.CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public java.lang.String[] split(java.lang.CharSequence a1) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String quote(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public static boolean matches(String a1, CharSequence a2) { throw new RuntimeException("skeleton method"); }
+  public String[] split(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public String[] split(CharSequence a1) { throw new RuntimeException("skeleton method"); }
+  public static String quote(String a1) { throw new RuntimeException("skeleton method"); }
 }

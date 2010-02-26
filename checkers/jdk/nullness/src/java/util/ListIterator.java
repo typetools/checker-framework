@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public interface ListIterator<E extends @Nullable Object> extends java.util.Iterator<E> {
+public interface ListIterator<E extends @Nullable Object> extends Iterator<E> {
   public abstract boolean hasNext();
   public abstract E next();
   public abstract boolean hasPrevious();

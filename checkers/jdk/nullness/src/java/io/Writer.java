@@ -6,14 +6,14 @@ import checkers.nullness.quals.*;
 
 public abstract class Writer implements Appendable, Closeable, Flushable {
   protected Writer() {}
-  public void write(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void write(char[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public abstract void write(char[] a1, int a2, int a3) throws java.io.IOException;
-  public void write(java.lang.String a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void write(java.lang.String a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public java.io.Writer append(@Nullable java.lang.CharSequence a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public java.io.Writer append(@Nullable java.lang.CharSequence a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public java.io.Writer append(@Nullable char a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public abstract void flush() throws java.io.IOException;
-  public abstract void close() throws java.io.IOException;
+  public void write(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void write(char[] a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public abstract void write(char[] a1, int a2, int a3) throws IOException;
+  public void write(String a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void write(String a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public Writer append(@Nullable CharSequence a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public Writer append(@Nullable CharSequence a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public Writer append(@Nullable char a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public abstract void flush() throws IOException;
+  public abstract void close() throws IOException;
 }

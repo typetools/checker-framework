@@ -5,5 +5,5 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract interface Flushable{
-  public abstract void flush() throws java.io.IOException;
+  public abstract void flush() throws IOException;
 }

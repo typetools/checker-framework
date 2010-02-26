@@ -5,5 +5,5 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract interface Closeable{
-  public abstract void close() throws java.io.IOException;
+  public abstract void close() throws IOException;
 }

@@ -7,41 +7,41 @@ import checkers.nullness.quals.*;
 public class ObjectInputStream extends InputStream implements ObjectInput, ObjectStreamConstants {
   public static abstract class GetField{
     public GetField() { throw new RuntimeException("skeleton method"); }
-    public abstract java.io.ObjectStreamClass getObjectStreamClass();
-    public abstract boolean defaulted(java.lang.String a1) throws java.io.IOException;
-    public abstract boolean get(java.lang.String a1, boolean a2) throws java.io.IOException;
-    public abstract byte get(java.lang.String a1, byte a2) throws java.io.IOException;
-    public abstract char get(java.lang.String a1, char a2) throws java.io.IOException;
-    public abstract short get(java.lang.String a1, short a2) throws java.io.IOException;
-    public abstract int get(java.lang.String a1, int a2) throws java.io.IOException;
-    public abstract long get(java.lang.String a1, long a2) throws java.io.IOException;
-    public abstract float get(java.lang.String a1, float a2) throws java.io.IOException;
-    public abstract double get(java.lang.String a1, double a2) throws java.io.IOException;
-    public abstract java.lang.Object get(java.lang.String a1, java.lang.Object a2) throws java.io.IOException;
+    public abstract ObjectStreamClass getObjectStreamClass();
+    public abstract boolean defaulted(String a1) throws IOException;
+    public abstract boolean get(String a1, boolean a2) throws IOException;
+    public abstract byte get(String a1, byte a2) throws IOException;
+    public abstract char get(String a1, char a2) throws IOException;
+    public abstract short get(String a1, short a2) throws IOException;
+    public abstract int get(String a1, int a2) throws IOException;
+    public abstract long get(String a1, long a2) throws IOException;
+    public abstract float get(String a1, float a2) throws IOException;
+    public abstract double get(String a1, double a2) throws IOException;
+    public abstract Object get(String a1, Object a2) throws IOException;
   }
-  public ObjectInputStream(java.io.InputStream a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public final java.lang.Object readObject() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public java.lang.Object readUnshared() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public void defaultReadObject() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public GetField readFields() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public void registerValidation(java.io.ObjectInputValidation a1, int a2) throws java.io.NotActiveException, java.io.InvalidObjectException { throw new RuntimeException("skeleton method"); }
-  public int read() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int read(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int available() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void close() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public boolean readBoolean() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public byte readByte() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int readUnsignedByte() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public char readChar() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public short readShort() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int readUnsignedShort() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int readInt() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public long readLong() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public float readFloat() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public double readDouble() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void readFully(byte[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public void readFully(byte[] a1, int a2, int a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public int skipBytes(int a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.String readLine() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public java.lang.String readUTF() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public ObjectInputStream(InputStream a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public final Object readObject() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Object readUnshared() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public void defaultReadObject() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public GetField readFields() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public void registerValidation(ObjectInputValidation a1, int a2) throws NotActiveException, InvalidObjectException { throw new RuntimeException("skeleton method"); }
+  public int read() throws IOException { throw new RuntimeException("skeleton method"); }
+  public int read(byte[] a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public int available() throws IOException { throw new RuntimeException("skeleton method"); }
+  public void close() throws IOException { throw new RuntimeException("skeleton method"); }
+  public boolean readBoolean() throws IOException { throw new RuntimeException("skeleton method"); }
+  public byte readByte() throws IOException { throw new RuntimeException("skeleton method"); }
+  public int readUnsignedByte() throws IOException { throw new RuntimeException("skeleton method"); }
+  public char readChar() throws IOException { throw new RuntimeException("skeleton method"); }
+  public short readShort() throws IOException { throw new RuntimeException("skeleton method"); }
+  public int readUnsignedShort() throws IOException { throw new RuntimeException("skeleton method"); }
+  public int readInt() throws IOException { throw new RuntimeException("skeleton method"); }
+  public long readLong() throws IOException { throw new RuntimeException("skeleton method"); }
+  public float readFloat() throws IOException { throw new RuntimeException("skeleton method"); }
+  public double readDouble() throws IOException { throw new RuntimeException("skeleton method"); }
+  public void readFully(byte[] a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void readFully(byte[] a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public int skipBytes(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public @Nullable String readLine() throws IOException { throw new RuntimeException("skeleton method"); }
+  public String readUTF() throws IOException { throw new RuntimeException("skeleton method"); }
 }

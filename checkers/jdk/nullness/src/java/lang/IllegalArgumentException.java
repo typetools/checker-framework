@@ -32,7 +32,7 @@ import checkers.nullness.quals.*;
  * inappropriate argument.
  *
  * @author  unascribed
- * @see     java.lang.Thread#setPriority(int)
+ * @see     Thread#setPriority(int)
  * @since   JDK1.0
  */
 public
