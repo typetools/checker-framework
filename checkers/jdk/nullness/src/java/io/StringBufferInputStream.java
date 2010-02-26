@@ -6,7 +6,7 @@ import checkers.nullness.quals.*;
 
 @Deprecated
 public class StringBufferInputStream extends InputStream {
-  public StringBufferInputStream(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public StringBufferInputStream(String a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int read() { throw new RuntimeException("skeleton method"); }
   public synchronized int read(byte[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public synchronized long skip(long a1) { throw new RuntimeException("skeleton method"); }

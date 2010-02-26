@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.javari.quals.*;
 
-public interface ObjectOutput extends java.io.DataOutput {
+public interface ObjectOutput extends DataOutput {
     public void close() throws IOException;
     public void flush() throws IOException;
     public void write(byte @ReadOnly [] b) throws IOException;

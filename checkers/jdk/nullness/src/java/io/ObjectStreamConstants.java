@@ -30,8 +30,8 @@ public abstract interface ObjectStreamConstants{
   public final static byte SC_SERIALIZABLE = 2;
   public final static byte SC_EXTERNALIZABLE = 4;
   public final static byte SC_ENUM = 16;
-    public final static java.io.SerializablePermission SUBSTITUTION_PERMISSION = new SerializablePermission("default");
-    public final static java.io.SerializablePermission SUBCLASS_IMPLEMENTATION_PERMISSION = new SerializablePermission("default");
+    public final static SerializablePermission SUBSTITUTION_PERMISSION = new SerializablePermission("default");
+    public final static SerializablePermission SUBCLASS_IMPLEMENTATION_PERMISSION = new SerializablePermission("default");
   public final static int PROTOCOL_VERSION_1 = 1;
   public final static int PROTOCOL_VERSION_2 = 2;
 }

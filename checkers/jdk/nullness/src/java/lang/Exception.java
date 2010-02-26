@@ -33,7 +33,7 @@ import checkers.nullness.quals.*;
  * application might want to catch.
  *
  * @author  Frank Yellin
- * @see     java.lang.Error
+ * @see     Error
  * @since   JDK1.0
  */
 public class Exception extends Throwable {

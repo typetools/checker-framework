@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public interface Queue<E> extends @I java.util.Collection<E> {
+public interface Queue<E> extends @I Collection<E> {
   public abstract boolean add(E a1) @Mutable;
   public abstract boolean offer(E a1) @Mutable;
   public abstract E remove() @Mutable;
