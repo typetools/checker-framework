@@ -3,6 +3,8 @@
  */
 package japa.parser.ast.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import japa.parser.ast.BlockComment;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -54,7 +56,6 @@ import japa.parser.ast.expr.QualifiedNameExpr;
 import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.expr.StringLiteralExpr;
 import japa.parser.ast.expr.SuperExpr;
-import japa.parser.ast.expr.SuperMemberAccessExpr;
 import japa.parser.ast.expr.ThisExpr;
 import japa.parser.ast.expr.UnaryExpr;
 import japa.parser.ast.expr.VariableDeclarationExpr;
@@ -86,16 +87,18 @@ import japa.parser.ast.type.ReferenceType;
 import japa.parser.ast.type.VoidType;
 import japa.parser.ast.type.WildcardType;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * @author Julio Vilmar Gesser
  */
-public class TestNodePositions extends TestCase {
+public class TestNodePositions {
 
+    @Test
     public void testNodePositions() throws Exception {
-        String source = TestHelper.readClass("./test", DumperTestClass.class);
-        CompilationUnit cu = TestHelper.parserString(source);
+        String source = Helper.readClass("./test", DumperTestClass.class);
+        CompilationUnit cu = Helper.parserString(source);
 
         cu.accept(new TestVisitor(source), null);
     }
@@ -474,12 +477,6 @@ public class TestNodePositions extends TestCase {
         }
 
         @Override
-        public void visit(Node n, Object arg) {
-            doTest(source, n);
-            super.visit(n, arg);
-        }
-
-        @Override
         public void visit(NormalAnnotationExpr n, Object arg) {
             doTest(source, n);
             super.visit(n, arg);
@@ -547,12 +544,6 @@ public class TestNodePositions extends TestCase {
 
         @Override
         public void visit(SuperExpr n, Object arg) {
-            doTest(source, n);
-            super.visit(n, arg);
-        }
-
-        @Override
-        public void visit(SuperMemberAccessExpr n, Object arg) {
             doTest(source, n);
             super.visit(n, arg);
         }

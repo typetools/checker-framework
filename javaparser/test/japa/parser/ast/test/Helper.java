@@ -17,17 +17,17 @@ import java.io.StringBufferInputStream;
 /**
  * @author Julio Vilmar Gesser
  */
-final class TestHelper {
+final class Helper {
 
-    private TestHelper() {
+    private Helper() {
         // hide the constructor
     }
 
-    private static File getFile(String sourceFolder, Class< ? > clazz) {
+    private static File getFile(String sourceFolder, Class<?> clazz) {
         return new File(sourceFolder, clazz.getName().replace('.', '/') + ".java");
     }
 
-    public static CompilationUnit parserClass(String sourceFolder, Class< ? > clazz) throws ParseException {
+    public static CompilationUnit parserClass(String sourceFolder, Class<?> clazz) throws ParseException {
         try {
             return JavaParser.parse(getFile(sourceFolder, clazz));
         } catch (IOException e) {
@@ -54,7 +54,7 @@ final class TestHelper {
         }
     }
 
-    public static String readClass(String sourceFolder, Class< ? > clazz) throws IOException {
+    public static String readClass(String sourceFolder, Class<?> clazz) throws IOException {
         return readFile(getFile(sourceFolder, clazz));
     }
 

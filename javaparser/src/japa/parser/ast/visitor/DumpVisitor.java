@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2007 Julio Vilmar Gesser.
- *
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
  * Java 1.5 parser and Abstract Syntax Tree is free software: you can redistribute it and/or modify
@@ -118,7 +118,7 @@ import java.util.List;
 
 public final class DumpVisitor implements VoidVisitor<Object> {
 
-    private class SourcePrinter {
+    private static class SourcePrinter {
 
         private int level = 0;
 
@@ -869,7 +869,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
                     printer.print(", ");
                 }
             }
-            printer.print(" ");
+        printer.print(" ");
         }
 
         n.getBlock().accept(this, arg);
@@ -909,7 +909,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         printAnnotations(n.getReceiverAnnotations(), arg);
 
         if (n.getThrows() != null) {
-            printer.print("throws ");
+            printer.print(" throws ");
             for (Iterator<NameExpr> i = n.getThrows().iterator(); i.hasNext();) {
                 NameExpr name = i.next();
                 name.accept(this, arg);

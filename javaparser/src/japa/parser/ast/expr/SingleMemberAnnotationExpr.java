@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Julio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -28,8 +28,6 @@ import japa.parser.ast.visitor.VoidVisitor;
  * @author Julio Vilmar Gesser
  */
 public final class SingleMemberAnnotationExpr extends AnnotationExpr {
-
-    private NameExpr name;
 
     private Expression memberValue;
 
@@ -61,16 +59,8 @@ public final class SingleMemberAnnotationExpr extends AnnotationExpr {
         return memberValue;
     }
 
-    public NameExpr getName() {
-        return name;
-    }
-
     public void setMemberValue(Expression memberValue) {
         this.memberValue = memberValue;
-    }
-
-    public void setName(NameExpr name) {
-        this.name = name;
     }
 
 }
