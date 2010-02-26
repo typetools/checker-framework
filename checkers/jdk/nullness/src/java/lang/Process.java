@@ -9,7 +9,7 @@ public abstract class Process{
   public abstract java.io.OutputStream getOutputStream();
   public abstract java.io.InputStream getInputStream();
   public abstract java.io.InputStream getErrorStream();
-  public abstract int waitFor() throws java.lang.InterruptedException;
+  public abstract int waitFor() throws InterruptedException;
   public abstract int exitValue();
   public abstract void destroy();
 }

@@ -14,5 +14,5 @@ public class ByteArrayInputStream extends InputStream {
   public boolean markSupported() { throw new RuntimeException("skeleton method"); }
   public void mark(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void reset() { throw new RuntimeException("skeleton method"); }
-  public void close() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public void close() throws IOException { throw new RuntimeException("skeleton method"); }
 }

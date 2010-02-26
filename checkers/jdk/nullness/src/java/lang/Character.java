@@ -4,144 +4,144 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public final class Character implements java.io.Serializable, java.lang.Comparable<java.lang.Character> {
+public final class Character implements java.io.Serializable, Comparable<Character> {
   private static final long serialVersionUID = 0;
   public static class Subset{
     protected Subset() {}
-    public final boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+    public final boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     public final int hashCode() { throw new RuntimeException("skeleton method"); }
-    public final java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+    public final String toString() { throw new RuntimeException("skeleton method"); }
   }
   public final static class UnicodeBlock extends Subset{
-    public final static java.lang.Character.UnicodeBlock BASIC_LATIN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LATIN_1_SUPPLEMENT = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LATIN_EXTENDED_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LATIN_EXTENDED_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock IPA_EXTENSIONS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SPACING_MODIFIER_LETTERS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock COMBINING_DIACRITICAL_MARKS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GREEK = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CYRILLIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ARMENIAN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HEBREW = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ARABIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock DEVANAGARI = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BENGALI = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GURMUKHI = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GUJARATI = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ORIYA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAMIL = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TELUGU = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KANNADA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MALAYALAM = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock THAI = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LAO = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TIBETAN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GEORGIAN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HANGUL_JAMO = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LATIN_EXTENDED_ADDITIONAL = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GREEK_EXTENDED = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GENERAL_PUNCTUATION = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPERSCRIPTS_AND_SUBSCRIPTS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CURRENCY_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock COMBINING_MARKS_FOR_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LETTERLIKE_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock NUMBER_FORMS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ARROWS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MATHEMATICAL_OPERATORS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MISCELLANEOUS_TECHNICAL = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CONTROL_PICTURES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock OPTICAL_CHARACTER_RECOGNITION = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ENCLOSED_ALPHANUMERICS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BOX_DRAWING = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BLOCK_ELEMENTS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GEOMETRIC_SHAPES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MISCELLANEOUS_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock DINGBATS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_SYMBOLS_AND_PUNCTUATION = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HIRAGANA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KATAKANA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BOPOMOFO = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HANGUL_COMPATIBILITY_JAMO = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KANBUN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ENCLOSED_CJK_LETTERS_AND_MONTHS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_COMPATIBILITY = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HANGUL_SYLLABLES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock PRIVATE_USE_AREA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ALPHABETIC_PRESENTATION_FORMS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ARABIC_PRESENTATION_FORMS_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock COMBINING_HALF_MARKS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_COMPATIBILITY_FORMS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SMALL_FORM_VARIANTS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ARABIC_PRESENTATION_FORMS_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HALFWIDTH_AND_FULLWIDTH_FORMS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SPECIALS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SURROGATES_AREA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SYRIAC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock THAANA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SINHALA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MYANMAR = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock ETHIOPIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CHEROKEE = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock OGHAM = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock RUNIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KHMER = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MONGOLIAN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BRAILLE_PATTERNS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_RADICALS_SUPPLEMENT = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KANGXI_RADICALS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock IDEOGRAPHIC_DESCRIPTION_CHARACTERS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BOPOMOFO_EXTENDED = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock YI_SYLLABLES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock YI_RADICALS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CYRILLIC_SUPPLEMENTARY = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAGALOG = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HANUNOO = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BUHID = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAGBANWA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LIMBU = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAI_LE = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KHMER_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock PHONETIC_EXTENSIONS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPPLEMENTAL_ARROWS_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPPLEMENTAL_ARROWS_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPPLEMENTAL_MATHEMATICAL_OPERATORS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MISCELLANEOUS_SYMBOLS_AND_ARROWS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock KATAKANA_PHONETIC_EXTENSIONS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock YIJING_HEXAGRAM_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock VARIATION_SELECTORS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LINEAR_B_SYLLABARY = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LINEAR_B_IDEOGRAMS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock AEGEAN_NUMBERS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock OLD_ITALIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock GOTHIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock UGARITIC = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock DESERET = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SHAVIAN = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock OSMANYA = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CYPRIOT_SYLLABARY = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock BYZANTINE_MUSICAL_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MUSICAL_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAI_XUAN_JING_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock MATHEMATICAL_ALPHANUMERIC_SYMBOLS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock TAGS = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock VARIATION_SELECTORS_SUPPLEMENT = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_A = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_B = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HIGH_SURROGATES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock HIGH_PRIVATE_USE_SURROGATES = new UnicodeBlock();
-    public final static java.lang.Character.UnicodeBlock LOW_SURROGATES = new UnicodeBlock();
-    public static @Nullable java.lang.Character.UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
-    public static @Nullable java.lang.Character.UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
-    public final static java.lang.Character.UnicodeBlock forName(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+    public final static Character.UnicodeBlock BASIC_LATIN = new UnicodeBlock();
+    public final static Character.UnicodeBlock LATIN_1_SUPPLEMENT = new UnicodeBlock();
+    public final static Character.UnicodeBlock LATIN_EXTENDED_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock LATIN_EXTENDED_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock IPA_EXTENSIONS = new UnicodeBlock();
+    public final static Character.UnicodeBlock SPACING_MODIFIER_LETTERS = new UnicodeBlock();
+    public final static Character.UnicodeBlock COMBINING_DIACRITICAL_MARKS = new UnicodeBlock();
+    public final static Character.UnicodeBlock GREEK = new UnicodeBlock();
+    public final static Character.UnicodeBlock CYRILLIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock ARMENIAN = new UnicodeBlock();
+    public final static Character.UnicodeBlock HEBREW = new UnicodeBlock();
+    public final static Character.UnicodeBlock ARABIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock DEVANAGARI = new UnicodeBlock();
+    public final static Character.UnicodeBlock BENGALI = new UnicodeBlock();
+    public final static Character.UnicodeBlock GURMUKHI = new UnicodeBlock();
+    public final static Character.UnicodeBlock GUJARATI = new UnicodeBlock();
+    public final static Character.UnicodeBlock ORIYA = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAMIL = new UnicodeBlock();
+    public final static Character.UnicodeBlock TELUGU = new UnicodeBlock();
+    public final static Character.UnicodeBlock KANNADA = new UnicodeBlock();
+    public final static Character.UnicodeBlock MALAYALAM = new UnicodeBlock();
+    public final static Character.UnicodeBlock THAI = new UnicodeBlock();
+    public final static Character.UnicodeBlock LAO = new UnicodeBlock();
+    public final static Character.UnicodeBlock TIBETAN = new UnicodeBlock();
+    public final static Character.UnicodeBlock GEORGIAN = new UnicodeBlock();
+    public final static Character.UnicodeBlock HANGUL_JAMO = new UnicodeBlock();
+    public final static Character.UnicodeBlock LATIN_EXTENDED_ADDITIONAL = new UnicodeBlock();
+    public final static Character.UnicodeBlock GREEK_EXTENDED = new UnicodeBlock();
+    public final static Character.UnicodeBlock GENERAL_PUNCTUATION = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPERSCRIPTS_AND_SUBSCRIPTS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CURRENCY_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock COMBINING_MARKS_FOR_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock LETTERLIKE_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock NUMBER_FORMS = new UnicodeBlock();
+    public final static Character.UnicodeBlock ARROWS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MATHEMATICAL_OPERATORS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MISCELLANEOUS_TECHNICAL = new UnicodeBlock();
+    public final static Character.UnicodeBlock CONTROL_PICTURES = new UnicodeBlock();
+    public final static Character.UnicodeBlock OPTICAL_CHARACTER_RECOGNITION = new UnicodeBlock();
+    public final static Character.UnicodeBlock ENCLOSED_ALPHANUMERICS = new UnicodeBlock();
+    public final static Character.UnicodeBlock BOX_DRAWING = new UnicodeBlock();
+    public final static Character.UnicodeBlock BLOCK_ELEMENTS = new UnicodeBlock();
+    public final static Character.UnicodeBlock GEOMETRIC_SHAPES = new UnicodeBlock();
+    public final static Character.UnicodeBlock MISCELLANEOUS_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock DINGBATS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_SYMBOLS_AND_PUNCTUATION = new UnicodeBlock();
+    public final static Character.UnicodeBlock HIRAGANA = new UnicodeBlock();
+    public final static Character.UnicodeBlock KATAKANA = new UnicodeBlock();
+    public final static Character.UnicodeBlock BOPOMOFO = new UnicodeBlock();
+    public final static Character.UnicodeBlock HANGUL_COMPATIBILITY_JAMO = new UnicodeBlock();
+    public final static Character.UnicodeBlock KANBUN = new UnicodeBlock();
+    public final static Character.UnicodeBlock ENCLOSED_CJK_LETTERS_AND_MONTHS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_COMPATIBILITY = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS = new UnicodeBlock();
+    public final static Character.UnicodeBlock HANGUL_SYLLABLES = new UnicodeBlock();
+    public final static Character.UnicodeBlock PRIVATE_USE_AREA = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS = new UnicodeBlock();
+    public final static Character.UnicodeBlock ALPHABETIC_PRESENTATION_FORMS = new UnicodeBlock();
+    public final static Character.UnicodeBlock ARABIC_PRESENTATION_FORMS_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock COMBINING_HALF_MARKS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_COMPATIBILITY_FORMS = new UnicodeBlock();
+    public final static Character.UnicodeBlock SMALL_FORM_VARIANTS = new UnicodeBlock();
+    public final static Character.UnicodeBlock ARABIC_PRESENTATION_FORMS_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock HALFWIDTH_AND_FULLWIDTH_FORMS = new UnicodeBlock();
+    public final static Character.UnicodeBlock SPECIALS = new UnicodeBlock();
+    public final static Character.UnicodeBlock SURROGATES_AREA = new UnicodeBlock();
+    public final static Character.UnicodeBlock SYRIAC = new UnicodeBlock();
+    public final static Character.UnicodeBlock THAANA = new UnicodeBlock();
+    public final static Character.UnicodeBlock SINHALA = new UnicodeBlock();
+    public final static Character.UnicodeBlock MYANMAR = new UnicodeBlock();
+    public final static Character.UnicodeBlock ETHIOPIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock CHEROKEE = new UnicodeBlock();
+    public final static Character.UnicodeBlock UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS = new UnicodeBlock();
+    public final static Character.UnicodeBlock OGHAM = new UnicodeBlock();
+    public final static Character.UnicodeBlock RUNIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock KHMER = new UnicodeBlock();
+    public final static Character.UnicodeBlock MONGOLIAN = new UnicodeBlock();
+    public final static Character.UnicodeBlock BRAILLE_PATTERNS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_RADICALS_SUPPLEMENT = new UnicodeBlock();
+    public final static Character.UnicodeBlock KANGXI_RADICALS = new UnicodeBlock();
+    public final static Character.UnicodeBlock IDEOGRAPHIC_DESCRIPTION_CHARACTERS = new UnicodeBlock();
+    public final static Character.UnicodeBlock BOPOMOFO_EXTENDED = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock YI_SYLLABLES = new UnicodeBlock();
+    public final static Character.UnicodeBlock YI_RADICALS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CYRILLIC_SUPPLEMENTARY = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAGALOG = new UnicodeBlock();
+    public final static Character.UnicodeBlock HANUNOO = new UnicodeBlock();
+    public final static Character.UnicodeBlock BUHID = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAGBANWA = new UnicodeBlock();
+    public final static Character.UnicodeBlock LIMBU = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAI_LE = new UnicodeBlock();
+    public final static Character.UnicodeBlock KHMER_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock PHONETIC_EXTENSIONS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPPLEMENTAL_ARROWS_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPPLEMENTAL_ARROWS_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPPLEMENTAL_MATHEMATICAL_OPERATORS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MISCELLANEOUS_SYMBOLS_AND_ARROWS = new UnicodeBlock();
+    public final static Character.UnicodeBlock KATAKANA_PHONETIC_EXTENSIONS = new UnicodeBlock();
+    public final static Character.UnicodeBlock YIJING_HEXAGRAM_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock VARIATION_SELECTORS = new UnicodeBlock();
+    public final static Character.UnicodeBlock LINEAR_B_SYLLABARY = new UnicodeBlock();
+    public final static Character.UnicodeBlock LINEAR_B_IDEOGRAMS = new UnicodeBlock();
+    public final static Character.UnicodeBlock AEGEAN_NUMBERS = new UnicodeBlock();
+    public final static Character.UnicodeBlock OLD_ITALIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock GOTHIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock UGARITIC = new UnicodeBlock();
+    public final static Character.UnicodeBlock DESERET = new UnicodeBlock();
+    public final static Character.UnicodeBlock SHAVIAN = new UnicodeBlock();
+    public final static Character.UnicodeBlock OSMANYA = new UnicodeBlock();
+    public final static Character.UnicodeBlock CYPRIOT_SYLLABARY = new UnicodeBlock();
+    public final static Character.UnicodeBlock BYZANTINE_MUSICAL_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MUSICAL_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAI_XUAN_JING_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock MATHEMATICAL_ALPHANUMERIC_SYMBOLS = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT = new UnicodeBlock();
+    public final static Character.UnicodeBlock TAGS = new UnicodeBlock();
+    public final static Character.UnicodeBlock VARIATION_SELECTORS_SUPPLEMENT = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_A = new UnicodeBlock();
+    public final static Character.UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_B = new UnicodeBlock();
+    public final static Character.UnicodeBlock HIGH_SURROGATES = new UnicodeBlock();
+    public final static Character.UnicodeBlock HIGH_PRIVATE_USE_SURROGATES = new UnicodeBlock();
+    public final static Character.UnicodeBlock LOW_SURROGATES = new UnicodeBlock();
+    public static @Nullable Character.UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
+    public static @Nullable Character.UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
+    public final static Character.UnicodeBlock forName(String a1) { throw new RuntimeException("skeleton method"); }
     
     protected UnicodeBlock() {}
   }
@@ -149,7 +149,7 @@ public final class Character implements java.io.Serializable, java.lang.Comparab
   public final static int MAX_RADIX = 36;
   public final static char MIN_VALUE = 0;
   public final static char MAX_VALUE = 65535;
-  public final static java.lang.Class<java.lang.Character> TYPE;
+  public final static Class<Character> TYPE;
   public final static byte UNASSIGNED = 0;
   public final static byte UPPERCASE_LETTER = 1;
   public final static byte LOWERCASE_LETTER = 2;
@@ -211,12 +211,12 @@ public final class Character implements java.io.Serializable, java.lang.Comparab
   public final static int MAX_CODE_POINT = 1114111;
   public final static int SIZE = 16;
   public Character(char a1) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.Character valueOf(char a1) { throw new RuntimeException("skeleton method"); }
+  public static Character valueOf(char a1) { throw new RuntimeException("skeleton method"); }
   public char charValue() { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String toString(char a1) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public String toString() { throw new RuntimeException("skeleton method"); }
+  public static String toString(char a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isValidCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isSupplementaryCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isHighSurrogate(char a1) { throw new RuntimeException("skeleton method"); }
@@ -224,17 +224,17 @@ public final class Character implements java.io.Serializable, java.lang.Comparab
   public static boolean isSurrogatePair(char a1, char a2) { throw new RuntimeException("skeleton method"); }
   public static int charCount(int a1) { throw new RuntimeException("skeleton method"); }
   public static int toCodePoint(char a1, char a2) { throw new RuntimeException("skeleton method"); }
-  public static int codePointAt(java.lang.CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static int codePointAt(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static int codePointAt(char[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static int codePointAt(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int codePointBefore(java.lang.CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static int codePointBefore(CharSequence a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static int codePointBefore(char[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static int codePointBefore(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static int toChars(int a1, char[] a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static char[] toChars(int a1) { throw new RuntimeException("skeleton method"); }
-  public static int codePointCount(java.lang.CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public static int codePointCount(CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static int codePointCount(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static int offsetByCodePoints(java.lang.CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public static int offsetByCodePoints(CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static int offsetByCodePoints(char[] a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
   public static boolean isLowerCase(char a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isLowerCase(int a1) { throw new RuntimeException("skeleton method"); }
@@ -286,6 +286,6 @@ public final class Character implements java.io.Serializable, java.lang.Comparab
   public static byte getDirectionality(int a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isMirrored(char a1) { throw new RuntimeException("skeleton method"); }
   public static boolean isMirrored(int a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(java.lang.Character a1) { throw new RuntimeException("skeleton method"); }
+  public int compareTo(Character a1) { throw new RuntimeException("skeleton method"); }
   public static char reverseBytes(char a1) { throw new RuntimeException("skeleton method"); }
 }

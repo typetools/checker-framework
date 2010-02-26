@@ -33,7 +33,7 @@ import checkers.nullness.quals.*;
  * have the appropriate format.
  *
  * @author  unascribed
- * @see     java.lang.Integer#toString()
+ * @see     Integer#toString()
  * @since   JDK1.0
  */
 public

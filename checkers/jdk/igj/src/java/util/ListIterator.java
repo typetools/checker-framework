@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public interface ListIterator<E> extends @I java.util.Iterator<E> {
+public interface ListIterator<E> extends @I Iterator<E> {
   public abstract boolean hasNext() @ReadOnly;
   public abstract E next() @ReadOnly;
   public abstract boolean hasPrevious() @ReadOnly;

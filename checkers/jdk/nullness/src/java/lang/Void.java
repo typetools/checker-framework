@@ -6,5 +6,5 @@ import checkers.nullness.quals.*;
 
 public final class Void {
   protected Void() {}
-  public final static java.lang.Class<java.lang.Void> TYPE = Void.class;
+  public final static Class<Void> TYPE = Void.class;
 }

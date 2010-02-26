@@ -4,5 +4,5 @@ import checkers.nullness.quals.*;
 
 public interface Comparator<T> {
   public abstract int compare(T a1, T a2);
-  public abstract boolean equals(@Nullable java.lang.Object a1);
+  public abstract boolean equals(@Nullable Object a1);
 }
