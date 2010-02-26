@@ -1,9 +1,6 @@
 package checkers.igj.quals;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import checkers.quals.*;
 
@@ -20,7 +17,7 @@ import static java.lang.annotation.ElementType.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target( { FIELD, LOCAL_VARIABLE, CONSTRUCTOR, METHOD, PARAMETER, TYPE })
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( ReadOnly.class )
 public @interface Immutable {

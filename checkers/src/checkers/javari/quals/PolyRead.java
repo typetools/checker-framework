@@ -1,13 +1,9 @@
 package checkers.javari.quals;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import checkers.javari.JavariChecker;
 import checkers.quals.*;
-import static java.lang.annotation.ElementType.*;
 
 /**
  * Specifies the allowed mutabilities of a method's return value or the arguments,
@@ -85,7 +81,7 @@ import static java.lang.annotation.ElementType.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({METHOD, PARAMETER, LOCAL_VARIABLE, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @PolymorphicQualifier
 public @interface PolyRead {

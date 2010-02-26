@@ -5,8 +5,6 @@ import java.lang.annotation.*;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
-import static java.lang.annotation.ElementType.*;
-
 /**
  * Indicates that the annotated reference is a ReadOnly reference.
  *
@@ -19,7 +17,7 @@ import static java.lang.annotation.ElementType.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target ( { FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE } )
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( { } )
 public @interface ReadOnly {
