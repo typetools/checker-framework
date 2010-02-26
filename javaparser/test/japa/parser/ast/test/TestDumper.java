@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Julio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,29 +21,34 @@
  */
 package japa.parser.ast.test;
 
+import static org.junit.Assert.assertEquals;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.test.classes.DumperTestClass;
 import japa.parser.ast.test.classes.JavadocTestClass;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * @author Julio Vilmar Gesser
  */
-public class TestDumper extends TestCase {
+public class TestDumper {
 
+    @Test
     public void testDumpVisitor() throws Exception {
-        String source = TestHelper.readClass("./test", DumperTestClass.class);
-        CompilationUnit cu = TestHelper.parserString(source);
+        String source = Helper.readClass("./test", DumperTestClass.class);
+        CompilationUnit cu = Helper.parserString(source);
         assertEquals(source, cu.toString());
     }
 
+    @Test
     public void testJavadoc() throws Exception {
-        String source = TestHelper.readClass("./test", JavadocTestClass.class);
-        CompilationUnit cu = TestHelper.parserString(source);
+        String source = Helper.readClass("./test", JavadocTestClass.class);
+        CompilationUnit cu = Helper.parserString(source);
         assertEquals(source, cu.toString());
         assertEquals(19, cu.getComments().size());
     }
 
+    @Test
     public void testComments() throws Exception {
         final String source_with_comment = //
         "package japa.parser.javacc;\n" + //
@@ -79,7 +84,7 @@ public class TestDumper extends TestCase {
                 "}\n" + //
                 "";
 
-        CompilationUnit cu = TestHelper.parserString(source_with_comment);
+        CompilationUnit cu = Helper.parserString(source_with_comment);
         assertEquals(source_without_comment, cu.toString());
         assertEquals(6, cu.getComments().size());
     }
