@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Julio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  *
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -22,6 +22,7 @@
 package japa.parser.ast;
 
 import japa.parser.ast.visitor.DumpVisitor;
+import japa.parser.ast.visitor.EqualsVisitor;
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
 
@@ -182,6 +183,16 @@ public abstract class Node {
         DumpVisitor visitor = new DumpVisitor();
         accept(visitor, null);
         return visitor.getSource();
+    }
+
+    @Override
+    public final int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsVisitor.equals(this, (Node) obj);
     }
 
 }

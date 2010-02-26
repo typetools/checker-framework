@@ -1,7 +1,7 @@
 +-------------------------------------------------------------------------------+
 |  Java 1.5 parser and Abstract Syntax Tree.                                    |
 +-------------------------------------------------------------------------------+
-|  Copyright (C) 2007 Julio Vilmar Gesser                                       |
+|  Copyright (C) 2007 Júlio Vilmar Gesser                                       |
 |  jgesser@gmail.com                                                            |
 |  http://code.google.com/p/javaparser/                                         |
 +-------------------------------------------------------------------------------+
@@ -31,6 +31,37 @@ bugs and feature enhacement and download the latest version:
 
 Version history
 ---------------
+
+1.0.8 (2010-01-17)
+- Fixed issues:
+	- Issue 17: A refactor suggestion for AnnotationExpr and its subclasses
+	- Issue 21: Java 5 JavaParser compiled JARs
+	- Issue 22: Please use java.lang.reflect.Modifier constants in japa.parser.ast.body.ModifierSet
+	- Issue 27: Implement the "equal" method
+	- Issue 30: equals and hashCode methods
+
+1.0.7 (2009-04-12)
+- Issue 19 fixed: 
+- Tests changed to run with junit 4 
+
+1.0.6 (2009-01-11)
+- Issue 11 fixed: changed method get/setPakage to get/setPackage in the class CompilationUnit
+- Created new visitor adapter to help AST modification: ModifierVisitorAdapter
+- Changed visitor adapters to abstract  
+
+1.0.5 (2008-10-26)
+- Created simplified constructors in the nodes of the AST (without positional arguments) 
+- Created ASTHelper class with some helpful methods (more methods are still needed)
+
+1.0.4 (2008-10-07)
+- Moved to javacc 4.1.
+- The java_1_5.jj can be build alone without compilation errors
+
+1.0.3 (2008-09-06)
+- Removed SuperMemberAccessExpr class, it was no longer used
+- Removed the methods get/setTypeArgs() from ArrayCreationExpr, this node shouldn't have these methods.
+- Fixed the bug with start/end position of the nodes IntegerLiteralMinValueExpr and LongLiteralMinValueExpr  
+- The methods get/setAnnotations() from all BodyDeclaration subclasses were pushed down to BodyDeclaration class 
 
 1.0.2 (2008-07-20)
   Issue fixed: Issue 1: Add support for editing AST nodes or create new ones

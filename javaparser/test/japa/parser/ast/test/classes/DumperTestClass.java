@@ -6,17 +6,20 @@ import japa.parser.ast.CompilationUnit;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Documented;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import static java.util.Map.Entry;
+import java.applet.*;
 
 @Deprecated
 public class DumperTestClass<T extends List<int[]>, X> extends Base implements Serializable {
 
     static Class clz1 = String.class;
 
-    Class clz2 = (String.class);
+    protected Class clz2 = (String.class);
 
     Class clz3 = int.class;
 
@@ -24,14 +27,59 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
 
     int[] arr = new int[10];
 
+    byte bye = 0;
+
+    byte byebye[] = null;
+
+    short sh1, sh2 = 1;
+
+    List<String>[][] arrLS = (List<String>[][]) new List<?>[10][];
+
     ;
+
+    {
+        int z = 0, y = 0;
+        int a = (z) + y;
+        a = (+z) + y;
+        byte b = (byte) +y;
+    }
 
     @Deprecated()
     static class Ugly {
 
-        int x = 0;
+        static int x = 0;
 
         public static void main(String[] args) {
+            x = +x;
+            x = ~x;
+            --x;
+            boolean b = !false;
+            x &= 2;
+            x |= 2;
+            x ^= 2;
+            x -= 2;
+            x %= 2;
+            x /= 2;
+            x *= 2;
+            x <<= 2;
+            x >>= 2;
+            x >>>= 2;
+            b = b || false;
+            b = b | false;
+            b = b & false;
+            b = b ^ false;
+            b = b != false;
+            b = x > 1;
+            b = x < 1;
+            b = x >= 1;
+            b = x <= 1;
+            x = x << 1;
+            x = x >> 1;
+            x = x >>> 1;
+            x = x - 1;
+            x = x * 1;
+            x = x % 1;
+            x = x / 1;
         }
     }
 
@@ -40,7 +88,7 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
     @Deprecated()
     int[][][][] arr2 = new int[10][2][1][0];
 
-    float fff = 0x1.fffeP+127f;
+    volatile float fff = 0x1.fffeP+127f;
 
     char cc = 'a';
 
@@ -68,13 +116,14 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         m, @Deprecated
         f;
 
-        public static enum Sexo_ implements Serializable {
+        public static enum Sexo_ implements Serializable, Cloneable {
         }
 
         private Sexo() {
         }
     }
 
+    @Deprecated
     public static enum Enum {
 
         m(1) {
@@ -90,13 +139,19 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         }
         ;
 
-        int x;
+        native void nnn();
+
+        transient int x;
 
         private Enum(int x) {
             this.x = x;
         }
 
         abstract void mm();
+    }
+
+    strictfp double ddd() {
+        return 0.0;
     }
 
     public <T, E> DumperTestClass(int x) {
@@ -106,6 +161,8 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         super.<T, E>check2(val1, val2);
         boolean b = true, y = false;
         abstract class X {
+
+            int i = 0;
 
             public <D> X() {
             }
@@ -118,6 +175,8 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
 
             public Y() {
                 super();
+                DumperTestClass.this.cc = 'c';
+                super.i = 1;
                 Y.super.m();
             }
 
@@ -159,6 +218,9 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
             }
             ;
             ;
+            int min = -2147483648;
+            long sl = 123123123123l;
+            long minl = -9223372036854775808L;
             switch(i) {
             }
             ll: switch(i) {
@@ -171,7 +233,9 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
                         break;
                     }
                 case 2:
-                    System.out.println(1);
+                    if (t instanceof Base) {
+                        System.out.println(1);
+                    }
                     i++;
                     ++i;
             }
@@ -195,11 +259,11 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         } else {
             x = 3;
             teste = new DumperTestClass(1);
-            x = 2;
+            x = x == 0 ? 2 : 4;
         }
         if (true) x = 1; else x = 3;
         while (true) {
-            while (x == 3) continue;
+            xxx: while (x == 3) continue xxx;
             break;
         }
         do {
@@ -255,9 +319,10 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         return JavaParser.parse(file);
     }
 
-    class A<T> {
+    class A<T extends Integer & Serializable> implements XXX, Serializable {
 
-        public <ABC> A(Integer integer, ABC string) {
+        @AnnotationTest
+        public <ABC> A(Integer integer, ABC string) throws Exception, IOException {
         }
     }
 
@@ -265,8 +330,11 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         @Deprecated Comparator c = new Comparator() {
 
             public int compare(Object o1, Object o2) {
-                A<Integer> a = new <String>A<Integer>(new Integer(11), "foo") {
-                };
+                try {
+                    A<Integer> a = new <String>A<Integer>(new Integer(11), "foo") {
+                    };
+                } catch (Exception e) {
+                }
                 return 0;
             }
 
@@ -277,6 +345,7 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         };
     }
 
+    @Documented
     public @interface AnnotationTest {
 
         String value() default "asd";
@@ -298,4 +367,7 @@ class Base {
 
     public <A, B> void check2(A val1, B val2) {
     }
+}
+
+interface XXX extends Serializable, Cloneable {
 }
