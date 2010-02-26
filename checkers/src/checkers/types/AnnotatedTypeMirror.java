@@ -1353,6 +1353,10 @@ public abstract class AnnotatedTypeMirror {
             return getCopy(true);
         }
 
+        @Override
+        public String toString() {
+            return "null";
+        }
     }
 
     /**
