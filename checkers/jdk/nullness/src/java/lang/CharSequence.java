@@ -7,6 +7,6 @@ import checkers.nullness.quals.*;
 public abstract interface CharSequence{
   public abstract int length();
   public abstract char charAt(int a1);
-  public abstract java.lang.CharSequence subSequence(int a1, int a2);
-  public abstract java.lang.String toString();
+  public abstract CharSequence subSequence(int a1, int a2);
+  public abstract String toString();
 }

@@ -34,8 +34,8 @@ import checkers.nullness.quals.*;
  * <code>Thread</code>.
  *
  * @author  unascribed
- * @see     java.lang.Thread#resume()
- * @see     java.lang.Thread#suspend()
+ * @see     Thread#resume()
+ * @see     Thread#suspend()
  * @since   JDK1.0
  */
 public class IllegalThreadStateException extends IllegalArgumentException {

@@ -5,5 +5,5 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract interface ObjectInputValidation{
-  public abstract void validateObject() throws java.io.InvalidObjectException;
+  public abstract void validateObject() throws InvalidObjectException;
 }

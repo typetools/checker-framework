@@ -6,10 +6,10 @@ import checkers.nullness.quals.*;
 @Raw
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
-  public @Pure boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Pure java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-  public final void wait(long a1, int a2) @Raw throws java.lang.InterruptedException { throw new RuntimeException("skeleton method"); }
-  public final void wait() @Raw throws java.lang.InterruptedException { throw new RuntimeException("skeleton method"); }
+  public @Pure boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure String toString() { throw new RuntimeException("skeleton method"); }
+  public final void wait(long a1, int a2) @Raw throws InterruptedException { throw new RuntimeException("skeleton method"); }
+  public final void wait() @Raw throws InterruptedException { throw new RuntimeException("skeleton method"); }
 
   private static native void registerNatives();
   public final native @Pure Class<?> getClass() @Raw;

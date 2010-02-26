@@ -7,9 +7,9 @@ public abstract class Dictionary<K extends /*@NonNull*/ Object, V extends /*@Non
   public Dictionary() { throw new RuntimeException("skeleton method"); }
   public abstract int size();
   public abstract boolean isEmpty();
-  public abstract java.util.Enumeration<K> keys();
-  public abstract java.util.Enumeration<V> elements();
-  public abstract @Pure @Nullable V get(@Nullable java.lang.Object a1);
+  public abstract Enumeration<K> keys();
+  public abstract Enumeration<V> elements();
+  public abstract @Pure @Nullable V get(@Nullable Object a1);
   public abstract @Nullable V put(K a1, V a2);
-  public abstract @Nullable V remove(java.lang.Object a1);
+  public abstract @Nullable V remove(Object a1);
 }
