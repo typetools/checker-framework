@@ -6,6 +6,7 @@ package japa.parser.ast.visitor;
 import japa.parser.ast.BlockComment;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.IndexUnit;
 import japa.parser.ast.LineComment;
 import japa.parser.ast.Node;
 import japa.parser.ast.PackageDeclaration;
@@ -1332,6 +1333,11 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         }
 
         return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean visit(IndexUnit n, Node arg) {
+        throw new RuntimeException("Not Supported!");
     }
 
 }
