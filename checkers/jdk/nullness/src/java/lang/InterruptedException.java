@@ -40,12 +40,12 @@ import checkers.nullness.quals.*;
  * </pre>
  *
  * @author  Frank Yellin
- * @see     java.lang.Object#wait()
- * @see     java.lang.Object#wait(long)
- * @see     java.lang.Object#wait(long, int)
- * @see     java.lang.Thread#sleep(long)
- * @see     java.lang.Thread#interrupt()
- * @see     java.lang.Thread#interrupted()
+ * @see     Object#wait()
+ * @see     Object#wait(long)
+ * @see     Object#wait(long, int)
+ * @see     Thread#sleep(long)
+ * @see     Thread#interrupt()
+ * @see     Thread#interrupted()
  * @since   JDK1.0
  */
 public

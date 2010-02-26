@@ -34,7 +34,7 @@ import checkers.nullness.quals.*;
  * thrown when the index is equal to the size of the string.
  *
  * @author  unascribed
- * @see     java.lang.String#charAt(int)
+ * @see     String#charAt(int)
  * @since   JDK1.0
  */
 public

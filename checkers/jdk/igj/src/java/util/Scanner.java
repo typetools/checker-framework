@@ -3,41 +3,41 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public final class Scanner implements @Immutable java.util.Iterator<java.lang.String> {
-  public Scanner(java.lang.Readable a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
+public final class Scanner implements @Immutable Iterator<String> {
+  public Scanner(Readable a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Scanner(java.io.InputStream a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.io.InputStream a1, java.lang.String a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.InputStream a1, String a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Scanner(java.io.File a1) @AssignsFields throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.io.File a1, java.lang.String a2) @AssignsFields throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.lang.String a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.File a1, String a2) @AssignsFields throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Scanner(String a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Scanner(java.nio.channels.ReadableByteChannel a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.nio.channels.ReadableByteChannel a1, java.lang.String a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.nio.channels.ReadableByteChannel a1, String a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public void close() @Mutable { throw new RuntimeException("skeleton method"); }
   public java.io.IOException ioException() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public java.util.regex.Pattern delimiter() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner useDelimiter(java.util.regex.Pattern a1) @Mutable { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner useDelimiter(java.lang.String a1) @Mutable { throw new RuntimeException("skeleton method"); }
-  public java.util.Locale locale() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner useLocale(java.util.Locale a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I Scanner useDelimiter(java.util.regex.Pattern a1) @Mutable { throw new RuntimeException("skeleton method"); }
+  public @I Scanner useDelimiter(String a1) @Mutable { throw new RuntimeException("skeleton method"); }
+  public Locale locale() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I Scanner useLocale(Locale a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public int radix() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner useRadix(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
+  public @I Scanner useRadix(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public java.util.regex.MatchResult match() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean hasNext() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String next() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String next() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public void remove() @Mutable { throw new RuntimeException("skeleton method"); }
-  public boolean hasNext(java.lang.String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String next(java.lang.String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public boolean hasNext(String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String next(String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean hasNext(java.util.regex.Pattern a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String next(java.util.regex.Pattern a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String next(java.util.regex.Pattern a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean hasNextLine() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String nextLine() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String findInLine(java.lang.String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String findInLine(java.util.regex.Pattern a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String findWithinHorizon(java.lang.String a1, int a2) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public java.lang.String findWithinHorizon(java.util.regex.Pattern a1, int a2) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner skip(java.util.regex.Pattern a1) @Mutable { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner skip(java.lang.String a1) @Mutable { throw new RuntimeException("skeleton method"); }
+  public String nextLine() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String findInLine(String a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String findInLine(java.util.regex.Pattern a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String findWithinHorizon(String a1, int a2) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public String findWithinHorizon(java.util.regex.Pattern a1, int a2) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public @I Scanner skip(java.util.regex.Pattern a1) @Mutable { throw new RuntimeException("skeleton method"); }
+  public @I Scanner skip(String a1) @Mutable { throw new RuntimeException("skeleton method"); }
   public boolean hasNextBoolean() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean nextBoolean() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean hasNextByte() @ReadOnly { throw new RuntimeException("skeleton method"); }
@@ -66,5 +66,5 @@ public final class Scanner implements @Immutable java.util.Iterator<java.lang.St
   public java.math.BigInteger nextBigInteger(int a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public boolean hasNextBigDecimal() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public java.math.BigDecimal nextBigDecimal() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I java.util.Scanner reset() @Mutable { throw new RuntimeException("skeleton method"); }
+  public @I Scanner reset() @Mutable { throw new RuntimeException("skeleton method"); }
 }

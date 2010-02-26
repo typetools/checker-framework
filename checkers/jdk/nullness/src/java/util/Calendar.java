@@ -2,7 +2,7 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public abstract class Calendar implements java.io.Serializable, java.lang.Cloneable, java.lang.Comparable<java.util.Calendar> {
+public abstract class Calendar implements java.io.Serializable, Cloneable, Comparable<Calendar> {
   protected Calendar() {}
   public final static int ERA = 0;
   public final static int YEAR = 1;
@@ -48,13 +48,13 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   public final static int ALL_STYLES = 0;
   public final static int SHORT = 1;
   public final static int LONG = 2;
-  public static java.util.Calendar getInstance() { throw new RuntimeException("skeleton method"); }
-  public static java.util.Calendar getInstance(java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public static java.util.Calendar getInstance(java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
-  public static java.util.Calendar getInstance(java.util.TimeZone a1, java.util.Locale a2) { throw new RuntimeException("skeleton method"); }
-  public static synchronized java.util.Locale[] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
-  public final java.util.Date getTime() { throw new RuntimeException("skeleton method"); }
-  public final void setTime(java.util.Date a1) { throw new RuntimeException("skeleton method"); }
+  public static Calendar getInstance() { throw new RuntimeException("skeleton method"); }
+  public static Calendar getInstance(TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public static Calendar getInstance(Locale a1) { throw new RuntimeException("skeleton method"); }
+  public static Calendar getInstance(TimeZone a1, Locale a2) { throw new RuntimeException("skeleton method"); }
+  public static synchronized Locale[] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
+  public final Date getTime() { throw new RuntimeException("skeleton method"); }
+  public final void setTime(Date a1) { throw new RuntimeException("skeleton method"); }
   public long getTimeInMillis() { throw new RuntimeException("skeleton method"); }
   public void setTimeInMillis(long a1) { throw new RuntimeException("skeleton method"); }
   public @Pure int get(int a1) { throw new RuntimeException("skeleton method"); }
@@ -65,18 +65,18 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
   public final void clear() { throw new RuntimeException("skeleton method"); }
   public final void clear(int a1) { throw new RuntimeException("skeleton method"); }
   public final boolean isSet(int a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.String getDisplayName(int a1, int a2, java.util.Locale a3) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.util.Map<java.lang.String, java.lang.Integer> getDisplayNames(int a1, int a2, java.util.Locale a3) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Nullable String getDisplayName(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public @Nullable Map<String, Integer> getDisplayNames(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean before(java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean after(java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(java.util.Calendar a1) { throw new RuntimeException("skeleton method"); }
+  public boolean before(Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean after(Object a1) { throw new RuntimeException("skeleton method"); }
+  public int compareTo(Calendar a1) { throw new RuntimeException("skeleton method"); }
   public abstract void add(int a1, int a2);
   public abstract void roll(int a1, boolean a2);
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public void setTimeZone(java.util.TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public java.util.TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
+  public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setLenient(boolean a1) { throw new RuntimeException("skeleton method"); }
   public boolean isLenient() { throw new RuntimeException("skeleton method"); }
   public void setFirstDayOfWeek(int a1) { throw new RuntimeException("skeleton method"); }
@@ -97,5 +97,5 @@ public abstract class Calendar implements java.io.Serializable, java.lang.Clonea
         "DST_OFFSET"
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
-  public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+  public String toString() { throw new RuntimeException("skeleton method"); }
 }
