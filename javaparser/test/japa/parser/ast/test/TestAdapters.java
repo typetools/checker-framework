@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Julio Vilmar Gesser.
+ * Copyright (C) 2008 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,25 +21,64 @@
  */
 package japa.parser.ast.test;
 
+import japa.parser.ParseException;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.test.classes.DumperTestClass;
+import japa.parser.ast.test.classes.JavadocTestClass;
+import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.GenericVisitorAdapter;
+import japa.parser.ast.visitor.ModifierVisitorAdapter;
+import japa.parser.ast.visitor.VoidVisitor;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /**
  * @author Julio Vilmar Gesser
  */
-public class TestAdapters extends TestCase {
+public class TestAdapters {
 
-    public void testVoidVisitorAdapter() throws Exception {
-        CompilationUnit cu = TestHelper.parserClass("./test", DumperTestClass.class);
-        cu.accept(new VoidVisitorAdapter(), null);
+    static class ConcreteVoidVisitorAdapter extends VoidVisitorAdapter {
+
     }
 
+    static class ConcreteGenericVisitorAdapter extends GenericVisitorAdapter {
+
+    }
+
+    static class ConcreteModifierVisitorAdapter extends ModifierVisitorAdapter {
+
+    }
+
+    private void doTest(VoidVisitor< ? > visitor) throws ParseException {
+        CompilationUnit cu = Helper.parserClass("./test", DumperTestClass.class);
+        cu.accept(visitor, null);
+
+        cu = Helper.parserClass("./test", JavadocTestClass.class);
+        cu.accept(visitor, null);
+    }
+
+    private void doTest(GenericVisitor< ? , ? > visitor) throws ParseException {
+        CompilationUnit cu = Helper.parserClass("./test", DumperTestClass.class);
+        cu.accept(visitor, null);
+
+        cu = Helper.parserClass("./test", JavadocTestClass.class);
+        cu.accept(visitor, null);
+    }
+
+    @Test
+    public void testVoidVisitorAdapter() throws Exception {
+        doTest(new ConcreteVoidVisitorAdapter());
+    }
+
+    @Test
     public void testGenericVisitorAdapter() throws Exception {
-        CompilationUnit cu = TestHelper.parserClass("./test", DumperTestClass.class);
-        cu.accept(new GenericVisitorAdapter(), null);
+        doTest(new ConcreteGenericVisitorAdapter());
+    }
+
+    @Test
+    public void testModifierVisitorAdapter() throws Exception {
+        doTest(new ConcreteModifierVisitorAdapter());
     }
 
 }

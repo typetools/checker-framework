@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.javari.quals.*;
 
-public interface ObjectInput extends java.io.DataInput {
+public interface ObjectInput extends DataInput {
     public int available() @ReadOnly throws IOException;
     public void close() throws IOException;
     public int read() throws IOException;

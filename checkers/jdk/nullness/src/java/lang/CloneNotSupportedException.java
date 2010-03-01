@@ -38,8 +38,8 @@ import checkers.nullness.quals.*;
  * should not be cloned.
  *
  * @author  unascribed
- * @see     java.lang.Cloneable
- * @see     java.lang.Object#clone()
+ * @see     Cloneable
+ * @see     Object#clone()
  * @since   JDK1.0
  */
 

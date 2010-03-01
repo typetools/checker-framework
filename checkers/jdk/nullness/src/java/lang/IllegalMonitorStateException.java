@@ -33,11 +33,11 @@ import checkers.nullness.quals.*;
  * monitor without owning the specified monitor.
  *
  * @author  unascribed
- * @see     java.lang.Object#notify()
- * @see     java.lang.Object#notifyAll()
- * @see     java.lang.Object#wait()
- * @see     java.lang.Object#wait(long)
- * @see     java.lang.Object#wait(long, int)
+ * @see     Object#notify()
+ * @see     Object#notifyAll()
+ * @see     Object#wait()
+ * @see     Object#wait(long)
+ * @see     Object#wait(long, int)
  * @since   JDK1.0
  */
 public

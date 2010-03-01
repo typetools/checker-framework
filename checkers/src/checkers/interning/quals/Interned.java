@@ -1,7 +1,5 @@
 package checkers.interning.quals;
 
-import static java.lang.annotation.ElementType.*;
-
 import java.lang.annotation.*;
 
 import checkers.interning.InterningChecker;
@@ -34,7 +32,7 @@ import com.sun.source.tree.LiteralTree;
 @Inherited
 @SubtypeOf({Unqualified.class})
 @Retention(RetentionPolicy.RUNTIME)
-//@Target(TYPE_USE)
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @ImplicitFor(
     treeClasses={LiteralTree.class},
     typeClasses={AnnotatedPrimitiveType.class})

@@ -2,7 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 import java.util.PriorityQueue;
-import java.io.File;
 
 import checkers.nullness.NullnessChecker;
 

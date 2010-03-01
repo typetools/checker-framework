@@ -6,7 +6,7 @@ import checkers.quals.*;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target( { FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE })
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf({ Dominator.class })
 @DefaultQualifierInHierarchy

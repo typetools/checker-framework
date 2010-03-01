@@ -1211,7 +1211,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *          object, then the index of the first character of the first
      *          such substring is returned; if it does not occur as a
      *          substring, <code>-1</code> is returned.
-     * @throws  java.lang.NullPointerException if <code>str</code> is
+     * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
     public int indexOf(String str) {
@@ -1232,7 +1232,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @param   fromIndex   the index from which to start the search.
      * @return  the index within this string of the first occurrence of the
      *          specified substring, starting at the specified index.
-     * @throws  java.lang.NullPointerException if <code>str</code> is
+     * @throws  NullPointerException if <code>str</code> is
      *            <code>null</code>.
      */
     public int indexOf(String str, int fromIndex) {
@@ -1254,7 +1254,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *          within this object, then the index of the first character of
      *          the last such substring is returned. If it does not occur as
      *          a substring, <code>-1</code> is returned.
-     * @throws  java.lang.NullPointerException  if <code>str</code> is
+     * @throws  NullPointerException  if <code>str</code> is
      *          <code>null</code>.
      */
     public int lastIndexOf(String str) {
@@ -1275,7 +1275,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @param   fromIndex   the index to start the search from.
      * @return  the index within this sequence of the last occurrence of the
      *          specified substring.
-     * @throws  java.lang.NullPointerException if <code>str</code> is
+     * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
     public int lastIndexOf(String str, int fromIndex) {

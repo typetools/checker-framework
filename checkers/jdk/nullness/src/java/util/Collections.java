@@ -5,61 +5,61 @@ import checkers.nullness.quals.*;
 public class Collections {
   protected Collections() {}
   @SuppressWarnings("rawtypes")
-  public final static java.util.Set EMPTY_SET = new HashSet();
+  public final static Set EMPTY_SET = new HashSet();
   @SuppressWarnings("rawtypes")
-  public final static java.util.List EMPTY_LIST = new LinkedList();
+  public final static List EMPTY_LIST = new LinkedList();
   @SuppressWarnings("rawtypes")
-  public final static java.util.Map EMPTY_MAP = new HashMap();
-  public static <T extends java.lang.Comparable<? super T>> void sort(java.util.List<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> void sort(java.util.List<T> a1, @Nullable java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> int binarySearch(java.util.List<? extends java.lang.Comparable<? super T>> a2, T a3) { throw new RuntimeException("skeleton method"); }
-  public static <T> int binarySearch(java.util.List<? extends T> a1, T a2, @Nullable java.util.Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
-  public static void reverse(java.util.List<?> a1) { throw new RuntimeException("skeleton method"); }
-  public static void shuffle(java.util.List<?> a1) { throw new RuntimeException("skeleton method"); }
-  public static void shuffle(java.util.List<?> a1, java.util.Random a2) { throw new RuntimeException("skeleton method"); }
-  public static void swap(java.util.List<?> a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static <T> void fill(java.util.List<? super T> a1, T a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> void copy(java.util.List<? super T> a1, java.util.List<? extends T> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T extends Object & java.lang.Comparable<? super T>> T min(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> T min(java.util.Collection<? extends T> a1, @Nullable java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T extends Object & java.lang.Comparable<? super T>> T max(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> T max(java.util.Collection<? extends T> a1, @Nullable java.util.Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
-  public static void rotate(java.util.List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> boolean replaceAll(java.util.List<T> a1, @Nullable T a2, T a3) { throw new RuntimeException("skeleton method"); }
-  public static int indexOfSubList(java.util.List<?> a1, java.util.List<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static int lastIndexOfSubList(java.util.List<?> a1, java.util.List<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Collection<T> unmodifiableCollection(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Set<T> unmodifiableSet(java.util.Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.SortedSet<T> unmodifiableSortedSet(java.util.SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.List<T> unmodifiableList(java.util.List<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.Map<K, V> unmodifiableMap(java.util.Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.SortedMap<K, V> unmodifiableSortedMap(java.util.SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Collection<T> synchronizedCollection(java.util.Collection<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Set<T> synchronizedSet(java.util.Set<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.SortedSet<T> synchronizedSortedSet(java.util.SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.List<T> synchronizedList(java.util.List<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.Map<K, V> synchronizedMap(java.util.Map<K, V> a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.SortedMap<K, V> synchronizedSortedMap(java.util.SortedMap<K, V> a1) { throw new RuntimeException("skeleton method"); }
-  public static <E> java.util.Collection<E> checkedCollection(java.util.Collection<E> a1, java.lang.Class<E> a2) { throw new RuntimeException("skeleton method"); }
-  public static <E> java.util.Set<E> checkedSet(java.util.Set<E> a1, java.lang.Class<E> a2) { throw new RuntimeException("skeleton method"); }
-  public static <E> java.util.SortedSet<E> checkedSortedSet(java.util.SortedSet<E> a1, java.lang.Class<E> a2) { throw new RuntimeException("skeleton method"); }
-  public static <E> java.util.List<E> checkedList(java.util.List<E> a1, java.lang.Class<E> a2) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.Map<K, V> checkedMap(java.util.Map<K, V> a1, java.lang.Class<K> a2, java.lang.Class<V> a3) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.SortedMap<K, V> checkedSortedMap(java.util.SortedMap<K, V> a1, java.lang.Class<K> a2, java.lang.Class<V> a3) { throw new RuntimeException("skeleton method"); }
-  public final static <T> java.util.Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
-  public final static <T> java.util.List<T> emptyList() { throw new RuntimeException("skeleton method"); }
-  public final static <K,V> java.util.Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> java.util.Map<K, V> singletonMap(K a1, V a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.List<T> nCopies(int a1, T a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Comparator<T> reverseOrder() { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Comparator<T> reverseOrder(@Nullable java.util.Comparator<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Enumeration<T> enumeration(java.util.Collection<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.ArrayList<T> list(java.util.Enumeration<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static int frequency(java.util.Collection<?> a1, @Nullable java.lang.Object a2) { throw new RuntimeException("skeleton method"); }
-  public static boolean disjoint(java.util.Collection<?> a1, java.util.Collection<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> boolean addAll(java.util.Collection<? super T> a1, T... a2) { throw new RuntimeException("skeleton method"); }
-  public static <E> java.util.Set<E> newSetFromMap(java.util.Map<E, java.lang.Boolean> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> java.util.Queue<T> asLifoQueue(java.util.Deque<T> a1) { throw new RuntimeException("skeleton method"); }
+  public final static Map EMPTY_MAP = new HashMap();
+  public static <T extends Comparable<? super T>> void sort(List<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> void sort(List<T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> int binarySearch(List<? extends Comparable<? super T>> a2, T a3) { throw new RuntimeException("skeleton method"); }
+  public static <T> int binarySearch(List<? extends T> a1, T a2, @Nullable Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
+  public static void reverse(List<?> a1) { throw new RuntimeException("skeleton method"); }
+  public static void shuffle(List<?> a1) { throw new RuntimeException("skeleton method"); }
+  public static void shuffle(List<?> a1, Random a2) { throw new RuntimeException("skeleton method"); }
+  public static void swap(List<?> a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public static <T> void fill(List<? super T> a1, T a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> void copy(List<? super T> a1, List<? extends T> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T extends Object & Comparable<? super T>> T min(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> T min(Collection<? extends T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> T max(Collection<? extends T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
+  public static void rotate(List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> boolean replaceAll(List<T> a1, @Nullable T a2, T a3) { throw new RuntimeException("skeleton method"); }
+  public static int indexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
+  public static int lastIndexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> Set<T> unmodifiableSet(Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> List<T> unmodifiableList(List<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> Map<K, V> unmodifiableMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> SortedMap<K, V> unmodifiableSortedMap(SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> Collection<T> synchronizedCollection(Collection<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> Set<T> synchronizedSet(Set<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> List<T> synchronizedList(List<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> Map<K, V> synchronizedMap(Map<K, V> a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> SortedMap<K, V> synchronizedSortedMap(SortedMap<K, V> a1) { throw new RuntimeException("skeleton method"); }
+  public static <E> Collection<E> checkedCollection(Collection<E> a1, Class<E> a2) { throw new RuntimeException("skeleton method"); }
+  public static <E> Set<E> checkedSet(Set<E> a1, Class<E> a2) { throw new RuntimeException("skeleton method"); }
+  public static <E> SortedSet<E> checkedSortedSet(SortedSet<E> a1, Class<E> a2) { throw new RuntimeException("skeleton method"); }
+  public static <E> List<E> checkedList(List<E> a1, Class<E> a2) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> Map<K, V> checkedMap(Map<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
+  public final static <T> Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
+  public final static <T> List<T> emptyList() { throw new RuntimeException("skeleton method"); }
+  public final static <K,V> Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
+  public static <T> Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> Map<K, V> singletonMap(K a1, V a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> List<T> nCopies(int a1, T a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> Comparator<T> reverseOrder() { throw new RuntimeException("skeleton method"); }
+  public static <T> Comparator<T> reverseOrder(@Nullable Comparator<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> Enumeration<T> enumeration(Collection<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> ArrayList<T> list(Enumeration<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static int frequency(Collection<?> a1, @Nullable Object a2) { throw new RuntimeException("skeleton method"); }
+  public static boolean disjoint(Collection<?> a1, Collection<?> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T> boolean addAll(Collection<? super T> a1, T... a2) { throw new RuntimeException("skeleton method"); }
+  public static <E> Set<E> newSetFromMap(Map<E, Boolean> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> Queue<T> asLifoQueue(Deque<T> a1) { throw new RuntimeException("skeleton method"); }
 }

@@ -5,5 +5,5 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract interface FilenameFilter{
-  public abstract boolean accept(java.io.File a1, java.lang.String a2);
+  public abstract boolean accept(File a1, String a2);
 }

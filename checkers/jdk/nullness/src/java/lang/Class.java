@@ -7,59 +7,59 @@ import checkers.nullness.quals.*;
 public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
-  public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-  public static java.lang.Class<?> forName(java.lang.String a1) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public static java.lang.Class<?> forName(java.lang.String a1, boolean a2, @Nullable java.lang.ClassLoader a3) throws java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public T newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public String toString() { throw new RuntimeException("skeleton method"); }
+  public static Class<?> forName(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public static Class<?> forName(String a1, boolean a2, @Nullable ClassLoader a3) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
+  public T newInstance() throws InstantiationException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public boolean isAnnotation() { throw new RuntimeException("skeleton method"); }
-  public native boolean isInstance(@Nullable java.lang.Object a1);
+  public native boolean isInstance(@Nullable Object a1);
   public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-  public java.lang.String getName() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.TypeVariable<java.lang.Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
+  public String getName() { throw new RuntimeException("skeleton method"); }
+  public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
-  public @Pure @Nullable java.lang.Package getPackage() { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.lang.reflect.Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
-  public java.lang.String getSimpleName() { throw new RuntimeException("skeleton method"); }
+  public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
+  public String getSimpleName() { throw new RuntimeException("skeleton method"); }
   public native @Pure @Nullable Class<? super T> getSuperclass();
   public native Class<?>[] getInterfaces();
-  public @Nullable java.lang.String getCanonicalName() { throw new RuntimeException("skeleton method"); }
+  public @Nullable String getCanonicalName() { throw new RuntimeException("skeleton method"); }
   public boolean isAnonymousClass() { throw new RuntimeException("skeleton method"); }
   public boolean isLocalClass() { throw new RuntimeException("skeleton method"); }
   public boolean isMemberClass() { throw new RuntimeException("skeleton method"); }
-  public java.lang.Class<?>[] getClasses() { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Field[] getFields() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method[] getMethods() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<?>[] getConstructors() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Field getField(java.lang.String a1) throws java.lang.NoSuchFieldException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method getMethod(java.lang.String a1, java.lang.Class<?> @Nullable ... a2) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<T> getConstructor(java.lang.Class<?>... a1) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.Class<?>[] getDeclaredClasses() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Field[] getDeclaredFields() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method[] getDeclaredMethods() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<?>[] getDeclaredConstructors() throws java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Field getDeclaredField(java.lang.String a1) throws java.lang.NoSuchFieldException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Method getDeclaredMethod(java.lang.String a1, java.lang.Class<?>... a2) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public java.lang.reflect.Constructor<T> getDeclaredConstructor(java.lang.Class<?>... a1) throws java.lang.NoSuchMethodException, java.lang.SecurityException { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.io.InputStream getResourceAsStream(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.net.URL getResource(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public Class<?>[] getClasses() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Field[] getFields() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method[] getMethods() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Constructor<?>[] getConstructors() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Field getField(String a1) throws NoSuchFieldException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method getMethod(String a1, Class<?> @Nullable ... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Constructor<T> getConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public Class<?>[] getDeclaredClasses() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Field[] getDeclaredFields() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Constructor<?>[] getDeclaredConstructors() throws SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Field getDeclaredField(String a1) throws NoSuchFieldException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Method getDeclaredMethod(String a1, Class<?>... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.Constructor<T> getDeclaredConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
+  public @Nullable java.io.InputStream getResourceAsStream(String a1) { throw new RuntimeException("skeleton method"); }
+  public @Nullable java.net.URL getResource(String a1) { throw new RuntimeException("skeleton method"); }
   public java.security.ProtectionDomain getProtectionDomain() { throw new RuntimeException("skeleton method"); }
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   public boolean isEnum() { throw new RuntimeException("skeleton method"); }
   public T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
   java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
-  public @PolyNull T cast(@PolyNull java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public <U> java.lang.Class<? extends U> asSubclass(java.lang.Class<U> a1) { throw new RuntimeException("skeleton method"); }
-  public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(java.lang.Class<A> a1) { throw new RuntimeException("skeleton method"); }
-  public boolean isAnnotationPresent(java.lang.Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
+  public @PolyNull T cast(@PolyNull Object a1) { throw new RuntimeException("skeleton method"); }
+  public <U> Class<? extends U> asSubclass(Class<U> a1) { throw new RuntimeException("skeleton method"); }
+  public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }
+  public boolean isAnnotationPresent(Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
-  public native @Pure @Nullable java.lang.Class<?> getComponentType();
-  public native java.lang.Object @Nullable [] getSigners();
-  public native @Nullable java.lang.Class<?> getDeclaringClass();
+  public native @Pure @Nullable Class<?> getComponentType();
+  public native Object @Nullable [] getSigners();
+  public native @Nullable Class<?> getDeclaringClass();
   public native boolean isPrimitive();
   @AssertNonNullIfTrue("getComponentType()")
   public native @Pure boolean isArray();
