@@ -11,11 +11,8 @@ import checkers.eclipse.marker.*;
  */
 public final class MarkerUtil{
 
-    /**
-     * don't instantiate an utility class
-     */
     private MarkerUtil(){
-        super();
+        throw new AssertionError("Shouldn't be initialized");
     }
 
     /**
@@ -43,7 +40,7 @@ public final class MarkerUtil{
                     0, // flags (could specify IWorkspace.AVOID_UPDATE)
                     null); // progress monitor (null if progress reporting is not desired)
         }catch (CoreException e){
-            Activator.getDefault().logException(e, "Core exception on add marker");
+            Activator.logException(e, "Core exception on add marker");
         }
     }
 

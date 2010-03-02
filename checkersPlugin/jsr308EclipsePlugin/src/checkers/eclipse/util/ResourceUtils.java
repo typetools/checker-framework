@@ -9,7 +9,7 @@ import org.eclipse.jface.viewers.*;
 public class ResourceUtils{
 
     private ResourceUtils(){
-        // forbidden
+        throw new AssertionError("Shouldn't be initialized");
     }
 
     /**
