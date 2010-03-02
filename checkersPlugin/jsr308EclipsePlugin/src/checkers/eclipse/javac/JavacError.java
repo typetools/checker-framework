@@ -1,19 +1,19 @@
-package jsr308.javac;
+package checkers.eclipse.javac;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-import jsr308.util.*;
+import checkers.eclipse.util.*;
 
 /**
  * Error reported by javac. Created by parsing javac output.
  */
 public class JavacError{
     private static final boolean VERBOSE = true;
-    private final File file;
-    private final int lineNumber;
-    private final String message;
+    public final File file;
+    public final int lineNumber;
+    public final String message;
 
     public JavacError(File file, int lineNumber, String message){
         this.file = file;
@@ -21,12 +21,16 @@ public class JavacError{
         this.message = message;
     }
 
+    @Override
+    public String toString(){
+        return file.getPath() + ":" + lineNumber + ": " + message;
+    }
+
     /**
      * Parses javac output and converts to a list of errors.
      */
     // XXX very nasty code - needs cleanup
     private static final Pattern errorCountPattern = Pattern.compile("^[0-9]+ errors*$");
-    private static final Pattern carrotPattern = Pattern.compile("^\\s*^.*$");
 
     public static List<JavacError> parse(String javacoutput){
         if (VERBOSE)
@@ -67,22 +71,5 @@ public class JavacError{
             }
         }while (iter.hasNext());
         return result;
-    }
-
-    public File getFile(){
-        return file;
-    }
-
-    public int getLineNumber(){
-        return lineNumber;
-    }
-
-    public String getMessage(){
-        return message;
-    }
-
-    @Override
-    public String toString(){
-        return file.getPath() + ":" + lineNumber + ": " + message;
     }
 }

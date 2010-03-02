@@ -1,4 +1,4 @@
-package jsr308.util;
+package checkers.eclipse.util;
 
 import java.util.*;
 
@@ -9,7 +9,7 @@ import org.eclipse.jface.viewers.*;
 public class ResourceUtils{
 
     private ResourceUtils(){
-        // forbidden
+        throw new AssertionError("Shouldn't be initialized");
     }
 
     /**
