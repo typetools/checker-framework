@@ -8,7 +8,7 @@
 			id="checkers.eclipse.JavaElementActions"
 			objectClass="org.eclipse.jdt.core.IJavaProject">
 		 <menu
-			   id="jsr308"
+			   id="checkers.eclipse"
 			   label="Checker Framework"
 			   path="additions"/>
 		 <action
@@ -93,7 +93,7 @@
    </extension>
       
    <extension
-		 id="jsr308EclipsePlugin.jsr308marker"
+		 id="checkers.eclipse.marker"
 		 name="Checker Framework Problem"
 		 point="org.eclipse.core.resources.markers">
 	  <super type="org.eclipse.core.resources.problemmarker"/>
