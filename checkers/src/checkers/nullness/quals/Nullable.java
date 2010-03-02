@@ -1,7 +1,5 @@
 package checkers.nullness.quals;
 
-import static java.lang.annotation.ElementType.*;
-
 import java.lang.annotation.*;
 
 import checkers.nullness.NullnessChecker;
@@ -30,7 +28,7 @@ import com.sun.source.tree.Tree;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf({})
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})

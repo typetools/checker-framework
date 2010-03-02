@@ -1,11 +1,6 @@
 package checkers.oigj.quals;
 
-import static java.lang.annotation.ElementType.*;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
@@ -23,7 +18,7 @@ import checkers.quals.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target( { CONSTRUCTOR, METHOD })
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier // (for now)
 @SubtypeOf( ReadOnly.class )
 public @interface AssignsFields {

@@ -1,7 +1,5 @@
 package checkers.nullness.quals;
 
-import static java.lang.annotation.ElementType.*;
-
 import java.lang.annotation.*;
 
 import checkers.quals.*;
@@ -18,7 +16,7 @@ import checkers.quals.*;
 @TypeQualifier
 @PolymorphicQualifier
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyRaw {
 
 }
