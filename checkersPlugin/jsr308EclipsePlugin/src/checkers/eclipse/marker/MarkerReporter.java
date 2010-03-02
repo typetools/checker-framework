@@ -1,6 +1,5 @@
 package checkers.eclipse.marker;
 
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 
@@ -10,6 +9,8 @@ import checkers.eclipse.*;
  * Creates a JSR308 marker in a runnable window.
  */
 public class MarkerReporter implements IWorkspaceRunnable{
+    public static final String NAME = Activator.PLUGIN_ID + ".marker";
+
     private final IResource resource;
     private final int startLine;
     private final String message;
@@ -40,7 +41,7 @@ public class MarkerReporter implements IWorkspaceRunnable{
     }
 
     private String getMarkerType(){
-        return JSR308Marker.NAME;
+        return NAME;
     }
 
     /**

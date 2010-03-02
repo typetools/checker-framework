@@ -19,28 +19,28 @@
 			   tooltip="Removes all Checker Framework markers from the selected element."/>
 
 		<action
-			   class="checkers.eclipse.actions.RunJavariCheckerAction"
+			   class="checkers.eclipse.actions.CheckerActions.JavariAction"
 			   id="jsr308.runCheckers.javari"
 			   label="Run Javari Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Javari checker on the selected element."/>
 
 		<action
-			   class="checkers.eclipse.actions.RunNullnessCheckerAction"
+			   class="checkers.eclipse.actions.CheckerActions.NullnessAction"
 			   id="jsr308.runCheckers.nonnull"
 			   label="Run Nullness Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Nullness checker on the selected element."/>
 
 		<action
-			   class="checkers.eclipse.actions.RunInternedCheckerAction"
+			   class="checkers.eclipse.actions.CheckerActions.InternedAction"
 			   id="jsr308.runCheckers.interned"
 			   label="Run Interned Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Interned checker on the selected element."/>
 
 		<action
-			   class="checkers.eclipse.actions.RunIGJCheckerAction"
+			   class="checkers.eclipse.actions.CheckerActions.IGJAction"
 			   id="jsr308.runCheckers.igj"
 			   label="Run IGJ Checker"
 			   menubarPath="jsr308/additions"
@@ -76,7 +76,7 @@
 
 		 </action>
 		 <action
-			   class="checkers.eclipse.RunCheckersAction"
+			   class="checkers.eclipse.actions.RunCheckerAction"
 			   id="jsr308.runCheckers"
 			   label="Run Checkers"
 			   menubarPath="jsr308/additions"
