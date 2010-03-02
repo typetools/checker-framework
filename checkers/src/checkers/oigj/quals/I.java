@@ -1,13 +1,8 @@
 package checkers.oigj.quals;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import checkers.quals.*;
-
-import static java.lang.annotation.ElementType.*;
 
 /**
  *
@@ -66,7 +61,7 @@ import static java.lang.annotation.ElementType.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target( { FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE })
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later
 @SubtypeOf( ReadOnly.class )

@@ -1,7 +1,5 @@
 package checkers.nullness.quals;
 
-import static java.lang.annotation.ElementType.*;
-
 import java.lang.annotation.*;
 
 import checkers.nullness.NullnessChecker;
@@ -23,7 +21,7 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( {} )
 public @interface Raw {

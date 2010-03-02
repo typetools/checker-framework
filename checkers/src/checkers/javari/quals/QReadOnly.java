@@ -1,14 +1,10 @@
 package checkers.javari.quals;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import checkers.javari.JavariChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import static java.lang.annotation.ElementType.*;
 
 /**
  * Indicates that the annotated type behaves as the most restrictive of
@@ -24,7 +20,7 @@ import static java.lang.annotation.ElementType.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(ReadOnly.class)
 public @interface QReadOnly {
