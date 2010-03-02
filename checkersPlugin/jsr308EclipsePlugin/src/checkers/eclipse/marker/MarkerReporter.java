@@ -24,24 +24,14 @@ public class MarkerReporter implements IWorkspaceRunnable{
     @Override
     public void run(IProgressMonitor monitor) throws CoreException{
 
-        String markerType = getMarkerType();
-
-        if (markerType == null){
-            return;
-        }
-
         if (Activator.DEBUG){
             System.out.println("Creating marker for " + resource.getLocation());
         }
 
         // This triggers resource update on IResourceChangeListener's (BugTreeView)
-        IMarker marker = resource.createMarker(markerType);
+        IMarker marker = resource.createMarker(NAME);
 
         setAttributes(marker);
-    }
-
-    private String getMarkerType(){
-        return NAME;
     }
 
     /**
