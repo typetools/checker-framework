@@ -2,7 +2,6 @@ package checkers.eclipse.actions;
 
 import java.util.*;
 
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.*;
@@ -37,7 +36,7 @@ public class JSR308Worker{
             IResource file = getFile(project, javacError);
             if (file == null)
                 continue;
-            MarkerUtil.addMarker(javacError.getMessage(), project.getProject(), file, javacError.getLineNumber());
+            MarkerUtil.addMarker(javacError.message, project.getProject(), file, javacError.lineNumber);
         }
         pm.worked(3);
         pm.done();
@@ -108,6 +107,6 @@ public class JSR308Worker{
 
     private IResource getFile(IJavaProject jProject, JavacError javacError){
         IPath fullPath = jProject.getProject().getLocation();
-        return jProject.getProject().findMember(Path.fromOSString(javacError.getFile().getPath()).removeFirstSegments(fullPath.segmentCount()));
+        return jProject.getProject().findMember(Path.fromOSString(javacError.file.getPath()).removeFirstSegments(fullPath.segmentCount()));
     }
 }

@@ -66,8 +66,8 @@ public class Activator extends AbstractUIPlugin{
      * @param message
      *            message describing how/why the exception occurred
      */
-    public void logException(Throwable e, String message){
-        logMessage(IStatus.ERROR, message, e);
+    public static void logException(Throwable e, String message){
+        getDefault().logMessage(IStatus.ERROR, message, e);
     }
 
     public void logMessage(int severity, String message, Throwable e){
