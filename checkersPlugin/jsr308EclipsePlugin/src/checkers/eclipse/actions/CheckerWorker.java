@@ -9,12 +9,12 @@ import org.eclipse.jdt.core.*;
 import checkers.eclipse.javac.*;
 import checkers.eclipse.util.*;
 
-public class JSR308Worker{
+public class CheckerWorker{
 
     private static final String PATH_SEPARATOR = System.getProperty("path.separator");// This is : on unix
     private final IProgressMonitor pm;
 
-    public JSR308Worker(IProgressMonitor monitor){
+    public CheckerWorker(IProgressMonitor monitor){
         pm = monitor;
     }
 
