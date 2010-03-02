@@ -3,7 +3,6 @@ package checkers.eclipse.actions;
 import java.lang.reflect.*;
 import java.util.*;
 
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.*;
@@ -25,31 +24,16 @@ public class ClearMarkersAction implements IObjectActionDelegate{
     /** The current selection. */
     private ISelection currentSelection;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.ui.IObjectActionDelegate#setActivePart(org.eclipse.jface.action.IAction, org.eclipse.ui.IWorkbenchPart)
-     */
     @Override
     public final void setActivePart(final IAction action, final IWorkbenchPart targetPart){
         // noop
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
-     */
     @Override
     public final void selectionChanged(final IAction action, final ISelection selection){
         this.currentSelection = selection;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
-     */
     @Override
     public final void run(final IAction action){
         if (!currentSelection.isEmpty()){
