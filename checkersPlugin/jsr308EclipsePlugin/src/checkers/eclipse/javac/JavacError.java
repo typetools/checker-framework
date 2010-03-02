@@ -1,10 +1,11 @@
-package jsr308.javac;
+package checkers.eclipse.javac;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-import jsr308.util.*;
+import checkers.eclipse.util.*;
+
 
 /**
  * Error reported by javac. Created by parsing javac output.

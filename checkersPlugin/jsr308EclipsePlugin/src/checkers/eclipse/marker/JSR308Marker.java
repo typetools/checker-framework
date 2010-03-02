@@ -1,4 +1,4 @@
-package jsr308.marker;
+package checkers.eclipse.marker;
 
 public interface JSR308Marker{
     /**

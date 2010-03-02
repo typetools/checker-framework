@@ -12,35 +12,35 @@
 			   label="JSR 308"
 			   path="additions"/>
 		 <action
-			   class="jsr308.actions.ClearMarkersAction"
+			   class="checkers.eclipse.actions.ClearMarkersAction"
 			   id="jsr308.removeMarkers"
 			   label="Clear Checkers Markers"
 			   menubarPath="jsr308/additions"
 			   tooltip="Removes all Checker Framework markers from the selected element."/>
 
 		<action
-			   class="jsr308.actions.RunJavariCheckerAction"
+			   class="checkers.eclipse.actions.RunJavariCheckerAction"
 			   id="jsr308.runCheckers.javari"
 			   label="Run Javari Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Javari checker on the selected element."/>
 
 		<action
-			   class="jsr308.actions.RunNullnessCheckerAction"
+			   class="checkers.eclipse.actions.RunNullnessCheckerAction"
 			   id="jsr308.runCheckers.nonnull"
 			   label="Run Nullness Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Nullness checker on the selected element."/>
 
 		<action
-			   class="jsr308.actions.RunInternedCheckerAction"
+			   class="checkers.eclipse.actions.RunInternedCheckerAction"
 			   id="jsr308.runCheckers.interned"
 			   label="Run Interned Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Interned checker on the selected element."/>
 
 		<action
-			   class="jsr308.actions.RunIGJCheckerAction"
+			   class="checkers.eclipse.actions.RunIGJCheckerAction"
 			   id="jsr308.runCheckers.igj"
 			   label="Run IGJ Checker"
 			   menubarPath="jsr308/additions"
@@ -63,7 +63,7 @@
 			   label="JSR 308"
 			   path="additions"/>
 		 <action
-			   class="jsr308.actions.ClearMarkersAction"
+			   class="checkers.eclipse.actions.ClearMarkersAction"
 			   id="jsr308.removeMarkers"
 			   label="Clear Checkers Markers"
 			   menubarPath="jsr308/additions"
@@ -76,7 +76,7 @@
 
 		 </action>
 		 <action
-			   class="jsr308.RunCheckersAction"
+			   class="checkers.eclipse.RunCheckersAction"
 			   id="jsr308.runCheckers"
 			   label="Run Checkers"
 			   menubarPath="jsr308/additions"

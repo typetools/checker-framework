@@ -1,9 +1,10 @@
-package jsr308.marker;
+package checkers.eclipse.marker;
 
-import jsr308.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+
+import checkers.eclipse.*;
 
 /**
  * Creates a JSR308 marker in a runnable window.
@@ -19,6 +20,7 @@ public class MarkerReporter implements IWorkspaceRunnable{
         this.message = message;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws CoreException{
 
         String markerType = getMarkerType();

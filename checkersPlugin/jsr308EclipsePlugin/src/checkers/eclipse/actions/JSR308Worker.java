@@ -1,13 +1,14 @@
-package jsr308.actions;
+package checkers.eclipse.actions;
 
 import java.util.*;
 
-import jsr308.javac.*;
-import jsr308.util.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.*;
+
+import checkers.eclipse.javac.*;
+import checkers.eclipse.util.*;
 
 public class JSR308Worker{
 
