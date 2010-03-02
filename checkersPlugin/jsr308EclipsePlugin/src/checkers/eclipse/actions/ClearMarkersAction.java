@@ -68,11 +68,11 @@ public class ClearMarkersAction implements IObjectActionDelegate{
                         }
 
                     }catch (CoreException ex){
-                        Activator.getDefault().logException(ex, "CoreException on clear markers");
+                        Activator.logException(ex, "CoreException on clear markers");
                         throw new InvocationTargetException(ex);
 
                     }catch (RuntimeException ex){
-                        Activator.getDefault().logException(ex, "RuntimeException on clear markers");
+                        Activator.logException(ex, "RuntimeException on clear markers");
                         throw ex;
                     }
                 }
@@ -81,9 +81,9 @@ public class ClearMarkersAction implements IObjectActionDelegate{
             ProgressMonitorDialog progress = new ProgressMonitorDialog(Activator.getShell());
             progress.run(true, true, r);
         }catch (InvocationTargetException e){
-            Activator.getDefault().logException(e, "InvocationTargetException on clear markers");
+            Activator.logException(e, "InvocationTargetException on clear markers");
         }catch (InterruptedException e){
-            Activator.getDefault().logException(e, "InterruptedException on clear markers");
+            Activator.logException(e, "InterruptedException on clear markers");
         }
     }
 

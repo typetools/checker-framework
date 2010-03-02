@@ -63,7 +63,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
                     JSR308Worker worker = new JSR308Worker(monitor);
                     worker.work(project, checkerClass);
                 }catch (CoreException e){
-                    Activator.getDefault().logException(e, "Analysis exception");
+                    Activator.logException(e, "Analysis exception");
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;

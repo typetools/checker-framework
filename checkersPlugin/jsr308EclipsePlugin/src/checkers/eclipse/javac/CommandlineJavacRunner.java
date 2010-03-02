@@ -45,7 +45,7 @@ public class CommandlineJavacRunner{
 
             return JavacError.parse(result);
         }catch (IOException e){
-            Activator.getDefault().logException(e, "Error calling javac");
+            Activator.logException(e, "Error calling javac");
             return null;
         }
     }
