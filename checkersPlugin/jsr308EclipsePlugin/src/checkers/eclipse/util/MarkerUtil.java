@@ -1,26 +1,23 @@
-package jsr308.util;
-
-import jsr308.*;
-import jsr308.marker.*;
+package checkers.eclipse.util;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+
+import checkers.eclipse.*;
+import checkers.eclipse.marker.*;
 
 /**
  * Utility methods for Eclipse markers.
  */
 public final class MarkerUtil{
 
-    /**
-     * don't instantiate an utility class
-     */
     private MarkerUtil(){
-        super();
+        throw new AssertionError("Shouldn't be initialized");
     }
 
     /**
      * Remove all FindBugs problem markers for given resource.
-     *
+     * 
      * @param res
      *            the resource
      * @throws CoreException
@@ -31,7 +28,7 @@ public final class MarkerUtil{
         if (Activator.DEBUG){
             System.out.println("Removing JSR 308 markers in " + res.getLocation());
         }
-        res.deleteMarkers(JSR308Marker.NAME, true, IResource.DEPTH_INFINITE);
+        res.deleteMarkers(MarkerReporter.NAME, true, IResource.DEPTH_INFINITE);
     }
 
     public static void addMarker(String message, IProject project, IResource resource, int startLine){
@@ -43,7 +40,7 @@ public final class MarkerUtil{
                     0, // flags (could specify IWorkspace.AVOID_UPDATE)
                     null); // progress monitor (null if progress reporting is not desired)
         }catch (CoreException e){
-            Activator.getDefault().logException(e, "Core exception on add marker");
+            Activator.logException(e, "Core exception on add marker");
         }
     }
 

@@ -1,82 +1,73 @@
-package jsr308.util;
+package checkers.eclipse.util;
 
 import java.util.*;
-
-import jsr308.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.*;
 
+import checkers.eclipse.*;
+
 /**
  * Eclipse-specific utilities.
- *
+ * 
  * Copied from FindBugs.
- *
+ * 
  * @author Phil Crosby
  * @author Peter Friese
  */
 public class Util{
     public static final String NL = System.getProperty("line.separator");
 
+    private static boolean isFileWithExtension(IResource resource, String ext){
+        return (resource != null && resource.getType() == IResource.FILE && ext.equalsIgnoreCase(resource.getFileExtension()));
+    }
+
     /**
      * Checks whether the given resource is a Java source file.
-     *
+     * 
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a Java source file, <code>false</code> otherwise.
      */
     public static boolean isJavaFile(IResource resource){
-        if (resource == null || (resource.getType() != IResource.FILE)){
-            return false;
-        }
-        String ex = resource.getFileExtension();
-        return "java".equalsIgnoreCase(ex);
+        return isFileWithExtension(resource, "java");
     }
 
     /**
      * Checks whether the given resource is a Java class file.
-     *
+     * 
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a class file, <code>false</code> otherwise.
      */
     public static boolean isClassFile(IResource resource){
-        if (resource == null || (resource.getType() != IResource.FILE)){
-            return false;
-        }
-        String ex = resource.getFileExtension();
-        return "class".equalsIgnoreCase(ex);
-
+        return isFileWithExtension(resource, "class");
     }
 
     /**
      * Checks whether the given resource is a Java artifact (i.e. either a Java source file or a Java class file).
-     *
+     * 
      * @param resource
      *            The resource to check.
      * @return <code>true</code> if the given resource is a Java artifact. <code>false</code> otherwise.
      */
     public static boolean isJavaArtifact(IResource resource){
-        if (resource == null || (resource.getType() != IResource.FILE)){
-            return false;
-        }
-        String ex = resource.getFileExtension();
-        return ("java".equalsIgnoreCase(ex) || "class".equalsIgnoreCase(ex));
+        return isJavaFile(resource) || isClassFile(resource);
     }
 
     public static boolean isJavaProject(IProject project){
         try{
             return project != null && project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
         }catch (CoreException e){
-            Activator.getDefault().logException(e, "couldn't determine project nature");
+            Activator.logException(e, "couldn't determine project nature");
             return false;
         }
     }
 
     /**
      * Get all compilation units of a selection.
-     *
+     * 
      * @param javaElements
      *            the selected java elements
      * @return all compilation units containing and contained in elements from javaElements

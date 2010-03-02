@@ -1,4 +1,4 @@
-package jsr308;
+package checkers.eclipse;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.resource.*;
@@ -17,7 +17,7 @@ public class Activator extends AbstractUIPlugin{
     public static boolean DEBUG = false;
 
     /** The plug-in ID */
-    public static final String PLUGIN_ID = "jsr308EclipsePlugin";
+    public static final String PLUGIN_ID = "checkers.eclipse";
 
     /** The shared instance */
     private static Activator plugin;
@@ -66,38 +66,8 @@ public class Activator extends AbstractUIPlugin{
      * @param message
      *            message describing how/why the exception occurred
      */
-    public void logException(Throwable e, String message){
-        logMessage(IStatus.ERROR, message, e);
-    }
-
-    /**
-     * Log an error.
-     * 
-     * @param message
-     *            error message
-     */
-    public void logError(String message){
-        logMessage(IStatus.ERROR, message, null);
-    }
-
-    /**
-     * Log a warning.
-     * 
-     * @param message
-     *            warning message
-     */
-    public void logWarning(String message){
-        logMessage(IStatus.WARNING, message, null);
-    }
-
-    /**
-     * Log an informational message.
-     * 
-     * @param message
-     *            the informational message
-     */
-    public void logInfo(String message){
-        logMessage(IStatus.INFO, message, null);
+    public static void logException(Throwable e, String message){
+        getDefault().logMessage(IStatus.ERROR, message, e);
     }
 
     public void logMessage(int severity, String message, Throwable e){
@@ -135,6 +105,7 @@ public class Activator extends AbstractUIPlugin{
         // need to call from UI thread
         final IWorkbenchWindow[] window = new IWorkbenchWindow[1];
         Display.getDefault().syncExec(new Runnable() {
+            @Override
             public void run(){
                 window[0] = getDefault().getWorkbench().getActiveWorkbenchWindow();
             }

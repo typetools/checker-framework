@@ -1,14 +1,16 @@
-package jsr308.marker;
-
-import jsr308.*;
+package checkers.eclipse.marker;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+
+import checkers.eclipse.*;
 
 /**
  * Creates a JSR308 marker in a runnable window.
  */
 public class MarkerReporter implements IWorkspaceRunnable{
+    public static final String NAME = Activator.PLUGIN_ID + ".marker";
+
     private final IResource resource;
     private final int startLine;
     private final String message;
@@ -19,26 +21,17 @@ public class MarkerReporter implements IWorkspaceRunnable{
         this.message = message;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws CoreException{
-
-        String markerType = getMarkerType();
-
-        if (markerType == null){
-            return;
-        }
 
         if (Activator.DEBUG){
             System.out.println("Creating marker for " + resource.getLocation());
         }
 
         // This triggers resource update on IResourceChangeListener's (BugTreeView)
-        IMarker marker = resource.createMarker(markerType);
+        IMarker marker = resource.createMarker(NAME);
 
         setAttributes(marker);
-    }
-
-    private String getMarkerType(){
-        return JSR308Marker.NAME;
     }
 
     /**
