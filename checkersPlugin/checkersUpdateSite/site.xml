@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="http://types.cs.washington.edu/jsr308/eclipse">
+   <description name="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/checker-framework/eclipse">
       This is the update site for the Checker Framework.
    </description>
-   <!--   <feature url="features/jsr308EclipseFeature_1.0.0.jar" id="jsr308EclipseFeature" version="1.0.0"/> -->
    <feature url="features/jsr308.checkers_0.0.1.jar" id="jsr308.checkers" version="0.0.1"/>
    <feature url="features/jsr308.checkers_0.0.2.jar" id="jsr308.checkers" version="0.0.2"/>
    <feature url="features/jsr308.checkers_0.0.3.jar" id="jsr308.checkers" version="0.0.3"/>
    <feature url="features/jsr308.skelgen_0.0.1.jar" id="jsr308.skelgen" version="0.0.1"/>
-
 </site>
