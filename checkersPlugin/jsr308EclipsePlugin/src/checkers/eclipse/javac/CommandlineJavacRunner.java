@@ -91,7 +91,7 @@ public class CommandlineJavacRunner{
         opts.add("-ea:com.sun.tools");
         opts.add("-Xbootclasspath/p:" + javacJARlocation());
 
-        opts.add("-Djsr308_imports=\"" + implicitAnnotations() + "\"");
+        // opts.add("-Djsr308_imports=\"" + implicitAnnotations() + "\"");
 
         opts.add("-jar");
         opts.add(javacJARlocation());
@@ -105,7 +105,6 @@ public class CommandlineJavacRunner{
         // opts.add("-J-Xms256M");
         // opts.add("-J-Xmx515M");
         opts.addAll(fileNames);
-        // opts.add("/afs/csail.mit.edu/u/a/akiezun/eclipseworkspaces/runtime-New_configuration/daikon/java/daikon/VarInfo.java");
         return opts.toArray(new String[opts.size()]);
     }
 
