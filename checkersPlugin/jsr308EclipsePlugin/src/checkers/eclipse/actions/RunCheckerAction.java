@@ -60,7 +60,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
             @Override
             protected IStatus run(IProgressMonitor monitor){
                 try{
-                    JSR308Worker worker = new JSR308Worker(monitor);
+                    CheckerWorker worker = new CheckerWorker(monitor);
                     worker.work(project, checkerClass);
                 }catch (CoreException e){
                     Activator.logException(e, "Analysis exception");
