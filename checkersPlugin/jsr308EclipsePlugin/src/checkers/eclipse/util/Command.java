@@ -1,4 +1,4 @@
-package jsr308.util;
+package checkers.eclipse.util;
 
 import java.io.*;
 import java.util.concurrent.*;

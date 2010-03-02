@@ -1,15 +1,15 @@
-package jsr308.javac;
+package checkers.eclipse.javac;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import jsr308.*;
-import jsr308.util.*;
-
 import org.eclipse.core.runtime.*;
 import org.eclipse.ui.console.*;
 import org.osgi.framework.*;
+
+import checkers.eclipse.*;
+import checkers.eclipse.util.*;
 
 /**
  * Runs the compiler and parses the output.
@@ -67,18 +67,22 @@ public class CommandlineJavacRunner{
         return b.toString();
     }
 
-    private String implicitAnnotations(){
+    private static String join(String delimiter, Iterable<?> args){
         StringBuilder sb = new StringBuilder();
 
         boolean isntFirst = false;
-        for (String s : IMPLICIT_ARGS){
+        for (Object s : args){
             if (isntFirst){
-                sb.append(File.pathSeparator);
+                sb.append(delimiter);
             }
             sb.append(s);
             isntFirst = true;
         }
         return sb.toString();
+    }
+
+    private String implicitAnnotations(){
+        return join(File.pathSeparator, IMPLICIT_ARGS);
     }
 
     private String[] options(List<String> fileNames, String processor, String classpath) throws IOException{

@@ -1,10 +1,11 @@
-package jsr308.util;
+package checkers.eclipse.util;
 
-import jsr308.*;
-import jsr308.marker.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+
+import checkers.eclipse.*;
+import checkers.eclipse.marker.*;
 
 /**
  * Utility methods for Eclipse markers.

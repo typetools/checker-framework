@@ -1,15 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: jsr308.checkers
-Bundle-SymbolicName: jsr308.checkers;singleton:=true
+Bundle-Name: checkers.eclipse
+Bundle-SymbolicName: checkers.eclipse;singleton:=true
 Bundle-Version: 0.0.3
 Bundle-ClassPath: lib/langtools/binary/javac.jar,lib/checkers/checkers.jar,.
-Bundle-Activator: jsr308.Activator
-Export-Package: jsr308,
- jsr308.actions,
- jsr308.javac,
- jsr308.marker,
- jsr308.util
+Bundle-Activator: checkers.eclipse.Activator
+Export-Package: checkers.eclipse,
+ checkers.eclipse.actions,
+ checkers.eclipse.javac,
+ checkers.eclipse.marker,
+ checkers.eclipse.util
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,

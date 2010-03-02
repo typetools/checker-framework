@@ -1,12 +1,13 @@
-package jsr308.util;
+package checkers.eclipse.util;
 
 import java.util.*;
 
-import jsr308.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.*;
+
+import checkers.eclipse.*;
 
 /**
  * Eclipse-specific utilities.

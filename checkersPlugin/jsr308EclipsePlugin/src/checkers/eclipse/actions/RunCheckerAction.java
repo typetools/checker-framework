@@ -1,7 +1,4 @@
-package jsr308.actions;
-
-import jsr308.*;
-import jsr308.util.*;
+package checkers.eclipse.actions;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.*;
@@ -9,6 +6,9 @@ import org.eclipse.jdt.core.*;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.ui.*;
+
+import checkers.eclipse.*;
+import checkers.eclipse.util.*;
 
 /**
  * Superclass of all checker actions.
@@ -31,6 +31,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
     /**
      * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
      */
+    @Override
     public void setActivePart(IAction action, IWorkbenchPart targetPart){
         // do nothing
     }
@@ -38,6 +39,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
     /**
      * @see IActionDelegate#run(IAction)
      */
+    @Override
     public void run(IAction action){
         if (!selection.isEmpty()){
             if (selection instanceof IStructuredSelection){
@@ -77,6 +79,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
     /**
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */
+    @Override
     public void selectionChanged(IAction action, ISelection newSelection){
         if (!usedInEditor){
             this.selection = newSelection;

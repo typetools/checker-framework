@@ -1,4 +1,4 @@
-package jsr308.actions;
+package checkers.eclipse.actions;
 
 import checkers.interning.*;
 

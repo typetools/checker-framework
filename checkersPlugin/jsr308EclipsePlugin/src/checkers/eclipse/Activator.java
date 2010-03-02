@@ -1,4 +1,4 @@
-package jsr308;
+package checkers.eclipse;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.resource.*;
@@ -17,7 +17,7 @@ public class Activator extends AbstractUIPlugin{
     public static boolean DEBUG = false;
 
     /** The plug-in ID */
-    public static final String PLUGIN_ID = "jsr308EclipsePlugin";
+    public static final String PLUGIN_ID = "checkers.eclipse";
 
     /** The shared instance */
     private static Activator plugin;
@@ -135,6 +135,7 @@ public class Activator extends AbstractUIPlugin{
         // need to call from UI thread
         final IWorkbenchWindow[] window = new IWorkbenchWindow[1];
         Display.getDefault().syncExec(new Runnable() {
+            @Override
             public void run(){
                 window[0] = getDefault().getWorkbench().getActiveWorkbenchWindow();
             }
