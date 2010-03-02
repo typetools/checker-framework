@@ -23,19 +23,19 @@ public class CheckerActions{
         }
     }
 
-    public class InternedAction extends RunCheckerAction{
+    public static class InternedAction extends RunCheckerAction{
         public InternedAction(){
             super(InterningChecker.class);
         }
     }
 
-    public class IGJAction extends RunCheckerAction{
+    public static class IGJAction extends RunCheckerAction{
         public IGJAction(){
             super(IGJChecker.class);
         }
     }
 
-    public class CustomAction extends RunCheckerAction{
+    public static class CustomAction extends RunCheckerAction{
         public CustomAction(){
             super(BasicChecker.class);
         }
