@@ -1,6 +1,5 @@
 package checkers.eclipse.util;
 
-
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 
@@ -21,7 +20,7 @@ public final class MarkerUtil{
 
     /**
      * Remove all FindBugs problem markers for given resource.
-     *
+     * 
      * @param res
      *            the resource
      * @throws CoreException
@@ -32,7 +31,7 @@ public final class MarkerUtil{
         if (Activator.DEBUG){
             System.out.println("Removing JSR 308 markers in " + res.getLocation());
         }
-        res.deleteMarkers(JSR308Marker.NAME, true, IResource.DEPTH_INFINITE);
+        res.deleteMarkers(MarkerReporter.NAME, true, IResource.DEPTH_INFINITE);
     }
 
     public static void addMarker(String message, IProject project, IResource resource, int startLine){

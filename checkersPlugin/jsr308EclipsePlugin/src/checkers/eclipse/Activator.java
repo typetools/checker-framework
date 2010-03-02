@@ -70,36 +70,6 @@ public class Activator extends AbstractUIPlugin{
         logMessage(IStatus.ERROR, message, e);
     }
 
-    /**
-     * Log an error.
-     * 
-     * @param message
-     *            error message
-     */
-    public void logError(String message){
-        logMessage(IStatus.ERROR, message, null);
-    }
-
-    /**
-     * Log a warning.
-     * 
-     * @param message
-     *            warning message
-     */
-    public void logWarning(String message){
-        logMessage(IStatus.WARNING, message, null);
-    }
-
-    /**
-     * Log an informational message.
-     * 
-     * @param message
-     *            the informational message
-     */
-    public void logInfo(String message){
-        logMessage(IStatus.INFO, message, null);
-    }
-
     public void logMessage(int severity, String message, Throwable e){
         if (DEBUG){
             String what = (severity == IStatus.ERROR) ? (e != null ? "Exception" : "Error") : "Warning";
