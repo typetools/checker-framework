@@ -23,8 +23,8 @@ public class CheckerActions{
         }
     }
 
-    public static class InternedAction extends RunCheckerAction{
-        public InternedAction(){
+    public static class InterningAction extends RunCheckerAction{
+        public InterningAction(){
             super(InterningChecker.class);
         }
     }
