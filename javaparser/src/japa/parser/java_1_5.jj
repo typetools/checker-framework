@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Júlio Vilmar Gesser.
+ * Copyright (C) 2008 JÃºlio Vilmar Gesser.
  *
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -29,7 +29,7 @@ options {
 
 PARSER_BEGIN(ASTParser)
 /*
- * Copyright (C) 2008 Júlio Vilmar Gesser.
+ * Copyright (C) 2008 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -58,7 +58,7 @@ import japa.parser.ast.type.*;
 
 /**
  * <p>This class was generated automatically by javacc, do not edit.</p>
- * @author Júlio Vilmar Gesser
+ * @author JÃºlio Vilmar Gesser
  */
 final class ASTParser {
 
@@ -2405,7 +2405,7 @@ Expression PrimarySuffixWithoutSuper(Expression scope):
   (
   	"."
   	(
-  	// TODO: está deixando passar "this.this", verificar na JLS se é possível
+  	// TODO: estÃ¡ deixando passar "this.this", verificar na JLS se Ã© possÃ­vel
 		"this" { ret = new ThisExpr(scope.getBeginLine(), scope.getBeginColumn(), token.endLine, token.endColumn, scope); }
 	  |
 	  	ret = AllocationExpression(scope)

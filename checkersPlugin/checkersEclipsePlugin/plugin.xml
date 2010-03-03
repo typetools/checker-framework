@@ -33,9 +33,9 @@
 			   tooltip="Run the Nullness checker on the selected element."/>
 
 		<action
-			   class="checkers.eclipse.actions.CheckerActions$InternedAction"
-			   id="checkers.eclipse.runCheckers.interned"
-			   label="Run Interned Checker"
+			   class="checkers.eclipse.actions.CheckerActions$InterningAction"
+			   id="checkers.eclipse.runCheckers.interning"
+			   label="Run Interning Checker"
 			   menubarPath="jsr308/additions"
 			   tooltip="Run the Interned checker on the selected element."/>
 

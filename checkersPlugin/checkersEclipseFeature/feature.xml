@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="jsr308EclipseFeature"
+      id="checkersEclipseFeature"
       label="Checker Framework Feature"
       version="0.0.3"
       provider-name="Checker Framework Development Team">
@@ -372,7 +372,7 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </license>
 
    <url>
-      <update label="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/jsr308/eclipse"/>
+      <update label="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/checker-framework/eclipse"/>
    </url>
 
    <requires>
@@ -384,10 +384,9 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </requires>
 
    <plugin
-         id="jsr308.checkers"
+         id="checkers.eclipse"
          download-size="34"
          install-size="34"
-         version="0.0.3"
-         unpack="true"/>
+         version="0.0.3"/>
 
 </feature>

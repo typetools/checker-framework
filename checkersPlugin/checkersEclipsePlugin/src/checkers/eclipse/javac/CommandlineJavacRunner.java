@@ -81,6 +81,7 @@ public class CommandlineJavacRunner{
         return sb.toString();
     }
 
+    @SuppressWarnings("unused")
     private String implicitAnnotations(){
         return join(File.pathSeparator, IMPLICIT_ARGS);
     }
