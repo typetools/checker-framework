@@ -120,10 +120,100 @@ than only the errors in the first file; see Section~\ref{running}.
 
 \section{Maven plugin\label{maven-plugin}}
 
-Adam Warski has written a Maven2 plugin that runs a checker.
-The plugin is available at 
-\myurl{http://www.warski.org/checkersplugin.html}.
+If you use the \ahref{http://maven.apache.org/}{Maven} project tool,
+then you can specify the distributed checkers as part of your build
+process.
 
+\begin{enumerate}
+
+\item First, you need to add the repositories in your \code{pom.xml} file:
+
+\begin{Verbatim}
+    <repositories>  
+        <repository>  
+            <id>checker-framework-repo</id>  
+            <url>http://types.cs.washington.edu/m2-repo</url>  
+        </repository>  
+    </repositories>  
+    <pluginRepositories>  
+        <pluginRepository>  
+            <id>checker-framework-repo</id>  
+            <url>http://types.cs.washington.edu/m2-repo</url>  
+        </pluginRepository>  
+    </pluginRepositories>
+\end{Verbatim}
+
+\item Then, to use the annotations used by the distributed checkers, you'll
+have to declared as a dependency:
+
+\begin{Verbatim}
+    <dependencies>  
+        <!-- annotations for the standard checkers: nullness, interning, mutability -->  
+        <dependency>  
+            <groupId>types.checkers</groupId>  
+            <artifactId>checkers-quals</artifactId>  
+            <version>1.0.6</version>  
+        </dependency>  
+
+        <!-- other dependencies -->  
+    </dependencies>
+\end{Verbatim}
+
+\item And finally, you need to attach the plugin to your build lifecycle:
+
+\begin{Verbatim}
+    <build>  
+        <plugins>  
+            <plugin>  
+                <groupId>mamut.net.pl</groupId>  
+                <artifactId>checkersplugin</artifactId>  
+                <version>0.1</version>  
+                <executions>  
+                    <execution>  
+                        <!-- run the checkers after compilation; this can also be any later phase -->  
+                        <phase>process-classes</phase>  
+                        <goals>  
+                            <goal>check</goal>  
+                        </goals>  
+                    </execution>  
+                </executions>  
+                <configuration>  
+                    <!-- required configuration options -->  
+                    <!-- a list of processors to run -->  
+                    <processors>  
+                        <processor>checkers.nullness.NullnessChecker</processor>  
+                        <processor>checkers.interning.InterningChecker</processor>  
+                    </processors>  
+
+
+                    <!-- other optional configuration -->  
+                    <!-- full path to a java executable that should be used to create the forked JVM -->  
+                    <executable>/opt/java1.6/bin/java</executable>  
+                    <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->  
+                    <failOnError>true|false</failOnError>  
+                    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->  
+                    <includes>  
+                        <include>org/company/important/**/*.java</include>  
+                    </includes>  
+                    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->  
+                    <excludes>  
+                        <exclude>org/company/notimportant/**/*.java</exclude>  
+                    </excludes>  
+                    <!-- additional parameters passed to the JSR308 java compiler -->  
+                    <javacParams>-Alint</javacParams>  
+                    <!-- additional parameters to pass to the forked JVM -->  
+                    <javaParams>-Xdebug</javaParams>  
+                    <!-- versions of checkers to use; defaults to the current newest version: 1.0.6 -->  
+                    <checkersVersion>0.8.8</checkersVersion>    
+                </configuration>  
+            </plugin>  
+        </plugins>  
+    </build>
+\end{Verbatim}
+
+\end{enumerate}
+
+The plugin was a contribution by Adam Warski.  [Thanks Adam!]
 
 \section{IntelliJ IDEA\label{intellij}}
 
