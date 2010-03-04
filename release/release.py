@@ -175,9 +175,33 @@ def make_release(version, real=False, sanitycheck=True):
     return execute(command)
 
 def checklinks(site_url=None):
-    execute('make -f %s checklinks' %
+    return execute('make -f %s checklinks' %
         os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'),
         halt_if_fail=False)
+
+MAVEN_GROUP_ID = 'types.checkers'
+MAVEN_REPO = 'file:///cse/www2/types/m2-repo'
+
+def mvn_deploy(name, binary, version, dest_repo=MAVEN_REPO, ):
+    command = """
+    mvn deploy:deploy-file
+        -DartifactId=%s
+        -Dfile=%s
+        -Dversion=%s
+        -Durl=%s
+        -DgroupId=%s
+        -Dpackaging=jar
+        -DgeneratePom=true
+    """ % (name, binary, version, dest_repo, MAVEN_GROUP_ID)
+    return execute(command)
+
+CHECKERS_BINARY = os.path.join(REPO_ROOT, 'checkers', 'binary', 'jsr308-all.jar')
+def mvn_deploy_jsr308_all(version, binary=CHECKERS_BINARY, dest_repo=MAVEN_REPO):
+    return mvn_deploy('jsr308-all', binary, version, dest_repo)
+
+CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers', 'checkers-quals.jar')
+def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
+    return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
 def execute(command_args, halt_if_fail=True):
     import shlex
@@ -226,6 +250,11 @@ def main(argv=None):
 
     # Making the real release
     make_release(next_version, real=True)
+
+    # Make maven release
+    mvn_deploy_jsr308_all(next_version)
+    mvn_deploy_quals(next_version)
+
     checklinks(DEFAULT_SITE)
 
     print("Pushed to %s" % DEFAULT_SITE)
