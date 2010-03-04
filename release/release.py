@@ -147,6 +147,9 @@ def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
 
     execute([EDITOR, path])
 
+def changelog_header_checkers(file=CHECKERS_CHANGELOG):
+    return changelog_header(file)
+
 LANGTOOLS_CHANGELOG = os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'changelog-jsr308.txt')
 def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
@@ -165,6 +168,9 @@ Base build
 
     execute([EDITOR, path])
 
+def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
+    return changelog_header(file)
+
 def make_release(version, real=False, sanitycheck=True):
     command = 'ant -f release.xml %s -Drelease.ver=%s clean web %s' % (
         '-Drelease.is.real=true' if real else '',
@@ -175,9 +181,33 @@ def make_release(version, real=False, sanitycheck=True):
     return execute(command)
 
 def checklinks(site_url=None):
-    execute('make -f %s checklinks' %
+    return execute('make -f %s checklinks' %
         os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'),
         halt_if_fail=False)
+
+MAVEN_GROUP_ID = 'types.checkers'
+MAVEN_REPO = 'file:///cse/www2/types/m2-repo'
+
+def mvn_deploy(name, binary, version, dest_repo=MAVEN_REPO, ):
+    command = """
+    mvn deploy:deploy-file
+        -DartifactId=%s
+        -Dfile=%s
+        -Dversion=%s
+        -Durl=%s
+        -DgroupId=%s
+        -Dpackaging=jar
+        -DgeneratePom=true
+    """ % (name, binary, version, dest_repo, MAVEN_GROUP_ID)
+    return execute(command)
+
+CHECKERS_BINARY = os.path.join(REPO_ROOT, 'checkers', 'binary', 'jsr308-all.jar')
+def mvn_deploy_jsr308_all(version, binary=CHECKERS_BINARY, dest_repo=MAVEN_REPO):
+    return mvn_deploy('jsr308-all', binary, version, dest_repo)
+
+CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers', 'checkers-quals.jar')
+def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
+    return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
 def execute(command_args, halt_if_fail=True):
     import shlex
@@ -190,12 +220,50 @@ def execute(command_args, halt_if_fail=True):
         raise Exception('Found an error: %s' % r)
     return r
 
+def changelog_header(filename):
+    f = open(filename, 'r')
+    header = []
+
+    for line in f:
+        if '-------' in line:
+            break
+        header.append(line)
+
+    return ''.join(header)
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
 USER = os.getlogin()
 DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
+
+TO = 'jsr308-discuss@googlegroups.com'
+def format_email(version, checkers_header=None, langtools_header=None, to=TO):
+    if checkers_header == None:
+        checkers_header = changelog_header_checkers()
+    if langtools_header == None:
+        langtools_header = changelog_header_langtools()
+
+    template = """
+To:  %s
+Subject: Release %s of the Checker Framework and Type Annotations compiler
+
+We have released a new version of the Type Annotations (JSR 308) compiler
+and of the Checker Framework.  The Type Annotations compiler supports the
+Java 7 annotation syntax.  The Checker Framework lets you create and/or run
+pluggable type-checkers, in order to detect and prevent bugs in your code.
+
+Notable changes include: [[ FILL ME HERE ]]
+
+Changes for Checker Framework
+%s
+Changes for Type Annotations Compiler
+%s
+
+=================== END OF EMAIL ==========================
+    """ % (to, version, checkers_header, langtools_header,)
+    return template
 
 def main(argv=None):
     append_to_PATH()
@@ -226,13 +294,21 @@ def main(argv=None):
 
     # Making the real release
     make_release(next_version, real=True)
+
+    # Make maven release
+    mvn_deploy_jsr308_all(next_version)
+    mvn_deploy_quals(next_version)
+
     checklinks(DEFAULT_SITE)
 
     print("Pushed to %s" % DEFAULT_SITE)
     raw_input("Please check the site.  DONE?")
 
     commit_and_push()
+
     print("You have just made the release.  Please announce it to the world")
+    print("Here is an email template:")
+    print format_email(next_version)
 
 if __name__ == "__main__":
     sys.exit(main())
