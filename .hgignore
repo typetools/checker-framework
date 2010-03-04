@@ -11,6 +11,7 @@ TAGS
 .classpath
 .project
 .externalToolBuilders
+.settings
 
 # build files
 bin
@@ -55,6 +56,11 @@ jsr308-langtools
 jsr308-langtools.basic
 langtools-ta
 
+# Maven files
+target/
+*.ipr
+*.iws
+*.iml
 
 syntax: regexp
 # Not a glob because it starts with # which looks like a comment.
