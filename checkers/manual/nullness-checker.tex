@@ -308,7 +308,7 @@ arguments.  One use for this key is when a class is declared to take only
 \<@NonNull> type arguments, but you want to instantiate the class with a
 \<@Nullable> type argument, as in \code{List<@Nullable Object>}.  For a more
 complete explanation of this example, see
-Section~\ref{faq-list-map-nonnull-typeargs}.
+Section~\refwithpage{faq-list-map-nonnull-typeargs}.
 
 The Nullness Checker also permits you to use assertions or method calls to
 suppress warnings; see below.
@@ -422,7 +422,7 @@ rather than re-using the \<assert> statement (as in
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}
 
-In each case, the assertion or method indicates an application invariant, a
+In each case, the assertion or method indicates an application invariant --- a
 fact that should always be true.  There are two distinct reasons a
 programmer may have written the invariant, depending on whether the
 programmer is 100\% sure that the application invariant holds.
@@ -447,10 +447,14 @@ programmer is 100\% sure that the application invariant holds.
 \end{enumerate}
 
 With assertions and existing methods like JUnit's \<assertNotNull>, there
-is no way of knowing the programmer's intent in using the method.  Guessing
-wrong would make the Nullness Checker less useful.  Different programmers
-or codebases may use them in different ways.  And, different checking tools
-issue different false warnings that need to be suppressed.
+is no way of knowing the programmer's intent in using the method.
+Different programmers or codebases may use them in different ways.
+Guessing wrong would make the Nullness Checker less useful, because it
+would either miss real errors or issue warnings where there is no real
+error.  Also, different checking tools issue different false warnings that
+need to be suppressed, so warning suppression needs to be customized for
+each tool rather than inferred from general-purpose code.
+
 
 As an example of using assertions for defensive programming, some style
 guides suggest using assertions or method calls to indicate nullness.  A
@@ -480,18 +484,20 @@ Unlike existing assertions and
 methods, \<castNonNull> is intended only to suppress false warnings that are
 issued by the Nullness Checker, not for defensive programming.
 
-If you know that a particular codebase uses the \<assert> statement or a
-nullness-checking method not for defensive programming but to indicate
+If you know that a particular codebase uses
+% the \<assert> statement or 
+a nullness-checking method not for defensive programming but to indicate
 facts that are guaranteed to be true (that is, these assertions will never
 fail at run time), then you can cause the Nullness Checker to suppress
-warnings related to them, just as it does for \<castNonNull>.  For a
-method, annotate its definition just as
+warnings related to them, just as it does for \<castNonNull>.
+Annotate its definition just as
 \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} is annotated (see the
 source code for the Checker Framework).
 % TODO:
 % For an assert statement, XXXXX.
-Also, be sure to document the intention, so that programmers do not
-accidentally misuse them for defensive programming.
+Also, be sure to document the intention in the method's Javadoc, so that
+programmers do not
+accidentally misuse it for defensive programming.
 
 
 If you are annotating a codebase that already contains precondition checks,
