@@ -23,7 +23,7 @@ import java.util.Set;
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
-	private final static String CHECKERS_GROUPD_ID = "mamut.net.pl";
+	private final static String CHECKERS_GROUPD_ID = "types.checkers";
 	private final static String CHECKERS_ARTIFACT_ID = "jsr308-all";
 
 	/**
