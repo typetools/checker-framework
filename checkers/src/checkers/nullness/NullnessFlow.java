@@ -787,9 +787,7 @@ class NullnessFlow extends Flow {
     }
 
     private void markTree(Tree node, AnnotationMirror anno) {
-        long pos = source.getStartPosition(root, node);
-        Location loc = new Location(pos, node);
-        flowResults.put(loc, anno);
+        flowResults.put(node, anno);
     }
 
     @Override

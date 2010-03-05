@@ -78,9 +78,6 @@ public class Flow extends TreePathScanner<Void, Void> {
      */
     protected final Set<AnnotationMirror> annotations;
 
-    /** Utility class for getting source positions. */
-    protected final SourcePositions source;
-
     /** Utility class for determining annotated types. */
     protected final AnnotatedTypeFactory factory;
 
@@ -95,7 +92,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     protected final List<VariableElement> vars;
 
     /** Stores the results of the analysis (source location to qualifier). */
-    protected final Map<Location, AnnotationMirror> flowResults;
+    protected final Map<Tree, AnnotationMirror> flowResults;
 
     /**
      * Tracks the annotated state of each variable during flow. Bit indices
@@ -169,17 +166,17 @@ public class Flow extends TreePathScanner<Void, Void> {
         this.root = root;
         this.annotations = annotations;
 
-        this.source = Trees.instance(env).getSourcePositions();
         if (factory == null)
             this.factory = new AnnotatedTypeFactory(checker, root);
-        else this.factory = factory;
+        else
+            this.factory = factory;
 
         this.atypes = new AnnotatedTypes(env, factory);
 
         this.visitorState = factory.getVisitorState();
 
         this.vars = new ArrayList<VariableElement>();
-        this.flowResults = new HashMap<Location, AnnotationMirror>();
+        this.flowResults = new IdentityHashMap<Tree, AnnotationMirror>();
 
         this.annos = new GenKillBits<AnnotationMirror>(this.annotations);
         this.annosWhenTrue = null;
@@ -219,13 +216,11 @@ public class Flow extends TreePathScanner<Void, Void> {
     public AnnotationMirror test(Tree tree) {
         while (tree.getKind() == Tree.Kind.ASSIGNMENT)
             tree = ((AssignmentTree)tree).getVariable();
-        long pos = source.getStartPosition(root, tree);
-        final Location loc = new Location(pos, tree);
-        if (!flowResults.containsKey(loc))
+        if (!flowResults.containsKey(tree))
             return null;
         // a hack needs to be fixed
         // always follow variable declarations
-        AnnotationMirror flowResult = flowResults.get(loc);
+        AnnotationMirror flowResult = flowResults.get(tree);
 
         return flowResult;
     }
@@ -447,25 +442,23 @@ public class Flow extends TreePathScanner<Void, Void> {
         }
 
         if (idx >= 0) {
-            long pos = source.getStartPosition(root, tree);
             for (AnnotationMirror annotation : annotations) {
                 if (debug != null)
-                    debug.println("Flow: recordBits(" + tree + ") @" + pos + " " + annotation + " "
+                    debug.println("Flow: recordBits(" + tree + ") + " + annotation + " "
                             + annos.get(annotation, idx) + " as " + tree.getKind());
-                Location loc = new Location(pos, tree);
                 if (annos.get(annotation, idx)) {
-                    AnnotationMirror existing = flowResults.get(loc);
+                    AnnotationMirror existing = flowResults.get(tree);
 
                     // Don't replace the existing annotation unless the current
                     // annotation is *more* specific than the existing one.
                     if (existing == null || annoRelations.isSubtype(existing, annotation))
-                        flowResults.put(loc, annotation);
-                } else if (flowResults.get(loc) == annotation) {
+                        flowResults.put(tree, annotation);
+                } else if (flowResults.get(tree) == annotation) {
                     // We inferred an annotation in this location that is not
                     // applicable anymore
                     // occurs in loop where an assignment invalidates the
                     // condition in the next round
-                    flowResults.remove(loc);
+                    flowResults.remove(tree);
                 }
             }
         }
@@ -574,10 +567,9 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (factory.fromTypeTree(node.getType()).isAnnotated())
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
-        long pos = source.getStartPosition(root, node);
         for (AnnotationMirror a : annotations)
             if (hasAnnotation(t, a))
-                flowResults.put(new Location(pos, node), a);
+                flowResults.put(node, a);
         return null;
     }
 
