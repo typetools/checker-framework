@@ -78,9 +78,6 @@ public class Flow extends TreePathScanner<Void, Void> {
      */
     protected final Set<AnnotationMirror> annotations;
 
-    /** Utility class for getting source positions. */
-    protected final SourcePositions source;
-
     /** Utility class for determining annotated types. */
     protected final AnnotatedTypeFactory factory;
 
@@ -169,10 +166,10 @@ public class Flow extends TreePathScanner<Void, Void> {
         this.root = root;
         this.annotations = annotations;
 
-        this.source = Trees.instance(env).getSourcePositions();
         if (factory == null)
             this.factory = new AnnotatedTypeFactory(checker, root);
-        else this.factory = factory;
+        else
+            this.factory = factory;
 
         this.atypes = new AnnotatedTypes(env, factory);
 
