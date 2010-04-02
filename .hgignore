@@ -45,6 +45,11 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+checkers/manual/figures/*.eps
+checkers/manual/figures/*.pdf
+checkers/manual/figures/*.png
+checkers/manual/*.png
+
 
 # is there true?
 *.pdf

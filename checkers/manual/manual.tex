@@ -38,6 +38,18 @@
 
 %HEVEA \newstyle{.lstframe}{margin:auto;margin-bottom:2em}
 
+% Make images larger and thus less pixelated.  This is not really a solution.
+%HEVEA\@addimagenopt{-mag 2000}
+% This avoids Hevea's built in conversion.
+\newcommand{\includeimage}[2]{
+\begin{center}
+\ifhevea\imgsrc{#1.png}\else
+\resizebox{!}{#2}{\includegraphics{figures/#1}}
+\vspace{-1.5\baselineskip}
+\fi
+\end{center}}
+
+
 % At least 80% of every float page must be taken up by
 % floats; there will be no page with more than 20% white space.
 \def\topfraction{.8}
