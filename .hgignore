@@ -50,11 +50,6 @@ checkers/manual/figures/*.pdf
 checkers/manual/figures/*.png
 checkers/manual/*.png
 
-
-# is there true?
-*.pdf
-*.eps
-
 # release tmps
 tmp
 
