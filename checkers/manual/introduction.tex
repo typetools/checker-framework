@@ -154,7 +154,9 @@ different shell, you may need to slightly adjust the commands.
 \item
   Download the latest Checker Framework distribution
   % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-  and unzip it.  You can put it anywhere you like; a standard place is in a
+  and unzip it.  You can put it anywhere you like by changing the
+  definition of environment variable \code{JSR308} below; a standard place
+  is in a
   new directory named \code{jsr308}.
 
 \begin{Verbatim}
@@ -264,7 +266,11 @@ must re-do it every time you start a new command shell.
 To make the change \textbf{permanently},
 Right-click the \<My Computer> icon and
 select \<Properties>. Select the \<Advanced> tab and click the
-\<Environment Variables> button. In the \<System Variables> pane, select
+\<Environment Variables> button. You can set the variable as a ``System
+Variable'' (visible to all users) or as a ``User Variable'' (visible to
+just this user).  Both work; the instructions below show how to set as a
+``System Variable''.
+In the \<System Variables> pane, select
 \<Path> from the list and click \<Edit>. In the \<Edit System Variable>
 dialog box, move the cursor to the beginning of the string in the
 \<Variable Value> field and type the full directory name followed by a
@@ -516,11 +522,12 @@ Two concrete examples (using the Nullness checker) are:
 For a discussion of the \code{-Xbootclasspath/p} argument, see
 Section~\ref{skeleton-using}.
 
-The checker is run only on the Java files specified on the command line (or
-created by another annotation processor).
-The checker does not analyze other classes (e.g., pre-compiled classes, or
-classes whose source
-code is available on the classpath), but it does check
+The checker is run only on any Java file that javac compiles.
+This includes all Java files specified on the command line (or
+created by another annotation processor).  It may also include other of
+your Java files (but not if a more recent \code{.class} file exists).
+Even when the checker does not analyze a class (say, the class was
+already compiled, or source codeis not available), it does check
 the \emph{uses} of those classes in the source code being compiled.
 
 The javac compiler halts compilation as soon as an error is found in a
@@ -575,7 +582,7 @@ checker is a type of ``annotation processor''.
   Section~\ref{checker-auto-discovery}
 \item \<-Xbootclasspath/p:> Indicates where to find the annotated JDK classes;
   see Section~\ref{skeleton-using}
-\item \<-implicit:class> Enables processing for implicitly compiled files
+\item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-XDTA:spacesincomments> parse annotation comments even when they
   contain spaces; applicable only to the Type Annotations compiler; see Section~\ref{annotations-in-comments}
@@ -686,7 +693,7 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
 You should use annotations to indicate \emph{normal} behavior.  The
-annotation indicate all the values that you \emph{want} to flow to
+annotations indicate all the values that you \emph{want} to flow to
 reference --- not every value that might possibly flow there if your
 program has a bug.
 
@@ -700,7 +707,8 @@ as an argument.  Examples include
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}
 
-\code{@Nullable} might seem like a reasonable annotation for the parameter,
+\code{@\refclass{nullness/quals}{Nullable}} (see Section~\ref{nullness-annotations})
+might seem like a reasonable annotation for the parameter,
 for two reasons.  First, \code{null} is a legal argument with a
 well-defined semantics:  throw an exception.  Second, \code{@Nullable}
 describes a possible program execution:  it might be possible for
@@ -713,7 +721,8 @@ However, it is never useful for a programmer to pass \code{null}.  It is
 the programmer's intention that \code{null} never flows there.  If
 \code{null} does flow there, the program will not continue normally.
 
-Therefore, you should mark such parameters as \code{@NonNull}, indicating
+Therefore, you should mark such parameters as 
+\code{@\refclass{nullness/quals}{NonNull}}, indicating
 the intended use of the method.  When you use the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
 possible run-time exceptions, which is its purpose.  Marking the parameter
