@@ -1,0 +1,69 @@
+syntax: glob
+
+# Emacs and other temporary files
+*~
+.#*
+TAGS
+*.orig
+.DS_Store
+# Eclipse files
+.metadata
+.classpath
+.project
+.externalToolBuilders
+.settings
+
+# build files
+bin
+build
+doc
+*.jar
+checkers/jdk/**/*.class
+*.pyc
+
+# manual files
+doc
+manual.aux
+manual.blg
+manual.dvi
+manual.haux
+manual.html
+manual.htoc
+manual.image.tex
+manual.image.tex.new
+manual.image.log
+manual.log
+manual.out
+manual.pdf
+manual.ps
+manual.toc
+manual001.gif
+manual001.png
+manual002.gif
+manual002.png
+manual003.gif
+manual003.png
+manual004.gif
+manual004.png
+checkers/manual/figures/*.eps
+checkers/manual/figures/*.pdf
+checkers/manual/figures/*.png
+checkers/manual/*.png
+
+# release tmps
+tmp
+
+jsr308-langtools
+jsr308-langtools.basic
+langtools-ta
+
+# Maven files
+target/
+*.ipr
+*.iws
+*.iml
+
+syntax: regexp
+# Not a glob because it starts with # which looks like a comment.
+(.*/)?\#[^/]*\#$
+(.*/)?\.\#.*
