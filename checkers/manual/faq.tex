@@ -21,9 +21,11 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
 \ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
-\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
 \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
+\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
+\ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
 \ref{faq-run-on-all-files}: How do I run a checker on all my source files? \\
+\ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker? \\
 \ref{faq-create-a-checker}: How do I create a new checker? \\
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
 \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
@@ -207,6 +209,11 @@ use subtypes.
 For more details, see section~\ref{when-to-use-type-qualifiers}.
 
 
+\section{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+
+See Section~\ref{get-started-with-legacy-code}.
+
+
 \section{How do I run a checker on all my source files?\label{faq-run-on-all-files}}
 
 The \code{javac} compiler halts compilation as soon as it processes a
@@ -214,6 +221,14 @@ source file with an error, including an error issued by a pluggable
 type-checker.  Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, permitting \<javac> to
 continue past the first erroneous source file.
+
+
+\section{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
+
+The compile options to javac can be a pain to type; for example,
+\code{javac -processor checkers.nullness.NullnessChecker ...}.
+See Section~\ref{checker-auto-discovery} for a way to avoid the need for
+the \code{-processor} command-line option.
 
 
 \section{How do I create a new checker?\label{faq-create-a-checker}}

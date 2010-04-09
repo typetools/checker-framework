@@ -34,6 +34,7 @@ If you get the error
 \begin{Verbatim}
 com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source.tree.Tree not found
 \end{Verbatim}
+% Unconfuse Emacs by matching the "$" in the above Verbatim
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
@@ -95,6 +96,25 @@ method sleep in class Thread cannot be applied to given types
 cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{Verbatim}
 
+\item
+If you get an error like the following when using the Ant task
+(Section~\ref{ant-task}),
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+...\build.xml:59: Error running ${env.CHECKERS}\binary\javac.bat compiler
+\end{Verbatim}
+% Unconfuse Emacs by matching the "$" in the above Verbatim
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+then the problem may be that you have not set the CHECKERS environment
+variable, as described in Section~\ref{windows-installation}.  Or, maybe
+you made it a user variable instead of a system variable.
 
 \end{itemize}
 
