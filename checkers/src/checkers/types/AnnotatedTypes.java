@@ -352,6 +352,12 @@ public class AnnotatedTypes {
             return ((AnnotatedArrayType) iterableType).getComponentType();
         }
 
+        if (iterableType.getKind() == TypeKind.WILDCARD)
+            return getIteratedType(((AnnotatedWildcardType) iterableType).getExtendsBound());
+        
+        if (iterableType.getKind() == TypeKind.TYPEVAR)
+            return getIteratedType(((AnnotatedTypeVariable) iterableType).getUpperBound());
+
         if (iterableType.getKind() != TypeKind.DECLARED)
             throw new IllegalArgumentException("Not iterable type: " + iterableType);
 
