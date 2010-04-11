@@ -736,7 +736,8 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
         AnnotatedExecutableType con = atypes.asMemberOf(type, ctor);
-        if (tree.getArguments().size() == con.getParameterTypes().size() + 1) {
+        if (tree.getArguments().size() == con.getParameterTypes().size() + 1
+            && isSyntheticArgument(tree.getArguments().get(0))) {
             // happens for anonymous constructors of inner classes
             List<AnnotatedTypeMirror> actualParams = new ArrayList<AnnotatedTypeMirror>();
             actualParams.add(getAnnotatedType(tree.getArguments().get(0)));
@@ -744,6 +745,10 @@ public class AnnotatedTypeFactory {
             con.setParameterTypes(actualParams);
         }
         return con;
+    }
+
+    private boolean isSyntheticArgument(Tree tree) {
+        return tree.toString().contains("<*nullchk*>");
     }
 
     public AnnotatedDeclaredType fromNewClass(NewClassTree tree) {
