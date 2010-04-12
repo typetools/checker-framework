@@ -1,3 +1,11 @@
+Version 1.0.7, 12 Apr 2010
+
+Checkers
+  Distributed a Maven repository
+  Updated stub parser project to latest version (javaparser 1.0.8)
+  Fixed bugs related to iterable wildcards and type parameter types
+
+----------------------------------------------------------------------
 Version 1.0.6, 24 Feb 2009
 
 Checkers
