@@ -79,14 +79,15 @@ def check_command(command):
 DEFAULT_PATHS = (
     '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
+    '/homes/gws/mernst/bin/share-plume',
     '/homes/gws/mernst/bin/Linux-i686',
     '/uns/bin',
     '.',
 )
 
 PERL_PATHS = (
-    '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/src/plume-lib/bin',
+    '/homes/gws/mernst/research/invariants/scripts',
 )
 
 def append_to_PATH(paths=DEFAULT_PATHS, perl_paths=PERL_PATHS):
@@ -110,7 +111,7 @@ def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
         execute('hg -R %s pull -u' % path)
         print("Checking changes")
-        execute('hg -R %s outgoing')
+        # execute('hg -R %s outgoing' % path)
 
 def commit_and_push(version, paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
@@ -205,7 +206,7 @@ CHECKERS_BINARY = os.path.join(REPO_ROOT, 'checkers', 'binary', 'jsr308-all.jar'
 def mvn_deploy_jsr308_all(version, binary=CHECKERS_BINARY, dest_repo=MAVEN_REPO):
     return mvn_deploy('jsr308-all', binary, version, dest_repo)
 
-CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers', 'checkers-quals.jar')
+CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers-quals.jar')
 def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
@@ -246,6 +247,8 @@ def format_email(version, checkers_header=None, langtools_header=None, to=TO):
         langtools_header = changelog_header_langtools()
 
     template = """
+=================== BEGINING OF EMAIL =====================
+
 To:  %s
 Subject: Release %s of the Checker Framework and Type Annotations compiler
 
@@ -291,6 +294,7 @@ def main(argv=None):
 
     print("Pushed to %s" % DRY_RUN_LINK)
     raw_input("Please check the site.  DONE?")
+    print("\n\n\n\n\n")
 
     # Making the real release
     make_release(next_version, real=True)
@@ -303,8 +307,9 @@ def main(argv=None):
 
     print("Pushed to %s" % DEFAULT_SITE)
     raw_input("Please check the site.  DONE?")
+    print("\n\n\n\n\n")
 
-    commit_and_push()
+    commit_and_push(inext_version)
 
     print("You have just made the release.  Please announce it to the world")
     print("Here is an email template:")
