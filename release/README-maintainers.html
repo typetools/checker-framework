@@ -70,14 +70,14 @@ and <code>/uns/bin</code>.
 
 <li>If you have never made a release before or no longer have a
 prepared release directory, set up a release directory as follows:
-  
+
 <ol>
 <li>
-  
+
 <p>Create a new directory.  Place the directory in a non-NFS
   location such as a scratch partition, because a local disk is faster than
   NFS.</p>
-  
+
 <pre>
     mkdir -p /scratch/$USER/jsr308-release
     cd /scratch/$USER/jsr308-release
@@ -110,6 +110,19 @@ testing site:</p>
 </ol>
 
 <h2 id="Release">Making a release</h2>
+
+<p>In <tt>checker-framework/release</tt>, execute:</p>
+
+<pre>
+    python -m release
+</pre>
+
+And follow the instructions it provides, and you are done!
+
+<h2 id="Release-Manual">Making a manual release</h2>
+
+<p><b>These instructions are deprecated in favor of the python release
+script.  The material will be deleted in its due time</b></p>
 
 <ol>
 <li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
@@ -212,7 +225,7 @@ changes, which you'll check in later in the process).</p></li>
 appropriately in <tt>checker-framework/release/release.properties</tt>, set
 as follows:</p>
 
-<ul>  
+<ul>
 <li><code>web.dry.root.dir</code>: the location of your site copy, e.g.,
 <code>~/www/jsr308test</code></li>
 <li><code>sanitycheck.dry.url</code>: the URL to access the <code>releases</code>
