@@ -84,6 +84,7 @@ original compilation target:
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+% Unconfuse Emacs font lock mode: $
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
@@ -286,6 +287,93 @@ documentation at \myurl{http://tide.olympe-network.com/}.
 
 \section{Type inference tools\label{type-inference-tools}}
 
+\subsection{Varieties of type inference}
+
+There are two different tasks that are commonly called ``type inference''.
+
+\begin{enumerate}
+\item
+  Type inference during type checking (Section~\ref{type-refinement}):
+  During type checking, if certain variables have no type qualifier, the
+  type-checker determines whether there is some type qualifier that would
+  permit the program to type check.  If so, the type checker uses that type
+  qualifier, but never tells the programmer what it was.  Each time the
+  type checker runs, it re-infers the type qualifier for that variable.  If
+  no type qualifier exists that permits the program to type-check, the
+  type-checker issues a type warning.
+
+  This variety of type inference is built into the Checker Framework.  Every
+  checker can takes advantage of it at no extra effort.  However, it only
+  works within a method, not across method boundaries.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    If the type qualifier is obvious to the programmer, then omitting it
+    can reduce annotation clutter in the program.
+  \item
+    The type inference can take advantage of only the code currently being
+    compiled, rather than having to be correct for all possible calls.
+    Additionally, if the code changes, then there is no old annotation to
+    update.
+  \end{itemize}
+
+
+\item
+  Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
+  As a separate step before type checking, a type inference tool takes the
+  program as input, and outputs a set of type qualifiers that would
+  type-check.  These qualifiers are inserted into the source code or the
+  class file.  They can be viewed and adjusted by the programmer, and can
+  be used by tools such as the type checker.
+
+  This variety of type inference must be provided by a separate tool.  It
+  is not built into the Checker Framework.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    The program contains documentation in the form of type qualifiers
+    provide, which can aid programmer understanding.
+  \item
+    Error messages may be more comprehensible.  With type inference
+    during type checking, error messages can be obscure, because the
+    compiler has already inferred (possibly incorrect) types for a number
+    of variables.
+  \item
+    A minor advantage is speed:  type-checking can be modular, which can be
+    faster than re-doing type inference every time the
+    program is type-checked.
+  \end{itemize}
+
+\end{enumerate}
+
+Advantages of both varieties of inference include:
+\begin{itemize}
+\item
+  Less work for the programmer.
+\item
+  The tool chooses the most general type, whereas a programmer might
+  accidentally write a more specific, less generally-useful annotation.
+\end{itemize}
+
+
+Each variety of type inference has its place.  When using the Checker
+Framework, type inference during type checking is performed only
+\emph{within} a method (Section~\ref{type-refinement}).  Every method
+signature (arguments and return values) must be explicitly annotated,
+either by the programmer or by a separate type checking tool
+(Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
+effort (typically, a programmer does not have to write any qualifiers
+inside the body of a method) while still retaining modular checking and
+documentation benefits.
+
+
+\subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
+
+This section lists tools that take a program and output a set of
+annotations for it.
+
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
 
@@ -293,4 +381,5 @@ Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
 
 
-% LocalWords:  jsr plugin Warski xml buildfile tIDE
+% LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
+% LocalWords:  IntelliJ Maia
