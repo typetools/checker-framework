@@ -96,8 +96,9 @@ public class TypeHierarchy {
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
             if (!lhsBase.annotations.isEmpty())
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
-            return qualifierHierarchy.getBottomQualifier() != null
-                   && rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+            return qualifierHierarchy.getBottomQualifier() == null ?
+                    rhs.getAnnotations().isEmpty() :
+                    rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
         }
         }
 
