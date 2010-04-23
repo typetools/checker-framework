@@ -303,7 +303,7 @@ There are two different tasks that are commonly called ``type inference''.
   type-checker issues a type warning.
 
   This variety of type inference is built into the Checker Framework.  Every
-  checker can takes advantage of it at no extra effort.  However, it only
+  checker can take advantage of it at no extra effort.  However, it only
   works within a method, not across method boundaries.
 
   Advantages of this variety of type inference include:
@@ -333,8 +333,8 @@ There are two different tasks that are commonly called ``type inference''.
   Advantages of this variety of type inference include:
   \begin{itemize}
   \item
-    The program contains documentation in the form of type qualifiers
-    provide, which can aid programmer understanding.
+    The program contains documentation in the form of type qualifiers,
+    which can aid programmer understanding.
   \item
     Error messages may be more comprehensible.  With type inference
     during type checking, error messages can be obscure, because the
@@ -361,7 +361,7 @@ Advantages of both varieties of inference include:
 Each variety of type inference has its place.  When using the Checker
 Framework, type inference during type checking is performed only
 \emph{within} a method (Section~\ref{type-refinement}).  Every method
-signature (arguments and return values) must be explicitly annotated,
+signature (arguments and return values) and field must be explicitly annotated,
 either by the programmer or by a separate type checking tool
 (Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
 effort (typically, a programmer does not have to write any qualifiers
