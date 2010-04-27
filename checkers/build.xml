@@ -163,6 +163,11 @@ ${build.version} of the 'javac.jar' library."/>
 
     <target name="docs" depends="javadoc"/>
 
+    <!--
+    This target seems to only work if tools.jar is already in the
+    classpath (despite the attempt in the body to add tools.jar to the
+    classpath).  Also, ${java.home} is the jre/ directory.
+    -->
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
@@ -176,7 +181,7 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
                  executable="../../jsr308-langtools/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
