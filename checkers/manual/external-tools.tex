@@ -39,9 +39,11 @@ First, set the \code{jsr308javac} property:
     <os family="windows" />
   </condition>
   <target name="init-jsr308javac-unix" if="isUnix">
+    <fail unless="env.CHECKERS" message="CHECKERS is not set"/>
     <property name="jsr308javac" value="${env.CHECKERS}/binary/javac" />
   </target>
   <target name="init-jsr308javac-windows" if="isWindows">
+    <fail unless="env.CHECKERS" message="CHECKERS is not set"/>
     <property name="jsr308javac" value="${env.CHECKERS}/binary/javac.bat" />
   </target>
 \end{Verbatim}
