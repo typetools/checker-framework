@@ -108,7 +108,8 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <attribute name="task" default=""/>
     <attribute name="logfile" default=""/>
     <sequential>
-      <exec executable="ant" failonerror="false">
+      <exec executable="ant" failonerror="false"
+          resultproperty="property.ignore">
         <arg line="-Dcompiler.lib=${compiler.lib}"/>
         <arg line="-Dcheckers.lib=${checkers.lib}"/>
         <arg line="-Ddaikon.lib=${daikon.lib}"/>
@@ -131,7 +132,9 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
       <my-ant task="@{task}" logfile="output.tmp"/>
       <my-diff file1="@{expected}" file2="output.tmp"
                ignore-matching-lines="Total time"/>
-      <delete file="output.tmp" quiet="true"/>
+      <exec executable="rm">
+          <arg line="-f output.tmp"/>
+      </exec>
     </sequential>
   </macrodef>
 
