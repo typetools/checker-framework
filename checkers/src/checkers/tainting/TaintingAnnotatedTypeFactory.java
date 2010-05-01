@@ -47,7 +47,7 @@ public class TaintingAnnotatedTypeFactory
     private class TaintingTreeAnnotator extends TreeAnnotator {
 
         public TaintingTreeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, TaintingAnnotatedTypeFactory.this);
         }
 
         /**

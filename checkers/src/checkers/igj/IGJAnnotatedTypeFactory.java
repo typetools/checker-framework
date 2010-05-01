@@ -269,7 +269,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     private class IGJTreePreAnnotator extends TreeAnnotator {
 
         public IGJTreePreAnnotator(IGJChecker checker) {
-            super(checker);
+            super(checker, IGJAnnotatedTypeFactory.this);
         }
 
         @Override

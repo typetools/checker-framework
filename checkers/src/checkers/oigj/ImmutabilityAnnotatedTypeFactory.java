@@ -268,7 +268,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     private class IGJTreePreAnnotator extends TreeAnnotator {
 
         public IGJTreePreAnnotator(ImmutabilitySubchecker checker) {
-            super(checker);
+            super(checker, ImmutabilityAnnotatedTypeFactory.this);
         }
 
         @Override
