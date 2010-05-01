@@ -30,7 +30,7 @@ public class KeyLookupAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Key
     private class KeyLookupTreeAnnotator extends TreeAnnotator {
 
         public KeyLookupTreeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, KeyLookupAnnotatedTypeFactory.this);
         }
 
         @Override

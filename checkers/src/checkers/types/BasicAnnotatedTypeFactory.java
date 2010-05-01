@@ -108,7 +108,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator(Checker checker) {
-        return new TreeAnnotator(checker);
+        return new TreeAnnotator(checker, this);
     }
 
     /**
