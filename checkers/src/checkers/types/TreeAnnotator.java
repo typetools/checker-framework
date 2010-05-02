@@ -124,19 +124,19 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
         if (tree.getType() == null) {
             Collection<AnnotationMirror> lub = null;
-            
+
             for (ExpressionTree init: tree.getInitializers()) {
                 AnnotatedTypeMirror iniType = typeFactory.getAnnotatedType(init);
                 Collection<AnnotationMirror> annos = iniType.getAnnotations();
-                
+
                 lub = (lub == null) ? annos : qualHierarchy.leastUpperBound(lub, annos);
             }
-            
+
             assert type.getKind() == TypeKind.ARRAY;
             if (lub != null) {
                 ((AnnotatedArrayType)type).getComponentType().addAnnotations(lub);
             }
         }
-        return null;
+        return super.visitNewArray(tree, type);
     }
 }
