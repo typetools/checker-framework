@@ -31,7 +31,7 @@
     </target>
 
     <target name="build" depends="prep" description="Compile files">
-        <javac destdir="${build}">
+        <javac destdir="${build}" includeantruntime="false">
           <src path="${src}"/>
           <include name="**/*.java"/>
         </javac>
