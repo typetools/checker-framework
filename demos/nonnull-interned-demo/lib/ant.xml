@@ -1,5 +1,11 @@
 <project name="macro-imports">
 
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${basedir}/../lib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
   <!--
        Macro for calling the JSR 308 Java compiler with a checker
        for the demo code.
@@ -64,7 +70,7 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" failonerror="yes">
+      <exec executable="diff" resultproperty="diff-result">
         <arg value="-q"/>
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
@@ -75,6 +81,26 @@
         <arg line="@{file1}"/>
         <arg line="@{file2}"/>
       </exec>
+
+      <if>
+          <isfailure code="${diff-result}" />
+          <then>
+              <loadfile property="results.expected" srcFile="@{file1}"/>
+              <loadfile property="results.actual" srcFile="@{file2}"/>
+              <fail message="Error in the demo.${line.separator}
+${line.separator}Expected:
+${line.separator}=====================================================================
+${line.separator}${results.expected}
+${line.separator}=====================================================================
+${line.separator}
+${line.separator}but found:
+${line.separator}=====================================================================
+${line.separator}${results.actual}
+${line.separator}
+${line.separator}=====================================================================
+${line.separator}NOTE: Did you run 'ant touch-files'?"/>
+          </then>
+      </if>
     </sequential>
   </macrodef>
 
@@ -82,7 +108,8 @@
     <attribute name="task" default=""/>
     <attribute name="logfile" default=""/>
     <sequential>
-      <exec executable="ant" failonerror="false">
+      <exec executable="ant" failonerror="false"
+          resultproperty="property.ignore">
         <arg line="-Dcompiler.lib=${compiler.lib}"/>
         <arg line="-Dcheckers.lib=${checkers.lib}"/>
         <arg line="-Ddaikon.lib=${daikon.lib}"/>
@@ -105,7 +132,9 @@
       <my-ant task="@{task}" logfile="output.tmp"/>
       <my-diff file1="@{expected}" file2="output.tmp"
                ignore-matching-lines="Total time"/>
-      <delete file="output.tmp" quiet="true"/>
+      <exec executable="rm">
+          <arg line="-f output.tmp"/>
+      </exec>
     </sequential>
   </macrodef>
 
