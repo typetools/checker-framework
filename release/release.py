@@ -280,6 +280,35 @@ def main(argv=None):
     if not next_version:
         next_version = suggested_version
     print next_version
+
+    # Update repositories
+    update_projects()
+
+    edit_checkers_changelog(version=next_version)
+    edit_langtools_changelog(version=next_version)
+
+    # Making the first release
+    site_copy_if_needed()
+    make_release(next_version)
+    checklinks(DRY_RUN_LINK)
+
+    print("Pushed to %s" % DRY_RUN_LINK)
+    raw_input("Please check the site.  DONE?")
+    print("\n\n\n\n\n")
+
+    # Making the real release
+    make_release(next_version, real=True)
+
+    # Make maven release
+    mvn_deploy_jsr308_all(next_version)
+    mvn_deploy_quals(next_version)
+
+    checklinks(DEFAULT_SITE)
+
+    print("Pushed to %s" % DEFAULT_SITE)
+    raw_input("Please check the site.  DONE?")
+    print("\n\n\n\n\n")
+
     commit_and_push(next_version)
 
     print("You have just made the release.  Please announce it to the world")
