@@ -420,7 +420,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         /** Creates a {@link NonNullTreeAnnotator} for the given checker. */
         NonNullTreeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, NullnessAnnotatedTypeFactory.this);
         }
 
         @Override

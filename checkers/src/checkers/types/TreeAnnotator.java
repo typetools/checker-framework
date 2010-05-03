@@ -6,10 +6,12 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
@@ -34,6 +36,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     private final Map<Tree.Kind, AnnotationMirror> treeKinds;
     private final Map<Class<?>, AnnotationMirror> treeClasses;
     private final Map<Pattern, AnnotationMirror> stringPatterns;
+    private final QualifierHierarchy qualHierarchy;
+    private final AnnotatedTypeFactory typeFactory;
 
     /**
      * Creates a {@link TypeAnnotator} from the given checker, using that checker's
@@ -42,11 +46,13 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
      *
      * @param checker the type checker to which this annotator belongs
      */
-    public TreeAnnotator(BaseTypeChecker checker) {
+    public TreeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory typeFactory) {
 
         this.treeKinds = new EnumMap<Kind, AnnotationMirror>(Kind.class);
         this.treeClasses = new HashMap<Class<?>, AnnotationMirror>();
         this.stringPatterns = new IdentityHashMap<Pattern, AnnotationMirror>();
+        this.qualHierarchy = checker.getQualifierHierarchy();
+        this.typeFactory = typeFactory;
 
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
 
@@ -112,5 +118,25 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             }
         }
         return super.visitLiteral(tree, type);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+        if (tree.getType() == null) {
+            Collection<AnnotationMirror> lub = null;
+
+            for (ExpressionTree init: tree.getInitializers()) {
+                AnnotatedTypeMirror iniType = typeFactory.getAnnotatedType(init);
+                Collection<AnnotationMirror> annos = iniType.getAnnotations();
+
+                lub = (lub == null) ? annos : qualHierarchy.leastUpperBound(lub, annos);
+            }
+
+            assert type.getKind() == TypeKind.ARRAY;
+            if (lub != null) {
+                ((AnnotatedArrayType)type).getComponentType().addAnnotations(lub);
+            }
+        }
+        return super.visitNewArray(tree, type);
     }
 }
