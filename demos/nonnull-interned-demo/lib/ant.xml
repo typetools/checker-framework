@@ -75,6 +75,10 @@
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
         <arg line="-I 'Note:'"/>
+        <!-- ignore ant headers and empty lines -->
+	<arg line="-I '^ *$'"/>
+	<arg line="-I '^[^ ]*:$'"/>
+
         <!-- ignore paths -->
         <arg line="-I '.java'"/>
         <arg line="-I '.xml'"/>
@@ -114,7 +118,6 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
         <arg line="-Dcheckers.lib=${checkers.lib}"/>
         <arg line="-Ddaikon.lib=${daikon.lib}"/>
         <arg line="-Ddeps.lib=${deps.lib}"/>
-        <arg value="-q"/>
         <arg value="-e"/>
         <arg line="-l @{logfile}"/>
         <arg line="@{task}"/>
