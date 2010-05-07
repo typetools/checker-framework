@@ -10,9 +10,7 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-AFU ?= $(HOME)/research/annotation-tools/annotation-file-utilities/scripts
-
-PATH := $(PATH):$(AFU)
+AFU ?= ../../../../annotation-tools/annotation-file-utilities/scripts
 
 all: clean classes
 # Separate make command because BUILD_CLASSES needs to be recomputed.
@@ -67,14 +65,14 @@ JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
 ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
 build/%.jaif: build/%.class
-	extract-annotations '$<'
+	$(AFU)/extract-annotations '$<'
 
 jaifs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
 	mkdir -p annotated
 	cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
-	insert-annotations '$@' '$<'
+	$(AFU)/insert-annotations '$@' '$<'
 
 annotated: $(ANNOTATED)
 
