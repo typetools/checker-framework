@@ -9,11 +9,11 @@ import java.util.*;
 public class Constants {
 
   // All but D should be inferred to be @Interned String.
-  String A = "A";
-  String B = "B";
-  String AB = A + B;
-  String AC = A + "C";
-  String D = new String("D");
+  final String A = "A";
+  final String B = "B";
+  final String AB = A + B;
+  final String AC = A + "C";
+  final String D = new String("D");
 
   void foo() {
     @Interned String is;
