@@ -1,5 +1,9 @@
 package checkers.interning;
 
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.element.TypeElement;
+
 import checkers.basetype.*;
 import checkers.interning.quals.*;
 import checkers.quals.TypeQualifiers;
@@ -22,4 +26,25 @@ import checkers.source.SupportedLintOptions;
  */
 @TypeQualifiers({ Interned.class, PolyInterned.class })
 @SupportedLintOptions({"dotequals"})
-public final class InterningChecker extends BaseTypeChecker { }
+@SupportedOptions({"checkclass"})
+public final class InterningChecker extends BaseTypeChecker {
+
+    /**
+     * Returns the declared type of which the equality tests should be tested,
+     * if the user explicitly passed one.  The user can pass the class name
+     * via the {@code -Acheckclass=...} option.
+     *
+     * If no class is specified, or the class specified isn't in the
+     * classpath, it returns null.
+     *
+     */
+    DeclaredType typeToCheck() {
+        String className = processingEnv.getOptions().get("checkclass");
+        if (className == null) return null;
+
+        TypeElement classElt = processingEnv.getElementUtils().getTypeElement(className);
+        if (classElt == null) return null;
+
+        return processingEnv.getTypeUtils().getDeclaredType(classElt);
+    }
+}
