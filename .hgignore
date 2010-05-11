@@ -3,7 +3,9 @@ syntax: glob
 # Emacs and other temporary files
 *~
 .#*
+*.swp
 TAGS
+tags
 *.orig
 .DS_Store
 # Eclipse files
