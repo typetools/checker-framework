@@ -31,6 +31,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
+    private final DeclaredType typeToCheck;
 
     /**
      * Creates a new visitor for type-checking {@link Interned}.
@@ -41,6 +42,14 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     public InterningVisitor(InterningChecker checker, CompilationUnitTree root) {
         super(checker, root);
         this.INTERNED = annoFactory.fromClass(Interned.class);
+        typeToCheck = checker.typeToCheck();
+    }
+
+    private boolean shouldCheckFor(ExpressionTree tree) {
+        if (typeToCheck == null) return true;
+
+        TypeMirror type = InternalUtils.typeOf(tree);
+        return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
     }
 
     @Override
@@ -60,6 +69,9 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             return super.visitBinary(node, p);
 
         if (suppressByHeuristic(node))
+            return super.visitBinary(node, p);
+
+        if (!shouldCheckFor(leftOp) && !shouldCheckFor(rightOp))
             return super.visitBinary(node, p);
 
         AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
