@@ -24,6 +24,7 @@ public class Constants {
     is = A + B;
     is = AC;
     is = A + "C";
+    is = A + B + "C";
     //:: (type.incompatible)
     is = D;
     //:: (type.incompatible)
