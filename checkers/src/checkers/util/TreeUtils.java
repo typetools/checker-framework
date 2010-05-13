@@ -327,6 +327,17 @@ public final class TreeUtils {
         return TreeInfo.symbol((JCTree)node);
     }
 
+    public static final boolean isUseOfElement(Tree node) {
+        switch (node.getKind()) {
+            case IDENTIFIER:
+            case MEMBER_SELECT:
+            case METHOD_INVOCATION:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static final Element elementFromUse(ExpressionTree node) {
         switch (node.getKind()) {
         case IDENTIFIER:

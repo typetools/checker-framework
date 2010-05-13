@@ -8,6 +8,7 @@ import checkers.javari.quals.Mutable;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.types.*;
+import checkers.util.TreeUtils;
 import static checkers.types.AnnotatedTypeMirror.*;
 
 import com.sun.source.tree.*;
@@ -51,8 +52,54 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
     }
 
     @Override
+    protected TreeAnnotator createTreeAnnotator(InterningChecker checker) {
+        return new InterningTreeAnnotator(checker);
+    }
+
+    @Override
     protected TypeAnnotator createTypeAnnotator(InterningChecker checker) {
         return new InterningTypeAnnotator(checker);
+    }
+
+    /**
+     * A class for adding annotations based on tree
+     */
+    private class InterningTreeAnnotator  extends TreeAnnotator {
+
+        InterningTreeAnnotator(BaseTypeChecker checker) {
+            super(checker, InterningAnnotatedTypeFactory.this);
+        }
+
+        private boolean isCompileTimeString(ExpressionTree node) {
+            ExpressionTree tree = TreeUtils.skipParens(node);
+            if (tree instanceof LiteralTree)
+                return true;
+
+            if (TreeUtils.isUseOfElement(tree)) {
+                Element elt = TreeUtils.elementFromUse(tree);
+                return elt != null
+                    && elt.getKind() == ElementKind.FIELD
+                    && ((VariableElement)elt).getConstantValue() != null;
+            } else if (TreeUtils.isStringConcatenation(tree)) {
+                BinaryTree binOp = (BinaryTree)node;
+                return isCompileTimeString(binOp.getLeftOperand())
+                    && isCompileTimeString(binOp.getRightOperand());
+
+            } else {
+                return false;
+            }
+        }
+
+
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            if (isCompileTimeString(node)) {
+                type.addAnnotation(INTERNED);
+            }
+
+
+            return super.visitBinary(node, type);
+        }
     }
 
     /**
