@@ -14,6 +14,7 @@ public class Constants {
   final String AB = A + B;
   final String AC = A + "C";
   final String D = new String("D");
+  final @Interned String E = new String("E").intern();
 
   void foo() {
     @Interned String is;
@@ -26,6 +27,10 @@ public class Constants {
     is = A + B + "C";
     //:: (type.incompatible)
     is = D;
+    //:: (type.incompatible)
+    is = A + E;
+    //:: (type.incompatible)
+    is = is + is;
   }
 
 }
