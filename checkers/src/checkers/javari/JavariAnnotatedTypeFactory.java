@@ -20,12 +20,12 @@ import static checkers.types.AnnotatedTypeMirror.*;
  * Addsimplicit and default Javari annotations, only if the user does not
  * annotate the type explicitly.  The default annotations are designed to
  * minimize the number of {@code ReadOnly} appearing in the source code.
- * <p />
+ * <p>
  *
  * All literals are implicitly {@code Mutable}, including the null literal.
  * While they are indeed immutable, the implicit type helps interfacing with
  * non-annotated libraries.
- * <p />
+ * <p>
  *
  * Default Annotations:
  *
