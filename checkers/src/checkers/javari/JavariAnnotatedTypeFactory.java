@@ -137,7 +137,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         treePre.visit(tree, type);
 
         // 3, 4 and 5
-        typePost.visit(type);
+        Element elt = InternalUtils.symbol(tree);
+        typePost.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
 
         // 6 - resolve ThisMutable from fields
         if (type.hasAnnotation(THISMUTABLE)) {
@@ -199,14 +200,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (!hasImmutabilityAnnotation(type))
                 type.addAnnotation(MUTABLE);
         }
-        typePost.visit(type);
+        typePost.visit(type, element.getKind());
     }
 
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
         for (AnnotatedTypeMirror supertype : supertypes)
-            typePost.visit(supertype);
+            typePost.visit(supertype, ElementKind.OTHER);
     }
 
     /**
@@ -542,14 +543,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      *
      * </ul>
      */
-    private class JavariTypePostAnnotator extends AnnotatedTypeScanner<Void, Void> {
+    private class JavariTypePostAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
 
         /**
          * Annotates scanned qualified types that correspond to fields
          * and have no immutability annotations with {@code @ThisMutable}
          */
         @Override
-        public Void scan(AnnotatedTypeMirror type, Void p) {       // case 3
+        public Void scan(AnnotatedTypeMirror type, ElementKind p) {       // case 3
             if (type != null && type.getElement() != null
                 && !hasImmutabilityAnnotation(type)
                 && type.getElement().getKind().isField())
@@ -565,7 +566,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * it with {@code @Mutable}.
          */
         @Override
-        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+        public Void visitExecutable(AnnotatedExecutableType type, ElementKind p) {
             AnnotatedDeclaredType receiver = type.getReceiverType();
             if (!hasImmutabilityAnnotation(receiver)) {                // case 1
                 AnnotatedDeclaredType owner = (AnnotatedDeclaredType)
@@ -589,7 +590,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * the same annotation as its underlying type's element.
          */
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
             if (!hasImmutabilityAnnotation(type)) {                  // case 2
                 TypeElement tElt = (TypeElement) type.getUnderlyingType().asElement();
                 AnnotatedTypeMirror tType = fromElement(tElt);
@@ -606,7 +607,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * @Mutable}, if they have no annotation yet.
          */
         @Override
-        public Void visitArray(AnnotatedArrayType type, Void p) {
+        public Void visitArray(AnnotatedArrayType type, ElementKind p) {
             if (!hasImmutabilityAnnotation(type)) {                  // case 4
                 type.addAnnotation(MUTABLE);
             }
@@ -614,22 +615,40 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-//            if (!hasImmutabilityAnnotation(type))
-//                type.addAnnotation(QREADONLY);
-            AnnotatedTypeMirror upperBound = type.getUpperBound();
-            if (upperBound != null
-                && !hasImmutabilityAnnotation(upperBound)
-                && upperBound.toString().equals("Object"))
-                upperBound.addAnnotation(READONLY);
+        public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
+            // In a declaration the upperbound is ReadOnly, while
+            // the upper bound in a use is Mutable
+            if (type.getUpperBound() != null
+                    && !hasImmutabilityAnnotation(type.getUpperBound())) {
+                if (p.isClass() || p.isInterface()
+                        || p == ElementKind.CONSTRUCTOR
+                        || p == ElementKind.METHOD)
+                    // case 5: upper bound within a class/method declaration
+                    type.getUpperBound().addAnnotation(READONLY);
+                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                    // case 10: remaining cases
+                    type.getUpperBound().addAnnotation(MUTABLE);
+            }
+
             return super.visitTypeVariable(type, p);
         }
 
         @Override
-        public Void visitWildcard(AnnotatedWildcardType type, Void p) {
+        public Void visitWildcard(AnnotatedWildcardType type, ElementKind p) {
+            // In a declaration the upper bound is ReadOnly, while
+            // the upper bound in a use is Mutable
             if (type.getExtendsBound() != null
-                    && !hasImmutabilityAnnotation(type.getExtendsBound()))
-                type.getExtendsBound().addAnnotation(READONLY);
+                    && !hasImmutabilityAnnotation(type.getExtendsBound())) {
+                if (p.isClass() || p.isInterface()
+                        || p == ElementKind.CONSTRUCTOR
+                        || p == ElementKind.METHOD)
+                    // case 5: upper bound within a class/method declaration
+                    type.getExtendsBound().addAnnotation(READONLY);
+                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                    // case 10: remaining cases
+                    type.getExtendsBound().addAnnotation(MUTABLE);
+            }
+
             return super.visitWildcard(type, p);
         }
     }
