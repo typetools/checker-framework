@@ -16,30 +16,34 @@ import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 
 import static checkers.types.AnnotatedTypeMirror.*;
 
-
 /**
- * Generates a AnnotatedTypeMirror with Javari annotations from a Tree
- * or a Element parameter.
- * <p>
- * Implicit annotations are added as follows:
+ * Addsimplicit and default Javari annotations, only if the user does not
+ * annotate the type explicitly.  The default annotations are designed to
+ * minimize the number of {@code ReadOnly} appearing in the source code.
+ * <p />
+ *
+ * All literals are implicitly {@code Mutable}, including the null literal.
+ * While they are indeed immutable, the implicit type helps interfacing with
+ * non-annotated libraries.
+ * <p />
+ *
+ * Default Annotations:
+ *
+ * This factory will add the {@link ReadOnly} annotation to a type if the
+ * input is
  * <ol>
+ * <li value="1">a use of a known ReadOnly class (i.e. class whose declaration
+ *  is annotated with {@code ReadOnly}.
+ * <li value="2">a method receive of a ReadOnly class
+ * <li value="3">the upper bound type of a type parameter declaration, or a
+ *  wildcard appearing on a class or method declaration
+ * <li value="4">Accessing a {@link ThisMutable} field on a ReadOnly reference
+ * </ol>
  *
- *   <li value="1">Qualified class types without annotations receive the
- *   {@code @Mutable} annotation.
+ * This factory will add the {@link ThisMutable} annotation to a type if the
+ * input is field of a mutable class.
  *
- *   <li value="2">Qualified executable types receivers without annotations
- *   are annotated with the qualified executable type owner's
- *   annotation.
- *
- *   <li value="3">Qualified declared types are annotated with their
- *   underlying type's element annotations.
- *
- *   <li value="4">Qualified types whose elements correspond to fields, and
- *   all its subtypes, are annotated with {@code @ReadOnly},
- *   {@code @Mutable} or {@code @PolyRead}, according to the qualified type
- *   of {@code this}.
- *
- *</ol>
+ * In all other cases, {@link Mutable} annotation is inserted by default.
  */
 public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
@@ -137,7 +141,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         treePre.visit(tree, type);
 
         // 3, 4 and 5
-        typePost.visit(type);
+        Element elt = InternalUtils.symbol(tree);
+        typePost.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
 
         // 6 - resolve ThisMutable from fields
         if (type.hasAnnotation(THISMUTABLE)) {
@@ -199,14 +204,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (!hasImmutabilityAnnotation(type))
                 type.addAnnotation(MUTABLE);
         }
-        typePost.visit(type);
+        typePost.visit(type, element.getKind());
     }
 
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
         for (AnnotatedTypeMirror supertype : supertypes)
-            typePost.visit(supertype);
+            typePost.visit(supertype, ElementKind.OTHER);
     }
 
     /**
@@ -542,14 +547,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      *
      * </ul>
      */
-    private class JavariTypePostAnnotator extends AnnotatedTypeScanner<Void, Void> {
+    private class JavariTypePostAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
 
         /**
          * Annotates scanned qualified types that correspond to fields
          * and have no immutability annotations with {@code @ThisMutable}
          */
         @Override
-        public Void scan(AnnotatedTypeMirror type, Void p) {       // case 3
+        public Void scan(AnnotatedTypeMirror type, ElementKind p) {       // case 3
             if (type != null && type.getElement() != null
                 && !hasImmutabilityAnnotation(type)
                 && type.getElement().getKind().isField())
@@ -565,7 +570,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * it with {@code @Mutable}.
          */
         @Override
-        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
+        public Void visitExecutable(AnnotatedExecutableType type, ElementKind p) {
             AnnotatedDeclaredType receiver = type.getReceiverType();
             if (!hasImmutabilityAnnotation(receiver)) {                // case 1
                 AnnotatedDeclaredType owner = (AnnotatedDeclaredType)
@@ -589,7 +594,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * the same annotation as its underlying type's element.
          */
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
             if (!hasImmutabilityAnnotation(type)) {                  // case 2
                 TypeElement tElt = (TypeElement) type.getUnderlyingType().asElement();
                 AnnotatedTypeMirror tType = fromElement(tElt);
@@ -606,7 +611,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
          * @Mutable}, if they have no annotation yet.
          */
         @Override
-        public Void visitArray(AnnotatedArrayType type, Void p) {
+        public Void visitArray(AnnotatedArrayType type, ElementKind p) {
             if (!hasImmutabilityAnnotation(type)) {                  // case 4
                 type.addAnnotation(MUTABLE);
             }
@@ -614,22 +619,40 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-//            if (!hasImmutabilityAnnotation(type))
-//                type.addAnnotation(QREADONLY);
-            AnnotatedTypeMirror upperBound = type.getUpperBound();
-            if (upperBound != null
-                && !hasImmutabilityAnnotation(upperBound)
-                && upperBound.toString().equals("Object"))
-                upperBound.addAnnotation(READONLY);
+        public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
+            // In a declaration the upperbound is ReadOnly, while
+            // the upper bound in a use is Mutable
+            if (type.getUpperBound() != null
+                    && !hasImmutabilityAnnotation(type.getUpperBound())) {
+                if (p.isClass() || p.isInterface()
+                        || p == ElementKind.CONSTRUCTOR
+                        || p == ElementKind.METHOD)
+                    // case 5: upper bound within a class/method declaration
+                    type.getUpperBound().addAnnotation(READONLY);
+                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                    // case 10: remaining cases
+                    type.getUpperBound().addAnnotation(MUTABLE);
+            }
+
             return super.visitTypeVariable(type, p);
         }
 
         @Override
-        public Void visitWildcard(AnnotatedWildcardType type, Void p) {
+        public Void visitWildcard(AnnotatedWildcardType type, ElementKind p) {
+            // In a declaration the upper bound is ReadOnly, while
+            // the upper bound in a use is Mutable
             if (type.getExtendsBound() != null
-                    && !hasImmutabilityAnnotation(type.getExtendsBound()))
-                type.getExtendsBound().addAnnotation(READONLY);
+                    && !hasImmutabilityAnnotation(type.getExtendsBound())) {
+                if (p.isClass() || p.isInterface()
+                        || p == ElementKind.CONSTRUCTOR
+                        || p == ElementKind.METHOD)
+                    // case 5: upper bound within a class/method declaration
+                    type.getExtendsBound().addAnnotation(READONLY);
+                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                    // case 10: remaining cases
+                    type.getExtendsBound().addAnnotation(MUTABLE);
+            }
+
             return super.visitWildcard(type, p);
         }
     }
