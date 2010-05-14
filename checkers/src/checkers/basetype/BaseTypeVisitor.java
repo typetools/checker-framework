@@ -298,11 +298,48 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             annoTypes.expandVarArgs(invokedMethod, node.getArguments());
         checkArguments(params, node.getArguments(), p);
 
+        if (isVectorCopyInto(invokedMethod)) {
+            typeCheckVectorCopyIntoArgument(node, params);
+        }
+
         if (!ElementUtils.isStatic(invokedMethod.getElement())
             && !isSuperInvocation(node))
             checkMethodInvocability(invokedMethod, node);
 
         return super.visitMethodInvocation(node, p);
+    }
+
+    // Handle case Vector.copyInto()
+    private final AnnotatedDeclaredType vectorType =
+        atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+
+    protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
+        ExecutableElement elt = method.getElement();
+        if (elt.getSimpleName().contentEquals("copyInto")
+            && elt.getParameters().size() == 1)
+            return true;
+
+        return false;
+    }
+
+    protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node, List<? extends AnnotatedTypeMirror> params) {
+        assert params.size() == 1;
+        assert node.getArguments().size() == 1;
+
+        AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+        AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
+
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(node);
+        AnnotatedDeclaredType receiverAsVector =
+            (AnnotatedDeclaredType)annoTypes.asSuper(receiver, vectorType);
+        if (receiverAsVector == null || receiverAsVector.getTypeArguments().isEmpty())
+            return;
+
+        commonAssignmentCheck(
+                passedAsArray.getComponentType(),
+                receiverAsVector.getTypeArguments().get(0),
+                node.getArguments().get(0),
+                "vector.copyinto.incompatible", null);
     }
 
     /**
