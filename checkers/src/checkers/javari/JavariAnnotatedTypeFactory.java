@@ -16,30 +16,34 @@ import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 
 import static checkers.types.AnnotatedTypeMirror.*;
 
-
 /**
- * Generates a AnnotatedTypeMirror with Javari annotations from a Tree
- * or a Element parameter.
- * <p>
- * Implicit annotations are added as follows:
+ * Addsimplicit and default Javari annotations, only if the user does not
+ * annotate the type explicitly.  The default annotations are designed to
+ * minimize the number of {@code ReadOnly} appearing in the source code.
+ * <p />
+ *
+ * All literals are implicitly {@code Mutable}, including the null literal.
+ * While they are indeed immutable, the implicit type helps interfacing with
+ * non-annotated libraries.
+ * <p />
+ *
+ * Default Annotations:
+ *
+ * This factory will add the {@link ReadOnly} annotation to a type if the
+ * input is
  * <ol>
+ * <li value="1">a use of a known ReadOnly class (i.e. class whose declaration
+ *  is annotated with {@code ReadOnly}.
+ * <li value="2">a method receive of a ReadOnly class
+ * <li value="3">the upper bound type of a type parameter declaration, or a
+ *  wildcard appearing on a class or method declaration
+ * <li value="4">Accessing a {@link ThisMutable} field on a ReadOnly reference
+ * </ol>
  *
- *   <li value="1">Qualified class types without annotations receive the
- *   {@code @Mutable} annotation.
+ * This factory will add the {@link ThisMutable} annotation to a type if the
+ * input is field of a mutable class.
  *
- *   <li value="2">Qualified executable types receivers without annotations
- *   are annotated with the qualified executable type owner's
- *   annotation.
- *
- *   <li value="3">Qualified declared types are annotated with their
- *   underlying type's element annotations.
- *
- *   <li value="4">Qualified types whose elements correspond to fields, and
- *   all its subtypes, are annotated with {@code @ReadOnly},
- *   {@code @Mutable} or {@code @PolyRead}, according to the qualified type
- *   of {@code this}.
- *
- *</ol>
+ * In all other cases, {@link Mutable} annotation is inserted by default.
  */
 public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
