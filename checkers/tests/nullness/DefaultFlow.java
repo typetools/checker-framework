@@ -12,4 +12,9 @@ public class DefaultFlow {
         reader.startsWith("hello");
     }
 
+    void tesVariableInitialization() {
+        @Nullable Object elts = null;
+        assert elts != null: "nullness";
+        @NonNull Object elem = elts;
+    }
 }
