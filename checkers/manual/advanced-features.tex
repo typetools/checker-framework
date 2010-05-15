@@ -649,7 +649,6 @@ in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 
 
-
 \subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
 
 In order to reduce the burden of annotating types in your program, the
@@ -741,6 +740,63 @@ treated as a \code{@\refclass{nullness/quals}{NonNull}} one.  The inference neve
 a supertype of its declared type (e.g., an expression of \code{@\refclass{nullness/quals}{NonNull}}
 type is never inferred to be treated as possibly-null).
 
+\subsection{Fields and flow sensitivity analysis}
+
+Flow sensitivity analysis infers the type of fields in some restricted cases:
+
+\begin{itemize}
+
+\item
+A final initialized field:
+Type inference is performed for final fields that
+are initialized at the declaration site; so the type of \code{protocol} is
+\code{@NonNull String} in the following declaration:
+
+\begin{Verbatim}
+    public final String protocol = "https";
+\end{Verbatim}
+
+Please note that such inferred type may leak to the public interface of the
+class.  To override such behavior, you can explicitly insert the desired
+annotation, e.g.
+
+\begin{Verbatim}
+    public final @Nullable String protocol = "https";
+\end{Verbatim}
+
+\item
+Within method bodies:
+Type inference is performed for fields in the context of method bodies,
+like local variables, but method invocations invalidate any inferred
+information.  Consider the following example, where \code{name} is a nullable
+field:
+
+\begin{Verbatim}
+class DBObject {
+  @Nullable Date updatedAt;
+
+  void update() {
+    if (updatedAt == null)
+        updatedAt = new Date();
+    // updatedAt is nonnull
+    log("Updating object at " + updatedAt.getTime());
+
+    persistData();
+    // updatedAt is nullable again
+    log.debug("Saved object updated at " + updatedAt.getTime()); // invalid!
+  }
+}
+\end{Verbatim}
+
+Here the call to \code{persistData()} invalidates the inferred nonnull type
+of \code{updatedAt}.
+
+When methods do not modify any object state or have any identity side-effects
+(e.g. \code{log()} method here), you can annotate these methods as
+\code{Pure}.  Annotating them as \code{Pure}, would cause the flow analyzer to
+carry the inferred types across the method invocation boundary.
+
+\end{itemize}
 
 \section{Inexpressible types\label{inexpressible-types}}
 
