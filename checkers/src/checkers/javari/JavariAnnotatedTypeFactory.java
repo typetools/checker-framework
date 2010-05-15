@@ -17,18 +17,21 @@ import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import static checkers.types.AnnotatedTypeMirror.*;
 
 /**
- * Addsimplicit and default Javari annotations, only if the user does not
+ * Adds implicit and default Javari annotations, only if the user does not
  * annotate the type explicitly.  The default annotations are designed to
- * minimize the number of {@code ReadOnly} appearing in the source code.
- * <p />
+ * minimize the need to write {@code ReadOnly} in the source code.
+ * <p>
  *
- * All literals are implicitly {@code Mutable}, including the null literal.
- * While they are indeed immutable, the implicit type helps interfacing with
- * non-annotated libraries.
- * <p />
+ * <b>Implicit Annotations:</b>
+ * All literals are implicitly treated as {@code Mutable}, including the
+ * null literal.  While they are indeed immutable, this implicit type helps
+ * interfacing with non-annotated libraries.
+ * <p>
  *
- * Default Annotations:
+ * <b>Default Annotations:</b>
  *
+ * <ul>
+ * <li>
  * This factory will add the {@link ReadOnly} annotation to a type if the
  * tree or element is
  * <ol>
@@ -42,10 +45,13 @@ import static checkers.types.AnnotatedTypeMirror.*;
  * declarations)
  * </ol>
  *
+ * <li>
  * This factory will add the {@link ThisMutable} annotation to a type if the
  * input is field of a mutable class.
  *
+ * <li>
  * In all other cases, {@link Mutable} annotation is inserted by default.
+ * </ul>
  */
 public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
