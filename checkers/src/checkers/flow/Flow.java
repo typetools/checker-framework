@@ -599,7 +599,8 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (init != null) {
             scanExpr(init);
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
-            if (!isNonFinalField(elem) /*&& !type.isAnnotated()*/) {
+            AnnotatedTypeMirror type = factory.fromMember(node);
+            if (!isNonFinalField(elem) && !type.isAnnotated()) {
                 propagate(node, init);
                 recordBits(getCurrentPath());
             }
