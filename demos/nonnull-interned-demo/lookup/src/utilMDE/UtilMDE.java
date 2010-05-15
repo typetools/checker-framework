@@ -409,8 +409,8 @@ public final class UtilMDE {
     // If the dir isn't on CLASSPATH, add it.
     String pathSep = (@NonNull String) System.getProperty("path.separator"); // @NE app-inv
     // what is the point of the "replace()" call?
-    @Nullable String tmp = System.getProperty("java.class.path",".");
-    assert tmp != null;
+    String tmp = System.getProperty("java.class.path",".");
+    assert tmp != null: "nullness";
     String cp = tmp.replace('\\', '/');
     StringTokenizer tokenizer = new StringTokenizer(cp, pathSep, false);
     boolean found = false;
