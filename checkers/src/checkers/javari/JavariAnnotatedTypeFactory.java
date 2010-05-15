@@ -30,14 +30,16 @@ import static checkers.types.AnnotatedTypeMirror.*;
  * Default Annotations:
  *
  * This factory will add the {@link ReadOnly} annotation to a type if the
- * input is
+ * tree or element is
  * <ol>
  * <li value="1">a use of a known ReadOnly class (i.e. class whose declaration
- *  is annotated with {@code ReadOnly}.
- * <li value="2">a method receive of a ReadOnly class
- * <li value="3">the upper bound type of a type parameter declaration, or a
+ *  is annotated with {@code ReadOnly}, including a method receiver of a
+ *  ReadOnly class, or
+ * <li value="2">the upper bound type of a type parameter declaration, or a
  *  wildcard appearing on a class or method declaration
- * <li value="4">Accessing a {@link ThisMutable} field on a ReadOnly reference
+ * <li value="3">an access of a {@link ThisMutable} field using a ReadOnly
+ * reference (e.g. {@code readOnlyRef.thisMutableField} with the obvious
+ * declarations)
  * </ol>
  *
  * This factory will add the {@link ThisMutable} annotation to a type if the
