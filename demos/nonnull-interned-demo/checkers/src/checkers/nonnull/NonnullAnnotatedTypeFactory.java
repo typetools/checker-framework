@@ -57,12 +57,12 @@ public class NonnullAnnotatedTypeFactory extends AnnotatedTypeFactory {
     public NonnullAnnotatedTypeFactory(ProcessingEnvironment env, CompilationUnitTree root, boolean useFlow, boolean ignoreSameTypeCast) {
       super(env, root);
 
-        @Nullable Elements elements = env.getElementUtils();
+        Elements elements = env.getElementUtils();
         assert elements != null; /*nninvariant*/
         this.elements = elements;
 
         @SuppressWarnings("nullness")
-        @Nullable SourcePositions srcPos = trees.getSourcePositions();
+        SourcePositions srcPos = trees.getSourcePositions();
         assert srcPos != null; /*nninvariant*/
         this.srcPos = srcPos;
 
