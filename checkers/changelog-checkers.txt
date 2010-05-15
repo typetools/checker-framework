@@ -1,3 +1,25 @@
+Version 1.0.8, 15 May 2010
+
+Checkers
+  Changed behavior of flow type refinement when annotation is explicit
+  Handle array initializer trees (without explicit type)
+  Handle the case of Vector.copyInto
+  Include javax classes in the distributed jdk jar files
+
+Interning Checker
+  Handle interning inference of string concatenation
+  Add 20+ @Interned annotations to the JDK
+  Add an option, checkclass, to validate the interning
+    of specific classes only
+
+Bug fixes
+  Fix a bug related to array implicit types
+  Lock checker: Treat null as a bottom type
+
+Manual
+  Added a new section about Flow inference and fields
+
+----------------------------------------------------------------------
 Version 1.0.7, 12 Apr 2010
 
 Checkers
