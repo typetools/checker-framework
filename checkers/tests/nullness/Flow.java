@@ -221,7 +221,7 @@ public class Flow {
     }
 
     void empty_makes_no_change() {
-        @Nullable String o1 = "not null!";
+        String o1 = "not null!";
         if (false) {
             // empty branch
         } else {
@@ -230,10 +230,10 @@ public class Flow {
         System.out.println(o1.toString());
     }
 
-    void type_refining() {
-        @Nullable String o1 = "not null!";
-        o1.toString();
-    }
+
+
+
+
 
     public boolean equals(@Nullable Object o) {
         if (!(o instanceof Integer))
