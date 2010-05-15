@@ -1,0 +1,65 @@
+These are actual bugs we had in the framework.
+
+1. Verify correctness of existing code
+
+* View class AnnotationLocation (IGJChecker/src/checkers/types/AnnotationLocation.java).
+  It is an immutable class.  The demo wants to verify this.
+
+* View the first field, 'location'.
+  AnnotationLocation uses a List<Integer> as a data abstraction for the
+  AnnotationLocation.
+  The @Immutable annotation specifies that the List is immutable!
+  (It's actually optional; it is just written here for emphasis.)
+
+* Run the checker
+    ant location
+
+* There is one error.  It is due to Collections.unmodifiableList()
+  not actually returning an immutable list, but only a read only list.
+
+* Fix the error:  replace
+    Collections.unmodifiableList(lacation)
+  by
+    new @Immutable ArrayList<@NonNull Integer>(location)
+
+* Run the checker again. No errors should be emitted.  We have verified
+  correctness.
+
+ACTUAL BUG: A caller was reusing the same instance of instance of list
+for multiple calls to the constructor.  Later, all AnnotationLocation
+represented the same value!
+
+
+2. Verify correctness of an optimization (hashing)
+
+* View AnnotatedTypeFactory.elementCache, of type
+    Map<Element, AnnotatedTypeMirror>.
+  It is a cache to map elements to their corresponding types.  The cache
+  value is immutable to prevent annotated types from being mutated via
+  external references.
+
+* Add @Immutable to the map value:
+    Map<Element, @Immutable AnnotatedTypeMirror).
+  We wish to verify that the immutability invariant holds.
+
+* Run:
+    ant factory
+
+  We get two errors regarding storing mutable values to the cache and
+  returning them as mutable.
+
+* Fix it by deep-copying the type before insertion and after retrieval.
+
+  Edit getAnnotatedType(Element) as follows:
+
+  -     return elementCache.get(elt);
+  +     return atypes.deepCopy(elementCache.get(elt));
+
+  -     elementCache.put(elt, type);
+  +     elementCache.put(elt, atypes.deepCopy(type));
+
+* Run the checker again.  No errors are emitted.
+
+ACTUAL BUG: In the first attempt to cache type results, we copied the
+type upon retrieval, but not insertion.  The visitor afterwards
+modified the first returned type, dirtying the cache!

@@ -1,0 +1,44 @@
+<!--
+  This is an Ant build file for compiling the Java Parser
+-->
+<project name="javaparser" default="dist" basedir=".">
+
+    <description>
+      Builds the java parser for JSR 308 index files.
+    </description>
+
+    <property name="src" value="src"/>
+    <property name="build" value="build"/>
+
+    <property file="build.properties"/>
+    <property environment="env"/>
+
+    <property name="javacc.home" value="${env.JAVACC_HOME}"/>
+    <property name="dist.file" value="javaparser.jar"/>
+
+    <target name="prep" description="Create required directories">
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="clean" description="Remove generated files">
+        <delete dir="${build}"/>
+        <delete file="${dist.file}"/>
+    </target>
+
+    <target name="gen-parser" description="Generate parser files">
+        <javacc target="src/japa/parser/java_1_5.jj"
+                javacchome="${javacc.home}" />
+    </target>
+
+    <target name="build" depends="prep" description="Compile files">
+        <javac destdir="${build}" includeantruntime="false">
+          <src path="${src}"/>
+          <include name="**/*.java"/>
+        </javac>
+    </target>
+
+    <target name="dist" depends="build" description="Create jar file">
+        <jar destfile="${dist.file}" basedir="${build}"/>
+    </target>
+
+</project>
