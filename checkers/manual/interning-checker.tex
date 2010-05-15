@@ -3,7 +3,7 @@
 
 If the Interning checker issues no warnings for a given program, then all
 reference equality tests (i.e., ``\code{==}'') in that program operate on
-interned types.  
+interned types.
 Interning is a design pattern in which the same object is used whenever two
 different objects would be considered equal.  Interning is also known as
 canonicalization or hash-consing, and it is related to the flyweight design
@@ -136,6 +136,11 @@ For a complete description of all checks performed by
   the checker, see the Javadoc for
   \refclass{interning}{InterningVisitor}.
 
+\label{checking-class}
+You can also restrict which types the checker should examine and type-check,
+using the \code{-Acheckclass} option.  So if you want to find all the
+interning errors related to uses of \code{String}, you can pass
+\code{-Acheckclass=java.lang.String}.
 
 \section{Examples\label{interning-example}}
 
