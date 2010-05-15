@@ -6,9 +6,29 @@ public class Flow {
 
     public void testFlow() {
 
-        @Mutable List<String> m = emptyList();   // error
+        //:: (type.incompatible)
+        @Mutable List<String> m = emptyList();
 
         List<String> im = emptyList();
-        im.add("m"); // error
+        //:: (method.invocation.invalid)
+        im.add("m");
+    }
+
+    static void assertImmutable(@Immutable Object o) {}
+
+    public void initializerEffect() {
+        Object a = emptyList();
+        assertImmutable(a); // valid
+
+        // initializer shouldn't affect type if explicit
+        @ReadOnly Object b = emptyList();
+        //:: (type.incompatible)
+        assertImmutable(b);
+
+        // assignments afterwards does affect it
+        @ReadOnly Object c = null;
+        c = emptyList();
+        assertImmutable(c);
     }
 }
+
