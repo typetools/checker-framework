@@ -527,7 +527,7 @@ This includes all Java files specified on the command line (or
 created by another annotation processor).  It may also include other of
 your Java files (but not if a more recent \code{.class} file exists).
 Even when the checker does not analyze a class (say, the class was
-already compiled, or source codeis not available), it does check
+already compiled, or source code is not available), it does check
 the \emph{uses} of those classes in the source code being compiled.
 
 The javac compiler halts compilation as soon as an error is found in a
@@ -881,6 +881,14 @@ where necessary.  If signature annotations are necessary, then you may want
 to fix the documentation that did not indicate the property; but this isn't
 strictly necessary, since the annotations that you wrote provide that
 documentation.
+
+You may wonder about the effect of adding a given annotation --- how many
+other annotations it will require, or whether it conflicts with other code.
+Suppose you have added an annotation to a method parameter.  You could
+manually examine all callees.  A better way can be to save the checker
+output before adding the annotation, and to compare it to the checker
+output after adding the annotation.  This helps you to focus on the
+specific changes.
 
 
 Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
