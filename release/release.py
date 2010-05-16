@@ -109,7 +109,8 @@ PROJECT_ROOTS = (
 )
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
-        execute('hg -R %s pull -u' % path)
+        execute('hg -R %s pull' % path)
+	execute('hg -R %s update' % path)
         print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
@@ -211,6 +212,7 @@ def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
 def execute(command_args, halt_if_fail=True):
+    print("Executing: %s"% (command_args))
     import shlex
     if isinstance(command_args, str):
         arg = shlex.split(command_args)
