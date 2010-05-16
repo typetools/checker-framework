@@ -71,7 +71,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         if (suppressByHeuristic(node))
             return super.visitBinary(node, p);
 
-        if (!shouldCheckFor(leftOp) && !shouldCheckFor(rightOp))
+        if (!(shouldCheckFor(leftOp) && shouldCheckFor(rightOp)))
             return super.visitBinary(node, p);
 
         AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
