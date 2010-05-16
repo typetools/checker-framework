@@ -959,8 +959,17 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     }
 
     // This is a test to ensure that all types are valid
-    private AnnotatedTypeScanner<Void, Tree> typeValidator =
-        new AnnotatedTypeScanner<Void, Tree>() {
+    private AnnotatedTypeScanner<Void, Tree> typeValidator = createTypeValidator();
+
+    protected TypeValidator createTypeValidator() {
+        return new TypeValidator();
+    }
+
+    protected class TypeValidator extends AnnotatedTypeScanner<Void, Tree> {
+        protected void reportError(AnnotatedTypeMirror type, Tree p) {
+            checker.report(Result.failure("type.invalid",
+                        type.getAnnotations(), type.toString()), p);
+        }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
@@ -975,13 +984,12 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                         useType.getUnderlyingType().asElement()).getErased();
 
             if (!checker.isValidUse(elemType, useType)) {
-                checker.report(Result.failure("type.invalid",
-                        useType.getAnnotations(), elemType.toString()), p);
+                reportError(useType, p);
             }
 
             return super.visitDeclared(type, p);
         }
-    };
+    }
 
     // **********************************************************************
     // Randome helper method
