@@ -22,7 +22,7 @@ These are actual bugs we had in the framework.
   by
     new @Immutable ArrayList<@NonNull Integer>(location)
 
-* Run the checker again. No errors should be emitted.  We have verified
+* Run the checker again.  No errors should be emitted.  We have verified
   correctness.
 
 ACTUAL BUG: A caller was reusing the same instance of instance of list
