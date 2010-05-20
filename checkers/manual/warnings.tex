@@ -9,12 +9,12 @@ a checker warning.
 
 \section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
 
-Sometimes, you wish to type-check only part of your program.  
+Sometimes, you wish to type-check only part of your program.
 You might focus on the most mission-critical or error-prone part of your
 code.  When you start to use a checker, you may not wish to annotate
 your entire program right away.
 % Not having source code is *not* a reason.
-You may not have 
+You may not have
 enough knowledge to annotate poorly-documented libraries that your program uses.
 
 If annotated code uses unannotated code, then the checker may issue
@@ -49,7 +49,7 @@ there are several ways to eliminate the compiler warnings.
   then you only have to annotate the signatures of a limited number of
   classes/methods
   (e.g., the public interface to a library or package).
-  
+
 \end{enumerate}
 
 Chapter~\ref{annotating-libraries} discusses adding annotations to
@@ -120,10 +120,15 @@ classes whose fully-qualified name starts with \codesize\verb|java.|, all
 warnings relating to invalid arguments, and all warnings relating to incorrect
 use of the return value.
 
+To suppress all errors and warnings related to multiple classes, you can use
+the regular expression alternative operator ``\code{|}'', as in
+``{\codesize\verb+-AskipClasses="java\.lang\.|java\.util\."+}'' to suppress
+all warnings related to classes belong to the \code{java.lang} or
+\code{java.util} packages.
 
 \label{lint-options}
 
-The \code{-Alint} option enables or disables optional checks, analogously to 
+The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
 Each of the distributed checkers supports at least the following lint options:
 
@@ -214,7 +219,7 @@ In a single program, you may write some annotations in comments, and others
 without comments.
 
 By default, the compiler ignores any comment that contains spaces at the
-beginning or end, or between the \code{@} and the annotation name.  
+beginning or end, or between the \code{@} and the annotation name.
 In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
 \code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
 This
@@ -288,11 +293,11 @@ working directory or any subdirectory.
 You can customize this command:
 \begin{itemize}
 \item
-To process comments with embedded spaces and asterisks, change 
+To process comments with embedded spaces and asterisks, change
 two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
 \item
 To ignore comments with leading or trailing spaces, remove the four
-instances of ``\verb|\s*|''.  
+instances of ``\verb|\s*|''.
 \item
   To not make backups, remove
 ``\verb|.bak|''.
