@@ -22,11 +22,12 @@ don't appear in your Eclipse.]
    style and shows up as a change in your repository that will distract you
    when you do a diff and that you might accidentally check in.)
 
-1. [need to renumber]
-   run
+2. Run
      ant touch-files
 
-2a. If using Eclipse:
+3. Do 3a if using Eclipse, or 3b if using Emacs.
+
+3a. If using Eclipse:
    Launch Eclipse, and switch to the demo workspace (File -> Switch Workspace
    -> Other..., and select the directory in which you unjarred workspace.jar;
    on subsequent runs you need only do File -> Switch Workspace and pick the
@@ -53,7 +54,7 @@ don't appear in your Eclipse.]
    jump to a declaration, but the outline (side pane, or Ctrl + O) still
    works.
 
-2b. If using Emacs:
+3b. If using Emacs:
    Set font; try one of these:
      (set-frame-font "Inconsolata 10")
      (set-default-font "10x20")
