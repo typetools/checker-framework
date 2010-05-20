@@ -8,7 +8,7 @@ Open personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.jav
 1. PersonalBlogService.executeQuery() only accepts untainted queries,
 2. PersonalBlogService.constructQuery is used to construct an untainted query.
 
-* Run the nullness checker, by invoking the ant script
+* Run the taintness checker, by invoking the ant script.
 
   The checker issues a warning for .getPostsByCategory():
   (possibly) tainted string category is used in the query construction.
