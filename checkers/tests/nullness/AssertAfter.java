@@ -34,6 +34,12 @@ public class AssertAfter {
       value.toString();
   }
 
+  public void inConditionInTrue() {
+      if (repNulled()) {
+          value.toString();
+      } else { }
+  }
+
   // skip-test: Come back when working on improved flow
 //  public void asCondition() {
 //      if (repNulled()) {
