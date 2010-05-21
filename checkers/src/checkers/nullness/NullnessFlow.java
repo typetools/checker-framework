@@ -554,6 +554,40 @@ class NullnessFlow extends Flow {
         return asserts;
     }
 
+    private List<String> shouldInferNullnessAfter(ExpressionTree node) {
+        node = TreeUtils.skipParens(node);
+        if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
+            BinaryTree bin = (BinaryTree)node;
+            List<String> asserts = new ArrayList<String>();
+            asserts.addAll(shouldInferNullnessAfter(bin.getLeftOperand()));
+            asserts.addAll(shouldInferNullnessAfter(bin.getRightOperand()));
+            return asserts;
+        }
+        if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
+            return Collections.emptyList();
+
+        List<String> asserts = new ArrayList<String>();
+        MethodInvocationTree methodInvok = (MethodInvocationTree)node;
+        ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        if (method.getAnnotation(AssertNonNullAfter.class) != null) {
+            AssertNonNullAfter anno = method.getAnnotation(AssertNonNullAfter.class);
+
+            String receiver = receiver(methodInvok);
+            for (String s : anno.value()) {
+                if (parameterPtn.matcher(s).matches()) {
+                    int param = Integer.valueOf(s.substring(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else {
+                    asserts.add(receiver + s);
+                }
+            }
+        }
+
+        return asserts;
+    }
+
     private List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT
             || ((UnaryTree)node).getExpression().getKind() != Tree.Kind.METHOD_INVOCATION) {
@@ -778,6 +812,8 @@ class NullnessFlow extends Flow {
                 && prev.get(NONNULL, i))
                 annos.set(NONNULL, i);
         }
+
+        this.nnExprs.addAll(shouldInferNullnessAfter(node));
 
         if (nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
