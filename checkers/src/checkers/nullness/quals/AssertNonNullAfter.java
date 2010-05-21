@@ -10,6 +10,8 @@ import checkers.nullness.NullnessChecker;
  * are non-null.
  * <p>
  *
+ * This is useful for methods that initialize a field, for example.
+ *
  * @see NonNull
  * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker

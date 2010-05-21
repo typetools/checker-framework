@@ -4,10 +4,11 @@ import java.lang.annotation.*;
 
 /**
  * Indicates that if the method is a pure method, so calling it
- * with the same parameters would yield the same results.
+ * multiple times with the same arguments yields the same results.
+ * <p>
  *
- * The method should not have any visible side-effect, and
- * non-visible side-effects (e.g. caching) are possible.
+ * The method should not have any visible side-effect.
+ * Non-visible benevolent side effects (e.g., caching) are possible.
  *
  * TODO: Consider moving Pure to core quals instead of nullness.
  */
