@@ -9,6 +9,7 @@
 
     <property name="src" value="src"/>
     <property name="build" value="build"/>
+    <property name="java.source.version" value="1.5"/>
 
     <property file="build.properties"/>
     <property environment="env"/>
@@ -31,7 +32,8 @@
     </target>
 
     <target name="build" depends="prep" description="Compile files">
-        <javac destdir="${build}" includeantruntime="false">
+        <javac destdir="${build}" includeantruntime="false"
+            source="${java.source.version}" target="${java.source.version}">
           <src path="${src}"/>
           <include name="**/*.java"/>
         </javac>
