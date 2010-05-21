@@ -3,9 +3,9 @@ package checkers.nullness.quals;
 import java.lang.annotation.*;
 
 /**
- * Indicates that the method expects the provided static field references
- * to be NonNull at the execution of the annotated method.
- *
+ * Indicates a method postcondition:  the method expects the specified
+ * variables (typically field references) to be non-null when the annotated
+ * method is invoked.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
