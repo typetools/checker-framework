@@ -12,6 +12,10 @@ the guarantee and what is checked.
 
 The Nullness checker uses two separate type hierarchies:  one for nullness,
 and one for rawness (see Section~\ref{raw-partially-initialized}).
+The Nullness checker has three varieties of annotations:  nullness
+qualifiers, nullness method annotations, and rawness qualifiers.
+
+\subsection{Nullness qualifiers\label{nullness-qualifiers}}
 
 The nullness hierarchy contains these qualifiers:
 
@@ -63,12 +67,6 @@ The nullness hierarchy contains these qualifiers:
 Figure~\ref{fig:nonnull-hierarchy} shows part of the type hierarchy for the
 Nullness type system.
 
-The Nullness Checker also supports a rawness annotation that indicates
-whether an object is fully initialized --- that is, whether its fields have
-all been assigned.  For details, see
-Section~\ref{raw-partially-initialized}.
-
-
 \begin{figure}
 \includeimage{nullness-and-raw}{2.5cm}
 \caption{Partial type hierarchy for the Nullness type system.
@@ -81,6 +79,50 @@ initialization has completed.  The two type hierarchies are independent but
 inter-related, and the Nullness Checker verifies them both.}
 \label{fig:nonnull-hierarchy}
 \end{figure}
+
+
+\subsection{Nullness method annotations\label{nullness-non-qualifiers}}
+
+The Nullness checker supports several annotations that specify method
+behavior.
+
+\begin{description}
+
+\item[\code{@\refclass{nullness/quals}{NonNullVariable}}]
+  indicates a method precondition:  The annotated method expects the
+  specified variables (typically field references) to be non-null when the
+  method is invoked.
+
+\item[\code{@\refclass{nullness/quals}{AssertNonNullAfter}}]
+\item[\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}]
+\item[\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}]
+  indicates a method postcondition.  With \<@AssertNonNullAfter>, the given
+  expressions are non-null after the method returns; this is useful for
+  methods that initialize a field, for example.  With
+  \<@AssertNonNullIfTrue> and \<@AssertNonNullIfFalse>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  expressions are non-null.  See the Javadoc for examples of their use.
+
+\item[\code{@\refclass{nullness/quals}{Pure}}]
+  indicates that the method has no (visible) side effects.  More
+  specifically, if the method is called multiple times with the same
+  arguments, then it returns the same result.
+
+\item[\code{@\refclass{nullness/quals}{AssertParametersNonNull}}]
+  % Indicates a method precondition:  The annotated method expects all of
+  % its parameters to be non-null.
+  is used for suppressing warnings, in very rare cases.  See the Javadoc for
+  details.
+
+\end{description}
+
+
+\subsection{Rawness qualifiers\label{rawness-qualifiers}}
+
+The Nullness Checker also supports a rawness annotation that indicates
+whether an object is fully initialized --- that is, whether its fields have
+all been assigned.  Figure~\ref{fig:nonnull-hierarchy} shows its type
+hierarchy.  For details, see Section~\ref{raw-partially-initialized}.
 
 
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
@@ -318,8 +360,9 @@ verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on statements.
 
 For situations when the \<@SuppressWarnings> annotation is inconvenient,
-the Nullness Checker provides two additional ways to suppress warnings:
-via an \<assert> statement or the \<castNonNull> method.  These are
+the Nullness Checker provides three additional ways to suppress warnings:
+via an \<assert> statement, the \<castNonNull> method, and the
+\<@AssertParametersNonNull> annotation.  These are
 appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
@@ -390,6 +433,12 @@ the following code:
   your copy is intended for use only to suppress warnings and not for
   defensive programming.  See Section~\ref{defensive-programming} for an
   explanation of the distinction.
+
+\item
+  Use the \code{@\refclass{nullness/quals}{AssertParametersNonNull}}
+  annotation.  It is used on \<castNonNull>, and may be used on other
+  methods with the same semantics; it should probably never be used in any
+  other situation.
 
 \end{enumerate}
 
@@ -980,6 +1029,7 @@ tool like the Checker Framework.)
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
-% LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles
+% LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
-% LocalWords:  FindBugs's getObject
+% LocalWords:  FindBugs's getObject NonNullVariable AssertNonNullIfFalse
+% LocalWords:  AssertParametersNonNull nonnull
