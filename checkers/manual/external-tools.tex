@@ -6,7 +6,7 @@ This section discusses how to run a checker from your favorite IDE\@.
 Or, if your favorite isn't here, you should customize how it runs the
 javac command on your behalf.  See the IDE documentation to learn how to
 customize it, adapting the instructions for javac in Section~\ref{running}.
-If you make another tool support running a checker, please 
+If you make another tool support running a checker, please
 inform us via the
 \ahref{http://groups.google.com/group/checker-framework-discuss}{mailing
   list} or
@@ -30,30 +30,50 @@ First, set the \code{jsr308javac} property:
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  <!-- Boilerplate to set jsr308javac property. Is there a better way? -->
+  <!-- Boilerplate! Is there a better way? -->
   <property environment="env"/>
-  <condition property="isUnix">
-    <os family="unix" />
-  </condition>
-  <condition property="isWindows">
-    <os family="windows" />
-  </condition>
-  <target name="init-jsr308javac-unix" if="isUnix">
-    <fail unless="env.CHECKERS" message="CHECKERS is not set"/>
-    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac" />
-  </target>
-  <target name="init-jsr308javac-windows" if="isWindows">
-    <fail unless="env.CHECKERS" message="CHECKERS is not set"/>
-    <property name="jsr308javac" value="${env.CHECKERS}/binary/javac.bat" />
-  </target>
+  <property name="jsr308.jar" value="${env.CHECKERS}/binary/jsr308-all.jar"/>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes">
+      <!-- JSR308 related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg line="-target 5"/>
+      <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
+      <compilerarg line="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+
+      <classpath>
+        <pathelement location="${env.CHECKERS}/checkers.jar"/>
+      </classpath>
+    </javac>
+  </presetdef>
+
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
-\noindent
-The \code{property} target makes environment variables (such as your home
-directory) available to Ant.
+The \code{fork} field of the \code{javac} task
+ensure that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the JSR 308 version that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-target 5} compiler argument is optional, if you use Java 5 in
+ordinary compilation when not performing pluggable type-checking.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+The \code{-Awarns ...} compiler argument is optional, and causes the checker to
+treat errors as warnings so that you can see all errors in all files rather
+than only the errors in the first file; see Section~\ref{running}.
 
 Next, duplicate the compilation target, then modify it slightly as
 indicated in this example, filling in each ellipsis (\ldots) from the
@@ -65,22 +85,13 @@ original compilation target:
 \begin{Verbatim}
   <target name="check-nullness"
           description="Check for nullness errors."
-          depends="clean,...,init-jsr308javac-unix,init-jsr308javac-windows">
-    <javac ...
-           fork="yes"
-           executable="${jsr308javac}">
-      <compilerarg value="-version"/>
-      <compilerarg line="-target 5"/>
+          depends="clean,...">
+    <!-- replace javac with jsr308.javac -->
+    <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
       <compilerarg line="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
-      <compilerarg value="-implicit:class"/>
-      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
-      <classpath>
-        <pathelement location="${env.CHECKERS}/checkers.jar"/>
-        ...
-      </classpath>
       ...
-    </javac>
+    </jsr308.javac>
   </target>
 \end{Verbatim}
 %BEGIN LATEX
@@ -96,30 +107,8 @@ The target assumes the existence of a \code{clean} target that removes all
 doesn't re-compile \code{.java} files for which a \code{.class} file
 already exists.
 
-The \code{executable} and \code{fork} fields of the \code{javac} task
-ensure that an external javac program is called.  Otherwise, Ant will run
-javac via a Java method call, and there is no guarantee that it will get
-the JSR 308 version that is distributed with the Checker Framework.
-
-The \code{-version} compiler argument is just for debugging; you may omit
-it.
-
-The \code{-target 5} compiler argument is optional, if you use Java 5 in
-ordinary compilation when not performing pluggable type-checking.
-
 The \code{-processor ...} compiler argument indicates which checker to
 run.  You can supply additional arguments to the checker as well.
-
-The \code{-implicit:class} compiler argument causes annotation processing
-to be performed on implicitly compiled files.  (An implicitly compiled file
-is one that was not specified on the command line, but for which the source
-code is newer than the \code{.class} file.)  This is the default, but
-supplying the argument explicitly suppresses a compiler warning.
-
-The \code{-Awarns ...} compiler argument is optional, and causes the checker to
-treat errors as warnings so that you can see all errors in all files rather
-than only the errors in the first file; see Section~\ref{running}.
-
 
 \section{Maven plugin\label{maven-plugin}}
 
@@ -132,17 +121,17 @@ process.
 \item First, you need to add the repositories in your \code{pom.xml} file:
 
 \begin{Verbatim}
-    <repositories>  
-        <repository>  
-            <id>checker-framework-repo</id>  
-            <url>http://types.cs.washington.edu/m2-repo</url>  
-        </repository>  
-    </repositories>  
-    <pluginRepositories>  
-        <pluginRepository>  
-            <id>checker-framework-repo</id>  
-            <url>http://types.cs.washington.edu/m2-repo</url>  
-        </pluginRepository>  
+    <repositories>
+        <repository>
+            <id>checker-framework-repo</id>
+            <url>http://types.cs.washington.edu/m2-repo</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>checker-framework-repo</id>
+            <url>http://types.cs.washington.edu/m2-repo</url>
+        </pluginRepository>
     </pluginRepositories>
 \end{Verbatim}
 
@@ -150,67 +139,67 @@ process.
 have to declared as a dependency:
 
 \begin{Verbatim}
-    <dependencies>  
-        <!-- annotations for the standard checkers: nullness, interning, mutability -->  
-        <dependency>  
-            <groupId>types.checkers</groupId>  
-            <artifactId>checkers-quals</artifactId>  
-            <version>1.0.6</version>  
-        </dependency>  
+    <dependencies>
+        <!-- annotations for the standard checkers: nullness, interning, mutability -->
+        <dependency>
+            <groupId>types.checkers</groupId>
+            <artifactId>checkers-quals</artifactId>
+            <version>1.0.6</version>
+        </dependency>
 
-        <!-- other dependencies -->  
+        <!-- other dependencies -->
     </dependencies>
 \end{Verbatim}
 
 \item And finally, you need to attach the plugin to your build lifecycle:
 
 \begin{Verbatim}
-    <build>  
-        <plugins>  
-            <plugin>  
-                <groupId>types.checkers</groupId>  
-                <artifactId>checkersplugin</artifactId>  
-                <version>0.1</version>  
-                <executions>  
-                    <execution>  
-                        <!-- run the checkers after compilation; this can also be any later phase -->  
-                        <phase>process-classes</phase>  
-                        <goals>  
-                            <goal>check</goal>  
-                        </goals>  
-                    </execution>  
-                </executions>  
-                <configuration>  
-                    <!-- required configuration options -->  
-                    <!-- a list of processors to run -->  
-                    <processors>  
-                        <processor>checkers.nullness.NullnessChecker</processor>  
-                        <processor>checkers.interning.InterningChecker</processor>  
-                    </processors>  
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>types.checkers</groupId>
+                <artifactId>checkersplugin</artifactId>
+                <version>0.1</version>
+                <executions>
+                    <execution>
+                        <!-- run the checkers after compilation; this can also be any later phase -->
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- required configuration options -->
+                    <!-- a list of processors to run -->
+                    <processors>
+                        <processor>checkers.nullness.NullnessChecker</processor>
+                        <processor>checkers.interning.InterningChecker</processor>
+                    </processors>
 
 
-                    <!-- other optional configuration -->  
-                    <!-- full path to a java executable that should be used to create the forked JVM -->  
-                    <executable>/opt/java1.6/bin/java</executable>  
-                    <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->  
-                    <failOnError>true|false</failOnError>  
-                    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->  
-                    <includes>  
-                        <include>org/company/important/**/*.java</include>  
-                    </includes>  
-                    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->  
-                    <excludes>  
-                        <exclude>org/company/notimportant/**/*.java</exclude>  
-                    </excludes>  
-                    <!-- additional parameters passed to the JSR308 java compiler -->  
-                    <javacParams>-Alint</javacParams>  
-                    <!-- additional parameters to pass to the forked JVM -->  
-                    <javaParams>-Xdebug</javaParams>  
-                    <!-- versions of checkers to use; defaults to the current newest version: 1.0.6 -->  
-                    <checkersVersion>0.8.8</checkersVersion>    
-                </configuration>  
-            </plugin>  
-        </plugins>  
+                    <!-- other optional configuration -->
+                    <!-- full path to a java executable that should be used to create the forked JVM -->
+                    <executable>/opt/java1.6/bin/java</executable>
+                    <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->
+                    <failOnError>true|false</failOnError>
+                    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->
+                    <includes>
+                        <include>org/company/important/**/*.java</include>
+                    </includes>
+                    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->
+                    <excludes>
+                        <exclude>org/company/notimportant/**/*.java</exclude>
+                    </excludes>
+                    <!-- additional parameters passed to the JSR308 java compiler -->
+                    <javacParams>-Alint</javacParams>
+                    <!-- additional parameters to pass to the forked JVM -->
+                    <javaParams>-Xdebug</javaParams>
+                    <!-- versions of checkers to use; defaults to the current newest version: 1.0.6 -->
+                    <checkersVersion>0.8.8</checkersVersion>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 \end{Verbatim}
 
@@ -264,7 +253,7 @@ run the Ant target by executing the following steps
 There are two choices for Eclipse support for type annotations.
 
 A prototype Eclipse plug-in for running a checker is available at
-\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.  
+\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.
 The website contains instructions for installing and using the plug-in.
 The plug-in is
 experimental now, but some people have used it successfully (and we have fixed
