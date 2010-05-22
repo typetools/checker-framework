@@ -313,6 +313,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     private final AnnotatedDeclaredType vectorType =
         atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
+    /**
+     * Returns true if the method symbol represents {@code Vector.copyInto}
+     */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto")
@@ -322,7 +325,27 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         return false;
     }
 
-    protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node, List<? extends AnnotatedTypeMirror> params) {
+    /**
+     * Type checks the method arguments of {@code Vector.copyInto()}.
+     *
+     * The Checker Framework special cases the method invocation, as it is
+     * type safety cannot be expressed by Java's type system.
+     *
+     * For a Vector, {@code v}, of type {@code Vectory<E>}, the method
+     * invocation, {@code v.copyInto(arr)} is type safe iff {@code arr}
+     * is a array of type {@code T[]}, where {@code T} is a subtype of
+     * {@code E}.
+     *
+     * In other words, this method checks that the type argument of the
+     * receiver method is a subtype of the component type of the passed array
+     * argument.
+     *
+     * @param node  a method invocation of {@code Vector.copyInto()}
+     * @param param the types of the parameter of {@code Vectory.copyInto()}
+     *
+     */
+    protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node,
+            List<? extends AnnotatedTypeMirror> params) {
         assert params.size() == 1;
         assert node.getArguments().size() == 1;
 
