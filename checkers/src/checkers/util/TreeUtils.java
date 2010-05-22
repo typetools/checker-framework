@@ -442,5 +442,34 @@ public final class TreeUtils {
                 && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
                         String.class.getCanonicalName()));
     }
+
+    /**
+     * Returns true if the node is a constant-time expression.
+     *
+     * A tree is a constant-time expression if it is:
+     * <ol>
+     * <li>a literal tree
+     * <li>a reference to a final variable initialized with a compile time
+     *  constant
+     * <li>a String concatination of two compile time constants
+     * </ol>
+     */
+    public static boolean isCompileTimeString(ExpressionTree node) {
+        ExpressionTree tree = TreeUtils.skipParens(node);
+        if (tree instanceof LiteralTree)
+            return true;
+
+        if (TreeUtils.isUseOfElement(tree)) {
+            Element elt = TreeUtils.elementFromUse(tree);
+            return ElementUtils.isCompileTimeConstant(elt);
+        } else if (TreeUtils.isStringConcatenation(tree)) {
+            BinaryTree binOp = (BinaryTree)node;
+            return isCompileTimeString(binOp.getLeftOperand())
+                && isCompileTimeString(binOp.getRightOperand());
+
+        } else {
+            return false;
+        }
+    }
 }
 

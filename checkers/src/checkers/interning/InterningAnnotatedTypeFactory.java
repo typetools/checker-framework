@@ -9,6 +9,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.types.*;
 import checkers.util.TreeUtils;
+import checkers.util.ElementUtils;
 import static checkers.types.AnnotatedTypeMirror.*;
 
 import com.sun.source.tree.*;
@@ -61,35 +62,11 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         return new InterningTypeAnnotator(checker);
     }
 
-    private boolean isCompileTimeString(ExpressionTree node) {
-        ExpressionTree tree = TreeUtils.skipParens(node);
-        if (tree instanceof LiteralTree)
-            return true;
-
-        if (TreeUtils.isUseOfElement(tree)) {
-            Element elt = TreeUtils.elementFromUse(tree);
-            return isCompileTimeConstant(elt);
-        } else if (TreeUtils.isStringConcatenation(tree)) {
-            BinaryTree binOp = (BinaryTree)node;
-            return isCompileTimeString(binOp.getLeftOperand())
-                && isCompileTimeString(binOp.getRightOperand());
-
-        } else {
-            return false;
-        }
-    }
-
     @Override
     protected void annotateImplicit(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotated() && isCompileTimeConstant(element))
+        if (!type.isAnnotated() && ElementUtils.isCompileTimeConstant(element))
             type.addAnnotation(INTERNED);
         super.annotateImplicit(element, type);
-    }
-
-    private boolean isCompileTimeConstant(Element elt) {
-        return elt != null
-            && elt.getKind() == ElementKind.FIELD
-            && ((VariableElement)elt).getConstantValue() != null;
     }
 
     /**
@@ -103,7 +80,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
-            if (isCompileTimeString(node)) {
+            if (TreeUtils.isCompileTimeString(node)) {
                 type.addAnnotation(INTERNED);
             }
 
