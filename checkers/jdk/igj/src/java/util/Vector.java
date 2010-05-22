@@ -8,7 +8,7 @@ public class Vector<E> extends @I AbstractList<E> implements @I List<E>, @I Rand
   public Vector(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Vector() @AssignsFields { throw new RuntimeException("skeleton method"); }
   public Vector(@ReadOnly Collection<? extends E> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public synchronized void copyInto(Object @Mutable [] a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
+  public synchronized void copyInto(@ReadOnly Object @Mutable [] a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
   public synchronized void trimToSize() @ReadOnly { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void setSize(int a1) @Mutable { throw new RuntimeException("skeleton method"); }
