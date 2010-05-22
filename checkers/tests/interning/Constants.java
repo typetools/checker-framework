@@ -31,6 +31,11 @@ public class Constants {
     is = A + E;
     //:: (type.incompatible)
     is = is + is;
+    is = Constants2.E;
   }
 
+}
+
+class Constants2 {
+  public static final String E = "e";
 }
