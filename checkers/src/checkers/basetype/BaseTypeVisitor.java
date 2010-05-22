@@ -328,11 +328,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
-     * The Checker Framework special cases the method invocation, as it is
+     * The Checker Framework special-cases the method invocation, as it is
      * type safety cannot be expressed by Java's type system.
      *
-     * For a Vector, {@code v}, of type {@code Vectory<E>}, the method
-     * invocation, {@code v.copyInto(arr)} is type safe iff {@code arr}
+     * For a Vector {@code v} of type {@code Vectory<E>}, the method
+     * invocation {@code v.copyInto(arr)} is type-safe iff {@code arr}
      * is a array of type {@code T[]}, where {@code T} is a subtype of
      * {@code E}.
      *
