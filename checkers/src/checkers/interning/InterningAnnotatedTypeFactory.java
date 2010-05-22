@@ -61,6 +61,37 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         return new InterningTypeAnnotator(checker);
     }
 
+    private boolean isCompileTimeString(ExpressionTree node) {
+        ExpressionTree tree = TreeUtils.skipParens(node);
+        if (tree instanceof LiteralTree)
+            return true;
+
+        if (TreeUtils.isUseOfElement(tree)) {
+            Element elt = TreeUtils.elementFromUse(tree);
+            return isCompileTimeConstant(elt);
+        } else if (TreeUtils.isStringConcatenation(tree)) {
+            BinaryTree binOp = (BinaryTree)node;
+            return isCompileTimeString(binOp.getLeftOperand())
+                && isCompileTimeString(binOp.getRightOperand());
+
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    protected void annotateImplicit(Element element, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated() && isCompileTimeConstant(element))
+            type.addAnnotation(INTERNED);
+        super.annotateImplicit(element, type);
+    }
+
+    private boolean isCompileTimeConstant(Element elt) {
+        return elt != null
+            && elt.getKind() == ElementKind.FIELD
+            && ((VariableElement)elt).getConstantValue() != null;
+    }
+
     /**
      * A class for adding annotations based on tree
      */
@@ -69,27 +100,6 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         InterningTreeAnnotator(BaseTypeChecker checker) {
             super(checker, InterningAnnotatedTypeFactory.this);
         }
-
-        private boolean isCompileTimeString(ExpressionTree node) {
-            ExpressionTree tree = TreeUtils.skipParens(node);
-            if (tree instanceof LiteralTree)
-                return true;
-
-            if (TreeUtils.isUseOfElement(tree)) {
-                Element elt = TreeUtils.elementFromUse(tree);
-                return elt != null
-                    && elt.getKind() == ElementKind.FIELD
-                    && ((VariableElement)elt).getConstantValue() != null;
-            } else if (TreeUtils.isStringConcatenation(tree)) {
-                BinaryTree binOp = (BinaryTree)node;
-                return isCompileTimeString(binOp.getLeftOperand())
-                    && isCompileTimeString(binOp.getRightOperand());
-
-            } else {
-                return false;
-            }
-        }
-
 
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
@@ -118,8 +128,9 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
             // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
-            if (elt.getKind() == ElementKind.ENUM)
+            if (elt.getKind() == ElementKind.ENUM) {
                 t.addAnnotation(INTERNED);
+            }
 
             return super.visitDeclared(t, p);
         }
