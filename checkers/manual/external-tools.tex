@@ -24,13 +24,14 @@ your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
 \code{javac} task.
 
-First, set the \code{jsr308javac} property:
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  <!-- Boilerplate! Is there a better way? -->
   <property environment="env"/>
 
   <presetdef name="jsr308.javac">
@@ -53,28 +54,7 @@ First, set the \code{jsr308javac} property:
 \end{smaller}
 %END LATEX
 
-The \code{fork} field of the \code{javac} task
-ensure that an external javac program is called.  Otherwise, Ant will run
-javac via a Java method call, and there is no guarantee that it will get
-the JSR 308 version that is distributed with the Checker Framework.
-
-The \code{-version} compiler argument is just for debugging; you may omit
-it.
-
-The \code{-target 5} compiler argument is optional, if you use Java 5 in
-ordinary compilation when not performing pluggable type-checking.
-
-The \code{-implicit:class} compiler argument causes annotation processing
-to be performed on implicitly compiled files.  (An implicitly compiled file
-is one that was not specified on the command line, but for which the source
-code is newer than the \code{.class} file.)  This is the default, but
-supplying the argument explicitly suppresses a compiler warning.
-
-The \code{-Awarns ...} compiler argument is optional, and causes the checker to
-treat errors as warnings so that you can see all errors in all files rather
-than only the errors in the first file; see Section~\ref{running}.
-
-Next, duplicate the compilation target, then modify it slightly as
+\item Duplicate the compilation target, then modify it slightly as
 indicated in this example, filling in each ellipsis (\ldots) from the
 original compilation target:
 
@@ -100,6 +80,37 @@ original compilation target:
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
+\end{enumerate}
+
+\subsection{Explanation\label{ant-task-explanation}}
+
+This section explains each part of the Ant task.
+
+\begin{enumerate}
+\item Definition of \code{jsr308.javac}:
+
+The \code{fork} field of the \code{javac} task
+ensures that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the JSR 308 version that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-target 5} compiler argument is optional, if you use Java 5 in
+ordinary compilation when not performing pluggable type-checking.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+The \code{-Awarns ...} compiler argument is optional, and causes the checker to
+treat errors as warnings so that you can see all errors in all files rather
+than only the errors in the first file; see Section~\ref{running}.
+
+\item The \code{check-nullness} target:
 
 The target assumes the existence of a \code{clean} target that removes all
 \code{.class} files.  That is necessary because Ant's \code{javac} target
@@ -108,6 +119,9 @@ already exists.
 
 The \code{-processor ...} compiler argument indicates which checker to
 run.  You can supply additional arguments to the checker as well.
+
+\end{enumerate}
+
 
 \section{Maven plugin\label{maven-plugin}}
 
@@ -204,7 +218,8 @@ have to declared as a dependency:
 
 \end{enumerate}
 
-The plugin was a contribution by Adam Warski.  [Thanks Adam!]
+The plugin was contributed by Adam Warski.
+% [Thanks Adam!]
 
 \section{IntelliJ IDEA\label{intellij}}
 
