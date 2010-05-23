@@ -174,7 +174,8 @@ different shell, you may need to slightly adjust the commands.
   The download includes an updated version of the javac compiler, called
   the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
   shipped with Java 7.  In order to use the updated compiler when you type
-  \code{javac}, add the directory \code{.../checkers/binary} to your path.
+  \code{javac}, add the directory \code{.../checkers/binary} to the
+  beginning of your path.
   To do so,
   place the following commands in your \code{.bashrc} file (and also execute
   them on the command line, or log out and back in):
@@ -237,8 +238,8 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
   the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
   shipped with Java 7.  In order to use the updated compiler when you type
   \code{javac}, add the directory \<C:\ttbs{}Program
-  Files\ttbs{}checkers\ttbs{}binary> to your path variable.  Also set a
-  CHECKERS variable.
+  Files\ttbs{}checkers\ttbs{}binary> to the beginning of your path
+  variable.  Also set a CHECKERS variable.
 
 % Instructions stolen from http://www.webreference.com/js/tips/020429.html
 
@@ -944,5 +945,7 @@ is annotated \<@ReadOnly>.
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
-% LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks
-% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath
+% LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
+% LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
+% LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
+% LocalWords:  callees

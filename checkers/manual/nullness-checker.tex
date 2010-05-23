@@ -757,7 +757,7 @@ The compiler will issue three warnings regarding violation of the semantics of
 
 \subsection{Annotated library\label{nullness-annotated-library}}
 
-Three libraries that or annotated with nullness qualifiers are:
+Some libraries that or annotated with nullness qualifiers are:
 
 \begin{itemize}
 \item
@@ -765,36 +765,42 @@ The Nullness checker itself.
 
 \item
 The
-\ahref{http://groups.csail.mit.edu/pag/daikon/}{Daikon invariant detector}.
-Run the command \code{make check-nullness} in the Daikon distribution.
+\ahref{http://code.google.com/p/plume-lib/}{Plume-lib library}.
+Run the command \code{make check-nullness}.
+
 
 \item
-The annotation scene library.
-To run the Nullness checker on the annotation scene library,
-% TODO: how does one do this?
-first download the scene library suite (which includes build
-dependencies for the scene library as well as its source code) and extract it
-into your checkers installation. The checker can then be run on the annotation
-scene library with Apache Ant using the following commands:
+The
+\ahref{http://groups.csail.mit.edu/pag/daikon/}{Daikon invariant detector}.
+Run the command \code{make check-nullness}.
 
-\begin{Verbatim}
-  cd checkers
-  ant -f scene-lib-test.xml
-\end{Verbatim}
-
-% \noindent
-% where \code{checkers} is the location of the Checker Framework installation.
-
-You can view the annotated source code, which contains \code{@\refclass{nullness/quals}{NonNull}} annotations, in
-the
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\code{checkers/scene-lib-test/src/annotations/}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-directory.
+% \item
+% The annotation scene library.
+% To run the Nullness checker on the annotation scene library,
+% % TODO: how does one do this?
+% first download the scene library suite (which includes build
+% dependencies for the scene library as well as its source code) and extract it
+% into your checkers installation. The checker can then be run on the annotation
+% scene library with Apache Ant using the following commands:
+% 
+% \begin{Verbatim}
+%   cd checkers
+%   ant -f scene-lib-test.xml
+% \end{Verbatim}
+% 
+% % \noindent
+% % where \code{checkers} is the location of the Checker Framework installation.
+% 
+% You can view the annotated source code, which contains \code{@\refclass{nullness/quals}{NonNull}} annotations, in
+% the
+% %BEGIN LATEX
+% \begin{smaller}
+% %END LATEX
+% \code{checkers/scene-lib-test/src/annotations/}
+% %BEGIN LATEX
+% \end{smaller}
+% %END LATEX
+% directory.
 
 \end{itemize}
 
