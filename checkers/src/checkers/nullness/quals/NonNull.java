@@ -14,7 +14,9 @@ import com.sun.source.tree.Tree;
 
 /**
  * Indicates that a variable should never have a null value.
+ * <p>
  *
+ * This annotation is rarely written in source code, because it is the default.
  * <p>
  *
  * This annotation is associated with the {@link NullnessChecker}.

@@ -188,11 +188,11 @@ In \code{MyClass2<@Interned String>},
 
 \subsection{Qualifier polymorphism\label{qualifier-polymorphism}}
 
-The Checker Framework also supports type \emph{qualifier} polymorphism for methods,
-which permits a single method to have multiple different qualified type
-signatures.
+The Checker Framework also supports type \emph{qualifier} polymorphism for
+methods, which permits a single method to have multiple different qualified
+type signatures.
 
-A polymorphic qualifier's definition is marked with
+To \emph{define} a polymorphic qualifier, mark the definition with
 \<@\refclass{quals}{PolymorphicQualifier}>.  For example,
 \<@\refclass{nullness/quals}{PolyNull}> is a polymorphic type
 qualifier for the Nullness type system:
@@ -203,11 +203,15 @@ qualifier for the Nullness type system:
   public @interface PolyNull { }
 \end{Verbatim}
 
+To \emph{use} a polymorphic qualifier, just write it on a type.
+For example, you can write \<@PolyNull> anywhere that you would write
+\<@NonNull> or \<@Nullable>.
+
 A method written using a polymorphic qualifier conceptually has multiple
-versions, somewhat like a template in C++.  In each version, each instance
-of the polymorphic qualifier has been replaced by the same other qualifier
-from the
-hierarchy.  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
+versions, somewhat like a template in C++ or the generics feature of Java.
+In each version, each instance of the polymorphic qualifier has been
+replaced by the same other qualifier from the hierarchy.  See the examples
+below in Section~\ref{qualifier-polymorphism-examples}.
 
 The method body must type-check with all signatures.  A method call is
 type-correct if it type-checks under any one of the signatures.  If a call
