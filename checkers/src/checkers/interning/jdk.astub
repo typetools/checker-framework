@@ -979,7 +979,8 @@ class DownloadManager {
      public static final @Interned String KERNEL_DEBUG_PROPERTY = "kernel.debug";
      public static final @Interned String KERNEL_NOMERGE_PROPERTY = "kernel.nomerge";
      public static final @Interned String RESOURCE_URL = "internal-resource/";
-     public static final @Interned String REQUESTED_BUNDLES_PATH = "lib" + File.separator + :     public static final @Interned String JAVA_HOME = System.getProperty("java.home");
+     public static final @Interned String REQUESTED_BUNDLES_PATH = "lib" + File.separator;
+     public static final @Interned String JAVA_HOME = System.getProperty("java.home");
      public static final @Interned String USER_HOME = System.getProperty("user.home");
      public static final @Interned String JAR_PATH_PROPERTY = "jarpath";
      public static final @Interned String SIZE_PROPERTY = "size";
