@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 
 class StaticFields {
-    @NonNullVariable("nullable")
+    @NonNullOnEntry("nullable")
     void testF() {
         nullable.toString();
     }
@@ -16,21 +16,21 @@ class StaticFields {
         otherNullable.toString();
     }
 
-    @NonNullVariable("nullable")
+    @NonNullOnEntry("nullable")
     void test1() {
         nullable.toString();
         //:: (dereference.of.nullable)
         otherNullable.toString();
     }
 
-    @NonNullVariable("otherNullable")
+    @NonNullOnEntry("otherNullable")
     void test2() {
         //:: (dereference.of.nullable)
         nullable.toString();
         otherNullable.toString();
     }
 
-    @NonNullVariable({"nullable", "otherNullable"})
+    @NonNullOnEntry({"nullable", "otherNullable"})
     void test3() {
         nullable.toString();
         otherNullable.toString();
