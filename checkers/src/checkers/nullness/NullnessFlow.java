@@ -686,6 +686,7 @@ class NullnessFlow extends Flow {
 
         ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
         this.nnExprs.addAll(shouldInferNullness(cond));
+        this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
 
         if (containsKey(node.getDetail(), checker.getSuppressWarningsKey())
             && cond.getKind() == Tree.Kind.NOT_EQUAL_TO
