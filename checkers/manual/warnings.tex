@@ -265,15 +265,20 @@ whether or not the Type Annotations compiler is being used.
 
 You can specify multiple packages separated by the classpath separator
 (same as the file path separator:  \<;> for Windows, and \<:> for Unix and
-Mac.).  For example, to implicitly import the Nullness and Interning
+Mac).  For example, to implicitly import the Nullness and Interning
 qualifiers, set \code{jsr308\_imports} to
 \code{checkers.nullness.quals.*:checkers.interning.quals.*}.
 
+If you issue the javac command from the command line or in a Makefile, you
+may need to add quotes, to prevent your shell from expanding the \code{*}
+character.
 In bash, you could write \code{export
   jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
 command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
 Alternately, you can set the environment variable via the javac
-command-line argument \code{-J-Djsr308\_imports="checkers.nullness.quals.*"}.
+command-line argument \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
+If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
+you do not need the extra quoting.
 
 
 \subsection{Migrating away from annotations in comments}

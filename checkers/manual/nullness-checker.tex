@@ -10,10 +10,12 @@ the guarantee and what is checked.
 
 \section{Nullness annotations\label{nullness-annotations}}
 
-The Nullness checker uses two separate type hierarchies:  one for nullness,
-and one for rawness (Section~\ref{raw-partially-initialized} describes rawness).
+The Nullness checker uses three separate type hierarchies:  one for nullness,
+one for rawness (Section~\ref{raw-partially-initialized}),
+and one for map keys (Section~\ref{map-keys})
 The Nullness checker has three varieties of annotations:  nullness
-qualifiers, nullness method annotations, and rawness qualifiers.
+qualifiers, nullness method annotations, rawness qualifiers, and map key
+qualifiers.
 
 \subsection{Nullness qualifiers\label{nullness-qualifiers}}
 
@@ -120,10 +122,20 @@ behavior.
 
 \subsection{Rawness qualifiers\label{rawness-qualifiers}}
 
-The Nullness Checker also supports a rawness annotation that indicates
-whether an object is fully initialized --- that is, whether its fields have
-all been assigned.  Figure~\ref{fig:nonnull-hierarchy} shows its type
-hierarchy.  For details, see Section~\ref{raw-partially-initialized}.
+The Nullness Checker supports a rawness annotation that indicates whether
+an object is fully initialized --- that is, whether its fields have all
+been assigned.  Use of this annotation can help you to type-check more
+code.  Figure~\ref{fig:nonnull-hierarchy} shows its type hierarchy.  For
+details, see Section~\ref{raw-partially-initialized}.
+
+
+\subsection{Map key qualifiers\label{map-key-qualifiers}}
+
+The Nullness Checker supports a map key annotation that indicates whether
+a value is a key for a given map --- that is, whether
+\code{map.containsKey(value)} would evaluate to \code{true}.
+Use of this annotation can help you to type-check more code.  For details,
+see Section~\ref{map-keys}.
 
 
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
@@ -725,6 +737,57 @@ A better name might have been ``not yet initialized'' or ``partially
 initialized'', but the term ``raw'' is now well-known.
 The \code{@\refclass{nullness/quals}{Raw}}
 annotation has nothing to do with the raw types of Java Generics.
+
+
+\section{Map key annotations\label{map-keys}}
+
+Java's
+\sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
+method always has the possibility to return null, if the key is not in the
+map.  Thus, to guarantee that the value returned from \code{Map.get} is
+non-null, it is necessary that the map contains only non-null values,
+\emph{and} the key is in the map.
+The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
+property.
+
+If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
+is a key in Map m.  Another way of saying this is that the expression
+\code{m.containsKey(v)} evaluates to true.
+
+You usually do not have to write \code{@KeyFor} explicitly, because the
+checker infers it based on usage patterns, such as calls to
+\code{containsKey} or iteration over a map's
+\sunjavadoc{java/util/Map.html#keySet()}{key set}.
+
+One usage pattern is for a user-managed collection that is a subset of the
+key set:
+
+\begin{Verbatim}
+Map<String, Object> m;
+Set<@KeyOf("m") String> matchingKeys; // keys that match some criterion
+for (String k : matchingKeys) {    // checker infers type to be @KeyOf("m") String>
+  ... m.get(k) ...  // known to be non-null
+}
+\end{Verbatim}
+
+As with any annotation, use of the \<@KeyFor> annotation may force you to
+slightly refactor your code.  For example, this would be illegal:
+
+\begin{Verbatim}
+  Map<K,V> m;
+  Collection<@KeyFor("m") K> coll;
+  coll.add(x);
+  ...            // at this point, the @KeyFor annotation is violated
+  m.put(x, ...);
+\end{Verbatim}
+
+but this would be OK:
+
+\begin{Verbatim}
+  @KeysFor("m") Collection coll;
+  m.put(x, ...);
+  coll.add(x);
+\end{Verbatim}
 
 
 \section{Examples\label{nullness-example}}
