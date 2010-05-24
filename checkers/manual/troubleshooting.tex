@@ -61,6 +61,20 @@ package checkers.nullness.quals does not exist
   variable/option, or by ensuring that the \code{checkers.jar} file is on
   your classpath.
 
+If the error is 
+
+\begin{Verbatim}
+package 'checkers.nullness.quals does not exist
+\end{Verbatim}
+
+\noindent
+(note the extra apostrophe!), then you have probably mis-used quoting when
+supplying the \code{jsr308\_imports} environment variable.
+
+\begin{Verbatim}
+package checkers.nullness.quals does not exist
+\end{Verbatim}
+
 
 \item
 If a checker seems to be ignoring the annotation on a method, then it is
