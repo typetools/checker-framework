@@ -182,7 +182,8 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
             if (selfType != null)
                 return f.atypes.asMemberOf(selfType, elt);
-            return f.fromElement(elt);
+            return f.getAnnotatedType(elt);
+//            return f.fromElement(elt);
         }
 
         @Override
