@@ -90,7 +90,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
         mapGetHeuristics = new MapGetHeuristics(env, this,
-                new AnnotatedTypeFactory(checker, root));
+                new AnnotatedTypeFactory(
+                        checker.getProcessingEnvironment(),
+                        null, root, null));
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
