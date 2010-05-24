@@ -7,9 +7,13 @@ import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+import checkers.nullness.quals.KeyFor;
+
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
@@ -58,6 +62,7 @@ import com.sun.source.util.TreePath;
     private final ProcessingEnvironment env;
     private final Elements elements;
     private final NullnessAnnotatedTypeFactory factory;
+    private final AnnotatedTypeFactory keyForFactory;
 
     private final ExecutableElement mapGet;
     private final ExecutableElement mapPut;
@@ -65,10 +70,12 @@ import com.sun.source.util.TreePath;
     private final ExecutableElement mapContains;
 
     public MapGetHeuristics(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory) {
+            NullnessAnnotatedTypeFactory factory,
+            AnnotatedTypeFactory keyForFactory) {
         this.env = env;
         this.elements = env.getElementUtils();
         this.factory = factory;
+        this.keyForFactory = keyForFactory;
 
         mapGet = getMethod("java.util.Map", "get", 1);
         mapPut = getMethod("java.util.Map", "put", 2);
@@ -104,9 +111,38 @@ import com.sun.source.util.TreePath;
      */
     private boolean isSuppressable(MethodInvocationTree tree) {
         Element elt = getSite(tree);
-        return (elt instanceof VariableElement
-                && tree.getArguments().get(0) instanceof IdentifierTree
-                && isKeyInMap((IdentifierTree)tree.getArguments().get(0), (VariableElement)elt));
+
+        if (elt instanceof VariableElement
+            && tree.getArguments().get(0) instanceof IdentifierTree
+            && isKeyInMap((IdentifierTree)tree.getArguments().get(0),
+                          (VariableElement)elt)) {
+            return true;
+        }
+
+        if (elt instanceof VariableElement
+            && keyForInMap(tree.getArguments().get(0),
+                (VariableElement)elt)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the
+     */
+    private boolean keyForInMap(ExpressionTree key,
+            VariableElement elt) {
+        String mapName = elt.getSimpleName().toString();
+        AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);
+
+        AnnotationMirror anno = keyForType.getAnnotation(KeyFor.class);
+        if (anno == null)
+            return false;
+
+        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
+
+        return maps.contains(mapName);
     }
 
     /**
@@ -272,7 +308,8 @@ import com.sun.source.util.TreePath;
             || checkForEnhanced(key, map, path)
             || checkForAsserts(key, map, path)
             || checkForIfExceptions(key, map, path)
-            || checkForIfThenPut(key, map, path)) {
+            || checkForIfThenPut(key, map, path)
+            ) {
             return true;
         }
 
