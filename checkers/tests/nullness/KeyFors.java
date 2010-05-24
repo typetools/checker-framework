@@ -1,7 +1,6 @@
 import checkers.nullness.quals.*;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 public class KeyFors {
 
@@ -18,6 +17,13 @@ public class KeyFors {
         @KeyFor("map") String key = "key";
 
         @NonNull String value = map.get(key);
+    }
+    
+    public void withCollection() {
+        Map<String, String> map = new HashMap<String, String>();
+        List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
+        
+        @NonNull String value = map.get(keys.get(0));
     }
 }
 
