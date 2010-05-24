@@ -868,8 +868,8 @@ class NullnessFlow extends Flow {
         List<String> prevNnExprs = new ArrayList<String>(nnExprs);
 
         Element elem = TreeUtils.elementFromDeclaration(node);
-        if (elem.getAnnotation(NonNullVariable.class) != null) {
-            String[] fields = elem.getAnnotation(NonNullVariable.class).value();
+        if (elem.getAnnotation(NonNullOnEntry.class) != null) {
+            String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
             this.nnExprs.addAll(Arrays.asList(fields));
         }
 

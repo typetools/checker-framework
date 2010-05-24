@@ -90,7 +90,7 @@ behavior.
 
 \begin{description}
 
-\item[\code{@\refclass{nullness/quals}{NonNullVariable}}]
+\item[\code{@\refclass{nullness/quals}{NonNullOnEntry}}]
   indicates a method precondition:  The annotated method expects the
   specified variables (typically field references) to be non-null when the
   method is invoked.
@@ -858,15 +858,15 @@ Run the command \code{make check-nullness}.
 % dependencies for the scene library as well as its source code) and extract it
 % into your checkers installation. The checker can then be run on the annotation
 % scene library with Apache Ant using the following commands:
-% 
+%
 % \begin{Verbatim}
 %   cd checkers
 %   ant -f scene-lib-test.xml
 % \end{Verbatim}
-% 
+%
 % % \noindent
 % % where \code{checkers} is the location of the Checker Framework installation.
-% 
+%
 % You can view the annotated source code, which contains \code{@\refclass{nullness/quals}{NonNull}} annotations, in
 % the
 % %BEGIN LATEX
@@ -1123,5 +1123,5 @@ tool like the Checker Framework.)
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
-% LocalWords:  FindBugs's getObject NonNullVariable AssertNonNullIfFalse
+% LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse
 % LocalWords:  AssertParametersNonNull nonnull
