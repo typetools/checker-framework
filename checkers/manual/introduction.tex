@@ -870,8 +870,13 @@ annotated.
 For each class, read its Javadoc.  For instance, if you are adding
 annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
 you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  Do not read nor annotate the method bodies yet ---
-first, get the signatures and fields annotated.  If you are only annotating
+anywhere appropriate.  Do not annotate the method bodies yet ---
+first, get the signatures and fields annotated.  The only reason to even
+\emph{read} the method bodies yet is to determine signature annotations for
+undocumented methods ---
+for example, if the method returns null, you know its return type should be
+annotated \<@Nullable>, and a parameter that is compared against \<null>
+may need to be annotated \<@Nullable>.  If you are only annotating
 signatures (say, for a library you do not maintain and do not wish to
 check), you are now done.
 
