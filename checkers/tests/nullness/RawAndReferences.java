@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 
 import java.util.*;
 
-class CreateSpinfo {
+class RawAndReferences {
 
   static void method(Map<String,String> map) {
       for (String decl : sortedKeySet(map)) {
