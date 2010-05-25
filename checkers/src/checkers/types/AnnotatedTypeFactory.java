@@ -267,7 +267,6 @@ public class AnnotatedTypeFactory {
             type = indexTypes.get(elt);
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType());
-            type.addAnnotations(elt.getAnnotationMirrors());
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
 
