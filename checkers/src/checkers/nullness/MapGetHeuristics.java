@@ -119,21 +119,20 @@ import com.sun.source.util.TreePath;
             return true;
         }
 
-        if (elt instanceof VariableElement
-            && keyForInMap(tree.getArguments().get(0),
-                (VariableElement)elt)) {
-            return true;
+        if (elt instanceof VariableElement) {
+            ExpressionTree arg = tree.getArguments().get(0);
+            return keyForInMap(arg, ((VariableElement)elt).getSimpleName().toString())
+                 || keyForInMap(arg, String.valueOf(TreeUtils.getReceiverTree(tree)));
         }
 
         return false;
     }
 
     /**
-     * Returns true if the
+     * Returns true if the key is a member of the specified map
      */
     private boolean keyForInMap(ExpressionTree key,
-            VariableElement elt) {
-        String mapName = elt.getSimpleName().toString();
+            String mapName) {
         AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);
 
         AnnotationMirror anno = keyForType.getAnnotation(KeyFor.class);
