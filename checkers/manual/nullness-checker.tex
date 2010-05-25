@@ -107,9 +107,20 @@ behavior.
   Javadoc for examples of their use.
 
 \item[\code{@\refclass{nullness/quals}{Pure}}]
-  indicates that the method has no (visible) side effects.  More
-  specifically, if the method is called multiple times with the same
-  arguments, then it returns the same result.
+  indicates that the method has no (visible) side effects.  Furthermore,
+  if the method is called multiple times with the same
+  arguments, then it returns the same result.  This property cannot be
+  assumed in general.  For example, suppose that the return value of method
+  \code{m} is nullable.  Then this code will pass the type-checker:
+
+\begin{Verbatim}
+        if (m(arg) != null) {
+          m(arg).toString();
+        }
+\end{Verbatim}
+
+\noindent
+only if method \code{m} is annotated as \code{@Pure}.
 
 \item[\code{@\refclass{nullness/quals}{AssertParametersNonNull}}]
   % Indicates a method precondition:  The annotated method expects all of
@@ -139,7 +150,7 @@ details, see Section~\ref{raw-partially-initialized}.
 
 \subsection{Map key qualifiers\label{map-key-qualifiers}}
 
-The Nullness Checker supports a map key annotation that indicates whether
+The Nullness Checker supports a map key annotation, \code{@\refclass{nullness/quals}{KeyFor}} that indicates whether
 a value is a key for a given map --- that is, whether
 \code{map.containsKey(value)} would evaluate to \code{true}.
 
@@ -772,13 +783,13 @@ checker infers it based on usage patterns, such as calls to
 \code{containsKey} or iteration over a map's
 \sunjavadoc{java/util/Map.html#keySet()}{key set}.
 
-One usage pattern is for a user-managed collection that is a subset of the
-key set:
+One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
+user-managed collection that is a subset of the key set:
 
 \begin{Verbatim}
 Map<String, Object> m;
 Set<@KeyOf("m") String> matchingKeys; // keys that match some criterion
-for (String k : matchingKeys) {    // checker infers type to be @KeyOf("m") String>
+for (String k : matchingKeys) {    // checker infers type of k to be: @KeyOf("m") String
   ... m.get(k) ...  // known to be non-null
 }
 \end{Verbatim}
