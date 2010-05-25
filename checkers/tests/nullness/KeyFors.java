@@ -1,0 +1,42 @@
+import checkers.nullness.quals.*;
+
+import java.util.*;
+
+public class KeyFors {
+
+    public void withoutKeyFor() {
+        Map<String, String> map = new HashMap<String, String>();
+        String key = "key";
+
+        //:: (type.incompatible)
+        @NonNull String value = map.get(key);
+    }
+
+    public void withKeyFor() {
+        Map<String, String> map = new HashMap<String, String>();
+        @KeyFor("map") String key = "key";
+
+        @NonNull String value = map.get(key);
+    }
+    
+    public void withCollection() {
+        Map<String, String> map = new HashMap<String, String>();
+        List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
+        
+        @NonNull String value = map.get(keys.get(0));
+    }
+
+    // Should this be '@KeyFor("#0")', or '@KeyFor("m")'?
+    public static <K extends Comparable<? super K>,V> Collection<@KeyFor("#0") K> sortedKeySet(Map<K,V> m) {
+        ArrayList<K> theKeys = new ArrayList<K> (m.keySet());
+        Collections.sort (theKeys);
+        return theKeys;
+    }
+
+    public void testForLoop(HashMap<String,ArrayList<String>> lastMap) {
+        for (String key : sortedKeySet(lastMap)) {
+            @NonNull ArrayList<String> al = lastMap.get(key);
+        }
+    }
+
+}
