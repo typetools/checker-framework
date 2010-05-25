@@ -471,5 +471,48 @@ public final class TreeUtils {
             return false;
         }
     }
+
+    /**
+     * Returns the receiver tree of a field access or a method invocation
+     */
+    public static ExpressionTree getReceiverTree(ExpressionTree expression) {
+        if (!(expression.getKind() == Tree.Kind.METHOD_INVOCATION
+                || expression.getKind() == Tree.Kind.MEMBER_SELECT
+                || expression.getKind() == Tree.Kind.IDENTIFIER
+                || expression.getKind() == Tree.Kind.ARRAY_ACCESS))
+            // No receiver type for those
+            return null;
+
+        if (expression.getKind() == Tree.Kind.IDENTIFIER
+            && "this".equals(expression.toString()))
+            return null;
+
+        ExpressionTree receiver = TreeUtils.skipParens(expression);
+        if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS)
+            return ((ArrayAccessTree)receiver).getExpression();
+
+        // Avoid int.class
+        if (expression.getKind() == Tree.Kind.MEMBER_SELECT &&
+                ((MemberSelectTree)expression).getExpression() instanceof PrimitiveTypeTree)
+            return null;
+
+        if (isSelfAccess(expression)) {
+            return null;
+        }
+
+        //
+        // Trying to handle receiver calls to trees of the form
+        // ((m).getArray())
+        // returns the type of 'm' in this case
+
+        if (receiver.getKind() == Tree.Kind.METHOD_INVOCATION)
+            receiver = ((MethodInvocationTree)receiver).getMethodSelect();
+        receiver = TreeUtils.skipParens(receiver);
+        assert receiver.getKind() == Tree.Kind.MEMBER_SELECT;
+        if (receiver.getKind() == Tree.Kind.MEMBER_SELECT)
+            receiver = ((MemberSelectTree)receiver).getExpression();
+
+        return receiver;
+    }
 }
 
