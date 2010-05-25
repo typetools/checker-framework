@@ -2,7 +2,8 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
+import checkers.nullness.NullnessChecker; // for Javadoc
+import checkers.nullness.NullnessUtils; // for Javadoc
 
 /**
  * Indicates that the method throws an exception if any of its
