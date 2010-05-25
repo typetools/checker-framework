@@ -340,8 +340,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * receiver method is a subtype of the component type of the passed array
      * argument.
      *
-     * @param node  a method invocation of {@code Vector.copyInto()}
-     * @param param the types of the parameter of {@code Vectory.copyInto()}
+     * @param node   a method invocation of {@code Vector.copyInto()}
+     * @param params the types of the parameters of {@code Vectory.copyInto()}
      *
      */
     protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node,
