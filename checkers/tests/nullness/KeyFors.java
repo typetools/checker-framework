@@ -26,6 +26,17 @@ public class KeyFors {
         @NonNull String value = map.get(keys.get(0));
     }
 
+    public void withIndirectReference() {
+        class Container {
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        Container container = new Container();
+        @KeyFor("container.map") String key = "m";
+
+        @NonNull String value = container.map.get(key);
+    }
+
     // Should this be '@KeyFor("#0")', or '@KeyFor("m")'?
     public static
     <K extends Comparable<? super K>,V> Collection<@KeyFor("#0") K>
