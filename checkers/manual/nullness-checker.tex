@@ -789,7 +789,7 @@ user-managed collection that is a subset of the key set:
 \begin{Verbatim}
 Map<String, Object> m;
 Set<@KeyOf("m") String> matchingKeys; // keys that match some criterion
-for (String k : matchingKeys) {    // checker infers type of k to be: @KeyOf("m") String
+for (@KeyOf("m") String k : matchingKeys) {
   ... m.get(k) ...  // known to be non-null
 }
 \end{Verbatim}
@@ -808,7 +808,7 @@ slightly refactor your code.  For example, this would be illegal:
 but this would be OK:
 
 \begin{Verbatim}
-  @KeysFor("m") Collection coll;
+  Collection<@KeyFor("m") K> coll;
   m.put(x, ...);
   coll.add(x);
 \end{Verbatim}
