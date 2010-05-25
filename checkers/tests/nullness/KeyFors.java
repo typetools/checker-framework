@@ -18,25 +18,25 @@ public class KeyFors {
 
         @NonNull String value = map.get(key);
     }
-    
+
     public void withCollection() {
         Map<String, String> map = new HashMap<String, String>();
         List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
-        
+
         @NonNull String value = map.get(keys.get(0));
     }
 
     // Should this be '@KeyFor("#0")', or '@KeyFor("m")'?
-    public static <K extends Comparable<? super K>,V> Collection<@KeyFor("#0") K> sortedKeySet(Map<K,V> m) {
-        ArrayList<K> theKeys = new ArrayList<K> (m.keySet());
-        Collections.sort (theKeys);
-        return theKeys;
+    public static
+    <K extends Comparable<? super K>,V> Collection<@KeyFor("#0") K>
+    sortedKeySet(Map<K,V> m) {
+        throw new RuntimeException();
     }
 
-    public void testForLoop(HashMap<String,ArrayList<String>> lastMap) {
-        for (String key : sortedKeySet(lastMap)) {
-            @NonNull ArrayList<String> al = lastMap.get(key);
+    public void testForLoop(HashMap<String,String> lastMap) {
+        // TODO: support Flow for KeyFor
+        for (@KeyFor("lastMap") String key : sortedKeySet(lastMap)) {
+            @NonNull String al = lastMap.get(key);
         }
     }
-
 }
