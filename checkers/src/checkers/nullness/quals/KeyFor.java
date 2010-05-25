@@ -12,13 +12,13 @@ import checkers.quals.*;
  * following declaration for example:
  *
  * <pre><code>
- *   Map<String, String> config = ...;
- *   @KeyFor("config") String key = "HOSTNAME";
+ *   Map&lt;String, String&gt; config = ...;
+ *   &#64;KeyFor("config") String key = "HOSTNAME";
  *
- *   String hostname = config.get(key);
+ *   String hostname = config.get(key);     // known to be non-null
  * </code></pre>
  *
- * indicates that "HOSTNAME" should be a key in the config.  The Nullness
+ * indicates that "HOSTNAME" is a key in config.  The Nullness
  * checker deduce this information to deduce that {@code hostname} reference
  * is a nonnull reference.
  *
@@ -31,5 +31,9 @@ import checkers.quals.*;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface KeyFor {
+    /**
+     * One or more Java expressions.
+     * Each evaluates to a map for which the annotated type is a key.
+     **/
     public String[] value();
 }
