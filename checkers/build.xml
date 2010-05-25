@@ -179,6 +179,8 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="src/checkers/util/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
+	<!-- This relative path is wrong; running "ant -find" from a
+	subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
                  executable="../../jsr308-langtools/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
