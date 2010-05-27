@@ -15,8 +15,8 @@ import checkers.eclipse.util.*;
  * Runs the compiler and parses the output.
  */
 public class CommandlineJavacRunner{
-    public static final String CHECKERS_LOCATION = "lib/checkers/checkers.jar";
-    public static final String JAVAC_LOCATION = "lib/langtools/binary/javac.jar";
+    public static final String CHECKERS_LOCATION = "lib/checkers.jar";
+    public static final String JAVAC_LOCATION = "lib/javac.jar";
     public static final List<String> IMPLICIT_ARGS = Arrays.asList("checkers.nullness.quals.*", "checkers.igj.quals.*", "checkers.javari.quals.*", "checkers.interning.quals.*");
 
     public static boolean VERBOSE = true;
