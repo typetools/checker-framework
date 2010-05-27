@@ -15,42 +15,42 @@
 			   class="checkers.eclipse.actions.ClearMarkersAction"
 			   id="checkers.eclipse.removeMarkers"
 			   label="Clear Checkers Markers"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Removes all Checker Framework markers from the selected element."/>
 
 		<action
 			   class="checkers.eclipse.actions.CheckerActions$JavariAction"
 			   id="checkers.eclipse.runCheckers.javari"
 			   label="Run Javari Checker"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run the Javari checker on the selected element."/>
 
 		<action
 			   class="checkers.eclipse.actions.CheckerActions$NullnessAction"
 			   id="checkers.eclipse.runCheckers.nonnull"
 			   label="Run Nullness Checker"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run the Nullness checker on the selected element."/>
 
 		<action
 			   class="checkers.eclipse.actions.CheckerActions$InterningAction"
 			   id="checkers.eclipse.runCheckers.interning"
 			   label="Run Interning Checker"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run the Interned checker on the selected element."/>
 
 		<action
 			   class="checkers.eclipse.actions.CheckerActions$IGJAction"
 			   id="checkers.eclipse.runCheckers.igj"
 			   label="Run IGJ Checker"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run the IGJ checker on the selected element."/>
 <!--Commented out because you need an option to pass arguments. Custom checher want -Aquals
 		<action
 			   class="checkers.eclipse.actions.RunCustomCheckerAction"
 			   id="checkers.eclipse.runCheckers.igj"
 			   label="Run Custom Checker"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run the custom checker on the selected element."/> -->
 			   
 	  </objectContribution>
@@ -59,14 +59,14 @@
 			objectClass="org.eclipse.core.resources.IProject"
 			id="checkers.eclipse.NavigatorActions">
 		 <menu
-			   id="jsr308"
+			   id="checkers.eclipse"
 			   label="Checker Framework"
 			   path="additions"/>
 		 <action
 			   class="checkers.eclipse.actions.ClearMarkersAction"
 			   id="checkers.eclipse.removeMarkers"
 			   label="Clear Checkers Markers"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Removes all Checker Framework markers from the selected element.">
 		 <enablement>
 			<objectState
@@ -79,7 +79,7 @@
 			   class="checkers.eclipse.actions.RunCheckerAction"
 			   id="srunCheckers"
 			   label="Run Checkers"
-			   menubarPath="jsr308/additions"
+			   menubarPath="checkers.eclipse/additions"
 			   tooltip="Run a checker on the selected element.">
 		 <enablement>
 			<objectState
