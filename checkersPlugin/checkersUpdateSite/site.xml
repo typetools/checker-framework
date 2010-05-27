@@ -3,5 +3,5 @@
    <description name="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/checker-framework/eclipse">
       This is the update site for the Checker Framework Eclipse plugins.
    </description>
-   <feature url="features/jsr308.checkers_0.0.4.jar" id="jsr308.checkers" version="0.0.4"/>
+   <feature url="features/checkers_0.0.4.jar" id="checkers" version="0.0.4"/>
 </site>
