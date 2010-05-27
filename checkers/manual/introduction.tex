@@ -645,22 +645,38 @@ There are some limitations to the guarantee.
 
 \begin{itemize}
 
-\item
-  Native methods and reflection can behave in a manner that is impossible
-  for a compiler plugin to check.  Such constructs may violate the
-  property being checked.  Similarly, deserialization and cloning can
-  create objects that could not result from normal constructor calls, and
-  that therefore may violate the property being checked.
-
 \item 
   A compiler plugin can check only those parts of your program that you run
-  it on. If you compile some parts of your program without the
-  \code{-processor} switch or with the \code{-AskipClasses} property
-  (in other words, without running the checker), or if you use the
-  \code{@SuppressWarnings} annotation to suppress some errors or warnings,
-  then there is no guarantee that the entire program satisfies the property
-  being checked.  An analogous situation is using an external library that
-  was compiled without being checked by the compiler plugin.
+  it on.  If you compile some parts of your program without running the
+  checker, then there is no guarantee that the entire program satisfies the
+  property being checked.  Some examples of un-checked code are:
+
+  \begin{itemize}
+  \item
+    Code compiled without the \code{-processor} switch, including any
+    external library supplied as a \code{.class} file.
+  \item
+    Code compiled with  the \code{-AskipClasses} property.
+  \item 
+    Suppression of warnings, such as via the \code{@SuppressWarnings} annotation.
+  \item
+    Native methods (because the implementation is not Java code, it cannot
+    be checked).
+  \end{itemize}
+
+  In each of these cases, any \emph{use} of the code is checked --- for
+  example, a call to a native method must be compatible with any
+  annotations on the native method's signature.
+  However, the annotations on the un-checked code are trusted; there is no
+  verification that the implementation of the native method satisfies the
+  annotations.
+
+\item
+  Reflection can violate the Java type system, and
+  the checkers are not sophisticated enough to reason about the possible
+  effects of reflection.  Similarly, deserialization and cloning can
+  create objects that could not result from normal constructor calls, and
+  that therefore may violate the property being checked.
 
 \item 
   Your code should pass the Java compiler without errors or warnings.  In
