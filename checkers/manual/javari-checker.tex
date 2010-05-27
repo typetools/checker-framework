@@ -30,12 +30,7 @@ more robust.  However, IGJ lacks a type inference tool such as Javarifier.
 
 \section{Javari annotations\label{javary-annotations}}
 
-Five annotations are part of the Javari type system.
-
-
-
-A programmer can write five annotations: \code{@\refclass{javari/quals}{ReadOnly}}, \code{@\refclass{javari/quals}{Mutable}},
-\code{@\refclass{javari/quals}{Assignable}}, \code{@\refclass{javari/quals}{PolyRead}}, and \code{@\refclass{javari/quals}{QReadOnly}}.
+The following six annotations make up the Javari type system.
 
 \begin{description}
 
@@ -62,6 +57,12 @@ A programmer can write five annotations: \code{@\refclass{javari/quals}{ReadOnly
   mutability; it simulates mutability overloading.  It can be applied to
   methods and parameters.  See Section~\ref{qualifier-polymorphism} and the
   \code{@\refclass{javari/quals}{PolyRead}} Javadoc for more details.
+
+\item[\code{@\refclass{javari/quals}{ThisMutable}}]
+  means that the mutability of the field is the same as that of the
+  reference that contains it.  \code{@ThisMutable} is the default on
+  fields, and does not make sense to write elsewhere.  Therefore,
+  \code{@ThisMutable} should never appear in a program.
 
 \end{description}
 

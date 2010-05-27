@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: checkers.eclipse
 Bundle-SymbolicName: checkers.eclipse;singleton:=true
 Bundle-Version: 0.0.3
-Bundle-ClassPath: lib/langtools/binary/javac.jar,lib/checkers/checkers.jar,.
+Bundle-ClassPath: lib/javac.jar,lib/checkers.jar,.
 Bundle-Activator: checkers.eclipse.Activator
 Export-Package: checkers.eclipse,
  checkers.eclipse.actions,
@@ -18,5 +18,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.console;bundle-version="3.4.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
