@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="jsr308.checkers"
+      id="checkers"
       label="Checker Framework Feature"
       version="0.0.4"
       provider-name="Checker Framework Development Team">
