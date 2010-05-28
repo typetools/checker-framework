@@ -16,7 +16,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
     private final String checkerName;
 
     /** The current selection. */
-    protected ISelection selection;
+    protected IStructuredSelection selection;
 
     /** true if this action is used from editor */
     protected boolean usedInEditor;
@@ -32,9 +32,10 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
 
     @Override
     public void selectionChanged(IAction action, ISelection newSelection) {
-        if (!usedInEditor) {
-            this.selection = newSelection;
-        }
+        if (!usedInEditor && (newSelection instanceof IStructuredSelection)) {
+            this.selection = (IStructuredSelection) newSelection;
+        } else
+            this.selection = null;
     }
 
     /**
@@ -45,23 +46,24 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
         // do nothing
     }
 
+    private IJavaProject project() {
+        if (selection != null && !selection.isEmpty())
+            return (IJavaProject) selection.getFirstElement();
+        return null;
+    }
+
     /**
      * @see IActionDelegate#run(IAction)
      */
     @Override
     public void run(IAction action) {
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            IStructuredSelection sSelection = (IStructuredSelection) selection;
-            work((IJavaProject) sSelection.getFirstElement());
+        IJavaProject project = project();
+        if (project != null) {
+            Job checkerJob = new CheckerWorker(project, checkerName);
+            checkerJob.setUser(true);
+            checkerJob.setPriority(Job.BUILD);
+            checkerJob.setRule(new MutexSchedulingRule());
+            checkerJob.schedule();
         }
-    }
-
-    private void work(final IJavaProject project) {
-        Job checkerJob = new CheckerWorker(project, checkerName);
-
-        checkerJob.setUser(true);
-        checkerJob.setPriority(Job.BUILD);
-        checkerJob.setRule(new MutexSchedulingRule());
-        checkerJob.schedule();
     }
 }

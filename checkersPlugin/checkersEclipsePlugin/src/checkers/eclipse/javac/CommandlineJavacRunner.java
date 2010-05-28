@@ -28,21 +28,12 @@ public class CommandlineJavacRunner {
         try {
             String[] cmd = options(fileNames, processor, classpath);
             if (VERBOSE)
-                System.out.println(toStringLinLines(cmd));
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream ps = new PrintStream(baos);
-
-            if (VERBOSE)
-                System.out.println(toStringNoCommas(cmd));
+                System.out.println(JavaUtils.join("\n", cmd));
 
             MessageConsoleStream out = Activator.findConsole()
                     .newMessageStream();
-            if (VERBOSE)
-                out.println(toStringNoCommas(cmd));
 
-            Command.exec(cmd, ps);
-
-            String result = baos.toString();
+            String result = Command.exec(cmd);
 
             if (VERBOSE)
                 out.println(result);
@@ -54,40 +45,9 @@ public class CommandlineJavacRunner {
         }
     }
 
-    private String toStringLinLines(String[] cmd) {
-        StringBuilder b = new StringBuilder();
-        for (String c : cmd) {
-            b.append(c + "\n");
-        }
-        return b.toString();
-    }
-
-    // None of the Arrays.toString decorations like [, ]
-    private String toStringNoCommas(String[] strings) {
-        StringBuilder b = new StringBuilder();
-        for (String string : strings) {
-            b.append(string).append(" ");
-        }
-        return b.toString();
-    }
-
-    private static String join(String delimiter, Iterable<?> args) {
-        StringBuilder sb = new StringBuilder();
-
-        boolean isntFirst = false;
-        for (Object s : args) {
-            if (isntFirst) {
-                sb.append(delimiter);
-            }
-            sb.append(s);
-            isntFirst = true;
-        }
-        return sb.toString();
-    }
-
     @SuppressWarnings("unused")
     private String implicitAnnotations() {
-        return join(File.pathSeparator, IMPLICIT_ARGS);
+        return JavaUtils.join(File.pathSeparator, IMPLICIT_ARGS);
     }
 
     private String[] options(List<String> fileNames, String processor,
