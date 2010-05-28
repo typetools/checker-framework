@@ -1,5 +1,7 @@
 package checkers.eclipse.util;
 
+import static checkers.eclipse.util.JavaUtils.*;
+
 import java.util.*;
 
 import org.eclipse.core.resources.*;
@@ -90,8 +92,8 @@ public class ResourceUtils {
         }
 
         if (element instanceof IAdaptable) {
-            return (IResource) ((IAdaptable) element)
-                    .getAdapter(IResource.class);
+            IAdaptable adaptable = (IAdaptable) element;
+            return (IResource) adaptable.getAdapter(IResource.class);
         }
 
         return null;
@@ -115,38 +117,44 @@ public class ResourceUtils {
      */
     public static Map<IProject, List<IResource>> getResourcesPerProject(
             IStructuredSelection structuredSelection) {
+
         Map<IProject, List<IResource>> projectsMap = new HashMap<IProject, List<IResource>>();
-        for (Iterator<?> iter = structuredSelection.iterator(); iter.hasNext();) {
-            Object element = iter.next();
+
+        @SuppressWarnings("unchecked")
+        Iterable<?> iterable = iterable(structuredSelection.iterator());
+
+        for (Object element : iterable) {
             IResource resource = getResource(element);
             mapResource(resource, projectsMap, false);
         }
+
         return projectsMap;
     }
 
     /**
      * Maps the resource into its project
-     * 
-     * @param resource
-     * @param projectsMap
      */
     private static void mapResource(IResource resource,
             Map<IProject, List<IResource>> projectsMap, boolean checkJavaProject) {
+
         if (resource.getType() == IResource.FILE
                 && !Util.isJavaArtifact(resource)) {
             // Ignore non java files
             return;
         }
+
         IProject project = resource.getProject();
         if (checkJavaProject && !Util.isJavaProject(project)) {
             // non java projects: can happen only for changesets
             return;
         }
+
         List<IResource> resources = projectsMap.get(project);
         if (resources == null) {
             resources = new ArrayList<IResource>();
             projectsMap.put(project, resources);
         }
+
         // do not need to check for duplicates, cause user cannot select
         // the same element twice
         if (!containsParents(resources, resource)) {
@@ -162,18 +170,21 @@ public class ResourceUtils {
      */
     private static boolean containsParents(List<IResource> resources,
             IResource candidate) {
+
         IPath location = candidate.getLocation();
         for (IResource resource : resources) {
             if (resource.getType() == IResource.FILE) {
                 continue;
             }
-            IContainer parent = (IContainer) resource;
-            IPath parentLoc = parent.getLocation();
-            if (parentLoc != null && parentLoc.isPrefixOf(location)) {
+
+            IPath resourceLoc = resource.getLocation();
+            if (resourceLoc != null && resourceLoc.isPrefixOf(location))
                 return true;
-            }
         }
         return false;
     }
 
+    public static IWorkspaceRoot workspaceRoot() {
+        return ResourcesPlugin.getWorkspace().getRoot();
+    }
 }
