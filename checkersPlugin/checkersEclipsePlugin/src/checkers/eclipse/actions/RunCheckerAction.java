@@ -1,13 +1,11 @@
 package checkers.eclipse.actions;
 
-import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.*;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.ui.*;
 
-import checkers.eclipse.*;
 import checkers.eclipse.util.*;
 
 /**
@@ -59,25 +57,11 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
     }
 
     private void work(final IJavaProject project) {
-        String jobName = "Running checker on " + project.getElementName();
+        Job checkerJob = new CheckerWorker(project, checkerName);
 
-        Job runChecker = new Job(jobName) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    CheckerWorker worker = new CheckerWorker(monitor);
-                    worker.work(project, checkerName);
-                } catch (Throwable e) {
-                    Activator.logException(e, "Analysis exception");
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-
-        runChecker.setUser(true);
-        runChecker.setPriority(Job.BUILD);
-        runChecker.setRule(new MutexSchedulingRule());
-        runChecker.schedule();
+        checkerJob.setUser(true);
+        checkerJob.setPriority(Job.BUILD);
+        checkerJob.setRule(new MutexSchedulingRule());
+        checkerJob.schedule();
     }
 }
