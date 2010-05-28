@@ -1,6 +1,7 @@
 package checkers.eclipse.util;
 
 import static checkers.eclipse.util.JavaUtils.*;
+import static org.eclipse.core.resources.IResource.*;
 
 import java.util.*;
 
@@ -22,10 +23,7 @@ public class ResourceUtils {
     public static IPath relativeToAbsolute(IPath relativePath) {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         IResource resource = root.findMember(relativePath);
-        if (resource != null) {
-            return resource.getLocation();
-        }
-        return relativePath;
+        return (resource != null) ? resource.getLocation() : relativePath;
     }
 
     /**
@@ -38,21 +36,21 @@ public class ResourceUtils {
         // XXX deleted packages should be considered to remove markers
         List<IResource> result = new ArrayList<IResource>();
         List<IResourceDelta> foldersDelta = new ArrayList<IResourceDelta>();
-        IResourceDelta affectedChildren[] = delta.getAffectedChildren();
-        for (int i = 0; i < affectedChildren.length; i++) {
-            IResourceDelta childDelta = affectedChildren[i];
+
+        for (IResourceDelta childDelta : delta.getAffectedChildren()) {
             IResource child = childDelta.getResource();
             if (child.isDerived()) {
                 continue;
             }
             int childType = child.getType();
             int deltaKind = childDelta.getKind();
-            if (childType == IResource.FILE) {
+
+            if (childType == FILE) {
                 if ((deltaKind == IResourceDelta.ADDED || deltaKind == IResourceDelta.CHANGED)
                         && Util.isJavaArtifact(child)) {
                     result.add(child);
                 }
-            } else if (childType == IResource.FOLDER) {
+            } else if (childType == FOLDER) {
                 if (deltaKind == IResourceDelta.ADDED) {
                     result.add(child);
                 } else if (deltaKind == IResourceDelta.REMOVED) {
@@ -66,7 +64,7 @@ public class ResourceUtils {
                         return result;
                     }
                     result.add(parent);
-                } else if (deltaKind != IResourceDelta.REMOVED) {
+                } else {
                     foldersDelta.add(childDelta);
                 }
             }
@@ -137,8 +135,7 @@ public class ResourceUtils {
     private static void mapResource(IResource resource,
             Map<IProject, List<IResource>> projectsMap, boolean checkJavaProject) {
 
-        if (resource.getType() == IResource.FILE
-                && !Util.isJavaArtifact(resource)) {
+        if (resource.getType() == FILE && !Util.isJavaArtifact(resource)) {
             // Ignore non java files
             return;
         }
@@ -173,7 +170,7 @@ public class ResourceUtils {
 
         IPath location = candidate.getLocation();
         for (IResource resource : resources) {
-            if (resource.getType() == IResource.FILE) {
+            if (resource.getType() == FILE) {
                 continue;
             }
 
