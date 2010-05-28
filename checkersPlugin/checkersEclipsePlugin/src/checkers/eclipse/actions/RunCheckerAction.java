@@ -13,7 +13,9 @@ import checkers.eclipse.util.*;
 /**
  * Superclass of all checker actions.
  */
-public abstract class RunCheckerAction implements IObjectActionDelegate{
+public abstract class RunCheckerAction implements IObjectActionDelegate {
+
+    private final String checkerName;
 
     /** The current selection. */
     protected ISelection selection;
@@ -21,18 +23,27 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
     /** true if this action is used from editor */
     protected boolean usedInEditor;
 
-    private final Class<?> checkerClass;
+    protected RunCheckerAction(Class<?> checker) {
+        this(checker.getCanonicalName());
+    }
 
-    protected RunCheckerAction(Class<?> checker){
+    protected RunCheckerAction(String checkerName) {
         super();
-        this.checkerClass = checker;
+        this.checkerName = checkerName;
+    }
+
+    @Override
+    public void selectionChanged(IAction action, ISelection newSelection) {
+        if (!usedInEditor) {
+            this.selection = newSelection;
+        }
     }
 
     /**
      * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
      */
     @Override
-    public void setActivePart(IAction action, IWorkbenchPart targetPart){
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
         // do nothing
     }
 
@@ -40,29 +51,23 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
      * @see IActionDelegate#run(IAction)
      */
     @Override
-    public void run(IAction action){
-        if (!selection.isEmpty()){
-            if (selection instanceof IStructuredSelection){
-                IStructuredSelection sSelection = (IStructuredSelection) selection;
-
-                if (selection.isEmpty()){
-                    return;
-                }
-
-                work((IJavaProject) sSelection.getFirstElement());
-            }
+    public void run(IAction action) {
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+            IStructuredSelection sSelection = (IStructuredSelection) selection;
+            work((IJavaProject) sSelection.getFirstElement());
         }
     }
 
-    private void work(final IJavaProject project){
-        Job runChecker = new Job("Running checker on " + project.getElementName() + "...") {
+    private void work(final IJavaProject project) {
+        String jobName = "Running checker on " + project.getElementName();
 
+        Job runChecker = new Job(jobName) {
             @Override
-            protected IStatus run(IProgressMonitor monitor){
-                try{
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
                     CheckerWorker worker = new CheckerWorker(monitor);
-                    worker.work(project, checkerClass);
-                }catch (CoreException e){
+                    worker.work(project, checkerName);
+                } catch (Throwable e) {
                     Activator.logException(e, "Analysis exception");
                     return Status.CANCEL_STATUS;
                 }
@@ -74,15 +79,5 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
         runChecker.setPriority(Job.BUILD);
         runChecker.setRule(new MutexSchedulingRule());
         runChecker.schedule();
-    }
-
-    /**
-     * @see IActionDelegate#selectionChanged(IAction, ISelection)
-     */
-    @Override
-    public void selectionChanged(IAction action, ISelection newSelection){
-        if (!usedInEditor){
-            this.selection = newSelection;
-        }
     }
 }

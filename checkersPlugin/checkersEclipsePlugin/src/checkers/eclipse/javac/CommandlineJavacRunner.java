@@ -14,15 +14,18 @@ import checkers.eclipse.util.*;
 /**
  * Runs the compiler and parses the output.
  */
-public class CommandlineJavacRunner{
-    public static final String CHECKERS_LOCATION = "lib/checkers/checkers.jar";
-    public static final String JAVAC_LOCATION = "lib/langtools/binary/javac.jar";
-    public static final List<String> IMPLICIT_ARGS = Arrays.asList("checkers.nullness.quals.*", "checkers.igj.quals.*", "checkers.javari.quals.*", "checkers.interning.quals.*");
+public class CommandlineJavacRunner {
+    public static final String CHECKERS_LOCATION = "lib/checkers.jar";
+    public static final String JAVAC_LOCATION = "lib/javac.jar";
+    public static final List<String> IMPLICIT_ARGS = Arrays.asList(
+            "checkers.nullness.quals.*", "checkers.igj.quals.*",
+            "checkers.javari.quals.*", "checkers.interning.quals.*");
 
     public static boolean VERBOSE = true;
 
-    public List<JavacError> callJavac(List<String> fileNames, String processor, String classpath){
-        try{
+    public List<JavacError> callJavac(List<String> fileNames, String processor,
+            String classpath) {
+        try {
             String[] cmd = options(fileNames, processor, classpath);
             if (VERBOSE)
                 System.out.println(toStringLinLines(cmd));
@@ -32,7 +35,8 @@ public class CommandlineJavacRunner{
             if (VERBOSE)
                 System.out.println(toStringNoCommas(cmd));
 
-            MessageConsoleStream out = Activator.findConsole().newMessageStream();
+            MessageConsoleStream out = Activator.findConsole()
+                    .newMessageStream();
             if (VERBOSE)
                 out.println(toStringNoCommas(cmd));
 
@@ -44,35 +48,35 @@ public class CommandlineJavacRunner{
                 out.println(result);
 
             return JavacError.parse(result);
-        }catch (IOException e){
+        } catch (IOException e) {
             Activator.logException(e, "Error calling javac");
             return null;
         }
     }
 
-    private String toStringLinLines(String[] cmd){
+    private String toStringLinLines(String[] cmd) {
         StringBuilder b = new StringBuilder();
-        for (String c : cmd){
+        for (String c : cmd) {
             b.append(c + "\n");
         }
         return b.toString();
     }
 
     // None of the Arrays.toString decorations like [, ]
-    private String toStringNoCommas(String[] strings){
+    private String toStringNoCommas(String[] strings) {
         StringBuilder b = new StringBuilder();
-        for (String string : strings){
+        for (String string : strings) {
             b.append(string).append(" ");
         }
         return b.toString();
     }
 
-    private static String join(String delimiter, Iterable<?> args){
+    private static String join(String delimiter, Iterable<?> args) {
         StringBuilder sb = new StringBuilder();
 
         boolean isntFirst = false;
-        for (Object s : args){
-            if (isntFirst){
+        for (Object s : args) {
+            if (isntFirst) {
                 sb.append(delimiter);
             }
             sb.append(s);
@@ -82,11 +86,12 @@ public class CommandlineJavacRunner{
     }
 
     @SuppressWarnings("unused")
-    private String implicitAnnotations(){
+    private String implicitAnnotations() {
         return join(File.pathSeparator, IMPLICIT_ARGS);
     }
 
-    private String[] options(List<String> fileNames, String processor, String classpath) throws IOException{
+    private String[] options(List<String> fileNames, String processor,
+            String classpath) throws IOException {
         List<String> opts = new ArrayList<String>();
         opts.add(javaVM());
         opts.add("-ea:com.sun.tools");
@@ -109,33 +114,37 @@ public class CommandlineJavacRunner{
         return opts.toArray(new String[opts.size()]);
     }
 
-    private String javaVM(){
+    private String javaVM() {
         String sep = System.getProperty("file.separator");
         return System.getProperty("java.home") + sep + "bin" + sep + "java";
     }
 
-    private String classpath(String classpath){
+    private String classpath(String classpath) {
         return classpath;
     }
 
-    private String javacJARlocation() throws IOException{
+    private String javacJARlocation() throws IOException {
         Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
 
         Path javacJAR = new Path(JAVAC_LOCATION);
-        URL javacJarURL = FileLocator.toFileURL(FileLocator.find(bundle, javacJAR, null));
+        URL javacJarURL = FileLocator.toFileURL(FileLocator.find(bundle,
+                javacJAR, null));
         return javacJarURL.getPath();
     }
 
-    // This used to be used. Now we just scan the classpath. The checkers.jar must be on the classpath anyway.
-    // XXX The problem is what to do if the checkers.jar on the classpath is different from the one in the plugin.
-    public static String checkersJARlocation(){
+    // This used to be used. Now we just scan the classpath. The checkers.jar
+    // must be on the classpath anyway.
+    // XXX The problem is what to do if the checkers.jar on the classpath is
+    // different from the one in the plugin.
+    public static String checkersJARlocation() {
         Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
 
         Path checkersJAR = new Path(CHECKERS_LOCATION);
         URL checkersJarURL;
-        try{
-            checkersJarURL = FileLocator.toFileURL(FileLocator.find(bundle, checkersJAR, null));
-        }catch (IOException e){
+        try {
+            checkersJarURL = FileLocator.toFileURL(FileLocator.find(bundle,
+                    checkersJAR, null));
+        } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return "";
