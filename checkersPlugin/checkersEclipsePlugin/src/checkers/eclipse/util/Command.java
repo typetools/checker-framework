@@ -29,6 +29,9 @@ public class Command {
         }
     }
 
+    /**
+     * Executes a command and return the error and output result of the process
+     */
     public static String exec(String[] cmd) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
