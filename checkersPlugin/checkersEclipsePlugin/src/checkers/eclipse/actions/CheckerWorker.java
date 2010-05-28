@@ -98,18 +98,15 @@ public class CheckerWorker {
 
         // location is null if the classpath entry outputs to the 'default'
         // location, i.e. project
-        IFile outDir = ResourcesPlugin.getWorkspace().getRoot()
-                .getFile(cp.getPath());
+        IFile outDir = ResourceUtils.workspaceRoot().getFile(cp.getPath());
         return outDir.getLocation().toOSString();
     }
 
     private String getAbsolutePath(IClasspathEntry entry) {
         IFile jarFile = ResourceUtils.workspaceRoot().getFile(entry.getPath());
         IPath location = jarFile.getLocation();
-        if (location != null)
-            return location.toOSString();
-        else
-            return jarFile.getFullPath().toOSString();// ??
+        IPath path = (location != null) ? location : jarFile.getFullPath();
+        return path.toOSString();
     }
 
     private List<String> getSourceFilesOnClasspath(final IJavaProject project)
