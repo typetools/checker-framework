@@ -28,7 +28,7 @@ public class Paths {
         }
 
         public ClasspathBuilder append(String path) {
-            if (classpath.length() == 0)
+            if (classpath.length() != 0)
                 classpath.append(PATH_SEPARATOR);
             classpath.append(path);
             return this;

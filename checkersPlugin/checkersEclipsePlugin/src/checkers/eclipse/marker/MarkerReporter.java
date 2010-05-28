@@ -29,10 +29,6 @@ public class MarkerReporter implements IWorkspaceRunnable {
         }
 
         IMarker marker = resource.createMarker(NAME);
-        setAttributes(marker);
-    }
-
-    private void setAttributes(IMarker marker) throws CoreException {
         if (Activator.DEBUG) {
             System.out.println("Setting attibutes for marker in "
                     + resource.getLocation());
