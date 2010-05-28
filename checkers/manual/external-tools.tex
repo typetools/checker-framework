@@ -41,7 +41,7 @@ Set the \code{jsr308javac} property:
       <compilerarg line="-target 5"/>
       <compilerarg value="-implicit:class"/>
       <compilerarg line="-Awarns -Xmaxwarns 10000"/>
-      <compilerarg line="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
 
       <classpath>
         <pathelement location="${env.CHECKERS}/checkers.jar"/>
@@ -63,13 +63,14 @@ original compilation target:
 %END LATEX
 \begin{Verbatim}
   <target name="check-nullness"
-          description="Check for nullness errors."
+          description="Check for nullness errors"
           depends="clean,...">
-    <!-- replace javac with jsr308.javac -->
+    <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg line="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/nullness/jdk.jar"/>
       <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
+      <!-- optional, to not check library bodies: <compilerarg value="-AskipClasses=^(java\.awt\.|javax\.swing\.)"/>
       ...
     </jsr308.javac>
   </target>
