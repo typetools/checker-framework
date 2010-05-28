@@ -109,7 +109,8 @@ of the methods in a class or package, put a \code{@SuppressWarnings}
 annotation on the class declaration or on the package's
 \code{package-info.java} file.
 
-You can suppress all errors and warnings at all uses of a given class.
+You can suppress all errors and warnings at all \emph{uses} of a given
+class (but the class itself is still type-checked).
 Set the \code{-AskipClasses} command-line option to a
 regular expression that matches classes for which warnings and errors
 should be suppressed.  For example, if you use
