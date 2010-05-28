@@ -8,27 +8,28 @@ import checkers.eclipse.*;
 /**
  * Creates a JSR308 marker in a runnable window.
  */
-public class MarkerReporter implements IWorkspaceRunnable{
+public class MarkerReporter implements IWorkspaceRunnable {
     public static final String NAME = Activator.PLUGIN_ID + ".marker";
 
     private final IResource resource;
     private final int startLine;
     private final String message;
 
-    public MarkerReporter(IResource resource, int startLine, String message){
+    public MarkerReporter(IResource resource, int startLine, String message) {
         this.startLine = startLine;
         this.resource = resource;
         this.message = message;
     }
 
     @Override
-    public void run(IProgressMonitor monitor) throws CoreException{
+    public void run(IProgressMonitor monitor) throws CoreException {
 
-        if (Activator.DEBUG){
+        if (Activator.DEBUG) {
             System.out.println("Creating marker for " + resource.getLocation());
         }
 
-        // This triggers resource update on IResourceChangeListener's (BugTreeView)
+        // This triggers resource update on IResourceChangeListener's
+        // (BugTreeView)
         IMarker marker = resource.createMarker(NAME);
 
         setAttributes(marker);
@@ -38,9 +39,10 @@ public class MarkerReporter implements IWorkspaceRunnable{
      * @param marker
      * @throws CoreException
      */
-    private void setAttributes(IMarker marker) throws CoreException{
-        if (Activator.DEBUG){
-            System.out.println("Setting attibutes for marker in " + resource.getLocation());
+    private void setAttributes(IMarker marker) throws CoreException {
+        if (Activator.DEBUG) {
+            System.out.println("Setting attibutes for marker in "
+                    + resource.getLocation());
         }
 
         marker.setAttribute(IMarker.LINE_NUMBER, startLine);
