@@ -15,6 +15,9 @@ public class NullnessExampleWithWarnings {
 
   public void example() {
 
+    // This type annotation is redundant -- the Nullness Checker will
+    // infer it, but it is written here in the example for emhpasis.
+    // In general, you do not have to annotate local variables.
     @NonNull String foo = "foo";
     String bar = null;
 
