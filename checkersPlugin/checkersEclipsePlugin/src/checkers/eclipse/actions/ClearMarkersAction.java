@@ -44,6 +44,33 @@ public class ClearMarkersAction implements IObjectActionDelegate{
         }
     }
 
+    private static class MarkerCleaner implements IRunnableWithProgress{
+        private final IStructuredSelection selection;
+
+        public MarkerCleaner(IStructuredSelection selection){
+            this.selection = selection;
+        }
+
+        @Override
+        public void run(IProgressMonitor pm) throws InvocationTargetException{
+            try{
+                @SuppressWarnings("unchecked")
+                Iterator<IAdaptable> it = selection.iterator();
+                while (it.hasNext()){
+                    IAdaptable adaptable = it.next();
+                    IResource resource = (IResource) adaptable.getAdapter(IResource.class);
+                    if (resource != null){
+                        pm.subTask("Clearing JSR 308 markers from " + resource.getName());
+                        MarkerUtil.removeMarkers(resource);
+                    }
+                }
+            }catch (CoreException ex){
+                Activator.logException(ex, "CoreException on clear markers");
+                throw new InvocationTargetException(ex);
+            }
+        }
+    }
+
     /**
      * Clear the markers on each project in the given selection, displaying a progress monitor.
      * 
@@ -51,33 +78,7 @@ public class ClearMarkersAction implements IObjectActionDelegate{
      */
     private void work(final IStructuredSelection selection){
         try{
-            IRunnableWithProgress r = new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor pm) throws InvocationTargetException{
-                    try{
-                        @SuppressWarnings("unchecked")
-                        Iterator<IAdaptable> it = selection.iterator();
-                        while (it.hasNext()){
-                            IAdaptable adaptable = it.next();
-                            Object resource = adaptable.getAdapter(IResource.class);
-                            IResource res = (resource instanceof IResource ? (IResource) resource : null);
-                            if (res != null){
-                                pm.subTask("Clearing JSR 308 markers from " + res.getName());
-                                MarkerUtil.removeMarkers(res);
-                            }
-                        }
-
-                    }catch (CoreException ex){
-                        Activator.logException(ex, "CoreException on clear markers");
-                        throw new InvocationTargetException(ex);
-
-                    }catch (RuntimeException ex){
-                        Activator.logException(ex, "RuntimeException on clear markers");
-                        throw ex;
-                    }
-                }
-            };
-
+            IRunnableWithProgress r = new MarkerCleaner(selection);
             ProgressMonitorDialog progress = new ProgressMonitorDialog(Activator.getShell());
             progress.run(true, true, r);
         }catch (InvocationTargetException e){

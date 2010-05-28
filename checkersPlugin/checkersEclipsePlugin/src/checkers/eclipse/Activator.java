@@ -1,7 +1,6 @@
 package checkers.eclipse;
 
 import org.eclipse.core.runtime.*;
-import org.eclipse.jface.resource.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.console.*;
@@ -22,6 +21,7 @@ public class Activator extends AbstractUIPlugin{
     /** The shared instance */
     private static Activator plugin;
 
+    // default constructor is required
     public Activator(){
         // empty
     }
@@ -45,17 +45,6 @@ public class Activator extends AbstractUIPlugin{
      */
     public static Activator getDefault(){
         return plugin;
-    }
-
-    /**
-     * Returns an image descriptor for the image file at the given plug-in relative path
-     * 
-     * @param path
-     *            the path
-     * @return the image descriptor
-     */
-    public static ImageDescriptor getImageDescriptor(String path){
-        return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
 
     /**
