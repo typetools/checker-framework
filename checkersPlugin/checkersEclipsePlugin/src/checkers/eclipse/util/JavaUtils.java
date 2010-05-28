@@ -16,4 +16,21 @@ public class JavaUtils {
         };
     }
 
+    public static String join(String delimiter, Object[] values) {
+        return join(delimiter, Arrays.asList(values));
+    }
+
+    public static String join(String delimiter, Iterable<?> values) {
+        StringBuilder sb = new StringBuilder();
+
+        boolean isntFirst = false;
+        for (Object value : values) {
+            if (isntFirst)
+                sb.append(delimiter);
+            sb.append(value);
+            isntFirst = true;
+        }
+
+        return sb.toString();
+    }
 }

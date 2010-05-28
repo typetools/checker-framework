@@ -66,13 +66,13 @@ public class CheckerWorker extends Job {
         return callJavac;
     }
 
-    private void markErrors(IJavaProject project, List<JavacError> callJavac) {
-        for (JavacError javacError : callJavac) {
-            IResource file = getFile(project, javacError);
+    private void markErrors(IJavaProject project, List<JavacError> errors) {
+        for (JavacError error : errors) {
+            IResource file = ResourceUtils.getFile(project, error.file);
             if (file == null)
                 continue;
-            MarkerUtil.addMarker(javacError.message, project.getProject(),
-                    file, javacError.lineNumber);
+            MarkerUtil.addMarker(error.message, project.getProject(),
+                    file, error.lineNumber);
         }
     }
 
@@ -81,7 +81,7 @@ public class CheckerWorker extends Job {
         int entryKind = cp.getEntryKind();
         switch (entryKind) {
         case IClasspathEntry.CPE_SOURCE:
-            return outputLocation(cp, project);
+            return ResourceUtils.outputLocation(cp, project);
         case IClasspathEntry.CPE_LIBRARY:
             return Paths.absolutePathOf(cp);
         case IClasspathEntry.CPE_PROJECT:
@@ -120,24 +120,5 @@ public class CheckerWorker extends Job {
 
         classpath.append(CommandlineJavacRunner.checkersJARlocation());
         return classpath.toString();
-    }
-
-    private String outputLocation(IClasspathEntry cp, IJavaProject project) {
-        IPath out = cp.getOutputLocation();
-        if (out != null)
-            return out.toOSString();
-
-        // location is null if the classpath entry outputs to the 'default'
-        // location, i.e. project
-        IFile outDir = ResourceUtils.workspaceRoot().getFile(cp.getPath());
-        return outDir.getLocation().toOSString();
-    }
-
-    private IResource getFile(IJavaProject jProject, JavacError javacError) {
-        IProject project = jProject.getProject();
-        IPath filePath = Path.fromOSString(javacError.file.getPath());
-        int segCount = project.getLocation().segmentCount();
-
-        return project.findMember(filePath.removeFirstSegments(segCount));
     }
 }

@@ -18,13 +18,12 @@ import checkers.eclipse.util.*;
 
 /**
  * Remove all bug markers for the currently selected project.
- * 
- * XXX copied from FindBugs.
  */
 public class ClearMarkersAction implements IObjectActionDelegate {
 
     /** The current selection. */
-    private ISelection currSelection;
+    private IStructuredSelection currSelection;
+    private final MarkerCleaner cleaner = new MarkerCleaner();
 
     @Override
     public final void setActivePart(final IAction action,
@@ -35,30 +34,26 @@ public class ClearMarkersAction implements IObjectActionDelegate {
     @Override
     public final void selectionChanged(final IAction action,
             final ISelection selection) {
-        this.currSelection = selection;
-    }
-
-    @Override
-    public final void run(final IAction action) {
-        if (currSelection instanceof IStructuredSelection)
-            work((IStructuredSelection) currSelection);
+        if (selection instanceof IStructuredSelection)
+            currSelection = (IStructuredSelection) selection;
+        else
+            currSelection = null;
     }
 
     /**
      * Clear the markers on each project in the given selection, displaying a
      * progress monitor.
      * 
-     * @param selection
      */
-    private void work(final IStructuredSelection selection) {
-        if (selection.isEmpty())
+    @Override
+    public final void run(final IAction action) {
+        if (currSelection == null || currSelection.isEmpty())
             return;
 
         try {
-            IRunnableWithProgress r = new MarkerCleaner(selection);
             ProgressMonitorDialog progress = new ProgressMonitorDialog(
                     Activator.getShell());
-            progress.run(true, true, r);
+            progress.run(true, true, cleaner);
         } catch (InvocationTargetException e) {
             Activator.logException(e,
                     "InvocationTargetException on clear markers");
@@ -67,18 +62,12 @@ public class ClearMarkersAction implements IObjectActionDelegate {
         }
     }
 
-    private static class MarkerCleaner implements IRunnableWithProgress {
-        private final IStructuredSelection selection;
-
-        public MarkerCleaner(IStructuredSelection selection) {
-            this.selection = selection;
-        }
-
+    private class MarkerCleaner implements IRunnableWithProgress {
         @Override
         public void run(IProgressMonitor pm) throws InvocationTargetException {
             try {
                 @SuppressWarnings("unchecked")
-                Iterator<IAdaptable> iter = selection.iterator();
+                Iterator<IAdaptable> iter = currSelection.iterator();
                 for (IAdaptable adaptable : iterable(iter)) {
                     IResource resource = (IResource) adaptable
                             .getAdapter(IResource.class);
@@ -96,5 +85,4 @@ public class ClearMarkersAction implements IObjectActionDelegate {
             }
         }
     }
-
 }
