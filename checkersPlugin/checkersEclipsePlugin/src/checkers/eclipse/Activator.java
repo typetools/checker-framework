@@ -59,12 +59,11 @@ public class Activator extends AbstractUIPlugin {
         getDefault().logMessage(IStatus.ERROR, message, e);
     }
 
-    public void logMessage(int severity, String message, Throwable e) {
+    private void logMessage(int severity, String message, Throwable e) {
         if (DEBUG) {
-            String what = (severity == IStatus.ERROR) ? (e != null ? "Exception"
-                    : "Error")
+            String status = (severity == IStatus.ERROR) ? "Exception"
                     : "Warning";
-            System.out.println(what + " in JSR 308 plugin: " + message);
+            System.out.println(status + " in JSR 308 plugin: " + message);
             if (e != null) {
                 e.printStackTrace();
             }
