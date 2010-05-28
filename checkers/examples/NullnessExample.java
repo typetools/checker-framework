@@ -23,7 +23,7 @@ public class NullnessExample {
 
   }
 
-  public void exampleGenerics() {
+  public @NonNull String exampleGenerics() {
 
     List</*@NonNull*/ String> foo = new LinkedList</*@NonNull*/ String>();
     List</*@NonNull*/ String> bar = foo;
@@ -32,6 +32,7 @@ public class NullnessExample {
     foo.add(quux);
     foo.add("quux");
     @NonNull String baz = foo.get(0);
+    return baz;
 
   }
 
