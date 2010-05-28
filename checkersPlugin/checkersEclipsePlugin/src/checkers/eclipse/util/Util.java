@@ -16,11 +16,12 @@ import checkers.eclipse.*;
  * @author Phil Crosby
  * @author Peter Friese
  */
-public class Util{
+public class Util {
     public static final String NL = System.getProperty("line.separator");
 
-    private static boolean isFileWithExtension(IResource resource, String ext){
-        return (resource != null && resource.getType() == IResource.FILE && ext.equalsIgnoreCase(resource.getFileExtension()));
+    private static boolean isFileWithExtension(IResource resource, String ext) {
+        return (resource != null && resource.getType() == IResource.FILE && ext
+                .equalsIgnoreCase(resource.getFileExtension()));
     }
 
     /**
@@ -28,9 +29,10 @@ public class Util{
      * 
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a Java source file, <code>false</code> otherwise.
+     * @return <code>true</code> if the given resource is a Java source file,
+     *         <code>false</code> otherwise.
      */
-    public static boolean isJavaFile(IResource resource){
+    public static boolean isJavaFile(IResource resource) {
         return isFileWithExtension(resource, "java");
     }
 
@@ -39,27 +41,31 @@ public class Util{
      * 
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a class file, <code>false</code> otherwise.
+     * @return <code>true</code> if the given resource is a class file,
+     *         <code>false</code> otherwise.
      */
-    public static boolean isClassFile(IResource resource){
+    public static boolean isClassFile(IResource resource) {
         return isFileWithExtension(resource, "class");
     }
 
     /**
-     * Checks whether the given resource is a Java artifact (i.e. either a Java source file or a Java class file).
+     * Checks whether the given resource is a Java artifact (i.e. either a Java
+     * source file or a Java class file).
      * 
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a Java artifact. <code>false</code> otherwise.
+     * @return <code>true</code> if the given resource is a Java artifact.
+     *         <code>false</code> otherwise.
      */
-    public static boolean isJavaArtifact(IResource resource){
+    public static boolean isJavaArtifact(IResource resource) {
         return isJavaFile(resource) || isClassFile(resource);
     }
 
-    public static boolean isJavaProject(IProject project){
-        try{
-            return project != null && project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
-        }catch (CoreException e){
+    public static boolean isJavaProject(IProject project) {
+        try {
+            return project != null && project.isOpen()
+                    && project.hasNature(JavaCore.NATURE_ID);
+        } catch (CoreException e) {
             Activator.logException(e, "couldn't determine project nature");
             return false;
         }
@@ -70,22 +76,26 @@ public class Util{
      * 
      * @param javaElements
      *            the selected java elements
-     * @return all compilation units containing and contained in elements from javaElements
+     * @return all compilation units containing and contained in elements from
+     *         javaElements
      * @throws JavaModelException
      */
-    public static ICompilationUnit[] getAllCompilationUnits(IJavaElement... javaElements) throws JavaModelException{
+    public static ICompilationUnit[] getAllCompilationUnits(
+            IJavaElement... javaElements) throws JavaModelException {
         Set<ICompilationUnit> result = new LinkedHashSet<ICompilationUnit>();
-        for (int i = 0; i < javaElements.length; i++){
+        for (int i = 0; i < javaElements.length; i++) {
             addAllCus(result, javaElements[i]);
         }
         return result.toArray(new ICompilationUnit[result.size()]);
     }
 
-    private static void addAllCus(Set<ICompilationUnit> collector, IJavaElement javaElement) throws JavaModelException{
-        switch (javaElement.getElementType()){
+    private static void addAllCus(Set<ICompilationUnit> collector,
+            IJavaElement javaElement) throws JavaModelException {
+        switch (javaElement.getElementType()) {
         case IJavaElement.JAVA_PROJECT:
             IJavaProject javaProject = (IJavaProject) javaElement;
-            IPackageFragmentRoot[] packageFragmentRoots = javaProject.getPackageFragmentRoots();
+            IPackageFragmentRoot[] packageFragmentRoots = javaProject
+                    .getPackageFragmentRoots();
             for (int i = 0; i < packageFragmentRoots.length; i++)
                 addAllCus(collector, packageFragmentRoots[i]);
             return;
@@ -101,7 +111,8 @@ public class Util{
 
         case IJavaElement.PACKAGE_FRAGMENT:
             IPackageFragment packageFragment = (IPackageFragment) javaElement;
-            collector.addAll(Arrays.asList(packageFragment.getCompilationUnits()));
+            collector.addAll(Arrays.asList(packageFragment
+                    .getCompilationUnits()));
             return;
 
         case IJavaElement.COMPILATION_UNIT:
@@ -109,7 +120,8 @@ public class Util{
             return;
 
         default:
-            ICompilationUnit cu = (ICompilationUnit) javaElement.getAncestor(IJavaElement.COMPILATION_UNIT);
+            ICompilationUnit cu = (ICompilationUnit) javaElement
+                    .getAncestor(IJavaElement.COMPILATION_UNIT);
             if (cu != null)
                 collector.add(cu);
         }

@@ -13,7 +13,7 @@ import checkers.eclipse.util.*;
 /**
  * Superclass of all checker actions.
  */
-public abstract class RunCheckerAction implements IObjectActionDelegate{
+public abstract class RunCheckerAction implements IObjectActionDelegate {
 
     /** The current selection. */
     protected ISelection selection;
@@ -23,7 +23,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
 
     private final Class<?> checkerClass;
 
-    protected RunCheckerAction(Class<?> checker){
+    protected RunCheckerAction(Class<?> checker) {
         super();
         this.checkerClass = checker;
     }
@@ -32,7 +32,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
      * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
      */
     @Override
-    public void setActivePart(IAction action, IWorkbenchPart targetPart){
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
         // do nothing
     }
 
@@ -40,12 +40,12 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
      * @see IActionDelegate#run(IAction)
      */
     @Override
-    public void run(IAction action){
-        if (!selection.isEmpty()){
-            if (selection instanceof IStructuredSelection){
+    public void run(IAction action) {
+        if (!selection.isEmpty()) {
+            if (selection instanceof IStructuredSelection) {
                 IStructuredSelection sSelection = (IStructuredSelection) selection;
 
-                if (selection.isEmpty()){
+                if (selection.isEmpty()) {
                     return;
                 }
 
@@ -54,15 +54,16 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
         }
     }
 
-    private void work(final IJavaProject project){
-        Job runChecker = new Job("Running checker on " + project.getElementName() + "...") {
+    private void work(final IJavaProject project) {
+        Job runChecker = new Job("Running checker on "
+                + project.getElementName() + "...") {
 
             @Override
-            protected IStatus run(IProgressMonitor monitor){
-                try{
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
                     CheckerWorker worker = new CheckerWorker(monitor);
                     worker.work(project, checkerClass);
-                }catch (CoreException e){
+                } catch (CoreException e) {
                     Activator.logException(e, "Analysis exception");
                     return Status.CANCEL_STATUS;
                 }
@@ -80,8 +81,8 @@ public abstract class RunCheckerAction implements IObjectActionDelegate{
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */
     @Override
-    public void selectionChanged(IAction action, ISelection newSelection){
-        if (!usedInEditor){
+    public void selectionChanged(IAction action, ISelection newSelection) {
+        if (!usedInEditor) {
             this.selection = newSelection;
         }
     }

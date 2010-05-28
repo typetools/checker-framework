@@ -19,52 +19,56 @@ import checkers.eclipse.util.*;
  * 
  * XXX copied from FindBugs.
  */
-public class ClearMarkersAction implements IObjectActionDelegate{
+public class ClearMarkersAction implements IObjectActionDelegate {
 
     /** The current selection. */
     private ISelection currentSelection;
 
     @Override
-    public final void setActivePart(final IAction action, final IWorkbenchPart targetPart){
+    public final void setActivePart(final IAction action,
+            final IWorkbenchPart targetPart) {
         // noop
     }
 
     @Override
-    public final void selectionChanged(final IAction action, final ISelection selection){
+    public final void selectionChanged(final IAction action,
+            final ISelection selection) {
         this.currentSelection = selection;
     }
 
     @Override
-    public final void run(final IAction action){
-        if (!currentSelection.isEmpty()){
-            if (currentSelection instanceof IStructuredSelection){
+    public final void run(final IAction action) {
+        if (!currentSelection.isEmpty()) {
+            if (currentSelection instanceof IStructuredSelection) {
                 IStructuredSelection structuredSelection = (IStructuredSelection) currentSelection;
                 work(structuredSelection);
             }
         }
     }
 
-    private static class MarkerCleaner implements IRunnableWithProgress{
+    private static class MarkerCleaner implements IRunnableWithProgress {
         private final IStructuredSelection selection;
 
-        public MarkerCleaner(IStructuredSelection selection){
+        public MarkerCleaner(IStructuredSelection selection) {
             this.selection = selection;
         }
 
         @Override
-        public void run(IProgressMonitor pm) throws InvocationTargetException{
-            try{
+        public void run(IProgressMonitor pm) throws InvocationTargetException {
+            try {
                 @SuppressWarnings("unchecked")
                 Iterator<IAdaptable> it = selection.iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     IAdaptable adaptable = it.next();
-                    IResource resource = (IResource) adaptable.getAdapter(IResource.class);
-                    if (resource != null){
-                        pm.subTask("Clearing JSR 308 markers from " + resource.getName());
+                    IResource resource = (IResource) adaptable
+                            .getAdapter(IResource.class);
+                    if (resource != null) {
+                        pm.subTask("Clearing JSR 308 markers from "
+                                + resource.getName());
                         MarkerUtil.removeMarkers(resource);
                     }
                 }
-            }catch (CoreException ex){
+            } catch (CoreException ex) {
                 Activator.logException(ex, "CoreException on clear markers");
                 throw new InvocationTargetException(ex);
             }
@@ -72,18 +76,21 @@ public class ClearMarkersAction implements IObjectActionDelegate{
     }
 
     /**
-     * Clear the markers on each project in the given selection, displaying a progress monitor.
+     * Clear the markers on each project in the given selection, displaying a
+     * progress monitor.
      * 
      * @param selection
      */
-    private void work(final IStructuredSelection selection){
-        try{
+    private void work(final IStructuredSelection selection) {
+        try {
             IRunnableWithProgress r = new MarkerCleaner(selection);
-            ProgressMonitorDialog progress = new ProgressMonitorDialog(Activator.getShell());
+            ProgressMonitorDialog progress = new ProgressMonitorDialog(
+                    Activator.getShell());
             progress.run(true, true, r);
-        }catch (InvocationTargetException e){
-            Activator.logException(e, "InvocationTargetException on clear markers");
-        }catch (InterruptedException e){
+        } catch (InvocationTargetException e) {
+            Activator.logException(e,
+                    "InvocationTargetException on clear markers");
+        } catch (InterruptedException e) {
             Activator.logException(e, "InterruptedException on clear markers");
         }
     }
