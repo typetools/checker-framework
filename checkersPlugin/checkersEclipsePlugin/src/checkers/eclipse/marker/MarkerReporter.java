@@ -28,17 +28,10 @@ public class MarkerReporter implements IWorkspaceRunnable {
             System.out.println("Creating marker for " + resource.getLocation());
         }
 
-        // This triggers resource update on IResourceChangeListener's
-        // (BugTreeView)
         IMarker marker = resource.createMarker(NAME);
-
         setAttributes(marker);
     }
 
-    /**
-     * @param marker
-     * @throws CoreException
-     */
     private void setAttributes(IMarker marker) throws CoreException {
         if (Activator.DEBUG) {
             System.out.println("Setting attibutes for marker in "

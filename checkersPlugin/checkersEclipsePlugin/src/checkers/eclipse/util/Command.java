@@ -19,14 +19,12 @@ public class Command {
 
     public static void runCommand(String[] command, String prompt,
             boolean verbose, String nonVerboseMessage, boolean gobbleChars) {
-
         runCommand(command, prompt, verbose, nonVerboseMessage, false,
                 gobbleChars);
     }
 
     public static void runCommandOKToFail(String[] command, String prompt,
             boolean verbose, String nonVerboseMessage, boolean gobbleChars) {
-
         runCommand(command, prompt, verbose, nonVerboseMessage, true,
                 gobbleChars);
     }

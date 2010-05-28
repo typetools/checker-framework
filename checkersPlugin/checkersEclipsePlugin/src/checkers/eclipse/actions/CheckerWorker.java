@@ -1,5 +1,6 @@
 package checkers.eclipse.actions;
 
+import java.io.*;
 import java.util.*;
 
 import org.eclipse.core.resources.*;
@@ -11,30 +12,30 @@ import checkers.eclipse.util.*;
 
 public class CheckerWorker {
 
-    private static final String PATH_SEPARATOR = System
-            .getProperty("path.separator");// This is : on unix
+    private static final String PATH_SEPARATOR = File.pathSeparator;
+
     private final IProgressMonitor pm;
 
     public CheckerWorker(IProgressMonitor monitor) {
         pm = monitor;
     }
 
-    public void work(IJavaProject project, Class<?> checkerClass)
+    public void work(IJavaProject project, String checkerName)
             throws CoreException {
-        pm.beginTask("Running checker " + checkerClass.getName() + " on "
-                + project.getElementName(), 10);
+        pm.beginTask(
+                "Running checker " + checkerName + " on "
+                        + project.getElementName(), 10);
         pm.setTaskName("Removing old markers");
         MarkerUtil.removeMarkers(project.getResource());
         pm.worked(1);
         List<String> javaFileNames = getSourceFilesOnClasspath(project);
-        String processor = checkerClass.getCanonicalName();
         pm.setTaskName("Running checker");
         String cp = getClasspathForJavac(project);
 
         // XXX it is very annoying that we run commandline javac rather than
         // directly. But otherwise there's a classpath hell.
         List<JavacError> callJavac = new CommandlineJavacRunner().callJavac(
-                javaFileNames, processor, cp);
+                javaFileNames, checkerName, cp);
         pm.worked(6);
         pm.setTaskName("Updating problem list");
         for (JavacError javacError : callJavac) {
@@ -94,6 +95,7 @@ public class CheckerWorker {
         IPath out = cp.getOutputLocation();
         if (out != null)
             return out.toOSString();
+
         // location is null if the classpath entry outputs to the 'default'
         // location, i.e. project
         IFile outDir = ResourcesPlugin.getWorkspace().getRoot()
@@ -102,8 +104,7 @@ public class CheckerWorker {
     }
 
     private String getAbsolutePath(IClasspathEntry entry) {
-        IFile jarFile = ResourcesPlugin.getWorkspace().getRoot()
-                .getFile(entry.getPath());
+        IFile jarFile = ResourceUtils.workspaceRoot().getFile(entry.getPath());
         IPath location = jarFile.getLocation();
         if (location != null)
             return location.toOSString();
@@ -122,9 +123,10 @@ public class CheckerWorker {
     }
 
     private IResource getFile(IJavaProject jProject, JavacError javacError) {
-        IPath fullPath = jProject.getProject().getLocation();
-        return jProject.getProject().findMember(
-                Path.fromOSString(javacError.file.getPath())
-                        .removeFirstSegments(fullPath.segmentCount()));
+        IProject project = jProject.getProject();
+        IPath filePath = Path.fromOSString(javacError.file.getPath());
+        int segCount = project.getLocation().segmentCount();
+
+        return project.findMember(filePath.removeFirstSegments(segCount));
     }
 }
