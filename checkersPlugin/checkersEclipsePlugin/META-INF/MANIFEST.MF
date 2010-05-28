@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: checkers.eclipse
 Bundle-SymbolicName: checkers.eclipse;singleton:=true
-Bundle-Version: 0.0.3
+Bundle-Version: 0.0.4
 Bundle-ClassPath: lib/javac.jar,lib/checkers.jar,.
 Bundle-Activator: checkers.eclipse.Activator
 Export-Package: checkers.eclipse,
