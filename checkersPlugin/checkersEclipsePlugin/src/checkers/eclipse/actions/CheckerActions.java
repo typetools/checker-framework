@@ -6,6 +6,9 @@ import checkers.interning.*;
 import checkers.javari.*;
 import checkers.nullness.*;
 
+/**
+ * Set of the action classes for the supported Checkers
+ */
 public class CheckerActions {
     private CheckerActions() {
         throw new AssertionError("not to be instantiated");

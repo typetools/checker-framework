@@ -7,6 +7,7 @@ import java.util.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jdt.core.*;
 import org.eclipse.jface.viewers.*;
 
 public class ResourceUtils {
@@ -184,4 +185,15 @@ public class ResourceUtils {
     public static IWorkspaceRoot workspaceRoot() {
         return ResourcesPlugin.getWorkspace().getRoot();
     }
+
+    public static List<String> sourceFilesOf(IJavaProject project)
+            throws CoreException {
+        final List<String> fileNames = new ArrayList<String>();
+
+        for (ICompilationUnit cu : Util.getAllCompilationUnits(project)) {
+            fileNames.add(cu.getResource().getLocation().toOSString());
+        }
+        return fileNames;
+    }
+
 }
