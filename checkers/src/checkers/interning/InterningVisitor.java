@@ -181,7 +181,8 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         // "return 0" statement (for the Comparator.compare heuristic).
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
-                Heuristics.applyAt(getCurrentPath(), Tree.Kind.IF, new Heuristics.Matcher() {
+                Heuristics.Matchers.withIn(
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
 
                     @Override
                     public Boolean visitIf(IfTree tree, Void p) {
@@ -202,7 +203,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
                                 expr.getKind() == Tree.Kind.INT_LITERAL &&
                                 ((LiteralTree)expr).getValue().equals(0));
                     }
-                });
+                })).match(getCurrentPath());
 
             if (!returnsZero)
                 return false;
