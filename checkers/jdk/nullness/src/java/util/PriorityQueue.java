@@ -24,6 +24,6 @@ public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> i
   public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
   public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
 
-  @NonNullIfFalse({"poll()", "peek()"})
+  @AssertNonNullIfFalse({"poll()", "peek()"})
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }
