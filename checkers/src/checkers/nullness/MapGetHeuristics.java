@@ -1,5 +1,7 @@
 package checkers.nullness;
 
+import static checkers.util.Heuristics.Matchers.*;
+
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -14,9 +16,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
-import checkers.util.Heuristics;
+import checkers.util.Heuristics.Matcher;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.util.Heuristics.Matchers;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -148,26 +151,24 @@ import com.sun.source.util.TreePath;
     /**
      * Case 1: get() is within true clause of map.containsKey()
      */
-    private boolean checkForContains(final Element key,
-            final VariableElement map, TreePath path) {
-        return Heuristics.applyAtAny(path, Tree.Kind.IF, new Heuristics.Matcher() {
+    public Matcher inContains(final Element key, final VariableElement map) {
+        return or(withIn(Matchers.ofKind(Tree.Kind.IF, new Matcher() {
             @Override public Boolean visitIf(IfTree tree, Void p) {
                 return isInvocationOfContains(key, map, tree.getCondition());
             }
-        }) || Heuristics.applyAtAny(path, Tree.Kind.CONDITIONAL_EXPRESSION, new Heuristics.Matcher() {
+        })), withIn(ofKind(Tree.Kind.CONDITIONAL_EXPRESSION, new Matcher() {
             @Override public Boolean visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
                 return isInvocationOfContains(key, map, tree.getCondition());
             }
-        });
+        })));
     }
 
     /**
      * Case 2: get() is within enhanced for-loop over the keys
      */
-    private boolean checkForEnhanced(final Element key,
-            final VariableElement map, TreePath path) {
-        return Heuristics.applyAtAny(path, Tree.Kind.ENHANCED_FOR_LOOP,
-                new Heuristics.Matcher() {
+    private Matcher inForEnhanced(final Element key,
+            final VariableElement map) {
+        return withIn(ofKind(Tree.Kind.ENHANCED_FOR_LOOP, new Matcher() {
             @Override public Boolean visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
                 if (key.equals(TreeUtils.elementFromDeclaration(tree.getVariable())))
                     return visit(tree.getExpression(), p);
@@ -177,20 +178,19 @@ import com.sun.source.util.TreePath;
             @Override public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
                 return (isMethod(tree, mapKeySet) && map.equals(getSite(tree)));
             }
-        });
+        }));
     }
 
     /**
      * Case 3: get() is preceded with an assert
      */
-    private boolean checkForAsserts(final Element key,
-            final VariableElement map, TreePath path) {
-        return Heuristics.preceededBy(path, Tree.Kind.ASSERT, new Heuristics.Matcher() {
+    private Matcher preceededByAssert(final Element key, final VariableElement map) {
+        return preceededBy(ofKind(Tree.Kind.ASSERT, new Matcher() {
             @Override public Boolean visitAssert(AssertTree tree, Void p) {
                 return isInvocationOfContains(key, map, tree.getCondition())
                     || isCheckOfGet(key, map, tree.getCondition());
             }
-        });
+        }));
     }
 
     private boolean isTerminating(StatementTree tree) {
@@ -214,22 +214,21 @@ import com.sun.source.util.TreePath;
     /**
      * Case 4: get() is preceded with explicit assertion
      */
-    private boolean checkForIfExceptions(final Element key,
-            final VariableElement map, TreePath path) {
-        return Heuristics.preceededBy(path, Tree.Kind.IF, new Heuristics.Matcher() {
+    private Matcher preceededByExplicitAssert(final Element key,
+            final VariableElement map) {
+        return preceededBy(ofKind(Tree.Kind.IF, new Matcher() {
             @Override public Boolean visitIf(IfTree tree, Void p) {
                 return (isNotContained(key, map, tree.getCondition())
                     && isTerminating(tree.getThenStatement()));
             }
-        });
+        }));
     }
 
     /**
      * Case 5: get() is preceded by put-if-abset pattern
      */
-    private boolean checkForIfThenPut(final Element key, final VariableElement map,
-            TreePath path) {
-        return Heuristics.preceededBy(path, Tree.Kind.IF, new Heuristics.Matcher() {
+    private Matcher preceededByIfThenPut(final Element key, final VariableElement map) {
+        return preceededBy(ofKind(Tree.Kind.IF, new Matcher() {
             @Override public Boolean visitIf(IfTree tree, Void p) {
                 if (isNotContained(key, map, tree.getCondition())) {
                     StatementTree first = firstStatement(tree.getThenStatement());
@@ -241,9 +240,17 @@ import com.sun.source.util.TreePath;
                 }
                 return false;
             }
-        });
+        }));
     }
 
+    private Matcher keyInMatcher(Element key, VariableElement map) {
+        return or(inContains(key, map),
+                inForEnhanced(key, map),
+                preceededByAssert(key, map),
+                preceededByExplicitAssert(key, map),
+                preceededByIfThenPut(key, map)
+                );
+    }
     /**
      * Checks for the supported patterns, and determines if we can
      * infer that the queried key exists in the map
@@ -256,16 +263,7 @@ import com.sun.source.util.TreePath;
         TreePath path = factory.getPath(keyTree);
         Element key = TreeUtils.elementFromUse(keyTree);
 
-        if (checkForContains(key, map, path)
-            || checkForEnhanced(key, map, path)
-            || checkForAsserts(key, map, path)
-            || checkForIfExceptions(key, map, path)
-            || checkForIfThenPut(key, map, path)
-            ) {
-            return true;
-        }
-
-        return false;
+        return keyInMatcher(key, map).match(path);
     }
 
     private Element getSite(MethodInvocationTree tree) {
