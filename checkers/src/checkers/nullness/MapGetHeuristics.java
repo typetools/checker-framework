@@ -14,6 +14,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
+import checkers.util.Heuristics;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
@@ -147,65 +148,49 @@ import com.sun.source.util.TreePath;
     /**
      * Case 1: get() is within true clause of map.containsKey()
      */
-    private boolean checkForContains(Element key, VariableElement map, TreePath path) {
-        for (TreePath tp = path; tp != null; tp = tp.getParentPath()) {
-            Tree.Kind kind = tp.getLeaf().getKind();
-            if (kind != Tree.Kind.IF && kind != Tree.Kind.CONDITIONAL_EXPRESSION)
-                continue;
-            ExpressionTree condition =
-                (kind == Tree.Kind.IF) ? ((IfTree)tp.getLeaf()).getCondition()
-                        : ((ConditionalExpressionTree)tp.getLeaf()).getCondition();
-            if (isInvocationOfContains(key, map, condition))
-                return true;
-        }
-        return false;
+    private boolean checkForContains(final Element key,
+            final VariableElement map, TreePath path) {
+        return Heuristics.applyAtAny(path, Tree.Kind.IF, new Heuristics.Matcher() {
+            @Override public Boolean visitIf(IfTree tree, Void p) {
+                return isInvocationOfContains(key, map, tree.getCondition());
+            }
+        }) || Heuristics.applyAtAny(path, Tree.Kind.CONDITIONAL_EXPRESSION, new Heuristics.Matcher() {
+            @Override public Boolean visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
+                return isInvocationOfContains(key, map, tree.getCondition());
+            }
+        });
     }
 
     /**
      * Case 2: get() is within enhanced for-loop over the keys
      */
-    private boolean checkForEnhanced(Element key, VariableElement map, TreePath path) {
-        for (TreePath tp = path; tp != null; tp = tp.getParentPath()) {
-            if (tp.getLeaf().getKind() != Tree.Kind.ENHANCED_FOR_LOOP)
-                continue;
-            EnhancedForLoopTree forLoop = (EnhancedForLoopTree) tp.getLeaf();
-            if (forLoop.getExpression() instanceof MethodInvocationTree) {
-                MethodInvocationTree iterable = (MethodInvocationTree)forLoop.getExpression();
-                if (key.equals(TreeUtils.elementFromDeclaration(forLoop.getVariable()))
-                        && isMethod(iterable, mapKeySet)
-                        && map.equals(getSite(iterable)))
-                    return true;
+    private boolean checkForEnhanced(final Element key,
+            final VariableElement map, TreePath path) {
+        return Heuristics.applyAtAny(path, Tree.Kind.ENHANCED_FOR_LOOP,
+                new Heuristics.Matcher() {
+            @Override public Boolean visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+                if (key.equals(TreeUtils.elementFromDeclaration(tree.getVariable())))
+                    return visit(tree.getExpression(), p);
+                return false;
             }
-        }
-        return false;
+
+            @Override public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+                return (isMethod(tree, mapKeySet) && map.equals(getSite(tree)));
+            }
+        });
     }
 
     /**
      * Case 3: get() is preceded with an assert
      */
-    private boolean checkForAsserts(Element key, VariableElement map, TreePath path) {
-        StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
-        if (stmt == null)
-            return false;
-        TreePath p = path;
-        while (p.getLeaf() != stmt) p = p.getParentPath();
-        assert p.getLeaf() == stmt;
-
-        while (p != null && p.getLeaf() instanceof StatementTree) {
-            if (p.getParentPath().getLeaf() instanceof BlockTree) {
-                BlockTree block = (BlockTree)p.getParentPath().getLeaf();
-                for (StatementTree st : block.getStatements()) {
-                    if (st == p.getLeaf())
-                        break;
-                    if (st instanceof AssertTree
-                            && (isInvocationOfContains(key, map, ((AssertTree)st).getCondition())
-                                || isCheckOfGet(key, map, ((AssertTree)st).getCondition())))
-                        return true;
-                }
+    private boolean checkForAsserts(final Element key,
+            final VariableElement map, TreePath path) {
+        return Heuristics.preceededBy(path, Tree.Kind.ASSERT, new Heuristics.Matcher() {
+            @Override public Boolean visitAssert(AssertTree tree, Void p) {
+                return isInvocationOfContains(key, map, tree.getCondition())
+                    || isCheckOfGet(key, map, tree.getCondition());
             }
-            p = p.getParentPath();
-        }
-        return false;
+        });
     }
 
     private boolean isTerminating(StatementTree tree) {
@@ -229,66 +214,34 @@ import com.sun.source.util.TreePath;
     /**
      * Case 4: get() is preceded with explicit assertion
      */
-    private boolean checkForIfExceptions(Element key, VariableElement map, TreePath path) {
-        StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
-        if (stmt == null)
-            return false;
-        TreePath p = path;
-        while (p.getLeaf() != stmt) p = p.getParentPath();
-        assert p.getLeaf() == stmt;
-
-        while (p != null && p.getLeaf() instanceof StatementTree) {
-            if (p.getParentPath().getLeaf() instanceof BlockTree) {
-                BlockTree block = (BlockTree)p.getParentPath().getLeaf();
-                for (StatementTree st : block.getStatements()) {
-                    if (st == p.getLeaf())
-                        break;
-                    if (st instanceof IfTree) {
-                        IfTree ifTree = (IfTree)st;
-                        if (isNotContained(key, map, ifTree.getCondition())) {
-                            if (isTerminating(ifTree.getThenStatement()))
-                                return true;
-                        }
-                    }
-                }
+    private boolean checkForIfExceptions(final Element key,
+            final VariableElement map, TreePath path) {
+        return Heuristics.preceededBy(path, Tree.Kind.IF, new Heuristics.Matcher() {
+            @Override public Boolean visitIf(IfTree tree, Void p) {
+                return (isNotContained(key, map, tree.getCondition())
+                    && isTerminating(tree.getThenStatement()));
             }
-            p = p.getParentPath();
-        }
-        return false;
+        });
     }
 
     /**
      * Case 5: get() is preceded by put-if-abset pattern
      */
-    private boolean checkForIfThenPut(Element key, VariableElement map, TreePath path) {
-        StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
-        if (stmt == null)
-            return false;
-        TreePath p = path;
-        while (p.getLeaf() != stmt) p = p.getParentPath();
-        assert p.getLeaf() == stmt;
-
-        while (p != null && p.getLeaf() instanceof StatementTree) {
-            if (p.getParentPath().getLeaf() instanceof BlockTree) {
-                BlockTree block = (BlockTree)p.getParentPath().getLeaf();
-                for (StatementTree st : block.getStatements()) {
-                    if (st == p.getLeaf())
-                        break;
-                    if (st instanceof IfTree) {
-                        IfTree ifTree = (IfTree)st;
-                        if (isNotContained(key, map, ifTree.getCondition())) {
-                            StatementTree first = firstStatement(ifTree.getThenStatement());
-                            if (first != null
-                                && first.getKind() == Tree.Kind.EXPRESSION_STATEMENT
-                                && isInvocationOfPut(key, map, ((ExpressionStatementTree)first).getExpression()))
-                                return true;
-                        }
+    private boolean checkForIfThenPut(final Element key, final VariableElement map,
+            TreePath path) {
+        return Heuristics.preceededBy(path, Tree.Kind.IF, new Heuristics.Matcher() {
+            @Override public Boolean visitIf(IfTree tree, Void p) {
+                if (isNotContained(key, map, tree.getCondition())) {
+                    StatementTree first = firstStatement(tree.getThenStatement());
+                    if (first != null
+                        && first.getKind() == Tree.Kind.EXPRESSION_STATEMENT
+                        && isInvocationOfPut(key, map, ((ExpressionStatementTree)first).getExpression())) {
+                        return true;
                     }
                 }
+                return false;
             }
-            p = p.getParentPath();
-        }
-        return false;
+        });
     }
 
     /**

@@ -99,4 +99,54 @@ public class Heuristics {
 
         return false;
     }
+
+    /**
+     * Applies a tree-matching algorithm at the any of the parent on a given tree
+     * path with a specified kind and returns the result.
+     *
+     * @param path the path to search
+     * @param kind the kind on which the matcher should be applied
+     * @param m the matcher to run
+     * @return true if a tree with {@link Kind} {@code kind} is found on the
+     *         path and the matcher, when applied, returns true; false otherwise
+     */
+    public static boolean applyAtAny(
+            TreePath path, Tree.Kind kind, Matcher m) {
+
+        for (Tree tree : path) {
+            if (tree.getKind() == kind) {
+                if (m.visit(tree, null))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean preceededBy(
+            TreePath path, Tree.Kind kind, Matcher m) {
+
+        StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
+        if (stmt == null)
+            return false;
+        TreePath p = path;
+        while (p.getLeaf() != stmt) p = p.getParentPath();
+        assert p.getLeaf() == stmt;
+
+        while (p != null && p.getLeaf() instanceof StatementTree) {
+            if (p.getParentPath().getLeaf() instanceof BlockTree) {
+                BlockTree block = (BlockTree)p.getParentPath().getLeaf();
+                for (StatementTree st : block.getStatements()) {
+                    if (st == p.getLeaf())
+                        break;
+
+                    if (kind == st.getKind() && m.visit(st, null))
+                        return true;
+                }
+            }
+            p = p.getParentPath();
+        }
+
+        return false;
+    }
 }
