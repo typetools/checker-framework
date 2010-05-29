@@ -3,10 +3,12 @@ package checkers.eclipse.util;
 import static checkers.eclipse.util.JavaUtils.*;
 import static org.eclipse.core.resources.IResource.*;
 
+import java.io.*;
 import java.util.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jdt.core.*;
 import org.eclipse.jface.viewers.*;
 
 public class ResourceUtils {
@@ -184,4 +186,44 @@ public class ResourceUtils {
     public static IWorkspaceRoot workspaceRoot() {
         return ResourcesPlugin.getWorkspace().getRoot();
     }
+
+    public static List<String> sourceFilesOf(IJavaProject project)
+            throws CoreException {
+        final List<String> fileNames = new ArrayList<String>();
+
+        for (ICompilationUnit cu : Util.getAllCompilationUnits(project)) {
+            fileNames.add(cu.getResource().getLocation().toOSString());
+        }
+        return fileNames;
+    }
+
+    /**
+     * Get the specified project file as an Eclipse resource.
+     * 
+     * Returns null if the file isn't found.
+     */
+    public static IResource getFile(IJavaProject jProject, File file) {
+        IProject project = jProject.getProject();
+        IPath filePath = Path.fromOSString(file.getPath());
+        int segCount = project.getLocation().segmentCount();
+
+        return project.findMember(filePath.removeFirstSegments(segCount));
+    }
+
+    /**
+     * Returns the path of the output directory of the project
+     */
+    public static String outputLocation(IClasspathEntry cp, IJavaProject project) {
+        // TODO: should this be project.getOutputLocation()
+        IPath out = cp.getOutputLocation();
+
+        if (out != null)
+            return out.toOSString();
+
+        // location is null if the classpath entry outputs to the 'default'
+        // location, i.e. project
+        IFile outDir = ResourceUtils.workspaceRoot().getFile(cp.getPath());
+        return outDir.getLocation().toOSString();
+    }
+
 }

@@ -1,13 +1,11 @@
 package checkers.eclipse.actions;
 
-import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.*;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.ui.*;
 
-import checkers.eclipse.*;
 import checkers.eclipse.util.*;
 
 /**
@@ -18,7 +16,7 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
     private final String checkerName;
 
     /** The current selection. */
-    protected ISelection selection;
+    protected IStructuredSelection selection;
 
     /** true if this action is used from editor */
     protected boolean usedInEditor;
@@ -34,9 +32,10 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
 
     @Override
     public void selectionChanged(IAction action, ISelection newSelection) {
-        if (!usedInEditor) {
-            this.selection = newSelection;
-        }
+        if (!usedInEditor && (newSelection instanceof IStructuredSelection)) {
+            this.selection = (IStructuredSelection) newSelection;
+        } else
+            this.selection = null;
     }
 
     /**
@@ -47,37 +46,24 @@ public abstract class RunCheckerAction implements IObjectActionDelegate {
         // do nothing
     }
 
+    private IJavaProject project() {
+        if (selection != null && !selection.isEmpty())
+            return (IJavaProject) selection.getFirstElement();
+        return null;
+    }
+
     /**
      * @see IActionDelegate#run(IAction)
      */
     @Override
     public void run(IAction action) {
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            IStructuredSelection sSelection = (IStructuredSelection) selection;
-            work((IJavaProject) sSelection.getFirstElement());
+        IJavaProject project = project();
+        if (project != null) {
+            Job checkerJob = new CheckerWorker(project, checkerName);
+            checkerJob.setUser(true);
+            checkerJob.setPriority(Job.BUILD);
+            checkerJob.setRule(new MutexSchedulingRule());
+            checkerJob.schedule();
         }
-    }
-
-    private void work(final IJavaProject project) {
-        String jobName = "Running checker on " + project.getElementName();
-
-        Job runChecker = new Job(jobName) {
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    CheckerWorker worker = new CheckerWorker(monitor);
-                    worker.work(project, checkerName);
-                } catch (Throwable e) {
-                    Activator.logException(e, "Analysis exception");
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-
-        runChecker.setUser(true);
-        runChecker.setPriority(Job.BUILD);
-        runChecker.setRule(new MutexSchedulingRule());
-        runChecker.schedule();
     }
 }

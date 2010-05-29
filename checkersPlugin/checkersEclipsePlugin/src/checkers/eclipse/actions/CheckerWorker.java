@@ -1,129 +1,124 @@
 package checkers.eclipse.actions;
 
-import java.io.*;
 import java.util.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.*;
 import org.eclipse.jdt.core.*;
 
+import checkers.eclipse.*;
 import checkers.eclipse.javac.*;
 import checkers.eclipse.util.*;
+import checkers.eclipse.util.Paths.ClasspathBuilder;
 
-public class CheckerWorker {
+public class CheckerWorker extends Job {
 
-    private static final String PATH_SEPARATOR = File.pathSeparator;
+    private final IJavaProject project;
+    private final String checkerName;
 
-    private final IProgressMonitor pm;
-
-    public CheckerWorker(IProgressMonitor monitor) {
-        pm = monitor;
+    public CheckerWorker(IJavaProject project, String checkerName) {
+        super("Running checker on " + project.getElementName());
+        this.project = project;
+        this.checkerName = checkerName;
     }
 
-    public void work(IJavaProject project, String checkerName)
-            throws CoreException {
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+        try {
+            work(monitor);
+        } catch (Throwable e) {
+            Activator.logException(e, "Analysis exception");
+            return Status.CANCEL_STATUS;
+        }
+        return Status.OK_STATUS;
+    }
+
+    private void work(IProgressMonitor pm) throws CoreException {
         pm.beginTask(
                 "Running checker " + checkerName + " on "
                         + project.getElementName(), 10);
+
         pm.setTaskName("Removing old markers");
         MarkerUtil.removeMarkers(project.getResource());
         pm.worked(1);
-        List<String> javaFileNames = getSourceFilesOnClasspath(project);
+
         pm.setTaskName("Running checker");
-        String cp = getClasspathForJavac(project);
+        List<JavacError> callJavac = runChecker(project, checkerName);
+        pm.worked(6);
+
+        pm.setTaskName("Updating problem list");
+        markErrors(project, callJavac);
+        pm.worked(3);
+
+        pm.done();
+    }
+
+    private List<JavacError> runChecker(IJavaProject project, String checkerName)
+            throws CoreException, JavaModelException {
+        List<String> javaFileNames = ResourceUtils.sourceFilesOf(project);
+        String cp = classPathOf(project);
 
         // XXX it is very annoying that we run commandline javac rather than
         // directly. But otherwise there's a classpath hell.
         List<JavacError> callJavac = new CommandlineJavacRunner().callJavac(
                 javaFileNames, checkerName, cp);
-        pm.worked(6);
-        pm.setTaskName("Updating problem list");
-        for (JavacError javacError : callJavac) {
-            IResource file = getFile(project, javacError);
+        return callJavac;
+    }
+
+    private void markErrors(IJavaProject project, List<JavacError> errors) {
+        for (JavacError error : errors) {
+            IResource file = ResourceUtils.getFile(project, error.file);
             if (file == null)
                 continue;
-            MarkerUtil.addMarker(javacError.message, project.getProject(),
-                    file, javacError.lineNumber);
+            MarkerUtil.addMarker(error.message, project.getProject(),
+                    file, error.lineNumber);
         }
-        pm.worked(3);
-        pm.done();
+    }
+
+    private String pathOf(IClasspathEntry cp, IJavaProject project)
+            throws JavaModelException {
+        int entryKind = cp.getEntryKind();
+        switch (entryKind) {
+        case IClasspathEntry.CPE_SOURCE:
+            return ResourceUtils.outputLocation(cp, project);
+        case IClasspathEntry.CPE_LIBRARY:
+            return Paths.absolutePathOf(cp);
+        case IClasspathEntry.CPE_PROJECT:
+            // TODO unimplemented!
+            break;
+        case IClasspathEntry.CPE_CONTAINER:
+            IClasspathContainer c = JavaCore.getClasspathContainer(
+                    cp.getPath(), project);
+            if (c.getKind() == IClasspathContainer.K_DEFAULT_SYSTEM
+                    || c.getKind() == IClasspathContainer.K_SYSTEM)
+                break;
+            for (IClasspathEntry entry : c.getClasspathEntries()) {
+                if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                    return entry.getPath().makeAbsolute().toFile()
+                            .getAbsolutePath();
+                } else {
+                    // TODO unimplemented!
+                }
+            }
+            return "";
+        case IClasspathEntry.CPE_VARIABLE:
+            // TODO unimplemented!
+            return "";
+        }
+        return "";
     }
 
     // Returns the project's classpath in a format suitable for javac
-    private String getClasspathForJavac(IJavaProject project)
-            throws JavaModelException {
-        StringBuilder classpath = new StringBuilder();
+    private String classPathOf(IJavaProject project) throws JavaModelException {
+        ClasspathBuilder classpath = new ClasspathBuilder();
+
         for (IClasspathEntry cp : project.getRawClasspath()) {
-            int entryKind = cp.getEntryKind();
-            switch (entryKind) {
-            case IClasspathEntry.CPE_SOURCE:
-                classpath.append(outputLocation(cp, project) + PATH_SEPARATOR);
-                continue;
-            case IClasspathEntry.CPE_LIBRARY:
-                classpath.append(getAbsolutePath(cp) + PATH_SEPARATOR);
-                break;
-            case IClasspathEntry.CPE_PROJECT:
-                // TODO unimplemented!
-                break;
-            case IClasspathEntry.CPE_CONTAINER:
-                IClasspathContainer c = JavaCore.getClasspathContainer(
-                        cp.getPath(), project);
-                if (c.getKind() == IClasspathContainer.K_DEFAULT_SYSTEM
-                        || c.getKind() == IClasspathContainer.K_SYSTEM)
-                    break;
-                for (IClasspathEntry entry : c.getClasspathEntries()) {
-                    if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                        classpath.append(entry.getPath().makeAbsolute()
-                                .toFile().getAbsolutePath()
-                                + PATH_SEPARATOR);
-                    } else {
-                        // TODO unimplemented!
-                    }
-                }
-                break;
-            case IClasspathEntry.CPE_VARIABLE:
-                // TODO unimplemented!
-                break;
-            }
+            String path = pathOf(cp, project);
+            classpath.append(path);
         }
-        classpath.append(PATH_SEPARATOR
-                + CommandlineJavacRunner.checkersJARlocation());
+
+        classpath.append(CommandlineJavacRunner.checkersJARlocation());
         return classpath.toString();
-    }
-
-    private String outputLocation(IClasspathEntry cp, IJavaProject project) {
-        IPath out = cp.getOutputLocation();
-        if (out != null)
-            return out.toOSString();
-
-        // location is null if the classpath entry outputs to the 'default'
-        // location, i.e. project
-        IFile outDir = ResourceUtils.workspaceRoot().getFile(cp.getPath());
-        return outDir.getLocation().toOSString();
-    }
-
-    private String getAbsolutePath(IClasspathEntry entry) {
-        IFile jarFile = ResourceUtils.workspaceRoot().getFile(entry.getPath());
-        IPath location = jarFile.getLocation();
-        IPath path = (location != null) ? location : jarFile.getFullPath();
-        return path.toOSString();
-    }
-
-    private List<String> getSourceFilesOnClasspath(final IJavaProject project)
-            throws CoreException {
-        final List<String> fileNames = new ArrayList<String>();
-
-        for (ICompilationUnit cu : Util.getAllCompilationUnits(project)) {
-            fileNames.add(cu.getResource().getLocation().toOSString());
-        }
-        return fileNames;
-    }
-
-    private IResource getFile(IJavaProject jProject, JavacError javacError) {
-        IProject project = jProject.getProject();
-        IPath filePath = Path.fromOSString(javacError.file.getPath());
-        int segCount = project.getLocation().segmentCount();
-
-        return project.findMember(filePath.removeFirstSegments(segCount));
     }
 }

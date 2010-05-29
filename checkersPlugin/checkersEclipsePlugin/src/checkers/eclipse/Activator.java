@@ -111,10 +111,11 @@ public class Activator extends AbstractUIPlugin {
         String name = "Checkers Plugins";
         ConsolePlugin plugin = ConsolePlugin.getDefault();
         IConsoleManager conMan = plugin.getConsoleManager();
-        IConsole[] existing = conMan.getConsoles();
-        for (int i = 0; i < existing.length; i++)
-            if (name.equals(existing[i].getName()))
-                return (MessageConsole) existing[i];
+        for (IConsole console : conMan.getConsoles()) {
+            if (name.equals(console.getName()))
+                return (MessageConsole) console;
+        }
+
         // no console found, so create a new one
         MessageConsole myConsole = new MessageConsole(name, null);
         conMan.addConsoles(new IConsole[] { myConsole });
