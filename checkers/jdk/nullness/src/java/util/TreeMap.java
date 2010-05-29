@@ -14,8 +14,8 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
-  public @Nullable K firstKey() { throw new RuntimeException("skeleton method"); }
-  public @Nullable K lastKey() { throw new RuntimeException("skeleton method"); }
+  public K firstKey() { throw new RuntimeException("skeleton method"); }
+  public K lastKey() { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
