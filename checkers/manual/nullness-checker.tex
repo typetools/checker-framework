@@ -231,7 +231,7 @@ possible but are not as useful.
 The Nullness Checker supports a form of conditional nullness types, via the
 \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}} method annotations.
 The annotation on a method declares that some expressions are non-null, if
-the method returns true.
+the method returns true (false, respectively).
 
 Consider \sunjavadoc{java/io/File.html}{java.io.File}.
 Method
@@ -262,7 +262,7 @@ can then de-reference \code{File.isDirectory} safely without any nullness check.
         analyze(child);
       }
     } else {
-        ... analyze file
+        ... analyze file ...
     }
   }
 \end{Verbatim}
