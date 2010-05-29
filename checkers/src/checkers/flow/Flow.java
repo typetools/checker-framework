@@ -131,7 +131,7 @@ public class Flow extends TreePathScanner<Void, Void> {
      * Stores the result of liveness analysis, required by the GEN-KILL analysis
      * for proper handling of jumps (break, return, throw, etc.).
      */
-    private boolean alive = true;
+    protected boolean alive = true;
 
     /** Tracks annotations in try blocks to support exceptions. */
     private final Deque<GenKillBits<AnnotationMirror>> tryBits;
