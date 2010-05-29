@@ -88,7 +88,7 @@ import com.sun.source.util.TreePath;
     }
 
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
-        if (isMapGetInvocation(tree)) {
+        if (isMethod(tree, mapGet)) {
             AnnotatedTypeMirror type = method.getReturnType();
             type.clearAnnotations();
             if (!isSuppressable((MethodInvocationTree)tree)) {
@@ -97,14 +97,6 @@ import com.sun.source.util.TreePath;
                 type.addAnnotation(factory.NONNULL);
             }
         }
-    }
-
-    /**
-     * @return true if the tree is a method invocation to a method overriding
-     *        {@code Map.get(K)}
-     */
-    private boolean isMapGetInvocation(Tree tree) {
-        return isMethod(tree, mapGet);
     }
 
     /**
