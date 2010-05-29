@@ -5,7 +5,6 @@ import java.util.*;
 import checkers.interning.InterningVisitor;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
 
 /**
@@ -78,75 +77,103 @@ public class Heuristics {
         public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
             return visit(node.getExpression(), p);
         }
+
+        public boolean match(TreePath path) {
+            return visit(path.getLeaf(), null);
+        }
     }
 
-    /**
-     * Applies a tree-matching algorithm at the first parent on a given tree
-     * path with a specified kind and returns the result.
-     *
-     * @param path the path to search
-     * @param kind the kind on which the matcher should be applied
-     * @param m the matcher to run
-     * @return true if a tree with {@link Kind} {@code kind} is found on the
-     *         path and the matcher, when applied, returns true; false otherwise
-     */
-    public static boolean applyAt(
-            TreePath path, Tree.Kind kind, Matcher m) {
+    public static class PreceededBy extends Matcher {
+        private final Matcher matcher;
+        public PreceededBy(Matcher matcher) {
+            this.matcher = matcher;
+        }
 
-        for (Tree tree : path)
-            if (tree.getKind() == kind)
-                return m.visit(tree, null) == Boolean.TRUE;
+        public boolean match(TreePath path) {
+            StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
+            if (stmt == null)
+                return false;
+            TreePath p = path;
+            while (p.getLeaf() != stmt) p = p.getParentPath();
+            assert p.getLeaf() == stmt;
 
-        return false;
+            while (p != null && p.getLeaf() instanceof StatementTree) {
+                if (p.getParentPath().getLeaf() instanceof BlockTree) {
+                    BlockTree block = (BlockTree)p.getParentPath().getLeaf();
+                    for (StatementTree st : block.getStatements()) {
+                        if (st == p.getLeaf())
+                            break;
+
+                        if (matcher.match(new TreePath(p, st)))
+                            return true;
+                    }
+                }
+                p = p.getParentPath();
+            }
+
+            return false;
+        }
     }
 
-    /**
-     * Applies a tree-matching algorithm at the any of the parent on a given tree
-     * path with a specified kind and returns the result.
-     *
-     * @param path the path to search
-     * @param kind the kind on which the matcher should be applied
-     * @param m the matcher to run
-     * @return true if a tree with {@link Kind} {@code kind} is found on the
-     *         path and the matcher, when applied, returns true; false otherwise
-     */
-    public static boolean applyAtAny(
-            TreePath path, Tree.Kind kind, Matcher m) {
+    public static class WithIn extends Matcher {
+        private final Matcher matcher;
+        public WithIn(Matcher matcher) {
+            this.matcher = matcher;
+        }
 
-        for (Tree tree : path) {
-            if (tree.getKind() == kind) {
-                if (m.visit(tree, null))
+        public boolean match(TreePath path) {
+            TreePath p = path;
+            while (p != null) {
+                if (matcher.match(p))
+                    return true;
+                p = p.getParentPath();
+            }
+
+            return false;
+        }
+    }
+
+    public static class OfKind extends Matcher {
+        private final Tree.Kind kind;
+        private final Matcher matcher;
+        public OfKind(Tree.Kind kind, Matcher matcher) {
+            this.kind = kind;
+            this.matcher = matcher;
+        }
+
+        public boolean match(TreePath path) {
+            if (path.getLeaf().getKind() == kind)
+                return matcher.match(path);
+            return false;
+        }
+    }
+
+    public static class OrMatcher extends Matcher {
+        private final Matcher[] matchers;
+        public OrMatcher(Matcher... matchers) {
+            this.matchers = matchers;
+        }
+        public boolean match(TreePath path) {
+            for (Matcher matcher: matchers) {
+                if (matcher.match(path))
                     return true;
             }
+            return false;
         }
-
-        return false;
     }
 
-    public static boolean preceededBy(
-            TreePath path, Tree.Kind kind, Matcher m) {
-
-        StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
-        if (stmt == null)
-            return false;
-        TreePath p = path;
-        while (p.getLeaf() != stmt) p = p.getParentPath();
-        assert p.getLeaf() == stmt;
-
-        while (p != null && p.getLeaf() instanceof StatementTree) {
-            if (p.getParentPath().getLeaf() instanceof BlockTree) {
-                BlockTree block = (BlockTree)p.getParentPath().getLeaf();
-                for (StatementTree st : block.getStatements()) {
-                    if (st == p.getLeaf())
-                        break;
-
-                    if (kind == st.getKind() && m.visit(st, null))
-                        return true;
-                }
-            }
-            p = p.getParentPath();
+    public static class Matchers {
+        public static Matcher preceededBy(Matcher matcher) {
+            return new PreceededBy(matcher);
         }
-
-        return false;
+        public static Matcher withIn(Matcher matcher) {
+            return new WithIn(matcher);
+        }
+        public static Matcher ofKind(Tree.Kind kind, Matcher matcher) {
+            return new OfKind(kind, matcher);
+        }
+        public static Matcher or(Matcher... matchers) {
+            return new OrMatcher(matchers);
+        }
     }
 }
