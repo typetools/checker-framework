@@ -1,0 +1,197 @@
+# Commands:
+#
+#  decl: <decls file>
+#  ppt: <ppt name from decl file>
+#  vars: <var1> <var2> <var3> ...
+#  data: <val1> <val2> <val3> ...
+#  assert: inv (<format>, <var1>, <var2>, <var3>)
+#  assert: show_invs (<var1>, <var2>, <var3>)
+#  assert: constant (<var1>, <var2>, <var3> ...)
+
+#
+# Test binary suppressions
+#
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y 
+  data: - 1
+  data: 1 1 
+  assert: inv ("x == y", x, y)
+  assert: !inv ("x >= y", x, y)  
+  data: 2 1 
+  assert: inv ("x >= y", x, y)
+
+#
+# Test recursive suppressions
+#
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: - 1 -
+  data: - - 1
+  data: 1 1 1
+  assert: inv ("x == y", x, y)
+  assert: inv ("y == z", y, z)
+  assert: !inv ("y >= z", y, z) 
+  assert: !inv ("x == (java.lang.Math.max(y, z))", x, y, z)
+  data: 2 2 1
+  assert: inv("y >= z", y, z)
+  assert: !inv ("x == (java.lang.Math.max(y, z))", x, y, z)
+  data: 2 1 2
+  assert: !inv("y >= z", y, z)
+  assert: inv ("x == (java.lang.Math.max(y, z))", x, y, z)
+
+# Test non-instantiation of LinearTernary based on LinearBinary and a constant
+# value
+# use the equation z = 1x + 2y + 6, z == 20
+# the equation over x and y is thus 1x + 2y = 14.  
+# Daikon calculates the binary equation as y == - 0.5 * x + 7
+# Daikon represents the ternary equation as x + 2 * y - z + 6 == 0
+
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 8 3 20
+  data: 6 4 20
+  data: 4 5 20
+  data: 2 6 20
+#  assert: inv("y == - 0.5 * x + 7", x, y) CX
+# assert: inv("2 * y == - x + 14", x, y) CX
+  assert: inv("x + 2 * y - 14 == 0", x, y)
+  assert: !inv ("x + 2 * y - z + 6 == 0", x,y,z)
+  data: 8 5 24
+  # assert: show_invs (x, y, z)
+#  assert: !inv("y == - 0.5 * x + 7", x, y)
+#  assert: !inv("2 * y == - x + 14", x, y)
+  assert: !inv("x + 2 * y - 14 == 0", x, y)
+  assert: inv ("x + 2 * y - z + 6 == 0", x,y,z)
+
+# Test non-instantiation of LinearTernary based on OneOf and two constant
+# values
+
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: - 3 20
+  data: 6 4 20
+  assert: !inv(daikon.inv.ternary.threeScalar.LinearTernary, x, z, z);
+  data: 6 4 25
+  assert: inv(daikon.inv.ternary.threeScalar.LinearTernary, x, z, z);
+
+# Test non-instantiation of LinearTernary based on OneOf and two constant
+# values
+
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 6 3 20
+  data: 3 4 20
+  assert: !inv(daikon.inv.ternary.threeScalar.LinearTernary, x, z, z);
+  data: 5 4 25
+  assert: inv(daikon.inv.ternary.threeScalar.LinearTernary, x, z, z);
+  # assert: show_invs (x, z, z)
+
+# The next tests are for instantiating.  They test the following:
+#
+#   1) during normal instantiation, an unsuppressed invariant is created
+#   2) during normal instantiation, a suppressed invariant is not created
+#   3) during normal instantiation, an invariant that is falsified by previous
+#      constants is removed
+
+# test (1) on 'x==y && y == z ==> x = y & z
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 3 5
+  data: 1 3 5
+  data: 1 3 9
+  assert: inv("x == (y & z)", x, y, z)
+
+# test (2) on 'x==y && y == z ==> x = y & z
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 1 1
+  data: 1 1 1
+  data: 2 2 2
+  assert: !inv("x == (x & x)", x, x, x)
+  data: 1 3 9
+  assert: inv("x == (y & z)", x, y, z)
+
+# test (3) on 'x==y && y<z ==> x = min(y,z)
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 2 3
+  data: 1 2 3
+  data: 2 2 3
+  assert: !inv("x == java.lang.Math.min(y, z)", x, y, z) 
+
+# test suppression x == y && x == z => x = y & z
+# when both of the equalities are removed on the same sample
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 1 1
+  data: 2 2 2
+  data: 5 5 5
+  data: 8 8 8
+  assert: !inv("x == (x & x)", x, x, x)
+  data: 1 5 3
+  assert: inv("x == (y & z)", x, y, z)
+  data: 1 1 4
+  assert: !inv("x == (y & z)", x, y, z)
+
+# test suppression x == y && x == z => x = y & z
+# when one of the equalities is removed
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 1 1
+  data: 2 2 2
+  assert: !inv("x == (x & x)", x, x, x)
+  data: 2 2 3
+  # removed this because a better suppression still makes this suppressed
+  # assert: inv("x == (x & z)", x, x, z)
+  data: 1 1 4
+  assert: !inv("x == (x & z)", x, x, z)
+
+decl: daikon/test/SampleTester.decls
+
+ppt: foo.f():::EXIT35
+  vars: x y z
+  data: 1 1 0
+  data: 2 1 0
+  assert: inv("x >= y", x, y)
+  assert: inv(daikon.inv.binary.twoScalar.IntGreaterEqual,x,y)
+  assert: !inv("x <= y", x, y)
+
+# Test x = min (y, z) non-instantiating suppressions
+decl: daikon/test/SampleTester.decls
+ppt: foo.f():::EXIT35
+  vars: x y z
+
+  # x,y,z are all constants, thus no invariant exists
+  data: 1 1 2  
+  assert: constant(x,y,z)
+  assert: !inv("x == (java.lang.Math.min(x, z))", x, x, z) 
+
+  # min is suppressed by x=y && y<z
+  # note that x and y are in the same equality set
+  data: 2 2 3  
+  assert: !constant(x)
+  assert: !constant(y)
+  assert: !constant(z)
+  assert: !inv("x == (java.lang.Math.min(x, z))", x ,x ,z) 
+
+  # x and y are no longer in the same equality set
+  data: 3 5 3
+  assert: inv("x == (java.lang.Math.min(y, z))", x, y, z)  
+
+  data: 2 2 5
+  data: 2 5 2
+  data: 20 20 50
+  assert: inv("x == (java.lang.Math.min(y, z))", x, y, z)  
+
+  data:  5 6 7
+  assert: !inv("x == (java.lang.Math.min(y, z))", x, y, z)  
