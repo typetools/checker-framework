@@ -707,6 +707,16 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 \section{Tips about writing annotations\label{tips-about-writing-annotations}}
 
+\subsection{Do not annotate local variables\label{tips-local-inference}}
+
+The checker infers annotations for local variables (see
+Section~\ref{type-refinement}).  Usually, you only need to annotate fields
+and method sigatures.  After doing those, you can add annotations inside
+method bodies if the checker is unable to infer the correct annotation, if
+you need to suppress a warning (see Section~\ref{suppressing-warnings}),
+etc.
+
+
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
 You should use annotations to indicate \emph{normal} behavior.  The
