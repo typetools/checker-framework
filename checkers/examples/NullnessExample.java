@@ -8,13 +8,16 @@ import java.util.*;
  * <p>
  *
  * Also see {@link NullnessExampleWithWarnings}, an example of incorrect use
- * of the NonNull type annotation.  See the Nullness checker documentation
+ * of the @NonNull type annotation.  See the Nullness checker documentation
  * for larger examples of annotated code.
  **/
 public class NullnessExample {
 
   public void example() {
 
+    // These type annotations are redundant -- the Nullness Checker will
+    // infer them, but they are written here in the example for emhpasis.
+    // In general, you do not have to annotate local variables.
     @NonNull String foo = "foo";
     @NonNull String bar = "bar";
 
