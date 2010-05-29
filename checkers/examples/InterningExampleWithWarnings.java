@@ -15,6 +15,9 @@ public class InterningExampleWithWarnings {
 
   public void example() {
 
+    // This type annotation is redundant -- the Interning Checker will
+    // infer it, but it is written here in the example for emhpasis.
+    // In general, you do not have to annotate local variables.
     @Interned String foo = "foo";
     String bar = new String("bar");
 
