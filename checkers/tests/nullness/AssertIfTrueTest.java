@@ -1,5 +1,9 @@
 import checkers.nullness.quals.*;
 
+/**
+ * Documented in Issue 62
+ * @skip-test
+ */
 public class AssertIfTrueTest {
 
     static String killfile_filter;
@@ -18,7 +22,7 @@ public class AssertIfTrueTest {
 
     public class File1 {
         @AssertNonNullIfTrue({"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
-            public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
+        public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
 
         public String @Nullable [] list() { throw new RuntimeException("skeleton method"); }
         public String @Nullable [] list(@Nullable String FilenameFilter_a1) { throw new RuntimeException("skeleton method"); }
