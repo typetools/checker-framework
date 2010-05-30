@@ -35,9 +35,9 @@ import checkers.quals.Unqualified;
  *
  * <li value="2">{@link ResourceBundle}:
  * The proper recommended mechanism for localization.
- * Prograppers pass the {@code baseName} name of the bundle via
+ * Programmers pass the {@code baseName} name of the bundle via
  * {@code bundlename} (e.g. {@code -Abundlename=MyResource}.  The checker uses
- * the resource associdated with the default {@link Locale} in the compilation
+ * the resource associated with the default {@link Locale} in the compilation
  * system.
  * </li>
  *
