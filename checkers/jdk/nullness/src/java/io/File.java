@@ -28,7 +28,9 @@ public class File implements Serializable, Comparable<File> {
   public boolean canRead() { throw new RuntimeException("skeleton method"); }
   public boolean canWrite() { throw new RuntimeException("skeleton method"); }
   public boolean exists() { throw new RuntimeException("skeleton method"); }
-  @AssertNonNullIfTrue({"list()","list(FilenameFilter)","listFiles()","listFiles(FilenameFilter)","listFiles(FileFilter)"})
+  // This @AssertNonNullIfTrue is not true, since the list methods also
+  // return true in the case of an IO error (instead of throwing IOException).
+  // @AssertNonNullIfTrue({"list()","list(FilenameFilter)","listFiles()","listFiles(FilenameFilter)","listFiles(FileFilter)"})
   public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
   public boolean isFile() { throw new RuntimeException("skeleton method"); }
   public boolean isHidden() { throw new RuntimeException("skeleton method"); }
