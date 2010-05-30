@@ -545,6 +545,16 @@ class NullnessFlow extends Flow {
                     if (param < methodInvok.getArguments().size()) {
                         asserts.add(methodInvok.getArguments().get(param).toString());
                     }
+                } else if (parameterPtn.matcher(s).find()) {
+                    Matcher matcher = parameterPtn.matcher(s);
+                    matcher.find();
+                    int param = Integer.valueOf(matcher.group(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        String rep = methodInvok.getArguments().get(param).toString();
+
+                        String val = matcher.replaceAll(rep);
+                        asserts.add(receiver + val);
+                    }
                 } else {
                     asserts.add(receiver + s);
                 }
@@ -579,6 +589,16 @@ class NullnessFlow extends Flow {
                     if (param < methodInvok.getArguments().size()) {
                         asserts.add(methodInvok.getArguments().get(param).toString());
                     }
+                } else if (parameterPtn.matcher(s).find()) {
+                    Matcher matcher = parameterPtn.matcher(s);
+                    matcher.find();
+                    int param = Integer.valueOf(matcher.group(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        String rep = methodInvok.getArguments().get(param).toString();
+
+                        String val = matcher.replaceAll(rep);
+                        asserts.add(receiver + val);
+                    }
                 } else {
                     asserts.add(receiver + s);
                 }
@@ -608,7 +628,7 @@ class NullnessFlow extends Flow {
                     if (param < methodInvok.getArguments().size()) {
                         asserts.add(methodInvok.getArguments().get(param).toString());
                     }
-                } if (parameterPtn.matcher(s).find()) {
+                } else if (parameterPtn.matcher(s).find()) {
                     Matcher matcher = parameterPtn.matcher(s);
                     matcher.find();
                     int param = Integer.valueOf(matcher.group(1));
@@ -646,6 +666,16 @@ class NullnessFlow extends Flow {
                     int param = Integer.valueOf(s.substring(1));
                     if (param < methodInvok.getArguments().size()) {
                         asserts.add(methodInvok.getArguments().get(param).toString());
+                    }
+                } else if (parameterPtn.matcher(s).find()) {
+                    Matcher matcher = parameterPtn.matcher(s);
+                    matcher.find();
+                    int param = Integer.valueOf(matcher.group(1));
+                    if (param < methodInvok.getArguments().size()) {
+                        String rep = methodInvok.getArguments().get(param).toString();
+
+                        String val = matcher.replaceAll(rep);
+                        asserts.add(receiver + val);
                     }
                 } else {
                     asserts.add(receiver + s);
