@@ -50,4 +50,28 @@ public class KeyFors {
             @NonNull String al = lastMap.get(key);
         }
     }
+
+
+  public class Graph<T> {
+
+    HashMap<T, List<@KeyFor("childMap") T>> childMap;
+
+    public void addNode( T n ) {
+      // body omitted, not relevant to test case
+    }
+
+    public void addEdge2( T parent, T child ) {
+      addNode(parent);
+      @KeyFor("childMap") T parent2 = (@KeyFor("childMap") T) parent;
+      @NonNull List<T> l = childMap.get(parent2);
+    }
+
+    public void addEdge3( T parent, T child ) {
+      addNode(parent);
+      parent = (@KeyFor("childMap") T) parent;
+      @NonNull List<T> l = childMap.get(parent);
+    }
+
+  }
+    
 }
