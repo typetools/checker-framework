@@ -47,10 +47,10 @@ import static checkers.types.AnnotatedTypeMirror.*;
  *
  * <li>
  * This factory will add the {@link ThisMutable} annotation to a type if the
- * input is field of a mutable class.
+ * input is a field of a mutable class.
  *
  * <li>
- * In all other cases, {@link Mutable} annotation is inserted by default.
+ * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
 public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
