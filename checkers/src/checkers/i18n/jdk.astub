@@ -13,19 +13,19 @@ class ResourceBundle {
 package java.awt;
 
 class Button {
-  @LocalizedString String getLabel();
-  void setLabel(@LocalizedString String label);
+  @Localized String getLabel();
+  void setLabel(@Localized String label);
 }
 
 class CheckBox {
-  @LocalizedString String getLabel();
-  void setLabel(@LocalizedString String label);
+  @Localized String getLabel();
+  void setLabel(@Localized String label);
 }
 
 package java.io;
 
 class PrintStream {
-  void println(@LocalizedString String str);
+  void println(@Localized String str);
 }
 
 package javax.swing;
