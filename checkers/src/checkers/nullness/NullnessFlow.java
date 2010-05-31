@@ -770,56 +770,14 @@ class NullnessFlow extends Flow {
         }
     }
 
-    // XXX: This method is copied from super to fix an immediate bug
-    // Have to fix it soon!  -- 05/29/2010
-    private void superVisitIf(IfTree node) {
-        pushNewLevel();
-
-        scanCond(node.getCondition());
-
-        GenKillBits<AnnotationMirror> beforeElse = annosWhenFalse;
-        annos = annosWhenTrue;
-
-        boolean aliveBefore = alive;
-
-        scanStat(node.getThenStatement());
-        popLastLevel();
-        pushNewLevel();
-        StatementTree elseStmt = node.getElseStatement();
-        if (elseStmt != null) {
-            // start diff from super
-            this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(node.getCondition()));
-            // end diff from super
-            boolean aliveAfter = alive;
-            alive = aliveBefore;
-            GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
-            annos = beforeElse;
-            scanStat(elseStmt);
-
-            if (!alive) {
-                alive = aliveAfter;
-                after.or(annos);
-                annos = GenKillBits.copy(after);
-            } else if (!aliveAfter) {
-                annos = annos;  // NOOP
-            } else {
-                // both branches are alive
-                alive = true;
-                annos.and(after);
-            }
-        } else {
-            if (!alive)
-                annos = GenKillBits.copy(beforeElse);
-            else
-                annos.and(beforeElse);
-        }
-        popLastLevel();
+    @Override
+    protected void whenConditionFalse(ExpressionTree node, Void p) {
+        this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(node));
     }
 
     @Override
     public Void visitIf(IfTree node, Void p) {
-        superVisitIf(node);
-        //super.visitIf(node, p);
+        super.visitIf(node, p);
 
         ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
         if (isTerminating(node.getThenStatement())) {

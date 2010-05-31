@@ -697,6 +697,9 @@ public class Flow extends TreePathScanner<Void, Void> {
         return null;
     }
 
+    protected void whenConditionFalse(ExpressionTree condition, Void p) {
+    }
+
     @Override
     public Void visitIf(IfTree node, Void p) {
         pushNewLevel();
@@ -713,6 +716,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         pushNewLevel();
         StatementTree elseStmt = node.getElseStatement();
         if (elseStmt != null) {
+            whenConditionFalse(node.getCondition(), p);
             boolean aliveAfter = alive;
             alive = aliveBefore;
             GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
