@@ -20,6 +20,10 @@ public class AssertIfTrueTest {
     /// Classes copied from the annotated JDK
     ///
 
+    // NOTE:  These annotations are actually incorrect (& not in the JDK
+    // any more).  But, the test remains valid in how it exercises nullness
+    // checking.
+
     public class File1 {
         @AssertNonNullIfTrue({"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
         public boolean isDirectory() { throw new RuntimeException("skeleton method"); }

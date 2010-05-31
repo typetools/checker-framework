@@ -30,6 +30,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
 \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
 \ref{faq-jml}: How does pluggable type-checking compare with JML? \\
+\ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
 \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
 
@@ -323,6 +324,19 @@ The JML toolset is less mature.  For instance, if your code uses
 generics or other features of Java 5, then you cannot use JML.  
 However, JML has a run-time checker, which the Checker Framework currently
 lacks.
+
+
+\section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
+
+\<@NonNull Object @Nullable []> is a possibly-null array of non-null
+objects.  Note that even though the first token in the type is
+``\<@NonNull>'', that annotation applies to the element
+type \<Object>.  The annotation \<@Nullable> applies to the
+array (\<[]>).
+
+Similarly,
+\<@Nullable Object @NonNull []> is a non-null array of possibly-null
+objects.
 
 
 \section{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
