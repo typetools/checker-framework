@@ -132,6 +132,25 @@ or elsewhere.  If you are using Apple Mac OS X, you can either use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
+Installation consists of one required and one optional step, which we
+overview here.
+\begin{enumerate}
+\item Unpack the distribution.
+\item (Optional) Add a new version of \<javac> to your path, so the new
+  compiler is used when you type \code{javac}.  If you plan to use the
+  compiler primarily via Ant or Maven, you can skip the optional step.
+
+  If you skip the optional step, you can still use the compiler from the
+  command line, but you will have to type a slightly longer command:  you
+  can either use the full pathname to the new version of \<javac>, or you
+  can type \<java -jar jsr308-all.jar> instead of \<javac>.
+
+  (In the unlikely event that you use \<-J> arguments to \<javac>, the
+  \<java -jar jsr308-all.jar> alternative also requires you to remove \<-J>
+  and pass them before \<-jar>.  For example, \<javac -J-Xmx512m Test.java>
+  would become \<java -Xmx512m -jar jsr308-all.jar Test.java>.)
+\end{enumerate}
+
 For Unix/Linux/MacOS installation instructions, see Section~\ref{unix-installation}.
 For Windows installation instructions, see Section~\ref{windows-installation}.
 
@@ -167,30 +186,38 @@ different shell, you may need to slightly adjust the commands.
   curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
   unzip checkers.zip
   chmod +x checkers/binary/javac
+  java -jar checkers/binary/jsr308-all.jar
+\end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
+
+The output of the last command should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
 \end{Verbatim}
 
 
 \item
+  (Optional)
   The download includes an updated version of the javac compiler, called
   the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
   shipped with Java 7.  In order to use the updated compiler when you type
   \code{javac}, add the directory \code{.../checkers/binary} to the
   beginning of your path.
   To do so,
-  place the following commands in your \code{.bashrc} file (and also execute
-  them on the command line, or log out and back in):
+  place the following commands in your \code{.bashrc} file:
 \begin{Verbatim}
   export JSR308=$HOME/jsr308
   export PATH=$JSR308/checkers/binary:${PATH}
 \end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
 
 % It is not necessary to add checkers.jar to your classpath, because the
 % shipped compiler already does so.
 %   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
 
-
-\item
-  Verify that the installation works.  From the command line, run:
+Also execute them on the command line, or log out and back in.  Then,
+verify that the installation works.  From the command line, run:
 
 \begin{Verbatim}
   javac -version
@@ -231,9 +258,25 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
   the \<checkers> directory, then Select \<Extract all files>, and use
   \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
   \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
+\item
+  Verify that the installation works.  From a Windows command prompt, run:
+
+% Do I need to quote the space in "Program Files"?
+\begin{Verbatim}
+  java -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
+\end{Verbatim}
+
 \end{enumerate}
 
+
 \item
+  (Optional)
   The download includes an updated version of the javac compiler, called
   the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
   shipped with Java 7.  In order to use the updated compiler when you type
@@ -288,8 +331,7 @@ This is a permanent change that only needs to be done once ever.
 % shipped compiler already does so.
 %   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
 
-\item
-  Verify that the installation works.  From the command line, run:
+Now, verify that the installation works.  From the command line, run:
 
 \begin{Verbatim}
   javac -version
@@ -324,17 +366,27 @@ this:
 \end{Verbatim}
 
 \noindent
-then you will instead run it like this (where \<javac> is the JSR 308
-compiler that is distributed with the Checker Framework):
+then you will instead use one of the two command lines:
 
 \begin{alltt}
+  # If you ran the optional installation step from Section \ref{installation}.
   javac -processor \textit{ProcessorName} Foo.java Bar.java
+
+  # If you did not run the optional installation step from Section \ref{installation}.
+  # Give the full pathname to the jsr308-all.jar file.
+  java -jar jsr308-all.jar -processor \textit{ProcessorName} Foo.java Bar.java
 \end{alltt}
 
 \noindent
-(If you usually do your coding within an IDE, you will need to configure
-the IDE to use the correct version of javac and to pass the command-line
-argument.  See your IDE documentation for details.)
+If you usually do your coding within an IDE, you will need to configure
+the IDE.  This manual contains instructions for 
+Ant (Section~\ref{ant-task}),
+Maven (Section~\ref{maven-plugin}),
+IntelliJ IDEA (Section~\ref{intellij}),
+Eclipse (Section~\ref{eclipse}), and
+tIDE (Section~\ref{tide}).
+Otherwise, see your IDE documentation for details.
+
 
 \begin{enumerate}
 \item
@@ -353,10 +405,12 @@ public class GetStarted {
 \end{Verbatim}
 
 \item
-  Run the nullness checker on the class.  Either run this from the command line:
+  Run the nullness checker on the class.  Either run one of these commands:
 
 \begin{Verbatim}
+  # Use the first line if you ran the optional installation step; use the second line otherwise.
   javac -processor checkers.nullness.NullnessChecker GetStarted.java
+  java -jar ...jsr308-all.jar -processor checkers.nullness.NullnessChecker GetStarted.java
 \end{Verbatim}
 
 \noindent
@@ -711,7 +765,7 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 The checker infers annotations for local variables (see
 Section~\ref{type-refinement}).  Usually, you only need to annotate fields
-and method sigatures.  After doing those, you can add annotations inside
+and method signatures.  After doing those, you can add annotations inside
 method bodies if the checker is unable to infer the correct annotation, if
 you need to suppress a warning (see Section~\ref{suppressing-warnings}),
 etc.
@@ -979,4 +1033,4 @@ is annotated \<@ReadOnly>.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees
+% LocalWords:  callees Xmx unconfuse
