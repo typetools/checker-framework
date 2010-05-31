@@ -133,6 +133,36 @@ public class Heuristics {
         }
     }
 
+    public static class WithinTrueBranch extends Matcher {
+        private final Matcher matcher;
+        /**
+         * @param Matcher for the condition
+         */
+        public WithinTrueBranch(Matcher conditionMatcher) {
+            this.matcher = conditionMatcher;
+        }
+
+        public boolean match(TreePath path) {
+            TreePath prev = path, p = path.getParentPath();
+            while (p != null) {
+                if (p.getLeaf().getKind() == Tree.Kind.IF) {
+                    IfTree ifTree = (IfTree)p.getLeaf();
+                    ExpressionTree cond = TreeUtils.skipParens(ifTree.getCondition());
+                    if (ifTree.getThenStatement() == prev.getLeaf()
+                        && matcher.match(new TreePath(p, cond)))
+                        return true;
+                    if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT
+                        && matcher.match(new TreePath(p, ((UnaryTree)cond).getExpression())))
+                        return true;
+                }
+                prev = p;
+                p = p.getParentPath();
+            }
+
+            return false;
+        }
+    }
+
     public static class OfKind extends Matcher {
         private final Tree.Kind kind;
         private final Matcher matcher;
@@ -168,6 +198,9 @@ public class Heuristics {
         }
         public static Matcher withIn(Matcher matcher) {
             return new WithIn(matcher);
+        }
+        public static Matcher whenTrue(Matcher conditionMatcher) {
+            return new WithinTrueBranch(conditionMatcher);
         }
         public static Matcher ofKind(Tree.Kind kind, Matcher matcher) {
             return new OfKind(kind, matcher);

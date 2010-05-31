@@ -144,11 +144,11 @@ import com.sun.source.util.TreePath;
      * Case 1: get() is within true clause of map.containsKey()
      */
     public Matcher inContains(final Element key, final VariableElement map) {
-        return or(withIn(Matchers.ofKind(Tree.Kind.IF, new Matcher() {
-            @Override public Boolean visitIf(IfTree tree, Void p) {
-                return isInvocationOfContains(key, map, tree.getCondition());
+        return or(whenTrue(new Matcher() {
+            @Override public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+                return isInvocationOfContains(key, map, node);
             }
-        })), withIn(ofKind(Tree.Kind.CONDITIONAL_EXPRESSION, new Matcher() {
+        }), withIn(ofKind(Tree.Kind.CONDITIONAL_EXPRESSION, new Matcher() {
             @Override public Boolean visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
                 return isInvocationOfContains(key, map, tree.getCondition());
             }
