@@ -772,7 +772,13 @@ class NullnessFlow extends Flow {
 
     @Override
     protected void whenConditionFalse(ExpressionTree node, Void p) {
+        node = TreeUtils.skipParens(node);
         this.nnExprs.addAll(shouldInferNullnessIfFalseNullable(node));
+        if (node.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
+            ExpressionTree unary = ((UnaryTree)node).getExpression();
+            this.nnExprs.addAll(shouldInferNullnessAfter(unary));
+            this.nnExprs.addAll(shouldInferNullnessIfTrue(unary));
+        }
     }
 
     @Override
