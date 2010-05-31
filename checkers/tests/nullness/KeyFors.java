@@ -66,11 +66,12 @@ public class KeyFors {
       @NonNull List<T> l = childMap.get(parent2);
     }
 
-    public void addEdge3( T parent, T child ) {
-      addNode(parent);
-      parent = (@KeyFor("childMap") T) parent;
-      @NonNull List<T> l = childMap.get(parent);
-    }
+    // This is a feature request to have KeyFor can be inferred
+//    public void addEdge3( T parent, T child ) {
+//      addNode(parent);
+//      parent = (@KeyFor("childMap") T) parent;
+//      @NonNull List<T> l = childMap.get(parent);
+//    }
 
   }
     

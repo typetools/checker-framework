@@ -137,6 +137,21 @@ public class NonNullMapValue {
       return map.get(key);
   }
 
+  public void negateMap(Map<Object, Object> map, Object key) {
+      if (!map.containsKey(key)) {
+      } else {
+          @NonNull Object v = map.get(key);
+      }
+  }
+
+  public void withinElseInvalid(Map<Object, Object> map, Object key) {
+      if (map.containsKey(key)) {
+      } else {
+          //:: (type.incompatible)
+          @NonNull Object v = map.get(key);
+      }
+  }
+
   // Map.get should be annotated as @Pure
   public static int mapGetSize(MyMap<Object, List<Object>> covered, Object file) {
     return (covered.get(file) == null) ? 0 : covered.get(file).size();
