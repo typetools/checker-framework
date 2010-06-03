@@ -149,6 +149,12 @@ overview here.
   \<java -jar jsr308-all.jar> alternative also requires you to remove \<-J>
   and pass them before \<-jar>.  For example, \<javac -J-Xmx512m Test.java>
   would become \<java -Xmx512m -jar jsr308-all.jar Test.java>.)
+
+  % Mahmood will try to fix this.
+  (The \<java -jar> approach does not work if you are using the default JDK
+  for Mac OS.  It does work with
+  \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
+  however.)
 \end{enumerate}
 
 For Unix/Linux/MacOS installation instructions, see Section~\ref{unix-installation}.
