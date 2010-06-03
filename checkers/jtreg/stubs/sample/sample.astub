@@ -1,0 +1,7 @@
+import checkers.nullness.quals.Nullable;
+
+package java.lang;
+
+class String {
+    String valueOf(@Nullable Object s);
+}
