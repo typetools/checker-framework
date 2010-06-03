@@ -782,6 +782,7 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+% unconfuse Emacs LaTeX mode: $
 
 You can use any standard debugger to observe the execution of your checker.  Set the execution main class to \code{com.sun.tools.javac.Main}, and insert the JSR308 javac.jar (resides in \code{\$jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is recommended that you add \code{\$jsr308-langtools} as a project, so you can
 step into its source code if needed.
@@ -915,6 +916,14 @@ The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processors is one that extends
 \refTreeclass{util}{AbstractTypeProcessor}; these get run on each class
 source file after the compiler confirms that the class is valid Java code.
+
+The most important methods of \refTreeclass{util}{AbstractTypeProcessor}
+are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
+class is where you would insert any sort of method call to walk the AST\@,
+and the latter just returns a constant indicating that we are targeting
+version 7 of the compiler. Implementing these two methods should be enough
+for a basic plugin; see the Javadoc for the class for other methods that
+you may find useful later on.
 
 The Checker Framework uses Sun's Tree API to access a program's AST\@.
 The Tree API is specific to the Sun JDK, so the Checker Framework only
