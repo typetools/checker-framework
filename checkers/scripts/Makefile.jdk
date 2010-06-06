@@ -14,10 +14,10 @@ AFU_SCRIPTS ?= ../../../../annotation-tools/annotation-file-utilities/scripts
 
 all: clean classes
 # Separate make command because BUILD_CLASSES needs to be recomputed.
-	$(MAKE) jaifs annotated jdk.jar
+	$(MAKE) jaifs annotated
 
 clean:
-	rm -rf build annotated jdk.jar
+	rm -rf build
 
 build: classes
 
@@ -70,16 +70,9 @@ build/%.jaif: build/%.class
 jaifs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
-	mkdir -p annotated
-	cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
-	$(AFU_SCRIPTS)/insert-annotations '$@' '$<'
+	$(AFU_SCRIPTS)/insert-annotations '../$@' '$<'
 
 annotated: $(ANNOTATED)
-
-jdk.jar: annotated
-	cd annotated; jar cf ../jdk.jar .
-
-jdk: jdk.jar
 
 showvars:
 	pwd
