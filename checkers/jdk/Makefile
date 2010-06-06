@@ -3,13 +3,28 @@
 .PHONEY: all clean
 
 MAKE ?= make
-dirs = nullness igj javari
-jdks = $(patsubst %,%/jdk.jar, $(dirs))
 
-all: clean $(jdks)
+RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+
+all: clean
+	$(MAKE) annotated
+	cd nullness; $(MAKE)
+	cd igj; $(MAKE)
+	cd javari; $(MAKE)
+	$(MAKE) jdk.jar
 
 clean:
-	rm -f $(jdks)
+	rm -rf annotated jdk.jar
 
-%.jar:
-	cd $(dir $@); $(MAKE) all
+annotated:
+	mkdir annotated
+	cd annotated; unzip	$(RTJAR) > /dev/null
+
+jdk.jar:
+	cd annotated; jar cf ../jdk.jar .
+
+showvars:
+	pwd
+	echo BUILD_CLASSES: ${BUILD_CLASSES}
+	echo JAIFS: ${JAIFS}
+	echo ANNOTATED: ${ANNOTATED}
