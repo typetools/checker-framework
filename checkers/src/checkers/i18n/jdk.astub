@@ -7,7 +7,7 @@ class ResourceBundle {
   @Localized Object getObject(@LocalizableKey String key);
   @Localized String getString(@LocalizableKey String key);
   @Localized String[] getStringArray(@LocalizableKey String key);
-  Set<@Localized String> keySet();
+  Set<@LocalizableKey String> keySet();
 }
 
 package java.awt;

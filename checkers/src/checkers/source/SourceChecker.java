@@ -11,6 +11,7 @@ import javax.lang.model.element.*;
 import javax.tools.Diagnostic;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
 import checkers.types.*;
@@ -242,18 +243,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    protected void message(Diagnostic.Kind kind, Object source, Object msgKey,
+    protected void message(Diagnostic.Kind kind, Object source, @CompilerMessageKey String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
 
-        for (Object arg : args) {
-            arg = (arg == null) ? null :
-                messages.getProperty(arg.toString(), arg.toString());
-        }
-
+		if (args != null) {
+			// look whether we can expand the arguments, too.
+			for (int i = 0; i < args.length; ++i) {
+				args[i] = (args[i] == null) ? null :
+					messages.getProperty(args[i].toString(), args[i].toString());
+			}
+		}
+        
         if (kind == Diagnostic.Kind.NOTE) {
-            System.err.println("(NOTE) " + String.format(msgKey.toString(), args));
+            System.err.println("(NOTE) " + String.format(msgKey, args));
             return;
         }
 
@@ -263,7 +267,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 && this.env.getOptions().containsKey("nomsgtext"))
             fmtString = defaultFormat;
         else
-            fmtString = messages.getProperty(msgKey.toString(), defaultFormat);
+            fmtString = messages.getProperty(msgKey, defaultFormat);
         String messageText = String.format(fmtString, args);
 
         // Replace '\n' with the proper line separator
@@ -377,7 +381,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Reports a result. By default, it prints it to the screen via the
-     * compiler's internal messeger if the result is non-success; otherwise,
+     * compiler's internal messenger if the result is non-success; otherwise,
      * the method returns with no side-effects.
      *
      * @param r
