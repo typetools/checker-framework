@@ -4,6 +4,7 @@ import javax.annotation.processing.SupportedOptions;
 
 import checkers.i18n.quals.LocalizableKey;
 import checkers.propkey.PropertyKeyChecker;
+import checkers.propkey.quals.PropertyKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 
@@ -33,7 +34,7 @@ import checkers.quals.Unqualified;
  *
  * </ol>
  */
-@TypeQualifiers( {LocalizableKey.class, Unqualified.class} )
+@TypeQualifiers( {LocalizableKey.class, PropertyKey.class, Unqualified.class} )
 @SupportedOptions( {"propfiles", "bundlename"} )
 public class LocalizableKeyChecker extends PropertyKeyChecker {
 }
