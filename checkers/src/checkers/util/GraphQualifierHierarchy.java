@@ -223,7 +223,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     private final void checkAnnoInGraph(AnnotationMirror a) {
         if (supertypesMap.containsKey(a))
             return;
-        
+
         if (a == null)
             throw new IllegalArgumentException(
                     "Found an Unqualified type.  Please ensure that\n" +
@@ -252,10 +252,6 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (ignore != null)
             possibleRoots.remove(ignore);
 
-        if (possibleRoots.size() > 1) {
-        	possibleRoots.remove(null);
-        }
-        
         assert possibleRoots.size() == 1 : "Other than one possible root: " + possibleRoots;
         return possibleRoots.get(0);
     }
