@@ -8,7 +8,7 @@ import checkers.quals.*;
 
 /**
  * Indicates that the {@code String} type has been localized and
- * formatted for the target output locale
+ * formatted for the target output locale.
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

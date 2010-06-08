@@ -17,6 +17,7 @@ import javax.lang.model.util.ElementFilter;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.source.*;
@@ -573,7 +574,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param errorKey the error message to use if the check fails
      * @param p a checker-specified parameter
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey, P p) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey, P p) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null;
         checkAssignability(var, varTree);
@@ -591,7 +592,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, String errorKey, P p) {
+            ExpressionTree valueExp, @CompilerMessageKey String errorKey, P p) {
         if (shouldSkip(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -619,7 +620,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey, P p) {
+            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey, P p) {
 
         boolean success = checker.isSubtype(valueType, varType);
 
@@ -635,8 +636,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                     varType.getKind(), varType, lineSeparator);
         }
 
-        // Use an error key only if it's overriden by a checker.
-        String useKey;
+        // Use an error key only if it's overridden by a checker.
+        @CompilerMessageKey String useKey;
         if (checker.getMessages().getProperty(errorKey) != null)
             useKey = errorKey;
         else useKey = "type.incompatible";
