@@ -4,6 +4,7 @@ import javax.annotation.processing.SupportedOptions;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.propkey.PropertyKeyChecker;
+import checkers.propkey.quals.PropertyKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 
@@ -13,7 +14,7 @@ import checkers.quals.Unqualified;
  * 
  * @author wmdietl
  */
-@TypeQualifiers( {CompilerMessageKey.class, Unqualified.class} )
+@TypeQualifiers( {CompilerMessageKey.class, PropertyKey.class, Unqualified.class} )
 @SupportedOptions( {"propfiles", "bundlename"} )
 public class CompilerMessagesChecker extends PropertyKeyChecker {
 }
