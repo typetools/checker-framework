@@ -234,7 +234,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     /**
-     * Infer the root for the subtype hierarhy.  Simply finds the one (and only
+     * Infer the root for the subtype hierarchy.  Simply finds the one (and only
      * one) qualifier that is not a subtype of any other qualifier
      *
      * @param ignore
@@ -252,7 +252,11 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (ignore != null)
             possibleRoots.remove(ignore);
 
-        assert possibleRoots.size() == 1 : possibleRoots;
+        if (possibleRoots.size() > 1) {
+        	possibleRoots.remove(null);
+        }
+        
+        assert possibleRoots.size() == 1 : "Other than one possible root: " + possibleRoots;
         return possibleRoots.get(0);
     }
 
