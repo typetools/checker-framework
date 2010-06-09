@@ -6,6 +6,8 @@ MAKE ?= make
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
+folders = java/lang java/util java/io javax/annotation javax/lang
+
 all: clean
 	$(MAKE) annotated
 	cd nullness; $(MAKE)
@@ -18,7 +20,7 @@ clean:
 
 annotated:
 	mkdir annotated
-	cd annotated; unzip	$(RTJAR) > /dev/null
+	cd annotated; unzip	$(RTJAR) $(folders) > /dev/null
 
 jdk.jar:
 	cd annotated; jar cf ../jdk.jar .
