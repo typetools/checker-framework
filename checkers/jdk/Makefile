@@ -1,32 +1,51 @@
 
-.SILENT:
-.PHONEY: all clean
-
 MAKE ?= make
-
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-folders = java/lang java/util java/io javax/annotation javax/lang
+CHECKERS = nullness igj javari
 
-all: clean
-	$(MAKE) annotated
-	cd nullness; $(MAKE)
-	cd igj; $(MAKE)
-	cd javari; $(MAKE)
+all: clean classes
+	$(MAKE) unmodified
+	$(MAKE) jaifs annotated
 	$(MAKE) jdk.jar
-
-clean:
-	rm -rf annotated jdk.jar
-
-annotated:
-	mkdir annotated
-	cd annotated; unzip	$(RTJAR) $(folders) > /dev/null
 
 jdk.jar:
 	cd annotated; jar cf ../jdk.jar .
 
-showvars:
-	pwd
-	echo BUILD_CLASSES: ${BUILD_CLASSES}
-	echo JAIFS: ${JAIFS}
-	echo ANNOTATED: ${ANNOTATED}
+# Helper
+
+MODIFIED = $(shell find $(CHECKERS) -name '*.class')
+UNZIP = \
+	$(patsubst nullness/build/%.class,annotated/%.class, \
+	  $(patsubst igj/build/%.class,annotated/%.class, \
+	    $(patsubst javari/build/%.class,annotated/%.class, \
+		  $(MODIFIED))))
+
+unmodified: $(UNZIP)
+
+# Delegates
+clean: $(addsuffix .clean, $(CHECKERS))
+	rm -rf jdk.jar annotated
+
+classes: $(addsuffix .classes, $(CHECKERS))
+
+jaifs: $(addsuffix .jaifs, $(CHECKERS))
+
+annotated: $(addsuffix .annotated, $(CHECKERS))
+
+annotated/%.class:
+	mkdir -p annotated
+	cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
+
+# Helper targets to invoke subdir make files
+%.clean:
+	cd $*; $(MAKE) clean
+
+%.classes:
+	cd $*; $(MAKE) classes
+
+%.jaifs:
+	cd $*; $(MAKE) jaifs
+
+%.annotated:
+	cd $*; $(MAKE) annotated
