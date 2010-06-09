@@ -104,3 +104,5 @@ A few things to note:
 - To test that the demos work, run
     ant -e check-demo
   from this directory.
+
+LaTeX sources for proposals are mostly in annotations-papers/ .
