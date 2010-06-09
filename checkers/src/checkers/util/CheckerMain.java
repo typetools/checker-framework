@@ -6,7 +6,11 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The main class for the Checkers when using the binary distribution, that
@@ -28,7 +32,7 @@ public class CheckerMain {
             com.sun.tools.javac.Main.main(newArgs);
         } else {
             System.out.println("Manipulating bootclasspath");
-            String[] cmdArgs = newCommandArgs(args);
+            List<String> cmdArgs = newCommandArgs(args);
             execute(cmdArgs);
         }
     }
@@ -37,15 +41,20 @@ public class CheckerMain {
      * The new command to restart java, with compiler jar prepended to the
      * bootclasspath
      */
-    static String[] newCommandArgs(String[] currArgs) {
-        String[] args = new String[currArgs.length + 5];
-        args[0] = "java";
+    static List<String> newCommandArgs(String[] currArgs) {
+        List<String> args = new ArrayList<String>(currArgs.length + 5);
+        args.add("java");
+
+        // Java's Arguments
+        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+        args.addAll(mxBean.getInputArguments());
+
         String jarPath = findPathJar(CheckerMain.class);
-        args[1] = "-Xbootclasspath/p:" + jarPath;
-        args[2] = "-jar";
-        args[3] = jarPath;
-        args[4] = "-Xbootclasspath/p:" + jdkJar();
-        System.arraycopy(currArgs, 0, args, 5, currArgs.length);
+        args.add("-Xbootclasspath/p:" + jarPath);
+        args.add("-jar");
+        args.add(jarPath);
+        args.add("-Xbootclasspath/p:" + jdkJar());
+        args.addAll(Arrays.asList(currArgs));
         return args;
     }
 
@@ -118,7 +127,7 @@ public class CheckerMain {
      * Helper method to do the proper escaping of arguments to pass to
      * system()
      */
-    static String constructCommand(String[] args) {
+    static String constructCommand(Iterable<String> args) {
         StringBuilder sb = new StringBuilder();
 
         for (String arg: args) {
@@ -131,7 +140,7 @@ public class CheckerMain {
     }
 
     /** Execute the cmmands, with IO redirection */
-    static void execute(String[] cmdArray) {
+    static void execute(Iterable<String> cmdArray) {
         String command = constructCommand(cmdArray);
         CLibrary.INSTANCE.system(command);
     }
