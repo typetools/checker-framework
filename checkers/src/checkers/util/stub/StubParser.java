@@ -78,8 +78,12 @@ public class StubParser {
             try {
                 if (!importDecl.isAsterisk()) {
                     AnnotationMirror anno = annoUtils.fromName(imported);
-                    Element annoElt = anno.getAnnotationType().asElement();
-                    result.put(annoElt.getSimpleName().toString(), anno);
+                    if (anno != null ) {
+                    	Element annoElt = anno.getAnnotationType().asElement();
+                    	result.put(annoElt.getSimpleName().toString(), anno);
+                    } else {
+                    	System.err.println("Could not load import: " + imported);
+                    }
                 } else {
                     result.putAll(annoWithinPackage(imported));
                 }
