@@ -23,6 +23,11 @@ class String {
   @Interned String intern();
 }
 
+class Boolean {
+  @Interned Boolean FALSE;
+  @Interned Boolean TRUE;
+}
+
 package java.lang.reflect;
 
 class Field {
