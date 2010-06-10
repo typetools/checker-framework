@@ -142,7 +142,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -519,12 +519,15 @@ ${build.version} of the 'javac.jar' library."/>
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
         <unjar src="${javac.lib}" dest="${temp.dir}"/>
-        <unjar src="jdk/jdk.jar" dest="${temp.dir}"/>
+        <unjar src="${jna.lib}" dest="${temp.dir}"/>
+        <copy file="jdk/jdk.jar" todir="${temp.dir}"/>
         <jar destfile="${bindist.file}" basedir="${temp.dir}">
             <manifest>
                 <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
             </manifest>
         </jar>
+
+        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar"/>
         <delete dir="${temp.dir}"/>
     </target>
 
