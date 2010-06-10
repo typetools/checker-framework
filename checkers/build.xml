@@ -519,9 +519,10 @@ ${build.version} of the 'javac.jar' library."/>
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
         <unjar src="${javac.lib}" dest="${temp.dir}"/>
+        <unjar src="jdk/jdk.jar" dest="${temp.dir}"/>
         <jar destfile="${bindist.file}" basedir="${temp.dir}">
             <manifest>
-                <attribute name="Main-Class" value="com.sun.tools.javac.Main"/>
+                <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
             </manifest>
         </jar>
         <delete dir="${temp.dir}"/>
