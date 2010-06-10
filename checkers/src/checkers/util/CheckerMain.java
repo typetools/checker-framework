@@ -3,6 +3,11 @@ package checkers.util;
 import com.sun.jna.*;
 
 import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
+import java.util.zip.*;
+import java.util.Enumeration;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -23,6 +28,7 @@ import java.util.ArrayList;
  *     bootclasspath.
  */
 public class CheckerMain {
+    private static final String VERSION = "1";
 
     public static void main(String[] args) throws Exception {
         if (isUsingJSR308Compiler()) {
@@ -60,9 +66,63 @@ public class CheckerMain {
 
     /** returns the path to annotated JDK */
     private static String jdkJar() {
+        // case 1: running from binary
         String thisJar = findPathJar(CheckerMain.class);
-        String parent = new File(thisJar).getParentFile().getPath();
-        return parent + File.separator + "jdk.jar";
+        File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
+        if (potential.exists()) {
+            System.out.println("from adjacent jdk.jar");
+            return potential.getPath();
+        }
+
+        // case 2: there was a temporary copy
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+        File jdkFile = new File(tmpFolder, "jdk-" + VERSION + ".jar");
+        System.out.println(jdkFile);
+        if (jdkFile.exists()) {
+            System.out.println("From temporary");
+            return jdkFile.getPath();
+        }
+
+        // case 3: extract zipped jdk.jar
+        try {
+            extractFile(thisJar, "jdk.jar", jdkFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (jdkFile.exists()) {
+            System.out.println("Extracted jar");
+            return jdkFile.getPath();
+        }
+
+        throw new AssertionError("Couldn't find annotated JDK");
+    }
+
+    private static void extractFile(String jar, String fileName, File output) throws Exception {
+        int BUFFER = 2048;
+
+        File jarFile = new File(jar);
+        ZipFile zip = new ZipFile(jarFile);
+
+        ZipEntry entry = zip.getEntry(fileName);
+        assert !entry.isDirectory();
+
+        BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+        int currentByte;
+        // establish buffer for writing file
+        byte data[] = new byte[BUFFER];
+
+        // write the current file to disk
+        FileOutputStream fos = new FileOutputStream(output);
+        BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
+
+        // read and write until last byte is encountered
+        while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+            dest.write(data, 0, currentByte);
+        }
+        dest.flush();
+        dest.close();
+        is.close();
     }
 
     /**
