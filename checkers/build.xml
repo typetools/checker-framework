@@ -183,7 +183,7 @@ ${build.version} of the 'javac.jar' library."/>
 	subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
                  executable="../../jsr308-langtools/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
