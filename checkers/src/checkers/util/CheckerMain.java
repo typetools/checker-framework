@@ -64,22 +64,31 @@ public class CheckerMain {
         return args;
     }
 
+    private static File tempJDKPath() {
+        String userSupplied = System.getProperty("jsr308.jdk");
+        if (userSupplied != null)
+            return new File(userSupplied);
+
+        String tmpFolder = System.getProperty("java.io.tmpdir");
+        File jdkFile = new File(tmpFolder, "jdk-" + VERSION + ".jar");
+        return jdkFile;
+    }
+
     /** returns the path to annotated JDK */
     private static String jdkJar() {
         // case 1: running from binary
         String thisJar = findPathJar(CheckerMain.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
         if (potential.exists()) {
-            System.out.println("from adjacent jdk.jar");
+            //System.out.println("from adjacent jdk.jar");
             return potential.getPath();
         }
 
         // case 2: there was a temporary copy
-        String tmpFolder = System.getProperty("java.io.tmpdir");
-        File jdkFile = new File(tmpFolder, "jdk-" + VERSION + ".jar");
-        System.out.println(jdkFile);
+        File jdkFile = tempJDKPath();
+        //System.out.println(jdkFile);
         if (jdkFile.exists()) {
-            System.out.println("From temporary");
+            //System.out.println("From temporary");
             return jdkFile.getPath();
         }
 
@@ -91,7 +100,7 @@ public class CheckerMain {
         }
 
         if (jdkFile.exists()) {
-            System.out.println("Extracted jar");
+            //System.out.println("Extracted jar");
             return jdkFile.getPath();
         }
 
