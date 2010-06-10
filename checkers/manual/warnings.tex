@@ -1,0 +1,321 @@
+\htmlhr
+\chapter{Handling warnings and legacy code\label{warnings-and-legacy}}
+
+Section~\ref{get-started-with-legacy-code} describes a methodology for
+applying annotations to legacy code.  This chapter tells you what to do if,
+for some reason, you cannot change your code in such a way as to eliminate
+a checker warning.
+
+
+\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+
+Sometimes, you wish to type-check only part of your program.
+You might focus on the most mission-critical or error-prone part of your
+code.  When you start to use a checker, you may not wish to annotate
+your entire program right away.
+% Not having source code is *not* a reason.
+You may not have
+enough knowledge to annotate poorly-documented libraries that your program uses.
+
+If annotated code uses unannotated code, then the checker may issue
+warnings.  For example, the Nullness checker (Chapter~\ref{nullness-checker}) will
+warn whenever an unannotated method result is used in a non-null context:
+
+\begin{Verbatim}
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
+\end{Verbatim}
+
+If the call \emph{can} return null, you should fix the bug in your program by
+removing the \code{@\refclass{nullness/quals}{NonNull}} annotation in your own program.
+
+If the library call \emph{never} returns null,
+there are several ways to eliminate the compiler warnings.
+\begin{enumerate}
+\item Annotate \code{unannotated\_method} in full.  This approach provides
+  the strongest guarantees, but may require you to annotate additional
+  methods that \code{unannotated\_method} calls.  See
+  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
+  libraries for which you have no source code.
+\item Annotate only the signature of \code{unannotated\_method}, and
+  suppress warnings in its body.  Two ways to suppress the warnings are via a
+  \code{@SuppressWarnings} annotation or by not running the checker on that
+  file (see Section~\ref{suppressing-warnings}).
+\item Suppress all warnings related to uses of \code{unannotated\_method}
+  via the \code{skipClasses} processor option
+  (see Section~\ref{suppressing-warnings}).
+  Since this can suppress more warnings than you may expect,
+  it is usually better to annotate at least the method's signature.  If you
+  choose the boundary between the annotated and unannotated code wisely,
+  then you only have to annotate the signatures of a limited number of
+  classes/methods
+  (e.g., the public interface to a library or package).
+
+\end{enumerate}
+
+Chapter~\ref{annotating-libraries} discusses adding annotations to
+signatures when you do not have source code available.
+Section~\ref{suppressing-warnings} discusses suppressing warnings.
+
+
+If you annotate a third-party library, please share it with us so that we
+can distribute the annotations with the Checker Framework; see
+Section~\ref{reporting-bugs}.
+
+
+\section{Suppressing warnings\label{suppressing-warnings}}
+
+You may wish to suppress checker warnings because of unannotated libraries
+or un-annotated portions of your own code, because of application
+invariants that are beyond the capabilities of the type system, because of
+checker limitations, because you are interested in only some of the
+guarantees provided by a checker, or for other reasons.  You can suppress
+warnings via
+\begin{itemize}
+\item
+  the \code{@SuppressWarnings} annotation,
+\item
+  the \code{-AskipClasses} command-line option,
+\item
+  the javac \code{-Alint} command-line option,
+\item
+  not using the \code{-processor} switch to \code{javac}, or
+\item
+  checker-specific mechanisms.
+\end{itemize}
+
+\noindent
+We now explain these mechanisms in turn.
+
+You can suppress specific errors and warnings by use of the
+\code{@SuppressWarnings("\emph{checkername}")} annotation, for example
+\code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
+This may be placed on program elements such as a local
+variable declaration, a method, or a class.  For instance, one common use is
+to suppress warnings at a cast that you know is safe.  Here is an example
+that uses the Tainting Checker (Section~\ref{tainting-checker}):
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting")
+  String myvar = (@Untainted String) expr;  // expr has type: @Tainted String
+\end{Verbatim}
+
+It is good practice to suppress warnings in the
+smallest possible scope.  For example, if a particular expression causes a
+false positive warning, you should extract that expression into a local variable
+and place a \code{@SuppressWarnings} annotation on the variable
+declaration.
+As another example, if you have annotated the signatures but not the bodies
+of the methods in a class or package, put a \code{@SuppressWarnings}
+annotation on the class declaration or on the package's
+\code{package-info.java} file.
+
+You can suppress all errors and warnings at all \emph{uses} of a given
+class (but the class itself is still type-checked).
+Set the \code{-AskipClasses} command-line option to a
+regular expression that matches classes for which warnings and errors
+should be suppressed.  For example, if you use
+``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}, then the checkers will suppress all warnings within
+classes whose fully-qualified name starts with \codesize\verb|java.|, all
+warnings relating to invalid arguments, and all warnings relating to incorrect
+use of the return value.
+
+To suppress all errors and warnings related to multiple classes, you can use
+the regular expression alternative operator ``\code{|}'', as in
+``{\codesize\verb+-AskipClasses="java\.lang\.|java\.util\."+}'' to suppress
+all warnings related to classes belong to the \code{java.lang} or
+\code{java.util} packages.
+
+\label{lint-options}
+
+The \code{-Alint} option enables or disables optional checks, analogously to
+javac's \code{-Xlint} option.
+Each of the distributed checkers supports at least the following lint options:
+
+\begin{itemize}
+
+\item
+  \code{cast:unsafe} (default: on) warn about unsafe casts that are not
+  checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
+  are generally not necessary when flow-sensitive local type refinement is
+  enabled.
+
+\item
+  \code{cast:redundant} (default: on) warn about redundant
+  casts that are guaranteed to succeed at run time,
+  as in \code{((@NonNull String) "m")}.  Such casts are not necessary,
+  because the target expression of the cast already has the given type
+  qualifier.
+
+\item
+  \code{cast} Enable or disable all cast-related warnings.
+
+\item
+  \code{all} Enable or disable all lint warnings, including
+  checker-specific ones if any.  Examples include \code{nulltest} for the
+  Nullness Checker (see Section~\ref{lint-nulltest}) and \<dotequals> for
+  the Interning Checker (see Section~\ref{lint-dotequals}).  This option
+  does not enable/disable the checker's standard checks, just its optional
+  ones.
+
+\item
+  \code{none} The inverse of \<all>:  disable or enable all lint warnings,
+  including checker-specifc ones if any.
+
+\end{itemize}
+
+% This syntax is different from -Xlint that uses a colon instead of an
+% equals sign, because javac forces the use of the equals sign.
+
+\noindent
+To activate a lint option, write \code{-Alint=} followed by a
+comma-delimited list of check names.  If the option is preceded by a
+hyphen (\code{-}), the warning is disabled.  For example, to disable all
+lint options except redundant casts, you can pass
+\code{-Alint=-all,cast:redundant} on the command line.
+
+
+You can also compile parts of your code without use of the
+\code{-processor} switch to \code{javac}.  No checking is done during
+such compilations.
+
+Finally, some checkers have special rules.  For example, the Nullness
+checker (Chapter~\ref{nullness-checker}) uses \code{assert} statements that contain
+null checks, and the special \<castNonNull> method, to suppress warnings
+(Section~\ref{suppressing-warnings-with-assertions}).
+
+
+
+\section{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
+
+Sometimes, your code needs to be compilable by people who are not
+using a Java 7 compiler.
+
+
+\subsection{Annotations in comments}
+
+A Java 4 compiler does not permit use of
+annotations, and a Java 5 compiler only permits annotations on
+declarations (but not on generic arguments, casts, \<extends> clauses, method receiver, etc.).
+
+So that your code can be compiled by any Java compiler (for any version of
+the Java language), you may write any annotation inside a
+\code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
+The Type Annotations compiler treats the code exactly as if you had not written the
+\code{/*} and \code{*/}.
+In other words, the Type Annotations compiler will recognize the
+annotation, but your code will still compile with any other Java compiler.
+
+(\textbf{Note:} This is a feature of the Type Annotations compiler that is
+distributed along with the Checker Framework.  It is \emph{not} supported by the
+mainline OpenJDK compiler, which ignores annotations written in
+comments.  This is the key difference between the Type Annotations
+compiler and the OpenJDK compiler.)
+%   For more details
+% about the differences, see file \code{README-jsr308.html} in the Type
+% Annotations distribution.
+
+In a single program, you may write some annotations in comments, and others
+without comments.
+
+By default, the compiler ignores any comment that contains spaces at the
+beginning or end, or between the \code{@} and the annotation name.
+In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
+\code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
+This
+feature enables backward compatibility with code that contains comments
+that start with \code{@} but are not annotations.  (The
+ESC/Java~\cite{FlanaganLLNSS02}, JML~\cite{LeavensBR2006:JML}, and
+Splint~\cite{Evans96} tools all use ``\code{/*@}'' or ``\code{/*~@}'' as a
+comment marker.)
+Compiler flag
+\code{-XDTA:spacesincomments} causes the compiler to parse annotation comments
+even when they contain spaces.  You may need to use
+\code{-XDTA:spacesincomments} if you use Eclipse's ``Source $>$ Correct
+Indentation'' command, since it inserts space in comments.  But the
+annotation comments are less readable with spaces, so you may wish to disable
+inserting spaces:  in the Formatter preferences, in the Comments tab,
+unselect the ``enable block comment formatting'' checkbox.
+
+
+\subsection{Implicit import statements\label{implicit-import-statements}}
+
+When writing source code with annotations, it is more convenient to write a
+short form such as \code{@NonNull} instead of
+\code{@checkers.nullness.quals.NonNull}.
+
+The traditional way to do this is to write an import statement like
+``\code{import checkers.nullness.quals.*;}''.  This works, but everyone who
+compiles the code (no matter what compiler they use, and even if the
+annotations are in comments) must have the annotation definitions (e.g.,
+the \code{checkers.jar} or \code{checkers-quals.jar} file) on their
+classpath.  The reason is that a Java compiler issues an error if an
+imported package is not on the classpath.  See Section~\ref{distributing}.
+
+\label{jsr308_imports}
+
+An alternative is to set the shell environment variable
+\code{jsr308\_imports} when you compile the code.
+The Type Annotations compiler treats this as if the given packages were
+imported, but other compilers
+ignore the
+\code{jsr308\_imports} environment variable --- they do not need it, since
+they do not support annotations in comments.  Thus, your code can compile
+whether or not the Type Annotations compiler is being used.
+
+You can specify multiple packages separated by the classpath separator
+(same as the file path separator:  \<;> for Windows, and \<:> for Unix and
+Mac).  For example, to implicitly import the Nullness and Interning
+qualifiers, set \code{jsr308\_imports} to
+\code{checkers.nullness.quals.*:checkers.interning.quals.*}.
+
+If you issue the javac command from the command line or in a Makefile, you
+may need to add quotes, to prevent your shell from expanding the \code{*}
+character.
+In bash, you could write \code{export
+  jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
+command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
+Alternately, you can set the environment variable via the javac
+command-line argument \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
+If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
+you do not need the extra quoting.
+
+
+\subsection{Migrating away from annotations in comments}
+
+Suppose that your codebase currently uses annotations in comments, but you
+wish to remove the comment characters around your annotations, because in
+the future you will use only Java 7 compilers.  This Unix command removes
+the comment characters, for all Java files in the current
+working directory or any subdirectory.
+
+\begin{Verbatim}
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+\end{Verbatim}
+
+You can customize this command:
+\begin{itemize}
+\item
+To process comments with embedded spaces and asterisks, change
+two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
+\item
+To ignore comments with leading or trailing spaces, remove the four
+instances of ``\verb|\s*|''.
+\item
+  To not make backups, remove
+``\verb|.bak|''.
+\end{itemize}
+
+
+If you are using implicit import statements
+(Section~\ref{implicit-import-statements}), you may also need to introduce
+explicit import statements into your code.
+
+
+
+% LocalWords:  quals skipClasses un AskipClasses Alint annotationname javac's
+% LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
+% LocalWords:  unselect checkbox classpath Djsr bak
