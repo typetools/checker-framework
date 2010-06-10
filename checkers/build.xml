@@ -520,6 +520,7 @@ ${build.version} of the 'javac.jar' library."/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
         <unjar src="${javac.lib}" dest="${temp.dir}"/>
         <unjar src="${jna.lib}" dest="${temp.dir}"/>
+        <copy file="jdk/jdk.jar" todir="${temp.dir}"/>
         <jar destfile="${bindist.file}" basedir="${temp.dir}">
             <manifest>
                 <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
