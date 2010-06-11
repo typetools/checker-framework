@@ -87,6 +87,7 @@ public class Arrays{
   public static float[] copyOfRange(float[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static double[] copyOfRange(double[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static boolean[] copyOfRange(boolean[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  @SuppressWarnings("varargs")
   public static <T> List<T> asList(T... a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(int @Nullable [] a1) { throw new RuntimeException("skeleton method"); }

@@ -182,7 +182,7 @@ ${build.version} of the 'javac.jar' library."/>
 	<!-- This relative path is wrong; running "ant -find" from a
 	subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
-                 executable="../../jsr308-langtools/dist/bin/javadoc"
+            executable="${jsr308.langtools}/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
