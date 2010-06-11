@@ -4,7 +4,7 @@
 When annotated code uses an unannotated library, a checker may issue warnings.
 As described in Section~\ref{unannotated-code}, the best way to correct
 this problem is to add annotations to the library.  (Alternately, you can instead
-suppress all warnings related to an unannotated library by use of the 
+suppress all warnings related to an unannotated library by use of the
 \code{-AskipClasses} command-line option; see
 Section~\ref{suppressing-warnings}.)  If you have source code for the
 library, you can easily add the annotations.
@@ -106,7 +106,6 @@ add the following import statement at the beginning of the file:
 
 \end{enumerate}
 
-
 \subsection{Using a stub file\label{stub-using}}
 
   When you run \code{javac} with a given checker/processor, you can specify
@@ -131,6 +130,11 @@ add the following import statement at the beginning of the file:
 \end{smaller}
 %END LATEX
 
+Checker and library writers are encouraged to distribute stub files for the
+JDK and most commonly used libraries.  Section~\ref{stub-distribution}
+explains how to bundle a stub file, such that they get imported automatically.
+Programmers should only explicitly specify the stub files they create
+themselves.
 
 \subsection{Stub file format\label{stub-format}}
 
@@ -197,6 +201,23 @@ following ways:
 
 \end{description}
 
+\subsection{Distributing stub files\label{stub-distribution}}
+
+Checker writers are encouraged to provide stub files to the JDK and most
+commonly used libraries.  Similarly, library writers can provide stub files
+for their own libraries and the external libraries they depend on.  The
+distributed stub files don't need to be explicitly specified by programmers.
+
+Checker writers should include the JDK stub file as \code{jdk.astub} in the
+same directory level as the Checker class (i.e. the subclass of
+\code{BaseTypeVisitor}).  The Checker Framework imports the \code{jdk.astub}
+automatically.
+
+{\textbf The following is not implemented yet}
+
+Also the Checker Framework automatically import all the stub files named
+\code{library.astub} found in the classpath.  Library writers can bundle the
+stub file in their resources directory or binary jars.
 
 \subsection{Known problems}
 
@@ -240,7 +261,7 @@ stub file from the Javadoc or the class file, and then annotate it.
 \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
 
 The Checker Framework distribution contains
-annotated JDKs at the path \<checkers/jdk/\emph{checkername}/jdk.jar>.
+annotated JDKs at the path \<checkers/jdk/jdk.jar>.
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must
@@ -267,7 +288,7 @@ annotated JDKs at the path \<checkers/jdk/\emph{checkername}/jdk.jar>.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/nullness/jdk.jar my_source_files
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/jdk.jar my_source_files
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -279,6 +300,8 @@ annotated JDKs at the path \<checkers/jdk/\emph{checkername}/jdk.jar>.
 
 \end{enumerate}
 
+Please note that so far, only three checkers require passing the annotated JDK
+explicitly, and they are the Nullness, the Javari, and the IGJ checkers.
 
 % \section{Installing the skeleton class generator\label{skeleton-installing}}
 %
