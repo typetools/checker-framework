@@ -16,6 +16,193 @@ we can add it to this manual.
 This section also discusses type inference tools (see
 Section~\ref{type-inference-tools}).
 
+\section{Javac Compiler\label{javac-installation}}
+
+If you use \code{javac} compiler form the command line, then you can use the
+Java 7 \code{javac} bundled with the Checker Framework.  The bundled
+\code{javac} recognizes type annotations, and type-annotations in
+comments~\ref{annotations-in-comments}.
+
+This section describes how you can install and use the bundled \code{javac}:
+
+%%% *****
+%%% UPDATE
+%%% *****
+
+%%% Note that much of this section is duplicated with the "Windows
+%%% installation" section.  That is better for users, even though it is
+%%% longer and makes the maintainers keep two versions in sync.
+\subsection{Unix/Linux/MacOS installation\label{unix-installation}}
+
+These instructions assume that you use the bash or sh shell.  If you use a
+different shell, you may need to slightly adjust the commands.
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  and unzip it.  You can put it anywhere you like by changing the
+  definition of environment variable \code{JSR308} below; a standard place
+  is in a
+  new directory named \code{jsr308}.
+
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  mkdir -p ${JSR308}
+  cd ${JSR308}
+  # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  unzip checkers.zip
+  chmod +x checkers/binary/javac
+  checkers/binary/javac -version
+\end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
+
+The output of the last command should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
+\end{Verbatim}
+
+
+\item
+  Place the following commands in your \code{.bashrc} file:
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  export PATH=$JSR308/checkers/binary:${PATH}
+\end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+
+Also execute them on the command line, or log out and back in.  Then,
+verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
+\end{Verbatim}
+
+\end{enumerate}
+
+That's all there is to it!  Now you are ready to start using the checkers.
+
+Section~\ref{example-use} walks you through a simple example.  More detailed
+instructions for using a checker appear in Chapter~\ref{using-a-checker}.
+
+
+\subsection{Windows installation\label{windows-installation}}
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  and unzip it to create a \<checkers> directory.  You can put it anywhere
+  you like; a standard place is in a new directory under \<C:\ttbs{}Program
+  Files>.
+
+\begin{enumerate}
+\item
+  Save the file
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}
+  to your Desktop.
+\item
+  Double-click the \<checkers.zip> file on your computer.  Click on
+  the \<checkers> directory, then Select \<Extract all files>, and use
+  \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
+  \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
+\item
+  Verify that the installation works.  From a Windows command prompt, run:
+
+% Do I need to quote the space in "Program Files"?
+\begin{Verbatim}
+  java -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\item
+  In order to use the updated compiler when you type \code{javac}, add the
+  directory \<C:\ttbs{}Program Files\ttbs{}checkers\ttbs{}binary> to the
+  beginning of your path variable.  Also set a CHECKERS variable.
+
+% Instructions stolen from http://www.webreference.com/js/tips/020429.html
+
+To set an environment variable, you have two options:  make the change
+temporarily or permanently.
+\begin{itemize}
+\item
+To make the change \textbf{temporarily}, type at the command shell prompt:
+
+\begin{alltt}
+path = \emph{newdir};%PATH%
+\end{alltt}
+
+For example:
+
+\begin{Verbatim}
+path = C:\Program Files\checkers\binary;%PATH%
+set CHECKERS = C:\Program Files\checkers
+\end{Verbatim}
+
+This is a temporary change that endures until the window is closed, and you
+must re-do it every time you start a new command shell.
+
+\item
+To make the change \textbf{permanently},
+Right-click the \<My Computer> icon and
+select \<Properties>. Select the \<Advanced> tab and click the
+\<Environment Variables> button. You can set the variable as a ``System
+Variable'' (visible to all users) or as a ``User Variable'' (visible to
+just this user).  Both work; the instructions below show how to set as a
+``System Variable''.
+In the \<System Variables> pane, select
+\<Path> from the list and click \<Edit>. In the \<Edit System Variable>
+dialog box, move the cursor to the beginning of the string in the
+\<Variable Value> field and type the full directory name followed by a
+semicolon (\<;>).
+
+% This is for the benefit of the Ant task.
+Similarly, set the CHECKERS variable.
+
+This is a permanent change that only needs to be done once ever.
+\end{itemize}
+
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+
+Now, verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.0.9
+\end{Verbatim}
+
+\end{enumerate}
+
 
 \section{Ant task\label{ant-task}}
 
