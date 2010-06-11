@@ -767,7 +767,64 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 \section{Tips about writing annotations\label{tips-about-writing-annotations}}
 
-\subsection{Do not annotate local variables\label{tips-local-inference}}
+
+\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
+
+Annotating an entire existing program may seem like a daunting task.  But,
+if you approach it systematically and do a little bit at a time, you will
+find that it is manageable.
+
+You should start with a property that matters to you, to achieve the best
+benefits.  It is easiest to add annotations if you know the code or the
+code contains documentation; you will find that you spend most of your time
+understanding the code, and very little time actually writing annotations
+or running the checker.
+
+It is best to annotate one package at a time, 
+% Upcoming fix that applies different defaults to annotated and unannotated
+% code will eliminate this reason.
+and to annotate the entire package so that you don't forget any classes,
+which can lead to unexpected results.
+Start as close to the leaves of the call tree as possible, because it is
+easiest to annotate a class if the code it calls has already been
+annotated.
+
+For each class, read its Javadoc.  For instance, if you are adding
+annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
+you can search the documentation for ``null'' and then add \<@Nullable>
+anywhere appropriate.  Do not annotate the method bodies yet ---
+first, get the signatures and fields annotated.  The only reason to even
+\emph{read} the method bodies yet is to determine signature annotations for
+undocumented methods ---
+for example, if the method returns null, you know its return type should be
+annotated \<@Nullable>, and a parameter that is compared against \<null>
+may need to be annotated \<@Nullable>.  If you are only annotating
+signatures (say, for a library you do not maintain and do not wish to
+check), you are now done.
+
+If you wish to check the implementation, then after the signatures are
+annotated, run the checker.  Then, add method body annotations (usually,
+few are necessary), fix bugs in code, and add annotations to signatures
+where necessary.  If signature annotations are necessary, then you may want
+to fix the documentation that did not indicate the property; but this isn't
+strictly necessary, since the annotations that you wrote provide that
+documentation.
+
+You may wonder about the effect of adding a given annotation --- how many
+other annotations it will require, or whether it conflicts with other code.
+Suppose you have added an annotation to a method parameter.  You could
+manually examine all callees.  A better way can be to save the checker
+output before adding the annotation, and to compare it to the checker
+output after adding the annotation.  This helps you to focus on the
+specific consequences of your change.
+
+
+Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
+you are unable to eliminate checker warnings.
+
+
+
+\subsection{Do not annotate local variables unless necessary\label{tips-local-inference}}
 
 The checker infers annotations for local variables (see
 Section~\ref{type-refinement}).  Usually, you only need to annotate fields
@@ -895,6 +952,40 @@ It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
+\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+
+%% I want to get rid of this syntax.
+%% However, @Linear provides a compelling use case.
+
+In the checkers distributed with the Checker Framework, an annotation on a
+constructor invocation is equivalent to a cast on a constructor result.
+That is, the following two expressions have identical semantics:  one is
+just shorthand for the other.
+
+\begin{Verbatim}
+  new @ReadOnly Date()
+  (@ReadOnly Date) new Date()
+\end{Verbatim}
+
+However, you should rarely have to use this.  The Checker Framework will
+determine the qualifier on the result, based on the ``return value''
+annotation on the constructor definition.  The ``return value'' annotation
+appears before the constructor name, for example:
+
+\begin{Verbatim}
+  class MyClass {
+    @ReadOnly MyClass() { ... }
+  }
+\end{Verbatim}
+
+In general, you should only use an annotation on a constructor invocation
+when you know that the cast is
+guaranteed to succeed.  An example from the IGJ checker
+(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
+@Mutable MyClass()>, where you know that every other reference to the class
+is annotated \<@ReadOnly>.
+
+
 \subsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
 
 For some programming tasks, you can use either a Java subclass or a type
@@ -930,97 +1021,6 @@ A final reason is efficiency.  Type qualifiers can be more
 efficient, since there is no run-time representation such as a wrapper
 or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
-
-
-\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
-
-Annotating an entire existing program may seem like a daunting task.  But,
-if you approach it systematically and do a little bit at a time, you will
-find that it is manageable.
-
-You should start with a property that matters to you, to achieve the best
-benefits.  It is easiest to add annotations if you know the code or the
-code contains documentation; you will find that you spend most of your time
-understanding the code, and very little time actually writing annotations
-or running the checker.
-
-It is best to annotate one package at a time, 
-% Upcoming fix that applies different defaults to annotated and unannotated
-% code will eliminate this reason.
-and to annotate the entire package so that you don't forget any classes,
-which can lead to unexpected results.
-Start as close to the leaves of the call tree as possible, because it is
-easiest to annotate a class if the code it calls has already been
-annotated.
-
-For each class, read its Javadoc.  For instance, if you are adding
-annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
-you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  Do not annotate the method bodies yet ---
-first, get the signatures and fields annotated.  The only reason to even
-\emph{read} the method bodies yet is to determine signature annotations for
-undocumented methods ---
-for example, if the method returns null, you know its return type should be
-annotated \<@Nullable>, and a parameter that is compared against \<null>
-may need to be annotated \<@Nullable>.  If you are only annotating
-signatures (say, for a library you do not maintain and do not wish to
-check), you are now done.
-
-If you wish to check the implementation, then after the signatures are
-annotated, run the checker.  Then, add method body annotations (usually,
-few are necessary), fix bugs in code, and add annotations to signatures
-where necessary.  If signature annotations are necessary, then you may want
-to fix the documentation that did not indicate the property; but this isn't
-strictly necessary, since the annotations that you wrote provide that
-documentation.
-
-You may wonder about the effect of adding a given annotation --- how many
-other annotations it will require, or whether it conflicts with other code.
-Suppose you have added an annotation to a method parameter.  You could
-manually examine all callees.  A better way can be to save the checker
-output before adding the annotation, and to compare it to the checker
-output after adding the annotation.  This helps you to focus on the
-specific changes.
-
-
-Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
-you are unable to eliminate checker warnings.
-
-
-\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
-
-%% I want to get rid of this syntax.
-%% However, @Linear provides a compelling use case.
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
-
-\begin{Verbatim}
-  new @ReadOnly Date()
-  (@ReadOnly Date) new Date()
-\end{Verbatim}
-
-However, you should rarely have to use this.  The Checker Framework will
-determine the qualifier on the result, based on the ``return value''
-annotation on the constructor definition.  The ``return value'' annotation
-appears before the constructor name, for example:
-
-\begin{Verbatim}
-  class MyClass {
-    @ReadOnly MyClass() { ... }
-  }
-\end{Verbatim}
-
-In general, you should only use an annotation on a constructor invocation
-when you know that the cast is
-guaranteed to succeed.  An example from the IGJ checker
-(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
-@Mutable MyClass()>, where you know that every other reference to the class
-is annotated \<@ReadOnly>.
-
-
 
 
 
