@@ -221,7 +221,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         if (node.getInitializer() == null)
             return super.visitVariable(node, p);
 
-        commonAssignmentCheck(node, node.getInitializer(), "assignment.invalid", p);
+        commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible", p);
         return super.visitVariable(node, p);
     }
 
@@ -229,12 +229,12 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * Performs two checks: subtyping and assignability checks, using
      * {@link #commonAssignmentCheck(Tree, ExpressionTree, String, Object)}.
      *
-     * If the subtype check fails, it issues a "assignment.invalid" error.
+     * If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
     @Override
     public R visitAssignment(AssignmentTree node, P p) {
         commonAssignmentCheck(node.getVariable(), node.getExpression(),
-                "assignment.invalid", p);
+                "assignment.type.incompatible", p);
         return super.visitAssignment(node, p);
     }
 
@@ -363,7 +363,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                 passedAsArray.getComponentType(),
                 receiverAsVector.getTypeArguments().get(0),
                 node.getArguments().get(0),
-                "vector.copyinto.incompatible", null);
+                "vector.copyinto.type.incompatible", null);
     }
 
     /**
@@ -637,13 +637,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         }
 
         // Use an error key only if it's overridden by a checker.
-        @CompilerMessageKey String useKey;
-        if (checker.getMessages().getProperty(errorKey) != null)
-            useKey = errorKey;
-        else useKey = "type.incompatible";
-
         if (!success) {
-            checker.report(Result.failure(useKey,
+            checker.report(Result.failure(errorKey,
                     valueType.toString(), varType.toString()), valueTree);
         }
     }
@@ -772,7 +767,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         for (int i = 0; i < requiredArgs.size(); ++i)
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
-                    "argument.invalid", p);
+                    "argument.type.incompatible", p);
     }
 
     /**
