@@ -752,9 +752,9 @@ Flow sensitivity analysis infers the type of fields in some restricted cases:
 
 \item
 A final initialized field:
-Type inference is performed for final fields that
-are initialized at the declaration site; so the type of \code{protocol} is
-\code{@NonNull String} in the following declaration:
+Type inference is performed for final fields that are initialized to a
+compile-time constant at the declaration site; so the type of \code{protocol}
+is \code{@NonNull String} in the following declaration:
 
 \begin{Verbatim}
     public final String protocol = "https";
