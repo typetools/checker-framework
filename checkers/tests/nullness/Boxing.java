@@ -12,7 +12,7 @@ public class Boxing {
         Integer i1 = 5;
         int i1u = i1;
         Integer i2 = null;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         int i2u = i2;       // invalid
     }
 

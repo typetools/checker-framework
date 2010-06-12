@@ -8,7 +8,7 @@ public class KeyFors {
         Map<String, String> map = new HashMap<String, String>();
         String key = "key";
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         @NonNull String value = map.get(key);
     }
 
@@ -74,5 +74,5 @@ public class KeyFors {
 //    }
 
   }
-    
+
 }

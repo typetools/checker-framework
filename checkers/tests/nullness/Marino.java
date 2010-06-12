@@ -22,7 +22,7 @@ public class Marino {
             //:: (dereference.of.nullable)
             System.out.println("hi" + s.length());
             if (i > 2) break;
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             a = null;
         }
         // Checker doesn't catch that m_str not initialized.
@@ -47,7 +47,7 @@ public class Marino {
             s = "bye";
         }finally{
             // Checker doesn't catch that s will be null here.
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             b = s;
             System.out.println("b has length: " + b.length());
         }

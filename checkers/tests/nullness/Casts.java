@@ -14,7 +14,7 @@ public class Casts {
 
     void testBoxing() {
         Integer b = null;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         int i = b;
         //:: (unboxing.of.nullable)
         Object o = (int)b;
