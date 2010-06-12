@@ -254,7 +254,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             annoTypes.getIteratedType(iterableType);
         validateTypeOf(node.getVariable());
         commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                "type.incompatible", p);
+                "enhancedfor.type.incompatible", p);
         return super.visitEnhancedForLoop(node, p);
     }
 

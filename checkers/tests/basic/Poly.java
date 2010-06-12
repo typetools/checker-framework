@@ -58,7 +58,7 @@ class Poly {
     }
 
     void test3() {
-        //:: (argument.type.incompatible)
+        //:: (assignment.type.incompatible)
         @Encrypted String s = substitute(new HashMap<String, String>());
         @Encrypted String t = substitute(new HashMap<String, @Encrypted String>());
     }
