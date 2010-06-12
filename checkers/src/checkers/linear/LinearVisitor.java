@@ -53,7 +53,7 @@ public class LinearVisitor extends BaseTypeVisitor<Void, Void> {
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
-                checker.report(Result.failure("unsafe.use",
+                checker.report(Result.failure("use.unsafe",
                         TreeUtils.elementFromUse(node), node), node);
             }
         }
