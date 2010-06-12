@@ -410,7 +410,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     /**
      * Checks that the type of the return expression is a subtype of the
      * enclosing method required return type.  If not, it issues a
-     * "return.invalid" error.
+     * "return.type.incompatible" error.
      */
     @Override
     public R visitReturn(ReturnTree node, P p) {
@@ -424,7 +424,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(enclosingMethod);
         commonAssignmentCheck(methodType.getReturnType(), node.getExpression(),
-                "return.invalid", p);
+                "return.type.incompatible", p);
 
         return super.visitReturn(node, p);
     }
