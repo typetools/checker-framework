@@ -6,7 +6,7 @@ public class Flow {
 
     public void testFlow() {
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         @Mutable List<String> m = emptyList();
 
         List<String> im = emptyList();
@@ -22,7 +22,7 @@ public class Flow {
 
         // initializer shouldn't affect type if explicit
         @ReadOnly Object b = emptyList();
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         assertImmutable(b);
 
         // assignments afterwards does affect it
