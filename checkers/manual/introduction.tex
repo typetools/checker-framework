@@ -3,7 +3,7 @@
 
 The Checker Framework enhances Java's type system to make it more powerful
 and useful.
-This lets software developers detect and 
+This lets software developers detect and
 prevent errors in their Java programs.
 
 The Checker Framework comes with checkers for specific types of errors:
@@ -95,7 +95,7 @@ evaluate and deploy their type systems.
 % \item Chapter~\ref{introduction} overviews the Checker Framework and
 %   describes how to \ahrefloc{installation}{install} it (Chapter~\ref{installation}).
 % \item Chapter~\ref{using-a-checker} describes how to \ahrefloc{using-a-checker}{use a checker}.
-% \item 
+% \item
 %   The next chapters are user manuals for the \ahrefloc{nullness-checker}{Nullness}
 %   (Chapter~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
 %   (Chapter~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Chapter~\ref{javari-checker}),
@@ -116,117 +116,33 @@ This document uses the terms ``checker'', ``checker plugin'',
 ``type-checking compiler plugin'', and ``annotation processor'' as
 synonyms.
 
-
 \section{Installation\label{installation}}
 
 This section describes how to install the binary release of the Checker
 Framework.  The binary release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
-build from source (Section~\refwithpage{build-source}).
+build the latest development version from source
+(Section~\refwithpage{build-source}).
 
 % Not "\ahrefurl" because it looks bad in the printed manual.
-\textbf{Requirement:} 
-You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from 
+\textbf{Requirement:}
+You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from
 \ahref{http://java.sun.com/javase/downloads/index.jsp}{Sun}
 or elsewhere.  If you are using Apple Mac OS X, you can either use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
-Installation consists of one required and one optional step, which we
-overview here.
-\begin{enumerate}
-\item Unpack the distribution.
-\item (Optional) Add a new version of \<javac> to your path, so the new
-  compiler is used when you type \code{javac}.  If you plan to use the
-  compiler primarily via Ant or Maven, you can skip the optional step.
+The installation process is simple!  Just Download the latest Checker
+Framework distribution
+(\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+and unzip it to create \code{checkers} folder.  You can put the it anywhere
+convenient and memorable.
 
-  If you skip the optional step, you can still use the compiler from the
-  command line, but you will have to type a slightly longer command:  you
-  can either use the full pathname to the new version of \<javac>, or you
-  can type \<java -jar jsr308-all.jar> instead of \<javac>.
-
-  (In the unlikely event that you use \<-J> arguments to \<javac>, the
-  \<java -jar jsr308-all.jar> alternative also requires you to remove \<-J>
-  and pass them before \<-jar>.  For example, \<javac -J-Xmx512m Test.java>
-  would become \<java -Xmx512m -jar jsr308-all.jar Test.java>.)
-
-  % Mahmood will try to fix this.
-  (The \<java -jar> approach does not work if you are using the default JDK
-  for Mac OS.  It does work with
-  \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
-  however.)
-\end{enumerate}
-
-For Unix/Linux/MacOS installation instructions, see Section~\ref{unix-installation}.
-For Windows installation instructions, see Section~\ref{windows-installation}.
-
-
-
-%%% *****
-%%% UPDATE
-%%% *****
-
-%%% Note that much of this section is duplicated with the "Windows
-%%% installation" section.  That is better for users, even though it is
-%%% longer and makes the maintainers keep two versions in sync.
-\subsection{Unix/Linux/MacOS installation\label{unix-installation}}
-
-These instructions assume that you use the bash or sh shell.  If you use a
-different shell, you may need to slightly adjust the commands.
-
-\begin{enumerate}
-
-\item
-  Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-  and unzip it.  You can put it anywhere you like by changing the
-  definition of environment variable \code{JSR308} below; a standard place
-  is in a
-  new directory named \code{jsr308}.
+To ensure that it was installed properly, run the following command:
 
 \begin{Verbatim}
-  export JSR308=$HOME/jsr308
-  mkdir -p ${JSR308}
-  cd ${JSR308}
-  # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
-  curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
-  unzip checkers.zip
-  chmod +x checkers/binary/javac
-  java -jar checkers/binary/jsr308-all.jar
-\end{Verbatim}
-% unconfuse Emacs LaTeX mode: $
-
-The output of the last command should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
-\end{Verbatim}
-
-
-\item
-  (Optional)
-  The download includes an updated version of the javac compiler, called
-  the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
-  shipped with Java 7.  In order to use the updated compiler when you type
-  \code{javac}, add the directory \code{.../checkers/binary} to the
-  beginning of your path.
-  To do so,
-  place the following commands in your \code{.bashrc} file:
-\begin{Verbatim}
-  export JSR308=$HOME/jsr308
-  export PATH=$JSR308/checkers/binary:${PATH}
-\end{Verbatim}
-% unconfuse Emacs LaTeX mode: $
-
-% It is not necessary to add checkers.jar to your classpath, because the
-% shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
-
-Also execute them on the command line, or log out and back in.  Then,
-verify that the installation works.  From the command line, run:
-
-\begin{Verbatim}
-  javac -version
+  java -jar /path/to/../checkers/binary/jsr308-all.jar -version  # in Linux
+  java -jar c:\Path\To\...\checkers\binary\jsr308-all.jar -version # in Windows
 \end{Verbatim}
 
 The output should be:
@@ -234,129 +150,18 @@ The output should be:
 \begin{Verbatim}
   javac 1.7.0-jsr308-1.0.9
 \end{Verbatim}
-
-\end{enumerate}
 
 That's all there is to it!  Now you are ready to start using the checkers.
 
-Section~\ref{example-use} walks you through a simple example.  More detailed
-instructions for using a checker appear in Chapter~\ref{using-a-checker}.
-
-
-\subsection{Windows installation\label{windows-installation}}
-
-\begin{enumerate}
-
-\item
-  Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-  and unzip it to create a \<checkers> directory.  You can put it anywhere
-  you like; a standard place is in a new directory under \<C:\ttbs{}Program
-  Files>.
-
-\begin{enumerate}
-\item
-  Save the file
-  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}
-  to your Desktop.
-\item
-  Double-click the \<checkers.zip> file on your computer.  Click on
-  the \<checkers> directory, then Select \<Extract all files>, and use
-  \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
-  \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
-\item
-  Verify that the installation works.  From a Windows command prompt, run:
-
-% Do I need to quote the space in "Program Files"?
-\begin{Verbatim}
-  java -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
-\end{Verbatim}
-
-The output should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
-\end{Verbatim}
-
-\end{enumerate}
-
-
-\item
-  (Optional)
-  The download includes an updated version of the javac compiler, called
-  the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
-  shipped with Java 7.  In order to use the updated compiler when you type
-  \code{javac}, add the directory \<C:\ttbs{}Program
-  Files\ttbs{}checkers\ttbs{}binary> to the beginning of your path
-  variable.  Also set a CHECKERS variable.
-
-% Instructions stolen from http://www.webreference.com/js/tips/020429.html
-
-To set an environment variable, you have two options:  make the change
-temporarily or permanently.
-\begin{itemize}
-\item
-To make the change \textbf{temporarily}, type at the command shell prompt:
-
-\begin{alltt}
-path = \emph{newdir};%PATH%
-\end{alltt}
-
-For example:
-
-\begin{Verbatim}
-path = C:\Program Files\checkers\binary;%PATH%
-set CHECKERS = C:\Program Files\checkers
-\end{Verbatim}
-
-This is a temporary change that endures until the window is closed, and you
-must re-do it every time you start a new command shell.
-
-\item
-To make the change \textbf{permanently},
-Right-click the \<My Computer> icon and
-select \<Properties>. Select the \<Advanced> tab and click the
-\<Environment Variables> button. You can set the variable as a ``System
-Variable'' (visible to all users) or as a ``User Variable'' (visible to
-just this user).  Both work; the instructions below show how to set as a
-``System Variable''.
-In the \<System Variables> pane, select
-\<Path> from the list and click \<Edit>. In the \<Edit System Variable>
-dialog box, move the cursor to the beginning of the string in the
-\<Variable Value> field and type the full directory name followed by a
-semicolon (\<;>).
-
-% This is for the benefit of the Ant task.
-Similarly, set the CHECKERS variable.
-
-This is a permanent change that only needs to be done once ever.
-\end{itemize}
-
-
-% It is not necessary to add checkers.jar to your classpath, because the
-% shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
-
-Now, verify that the installation works.  From the command line, run:
-
-\begin{Verbatim}
-  javac -version
-\end{Verbatim}
-
-The output should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
-\end{Verbatim}
-
-\end{enumerate}
-
-That's all there is to it!  Now you are ready to start using the checkers.
+The download includes an updated version of the javac compiler, called
+the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
+shipped with Java 7.  In order to use the updated compiler when you type
+\code{javac}, add the directory \code{.../checkers/binary} to the
+beginning of your path.  Detailed installation information are found
+in~\ref{javac-installation}.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
-
-
 
 \section{Example use:  detecting a null pointer bug\label{example-use}}
 
@@ -385,7 +190,7 @@ then you will instead use one of the two command lines:
 
 \noindent
 If you usually do your coding within an IDE, you will need to configure
-the IDE.  This manual contains instructions for 
+the IDE.  This manual contains instructions for
 Ant (Section~\ref{ant-task}),
 Maven (Section~\ref{maven-plugin}),
 IntelliJ IDEA (Section~\ref{intellij}),
@@ -595,7 +400,7 @@ The javac compiler halts compilation as soon as an error is found in a
 source file.  You can pass \code{-Awarns} in the command-line to
 treat checker errors as warnings.  This option allows you to see all
 the type-checking errors at once, rather than just the errors in the first
-file that contains errors.  You may wish to also supply 
+file that contains errors.  You may wish to also supply
 \code{-Xmaxwarns 10000}, because by default \<javac> prints at most 100
 warnings.
 
@@ -705,7 +510,7 @@ There are some limitations to the guarantee.
 
 \begin{itemize}
 
-\item 
+\item
   A compiler plugin can check only those parts of your program that you run
   it on.  If you compile some parts of your program without running the
   checker, then there is no guarantee that the entire program satisfies the
@@ -717,7 +522,7 @@ There are some limitations to the guarantee.
     external library supplied as a \code{.class} file.
   \item
     Code compiled with  the \code{-AskipClasses} property.
-  \item 
+  \item
     Suppression of warnings, such as via the \code{@SuppressWarnings} annotation.
   \item
     Native methods (because the implementation is not Java code, it cannot
@@ -738,7 +543,7 @@ There are some limitations to the guarantee.
   create objects that could not result from normal constructor calls, and
   that therefore may violate the property being checked.
 
-\item 
+\item
   Your code should pass the Java compiler without errors or warnings.  In
   particular, your code should use generic types, with no uses of raw types.
   Misuse of generics, including casting away generic types, can cause other
@@ -767,7 +572,64 @@ should, then please report a bug (see Section~\ref{reporting-bugs}).
 
 \section{Tips about writing annotations\label{tips-about-writing-annotations}}
 
-\subsection{Do not annotate local variables\label{tips-local-inference}}
+
+\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
+
+Annotating an entire existing program may seem like a daunting task.  But,
+if you approach it systematically and do a little bit at a time, you will
+find that it is manageable.
+
+You should start with a property that matters to you, to achieve the best
+benefits.  It is easiest to add annotations if you know the code or the
+code contains documentation; you will find that you spend most of your time
+understanding the code, and very little time actually writing annotations
+or running the checker.
+
+It is best to annotate one package at a time,
+% Upcoming fix that applies different defaults to annotated and unannotated
+% code will eliminate this reason.
+and to annotate the entire package so that you don't forget any classes,
+which can lead to unexpected results.
+Start as close to the leaves of the call tree as possible, because it is
+easiest to annotate a class if the code it calls has already been
+annotated.
+
+For each class, read its Javadoc.  For instance, if you are adding
+annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
+you can search the documentation for ``null'' and then add \<@Nullable>
+anywhere appropriate.  Do not annotate the method bodies yet ---
+first, get the signatures and fields annotated.  The only reason to even
+\emph{read} the method bodies yet is to determine signature annotations for
+undocumented methods ---
+for example, if the method returns null, you know its return type should be
+annotated \<@Nullable>, and a parameter that is compared against \<null>
+may need to be annotated \<@Nullable>.  If you are only annotating
+signatures (say, for a library you do not maintain and do not wish to
+check), you are now done.
+
+If you wish to check the implementation, then after the signatures are
+annotated, run the checker.  Then, add method body annotations (usually,
+few are necessary), fix bugs in code, and add annotations to signatures
+where necessary.  If signature annotations are necessary, then you may want
+to fix the documentation that did not indicate the property; but this isn't
+strictly necessary, since the annotations that you wrote provide that
+documentation.
+
+You may wonder about the effect of adding a given annotation --- how many
+other annotations it will require, or whether it conflicts with other code.
+Suppose you have added an annotation to a method parameter.  You could
+manually examine all callees.  A better way can be to save the checker
+output before adding the annotation, and to compare it to the checker
+output after adding the annotation.  This helps you to focus on the
+specific consequences of your change.
+
+
+Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
+you are unable to eliminate checker warnings.
+
+
+
+\subsection{Do not annotate local variables unless necessary\label{tips-local-inference}}
 
 The checker infers annotations for local variables (see
 Section~\ref{type-refinement}).  Usually, you only need to annotate fields
@@ -808,7 +670,7 @@ However, it is never useful for a programmer to pass \code{null}.  It is
 the programmer's intention that \code{null} never flows there.  If
 \code{null} does flow there, the program will not continue normally.
 
-Therefore, you should mark such parameters as 
+Therefore, you should mark such parameters as
 \code{@\refclass{nullness/quals}{NonNull}}, indicating
 the intended use of the method.  When you use the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
@@ -830,7 +692,7 @@ is not permitted to \emph{weaken} the contract; for example,
 if a method accepts \code{null} as an argument, then every overriding
 definition must also accept \code{null}.
 A subclass is permitted to \emph{strengthen} the contract; for example,
-if a method does \emph{not} accept \code{null} as an argument, then an 
+if a method does \emph{not} accept \code{null} as an argument, then an
 overriding definition is permitted to accept \code{null}.
 
 As a bad example, consider an erroneous \code{@Nullable} annotation at
@@ -895,6 +757,40 @@ It is a pleasant feature of the Checker Framework that in many cases, no
 annotations at all are needed on type parameters such as \code{E} in \<MultiSet>.
 
 
+\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
+
+%% I want to get rid of this syntax.
+%% However, @Linear provides a compelling use case.
+
+In the checkers distributed with the Checker Framework, an annotation on a
+constructor invocation is equivalent to a cast on a constructor result.
+That is, the following two expressions have identical semantics:  one is
+just shorthand for the other.
+
+\begin{Verbatim}
+  new @ReadOnly Date()
+  (@ReadOnly Date) new Date()
+\end{Verbatim}
+
+However, you should rarely have to use this.  The Checker Framework will
+determine the qualifier on the result, based on the ``return value''
+annotation on the constructor definition.  The ``return value'' annotation
+appears before the constructor name, for example:
+
+\begin{Verbatim}
+  class MyClass {
+    @ReadOnly MyClass() { ... }
+  }
+\end{Verbatim}
+
+In general, you should only use an annotation on a constructor invocation
+when you know that the cast is
+guaranteed to succeed.  An example from the IGJ checker
+(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
+@Mutable MyClass()>, where you know that every other reference to the class
+is annotated \<@ReadOnly>.
+
+
 \subsection{When to use (and not use) type qualifiers\label{when-to-use-type-qualifiers}}
 
 For some programming tasks, you can use either a Java subclass or a type
@@ -930,97 +826,6 @@ A final reason is efficiency.  Type qualifiers can be more
 efficient, since there is no run-time representation such as a wrapper
 or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
-
-
-\subsection{How to get started annotating legacy code\label{get-started-with-legacy-code}}
-
-Annotating an entire existing program may seem like a daunting task.  But,
-if you approach it systematically and do a little bit at a time, you will
-find that it is manageable.
-
-You should start with a property that matters to you, to achieve the best
-benefits.  It is easiest to add annotations if you know the code or the
-code contains documentation; you will find that you spend most of your time
-understanding the code, and very little time actually writing annotations
-or running the checker.
-
-It is best to annotate one package at a time, 
-% Upcoming fix that applies different defaults to annotated and unannotated
-% code will eliminate this reason.
-and to annotate the entire package so that you don't forget any classes,
-which can lead to unexpected results.
-Start as close to the leaves of the call tree as possible, because it is
-easiest to annotate a class if the code it calls has already been
-annotated.
-
-For each class, read its Javadoc.  For instance, if you are adding
-annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
-you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  Do not annotate the method bodies yet ---
-first, get the signatures and fields annotated.  The only reason to even
-\emph{read} the method bodies yet is to determine signature annotations for
-undocumented methods ---
-for example, if the method returns null, you know its return type should be
-annotated \<@Nullable>, and a parameter that is compared against \<null>
-may need to be annotated \<@Nullable>.  If you are only annotating
-signatures (say, for a library you do not maintain and do not wish to
-check), you are now done.
-
-If you wish to check the implementation, then after the signatures are
-annotated, run the checker.  Then, add method body annotations (usually,
-few are necessary), fix bugs in code, and add annotations to signatures
-where necessary.  If signature annotations are necessary, then you may want
-to fix the documentation that did not indicate the property; but this isn't
-strictly necessary, since the annotations that you wrote provide that
-documentation.
-
-You may wonder about the effect of adding a given annotation --- how many
-other annotations it will require, or whether it conflicts with other code.
-Suppose you have added an annotation to a method parameter.  You could
-manually examine all callees.  A better way can be to save the checker
-output before adding the annotation, and to compare it to the checker
-output after adding the annotation.  This helps you to focus on the
-specific changes.
-
-
-Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
-you are unable to eliminate checker warnings.
-
-
-\subsection{Annotations on constructor invocations\label{annotations-on-constructor-invocations}}
-
-%% I want to get rid of this syntax.
-%% However, @Linear provides a compelling use case.
-
-In the checkers distributed with the Checker Framework, an annotation on a
-constructor invocation is equivalent to a cast on a constructor result.
-That is, the following two expressions have identical semantics:  one is
-just shorthand for the other.
-
-\begin{Verbatim}
-  new @ReadOnly Date()
-  (@ReadOnly Date) new Date()
-\end{Verbatim}
-
-However, you should rarely have to use this.  The Checker Framework will
-determine the qualifier on the result, based on the ``return value''
-annotation on the constructor definition.  The ``return value'' annotation
-appears before the constructor name, for example:
-
-\begin{Verbatim}
-  class MyClass {
-    @ReadOnly MyClass() { ... }
-  }
-\end{Verbatim}
-
-In general, you should only use an annotation on a constructor invocation
-when you know that the cast is
-guaranteed to succeed.  An example from the IGJ checker
-(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
-@Mutable MyClass()>, where you know that every other reference to the class
-is annotated \<@ReadOnly>.
-
-
 
 
 

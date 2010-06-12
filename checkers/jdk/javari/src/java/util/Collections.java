@@ -59,6 +59,7 @@ public class Collections {
     public static <T> @PolyRead ArrayList<T> list(@PolyRead Enumeration<T> e) { throw new RuntimeException("skeleton method"); }
     public static int frequency(@ReadOnly Collection<?> c, @ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
     public static boolean disjoint(@ReadOnly Collection<?> c1, @ReadOnly Collection<?> c2) { throw new RuntimeException("skeleton method"); }
+    @SuppressWarnings("varargs")
     public static <T> boolean addAll(Collection<? super T> c, T... elements) { throw new RuntimeException("skeleton method"); }
     public static <E> @PolyRead Set<E> newSetFromMap(@PolyRead Map<E, Boolean> map) { throw new RuntimeException("skeleton method"); }
     public static <T> @PolyRead Queue<T> asLifoQueue(@PolyRead Deque<T> deque) { throw new RuntimeException("skeleton method"); }
