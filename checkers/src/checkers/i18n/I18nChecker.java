@@ -3,7 +3,6 @@ package checkers.i18n;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import checkers.propkey.PropertyKeyChecker;
 import checkers.source.SourceChecker;
 import checkers.util.AggregateChecker;
 
@@ -17,7 +16,7 @@ import checkers.util.AggregateChecker;
  * </ol>
  *
  * @see SubI18Checker
- * @see PropertyKeyChecker
+ * @see LocalizableKeyChecker
  */
 public class I18nChecker extends AggregateChecker {
 
