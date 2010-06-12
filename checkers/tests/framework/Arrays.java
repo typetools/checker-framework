@@ -106,9 +106,9 @@ class Arrays {
 //      @Odd String [] ara1 = { null, null };
         @Odd String [] ara2 = new @Odd String [] { null, null };
 
-        //:: (assignment.type.incompatible)
-        @Odd String [] arb1 = { null, "m" };
-        //:: (assignment.type.incompatible)
+//        //:: (assignment.type.incompatible)
+//        @Odd String [] arb1 = { null, "m" };
+        //:: (type.incompatible)
         @Odd String [] arb2 = new @Odd String [] { null, "m" };
     }
 }

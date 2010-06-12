@@ -38,7 +38,7 @@ public class Exceptions {
     void reassignException() {
         try {
         } catch (RuntimeException e) {
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             e = null;
             throw e;
         }

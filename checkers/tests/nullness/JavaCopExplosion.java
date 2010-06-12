@@ -26,7 +26,7 @@ class Explosion {
         String s2;
         s2 = null;
         if (s2 != null || s != null)
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             s = s2;
         else
             s = new String("Levitan");
@@ -71,7 +71,7 @@ class Explosion {
             //y = z;
             nnz = z;
             z = null;
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             nnz = z;
 
             while (z == null){

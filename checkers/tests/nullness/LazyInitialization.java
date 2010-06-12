@@ -15,7 +15,7 @@ public class LazyInitialization {
 
     void testAssignment() {
         lazy = "m";
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         lazy = null;    // null
     }
 
