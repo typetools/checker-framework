@@ -25,11 +25,11 @@ public class Constants {
     is = AC;
     is = A + "C";
     is = A + B + "C";
-    //:: (type.incompatible)
+    //:: (assignment.type.incompatible)
     is = D;
-    //:: (type.incompatible)
+    //:: (assignment.type.incompatible)
     is = A + E;
-    //:: (type.incompatible)
+    //:: (assignment.type.incompatible)
     is = is + is;
     is = Constants2.E;
   }

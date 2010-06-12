@@ -16,37 +16,37 @@ public class QReadOnlys {
         mq = mq;
         mq = mr;
         mq = mm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rr; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rm; // invalid
 
         // mr test
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = mq; // invalid
         mr = mr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = mm; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rr; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rm; // invalid
 
         // mm test
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = mq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = mr; // invalid
         mm = mm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rr; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rm; // invalid
 
         // rq test
@@ -58,26 +58,26 @@ public class QReadOnlys {
         rq = rm;
 
         // rr test
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = mq; // invalid
         rr = mr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = mm; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = rq; // invalid
         rr = rr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = rm; // invalid
 
         // rm test
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = mq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = mr; // invalid
         rm = mm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = rq; // invalid
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = rr; // invalid
         rm = rm;
     }
@@ -85,7 +85,7 @@ public class QReadOnlys {
     void testQReadOnly() {
         List<@QReadOnly Date> lst = null;
         @ReadOnly Date roDate = null;
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         lst.add(roDate);  // invalid
     }
 }

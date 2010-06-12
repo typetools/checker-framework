@@ -16,11 +16,11 @@ public class Arrays {
   public static void test(@Interned Integer i, @Interned String s) {
     String @Interned [] iarray1 = new String @Interned [2];
     String @Interned [] iarray2 = new String @Interned [] {"foo", "bar"};
-    //:: (type.incompatible)
+    //:: (assignment.type.incompatible)
     s = iarray1[1];             // error
 
     String[] sa = new String[22];
-    //:: (type.incompatible)
+    //:: (assignment.type.incompatible)
     iarray1 = sa;               // error
     sa = iarray1;               // OK
 

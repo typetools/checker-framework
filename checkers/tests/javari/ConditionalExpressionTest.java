@@ -21,35 +21,35 @@ class ConditionalExpressionTest {
         ro = (c ? rm : mut);
         ro = (c ? rm : rm);
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? ro : ro);   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? ro : mut);  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? ro : rm);   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? mut : ro);  // error
         mut = (c ? mut : mut);
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? mut : rm);  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? rm : ro);   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? rm : mut);  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mut = (c ? rm : rm);   // error
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = (c ? ro : ro);    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = (c ? ro : mut);   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = (c ? ro : rm);    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = (c ? mut : ro);   // error
         rm = (c ? mut : mut);
         rm = (c ? mut : rm);
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = (c ? rm : ro);    // error
         rm = (c ? rm : mut);
         rm = (c ? rm : rm);
