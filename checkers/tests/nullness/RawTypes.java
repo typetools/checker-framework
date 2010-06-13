@@ -12,7 +12,7 @@ class RawTypes {
             //:: (method.invocation.invalid)
             init();                                     // error
             this.field = "field";                       // valid
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             this.field = null;                          // error
         }
 
@@ -40,7 +40,7 @@ class RawTypes {
 
         public B() {
             super();
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             this.otherField = null;                             // error
             this.otherField = "otherField";                     // valid
         }
@@ -156,7 +156,7 @@ class RawTypes {
     void cast(@Raw Object... args) {
 
         @SuppressWarnings("rawtypes")
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
         Object[] argsNonRaw1 = args;
 
         @SuppressWarnings("cast")

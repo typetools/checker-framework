@@ -9,14 +9,14 @@ class Hierarchy {
     @ReadOnly Object readOnly;
 
     void test() {
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         immutable = mutable;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         immutable = readOnly;
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mutable = immutable;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mutable = readOnly;
 
         readOnly = immutable;

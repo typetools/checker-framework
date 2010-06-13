@@ -17,9 +17,9 @@ public class Constructors {
     public void testStaticAnonymousConstructor() {
         String notOdd = "m";
 
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         new Constructors(notOdd, 0);        // error
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         new Constructors(notOdd, 0) { };    // error
     }
 
@@ -30,9 +30,9 @@ public class Constructors {
     public static void testAnonymousConstructor() {
         Constructors m = new Constructors(null) { };
         String notOdd = "m";
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         m.new MyConstructors(notOdd);       // error
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         m.new MyConstructors(notOdd) { };   // error
     }
 

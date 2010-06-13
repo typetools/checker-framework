@@ -11,7 +11,7 @@ class Simple {
     }
 
     void stringRef(String ref) {
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         execute(ref);   // error
         tainted(ref);
     }
@@ -24,14 +24,14 @@ class Simple {
     void concatenation(@Untainted String s1, String s2) {
         execute(s1 + s1);
         execute(s1 + "m");
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         execute(s1 + s2);   // error
 
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         execute(s2 + s1);   // error
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         execute(s2 + "m");  // error
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         execute(s2 + s2);   // error
 
         tainted(s1 + s1);

@@ -16,7 +16,7 @@ public class GenericArgs {
 
     static class X<T extends @NonNull Object> {
         T value() {
-            //:: (type.incompatible)
+            //:: (return.type.incompatible)
             return null;
         }
     }
@@ -33,7 +33,7 @@ public class GenericArgs {
     void test4() {
         //:: (generic.argument.invalid)
         GenericArgs.<@Nullable Object>test3(null);
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         GenericArgs.<@NonNull Object>test3(null);
     }
 
@@ -44,7 +44,7 @@ public class GenericArgs {
     }
 
     void test5() {
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         new <@NonNull String> GenericConstructor(null);
     }
 
