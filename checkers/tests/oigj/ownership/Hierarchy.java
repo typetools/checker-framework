@@ -10,7 +10,7 @@ public class Hierarchy {
 
     void dominator() {
         dominator = dominator;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         modifier = dominator;
     }
 

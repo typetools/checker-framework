@@ -29,7 +29,7 @@ class AnnotatedGenerics {
             MyClass<String> c = new MyClass<String>();
             String c1 = c.next();
             @Nullable String c2 = c.next();
-            //:: (type.incompatible)
+            //:: (assignment.type.incompatible)
             @NonNull String c3 = c.next();
         }
     }

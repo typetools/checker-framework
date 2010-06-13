@@ -227,6 +227,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
+     * Returns the localized long message corresponding for this key, and
+     * returns the defValue if no localized message is found.
+     *
+     */
+    protected String fullMessageOf(String messageKey, String defValue) {
+        String key = messageKey;
+
+        do {
+            if (messages.containsKey(key)) {
+                return messages.getProperty(key);
+            }
+
+            int dot = key.indexOf('.');
+            if (dot < 0) return defValue;
+            key = key.substring(dot + 1);
+        } while (true);
+    }
+
+    /**
      * Prints a message (error, warning, note, etc.) via JSR-269.
      *
      * @param kind
@@ -255,7 +274,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 					messages.getProperty(args[i].toString(), args[i].toString());
 			}
 		}
-        
+
         if (kind == Diagnostic.Kind.NOTE) {
             System.err.println("(NOTE) " + String.format(msgKey, args));
             return;
@@ -267,7 +286,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 && this.env.getOptions().containsKey("nomsgtext"))
             fmtString = defaultFormat;
         else
-            fmtString = messages.getProperty(msgKey, defaultFormat);
+            fmtString = fullMessageOf(msgKey, defaultFormat);
         String messageText = String.format(fmtString, args);
 
         // Replace '\n' with the proper line separator
@@ -634,7 +653,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.RELEASE_7;
+    public final SourceVersion getSupportedSourceVersion() {
+    	try {
+    		return SourceVersion.RELEASE_7;
+    	} catch (NoSuchFieldError e) {
+    		// Running in JDK 6
+    		return SourceVersion.latest();
+    	}
     }
 }

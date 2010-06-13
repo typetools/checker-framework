@@ -10,7 +10,7 @@ public class ArrayArgs {
 
     public void test() {
         String[] s = new String[] { null, null, null };
-        //:: (type.incompatible)
+        //:: (argument.type.incompatible)
         test(s);
         test(NonNull.class);
     }

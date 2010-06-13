@@ -14,25 +14,25 @@ public class Generics {
 
         // Assignments test
         rr = rr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = rm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = rq;    // error
         rr = mr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = mm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rr = mq;    // error
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = rr;    // error
         rm = rm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = rq;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = mr;    // error
         rm = mm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         rm = mq;    // error
 
         rq = rr;
@@ -42,35 +42,35 @@ public class Generics {
         rq = mm;
         rq = mq;
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rr;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = rq;    // error
         mr = mr;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = mm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mr = mq;    // error
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rr;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = rq;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = mr;    // error
         mm = mm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mm = mq;    // error
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rr;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rm;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         mq = rq;    // error
         mq = mr;
         mq = mm;
