@@ -21,7 +21,13 @@ UNZIP = \
 	    $(patsubst javari/build/%.class,annotated/%.class, \
 		  $(MODIFIED))))
 
-unmodified: $(UNZIP)
+JAVARIFIER_REQUIRED = \
+	annotated/java/lang/annotation/Annotation.class \
+	annotated/java/lang/annotation/Documented.class \
+	annotated/java/lang/annotation/Retention.class \
+	annotated/java/lang/annotation/Target.class
+
+unmodified: $(UNZIP) $(JAVARIFIER_REQUIRED)
 
 # Delegates
 clean: $(addsuffix .clean, $(CHECKERS))
