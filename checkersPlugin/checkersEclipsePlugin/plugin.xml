@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+		 point="org.eclipse.ui.popupMenus">
+	  <objectContribution
+			id="checkers.eclipse.JavaElementActions"
+			objectClass="org.eclipse.jdt.core.IJavaProject">
+		 <menu
+			   id="checkers.eclipse"
+			   label="Checker Framework"
+			   path="additions"/>
+		 <action
+			   class="checkers.eclipse.actions.ClearMarkersAction"
+			   id="checkers.eclipse.removeMarkers"
+			   label="Clear Checkers Markers"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Removes all Checker Framework markers from the selected element."/>
+
+		<action
+			   class="checkers.eclipse.actions.CheckerActions$JavariAction"
+			   id="checkers.eclipse.runCheckers.javari"
+			   label="Run Javari Checker"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run the Javari checker on the selected element."/>
+
+		<action
+			   class="checkers.eclipse.actions.CheckerActions$NullnessAction"
+			   id="checkers.eclipse.runCheckers.nonnull"
+			   label="Run Nullness Checker"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run the Nullness checker on the selected element."/>
+
+		<action
+			   class="checkers.eclipse.actions.CheckerActions$InterningAction"
+			   id="checkers.eclipse.runCheckers.interning"
+			   label="Run Interning Checker"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run the Interned checker on the selected element."/>
+
+		<action
+			   class="checkers.eclipse.actions.CheckerActions$IGJAction"
+			   id="checkers.eclipse.runCheckers.igj"
+			   label="Run IGJ Checker"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run the IGJ checker on the selected element."/>
+<!--Commented out because you need an option to pass arguments. Custom checher want -Aquals
+		<action
+			   class="checkers.eclipse.actions.RunCustomCheckerAction"
+			   id="checkers.eclipse.runCheckers.igj"
+			   label="Run Custom Checker"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run the custom checker on the selected element."/> -->
+			   
+	  </objectContribution>
+	  <!-- Special case context menu for simple projects that have java natures -->
+	  <objectContribution
+			objectClass="org.eclipse.core.resources.IProject"
+			id="checkers.eclipse.NavigatorActions">
+		 <menu
+			   id="checkers.eclipse"
+			   label="Checker Framework"
+			   path="additions"/>
+		 <action
+			   class="checkers.eclipse.actions.ClearMarkersAction"
+			   id="checkers.eclipse.removeMarkers"
+			   label="Clear Checkers Markers"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Removes all Checker Framework markers from the selected element.">
+		 <enablement>
+			<objectState
+				  name="nature"
+				  value="org.eclipse.jdt.core.javanature"/>
+		 </enablement>
+
+		 </action>
+		 <action
+			   class="checkers.eclipse.actions.RunCheckerAction"
+			   id="srunCheckers"
+			   label="Run Checkers"
+			   menubarPath="checkers.eclipse/additions"
+			   tooltip="Run a checker on the selected element.">
+		 <enablement>
+			<objectState
+				  name="nature"
+				  value="org.eclipse.jdt.core.javanature"/>
+		 </enablement>
+
+		 </action>
+	  </objectContribution>
+
+   </extension>
+      
+   <extension
+		 id="checkers.eclipse.marker"
+		 name="Checker Framework Problem"
+		 point="org.eclipse.core.resources.markers">
+	  <super type="org.eclipse.core.resources.problemmarker"/>
+	  <super type="org.eclipse.core.resources.textmarker"/>
+	  <persistent value="true"/>
+   </extension>
+   
+</plugin>

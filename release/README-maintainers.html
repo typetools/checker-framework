@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Releasing the JSR 308 langtools and the Checker Framework</title>
+<style type="text/css">
+body { font-family: sans-serif; margin: 20px }
+pre { background-color: #CCC; padding: 0.75em; }
+</style>
+</head>
+
+<body>
+
+<h1>Releasing the JSR 308 langtools and the Checker Framework</h1> <!-- omit from toc -->
+
+<p>This document explains how to make a public release of the JSR 308
+langtools and checkers.</p>
+
+<p>The release process is mostly automated, but you should expect to
+spend 30 to 60 minutes for each release you make. You will actually
+make the release twice &mdash; first to a testing site, and then to the live
+site.</p>
+
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#Requirements">Requirements</a></li>
+      <li><a href="#Setup">Initial setup</a></li>
+      <li><a href="#Release">Making a release</a></li>
+    </ul>
+<!-- end toc -->
+
+<h2 id="Requirements">Requirements</h2>
+
+<p>To make a release of the JSR 308 langtools and checkers, you need:</p>
+
+<ul>
+<li>JDK &ge; 6</li>
+<li>Apache ant &ge; 1.6.5</li>
+<li>Access to <code>/cse/www2/types</code> directory on a cs.washington.edu machine</li>
+<li>Mercurial &ge; 1.2.1</li>
+<li>LaTeX (along with <code>hevea</code> and <code>bibtex</code>)</li>
+<li>a web-accessible directory like <code>public_html</code> (for
+testing the release)</li>
+</ul>
+
+<p>You should have all of the above if you use a Washington CSE machine
+(e.g. <code>godwit</code>).</p>
+
+
+<h2 id="Setup">Initial setup</h2>
+
+<ol>
+<li>
+<p>Add the <code>scripts</code> directory of the Daikon <code>invariants</code>
+repository to your <code>PATH</code> (see instructions for <a
+href="http://groups.csail.mit.edu/pag/daikon/mit/#getting-daikon">getting
+Daikon</a> if you don't have access to a checkout).  Mike has a (usually)
+fresh checkout at <code>~mernst/research/invariants/scripts</code></p>
+</li>
+
+<li>
+<p>Ensure that the various tools needed for the release are in your
+<code>PATH</code>.  The files are scattered around the following
+folders: <code>~mernst/bin/share</code>, <code>~mernst/bin/Linux-i686</code>,
+and <code>/uns/bin</code>.
+</li>
+
+<li>If you have never made a release before or no longer have a
+prepared release directory, set up a release directory as follows:
+
+<ol>
+<li>
+
+<p>Create a new directory.  Place the directory in a non-NFS
+  location such as a scratch partition, because a local disk is faster than
+  NFS.</p>
+
+<pre>
+    mkdir -p /scratch/$USER/jsr308-release
+    cd /scratch/$USER/jsr308-release
+</pre>
+</li>
+
+<li>
+<p>Check out the jsr308-langtools and checker-framework repositories:</p>
+<pre>
+    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+    hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
+    # Just to be on the safe side.
+    cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
+</pre>
+</li>
+
+<li><p>Copy some files from the JSR 308 site as the basis for a
+testing site:</p>
+
+<pre>
+    cd release
+    ant -f release.xml site-copy
+</pre>
+
+<p>and answer the prompt accordingly. The site will be created in
+<code>~/www/jsr308test</code> by default.</p></li>
+
+</ol>
+</li>
+</ol>
+
+<h2 id="Release">Making a release</h2>
+
+<p>In <tt>checker-framework/release</tt>, execute:</p>
+
+<pre>
+    python -m release
+</pre>
+
+And follow the instructions it provides, and you are done!
+
+<h2 id="Release-Manual">Making a manual release</h2>
+
+<p><b>These instructions are deprecated in favor of the python release
+script.  The material will be deleted in its due time</b></p>
+
+<ol>
+<li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
+<tt>CFVERSION</tt> is for the version being released.
+For example,
+<pre>
+  export anno=$HOME/research/types
+  export CFVERSION=1.0.3
+</pre>
+
+<li><p>Ensure that your checkouts are up to date and you have no
+    uncommitted changes.  Each one of these <tt>hg</tt> commands should
+    print "no changes found":</p>
+<pre>
+  cd $anno/checker-framework
+  hg fetch
+  hg outgoing
+  cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+</pre>
+</li>
+
+<li><p>Ensure that all regression tests pass.</p>
+
+<li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
+<tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
+what has changed in this version.  (Hopefully, this has already been done by
+each person who made a recent change.)
+The changelogs should focus on user-visible changes, or very significant
+implementation changes that may affect users.
+</p>
+
+<p>
+To double-check that the changelogs are adequate, run the following
+commands, and read the files in <tt>~/tmp</tt> that they create:
+
+<p>
+Determine the revision number for the previous release (Yuck; we should
+tag releases instead) by examining the output of
+</p>
+<pre>
+  (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
+  (cd $anno/jsr308-langtools; hg log /doc/changelog-jsr308.txt)
+</pre>
+<p>
+and setting environment variables accordingly:
+</p>
+<pre>
+  export CF_PREV_REVISION=463
+  export JL_PREV_REVISION=1059
+</pre>
+
+<pre>
+    # Diff the manuals against the previous versions:
+    cd $anno/checker-framework/checkers/manual
+    hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
+    cd $anno/jsr308-langtools
+    hg diff -w -r$JL_PREV_REVISION README-jsr308.html > ~/tmp/langtools-manual-diff
+
+    # Use the version control logs since the last release:
+    # In Emacs, it's useful to do:  (delete-matching-paragraphs "automated merge with " nil nil t)
+    cd $anno/checker-framework
+    hg log -v -r$CF_PREV_REVISION:tip > ~/tmp/checkers-log
+    cd $anno/jsr308-langtools
+    hg log -r$JL_PREV_REVISION:tip > ~/tmp/langtools-log
+    hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
+</pre>
+
+</li>
+
+<li><p>Ensure that your checkouts are up to date and you have no
+    uncommitted changes.  Each one of these <tt>hg</tt> commands should
+    print "no changes found":</p>
+<pre>
+  cd $anno/checker-framework
+  hg fetch
+  hg outgoing
+  cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+</pre>
+</li>
+
+
+<li><p>Update your release checkout:</p>
+
+<pre>
+    cd /scratch/$USER/jsr308-release/checker-framework
+    hg fetch    # eq to 'hg pull; hg up'
+    cd ../jsr308-langtools
+    hg fetch    # eq to 'hg pull; hg up'
+</pre>
+
+<p>There shouldn't be any conflicts, since the release scripts shouldn't
+make any serious local modifications (aside from version number
+changes, which you'll check in later in the process).</p></li>
+
+<li><p>Ensure that the properties for the dry-run release is set
+appropriately in <tt>checker-framework/release/release.properties</tt>, set
+as follows:</p>
+
+<ul>
+<li><code>web.dry.root.dir</code>: the location of your site copy, e.g.,
+<code>~/www/jsr308test</code></li>
+<li><code>sanitycheck.dry.url</code>: the URL to access the <code>releases</code>
+directory of your site copy, e.g.,
+<code>http://www.cs.washington.edu/homes/${USER}/jsr308test/releases</code></li>
+</ul>
+
+<p>(You'll do a dry-run of the release to your site copy, and will only
+update the live site after you've sanity-checked the release.)</p></li>
+
+<li><p>Do a dry-run of the release:</p>
+
+<pre>
+    cd /scratch/$USER/jsr308-release/checker-framework/release
+    ant -f release.xml -Drelease.ver=$CFVERSION clean web sanitycheck
+</pre>
+
+<p>The <code>web</code> step will run <code>ant clean build-javac
+build-javap</code> for langtools, and <code>ant clean dists
+all-tests</code> for checkers, so if the build is broken or any
+checker tests fail, you won't be able to continue. (If this is the
+case, you should fix the issue, or contact someone who can via <a
+href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>.)</p>
+
+<p>The <code>sanitycheck</code> step unzips the releases from the website, then
+rebuilds both projects and runs tests on the source and binary versions
+from the release.</p>
+
+<p>If all steps pass and you see <code>BUILD SUCCESSFUL</code>, then
+proceed.  Otherwise, fix the problems and repeat the ant command.</p></li>
+
+
+<li><a name="sanity-check"></a><p>Sanity-check the release.
+If there are any problems, correct them in the repository and re-make the
+release.
+</p>
+
+<ul>
+
+<li><p>As a new user with no customizations (say, in a
+virtual machine; Mike uses <tt>ssh test@localhost</tt>), follow the Checker
+Framework short installation instructions by executing these commands:</p>
+
+<pre>
+cd
+wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
+JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-framework/current \
+    make -f Makefile-jsr308-install
+</pre>
+
+<p>
+</p>
+
+</li>
+</ul>
+
+<li>Make the final release:
+
+<pre>
+    cd /scratch/$USER/jsr308-release/checker-framework/release
+    ant -f release.xml -Drelease.ver=$CFVERSION -Drelease.is.real=true clean web checklinks sanitycheck
+</pre>
+
+<p>The same process as in the dry-run occurs; chances are, if the
+dry-run passed successfully, this step should pass as well.</p>
+
+</li>
+
+<li>Again test the simple installation instructions guideline:
+<pre>
+cd
+wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
+make -f Makefile-jsr308-install
+</pre>
+</li>
+
+<li><p>Check in any changes made to version numbers and dates as part of
+the release process.  (Should this be done before the release, so
+that its data is consistent?)</p>
+
+<pre>
+    cd /scratch/$USER/jsr308-release/jsr308-langtools
+    hg diff
+    # As always, review the changes output by "hg diff" before committing.
+    # Typical commit message:
+    hg commit -m "Update version number to $CFVERSION"
+    hg push
+
+    cd /scratch/$USER/jsr308-release/checker-framework
+    hg diff
+    # As always, review the changes output by "hg diff" before committing.
+    # Typical commit message:
+    hg commit -m "Update version number to $CFVERSION"
+    hg push
+</pre>
+</li>
+
+<li>
+Copy <tt>checkers-quals.jar</tt> to some libraries that use it:
+<pre>
+  cp -pf .../checkers-quals.jar ${inv}/java/lib
+  cvs commit ${inv}/java/lib/checkers-quals.jar -m "checkers-quals.jar version $CFVERSION"
+  cp -pf .../checkers-quals.jar ${pl}/java/lib
+  hg commit ${pl}/java/lib/checkers-quals.jar -m "checkers-quals.jar version $CFVERSION"
+</pre>
+
+<li><p>Send a release announcement to <a
+href="mailto:jsr308-discuss@groups.google.com">jsr308-discuss@groups.google.com</a>.
+The announcement should indicate what is new in the release, and should
+include the changelog entries from
+<pre>
+  checker-framework/checkers/changelog-checkers.txt
+  jsr308-langtools/doc/changelog-jsr308.txt
+</pre>
+</li>
+
+</ol>
+
+</body>
+</html>
+
+<!--  LocalWords:  JSR langtools serif px pre CCC JDK AFS PAG mkdir cd svn co
+ -->
+<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg INV buildfile
+ -->
