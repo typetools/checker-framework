@@ -1011,7 +1011,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     }
 
     // **********************************************************************
-    // Randome helper method
+    // Random helper methods
     // **********************************************************************
 
     /**
