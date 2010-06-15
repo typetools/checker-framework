@@ -9,6 +9,7 @@ public class FenumTest extends ParameterizedCheckerTest {
 
     public FenumTest(File testFile) {
         super(testFile, "checkers.fenum.FenumChecker", "fenum", "-Anomsgtext");
+        // super(testFile, "checkers.fenum.FenumChecker", "fenum");
     }
 
     @Parameters
