@@ -30,7 +30,7 @@ public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull 
   public int size() { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Pure V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
