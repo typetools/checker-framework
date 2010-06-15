@@ -2,9 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker; // for Javadoc
-import checkers.nullness.NullnessUtils; // for Javadoc
-
 /**
  * Indicates that the method throws an exception if any of its
  * parameters is {@code null}.
@@ -12,7 +9,7 @@ import checkers.nullness.NullnessUtils; // for Javadoc
  *
  * Use of this annotation should be very rare.  In most cases, it is better
  * to simply annotate each parameter as {@link NonNull}.  One place it is
- * used is {@link NullnessUtils#castNonNull}.
+ * used is {@link checkers.nullness.NullnessUtils#castNonNull}.
  * <p>
  *
  * This annotation is intended for use only on methods whose sole purpose
@@ -21,7 +18,7 @@ import checkers.nullness.NullnessUtils; // for Javadoc
  * the difference.
  *
  * @see NonNull
- * @see NullnessChecker
+ * @see checkers.nullness.NullnessChecker
  * @checker.framework.manual #defensive-programming Nullness Checker
  */
 @Documented
