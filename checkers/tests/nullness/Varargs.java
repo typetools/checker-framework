@@ -26,7 +26,7 @@ public class Varargs {
 
     public void format1(java.lang.String a1, @Nullable java.lang.Object... a2) {
         int x = a2.length;           // no warning
-        //:: (type.incompatible)
+        //:: (enhancedfor.type.incompatible)
         for (@NonNull Object p : a2) // warning
             System.out.println(p);
     }

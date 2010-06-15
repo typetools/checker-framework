@@ -2,6 +2,9 @@ package checkers.i18n;
 
 import javax.annotation.processing.SupportedOptions;
 
+import java.util.ResourceBundle;
+import java.util.Locale;
+
 import checkers.i18n.quals.LocalizableKey;
 import checkers.propkey.PropertyKeyChecker;
 import checkers.propkey.quals.PropertyKey;

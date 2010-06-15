@@ -1,3 +1,3 @@
-ThisReference.java:18: (type.incompatible)
-ThisReference.java:24: (type.incompatible)
-ThisReference.java:30: (type.incompatible)
+ThisReference.java:18: (argument.type.incompatible)
+ThisReference.java:24: (argument.type.incompatible)
+ThisReference.java:30: (argument.type.incompatible)

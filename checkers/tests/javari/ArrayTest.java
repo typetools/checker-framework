@@ -42,33 +42,33 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aMM = ...
         aMM = aMM;
         aMM = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM = aMRo;    // error
         aMM = aTmM;
         aMM = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM = aTmRo;   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM = aRoM;    // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM = aRoTm;   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM = aRoRo;   // error
 
         // aMTm = ...
         aMTm = aMM;
         aMTm = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm = aMRo;   // error
         aMTm = aTmM;
         aMTm = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm = aTmRo;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm = aRoM;   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm = aRoTm;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm = aRoRo;  // error
 
         // aMRo = ...
@@ -78,11 +78,11 @@ class ArrayTest {         int @ReadOnly [] rmi;
         aMRo = aTmM;
         aMRo = aTmTm;
         aMRo = aTmRo;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMRo = aRoM;   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMRo = aRoTm;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMRo = aRoRo;  // error
 
     }
@@ -92,33 +92,33 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aTmM = ...
         aTmM = aMM;
         aTmM = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM = aMRo;   // error
         aTmM = aTmM;
         aTmM = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM = aTmRo;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM = aRoM;   // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM = aRoTm;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM = aRoRo;  // error
 
         // aTmTm = ...
         aTmTm = aMM;
         aTmTm = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm = aMRo;  // error
         aTmTm = aTmM;
         aTmTm = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm = aTmRo; // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm = aRoM;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm = aRoTm; // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm = aRoRo; // error
 
         // aTmRo = ...
@@ -128,11 +128,11 @@ class ArrayTest {         int @ReadOnly [] rmi;
         aTmRo = aTmM;
         aTmRo = aTmTm;
         aTmRo = aTmRo;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmRo = aRoM;  // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmRo = aRoTm; // error
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmRo = aRoRo; // error
 
     }
@@ -142,29 +142,29 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aRoM = ...
         aRoM = aMM;
         aRoM = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM = aMRo;   // error
         aRoM = aTmM;
         aRoM = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM = aTmRo;  // error
         aRoM = aRoM;
         aRoM = aRoTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM = aRoRo;  // error
 
         // aRoTm = ...
         aRoTm = aMM;
         aRoTm = aMTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm = aMRo;  // error
         aRoTm = aTmM;
         aRoTm = aTmTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm = aTmRo; // error
         aRoTm = aRoM;
         aRoTm = aRoTm;
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm = aRoRo; // error
 
         // aRoRo = ...
@@ -185,29 +185,29 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aMM = ...
         aMM[0] = aMM[0];
         aMM[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM[0] = aMRo[0];    // error
         aMM[0] = aTmM[0];
         aMM[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM[0] = aTmRo[0];   // error
         aMM[0] = aRoM[0];
         aMM[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMM[0] = aRoRo[0];   // error
 
         // aMTm = ...
         aMTm[0] = aMM[0];
         aMTm[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm[0] = aMRo[0];   // error
         aMTm[0] = aTmM[0];
         aMTm[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm[0] = aTmRo[0];  // error
         aMTm[0] = aRoM[0];
         aMTm[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aMTm[0] = aRoRo[0];  // error
 
         // aMRo = ...
@@ -228,29 +228,29 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aTmM = ...
         aTmM[0] = aMM[0];
         aTmM[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM[0] = aMRo[0];   // error
         aTmM[0] = aTmM[0];
         aTmM[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM[0] = aTmRo[0];  // error
         aTmM[0] = aRoM[0];
         aTmM[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmM[0] = aRoRo[0];  // error
 
         // aTmTm = ...
         aTmTm[0] = aMM[0];
         aTmTm[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm[0] = aMRo[0];  // error
         aTmTm[0] = aTmM[0];
         aTmTm[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm[0] = aTmRo[0]; // error
         aTmTm[0] = aRoM[0];
         aTmTm[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aTmTm[0] = aRoRo[0]; // error
 
         // aTmRo = ...
@@ -271,29 +271,29 @@ class ArrayTest {         int @ReadOnly [] rmi;
         // aRoM = ...
         aRoM[0] = aMM[0];
         aRoM[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM[0] = aMRo[0];   // error
         aRoM[0] = aTmM[0];
         aRoM[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM[0] = aTmRo[0];  // error
         aRoM[0] = aRoM[0];
         aRoM[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoM[0] = aRoRo[0];  // error
 
         // aRoTm = ...
         aRoTm[0] = aMM[0];
         aRoTm[0] = aMTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm[0] = aMRo[0];  // error
         aRoTm[0] = aTmM[0];
         aRoTm[0] = aTmTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm[0] = aTmRo[0]; // error
         aRoTm[0] = aRoM[0];
         aRoTm[0] = aRoTm[0];
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         aRoTm[0] = aRoRo[0]; // error
 
         // aRoRo = ...
