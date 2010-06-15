@@ -35,6 +35,6 @@ public abstract class ResourceBundle{
   public final static void clearCache() { throw new RuntimeException("skeleton method"); }
   public final static void clearCache(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   public abstract Enumeration<String> getKeys();
-  public boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
   public Set<String> keySet() { throw new RuntimeException("skeleton method"); }
 }
