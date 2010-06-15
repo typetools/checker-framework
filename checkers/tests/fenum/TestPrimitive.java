@@ -1,47 +1,52 @@
 import checkers.fenum.quals.*;
 
+@SuppressWarnings("fenum.assignment.type.incompatible")
 public class TestPrimitive {
-	public final @FenumDecl("A") int ACONST1 = 1;
-	public final @FenumDecl("A") int ACONST2 = 2;
-	public final @FenumDecl("A") int ACONST3 = 3;
+	public final @Fenum("A") int ACONST1 = 1;
+	public final @Fenum("A") int ACONST2 = 2;
+	public final @Fenum("A") int ACONST3 = 3;
 
-	public final @FenumDecl("B") int BCONST1 = 4;
-	public final @FenumDecl("B") int BCONST2 = 5;
-	public final @FenumDecl("B") int BCONST3 = 6;
+	public final @Fenum("B") int BCONST1 = 4;
+	public final @Fenum("B") int BCONST2 = 5;
+	public final @Fenum("B") int BCONST3 = 6;
 }
 
 class FenumUser {
-	@Fenum("A") int state1 = new TestPrimitive().ACONST1;
-		
-	//:: (assignment.type.incompatible)
+	@Fenum("A") int state1; // = new TestPrimitive().ACONST1;
+	@Fenum("A") int state3 = this.state1;
+
+	//:: (fenum.assignment.type.incompatible)
 	@Fenum("B") int state2 = new TestPrimitive().ACONST1;
 	
 	void foo(TestPrimitive t) {
-		//:: (assignment.type.incompatible)
+		//:: (fenum.assignment.type.incompatible)
 		state1 = 4;
 		
 		state1 = t.ACONST2;
 		state1 = t.ACONST3;
 		
-		//:: (assignment.type.incompatible)
+		//:: (fenum.assignment.type.incompatible)
 		state1 = t.BCONST1;
 		
-		//:: (assignment.type.incompatible)
+		// We allow this, should we forbid it?
 		int x = t.ACONST1;
 		
 		if( t.ACONST1 < t.ACONST2  ) {
 			// ok
 		}
 
-		//:: (type.incompatible)
+		//:: (fenum.binary.type.incompatible)
 		if( t.ACONST1 < t.BCONST2  ) {
 		}
-		//:: (type.incompatible)
+		//:: (fenum.binary.type.incompatible)
 		if( t.ACONST1 == t.BCONST2  ) {
 		}
 
-		//:: (type.incompatible)
+		// We allow this, should we forbid it?
 		if( t.ACONST1 < 5 ) {
+		}
+		// We allow this, should we forbid it?
+		if( t.ACONST1 == 5 ) {
 		}
 	}
 }
