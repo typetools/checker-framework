@@ -1,3 +1,19 @@
+Version 1.1.0, 13 Jun 2010
+
+Checkers
+  Introduced a new simple mechanism for running the Checkers
+  Added one annotated JDK for all checkers
+
+Nullness Checker
+  Fixed bugs related to map.get() and KeyFor annotation
+  Fixed bugs related to AssertNonNull* and parameters
+  Minor updates to the annotated JDK, especially to java.io.File
+
+Manual
+  Updated installation instructions
+  Clarified section regarding fields and type inference
+
+----------------------------------------------------------------------
 Version 1.0.9, 25 May 2010
 
 Nullness Checker:
