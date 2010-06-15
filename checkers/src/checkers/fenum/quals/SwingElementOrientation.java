@@ -4,8 +4,6 @@ import java.lang.annotation.*;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
-
 
 /**
  * @author wmdietl
@@ -14,5 +12,5 @@ import checkers.quals.Unqualified;
 @Retention(RetentionPolicy.RUNTIME)
 // @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Unqualified.class } )
+@SubtypeOf( { FenumTop.class } )
 public @interface SwingElementOrientation {}

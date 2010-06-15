@@ -6,11 +6,14 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.VariableTree;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.TreeUtils;
 
 
 public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
@@ -65,5 +68,22 @@ public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
                     "fenum.argument.type.incompatible", p);
+    }
+    
+    // Copy of supermethod, only change error key.
+    @Override
+    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+            MethodInvocationTree node) {
+        AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
+        AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
+        treeReceiver.addAnnotations(atypeFactory.getReceiver(node).getAnnotations());
+
+        if (!checker.isSubtype(treeReceiver, methodReceiver)) {
+            checker.report(Result.failure("fenum.method.invocation.invalid",
+                TreeUtils.elementFromUse(node),
+                treeReceiver.toString(), methodReceiver.toString()), node);
+            return false;
+        }
+        return true;
     }
 }
