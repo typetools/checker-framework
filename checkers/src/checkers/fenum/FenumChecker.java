@@ -9,7 +9,11 @@ import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
 
+import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
+import checkers.fenum.quals.FenumUnqualified;
+import checkers.fenum.quals.FenumBottom;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -45,7 +49,10 @@ public class FenumChecker extends BaseTypeChecker {
         String qualName = env.getOptions().get("qual");
         if (qualName == null) {
         	// maybe issue a warning?
+        	qualSet.add(FenumTop.class);
         	qualSet.add(Fenum.class);
+        	qualSet.add(FenumUnqualified.class);
+        	qualSet.add(FenumBottom.class);
 		} else {
 			try {
 				final Class<? extends Annotation> q =
@@ -54,6 +61,10 @@ public class FenumChecker extends BaseTypeChecker {
 			} catch (ClassNotFoundException e) {
 				throw new Error(e);
 			}
+			qualSet.add(FenumTop.class);
+			qualSet.add(FenumUnqualified.class);
+			qualSet.add(FenumBottom.class);
+			qualSet.add(Fenum.class);
 		}
         return Collections.unmodifiableSet(qualSet);
     }
@@ -71,5 +82,16 @@ public class FenumChecker extends BaseTypeChecker {
             swKeys.add(anno.getSimpleName().toLowerCase());
 
         return swKeys;
+    }
+    
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+		// The checker calls this method to compare the annotation used in a
+		// type to the modifier it adds to the class declaration. As our default
+		// modifier is Unqualified, this results in an error when a non-subtype
+		// is used. Just ignore this check here and do them manually in the
+		// visitor.
+    	return true;
     }
 }

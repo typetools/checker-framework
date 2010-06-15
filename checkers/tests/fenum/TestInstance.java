@@ -23,20 +23,21 @@ class FenumUser {
 
 		state1 = t.ACONST2;
 		state1 = t.ACONST3;
-
+		state1 = null;
+		
 		//:: (fenum.assignment.type.incompatible)
 		state1 = t.BCONST1;
 		
-		// We allow this, should we forbid it?
+		//:: (fenum.method.invocation.invalid)
 		state1.hashCode();
-		// We allow this, should we forbid it?
+		//:: (fenum.method.invocation.invalid)
 		t.ACONST1.hashCode();
 		
 		// sanity check: unqualified instantiation and call work.
 		Object o = new Object();
 		o.hashCode();
 
-		// We allow this, should we forbid it?
+		//:: (fenum.assignment.type.incompatible)
 		o = t.ACONST1;
 		
 		if( t.ACONST1 == t.ACONST2  ) {

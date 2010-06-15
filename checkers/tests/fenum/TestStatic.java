@@ -17,6 +17,9 @@ class FenumUser {
 	//:: (fenum.assignment.type.incompatible)
 	@Fenum("B")	int state2 = TestStatic.ACONST1;
 
+	void bar(@Fenum("A") int p) {
+	}
+	
 	void foo() {
 		//:: (fenum.assignment.type.incompatible)
 		state1 = 4;
@@ -28,15 +31,27 @@ class FenumUser {
 
 		//:: (fenum.assignment.type.incompatible)
 		state1 = TestStatic.BCONST1;
+		
+		//:: (fenum.argument.type.incompatible)
+		bar(5);
+		bar(TestStatic.ACONST1);
+		//:: (fenum.argument.type.incompatible)
+		bar(TestStatic.BCONST1);
 	}
+	
+
+	
 	
 	@SuppressWarnings("fenum")
 	void ignoreAll() {
-		state1 = 4;	
+		state1 = 4;
+		bar(5);
 	}
 
 	@SuppressWarnings("fenum.assignment.type.incompatible")
 	void ignoreOne() {
-		state1 = 4;	
+		state1 = 4;
+		//:: (fenum.argument.type.incompatible)
+		bar(5);
 	}
 }

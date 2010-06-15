@@ -28,7 +28,7 @@ class FenumUser {
 		//:: (fenum.assignment.type.incompatible)
 		state1 = t.BCONST1;
 		
-		// We allow this, should we forbid it?
+		//:: (fenum.assignment.type.incompatible)
 		int x = t.ACONST1;
 		
 		if( t.ACONST1 < t.ACONST2  ) {
@@ -42,10 +42,10 @@ class FenumUser {
 		if( t.ACONST1 == t.BCONST2  ) {
 		}
 
-		// We allow this, should we forbid it?
+		//:: (fenum.binary.type.incompatible)
 		if( t.ACONST1 < 5 ) {
 		}
-		// We allow this, should we forbid it?
+		//:: (fenum.binary.type.incompatible)
 		if( t.ACONST1 == 5 ) {
 		}
 	}
