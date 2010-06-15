@@ -16,5 +16,5 @@
 :110: (assignability.invalid)
 :112: (method.invocation.invalid)
 :114: (assignability.invalid)
-:125: (type.incompatible)
-:126: (type.incompatible)
+:125: (assignment.type.incompatible)
+:126: (assignment.type.incompatible)

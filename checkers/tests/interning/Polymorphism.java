@@ -13,7 +13,7 @@ public class Polymorphism {
         @Interned String interned = "interned";
 
         interned = identity(interned);
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         interned = identity(notInterned); // invalid
     }
 
@@ -27,7 +27,7 @@ public class Polymorphism {
         @Interned Polymorphism interned = null;
 
         interned = interned.getSelf();
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         interned = notInterned.getSelf(); // invalid
     }
 
@@ -36,7 +36,7 @@ public class Polymorphism {
         if (s.equals("n"))
             return "m";
         else
-            //:: (type.incompatible)
+            //:: (return.type.incompatible)
             return new String("m"); // invalid
     }
 

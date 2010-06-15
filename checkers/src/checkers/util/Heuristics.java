@@ -63,8 +63,6 @@ public class Heuristics {
     /**
      * A convenience class for tree-matching algorithms. Skips parentheses by
      * default.
-     *
-     * @see Heuristics#applyAt(TreePath, Tree.Kind, Matcher)
      */
     public static class Matcher extends SimpleTreeVisitor<Boolean, Void> {
 
@@ -136,7 +134,7 @@ public class Heuristics {
     public static class WithinTrueBranch extends Matcher {
         private final Matcher matcher;
         /**
-         * @param Matcher for the condition
+         * @param conditionMatcher for the condition
          */
         public WithinTrueBranch(Matcher conditionMatcher) {
             this.matcher = conditionMatcher;

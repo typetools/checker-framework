@@ -8,7 +8,7 @@ public class MultiBoundTypeVar {
 
         Cloneable c1 = t;
 
-        //:: (type.incompatible)
+        //:: (assignment.type.incompatible)
         @Odd Cloneable c2 = t;
 
         Appendable d1 = t;

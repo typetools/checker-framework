@@ -1,2 +1,2 @@
-ListNode.java:29: (type.incompatible)
-ListNode.java:34: (type.incompatible)
+ListNode.java:29: (assignment.type.incompatible)
+ListNode.java:34: (assignment.type.incompatible)

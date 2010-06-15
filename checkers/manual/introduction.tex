@@ -128,7 +128,7 @@ build the latest development version from source
 \textbf{Requirement:}
 You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from
 \ahref{http://java.sun.com/javase/downloads/index.jsp}{Sun}
-or elsewhere.  If you are using Apple Mac OS X, you can either use
+or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
@@ -148,7 +148,7 @@ To ensure that it was installed properly, run the following command:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
+  javac 1.7.0-jsr308-1.1.0
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -378,7 +378,7 @@ Two concrete examples (using the Nullness checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker MyFile.java
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/nullness/jdk.jar MyFile.java
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/jdk.jar MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
