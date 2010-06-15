@@ -15,6 +15,4 @@ import checkers.quals.Unqualified;
 // @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
 @SubtypeOf( { Unqualified.class } )
-public @interface Fenum {
-	String value() default "";
-}
+public @interface SwingCompassDirection {}

@@ -1,51 +1,75 @@
 package checkers.fenum;
 
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.processing.SupportedOptions;
 
 import checkers.fenum.quals.Fenum;
-import checkers.fenum.quals.FenumBottom;
-import checkers.fenum.quals.FenumDecl;
-import checkers.fenum.quals.FenumTop;
-import checkers.fenum.quals.FenumUnqualified;
 import checkers.basetype.BaseTypeChecker;
-import checkers.quals.TypeQualifiers;
-// import checkers.source.SupportedLintOptions;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
-
 
 /**
  * The main checker class for the fake enum checker.
  * 
+ * There are two options to distinguish different enumerators:
+ * 
+ * <ol>
+ * <li> {@code @Fenum("Name")}: introduces a fake enumerator with the name
+ * "Name". Enumerators with different names are distinct. The default name is
+ * empty, but you are encouraged to use a unique name for your purpose.
+ * </li>
+ * 
+ * <li> Alternatively, you can specify the annotation to use with the
+ * {@code -Aqual} command line argument. 
+ * </li>
+ * </ul>
+ * 
  * @author wmdietl
  */
-@TypeQualifiers( { FenumDecl.class, Fenum.class, FenumUnqualified.class,
-		FenumTop.class, FenumBottom.class } )
-// @SupportedLintOptions({"allowLost", "checkOaM", "checkStrictPurity"})
+@SupportedOptions( { "qual" } )		
 public class FenumChecker extends BaseTypeChecker {
-	
-	protected static AnnotationMirror FENUM_DECL, FENUM_UNQUAL, FENUM;
-	
+    /** Copied from BasicChecker.
+     * Instead of returning an empty set if no "quals" option is given,
+     * we return Fenum as the only qualifier.
+     */
     @Override
-    public synchronized void init(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-        FENUM_DECL = annoFactory.fromClass(FenumDecl.class);
-        FENUM_UNQUAL = annoFactory.fromClass(FenumUnqualified.class);
-        FENUM = annoFactory.fromClass(Fenum.class);
-        
-        super.init(env);
+    @SuppressWarnings("unchecked")
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        Set<Class<? extends Annotation>> qualSet =
+            new HashSet<Class<? extends Annotation>>();
+
+        String qualName = env.getOptions().get("qual");
+        if (qualName == null) {
+        	// maybe issue a warning?
+        	qualSet.add(Fenum.class);
+		} else {
+			try {
+				final Class<? extends Annotation> q =
+					(Class<? extends Annotation>) Class.forName(qualName);
+				qualSet.add(q);
+			} catch (ClassNotFoundException e) {
+				throw new Error(e);
+			}
+		}
+        return Collections.unmodifiableSet(qualSet);
     }
-    
+
+    /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
+     */
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-		// The checker calls this method to compare the annotation used in a
-		// type to the modifier it adds to the class declaration. As our default
-		// modifier is Unqualified, this results in an error when a non-subtype
-		// is used. Just ignore this check here and do them manually in the
-		// visitor.
-    	return true;
+    public Collection<String> getSuppressWarningsKey() {
+        Set<String> swKeys = new HashSet<String>();
+        Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
+        if (annos.isEmpty())
+            return super.getSuppressWarningsKey();
+
+        for (Class<? extends Annotation> anno : annos)
+            swKeys.add(anno.getSimpleName().toLowerCase());
+
+        return swKeys;
     }
 }
