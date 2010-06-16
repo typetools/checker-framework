@@ -11,7 +11,7 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public int size() { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }

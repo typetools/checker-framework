@@ -241,7 +241,7 @@ class Usage(Exception):
 USER = os.getlogin()
 DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
 
-TO = 'jsr308-discuss@googlegroups.com'
+TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 def format_email(version, checkers_header=None, langtools_header=None, to=TO):
     if checkers_header == None:
         checkers_header = changelog_header_checkers()
