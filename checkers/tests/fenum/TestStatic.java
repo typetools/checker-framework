@@ -1,6 +1,6 @@
 import checkers.fenum.quals.*;
 
-@SuppressWarnings("fenum.assignment.type.incompatible")
+@SuppressWarnings("fenum:assignment.type.incompatible")
 public class TestStatic {
 	public static final @Fenum("A") int ACONST1 = 1;
 	public static final @Fenum("A") int ACONST2 = 2;
@@ -14,14 +14,14 @@ public class TestStatic {
 class FenumUser {
 	@Fenum("A")	int state1 = TestStatic.ACONST1;
 
-	//:: (fenum.assignment.type.incompatible)
+	//:: (assignment.type.incompatible)
 	@Fenum("B")	int state2 = TestStatic.ACONST1;
 
 	void bar(@Fenum("A") int p) {
 	}
 	
 	void foo() {
-		//:: (fenum.assignment.type.incompatible)
+		//:: (assignment.type.incompatible)
 		state1 = 4;
 
 		state1 = TestStatic.ACONST2;
@@ -29,29 +29,26 @@ class FenumUser {
 		
 		state2 = TestStatic.BCONST3;
 
-		//:: (fenum.assignment.type.incompatible)
+		//:: (assignment.type.incompatible)
 		state1 = TestStatic.BCONST1;
 		
-		//:: (fenum.argument.type.incompatible)
+		//:: (argument.type.incompatible)
 		bar(5);
 		bar(TestStatic.ACONST1);
-		//:: (fenum.argument.type.incompatible)
+		//:: (argument.type.incompatible)
 		bar(TestStatic.BCONST1);
 	}
-	
 
-	
-	
 	@SuppressWarnings("fenum")
 	void ignoreAll() {
 		state1 = 4;
 		bar(5);
 	}
 
-	@SuppressWarnings("fenum.assignment.type.incompatible")
+	@SuppressWarnings("fenum:assignment.type.incompatible")
 	void ignoreOne() {
 		state1 = 4;
-		//:: (fenum.argument.type.incompatible)
+		//:: (argument.type.incompatible)
 		bar(5);
 	}
 }
