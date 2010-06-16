@@ -12,10 +12,10 @@ public class SwingTest {
 		// ok
 		m(SwingConstants.BOTTOM);
 		
-		//:: (fenum.argument.type.incompatible)
+		//:: (argument.type.incompatible)
 		m(5);
 		
-		//:: (fenum.argument.type.incompatible)
+		//:: (argument.type.incompatible)
 		m(SwingConstants.NORTH);
 	}
 	
@@ -26,11 +26,11 @@ public class SwingTest {
 		@SwingBoxOrientation int b = 5;
 	}
 	
-	@SuppressWarnings("fenum.argument.type.incompatible")
+	@SuppressWarnings("fenum:argument.type.incompatible")
 	static void ignoreOne() {
 		m(SwingConstants.NORTH);
 		
-		//:: (fenum.assignment.type.incompatible)
+		//:: (assignment.type.incompatible)
 		@SwingBoxOrientation int b = 5;
 	}
 	
@@ -40,7 +40,7 @@ public class SwingTest {
 		// Unfortunately, FenumBottom is not a subtype of the programmer
 		// introduced qualifiers, so this is forbidden.
 		// Is there a way around this?
-		//:: (fenum.assignment.type.incompatible)
+		//:: (assignment.type.incompatible)
 		@SwingBoxOrientation Object box = null;
 	}
 
