@@ -62,9 +62,9 @@ public class FenumChecker extends BaseTypeChecker {
 				throw new Error(e);
 			}
 			qualSet.add(FenumTop.class);
+			qualSet.add(Fenum.class);
 			qualSet.add(FenumUnqualified.class);
 			qualSet.add(FenumBottom.class);
-			qualSet.add(Fenum.class);
 		}
         return Collections.unmodifiableSet(qualSet);
     }
