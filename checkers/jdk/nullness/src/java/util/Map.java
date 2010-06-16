@@ -14,7 +14,7 @@ public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
   }
   public abstract int size();
   public abstract boolean isEmpty();
-  public abstract boolean containsKey(@Nullable Object a1);
+  public abstract @Pure boolean containsKey(@Nullable Object a1);
   public abstract boolean containsValue(@Nullable Object a1);
   // The parameter is not nullable, because implementations of Map.get and
   // Map.put are specifically premitted to throw NullPointerException if
