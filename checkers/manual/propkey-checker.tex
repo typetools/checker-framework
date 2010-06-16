@@ -1,0 +1,119 @@
+\htmlhr
+\chapter{Property file checker\label{propkey-checker}}
+
+The property file checker ensures that a property file or resource bundle is
+accessed with valid keys.
+The checker is useful by itself to check whether the used keys are found in the
+corresponding property file or resource bundle. We describe this generic checker
+in Section \refwithpage{genpropkey-checker}.
+
+We also provide two specialized checkers:
+an internationalization checker (Section \refwithpage{i18n-checker}) used to
+verify that code is properly internationalized and
+a compiler message key checker (Section \refwithpage{compilermsgs-checker}) used
+to ensure that the compiler message keys used in the Checker Framework are
+declared in a property file.
+
+
+\section{Generic property file checker\label{genpropkey-checker}}
+
+
+
+
+
+
+\section{Internationalization checker\label{i18n-checker}}
+
+The Internationalization Checker verifies that your code is properly
+internationalized.  Internationalization is the process of adapting
+software to different languages and locales.  Internationalization is
+sometimes called localization (though the terms are not identical), and is
+sometimes called i18n (because the word starts with ``i'', ends with ``n'',
+and has 18 characters in between).
+
+The checker focuses on one aspect of localization:  user-visible strings
+should be presented in the user's own language, such as English, French, or
+German.  This is achieved by looking up keys in a localization resource,
+which maps keys to user-visible strings.  For instance, one version of a
+resource might map \code{"CANCEL\_STRING"} to
+\code{"Cancel"}, and another version of the same resource might map
+\code{"CANCEL\_STRING"} to \code{"Abbrechen"}.
+
+There are other aspects to localization, such as formatting of dates (3/5
+vs.~5/3 for March 5), that the checker does not check.
+
+The Internationalization Checker verifies these two properties:
+
+\begin{enumerate}
+
+\item
+  Any user-visible text should be obtained from a localization resource.
+  For example, \code{String} literals should not be output to the user.
+
+\item
+  When looking up keys in a localization resource, the key should exist in
+  that resource.  This check catches incorrect or misspelled localization
+  keys.
+
+\end{enumerate}
+
+
+\subsection{Internationalization annotations\label{i18n-annotations}}
+
+The Internationalization Checker supports two annotations:
+
+\begin{enumerate}
+\item \code{@\refclass{i18n/quals}{Localized}}: indicates that the qualified
+\code{String} is a message that has been localized and/or formatted with
+respect to the used locale.
+
+\item \code{@\refclass{i18n/quals}{LocalizableKey}}: indicates that the
+qualified \code{String} or \code{Object} is a valid key found in the
+localization resource.
+\end{enumerate}
+
+You may need to add the \code{@Localized} annotation to more methods in the
+JDK or other libraries, or in your own code.
+
+
+\subsection{Running the Internationalization Checker\label{i18n-running}}
+
+The Internationalization Checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+  javac -processor checkers.i18n.I18nChecker -Abundlename=MyResource MyFile.java ...
+\end{Verbatim}
+
+You must specify the localization resource, which maps keys to user-visible
+strings.  The checker supports two types of localization resource:
+ResourceBundle or property file.  You should specify just one of the
+following two command-line options:
+
+\begin{enumerate}
+
+\item \code{-Abundlename=\emph{resource\_name}}
+
+  \emph{resource\_name} is the name of the resource to be used with
+  \sunjavadoc{java/util/ResourceBundle.html#getBundle(java.lang.String, java.util.Locale, java.lang.ClassLoader)}{ResourceBundle.getBundle()}.
+  The checker uses the default \code{Locale} and \code{ClassLoader} in the
+  compilation system.
+  (For a tutorial about \code{ResourceBundle}s, see
+  \myurl{http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/}.)
+
+\item \code{-Apropfiles=\emph{prop\_file}}
+
+  \emph{prop\_file} is the name of a properties file that maps
+  localization keys to localized message.  The file format is described in
+  the Javadoc for 
+  \sunjavadoc{java/util/Properties.html#load(java.io.Reader)}{Properties.load()}.
+  Multiple files are separated by colons \code{:}.
+
+\end{enumerate}
+
+
+
+\section{Compiler Message Key checker\label{compilermsgs-checker}}
+
+
+xxx
