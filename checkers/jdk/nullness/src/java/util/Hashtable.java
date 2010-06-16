@@ -15,7 +15,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> ext
   public synchronized Enumeration<V> elements() { throw new RuntimeException("skeleton method"); }
   public synchronized boolean contains(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  public synchronized @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public synchronized @Pure @Nullable V get(Object a1) { throw new RuntimeException("skeleton method"); }
   public synchronized @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public synchronized @Nullable V remove(Object a1) { throw new RuntimeException("skeleton method"); }
