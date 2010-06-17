@@ -14,9 +14,85 @@ a compiler message key checker (Section \refwithpage{compilermsgs-checker}) used
 to ensure that the compiler message keys used in the Checker Framework are
 declared in a property file.
 
+It is very easy to reuse the property key checker for other related purposes.
+Take a look at the source code of the compiler message key checker and adapt it for
+your purposes.
+
+
 
 \section{Generic property file checker\label{genpropkey-checker}}
 
+The generic property file checker ensures that a resource key is located
+in the corresponding property file or resource bundle.
+
+
+It uses only the annotation \code{@\refclass{propkey/quals}{PropertyKey}}
+to indicate that the qualified \code{String} is a valid key
+found in the property file or resource bundle.
+
+We provide the following annotations for the JDK:
+
+% keep synced with propkey/jdk.astub.
+\begin{Verbatim}
+package java.util;
+
+class Properties {
+  String getProperty(@PropertyKey String key);
+  String getProperty(@PropertyKey String key, String defaultValue);
+  Object setProperty(@PropertyKey String key, String value); 
+}
+
+class ResourceBundle {
+  Object getObject(@PropertyKey String key);
+  String getString(@PropertyKey String key);
+  String[] getStringArray(@PropertyKey String key);
+  Set<@PropertyKey String> keySet();
+}
+\end{Verbatim}
+
+
+If you directly use \code{String} literals in your calls to these methods,
+you do not need to add annotations of your own.
+The checker ensures that every \code{String} literal occurs in a
+property file or resource bundle.
+
+If you pass a \code{String} variable to be eventually used as a key, you
+also need to annotate all these variables with \code{@PropertyKey}.
+
+
+The checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+  javac -processor checkers.propkey.PropertyKeyChecker
+        -Abundlename=MyResource MyFile.java ...
+\end{Verbatim}
+
+You must specify the resource, which maps keys to strings.
+The checker supports two types of resource:
+a ResourceBundle or property files.  You should specify just one of the
+following two command-line options:
+
+\begin{enumerate}
+
+\item \code{-Abundlename=\emph{resource\_name}}
+
+  \emph{resource\_name} is the name of the resource to be used with
+  \sunjavadoc{java/util/ResourceBundle.html#getBundle(java.lang.String, java.util.Locale, java.lang.ClassLoader)}{ResourceBundle.getBundle()}.
+  The checker uses the default \code{Locale} and \code{ClassLoader} in the
+  compilation system.
+  (For a tutorial about \code{ResourceBundle}s, see
+  \myurl{http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/}.)
+
+\item \code{-Apropfiles=\emph{prop\_file}}
+
+  \emph{prop\_file} is the name of a properties file that maps
+  keys to messages.  The file format is described in
+  the Javadoc for 
+  \sunjavadoc{java/util/Properties.html#load(java.io.Reader)}{Properties.load()}.
+  Multiple files are separated by colons \code{:}.
+
+\end{enumerate}
 
 
 
@@ -70,6 +146,8 @@ respect to the used locale.
 \item \code{@\refclass{i18n/quals}{LocalizableKey}}: indicates that the
 qualified \code{String} or \code{Object} is a valid key found in the
 localization resource.
+This annotation is a specialization of the \code{@PropertyKey} annotation, that
+gets checked by the generic property key checker.
 \end{enumerate}
 
 You may need to add the \code{@Localized} annotation to more methods in the
@@ -86,34 +164,45 @@ command:
 \end{Verbatim}
 
 You must specify the localization resource, which maps keys to user-visible
-strings.  The checker supports two types of localization resource:
-ResourceBundle or property file.  You should specify just one of the
-following two command-line options:
-
-\begin{enumerate}
-
-\item \code{-Abundlename=\emph{resource\_name}}
-
-  \emph{resource\_name} is the name of the resource to be used with
-  \sunjavadoc{java/util/ResourceBundle.html#getBundle(java.lang.String, java.util.Locale, java.lang.ClassLoader)}{ResourceBundle.getBundle()}.
-  The checker uses the default \code{Locale} and \code{ClassLoader} in the
-  compilation system.
-  (For a tutorial about \code{ResourceBundle}s, see
-  \myurl{http://java.sun.com/developer/technicalArticles/Intl/ResourceBundles/}.)
-
-\item \code{-Apropfiles=\emph{prop\_file}}
-
-  \emph{prop\_file} is the name of a properties file that maps
-  localization keys to localized message.  The file format is described in
-  the Javadoc for 
-  \sunjavadoc{java/util/Properties.html#load(java.io.Reader)}{Properties.load()}.
-  Multiple files are separated by colons \code{:}.
-
-\end{enumerate}
+strings.  Like the generic property key checker, the internationalization checker
+supports two types of localization resource:
+a ResourceBundle using the 
+\code{-Abundlename=\emph{resource\_name}} option
+or property files using the
+\code{-Apropfiles=\emph{prop\_file}} option.
 
 
 
 \section{Compiler Message Key checker\label{compilermsgs-checker}}
 
+The Checker Framework uses compiler message keys to output error messages.
+These keys are substituted by localized strings for user-visible error messages.
+We use the compiler message key checker to ensure that all internal keys are
+correctly localized.
+Instead of using the internationalization checker, we use a specialized checker,
+giving us more precise documentation of the intended use of \code{String}s.
 
-xxx
+The single annotation used by this checker is 
+\code{@\refclass{compilermsgs/quals}{CompilerMessageKey}}.
+For most users of the Checker Framework there will be no need to annotate any
+\code{String}s, as we completely annotated the Checker Framework.
+For example, class \code{checkers.source.Result} uses \code{@CompilerMessageKey}
+in methods \code{failure} and \code{warning}.
+
+The compiler message key checker can be invoked by running the following
+command:
+
+\begin{Verbatim}
+  javac -processor checkers.compilermsgs.CompilerMessagesChecker
+        -Apropfiles=messages.properties MyFile.java ...
+\end{Verbatim}
+
+You must specify the resource, which maps compiler message keys to user-visible
+strings.  The checker supports the same options as the generic property key checker.
+Within the Checker Framework, we only use property files called \code{messages.properties},
+so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
+
+~
+
+It is easy to specialize the generic property key checker to particular uses!
+Let us know of your use case and we can integrate a checker for it.
