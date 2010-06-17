@@ -29,6 +29,9 @@ The Checker Framework comes with checkers for specific types of errors:
   inspired by the Java Concurrency in Practice (JCIP) annotations (see
   \chapterpageref{lock-checker})
 \item
+  \ahrefloc{fenum-checker}{Fake enum checker} to allow type-safe fake enum
+  patterns (see \chapterpageref{fenum-checker})
+\item
   \ahrefloc{tainting-checker}{Tainting checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
@@ -38,10 +41,11 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{regex-checker}{Regex checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
-  \ahrefloc{i18n-checker}{Internationalization checker} to ensure that code
-  is properly internationalized:  user-visible text is obtained from a
-  localization resource, and proper keys are used for a localization
-  resource (see \chapterpageref{i18n-checker})
+  \ahrefloc{propkey-checker}{Property file checker} to ensure that only
+  proper keys are used for property files and resource bundles.
+  Includes a checker that code is properly internationalized
+  and a checker for compiler message keys as used in the Checker Framework
+  (see \chapterpageref{propkey-checker})
 \item
   \ahrefloc{basic-checker}{Basic checker} for customized checking without
   writing any code (see \chapterpageref{basic-checker})
