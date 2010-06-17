@@ -12,7 +12,7 @@ public class TestPrimitive {
 }
 
 class FenumUser {
-	@Fenum("A") int state1; // = new TestPrimitive().ACONST1;
+	@Fenum("A") int state1 = new TestPrimitive().ACONST1;
 	@Fenum("A") int state3 = this.state1;
 
 	//:: (assignment.type.incompatible)
