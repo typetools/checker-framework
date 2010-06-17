@@ -1,3 +1,8 @@
+Version 1.1.0b, 16 Jun 2010
+
+Fixed a bug related to runing binary release in JDK 6
+
+----------------------------------------------------------------------
 Version 1.1.0, 13 Jun 2010
 
 Checkers
