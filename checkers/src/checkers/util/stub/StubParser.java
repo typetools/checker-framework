@@ -89,6 +89,7 @@ public class StubParser {
                 }
             } catch (AssertionError error) {
                 // do nothing
+            	System.err.println("StubParser: " + error);
             }
         }
         return result;
@@ -128,8 +129,10 @@ public class StubParser {
         // TODO: Should throw exception?!
         if (typeElt == null
                 || typeElt.getKind() == ElementKind.ENUM
-                || typeElt.getKind() == ElementKind.ANNOTATION_TYPE)
+                || typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
+        	  System.err.println("StubParser: Type not found: " + typeName);
             return;
+        }
 
         if (type instanceof ClassOrInterfaceDeclaration) {
             parseType((ClassOrInterfaceDeclaration)type, typeElt, result);
@@ -145,7 +148,9 @@ public class StubParser {
                 parseConstructor((ConstructorDeclaration)decl, (ExecutableElement)elt, result);
             else if (elt.getKind() == ElementKind.METHOD)
                 parseMethod((MethodDeclaration)decl, (ExecutableElement)elt, result);
-            else { /* do nothing */ }
+            else { /* do nothing */
+                // System.err.println("Ignoring: " + elt);
+            }
         }
     }
 
@@ -313,7 +318,7 @@ public class StubParser {
         }
     }
 
-    public Map<Element, BodyDeclaration> mapMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
+    private Map<Element, BodyDeclaration> mapMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
         assert typeElt.getSimpleName().contentEquals(typeDecl.getName());
 
         Map<Element, BodyDeclaration> result = new HashMap<Element, BodyDeclaration>();
@@ -329,6 +334,11 @@ public class StubParser {
                 FieldDeclaration fieldDecl = (FieldDeclaration)member;
                 for (VariableDeclarator var : fieldDecl.getVariables())
                     result.put(findElement(typeElt, var), fieldDecl);
+            } else if (member instanceof ClassOrInterfaceDeclaration) {
+            	// TODO: handle nested classes
+            	// ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
+            } else {
+            	// System.out.println("StubParser: Ignoring in mapMembers: " + member.getClass());
             }
         }
         result.remove(null);
@@ -341,6 +351,7 @@ public class StubParser {
             if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString))
                 return superType;
         }
+        System.err.println("StubParser: Type " + typeString + " not found");
         return null;
     }
     public ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
@@ -350,12 +361,13 @@ public class StubParser {
                 methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            // do hearustics first
+            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && wantedMethodName.contentEquals(method.getSimpleName())
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
+        System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
         return null;
     }
 
@@ -365,11 +377,12 @@ public class StubParser {
                 methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-            // do hearustics first
+            // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
+        System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
         return null;
     }
 
@@ -379,6 +392,7 @@ public class StubParser {
             if (fieldName.contains(field.getSimpleName()))
                 return field;
         }
+        System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
         return null;
     }
 }
