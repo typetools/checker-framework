@@ -1,19 +1,27 @@
 \htmlhr
 \chapter{Fake Enum checker\label{fenum-checker}}
 
-Since version 5 Java provides support for 
-\ahref{http://java.sun.com/docs/books/jls/third\_edition/html/classes.html\#8.9}{enums}.
-If possible, one should use the language provided functionality and use enums.
+Java's 
+\ahref{http://java.sun.com/docs/books/jls/third\_edition/html/classes.html\#8.9}{\code{enum}}
+keyword lets you define an enumeration type: a finite set of distinct values
+that is disjoint from other enumerations.
+Using a true enumerated type has advantages over using a set of \code{int} or
+\code{String} constants; this pattern (known as the fake enum pattern) relies on
+a careful, manual encoding and provides no type safety.
 However, sometimes you cannot use enums.
-You might have a public API that uses \code{int} constants and cannot break your existing clients.
-Or in environments with limited resources, 
+A public API that predates Java's enum keyword may use \code{int} constants;
+it cannot be changed, because doing so would break existing clients.
+For example, Java's JDK still uses \code{int} constants in the AWT and Swing
+frameworks.
+In environments with limited resources, for example in the Android mobile phone
+platform,
 \ahref{http://developer.android.com/guide/practices/design/performance.html\#avoid\_enums}{avoiding enums}
 can improve performance.
 
-Using the Fake Enum checker, fenum for short, we can improve the type safety
-of code that uses the fake, or straw-man, enum pattern.
-A fenum introduces a new type that is distinct from all values of the base type.
-Fenums can be introduced for primitive types as well as for reference types.
+In cases when code has to use the fake enum pattern, the fake enum (Fenum)
+checker gives the same safety guarantees as a true enumeration type. 
+The developer can introduce new types that are distinct from all values of the
+base type. Fenums can be introduced for primitive types as well as for reference types.
 
 
 \section{Fake enum annotations}
@@ -23,8 +31,8 @@ The checker supports two ways to introduce a new fenum:
 \begin{enumerate}
 \item Introduce your own specialized fenum annotation with code like this:
 
-\begin{Verbatim}
-package myproject.quals;
+\begin{Verbatim}[commandchars=\\\[\]]
+package \textit[myproject].quals;
 
 import java.lang.annotation.*;
 import checkers.quals.SubtypeOf;
@@ -34,7 +42,7 @@ import checkers.quals.TypeQualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier
 @SubtypeOf( { FenumTop.class } )
-public @interface MyFenum {}
+public @interface \textit[MyFenum] {}
 \end{Verbatim}
 
 \item Use the provided \code{@\refclass{fenum/quals}{Fenum}} annotation, that takes a
@@ -43,23 +51,48 @@ For example, \code{@Fenum("A")} and \code{@Fenum("B")} are two distinct fenums.
 \end{enumerate}
 
 
-\section{Running the Fake Enum checker}
+The first approach allows you to define a short, meaningful name suitable for
+your project, whereas the second approach allows quick prototyping.
 
-The fenum checker can be invoked by running the following
-command:
 
-\begin{Verbatim}
-  javac -processor checkers.fenum.FenumChecker -Aqual=myproject.quals.MyFenum MyFile.java ...
+
+\section{What the Fenum checker checks}
+
+The Fenum checker ensures that all types with a particular fenum annotation or
+\code{String} argument are different from unannotated types and types with a
+different fenum annotation or \code{String} argument.
+
+The checker additionally forbids method calls on fenum types and ensures that
+only one fenum type is used in comparisons and arithmetic operations (if
+applicable to the annotated type).
+
+
+
+\section{Running the Fenum checker}
+
+The Fenum checker can be invoked by running the following commands.
+
+If you define your own annotation, provide the name of the annotation using the
+\code{-Aquals} option:
+
+\begin{Verbatim}[commandchars=\\\[\]]
+  javac -processor checkers.fenum.FenumChecker
+        \textit[-Aquals=myproject.quals.MyFenum] MyFile.java ...
 \end{Verbatim}
 
-If you use the \code{@\refclass{fenum/quals}{Fenum}} annotation, you do not need a checker option.
-If you define your own annotation, provide the name of the annotation using the \code{-Aqual} option.
+If you use the \code{@\refclass{fenum/quals}{Fenum}} annotation with a
+\code{String} argument, you do not need a checker option:
+
+\begin{Verbatim}
+  javac -processor checkers.fenum.FenumChecker MyFile.java ...
+\end{Verbatim}
 
 
-\section{Expected Warnings}
 
-As all fenum types are distinct from unqualified values, you will get a warning
-message from the checker when you initialize the fenum values.
+\section{Suppressing Warnings}
+
+One example of when you need to suppress warnings is when you initialize the
+fenum constants to literal values.
 To remove this warning message, add the corresponding \code{@SuppressWarnings} to either
 the field or class declaration, for example:
 
@@ -71,9 +104,6 @@ class MyConsts {
 }
 \end{Verbatim}
 
-The fenum checker also forbids method calls on fenums and comparisons between fenums and
-unqualified variables. In case this is too restrictive, add the corresponding
-\code{@SuppressWarnings}.  
 
 
 \section{Example}
@@ -86,34 +116,25 @@ and then performs a few typical operations.
 public class TestStatic {
   public static final @Fenum("A") int ACONST1 = 1;
   public static final @Fenum("A") int ACONST2 = 2;
-  public static final @Fenum("A") int ACONST3 = 3;
 
   public static final @Fenum("B") int BCONST1 = 4;
   public static final @Fenum("B") int BCONST2 = 5;
-  public static final @Fenum("B") int BCONST3 = 6;
 }
 
 class FenumUser {
   @Fenum("A") int state1 = TestStatic.ACONST1;
-  // Incompatible fenums forbidden!
-  @Fenum("B") int state2 = TestStatic.ACONST1;
+  @Fenum("B") int state2 = TestStatic.ACONST1;     // Incompatible fenums forbidden!
 
-  void bar(@Fenum("A") int p) {}
+  void fenumArg(@Fenum("A") int p) {}
 	
   void foo() {
-    // Direct use of value forbidden!
-    state1 = 4;
-    // Incompatible fenums forbidden!
-    state1 = TestStatic.BCONST1;
-    // ok
-    state1 = TestStatic.ACONST2;
-		
-    // Direct use of value forbidden!
-    bar(5);
-    // Incompatible fenums forbidden!
-    bar(TestStatic.BCONST1);
-    // ok
-    bar(TestStatic.ACONST1);
+    state1 = 4;                     // Direct use of value forbidden!
+    state1 = TestStatic.BCONST1;    // Incompatible fenums forbidden!
+    state1 = TestStatic.ACONST2;    // ok
+
+    fenumArg(5);                    // Direct use of value forbidden!
+    fenumArg(TestStatic.BCONST1);   // Incompatible fenums forbidden!
+    fenumArg(TestStatic.ACONST1);   // ok
   }
  }
 \end{Verbatim}
