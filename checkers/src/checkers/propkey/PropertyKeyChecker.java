@@ -50,7 +50,7 @@ import checkers.quals.Unqualified;
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, Unqualified.class} )
 // Subclasses need exactly this:
-@SupportedOptions( {"propfiles", "bundlename"} )
+@SupportedOptions( {"propfiles", "bundlenames"} )
 public class PropertyKeyChecker extends BaseTypeChecker {
 
     private Set<String> lookupKeys;
@@ -70,19 +70,23 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     }
 
     private Set<String> buildLookupKeys(Map<String, String> options) {
-        if (options.containsKey("propfiles"))
-            return keysOfPropertyFiles(env.getOptions().get("propfiles"));
-        if (options.containsKey("bundlename"))
-            return keysOfResourceBundle(env.getOptions().get("bundlename"));
+		Set<String> result = new HashSet<String>();
 
-        return Collections.emptySet();
+        if (options.containsKey("propfiles")) {
+            result.addAll( keysOfPropertyFiles(env.getOptions().get("propfiles")) );
+        }
+        if (options.containsKey("bundlenames")) {
+            result.addAll( keysOfResourceBundle(env.getOptions().get("bundlenames")) );
+        }
+
+        return result;
     }
 
 	private Set<String> keysOfPropertyFiles(String names) {
 		String[] namesArr = names.split(":");
 
 		if (namesArr == null) {
-			System.err.println("Couldn't find the files: <" + names + ">");
+			System.err.println("Couldn't parse the properties files: <" + names + ">");
 			return Collections.emptySet();
 		}
 
@@ -117,7 +121,8 @@ public class PropertyKeyChecker extends BaseTypeChecker {
 					System.err.println("Couldn't find the properties file: " + name);
 					// report(Result.failure("propertykeychecker.filenotfound",
 					// name), null);
-					return Collections.emptySet();
+					// return Collections.emptySet();
+					continue;
 				}
 
 				prop.load(in);
@@ -134,15 +139,27 @@ public class PropertyKeyChecker extends BaseTypeChecker {
 		return result;
 	}
 
-	private Set<String> keysOfResourceBundle(String bundleName) {
-		ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-		if (bundle == null) {
-			System.err.println("Couldn't find the bundle: <" + bundleName
-					+ "> for locale <" + Locale.getDefault() + ">");
+	private Set<String> keysOfResourceBundle(String bundleNames) {
+		String[] namesArr = bundleNames.split(":");
+
+		if (namesArr == null) {
+			System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
 			return Collections.emptySet();
 		}
 
-		return bundle.keySet();
+		Set<String> result = new HashSet<String>();
+
+		for (String bundleName : namesArr) {	
+			ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
+			if (bundle == null) {
+				System.err.println("Couldn't find the resource bundle: <" + bundleName
+					+ "> for locale <" + Locale.getDefault() + ">");
+				continue;
+			}
+
+			result.addAll(bundle.keySet());
+		}
+		return result;
 	}
 
 }

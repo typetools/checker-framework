@@ -38,6 +38,6 @@ import checkers.quals.Unqualified;
  * </ol>
  */
 @TypeQualifiers( {LocalizableKey.class, PropertyKey.class, Unqualified.class} )
-@SupportedOptions( {"propfiles", "bundlename"} )
+@SupportedOptions( {"propfiles", "bundlenames"} )
 public class LocalizableKeyChecker extends PropertyKeyChecker {
 }
