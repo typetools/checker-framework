@@ -15,6 +15,6 @@ import checkers.quals.Unqualified;
  * @author wmdietl
  */
 @TypeQualifiers( {CompilerMessageKey.class, PropertyKey.class, Unqualified.class} )
-@SupportedOptions( {"propfiles", "bundlename"} )
+@SupportedOptions( {"propfiles", "bundlenames"} )
 public class CompilerMessagesChecker extends PropertyKeyChecker {
 }
