@@ -2,7 +2,7 @@
 \chapter{Interning checker\label{interning-checker}}
 
 If the Interning checker issues no warnings for a given program, then all
-reference equality tests (i.e., ``\code{==}'') in that program operate on
+reference equality tests (i.e., all uses of ``\code{==}'') in that program operate on
 interned types.
 Interning is a design pattern in which the same object is used whenever two
 different objects would be considered equal.  Interning is also known as
@@ -22,6 +22,13 @@ The Interning checker helps programmers to prevent such bugs.
 The Interning checker also helps to prevent performance problems that result
 from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
+
+Interning is such an important design pattern that Java builds it in for
+strings.  Every string literal in the program is guaranteed to be interned
+(\ahref{http://java.sun.com/docs/books/jls/third\_edition/html/lexical.html\#3.10.5}{JLS
+  \S3.10.5}), and the
+\sunjavadoc{java/lang/String.html#intern()}{String.intern()} method
+performs interning for strings that are computed at run time.
 
 
 \section{Interning annotations\label{interning-annotations}}
