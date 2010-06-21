@@ -34,7 +34,7 @@ import checkers.basetype.BaseTypeChecker;
  * 
  * @author wmdietl
  */
-@SupportedOptions( { "qual" } )		
+@SupportedOptions( { "quals" } )		
 public class FenumChecker extends BaseTypeChecker {
     /** Copied from BasicChecker.
      * Instead of returning an empty set if no "quals" option is given,
@@ -46,8 +46,8 @@ public class FenumChecker extends BaseTypeChecker {
         Set<Class<? extends Annotation>> qualSet =
             new HashSet<Class<? extends Annotation>>();
 
-        String qualName = env.getOptions().get("qual");
-        if (qualName == null) {
+        String qualNames = env.getOptions().get("quals");
+        if (qualNames == null) {
         	// maybe issue a warning?
         	qualSet.add(FenumTop.class);
         	qualSet.add(Fenum.class);
@@ -55,9 +55,11 @@ public class FenumChecker extends BaseTypeChecker {
         	qualSet.add(FenumBottom.class);
 		} else {
 			try {
-				final Class<? extends Annotation> q =
-					(Class<? extends Annotation>) Class.forName(qualName);
-				qualSet.add(q);
+				for (String qualName : qualNames.split(",")) {
+					final Class<? extends Annotation> q =
+						(Class<? extends Annotation>) Class.forName(qualName);
+					qualSet.add(q);
+				}
 			} catch (ClassNotFoundException e) {
 				throw new Error(e);
 			}
