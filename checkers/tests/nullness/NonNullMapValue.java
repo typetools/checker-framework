@@ -3,6 +3,8 @@ import checkers.nullness.quals.*;
 import java.util.*;
 import java.io.*;
 
+import org.junit.Ignore;
+
 public class NonNullMapValue {
 
   // Discussion:
@@ -163,12 +165,14 @@ public class NonNullMapValue {
 
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
-  @Ignore // issue #67:  http://code.google.com/p/checker-framework/issues/detail?id=67
   void testAnd() {
     Map<String, String> map = new HashMap<String, String>();
     if (map.containsKey(KEY)) {
       map.get(KEY).toString();
     }
+    // BUG: this suppression is temporary until the bug fix is done
+    // issue #67:  http://code.google.com/p/checker-framework/issues/detail?id=67
+    //:: (dereference.of.nullable)
     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
       // do nothing
     }
