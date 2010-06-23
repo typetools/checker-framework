@@ -160,4 +160,18 @@ public class NonNullMapValue {
   interface MyMap<K, V> extends Map<K, V> {
     @Pure public V get(Object o);
   }
+
+  private static final String KEY = "key";
+  private static final String KEY2 = "key2";
+  @Ignore // issue #67:  http://code.google.com/p/checker-framework/issues/detail?id=67
+  void testAnd() {
+    Map<String, String> map = new HashMap<String, String>();
+    if (map.containsKey(KEY)) {
+      map.get(KEY).toString();
+    }
+    if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
+      // do nothing
+    }
+  }
+
 }
