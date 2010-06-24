@@ -16,16 +16,14 @@ import checkers.util.TypesUtils;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
-// Bug:  StubGenerator does not output "static" modifiers.  Here is an
-// example; see the "out" field (among others).
-//   java checkers.util.stub.StubGenerator java.lang.System > System.astub
-
 /**
- * Generates an index file.<br />
+ * Generates a stub file from a single class or an entire package.<p>
  *
- * An index file can be used to add annotations to methods of classes, that are
- * only available in binary or the source of which cannot be edited.
- *
+ * A stub file can be used to add annotations to methods of classes, that
+ * are only available in binary or the source of which cannot be edited.
+ * For details, see the <a
+ * href="http://types.cs.washington.edu/checker-framework/#stub-creating-and-using">Checker
+ * Framework Manual</a>.
  */
 public class StubGenerator {
     /** The used indention for the class */
