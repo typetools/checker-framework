@@ -207,6 +207,10 @@ The Type Annotations compiler treats the code exactly as if you had not written 
 In other words, the Type Annotations compiler will recognize the
 annotation, but your code will still compile with any other Java compiler.
 
+This feature only works if you provide no \code{-source} command-line
+argument to \code{javac}, or if the \code{-source} argument is \code{1.7}
+or \code{7}.
+
 (\textbf{Note:} This is a feature of the Type Annotations compiler that is
 distributed along with the Checker Framework.  It is \emph{not} supported by the
 mainline OpenJDK compiler, which ignores annotations written in
