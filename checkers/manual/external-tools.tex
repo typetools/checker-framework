@@ -265,6 +265,10 @@ original compilation target:
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
+
+The target should not include a \code{-source} argument, such as
+\code{-source 1.5}, because doing so will disable the annotations in
+comments feature (see Section~\refwithpage{annotations-in-comments}).
 \end{enumerate}
 
 \subsection{Explanation\label{ant-task-explanation}}
