@@ -3,7 +3,7 @@ import checkers.javari.quals.*;
 public class ReadOnlyConstructor {
     int i;
 
-    ReadOnlyConstructor() @ReadOnly {
+    @ReadOnly ReadOnlyConstructor() {
         this.i = 3;
     }
 
