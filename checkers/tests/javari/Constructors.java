@@ -8,9 +8,9 @@ class Constructors {
     @Mutable String mString;
     @ReadOnly String roString;
 
-    public Constructors (@PolyRead String s) @PolyRead {}
+    public @PolyRead Constructors (@PolyRead String s) {}
 
-    public Constructors (@ReadOnly String s, int x) @ReadOnly{}
+    public @ReadOnly Constructors (@ReadOnly String s, int x) {}
 
     public Constructors (String s, String x) {}
 
@@ -49,7 +49,7 @@ class Constructors {
     }
 
     ////// Adding test for constructor receivers
-    public Constructors(@Mutable Constructors o, String i) @Mutable { }
+    public @Mutable Constructors(@Mutable Constructors o, String i) { }
 
     public void testConstructorWithReceiver() {
         @ReadOnly Constructors ro = null;
