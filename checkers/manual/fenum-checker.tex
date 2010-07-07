@@ -37,7 +37,7 @@ base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
 
 
-\section{Fake enum annotations}
+\section{Fake enum annotations\label{fenum-annotations}}
 
 The checker supports two ways to introduce a new fake enum (fenum):
 
@@ -73,7 +73,7 @@ your project, whereas the second approach allows quick prototyping.
 
 
 
-\section{What the Fenum checker checks}
+\section{What the Fenum checker checks\label{fenum-checks}}
 
 The Fenum checker ensures that unrelated types are not mixed. 
 All types with a particular fenum annotation or \code{String} argument are
@@ -90,7 +90,7 @@ reference or zero value in the field of a fenum type.
 
 
 
-\section{Running the Fenum checker}
+\section{Running the Fenum checker\label{fenum-running}}
 
 The Fenum checker can be invoked by running the following commands.
 
@@ -117,7 +117,7 @@ not need the \code{-Aquals} option:
 
 
 
-\section{Suppressing Warnings}
+\section{Suppressing warnings\label{fenum-suppressing}}
 
 One example of when you need to suppress warnings is when you initialize the
 fenum constants to literal values.
@@ -134,7 +134,7 @@ class MyConsts {
 
 
 
-\section{Example}
+\section{Example\label{fenum-example}}
 
 The following example introduces two fenums in class \code{TestStatic}
 and then performs a few typical operations.
@@ -168,7 +168,7 @@ class FenumUser {
 \end{Verbatim}
 
 
-\section{References}
+\section{References\label{fenum-references}}
 
 \begin{itemize}
 \item Java Language Specification on enums:\\
