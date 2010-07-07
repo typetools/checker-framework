@@ -5,7 +5,7 @@ import checkers.javari.quals.*;
  */
 @ReadOnly class RoClass {
 
-    public RoClass() @ReadOnly {} // readonly constructor
+    public @ReadOnly RoClass() {} // readonly constructor
     public RoClass(Object s) {}   // "mutable" constructor
 
     Object x;          // this-mutable resolves as readonly
