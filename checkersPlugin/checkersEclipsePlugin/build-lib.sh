@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Updates the lib/ directory with newer versions of checkers.jar and javac.jar.
+
 CHECKERS=../../checkers
 LANGTOOLS=../../../jsr308-langtools
 
