@@ -861,25 +861,25 @@ public class Flow extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitTry(TryTree node, Void p) {
-    tryBits.push(GenKillBits.copy(annos));
-    scan(node.getBlock(), p);
-    GenKillBits<AnnotationMirror> annoAfterBlock = GenKillBits.copy(annos);
-    pushNewLevel();
-    GenKillBits<AnnotationMirror> result = tryBits.pop();
-    annos.and(result);
-    popLastLevel();
-    if (node.getCatches() != null) {
-        boolean catchAlive = false;
-        for (CatchTree ct : node.getCatches()) {
-            scan(ct, p);
-            catchAlive |= alive;
+        tryBits.push(GenKillBits.copy(annos));
+        scan(node.getBlock(), p);
+        GenKillBits<AnnotationMirror> annoAfterBlock = GenKillBits.copy(annos);
+        pushNewLevel();
+        GenKillBits<AnnotationMirror> result = tryBits.pop();
+        annos.and(result);
+        popLastLevel();
+        if (node.getCatches() != null) {
+            boolean catchAlive = false;
+            for (CatchTree ct : node.getCatches()) {
+                scan(ct, p);
+                catchAlive |= alive;
+            }
+            // Conservative: only if there's no finally
+            if (!catchAlive && node.getFinallyBlock() == null)
+                annos = GenKillBits.copy(annoAfterBlock);
         }
-        // Conservative: only if there's no finally
-        if (!catchAlive && node.getFinallyBlock() == null)
-            annos = GenKillBits.copy(annoAfterBlock);
-    }
-    scan(node.getFinallyBlock(), p);
-    return null;
+        scan(node.getFinallyBlock(), p);
+        return null;
     }
 
     @Override
