@@ -115,9 +115,8 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type from a {@link Tree} by determining
-     * the appropriate scope for defaults.
-     *
+     * Applies default annotations to a type.
+     * A {@link Tree} that determines the appropriate scope for defaults.
      * <p>
      *
      * For instance, if the tree is associated with a declaration (e.g., it's
@@ -133,6 +132,7 @@ public class QualifierDefaults {
      */
     private void applyDefaults(Tree tree, AnnotatedTypeMirror type) {
 
+        // The location to take defaults from.
         Element elt = null;
         switch (tree.getKind()) {
             case MEMBER_SELECT:
@@ -148,6 +148,8 @@ public class QualifierDefaults {
                 break;
 
             // TODO cases for array access, etc. -- every expression tree
+            // (The above probably means that we should use defaults in the
+            // scope of the declaration of the array.  Is that right?  -MDE)
 
             default:
                 // If no associated symbol was found, use the tree's (lexical)
@@ -195,32 +197,33 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type from an {@link Element} by using
-     * the {@link DefaultQualifier} annotation present on the element or any of its
-     * enclosing elements.
+     * Applies default annotations to a type.
+     * The defaults are taken from an {@link Element} by using the
+     * {@link DefaultQualifier} annotation present on the element
+     * or any of its enclosing elements.
      *
-     * @param elt the element representing the nearest enclosing default
-     *        annotation scope for the type
+     * @param annotationScope the element representing the nearest enclosing
+     *        default annotation scope for the type
      * @param type the type to which defaults will be applied
      */
-    private void applyDefaults(final Element elt, final AnnotatedTypeMirror type) {
+    private void applyDefaults(final Element annotationScope, final AnnotatedTypeMirror type) {
 
-        List<DefaultQualifier> defaults = defaultsAt(elt);
+        List<DefaultQualifier> defaults = defaultsAt(annotationScope);
         for (DefaultQualifier dq : defaults)
-            applyDefault(elt, dq, type);
+            applyDefault(annotationScope, dq, type);
 
         if (this.absoluteDefaultAnno != null)
-            new DefaultApplier(elt, this.absoluteDefaultLocs, type).scan(type, absoluteDefaultAnno);
+            new DefaultApplier(annotationScope, this.absoluteDefaultLocs, type).scan(type, absoluteDefaultAnno);
     }
 
-    private void applyDefault(Element elt, DefaultQualifier d, AnnotatedTypeMirror type) {
+    private void applyDefault(Element annotationScope, DefaultQualifier d, AnnotatedTypeMirror type) {
         String name = d.value();
         if (qualifiedNameMap.containsKey(name))
             name = qualifiedNameMap.get(name);
         AnnotationMirror anno = annoFactory.fromName(name);
         if (anno == null)
             return;
-        new DefaultApplier(elt, d.locations(), type).scan(type, anno);
+        new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
     }
 
     private static class DefaultApplier
