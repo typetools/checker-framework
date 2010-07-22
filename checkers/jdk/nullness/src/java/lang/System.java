@@ -24,21 +24,21 @@ public final class System {
   public static void setIn(InputStream in) { throw new RuntimeException("skeleton method"); }
   public static void setOut(PrintStream out) { throw new RuntimeException("skeleton method"); }
   public static void setErr(PrintStream err) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ Console console() { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ Channel inheritedChannel() throws IOException { throw new RuntimeException("skeleton method"); }
-  public static void setSecurityManager(/*@Nullable*/ SecurityManager s) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ SecurityManager getSecurityManager() { throw new RuntimeException("skeleton method"); }
+  public static @Nullable Console console() { throw new RuntimeException("skeleton method"); }
+  public static @Nullable Channel inheritedChannel() throws IOException { throw new RuntimeException("skeleton method"); }
+  public static void setSecurityManager(@Nullable SecurityManager s) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable SecurityManager getSecurityManager() { throw new RuntimeException("skeleton method"); }
   public static native long currentTimeMillis();
   public static native long nanoTime();
   public static native void arraycopy(Object src, int srcPos, Object dest, int destPos, int length);
-  public static native int identityHashCode(/*@Nullable*/ Object x);
+  public static native int identityHashCode(@Nullable Object x);
   public static Properties getProperties() { throw new RuntimeException("skeleton method"); }
-  public static void setProperties(/*@Nullable*/ Properties props) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ String getProperty(String key) { throw new RuntimeException("skeleton method"); }
-  public static /*@PolyNull*/ String getProperty(String key, /*@PolyNull*/ String def) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ String setProperty(String key, String value) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ String clearProperty(String key) { throw new RuntimeException("skeleton method"); }
-  public static /*@Nullable*/ String getenv(String name) { throw new RuntimeException("skeleton method"); }
+  public static void setProperties(@Nullable Properties props) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable String getProperty(String key) { throw new RuntimeException("skeleton method"); }
+  public static @PolyNull String getProperty(String key, @PolyNull String def) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable String setProperty(String key, String value) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable String clearProperty(String key) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable String getenv(String name) { throw new RuntimeException("skeleton method"); }
   public static java.util.Map<String,String> getenv() { throw new RuntimeException("skeleton method"); }
   public static void exit(int status) { throw new RuntimeException("skeleton method"); }
   public static void gc() { throw new RuntimeException("skeleton method"); }
