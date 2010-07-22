@@ -26,6 +26,6 @@ public final class Formatter implements java.io.Closeable, java.io.Flushable {
   public void flush() { throw new RuntimeException("skeleton method"); }
   public void close() { throw new RuntimeException("skeleton method"); }
   public @Nullable java.io.IOException ioException() { throw new RuntimeException("skeleton method"); }
-  public Formatter format(String a1, Object... a2) { throw new RuntimeException("skeleton method"); }
-  public Formatter format(@Nullable Locale a1, String a2, Object... a3) { throw new RuntimeException("skeleton method"); }
+  public Formatter format(String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
+  public Formatter format(@Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
 }
