@@ -30,10 +30,7 @@ import javax.annotation.processing.*;
  * Most type-checker plug-ins will want to extend this class, instead of
  * {@link SourceChecker}.  Checkers which require annotated types but not
  * subtype checking (e.g. for testing purposes)
- * should extend {@link SourceChecker}.  Non-type checkers (e.g. for enforcing
- * coding styles) should extend {@link AbstractProcessor} (or even
- * {@link SourceChecker}) as the Checker Framework is not designed for such
- * checkers.
+ * should extend {@link SourceChecker}.
  *
  * Non-type checkers (e.g. checkers to enforce coding
  * styles) should extend {@link SourceChecker} or {@link AbstractProcessor}
