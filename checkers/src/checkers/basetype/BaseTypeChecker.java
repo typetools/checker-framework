@@ -177,7 +177,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 // polymorphic qualifiers don't need to declared their supertypes
                 if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
                     continue;
-                throw new AssertionError(typeQualifier + " does not specify its super qulifiers");
+                throw new AssertionError(typeQualifier + " does not specify its super qualifiers");
             }
             Class<? extends Annotation>[] superQualifiers =
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
@@ -387,7 +387,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * Invokes the constructor belonging to the class
      * named by {@code name} having the given parameter types on the given
      * arguments. Returns {@code null} if the class cannot be found, or the
-     * constructor does not exist or cannot be invoked on the given arguments,
+     * constructor does not exist or cannot be invoked on the given arguments.
      *
      * @param <T> the type to which the constructor belongs
      * @param name the name of the class to which the constructor belongs
