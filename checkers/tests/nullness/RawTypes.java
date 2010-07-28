@@ -60,7 +60,12 @@ class RawTypes {
             init();                                             // valid
             this.init();                                        // valid
         }
-    }
+
+        void otherRaw() @Raw {
+            init();                                             // valid
+            this.init();                                        // valid
+        }
+}
 
     class C extends B {
 
@@ -108,6 +113,10 @@ class RawTypes {
         }
     }
 
+    class AFSIICell {
+        AllFieldsSetInInitializer afsii;
+    }
+
     class AllFieldsSetInInitializer {
         long elapsedMillis;
         long startTime;
@@ -120,6 +129,7 @@ class RawTypes {
             nonRawMethod();     // error
             startTime = 0;
             nonRawMethod();     // no error
+            new AFSIICell().afsii = this;
         }
 
         public AllFieldsSetInInitializer(boolean b) {
@@ -156,12 +166,58 @@ class RawTypes {
     void cast(@Raw Object... args) {
 
         @SuppressWarnings("rawtypes")
-            //:: (assignment.type.incompatible)
+        //:: (assignment.type.incompatible)
         Object[] argsNonRaw1 = args;
 
         @SuppressWarnings("cast")
         Object[] argsNonRaw2 = (Object[]) args;
 
     }
+
+    class RawAfterConstructor {
+        int a;
+        // Should err, because some variables are not yet initialized when
+        // the constructor exits.
+        RawAfterConstructor() {
+        }
+    }
+
+
+//     // TODO: reinstate.  This shows desired features, for initialization in
+//     // a helper method rather than in the constructor.
+//     class InitInHelperMethod {
+//         int a;
+//         int b;
+// 
+//         InitInHelperMethod(short constructor_inits_ab) {
+//             a = 1;
+//             b = 1;
+//             nonRawMethod();
+//         }
+// 
+//         InitInHelperMethod(boolean constructor_inits_a) {
+//             a = 1;
+//             init_b();
+//             nonRawMethod();
+//         }
+// 
+//         void init_b() @Raw {
+//             b = 2;
+//             nonRawMethod();
+//         }
+// 
+//         InitInHelperMethod(int constructor_inits_none) {
+//             init_ab();
+//             nonRawMethod();
+//         }
+// 
+//         void init_ab() @Raw {
+//             a = 1;
+//             b = 2;
+//             nonRawMethod();
+//         }
+// 
+//         void nonRawMethod() { }
+//     }
 
 }
