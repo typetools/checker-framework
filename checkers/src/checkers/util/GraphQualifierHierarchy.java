@@ -226,11 +226,11 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
         if (a == null)
             throw new IllegalArgumentException(
-                    "Found an Unqualified type.  Please ensure that\n" +
-                    "your implicit rules cover all cases and/or\n" +
-                    "use @DefaulQualifierInHierarchy annotaiton");
+                    "Found an unqualified type.  Please ensure that " +
+                    "your implicit rules cover all cases and/or " +
+                    "use a @DefaulQualifierInHierarchy annotation");
         else
-            throw new IllegalArgumentException("unrecognized qualifier: " + a);
+            throw new IllegalArgumentException("Unrecognized qualifier: " + a);
     }
 
     /**
