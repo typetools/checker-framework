@@ -76,6 +76,6 @@ annotated: $(ANNOTATED)
 
 showvars:
 	pwd
-	echo BUILD_CLASSES: ${BUILD_CLASSES}
-	echo JAIFS: ${JAIFS}
-	echo ANNOTATED: ${ANNOTATED}
+	@echo BUILD_CLASSES: ${BUILD_CLASSES}
+	@echo JAIFS: ${JAIFS}
+	@echo ANNOTATED: ${ANNOTATED}
