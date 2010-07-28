@@ -705,6 +705,12 @@ have a default value of null.
 % annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
 % restrictions apply to assigning \code{this} to a field.
 
+Currently, the type-checker requires that all fields either have a a
+default in the field declaration, or be initialized in the constructor.  If
+your code initializes (some) fields in a helper method, you will need to
+suppress some warnings.
+
+
 \paragraph{Invoking the superclass constructor; rawness of the superclass reference}
 
 Suppose that class B extends class A.  Within the B
