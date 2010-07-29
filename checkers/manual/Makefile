@@ -1,5 +1,26 @@
-# To regenerate this list, run:   latex-process-inputs.pl -list manual.tex
-TEX_FILES = manual.tex introduction.tex nullness-checker.tex interning-checker.tex igj-checker.tex javari-checker.tex lock-checker.tex tainting-checker.tex basic-checker.tex advanced-features.tex warnings.tex annotating-libraries.tex creating-a-checker.tex external-tools.tex faq.tex troubleshooting.tex propkey-checker.tex fenum-checker.tex
+# To regenerate this list, run:   latex-process-inputs.pl -makefilelist manual.tex
+TEX_FILES = \
+manual.tex \
+introduction.tex \
+nullness-checker.tex \
+interning-checker.tex \
+igj-checker.tex \
+oigj-checker.tex \
+javari-checker.tex \
+lock-checker.tex \
+fenum-checker.tex \
+tainting-checker.tex \
+linear-checker.tex \
+regex-checker.tex \
+propkey-checker.tex \
+basic-checker.tex \
+advanced-features.tex \
+warnings.tex \
+annotating-libraries.tex \
+creating-a-checker.tex \
+external-tools.tex \
+faq.tex \
+troubleshooting.tex
 
 all: figures-all doc manual.pdf manual.html
 
