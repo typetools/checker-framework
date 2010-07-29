@@ -46,10 +46,10 @@ The checker supports two ways to introduce a new fake enum (fenum):
 
 \begin{enumerate}
 \item Introduce your own specialized fenum annotation with code like this in
-file \code{MyFenum.java}:
+file \code{\emph{MyFenum}.java}:
 
-\begin{Verbatim}[commandchars=\\\[\]]
-package \textit[myproject].quals;
+\begin{alltt}
+package \textit{myproject}.quals;
 
 import java.lang.annotation.*;
 import checkers.quals.SubtypeOf;
@@ -58,9 +58,9 @@ import checkers.quals.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier
-@SubtypeOf( { FenumTop.class } )
-public @interface \textit[MyFenum] {}
-\end{Verbatim}
+@SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
+public @interface \textit{MyFenum} \ttlcb\ttrcb
+\end{alltt}
 
 You only need to adapt the package, annotation, and file names in the example.
 
@@ -79,7 +79,7 @@ your project, whereas the second approach allows quick prototyping.
 \section{What the Fenum checker checks\label{fenum-checks}}
 
 The Fenum checker ensures that unrelated types are not mixed. 
-All types with a particular fenum annotation or \code{String} argument are
+All types with a particular fenum annotation, or \code{@Fenum(...)} with a particular \code{String} argument, are
 disjoint from all unannotated types and all types with a different fenum
 annotation or \code{String} argument.
 
@@ -102,10 +102,10 @@ The Fenum checker can be invoked by running the following commands.
 If you define your own annotation, provide the name of the annotation using the
 \code{-Aquals} option:
 
-\begin{Verbatim}[commandchars=\\\[\]]
+\begin{alltt}
   javac -processor checkers.fenum.FenumChecker
-        \textit[-Aquals=myproject.quals.MyFenum] MyFile.java ...
-\end{Verbatim}
+        \textit{-Aquals=myproject.quals.MyFenum} MyFile.java ...
+\end{alltt}
 
 
 \item
