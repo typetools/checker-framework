@@ -11,7 +11,8 @@ all: clean classes
 # Put those annotated .class files back in jdk.jar.
 	$(MAKE) jdk.jar
 
-# This only contains those classes with annotations, not every class from
+## DO NOT INVOKE DIRECTLY.  USE "make all" INSTEAD.
+# jdk.jar only contains those classes with annotations, not every class from
 # the original JDK.
 jdk.jar:
 	cd annotated; jar cf ../jdk.jar .
