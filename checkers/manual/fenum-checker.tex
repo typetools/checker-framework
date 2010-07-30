@@ -6,29 +6,32 @@ Java's
 keyword lets you define an enumeration type: a finite set of distinct values
 that are related to one another but are disjoint from all other
 types, including other enumerations.
-Before enums were added to Java there were two possible ways to handle
-enumerations:
+Before enums were added to Java, there were two ways to encode an
+enumeration, both of which are error-prone:
 
-\begin{itemize}
-\item using, as in C code, a set of \code{int} or \code{String} constants (known
-as the fake enum pattern) is error-prone;
+\begin{description}
+\item[the fake enum pattern]  a set of \code{int} or \code{String}
+  constants (as often found in older C code).
 
-\item using a class with private constructor (known as the
-\ahref{http://java.sun.com/developer/Books/shiftintojava/page1.html}{typesafe
-enum pattern}) is a manual encoding of enumerations that needs
-\ahref{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful  development}.
-\end{itemize}
+\item[the \ahref{http://java.sun.com/developer/Books/shiftintojava/page1.html}{typesafe
+enum pattern}]  a class with private constructor.
+% This requires
+% \ahref{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
+\end{description}
 
-
-However, sometimes you cannot use enums or the typesafe enum pattern.
-A public API that predates Java's enum keyword may use \code{int} constants;
-it cannot be changed, because doing so would break existing clients.
-For example, Java's JDK still uses \code{int} constants in the AWT and Swing
-frameworks.
-In environments with limited resources, for example in the
-\ahref{http://developer.android.com/guide/practices/design/performance.html\#avoid\_enums}{Android mobile phone
-platform}, use of fake, rather than real enums or the typesafe enum pattern, can
-improve performance.
+Sometimes you need to use the fake enum pattern,
+rather than a real enum or the typesafe enum pattern.
+%
+One reason is backward-compatibility.  A public API that predates Java's
+enum keyword may use \code{int} constants; it cannot be changed, because
+doing so would break existing clients.  For example, Java's JDK still uses
+\code{int} constants in the AWT and Swing frameworks.
+%
+Another reason is performance, especially in environments with limited
+resources.  For example, the Android mobile phone platform
+\ahref{http://developer.android.com/guide/practices/design/performance.html\#avoid\_enums}{recommends}
+use of fake enums when only an integer value is needed, in order to reduce
+code size and run time.
 
 In cases when code has to use the fake enum pattern, the fake enum (Fenum)
 checker gives the same safety guarantees as a true enumeration type. 
@@ -43,10 +46,10 @@ The checker supports two ways to introduce a new fake enum (fenum):
 
 \begin{enumerate}
 \item Introduce your own specialized fenum annotation with code like this in
-file \code{MyFenum.java}:
+file \code{\emph{MyFenum}.java}:
 
-\begin{Verbatim}[commandchars=\\\[\]]
-package \textit[myproject].quals;
+\begin{alltt}
+package \textit{myproject}.quals;
 
 import java.lang.annotation.*;
 import checkers.quals.SubtypeOf;
@@ -55,11 +58,11 @@ import checkers.quals.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier
-@SubtypeOf( { FenumTop.class } )
-public @interface \textit[MyFenum] {}
-\end{Verbatim}
+@SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
+public @interface \textit{MyFenum} \ttlcb\ttrcb
+\end{alltt}
 
-You only need to adapt the package, annotation, and file names in the exampel.
+You only need to adapt the package, annotation, and file names in the example.
 
 
 \item Use the provided \code{@\refclass{fenum/quals}{Fenum}} annotation, that takes a
@@ -76,7 +79,7 @@ your project, whereas the second approach allows quick prototyping.
 \section{What the Fenum checker checks\label{fenum-checks}}
 
 The Fenum checker ensures that unrelated types are not mixed. 
-All types with a particular fenum annotation or \code{String} argument are
+All types with a particular fenum annotation, or \code{@Fenum(...)} with a particular \code{String} argument, are
 disjoint from all unannotated types and all types with a different fenum
 annotation or \code{String} argument.
 
@@ -84,10 +87,11 @@ The checker forbids method calls on fenum types and ensures that
 only compatible fenum types are used in comparisons and arithmetic operations
 (if applicable to the annotated type).
 
-It is the programmers responsibility that ensure that fields with a fenum type
-are properly initialized before use. Otherwise, one might observe a \code{null}
-reference or zero value in the field of a fenum type.
-
+It is the programmer's responsibility that ensure that fields with a fenum type
+are properly initialized before use.  Otherwise, one might observe a \code{null}
+reference or zero value in the field of a fenum type.  (The Nullness checker
+(\chapterpageref{nullness-checker}) can prevent failure to initialize a
+reference variable.)
 
 
 \section{Running the Fenum checker\label{fenum-running}}
@@ -99,10 +103,10 @@ The Fenum checker can be invoked by running the following commands.
 If you define your own annotation, provide the name of the annotation using the
 \code{-Aquals} option:
 
-\begin{Verbatim}[commandchars=\\\[\]]
+\begin{alltt}
   javac -processor checkers.fenum.FenumChecker
-        \textit[-Aquals=myproject.quals.MyFenum] MyFile.java ...
-\end{Verbatim}
+        \textit{-Aquals=myproject.quals.MyFenum} MyFile.java ...
+\end{alltt}
 
 
 \item
@@ -187,3 +191,6 @@ class FenumUser {
   \ahrefurl{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}
 
 \end{itemize}
+
+% LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
+% LocalWords:  TestStatic
