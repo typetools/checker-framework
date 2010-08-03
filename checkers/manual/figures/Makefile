@@ -19,6 +19,8 @@ png-copy: ${PNGFILES}
 # Direct dia translation overlays the "R" and "e" in "ReadOnly".
 igj.png: igj.pdf
 	convert -geometry 406x224 $< $@
+javari.png: javari.pdf
+	convert -geometry 406x224 $< $@
 
 clean:
 	@\rm *.eps
