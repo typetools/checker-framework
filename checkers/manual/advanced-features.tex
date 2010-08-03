@@ -268,10 +268,11 @@ which is like writing
 \noindent
 Another way of thinking about which one of the two \code{max} variants is
 selected is that the nullness annotations of (the declared types of) both
-arguments are \emph{unified} to a type that is a subtype of both.  If both
-arguments are \code{@NonNull}, their unification is \<@NonNull>, and the
+arguments are \emph{unified} to a type that is a supertype of both, also
+known as the \emph{least upper bound} or lub.  If both
+arguments are \code{@NonNull}, their unification (lub) is \<@NonNull>, and the
 method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
-then the unification is \<@Nullable>, and so is the return type.
+then the unification (lub) is \<@Nullable>, and so is the return type.
 
 
 \paragraph{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
