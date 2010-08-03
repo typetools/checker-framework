@@ -187,8 +187,8 @@ ${build.version} of the 'javac.jar' library."/>
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
-          <link href="http://download.java.net/jdk7/docs/api/"/>
-          <link href="http://download.java.net/jdk7/docs/jdk/api/javac/tree/"/>
+          <link href="http://download.oracle.com/javase/7/docs/api/"/>
+          <link href="http://download.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
           <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
         </javadoc>
     </target>
