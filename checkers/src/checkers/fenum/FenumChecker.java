@@ -13,6 +13,7 @@ import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.fenum.quals.FenumBottom;
+import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.basetype.BaseTypeChecker;
 
@@ -32,9 +33,12 @@ import checkers.basetype.BaseTypeChecker;
  * </li>
  * </ul>
  * 
+ * TODO: document flowinference lint option. 
+ * 
  * @author wmdietl
  */
-@SupportedOptions( { "quals" } )		
+@SupportedOptions( { "quals" } )
+@SupportedLintOptions( { "flowinference" } )
 public class FenumChecker extends BaseTypeChecker {
     /** Copied from BasicChecker.
      * Instead of returning an empty set if no "quals" option is given,
@@ -96,4 +100,57 @@ public class FenumChecker extends BaseTypeChecker {
 		// visitor.
     	return true;
     }
+    
+    /** TODO: this is a copy of the super-method, just slightly modified to try
+     * adding the FenumBottom to all qualifiers.
+     */
+    /*
+    @Override
+	protected QualifierHierarchy createQualifierHierarchy() {
+    	AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+
+		GraphQualifierHierarchy.Factory factory = new GraphQualifierHierarchy.Factory();
+		AnnotationMirror bottom = annoFactory.fromClass(FenumBottom.class);
+		
+		for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
+			if (typeQualifier.equals(Unqualified.class)) {
+				factory.addQualifier(null);
+				continue;
+			}
+			AnnotationMirror typeQualifierAnno = annoFactory
+					.fromClass(typeQualifier);
+			factory.addQualifier(typeQualifierAnno);
+			if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
+				// polymorphic qualifiers don't need to declared their
+				// supertypes
+				if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
+					continue;
+				throw new AssertionError(typeQualifier
+						+ " does not specify its super qualifiers");
+			}
+			Class<? extends Annotation>[] superQualifiers = typeQualifier
+					.getAnnotation(SubtypeOf.class).value();
+			for (Class<? extends Annotation> superQualifier : superQualifiers) {
+				AnnotationMirror superAnno = null;
+				if (superQualifier != Unqualified.class)
+					superAnno = annoFactory.fromClass(superQualifier);
+				factory.addSubtype(typeQualifierAnno, superAnno);
+			}	
+			
+			if( typeQualifier.getCanonicalName()!= "checkers.fenum.FenumBottom" ) {
+				System.out.println("Adding subtype to : " + typeQualifier.getCanonicalName());
+				// WMD TODO: get this working!
+				// WMD add bottom to all qualifiers
+				// factory.addSubtype(bottom, typeQualifierAnno);
+			}
+		}
+		QualifierHierarchy hierarchy = factory.build();
+		if (hierarchy.getTypeQualifiers().size() < 2) {
+			throw new IllegalStateException(
+					"Invalid qualifier hierarchy: hierarchy requires at least two annotations: "
+							+ hierarchy.getTypeQualifiers());
+		}
+		return hierarchy;
+	}
+	*/
 }
