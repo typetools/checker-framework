@@ -3,6 +3,7 @@ package checkers.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +136,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesGraph;
 
     /** immutable map: qualifier --> supertypesMap of the qualifier**/
+    // Contains all supertypes, not just the direct supertypes of the qualifier
     private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesMap;
     /** the root of all the qualifiers **/
     private final AnnotationMirror root;
@@ -191,7 +193,8 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (areSameIgnoringValues(a1, a2))
             return areSame(a1, a2) ? a1 : root;
         if (lubs == null) {
-            lubs = new HashMap<AnnotationPair, AnnotationMirror>();
+        	// WMD TODO: this does not seem to be needed
+            // lubs = new HashMap<AnnotationPair, AnnotationMirror>();
             lubs = calculateLubs();
         }
         AnnotationPair pair = new AnnotationPair(a1, a2);
@@ -297,18 +300,18 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     private Map<AnnotationPair, AnnotationMirror>  calculateLubs() {
-        Map<AnnotationPair, AnnotationMirror> lubs = new HashMap<AnnotationPair, AnnotationMirror>();
+        Map<AnnotationPair, AnnotationMirror> newlubs = new HashMap<AnnotationPair, AnnotationMirror>();
         for (AnnotationMirror a1 : supertypesGraph.keySet())
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
                 if (areSameIgnoringValues(a1, a2))
                     continue;
                 AnnotationPair pair = new AnnotationPair(a1, a2);
-                if (lubs.containsKey(pair))
+                if (newlubs.containsKey(pair))
                     continue;
                 AnnotationMirror lub = findLub(a1, a2);
-                lubs.put(pair, lub);
+                newlubs.put(pair, lub);
             }
-        return lubs;
+        return newlubs;
     }
 
     private AnnotationMirror findLub(AnnotationMirror a1, AnnotationMirror a2) {
@@ -317,7 +320,9 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (isSubtype(a2, a1))
             return a1;
 
-        for (AnnotationMirror a1Super : supertypesMap.get(a1)) {
+        for (AnnotationMirror a1Super : findSmallestTypes(supertypesMap.get(a1))) {
+        	// TODO: we take the first of the smallest supertypes, maybe we would
+        	// get a different LUB if we used a different one?
             AnnotationMirror a1Lub = findLub(a1Super, a2);
             if (a1Lub != null)
                 return a1Lub;
@@ -326,7 +331,23 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         		"Does the checker know about all type qualifiers?");
     }
 
-    /**
+    // remove all supertypes contained in the set
+    private Set<AnnotationMirror> findSmallestTypes(Set<AnnotationMirror> inset) {
+    	Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
+    	
+    	for( AnnotationMirror a1 : inset ) {
+    		Iterator<AnnotationMirror> outit = outset.iterator();
+    		while( outit.hasNext() ) {
+    			AnnotationMirror a2 = outit.next();
+    			if( a1!=a2 && isSubtype(a1, a2) ) {
+    				outit.remove();
+    			}
+    		}
+    	}
+		return outset;
+	}
+
+	/**
      * Finds all the super qualifiers for an qualifier
      *
      * @param anno
