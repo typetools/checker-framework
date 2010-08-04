@@ -534,6 +534,8 @@ public abstract class AnnotatedTypeMirror {
          * Sets the type arguments on this type
          * @param t the type arguments
          */
+        // WMD
+        public
         void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
             typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
         }
@@ -972,6 +974,8 @@ public abstract class AnnotatedTypeMirror {
          *
          * @param type the component type
          */
+        // WMD
+        public
         void setComponentType(AnnotatedTypeMirror type) {
             this.componentType = type;
         }
