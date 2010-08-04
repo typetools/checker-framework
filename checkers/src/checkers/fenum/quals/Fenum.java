@@ -6,7 +6,8 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * @author wmdietl
+ * A generic fake enumeration qualifier that is parameterized by a name.
+ * 
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
