@@ -6,12 +6,12 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * 
- * @author wmdietl
+ * The top of the type hierarchy.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target( {} )
+// TODO: should we allow it in some places?
+// @Target( {} )
 @TypeQualifier
 @SubtypeOf( { } )
 public @interface FenumTop {}
