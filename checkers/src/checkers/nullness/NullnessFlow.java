@@ -1011,7 +1011,8 @@ class NullnessFlow extends Flow {
 
         nnExprs = nnExprsWhenFalse;
         scanExpr(node.getFalseExpression());
-        annos.and(after);
+        // annos.and(after);
+        GenKillBits.andWMD(annos, after, annoRelations);
 
         nnExprs = prevNNExprs;
         return null;
