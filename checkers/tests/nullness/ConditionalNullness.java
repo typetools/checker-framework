@@ -35,7 +35,6 @@ public class ConditionalNullness {
             //:: (dereference.of.nullable)
             field.toString();   // error
         }
-        //:: (dereference.of.nullable)
         field.toString();       // error
     }
 
