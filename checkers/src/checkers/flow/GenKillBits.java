@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.types.QualifierHierarchy;
+
 /**
  * Maintains multiple gen-kill sets, "keyed" by a value. For instance, the
  * flow-sensitive inference implemented in {@link Flow} uses a
@@ -118,13 +120,14 @@ public class GenKillBits<K> {
      * @throws IllegalArgumentException if the other group is missing a key from
      *         this group
      */
+    /*
     public void and(GenKillBits<K> other) {
         for (K key : bitsets.keySet()) {
             if (!other.bitsets.containsKey(key))
                 throw new IllegalArgumentException();
             bitsets.get(key).and(other.bitsets.get(key));
         }
-    }
+    }*/
 
     /**
      * Merges each gen-kill set in this group with the one corresponding to the
@@ -146,4 +149,66 @@ public class GenKillBits<K> {
     public String toString() {
         return "[GenKill: " + bitsets + "]";
     }
+
+	public static void andWMD(GenKillBits<AnnotationMirror> outarg1,
+			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
+		// outarg1.and(arg2);
+		
+		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
+			if (!arg2.bitsets.containsKey(key1))
+				throw new IllegalArgumentException();
+
+			for(AnnotationMirror key2 : arg2.bitsets.keySet()) {
+				BitSet lhs = outarg1.bitsets.get(key1);
+				BitSet rhs = arg2.bitsets.get(key2);
+				
+				int length = lhs.length();
+				if(rhs.length() > length) length = rhs.length();
+				
+				for(int var=0; var < length; ++var) {
+					if( lhs.get(var) && rhs.get(var) ) {
+						AnnotationMirror lub = annoRelations.leastUpperBound(key1, key2);
+						lhs.clear(var);
+						outarg1.bitsets.get(lub).set(var);
+					}
+				}
+			}
+		}
+	}
+
+	public static void andWMDold(GenKillBits<AnnotationMirror> outarg1,
+			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
+		System.out.println("outarg1: " + outarg1);
+		System.out.println("arg2: " + arg2);
+		for (AnnotationMirror key : outarg1.bitsets.keySet()) {
+			if (!arg2.bitsets.containsKey(key))
+				throw new IllegalArgumentException();
+
+			BitSet lhs = outarg1.bitsets.get(key);
+			subtypeHelperold(outarg1, key, annoRelations, lhs);
+			
+			System.out.println("lhs(" + key + "): " + lhs);
+			
+			BitSet rhs = (BitSet) arg2.bitsets.get(key).clone();
+			subtypeHelperold(arg2, key, annoRelations, rhs);
+			
+			System.out.println("rhs(" + key + "): " + rhs);
+			
+			lhs.and(rhs);
+		}
+		System.out.println("result: " + outarg1);
+	}
+
+	private static void subtypeHelperold(GenKillBits<AnnotationMirror> arg,
+			AnnotationMirror inkey,
+			QualifierHierarchy annoRelations,
+			BitSet inout) {
+		for (AnnotationMirror key1 : arg.bitsets.keySet()) {
+			for (AnnotationMirror key2 : arg.bitsets.keySet()) {
+				if (annoRelations.isSubtype(key1, inkey)) {
+					inout.or(arg.bitsets.get(key1));
+				}
+			}
+		}
+	}
 }
