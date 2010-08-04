@@ -114,6 +114,38 @@ public class QualifierDefaults {
         return null;
     }
 
+    // WMD TODO
+    private Element nearestEnclosingExceptLocal(Tree tree) {
+    	TreePath path = factory.getPath(tree);
+    	if (path == null) return InternalUtils.symbol(tree);
+    	
+    	Tree prev = null;
+            
+    	for (Tree t : path) {
+    		switch (t.getKind()) {
+    		case VARIABLE:
+    			VariableTree vtree = (VariableTree)t;
+    			if (prev==vtree.getInitializer()) {
+    				Element elt = TreeUtils.elementFromDeclaration((VariableTree)t);    				
+    		        DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
+    		        DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
+    		        
+    		        if (d == null && ds == null)
+    		        	break;
+    			}
+    			return TreeUtils.elementFromDeclaration((VariableTree)t);
+    		case METHOD:
+    			return TreeUtils.elementFromDeclaration((MethodTree)t);
+    		case CLASS:
+    			return TreeUtils.elementFromDeclaration((ClassTree)t);
+    		default: // Do nothing.
+    		}
+    		prev = t;
+    	}
+    
+    	return null;
+    }
+    
     /**
      * Applies default annotations to a type.
      * A {@link Tree} that determines the appropriate scope for defaults.
@@ -154,14 +186,18 @@ public class QualifierDefaults {
             default:
                 // If no associated symbol was found, use the tree's (lexical)
                 // scope.
-                elt = nearestEnclosing(tree);
+                elt = nearestEnclosingExceptLocal(tree);
+            	// elt = nearestEnclosing(tree);
         }
+        // System.out.println("applyDefaults on tree " + tree + " gives elt: " + elt);
         if (elt != null)
             applyDefaults(elt, type);
     }
 
     private Map<Element, List<DefaultQualifier>> qualifierCache =
         new IdentityHashMap<Element, List<DefaultQualifier>>();
+    
+	private static AnnotationMirror WMD_localannot;
 
     private List<DefaultQualifier> defaultsAt(final Element elt) {
         if (elt == null)
@@ -253,15 +289,22 @@ public class QualifierDefaults {
             if (t.getKind() == TypeKind.WILDCARD
                     || t.getKind() == TypeKind.TYPEVAR)
                 return super.scan(t, p);
-
+        	
             // Skip annotating this type if:
             // - the default is "all except (the raw types of) locals"
             // - we are applying defaults to a local
             // - and the type is a raw type
             if (elt.getKind() == ElementKind.LOCAL_VARIABLE
                     && locations.contains(DefaultLocation.ALL_EXCEPT_LOCALS)
-                    && t == type)
+                    && t == type) {
+       
+            	// WMD: add the local variable annotation!
+				if (!t.isAnnotated() && WMD_localannot != null) {
+                    t.addAnnotation(WMD_localannot);
+                }
+				
                 return super.scan(t, p);
+            }
 
             if (locations.contains(DefaultLocation.UPPER_BOUNDS)
                 && locations.size() == 1
@@ -326,4 +369,8 @@ public class QualifierDefaults {
             return r;
         }
     }
+
+	public void setLocalDefault(AnnotationMirror localannot) {
+		WMD_localannot = localannot;
+	}
 }
