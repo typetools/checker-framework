@@ -209,6 +209,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+    	if(e==null) {
+    		System.err.println("Refusing to process empty TypeElement");
+    		return;
+    	}
+    	if(p==null) {
+    		System.err.println("Refusing to process empty TreePath in TypeElement: " + e);
+    		return;
+    	}
+    	
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
