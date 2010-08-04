@@ -175,40 +175,4 @@ public class GenKillBits<K> {
 			}
 		}
 	}
-
-	public static void andWMDold(GenKillBits<AnnotationMirror> outarg1,
-			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
-		System.out.println("outarg1: " + outarg1);
-		System.out.println("arg2: " + arg2);
-		for (AnnotationMirror key : outarg1.bitsets.keySet()) {
-			if (!arg2.bitsets.containsKey(key))
-				throw new IllegalArgumentException();
-
-			BitSet lhs = outarg1.bitsets.get(key);
-			subtypeHelperold(outarg1, key, annoRelations, lhs);
-			
-			System.out.println("lhs(" + key + "): " + lhs);
-			
-			BitSet rhs = (BitSet) arg2.bitsets.get(key).clone();
-			subtypeHelperold(arg2, key, annoRelations, rhs);
-			
-			System.out.println("rhs(" + key + "): " + rhs);
-			
-			lhs.and(rhs);
-		}
-		System.out.println("result: " + outarg1);
-	}
-
-	private static void subtypeHelperold(GenKillBits<AnnotationMirror> arg,
-			AnnotationMirror inkey,
-			QualifierHierarchy annoRelations,
-			BitSet inout) {
-		for (AnnotationMirror key1 : arg.bitsets.keySet()) {
-			for (AnnotationMirror key2 : arg.bitsets.keySet()) {
-				if (annoRelations.isSubtype(key1, inkey)) {
-					inout.or(arg.bitsets.get(key1));
-				}
-			}
-		}
-	}
 }
