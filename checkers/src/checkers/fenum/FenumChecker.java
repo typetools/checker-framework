@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
@@ -15,6 +16,9 @@ import checkers.fenum.quals.FenumUnqualified;
 import checkers.fenum.quals.FenumBottom;
 import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -100,57 +104,35 @@ public class FenumChecker extends BaseTypeChecker {
 		// visitor.
     	return true;
     }
-    
-    /** TODO: this is a copy of the super-method, just slightly modified to try
-     * adding the FenumBottom to all qualifiers.
-     */
-    /*
+        
     @Override
-	protected QualifierHierarchy createQualifierHierarchy() {
-    	AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-
-		GraphQualifierHierarchy.Factory factory = new GraphQualifierHierarchy.Factory();
-		AnnotationMirror bottom = annoFactory.fromClass(FenumBottom.class);
-		
-		for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
-			if (typeQualifier.equals(Unqualified.class)) {
-				factory.addQualifier(null);
-				continue;
-			}
-			AnnotationMirror typeQualifierAnno = annoFactory
-					.fromClass(typeQualifier);
-			factory.addQualifier(typeQualifierAnno);
-			if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-				// polymorphic qualifiers don't need to declared their
-				// supertypes
-				if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
-					continue;
-				throw new AssertionError(typeQualifier
-						+ " does not specify its super qualifiers");
-			}
-			Class<? extends Annotation>[] superQualifiers = typeQualifier
-					.getAnnotation(SubtypeOf.class).value();
-			for (Class<? extends Annotation> superQualifier : superQualifiers) {
-				AnnotationMirror superAnno = null;
-				if (superQualifier != Unqualified.class)
-					superAnno = annoFactory.fromClass(superQualifier);
-				factory.addSubtype(typeQualifierAnno, superAnno);
-			}	
-			
-			if( typeQualifier.getCanonicalName()!= "checkers.fenum.FenumBottom" ) {
-				System.out.println("Adding subtype to : " + typeQualifier.getCanonicalName());
-				// WMD TODO: get this working!
-				// WMD add bottom to all qualifiers
-				// factory.addSubtype(bottom, typeQualifierAnno);
-			}
-		}
-		QualifierHierarchy hierarchy = factory.build();
-		if (hierarchy.getTypeQualifiers().size() < 2) {
-			throw new IllegalStateException(
-					"Invalid qualifier hierarchy: hierarchy requires at least two annotations: "
-							+ hierarchy.getTypeQualifiers());
-		}
-		return hierarchy;
-	}
-	*/
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    }
+    
+    /* The user is expected to introduce additional fenum annotations.
+     * These annotations are declared to be subtypes of FenumTop, using the
+     * @SubtypeOf annotation.
+     * However, there is no way to declare that it is a supertype of FenumBottom.
+     * Therefore, we fix the bottom of the type hierarchy here and add a special
+     * case when the subtype has the FenumBottom annotation. 
+     */
+    private final class FenumQualifierHierarchy extends GraphQualifierHierarchy {
+        public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
+        }
+        
+        @Override
+        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
+        	if ( AnnotationUtils.getInstance(env).fromClass(FenumBottom.class).equals(anno1)) {
+        		return true;
+        	}
+        	return super.isSubtype(anno1, anno2);
+        }
+        
+        @Override
+        public AnnotationMirror getBottomQualifier() {
+        	return AnnotationUtils.getInstance(env).fromClass(FenumBottom.class);
+        }
+    }
 }
