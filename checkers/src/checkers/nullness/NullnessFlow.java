@@ -148,7 +148,8 @@ class NullnessFlow extends Flow {
                     annosWhenFalse.set(NONNULL, idx);
             }
         }
-        annosWhenFalse.or(before);
+        // annosWhenFalse.or(before);
+        GenKillBits.orWMD(annosWhenFalse, before, annoRelations);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
