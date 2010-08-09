@@ -138,13 +138,14 @@ public class GenKillBits<K> {
      * @throws IllegalArgumentException if the other group is missing a key from
      *         this group
      */
+    /*
     public void or(GenKillBits<K> other) {
         for (K key : bitsets.keySet()) {
             if (!other.bitsets.containsKey(key))
                 throw new IllegalArgumentException();
             bitsets.get(key).or(other.bitsets.get(key));
         }
-    }
+    }*/
 
     public String toString() {
         return "[GenKill: " + bitsets + "]";
@@ -170,6 +171,33 @@ public class GenKillBits<K> {
 						AnnotationMirror lub = annoRelations.leastUpperBound(key1, key2);
 						lhs.clear(var);
 						outarg1.bitsets.get(lub).set(var);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public static void orWMD(GenKillBits<AnnotationMirror> outarg1,
+			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
+		// outarg1.or(arg2);
+		
+		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
+			if (!arg2.bitsets.containsKey(key1))
+				throw new IllegalArgumentException();
+
+			for(AnnotationMirror key2 : arg2.bitsets.keySet()) {
+				BitSet lhs = outarg1.bitsets.get(key1);
+				BitSet rhs = arg2.bitsets.get(key2);
+				
+				int length = lhs.length();
+				if(rhs.length() > length) length = rhs.length();
+				
+				for(int var=0; var < length; ++var) {
+					if( lhs.get(var) || rhs.get(var) ) {
+						AnnotationMirror glb = annoRelations.greatestLowerBound(key1, key2);
+						lhs.clear(var);
+						outarg1.bitsets.get(glb).set(var);
 					}
 				}
 			}
