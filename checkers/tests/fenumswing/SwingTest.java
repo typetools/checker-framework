@@ -39,10 +39,6 @@ public class SwingTest {
 	void testNull() {
 		// This enum should only be used on ints, but I wanted to 
 		// test how an Object enum and null interact.
-		// Unfortunately, FenumBottom is not a subtype of the programmer
-		// introduced qualifiers, so this is forbidden.
-		// TODO: Is there a way around this?
-		//:: (assignment.type.incompatible)
 		@SwingVerticalOrientation Object box = null;
 	}
 
