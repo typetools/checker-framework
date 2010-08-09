@@ -732,7 +732,8 @@ public class Flow extends TreePathScanner<Void, Void> {
 
             if (!alive) {
                 alive = aliveAfter;
-                after.or(annos);
+                // after.or(annos);
+                GenKillBits.orWMD(after, annos, annoRelations);
                 annos = GenKillBits.copy(after);
             } else if (!aliveAfter) {
                 annos = annos;  // NOOP
