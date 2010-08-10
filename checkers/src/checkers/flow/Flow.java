@@ -638,9 +638,19 @@ public class Flow extends TreePathScanner<Void, Void> {
         //if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
         //    clearAnnos(var);
         
-        return null;
-    }
+        // WMD added this to get (s2 = (s1 += 1)) working.
+        // Is something similar needed for other expressions?
+        // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
+        AnnotatedTypeMirror t = factory.getAnnotatedType(node.getVariable());
+        for (AnnotationMirror a : annotations) {
+            if (hasAnnotation(t, a)) {
+            	flowResults.put(node, a);
+            }
+        }
 
+        return null;
+	}
+    
     private void clearAnnos(Tree tree) {
         Element elt = InternalUtils.symbol(tree);
         if (elt == null)
