@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+// Also see file FailedTests, that contains currently-failing tests.
 /**
  * JUnit tests for the IGJ annotation checker.
  */
@@ -160,4 +161,11 @@ public class IGJTest extends CheckerTest {
     @Test public void testManifestClass()   { test(); }
     @Test public void testMutableClass()    { test(); }
     @Test public void testUnannoFieldArrayAccess() { test(); }
+
+    // TODO: MDE will add
+    // @Test public void testSubclassing() { test(); }
+
+    // currently failing
+    // @Test public void testFailedTests() { test(); }
+
 }
