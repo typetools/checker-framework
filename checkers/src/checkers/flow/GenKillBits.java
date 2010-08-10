@@ -61,6 +61,8 @@ public class GenKillBits<K> {
      * @see GenKillBits#copy(GenKillBits)
      */
     public GenKillBits(GenKillBits<K> other) {
+    	other.valid();
+    	
         bitsets = new HashMap<K, BitSet>(other.bitsets);
         for (K key : bitsets.keySet()) {
             BitSet newbits = (BitSet) bitsets.get(key).clone();
@@ -92,6 +94,8 @@ public class GenKillBits<K> {
      *         this group
      */
     public boolean get(K key, int index) {
+    	valid();
+    	
         if (!bitsets.containsKey(key))
             throw new IllegalArgumentException();
         return bitsets.get(key).get(index);
@@ -155,6 +159,9 @@ public class GenKillBits<K> {
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
 		// outarg1.and(arg2);
 		
+		outarg1.valid();
+		arg2.valid();
+		
 		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
 			if (!arg2.bitsets.containsKey(key1))
 				throw new IllegalArgumentException();
@@ -175,6 +182,7 @@ public class GenKillBits<K> {
 				}
 			}
 		}
+		outarg1.valid();
 	}
 	
 	
@@ -182,6 +190,9 @@ public class GenKillBits<K> {
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
 		// outarg1.or(arg2);
 		
+		outarg1.valid();
+		arg2.valid();
+
 		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
 			if (!arg2.bitsets.containsKey(key1))
 				throw new IllegalArgumentException();
@@ -202,5 +213,26 @@ public class GenKillBits<K> {
 				}
 			}
 		}
+		outarg1.valid();
+	}
+	
+	private boolean valid() {
+		BitSet xorres = new BitSet();
+		BitSet orres = new BitSet();
+
+		for (K key : bitsets.keySet()) {
+			// System.out.println("xores in for key " + key + ": " + xorres);
+        	xorres.xor(bitsets.get(key));
+        	// System.out.println("xores out for key " + key + ": " + xorres);
+        	orres.or(bitsets.get(key));
+        }
+
+        for(int i=0; i<xorres.length(); ++i) {
+        	if (orres.get(i) && !xorres.get(i)) {
+        		System.err.println("More than one variable true: " + this);
+        		return false;
+        	}
+        }
+		return true;
 	}
 }
