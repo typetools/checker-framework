@@ -52,11 +52,11 @@ class MyNullnessTest {
   }
 }
 
-The file may appear anywhere in or under checkers/tests/nullness.  (You may
+The file may appear anywhere in or under checkers/tests/nullness/.  (You may
 find it useful to use separate subfolders, such as
-nullness/tests/nullness/dereference .)  Each checker should have its own
-folder under checkers/tests, such as checkers/tests/igj,
-checkers/tests/interning, etc.
+nullness/tests/nullness/dereference/.)  Each checker should have its own
+folder under checkers/tests, such as checkers/tests/igj/,
+checkers/tests/interning/, etc.
 
 
 Writing Tests for New Checkers

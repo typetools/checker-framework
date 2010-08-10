@@ -130,6 +130,19 @@ then the problem may be that you have not set the CHECKERS environment
 variable, as described in Section~\ref{windows-installation}.  Or, maybe
 you made it a user variable instead of a system variable.
 
+\item
+If you get one of these errors:
+
+\begin{alltt}
+The hierarchy of the type \emph{ClassName} is inconsistent
+
+The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
+  It is indirectly referenced from required .class files", 
+\end{alltt}
+
+\noindent
+then you are missing \code{jsr308-all.jar} from your classpath.
+
 \end{itemize}
 
 
