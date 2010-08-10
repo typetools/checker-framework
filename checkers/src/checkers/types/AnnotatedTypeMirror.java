@@ -1402,6 +1402,10 @@ public abstract class AnnotatedTypeMirror {
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
             // canno substitute
+            // return getCopy(true);
+        	// WMD wants to substitute primite types!
+            if (mappings.containsKey(this))
+                return mappings.get(this);
             return getCopy(true);
         }
 
