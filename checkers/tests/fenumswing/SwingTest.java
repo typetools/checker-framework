@@ -106,6 +106,15 @@ public class SwingTest {
 	    return o;
 	}
 	
+	int s1 = 0;
+	int c = 3;
+	
+	void testInference8() {
+		int s2 = s1;
+		s1 = (s2 &= c);
+	}
+	
+	
 	@SwingVerticalOrientation Object testDefaulting0() {
 		@checkers.quals.DefaultQualifier("SwingVerticalOrientation")
 	    Object o = new String();
