@@ -114,6 +114,62 @@ public class SwingTest {
 		s1 = (s2 &= c);
 	}
 	
+	boolean flag;
+	Object testInference9() {
+	    Object o = null;
+	    while(flag) {
+	    	if( 5==4 ) {
+	    		o = new @SwingHorizontalOrientation Object();
+	    	} else {
+	    		o = new @SwingVerticalOrientation Object();
+	    		// note that this break makes a difference!
+	    		break;
+	    	}
+	    }
+	    //:: (return.type.incompatible)
+	    return o;
+	}
+	@SwingBoxOrientation Object testInference9b() {
+	    Object o = null;
+	    while(flag) {
+	    	if( 5==4 ) {
+	    		o = new @SwingHorizontalOrientation Object();
+	    	} else {
+	    		o = new @SwingVerticalOrientation Object();
+	    		// note that this break makes a difference!
+	    		break;
+	    	}
+	    }
+	    return o;
+	}
+	@SwingHorizontalOrientation Object testInference9c() {
+	    Object o = null;
+	    while(flag) {
+	    	if( 5==4 ) {
+	    		o = new @SwingHorizontalOrientation Object();
+	    	} else {
+	    		o = new @SwingVerticalOrientation Object();
+	    		// note that this break makes a difference!
+	    		break;
+	    	}
+	    }
+	    //:: (return.type.incompatible)
+	    return o;
+	}
+	@SwingVerticalOrientation Object testInference9d() {
+	    Object o = null;
+	    while(flag) {
+	    	if( 5==4 ) {
+	    		o = new @SwingHorizontalOrientation Object();
+	    	} else {
+	    		o = new @SwingVerticalOrientation Object();
+	    		// note that this break makes a difference!
+	    		break;
+	    	}
+	    }
+	    //:: (return.type.incompatible)
+	    return o;
+	}
 	
 	@SwingVerticalOrientation Object testDefaulting0() {
 		@checkers.quals.DefaultQualifier("SwingVerticalOrientation")
