@@ -161,7 +161,7 @@ public class GenKillBits<K> {
 		
 		outarg1.valid();
 		arg2.valid();
-		
+
 		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
 			if (!arg2.bitsets.containsKey(key1))
 				throw new IllegalArgumentException();
@@ -205,10 +205,35 @@ public class GenKillBits<K> {
 				if(rhs.length() > length) length = rhs.length();
 				
 				for(int var=0; var < length; ++var) {
-					if( lhs.get(var) || rhs.get(var) ) {
-						AnnotationMirror glb = annoRelations.greatestLowerBound(key1, key2);
-						lhs.clear(var);
-						outarg1.bitsets.get(glb).set(var);
+					if ( rhs.get(var) ) {
+						if( lhs.get(var) ) {
+							AnnotationMirror glb = annoRelations.leastUpperBound(key1, key2);
+							lhs.clear(var);
+							outarg1.bitsets.get(glb).set(var);
+						} else {
+							/* If the rhs has the bit set, but the lhs has not, there _might_ be a different
+							 * modifier in the lhs that already has the bit set.
+							 * If we find it, remove it and set the lub.
+							 * If we do not find it, set key2.
+							 */
+							boolean found = false;
+							for (AnnotationMirror key3 : outarg1.bitsets.keySet()) {
+								if ( outarg1.bitsets.get(key3).get(var) ) {
+									AnnotationMirror glb = annoRelations.leastUpperBound(key3, key2);
+									if (!glb.equals(key3) ) {
+										outarg1.bitsets.get(key3).clear(var);
+										outarg1.bitsets.get(glb).set(var);
+									}
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								// we do not need to calculate a lub, because the variable is not set on
+								// the lhs and there is no other modifier that has the bit set.
+								outarg1.bitsets.get(key2).set(var);
+							}
+						}
 					}
 				}
 			}
@@ -221,13 +246,13 @@ public class GenKillBits<K> {
 		BitSet orres = new BitSet();
 
 		for (K key : bitsets.keySet()) {
-			// System.out.println("xores in for key " + key + ": " + xorres);
         	xorres.xor(bitsets.get(key));
-        	// System.out.println("xores out for key " + key + ": " + xorres);
         	orres.or(bitsets.get(key));
         }
 
-        for(int i=0; i<xorres.length(); ++i) {
+		// Careful: take the length of the orres! Otherwise you might miss
+		// elements at the end, b/c length() doesn't count zeros at the end!
+        for(int i=0; i<orres.length(); ++i) {
         	if (orres.get(i) && !xorres.get(i)) {
         		System.err.println("More than one variable true: " + this);
         		return false;
