@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Troubleshooting and getting help\label{troubleshooting}}
+\chapter{\label{troubleshooting}Troubleshooting and getting help}
 
 Please read the entire manual, including this chapter and the FAQ
 (Chapter~\ref{faq}), because the manual might already answer your question.
@@ -142,6 +142,21 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 
 \noindent
 then you are missing \code{jsr308-all.jar} from your classpath.
+
+\item
+If you get the error
+
+\begin{Verbatim}
+  java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+\end{Verbatim}
+
+\noindent
+% I'm not 100% sure of the following explanation and solution.
+then an annotation is not present at run time that was present at compile
+time.  For example, maybe when you compiled the code, the \<@NonNull>
+annotation was available, but it was not available at run time.
+You can use JDK 7 at run time, or compile
+with a Java 6 compiler that will ignore the annotations in comments.
 
 \end{itemize}
 
