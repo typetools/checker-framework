@@ -1,4 +1,4 @@
-# To regenerate this list, run:   latex-process-inputs.pl -makefilelist manual.tex
+# To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
 introduction.tex \
