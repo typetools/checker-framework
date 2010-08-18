@@ -327,8 +327,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *
      * The check is shallow, as it does not descend into generic or array
      * types (i.e. only performing the validity check on the raw type or
-     * outmost array dimension).  {@link BaseTypeVisitor#validateTypeOf(Tree)}
-     * would call this for each type argument or array dimention separately.
+     * outermost array dimension).  {@link BaseTypeVisitor#validateTypeOf(Tree)}
+     * would call this for each type argument or array dimension separately.
      *
      * <p>
      *
