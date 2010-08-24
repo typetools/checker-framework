@@ -179,8 +179,8 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
-        if (overrides(enclosing, Comparator.class, "compare")) {
-            final boolean returnsZero =
+        if (overrides(enclosing, Comparator.class, "compare")) { 
+            final boolean returnsZero =                           
                 Heuristics.Matchers.withIn(
                         Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
 
@@ -216,6 +216,48 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         } else if (overrides(enclosing, Object.class, "equals")) {
             assert enclosing.getParameters().size() == 1;
+            Element param = enclosing.getParameters().get(0);
+            Element thisElt = getThis(trees.getScope(getCurrentPath()));
+            assert thisElt != null;
+            return (thisElt.equals(lhs) && param.equals(rhs))
+                || (param.equals(lhs) && thisElt.equals(rhs));
+            
+        } else if (overrides(enclosing, Comparable.class, "compareTo")) {
+        	//Literally a copy-paste of existing code. 
+        	//Check for zero return value from Comparator case, checks 
+        	//against this from Object.equals case. I think it makes sense. 
+        	//returnsZero is gonna be a bit redundant, I think...
+        	
+        	final boolean returnsZero =                           
+                Heuristics.Matchers.withIn(
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
+
+                    @Override
+                    public Boolean visitIf(IfTree tree, Void p) {
+                        return visit(tree.getThenStatement(), p);
+                    }
+
+                    @Override
+                    public Boolean visitBlock(BlockTree tree, Void p) {
+                        if (tree.getStatements().size() > 0)
+                            return visit(tree.getStatements().get(0), p);
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitReturn(ReturnTree tree, Void p) {
+                        ExpressionTree expr = tree.getExpression();
+                        return (expr != null &&
+                                expr.getKind() == Tree.Kind.INT_LITERAL &&
+                                ((LiteralTree)expr).getValue().equals(0));
+                    }
+                })).match(getCurrentPath());
+        	
+        	if(!returnsZero) {
+        		return false;
+        	}
+        	
+        	assert enclosing.getParameters().size() == 1;
             Element param = enclosing.getParameters().get(0);
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
