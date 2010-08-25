@@ -30,14 +30,14 @@ figures-all:
 doc:
 	ln -sf ../doc doc
 
-manual.dvi: ${TEX_FILES}
+manual.dvi: ${TEX_FILES} bib-update
 	$(MAKE) -C figures
 	latex manual.tex
 	bibtex manual
 	latex manual.tex
 	latex manual.tex
 
-manual.pdf: manual.dvi
+manual.pdf: manual.dvi bib-update
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
@@ -56,6 +56,14 @@ manual.html: manual.dvi
 	perl -pi -e 's/\/&#XA0;/\/~/' manual.html
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
+
+export BIBINPUTS ?= .:bib
+
+bib:
+	hg clone https://plume-bib.googlecode.com/hg/ bib
+.PHONY: bib-update
+bib-update: bib
+	cd bib && hg pull -u && make
 
 clean:
 	@\rm -f doc *.aux *.blg *.haux *.htoc *.log *.pdf *.ps *.dvi *.idx *.ind *.ilg *.toc
