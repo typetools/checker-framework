@@ -225,7 +225,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         } else if (overrides(enclosing, Comparable.class, "compareTo")) {
         	//Literally a copy-paste of existing code. 
         	//Check for zero return value from Comparator case, checks 
-        	//against this from Object.equals case. I think it makes sense. 
+        	//against "this" from Object.equals case. I think it makes sense. 
         	//returnsZero is gonna be a bit redundant, I think...
         	
         	final boolean returnsZero =                           
