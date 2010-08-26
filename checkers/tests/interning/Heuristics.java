@@ -26,10 +26,7 @@ public class Heuristics implements Comparable<Heuristics> {
     // Using == is OK if it's the first statement in the equals method
     // and it compares "this" against the argument.
 
-    // TO DO: Remove this "//::" suppression, because the checker should not issue a warning.
-    //:: (not.interned)
     if (o == this) return 0;
-    //:: (not.interned)
     if (this == o) return 0;
     return 0;
   }
