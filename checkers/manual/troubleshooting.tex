@@ -281,6 +281,7 @@ cd $JSR308
 hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
 hg clone https://checker-framework.googlecode.com/hg/ checker-framework
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 
 \noindent
 (Alternately, you could use the version of the source code that is packaged
@@ -291,7 +292,14 @@ in the Checker Framework release.)
 
 \begin{enumerate}
 \item
-Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or 7 installation. Most likely it is already set for Ant to work.
+Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
+7 installation.  (It may already be set for Ant to work.)
+
+Here is a command that works in the bash shell, for example:
+% Can someone give a simpler command?
+\begin{Verbatim}
+  export JAVA_HOME=$(dirname $(dirname $(readlink -f $(/usr/bin/which javac))))
+\end{Verbatim}
 \item
 Compile the Type Annotations javac compiler and the javap tool:
 
@@ -344,6 +352,7 @@ Run \code{ant} to create \<checkers.jar>:
   cd $JSR308/checker-framework/checkers
   ant
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 
 \item Add \code{tools.jar} and \code{checkers.jar} to your classpath
   (If you do not do this, you will have to supply the \code{-cp} option
@@ -356,6 +365,7 @@ Run \code{ant} to create \<checkers.jar>:
 \begin{Verbatim}
   export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checkers/checkers.jar
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
@@ -367,9 +377,10 @@ Run \code{ant} to create \<checkers.jar>:
 
   \item Run \code{ant all-tests} in the \code{checkers} directory:
 \begin{Verbatim}
-cd checkers
+ cd $JSR308/checker-framework/checkers
 ant all-tests
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 
   \item Run the Nullness checker examples (see
     Section~\refwithpage{nullness-example}).
