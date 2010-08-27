@@ -2,14 +2,16 @@
 \chapter{Interning checker\label{interning-checker}}
 
 If the Interning checker issues no warnings for a given program, then all
-reference equality tests (i.e., all uses of ``\code{==}'') in that program operate on
-interned types.
+reference equality tests (i.e., all uses of ``\code{==}'') are proper;
+\code{==} is not misused where \code{equals()} should have been used instead.
+
 Interning is a design pattern in which the same object is used whenever two
 different objects would be considered equal.  Interning is also known as
 canonicalization or hash-consing, and it is related to the flyweight design
 pattern.
 Interning can save memory and can speed up testing for
-equality by permitting use of \code{==}; however, use of \code{==} on
+equality by permitting use of \code{==}.  However, \code{==} should be used
+only on interned values; using \code{==} on
 non-interned values can result in subtle bugs.  For example:
 
 \begin{Verbatim}
@@ -29,6 +31,41 @@ strings.  Every string literal in the program is guaranteed to be interned
   \S3.10.5}), and the
 \sunjavadoc{java/lang/String.html#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
+Users can also write their own interning methods for other types.
+
+It is a proper optimization to use \code{==}, rather than \code{equals()},
+whenever the comparison is guaranteed to produce the same result --- that
+is, whenever the comparison is never provided with two different objects
+for which \code{equals()} would return true.  Here are three reasons that
+this property could hold:
+
+\begin{enumerate}
+\item
+  Interning.  A factory method ensures that, globally, no two different
+  interned objects are \code{equals()} to one another.  (In some cases
+  other, non-interned objects of the class might be \code{equals()} to one
+  another; in other cases, every object of the class is interned.)
+  Interned objects should always be immutable.
+\item
+  Global control flow.  The program's control flow is such that the
+  constructor for class $C$ is called a limited number of times, and with
+  specific values that ensure the results are not \code{equals()} to one
+  another.  Objects of class $C$ can always be compared with \code{==}.
+  Such objects may be mutable or immutable.
+\item
+  Local control flow.  Even though not all objects of the given type may be
+  compared with \code{==}, the specific objects that can reach a given
+  comparison may be.  For example, suppose that an array contains no
+  duplicates.  Then testing to find the index of a given element that is
+  known to be in the array can use \code{==}.
+\end{enumerate}
+
+To eliminate Interning Checker warnings, you will need to annotate your
+code regarding all legal uses of \code{==}.  Thus, the Interning Checker
+should perhaps have been called the Reference Equality Checker.  In the
+future, the checker will include annotations that target the non-interning
+cases above, but for now you need to use \<@Interned> and/or
+\<@SuppressWarnings>.
 
 
 \section{Interning annotations\label{interning-annotations}}
@@ -184,4 +221,4 @@ run \code{make check-interning}.
 
 % LocalWords:  plugin MyInternedClass enum InterningExampleWithWarnings java
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
-% LocalWords:  javac InterningVisitor
+% LocalWords:  javac InterningVisitor JLS Acheckclass
