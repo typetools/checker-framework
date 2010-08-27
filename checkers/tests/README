@@ -1,3 +1,13 @@
+How to run the tests for the Checker Framework
+==============================================
+
+  cd checkers
+  ant all-tests
+
+Other ant targets also exist to run a subset of the tests; for example,
+  ant nullness-tests
+
+
 How to write test cases for the Checker Framework
 =================================================
 
