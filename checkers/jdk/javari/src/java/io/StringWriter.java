@@ -2,9 +2,6 @@ package java.io;
 import checkers.javari.quals.*;
 
 public class StringWriter extends Writer {
-
-    private StringBuffer buf;
-
     public StringWriter() {
         throw new RuntimeException("skeleton method");
     }
@@ -56,5 +53,4 @@ public class StringWriter extends Writer {
     public void close() throws IOException {
         throw new RuntimeException("skeleton method");
     }
-
 }
