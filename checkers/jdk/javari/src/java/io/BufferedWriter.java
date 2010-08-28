@@ -2,16 +2,6 @@ package java.io;
 import checkers.javari.quals.*;
 
 public class BufferedWriter extends Writer {
-
-    private Writer out;
-
-    private char cb[];
-    private int nChars, nextChar;
-
-    private static int defaultCharBufferSize = 8192;
-
-    private String lineSeparator;
-
     public BufferedWriter(Writer out) {
         throw new RuntimeException("skeleton method");
     }

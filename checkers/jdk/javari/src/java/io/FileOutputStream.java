@@ -2,18 +2,8 @@ package java.io;
 import checkers.javari.quals.*;
 
 import java.nio.channels.FileChannel;
-import sun.nio.ch.FileChannelImpl;
 
 public class FileOutputStream extends OutputStream {
-    private final FileDescriptor fd;
-
-    private FileChannel channel= null;
-
-    private final Object closeLock = new Object();
-    private volatile boolean closed = false;
-    private static final ThreadLocal<Boolean> runningFinalize =
-        new ThreadLocal<Boolean>();
-
     public FileOutputStream(String name) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
@@ -36,14 +26,12 @@ public class FileOutputStream extends OutputStream {
 
     public native void write(int b) throws IOException;
 
-    private native void writeBytes(byte b[], int off, int len) throws IOException;
-
     public void write(byte b @ReadOnly []) throws IOException {
-        writeBytes(b, 0, b.length);
+        throw new RuntimeException("skeleton method");
     }
 
     public void write(byte b @ReadOnly [], int off, int len) throws IOException {
-        writeBytes(b, off, len);
+        throw new RuntimeException("skeleton method");
     }
 
     public void close() throws IOException {
