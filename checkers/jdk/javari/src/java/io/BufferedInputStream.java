@@ -2,19 +2,13 @@ package java.io;
 import checkers.javari.quals.*;
 
 public class BufferedInputStream extends FilterInputStream {
-    private static int defaultBufferSize = 8192;
-    protected volatile byte buf[];
-    protected int count;
-    protected int pos;
-    protected int markpos = -1;
-    protected int marklimit;
-
     public BufferedInputStream(InputStream in) {
-        this(in, defaultBufferSize);  // for some reason removing this breaks compilation
+        this(in, 0);
+        throw new RuntimeException("skeleton method");
     }
 
     public BufferedInputStream(InputStream in, int size) {
-        super(in); // for some reason removing this breaks compilation
+        super(in);
         throw new RuntimeException("skeleton method");
     }
 

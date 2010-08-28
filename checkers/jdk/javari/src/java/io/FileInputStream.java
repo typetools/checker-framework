@@ -42,10 +42,6 @@ public class FileInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    private static native void initIDs();
-
-    private native void close0() throws IOException;
-
     protected void finalize() throws IOException {
         throw new RuntimeException("skeleton method");
     }

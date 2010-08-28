@@ -72,11 +72,6 @@ public abstract class ClassLoader {
         throw new RuntimeException("skeleton method");
     }
 
-    private Class findBootstrapClassOrNull(String name)
-    {
-        throw new RuntimeException("skeleton method");
-    }
-
     protected final Class<?> findLoadedClass(String name) {
         throw new RuntimeException("skeleton method");
     }

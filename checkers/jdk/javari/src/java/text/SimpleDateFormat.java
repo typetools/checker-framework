@@ -35,10 +35,6 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    private StringBuffer format(Date date, StringBuffer toAppendTo, FieldDelegate delegate) {
-        throw new RuntimeException("skeleton method");
-    }
-
     public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
         throw new RuntimeException("skeleton method");
     }
