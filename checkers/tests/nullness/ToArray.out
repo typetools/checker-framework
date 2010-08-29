@@ -1,0 +1,20 @@
+:5: (generic.argument.invalid)
+:5: (generic.argument.invalid)
+
+:10: (enhancedfor.type.incompatible)
+:18: (enhancedfor.type.incompatible)
+:20: (enhancedfor.type.incompatible)
+:23: (argument.type.incompatible)
+
+:28: (generic.argument.invalid)
+:28: (generic.argument.invalid)
+
+:33: (enhancedfor.type.incompatible)
+:41: (enhancedfor.type.incompatible)
+:43: (enhancedfor.type.incompatible)
+:46: (argument.type.incompatible)
+
+:60: (enhancedfor.type.incompatible)
+:62: (enhancedfor.type.incompatible)
+:64: (enhancedfor.type.incompatible)
+:68: (enhancedfor.type.incompatible)
