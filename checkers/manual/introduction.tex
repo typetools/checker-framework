@@ -343,20 +343,47 @@ Section~\ref{annotations-in-comments}.
 
 \subsection{Distributing your annotated project\label{distributing}}
 
-If your code contains any annotations (outside of comments, see Section~\ref{annotations-in-comments}), or any import
-statements for the annotations, then your code has a dependency on the
-annotation declarations.  You also will need to provide the annotation
-declarations as well, if you decide to distribute your project.
+If your code contains annotations, then your code has a dependency on the
+annotation declarations.  People who want to compile or run your code may
+need declarations of the annotations on their classpath.
 
-For your convenience, inside the Checker Framework distribution \code{.zip} file
-is a jar file,
-\code{checkers-quals.jar}, that only contains the distributed qualifiers.
-You may include the jar file in your distribution.
+\begin{itemize}
+\item
+To perform pluggable type-checking, all of the Checker Framework (which
+also contains the annotation declarations) is needed.
+\item
+To compile the code:
+\begin{itemize}
+\item
+  If you wrote annotations in comments (see
+  Section~\ref{annotations-in-comments}) and used implicit import
+  statements (see Section~\ref{implicit-import-statements}), then the code
+  can be compiled by any Java compiler, without needing declarations of the
+  annotations.
+\item
+  Otherwise, compiling the code requires a declaration of the annotations.
+  These appear in the full Checker Framework.  Additionally, the Checker
+  Framework distribution \code{.zip} file contains a small jar file,
+  \code{checkers-quals.jar}, that only contains the definitions of the
+  distributed qualifiers, without any support for type-checking.
+\end{itemize}
+\item
+To run the code:
+\begin{itemize}
+\item
+  If you compiled the code without using the annotation declarations, then
+  no annotation declarations are needed.
+\item
+  If you compiled the code using the annotation declarations, then users
+  may need to have the annotation declarations on their classpath.
+\end{itemize}
+\end{itemize}
 
-Your clients need to have the annotations jar in the classpath when
-compiling your project.  When running it though, they most likely
-don't require the annotations declarations (unless the annotation
-classes are loaded via reflection, which would be unusual).
+A simple rule of thumb is as follows.  When distributing your source code,
+you may wish to include either the Checker Framework jar file or the
+\code{checkers-quals.jar} file.  When distributing compiled binaries, you
+may wish to compile them without using the annotations, or include the
+contents of \code{checkers-quals.jar} in your distribution.
 
 
 \section{Running a checker\label{running}}
@@ -848,4 +875,4 @@ could otherwise be statically dispatched.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse
+% LocalWords:  callees Xmx unconfuse fenum propkey
