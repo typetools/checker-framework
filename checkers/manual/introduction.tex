@@ -294,8 +294,8 @@ This section is structured as follows:
 \begin{itemize}
 \item Section~\ref{writing-annotations}: How to write annotations
 \item Section~\ref{running}:  How to run a checker
-\item Section~\ref{tips-about-writing-annotations}: Tips about writing annotations
 \item Section~\ref{checker-guarantees}: What the checker guarantees
+\item Section~\ref{tips-about-writing-annotations}: Tips about writing annotations
 \end{itemize}
 
 Additional topics that apply to all checkers are covered later in the manual:
@@ -596,6 +596,29 @@ There are some limitations to the guarantee.
 A checker can be useful in finding bugs or in verifying part of a
 program, even if the checker is unable to verify the correctness of an
 entire program.
+
+In order to avoid a flood of unhelpful warnings, many of the checkers avoid
+issuing the same worning multiple times.  For example, in this code:
+
+\begin{Verbatim}
+  @Nullable Object x = ...;
+  x.toString();                 // warning
+  x.toString();                 // no warning
+\end{Verbatim}
+
+\noindent
+In this case, the second call to \<toString> cannot possibly throw a null
+pointer warning --- \<x> is non-null if control flows to the second
+statement.
+In other cases, a checker avoids issuing later warnings with the same cause
+even when later code in a method might also fail.
+This does not
+affect the soundness guarantee, but a user may need to examine more
+warnings after fixing the first ones identified.  (More often, at least in
+our experience to date, a single fix corrects all the warnings.)
+
+% It might be worthwhile to permit a user to see every warning -- though I
+% would not advocate this setting for daily use.
 
 If you find that a checker fails to issue a warning that it
 should, then please report a bug (see Section~\ref{reporting-bugs}).
