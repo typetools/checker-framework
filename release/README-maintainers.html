@@ -110,13 +110,43 @@ testing site:</p>
 
 <h2 id="Release">Making a release</h2>
 
+<p>
+Update file
+<tt>checker-framework/checkers/changelog-checkers.txt</tt>.
+For example, you could run these commands:
+</p>
+<pre>hg log --style changelog --date '>2009-05-14'
+
+<!--  This doesn't work; it gives one diff per changeset, not a single diff.
+hg log -p -d '>2009-05-14' checker-framework/checkers/manual -->
+cd ..
+hg clone checker-framework checker-framework-last-release
+cd checker-framework-last-release
+hg update --date 2009-05-14
+cd ..
+diff -u -b -r --exclude=.hg --exclude=.hgtags --exclude='*.class' --exclude='*~' checker-framework-last-release/checkers/manual/ checker-framework/checkers/manual/
+rm -rf checker-framework-last-release
+</pre>
+<p>
+with the proper date substituted.
+[TODO: should use tags in the command instead.]
+</p>
+
+<p>Tag the release, for example [TODO: this should be automated.  TODO: Do
+  this *after* making the release, maybe?]:
+</p>
+<pre>hg tag 1.1.1</pre>
+
 <p>In <tt>checker-framework/release</tt>, execute:</p>
 
 <pre>
     python -m release
 </pre>
 
+<p>
 And follow the instructions it provides, and you are done!
+</p>
+
 
 <h2 id="Release-Manual">Making a manual release</h2>
 
