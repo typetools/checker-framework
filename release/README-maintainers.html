@@ -38,7 +38,7 @@ site.</p>
 <p>To make a release of the JSR 308 langtools and checkers, you need:</p>
 
 <ul>
-<li>JDK &ge; 6</li>
+<li>JDK 6 (JDK 7 seems to be a problem)</li>
 <li>Apache ant &ge; 1.6.5</li>
 <li>Access to <code>/cse/www2/types</code> directory on a cs.washington.edu machine</li>
 <li>Mercurial &ge; 1.2.1</li>
@@ -48,18 +48,16 @@ testing the release)</li>
 </ul>
 
 <p>You should have all of the above if you use a Washington CSE machine
-(e.g. <code>godwit</code>).</p>
+(e.g., <code>jicama</code> or <code>godwit</code>).</p>
 
 
 <h2 id="Setup">Initial setup</h2>
 
 <ol>
 <li>
-<p>Add the <code>scripts</code> directory of the Daikon <code>invariants</code>
-repository to your <code>PATH</code> (see instructions for <a
-href="http://groups.csail.mit.edu/pag/daikon/mit/#getting-daikon">getting
-Daikon</a> if you don't have access to a checkout).  Mike has a (usually)
-fresh checkout at <code>~mernst/research/invariants/scripts</code></p>
+<p>Add <code>plume-lib/bin</code> to your <code>PATH</code>.
+Mike has a (usually) up-to-date checkout at
+<code>~mernst/bin/src/plume-lib/bin</code></p>
 </li>
 
 <li>
