@@ -35,4 +35,19 @@ public class MethodInvocation {
         nonInterned.internedMethod();   // should emit error
     }
 
+  // Now, test method parameters
+  void internedCharacterParameter(@Interned Character a) {
+  }
+
+  void internedCharacterParametersClient() {
+    // TODO: auto-boxing from char to Character //:: (argument.type.incompatible)
+    internedCharacterParameter('ä');
+    // TODO: auto-boxing from char to Character //:: (argument.type.incompatible)
+    internedCharacterParameter('a');
+    //:: (argument.type.incompatible)
+    internedCharacterParameter(new Character('a'));
+    //:: (argument.type.incompatible)
+    internedCharacterParameter(Character.valueOf('a'));
+  }
+
 }
