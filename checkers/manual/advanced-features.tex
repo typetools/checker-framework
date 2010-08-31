@@ -14,7 +14,7 @@ Framework works, you can return to it.
 \subsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
 The Checker Framework fully supports
-qualified Java generic types (also known in the research literature as ``parametric
+type-qualified Java generic types (also known in the research literature as ``parametric
 polymorphism'').  Before running any checker, we recommend that you eliminate
 raw types from your code (e.g., your code should use \code{List<...>} as
 opposed to \code{List}).
@@ -101,12 +101,19 @@ Note that these types mean different things:
   class MyList2<@NonNull T> { ... }
 \end{Verbatim}
 
-In each case, only a non-null object could be placed in the list.  However,
-\code{null} could be extracted from an instance of \<MyList1>, whereas any
-element extracted from \<MyList2> is non-null.  The differences are more
+\noindent
+Consider the implementation of the list (in the ellipsis).  The
+implementation of \code{MyList2} may only place non-null objects in the
+list and may assume that retrieved elements are non-null.  The
+implementation of \code{MyList1} is similar in that it may only place
+non-null objects in the list, because it might be instantiated as, say,
+\code{MyList1<@NonNull Date>}.  When retrieving elements from the list,
+the implementation of \code{MyList1} must account for the fact that
+elements of \code{MyList1} may be null, because it might be instantiated
+as, say, \code{MyList1<@Nullable Date>}.
+The differences are more
 significant when the qualifier hierarchy is more complicated than just
 \<@Nullable> and \<@NonNull>.
-
 
 
 \paragraph{Defaults for bounds}
@@ -793,7 +800,7 @@ class DBObject {
 }
 \end{Verbatim}
 
-Here the call to \code{persistData()} invalidates the inferred nonnull type
+Here the call to \code{persistData()} invalidates the inferred non-null type
 of \code{updatedAt}.
 
 When methods do not modify any object state or have any identity side-effects
@@ -834,4 +841,4 @@ need arises.
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
 % LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
-% LocalWords:  QualifierDefaults nullable
+% LocalWords:  QualifierDefaults nullable lub persistData updatedAt
