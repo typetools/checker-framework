@@ -13,6 +13,7 @@ import urllib2
 import re
 import subprocess
 import os
+import pwd
 
 help_message = '''
 The help message goes here.
@@ -77,35 +78,28 @@ def check_command(command):
         raise AssertionError('command not found: %s' % command)
 
 DEFAULT_PATHS = (
-    '/homes/gws/mernst/research/invariants/scripts',
+#    '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
-    '/homes/gws/mernst/bin/share-plume',
+#    '/homes/gws/mernst/bin/share-plume',
     '/homes/gws/mernst/bin/Linux-i686',
     '/uns/bin',
     '.',
 )
 
-PERL_PATHS = (
-    '/homes/gws/mernst/bin/src/plume-lib/bin',
-    '/homes/gws/mernst/research/invariants/scripts',
-)
-
-def append_to_PATH(paths=DEFAULT_PATHS, perl_paths=PERL_PATHS):
+def append_to_PATH(paths=DEFAULT_PATHS):
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH
 
-    current_PERL = os.getenv('PERL5LIB')
-    if current_PERL:
-        new_PERL = current_PERL + ':' + ':'.join(perl_paths)
-    else:
-        new_PERL = ':'.join(perl_paths)
-    os.environ['PERL5LIB'] = new_PERL
-
 REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
+JSR308_LANGTOOLS = os.path.join(REPO_ROOT, '..', 'jsr308-langtools')
+# Is PLUME_LIB even necessary?
+PLUME_LIB = os.path.join(os.getenv('HOME'), 'plume-lib')
+# Do not include PLUME_LIB in PROJECT_ROOTS, because this script
+# commits to all repositories in PROJECT_ROOTS.
 PROJECT_ROOTS = (
     REPO_ROOT,
-    os.path.join(REPO_ROOT, 'jsr308-langtools'),
+    JSR308_LANGTOOLS,
 )
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
@@ -135,10 +129,12 @@ def file_prepend(path, text):
     f.write(contents)
     f.close()
 
-EDITOR = 'vim'
+EDITOR = os.getenv('EDITOR')
+if EDITOR == None:
+    raise Exception('EDITOR environment variable is not set')
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
 def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
-    raw_input("About to edit the Checker Framework changelog.  OK?")
+    raw_input("About to edit the Checker Framework changelog.  Press ENTER to continue.")
     if not file_contains(path, version):
         import datetime
         today = datetime.datetime.now().strftime("%d %b %Y")
@@ -146,17 +142,16 @@ def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
 
 ----------------------------------------------------------------------
 """ % (version, today))
-
     execute([EDITOR, path])
 
 def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
 
-LANGTOOLS_CHANGELOG = os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'changelog-jsr308.txt')
+LANGTOOLS_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
 def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
-    raw_input("About to edit the JSR308 langtools changelog.  OK?")
+    raw_input("About to edit the JSR308 langtools changelog.  Press ENTER to continue.")
     if not file_contains(path, version):
         import datetime
         today = datetime.datetime.now().strftime("%d %b %Y")
@@ -184,7 +179,7 @@ def make_release(version, real=False, sanitycheck=True):
 
 def checklinks(site_url=None):
     return execute('make -f %s checklinks' %
-        os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'),
+        os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile'),
         halt_if_fail=False)
 
 MAVEN_GROUP_ID = 'types.checkers'
@@ -212,7 +207,7 @@ def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
 def execute(command_args, halt_if_fail=True):
-    print("Executing: %s"% (command_args))
+    print("Executing: %s" % (command_args))
     import shlex
     if isinstance(command_args, str):
         arg = shlex.split(command_args)
@@ -220,7 +215,7 @@ def execute(command_args, halt_if_fail=True):
     else:
         r = subprocess.call(command_args)
     if halt_if_fail and r:
-        raise Exception('Found an error: %s' % r)
+        raise Exception('Error %s while executing %s' % (r, command_args))
     return r
 
 def changelog_header(filename):
@@ -238,7 +233,9 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-USER = os.getlogin()
+# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
+# Another alternative is: USER = os.getenv('USER')
+USER = pwd.getpwuid(os.geteuid())[0]
 DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
 
 TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
@@ -295,20 +292,20 @@ def main(argv=None):
     checklinks(DRY_RUN_LINK)
 
     print("Pushed to %s" % DRY_RUN_LINK)
-    raw_input("Please check the site.  DONE?")
+    raw_input("Please check the site.  DONE?  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
     # Making the real release
     make_release(next_version, real=True)
 
-    # Make maven release
+    # Make Maven release
     mvn_deploy_jsr308_all(next_version)
     mvn_deploy_quals(next_version)
 
     checklinks(DEFAULT_SITE)
 
     print("Pushed to %s" % DEFAULT_SITE)
-    raw_input("Please check the site.  DONE?")
+    raw_input("Please check the site.  DONE?  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
     commit_and_push(next_version)
