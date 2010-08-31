@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>maven-plugin</packaging>
     <name>Checkers plugin</name>
-    <groupId>types.checkers</groupId>
+    <groupId>com.jolira.types.checkers</groupId>
     <artifactId>checkersplugin</artifactId>
     <version>0.1</version>
 
