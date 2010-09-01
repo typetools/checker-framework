@@ -18,12 +18,21 @@ Section~\ref{type-inference-tools}).
 
 \section{Javac Compiler\label{javac-installation}}
 
-If you use \code{javac} compiler form the command line, then you can use the
-Java 7 \code{javac} bundled with the Checker Framework.  The bundled
-\code{javac} recognizes type annotations, and type-annotations in
+If you use \code{javac} compiler from the command line, then you can use the
+Java 7 \code{javac} that is bundled with the Checker Framework.  The bundled
+\code{javac} recognizes type annotations, and annotations in
 comments (see Section~\ref{annotations-in-comments}).
+(Eventually, you will be able to use any Java 7 compiler, but Oracle has
+been slow to incorporate all the patches, so the bundled \code{javac} is
+superior, for the purpose of pluggable type-checking.)
 
-This section describes how you can install and use the bundled \code{javac}:
+This section describes how you can install and use the bundled
+\code{javac}, using either Unix/Linux/MacOS (see
+Section~\ref{unix-installation}) or Windows (see
+Section~\ref{windows-installation}).
+The instructions are identical to those of Section~\label{installation},
+but are given as commands that you can cut and paste into your command shell.
+
 
 %%% *****
 %%% UPDATE
@@ -344,7 +353,7 @@ have to declared as a dependency:
     <dependencies>
         <!-- annotations for the standard checkers: nullness, interning, mutability -->
         <dependency>
-            <groupId>types.checkers</groupId>
+            <groupId>com.jolira.types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
             <version>1.0.6</version>
         </dependency>
@@ -359,7 +368,7 @@ have to declared as a dependency:
     <build>
         <plugins>
             <plugin>
-                <groupId>types.checkers</groupId>
+                <groupId>com.jolira.types.checkers</groupId>
                 <artifactId>checkersplugin</artifactId>
                 <version>0.1</version>
                 <executions>
@@ -451,20 +460,23 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\paragraph{Eclipse plug-in}
+\paragraph{Eclipse plug-in for the Checker Framework}
 
-There are two choices for Eclipse support for type annotations.
+The Checker Plugin is an Eclipse plugin that enables the use of the Checker
+Framework.
+Its website (\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}).
+The website contains instructions for installing and using the plugin.
+% The plugin has been substantially improved through a Google Summer of Code 2010 project
+% and supports all checkers that are distributed with the Checker Framework.
 
-A prototype Eclipse plug-in for running a checker is available at
-\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}.
-The website contains instructions for installing and using the plug-in.
-The plug-in is
-experimental --- some people have used it successfully, and others have had
-trouble.
-% (and we have fixed all bugs that have been reported so far).
+\paragraph{Eclipse plug-in for Type Annotations}
 
-Another prototype version of Type Annotations support for Eclipse is
-available from the Eclipse project.
+A prototype version of Type Annotations support for Eclipse is
+available from the Eclipse project.  The goal is to enable full support for
+writing
+type annotations outside of comments.  You do not need this to run the
+Checker Framework, whether or not you write your type annotations in comments.
+
 % Username/password is necessary according to Jon McCord, 5/23/2010
 (Update:  this apparently needs a username and password, so it may not be
 publicly available.)

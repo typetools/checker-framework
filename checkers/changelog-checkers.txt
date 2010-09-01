@@ -1,3 +1,23 @@
+----------------------------------------------------------------------
+Version 1.1.1,
+
+Eclipse support:
+  Removed the obsolete Eclipse plug-in from repository.  The new one uses a
+  different repository
+  (http://code.google.com/a/eclipselabs.org/p/checker-plugin/) but a user
+  obtains it from the same URL as before:
+  http://types.cs.washington.edu/checker-framework/eclipse/
+
+Property Key Checker:
+  The property key checker allows multiple resource bundles and the
+  simultaneous use of both resource bundles and property files.
+
+Javari Checker:
+  Added Javari stub classes for more JDK classes.
+
+Many documentation improvements and minor bugfixes.
+
+----------------------------------------------------------------------
 Version 1.1.0b, 16 Jun 2010
 
 Fixed a bug related to runing binary release in JDK 6
