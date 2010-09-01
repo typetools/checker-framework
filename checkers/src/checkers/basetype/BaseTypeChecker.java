@@ -172,6 +172,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 continue;
             }
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
+            assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
                 // polymorphic qualifiers don't need to declared their supertypes
