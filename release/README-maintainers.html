@@ -110,6 +110,56 @@ testing site:</p>
 
 <h2 id="Release">Making a release</h2>
 
+<ol>
+
+<li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
+<tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
+what has changed in this version.  (Hopefully, this has already been done by
+each person who made a recent change.)
+The changelogs should focus on user-visible changes, or very significant
+implementation changes that may affect users.
+</p>
+
+<p>
+To double-check that the changelogs are adequate, run the following
+commands, and read the files in <tt>~/tmp</tt> that they create:
+
+<p>
+Determine the revision number for the previous release (TODO:  we should
+tag releases instead) by examining the output of
+</p>
+<pre>
+  (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
+  (cd $anno/jsr308-langtools; hg log /doc/changelog-jsr308.txt)
+</pre>
+<p>
+and setting environment variables accordingly:
+</p>
+<pre>
+  export CF_PREV_REVISION=463
+  export JL_PREV_REVISION=1059
+</pre>
+
+<pre>
+    # Diff the manuals against the previous versions:
+    cd $anno/checker-framework/checkers/manual
+    hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
+    cd $anno/jsr308-langtools
+    hg diff -w -r$JL_PREV_REVISION README-jsr308.html > ~/tmp/langtools-manual-diff
+
+    # Use the version control logs since the last release:
+    # In Emacs, it's useful to do:  (delete-matching-paragraphs "automated merge with " nil nil t)
+    cd $anno/checker-framework
+    hg log -v -r$CF_PREV_REVISION:tip > ~/tmp/checkers-log
+    cd $anno/jsr308-langtools
+    hg log -r$JL_PREV_REVISION:tip > ~/tmp/langtools-log
+    hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
+</pre>
+
+<p>
+OLDER:
+</p>
+
 <p>
 Update file
 <tt>checker-framework/checkers/changelog-checkers.txt</tt>.
@@ -132,11 +182,9 @@ with the proper date substituted.
 [TODO: should use tags in the command instead.]
 </p>
 
-<p>Tag the release, for example [TODO: this should be automated.  TODO: Do
-  this *after* making the release, maybe?]:
-</p>
-<pre>hg tag 1.1.1</pre>
+</li>
 
+<li>
 <p>In <tt>checker-framework/release</tt>, execute:</p>
 
 <pre>
@@ -145,7 +193,7 @@ with the proper date substituted.
 </pre>
 
 <p>
-And follow the instructions it provides, and you are done!
+and follow the instructions it provides.
 </p>
 
 <p>
@@ -154,7 +202,7 @@ If you are running on a system without access to the
 can do:
 </p>
 <pre>
-scp -r jsr308test mernst@godwit.cs.washington.edu:./www/
+(cd $HOME/www; scp -r jsr308test mernst@godwit.cs.washington.edu:./www/)
 </pre>
 <p>
 (which puts the Checker Framework distribution at
@@ -179,6 +227,16 @@ fails to check for broken links.)
 TODO: make it easier to override Ant environment variables from the python
 script.
 </p>
+</li>
+
+<li>
+<p>Tag the release, for example [TODO: this should be automated.  TODO: Do
+  this *after* making the release, maybe?]:
+</p>
+<pre>hg tag 1.1.1</pre>
+</li>
+
+</ol>
 
 
 <h2 id="Release-Manual">Making a manual release</h2>
