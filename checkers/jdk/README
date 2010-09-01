@@ -11,8 +11,8 @@ different versions of the JDK.
 
 If you need stub files for additional library classes -- in the JDK or another
 library -- those can be generated using the StubGenerator tool along with some
-manual annotating. The "Annotating libraries" section of the manual describes
+manual annotating.  The "Annotating libraries" chapter of the manual describes
 this process as well.
 
-If you do generate new stub files please share them with us via email at
+If you do create new stub files please share them with us via email at
 checker-framework-dev@googlegroups.com.  Thanks!
