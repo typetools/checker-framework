@@ -148,6 +148,38 @@ with the proper date substituted.
 And follow the instructions it provides, and you are done!
 </p>
 
+<p>
+If you are running on a system without access to the
+<tt>/cse/www2/types</tt> directory, then when the sanity check fails, you
+can do:
+</p>
+<pre>
+scp -r jsr308test mernst@godwit.cs.washington.edu:./www/
+</pre>
+<p>
+(which puts the Checker Framework distribution at
+http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/current/checkers-manual.html),
+and then run a <em>second</em> time with
+</p>
+<pre>
+    python -m release -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1
+</pre>
+<p>
+(It would be possible to just run the sanitycheck target directly:
+</p>
+<pre>
+ant -f release.xml -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1 -Drelease.ver=1.1.1 sanitycheck
+</pre>
+<p>
+but that
+fails to check for broken links.)
+</p>
+
+<p>
+TODO: make it easier to override Ant environment variables from the python
+script.
+</p>
+
 
 <h2 id="Release-Manual">Making a manual release</h2>
 
