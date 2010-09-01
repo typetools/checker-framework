@@ -13,7 +13,7 @@ import checkers.util.AggregateChecker;
  * The OIGJ language is a Java language extension that expresses immutability
  * and ownership constraints.
  *
- * @checker.framework.manual #oigj-checker OIGJ Checker
+ * <!-- TODO: reinstate once manual chapter exists: @checker.framework.manual #oigj-checker OIGJ Checker -->
  *
  */
 public class OIGJChecker extends AggregateChecker {

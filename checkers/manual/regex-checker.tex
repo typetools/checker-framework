@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Regex checker\label{regex-checker}}
+\chapter{Regex checker for regular expression syntax\label{regex-checker}}
 
 The Regex Checker prevents, at compile-time, use of syntactically invalid
 regular expressions.
@@ -17,6 +17,9 @@ language that is not supported by Java (see section ``Comparison to Perl
 Ordinarily, the programmer does not learn of these errors until run time.
 The Regex checker warns about these problems at compile time.
 
+To run the Regex Checker, supply the \code{-processor
+  checkers.regex.RegexChecker} command-line option to javac.
+
 
 \section{Regex annotations\label{regex-annotations}}
 
@@ -26,15 +29,6 @@ expression \code{String}s.
 
 The checker implicitly adds the \code{Regex} qualifier to any
 \code{String} literal that is a valid regex.
-
-
-\section{Running the Regex Checker\label{regex-running}}
-
-The Regex Checker can be invoked by running the following command:
-
-\begin{Verbatim}
-  javac -processor checkers.regex.RegexChecker MyFile.java ...
-\end{Verbatim}
 
 
 % LocalWords:  Regex regex quals
