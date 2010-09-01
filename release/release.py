@@ -13,6 +13,7 @@ import urllib2
 import re
 import subprocess
 import os
+import pwd
 
 help_message = '''
 The help message goes here.
@@ -62,13 +63,12 @@ def increment_version(version):
         parts[0] += 1
     return ".".join([str(x) for x in parts])
 
-def site_copy():
-    execute('ant -f release.xml site-copy')
+def site_copy(ant_args):
+    execute("ant -f release.xml %s site-copy" % ant_args)
 
-def site_copy_if_needed():
-    dry_path = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
-    if not os.path.exists(dry_path):
-        return site_copy()
+def site_copy_if_needed(ant_args):
+    if not os.path.exists(DRY_PATH):
+        return site_copy(ant_args)
     return True
 
 def check_command(command):
@@ -77,35 +77,28 @@ def check_command(command):
         raise AssertionError('command not found: %s' % command)
 
 DEFAULT_PATHS = (
-    '/homes/gws/mernst/research/invariants/scripts',
+#    '/homes/gws/mernst/research/invariants/scripts',
     '/homes/gws/mernst/bin/share',
-    '/homes/gws/mernst/bin/share-plume',
+#    '/homes/gws/mernst/bin/share-plume',
     '/homes/gws/mernst/bin/Linux-i686',
     '/uns/bin',
     '.',
 )
 
-PERL_PATHS = (
-    '/homes/gws/mernst/bin/src/plume-lib/bin',
-    '/homes/gws/mernst/research/invariants/scripts',
-)
-
-def append_to_PATH(paths=DEFAULT_PATHS, perl_paths=PERL_PATHS):
+def append_to_PATH(paths=DEFAULT_PATHS):
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH
 
-    current_PERL = os.getenv('PERL5LIB')
-    if current_PERL:
-        new_PERL = current_PERL + ':' + ':'.join(perl_paths)
-    else:
-        new_PERL = ':'.join(perl_paths)
-    os.environ['PERL5LIB'] = new_PERL
-
 REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
+JSR308_LANGTOOLS = os.path.join(REPO_ROOT, '..', 'jsr308-langtools')
+# Is PLUME_LIB even necessary?
+PLUME_LIB = os.path.join(os.getenv('HOME'), 'plume-lib')
+# Do not include PLUME_LIB in PROJECT_ROOTS, because this script
+# commits to all repositories in PROJECT_ROOTS.
 PROJECT_ROOTS = (
     REPO_ROOT,
-    os.path.join(REPO_ROOT, 'jsr308-langtools'),
+    JSR308_LANGTOOLS,
 )
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
@@ -135,32 +128,35 @@ def file_prepend(path, text):
     f.write(contents)
     f.close()
 
-EDITOR = 'vim'
+EDITOR = os.getenv('EDITOR')
+if EDITOR == None:
+    raise Exception('EDITOR environment variable is not set')
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
 def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
-    raw_input("About to edit the Checker Framework changelog.  OK?")
-    if not file_contains(path, version):
-        import datetime
-        today = datetime.datetime.now().strftime("%d %b %Y")
-        file_prepend(path,"""Version %s, %s
+    edit = raw_input("Edit the Checker Framework changelog? [Y/n] ")
+    if not (edit == "n"):
+        if not file_contains(path, version):
+            import datetime
+            today = datetime.datetime.now().strftime("%d %b %Y")
+            file_prepend(path,"""Version %s, %s
 
 ----------------------------------------------------------------------
 """ % (version, today))
-
     execute([EDITOR, path])
 
 def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
 
-LANGTOOLS_CHANGELOG = os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'changelog-jsr308.txt')
+LANGTOOLS_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
 def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
-    raw_input("About to edit the JSR308 langtools changelog.  OK?")
-    if not file_contains(path, version):
-        import datetime
-        today = datetime.datetime.now().strftime("%d %b %Y")
-        file_prepend(path, """Version %s, %s
+    edit = raw_input("Edit the JSR308 langtools changelog? [Y/n] ")
+    if not (edit == "n"):
+        if not file_contains(path, version):
+            import datetime
+            today = datetime.datetime.now().strftime("%d %b %Y")
+            file_prepend(path, """Version %s, %s
 
 Base build
   Updated to OpenJDK langtools build b%s
@@ -168,15 +164,16 @@ Base build
 ----------------------------------------------------------------------
 """ % (version, today, latest_jdk))
 
-    execute([EDITOR, path])
+        execute([EDITOR, path])
 
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
     return changelog_header(file)
 
-def make_release(version, real=False, sanitycheck=True):
-    command = 'ant -f release.xml %s -Drelease.ver=%s clean web %s' % (
+def make_release(version, ant_args, real=False, sanitycheck=True):
+    command = 'ant -f release.xml %s -Drelease.ver=%s %s clean web %s' % (
         '-Drelease.is.real=true' if real else '',
         version,
+        ant_args,
         'sanitycheck' if sanitycheck else '',
     )
     print("Actually making the release")
@@ -184,7 +181,7 @@ def make_release(version, real=False, sanitycheck=True):
 
 def checklinks(site_url=None):
     return execute('make -f %s checklinks' %
-        os.path.join(REPO_ROOT, 'jsr308-langtools', 'doc', 'Makefile'),
+        os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile'),
         halt_if_fail=False)
 
 MAVEN_GROUP_ID = 'types.checkers'
@@ -212,7 +209,7 @@ def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
 def execute(command_args, halt_if_fail=True):
-    print("Executing: %s"% (command_args))
+    print("Executing: %s" % (command_args))
     import shlex
     if isinstance(command_args, str):
         arg = shlex.split(command_args)
@@ -220,7 +217,7 @@ def execute(command_args, halt_if_fail=True):
     else:
         r = subprocess.call(command_args)
     if halt_if_fail and r:
-        raise Exception('Found an error: %s' % r)
+        raise Exception('Error %s while executing %s' % (r, command_args))
     return r
 
 def changelog_header(filename):
@@ -238,8 +235,14 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-USER = os.getlogin()
-DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
+## Define DRY_RUN_LINK (All this is not used, I think; I need to pass in -Dsanitycheck.dry.url=... which is similar but independently defined.)
+# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
+# Another alternative is: USER = os.getenv('USER')
+USER = pwd.getpwuid(os.geteuid())[0]
+DRY_RUN_LINK_HTTP = "http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/" % USER
+DRY_PATH = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
+DRY_RUN_LINK_FILE = "file://%s/jsr308/" % DRY_PATH
+DRY_RUN_LINK = DRY_RUN_LINK_HTTP
 
 TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 def format_email(version, checkers_header=None, langtools_header=None, to=TO):
@@ -270,7 +273,7 @@ Changes for Type Annotations Compiler
     """ % (to, version, checkers_header, langtools_header,)
     return template
 
-def main(argv=None):
+def main(argv):
     append_to_PATH()
     print("Making a new release of the Checker Framework!")
 
@@ -290,25 +293,28 @@ def main(argv=None):
     edit_langtools_changelog(version=next_version)
 
     # Making the first release
-    site_copy_if_needed()
-    make_release(next_version)
+    ant_args = ""
+    for arg in argv[1:]:      # everything but the first element
+        ant_args = ant_args + " '" + arg + "'"
+    site_copy_if_needed(ant_args)
+    make_release(next_version, ant_args)
     checklinks(DRY_RUN_LINK)
 
     print("Pushed to %s" % DRY_RUN_LINK)
-    raw_input("Please check the site.  DONE?")
+    raw_input("Please check the site.  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
     # Making the real release
-    make_release(next_version, real=True)
+    make_release(next_version, argv, real=True)
 
-    # Make maven release
+    # Make Maven release
     mvn_deploy_jsr308_all(next_version)
     mvn_deploy_quals(next_version)
 
     checklinks(DEFAULT_SITE)
 
     print("Pushed to %s" % DEFAULT_SITE)
-    raw_input("Please check the site.  DONE?")
+    raw_input("Please check the site.  DONE?  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
     commit_and_push(next_version)
@@ -317,6 +323,6 @@ def main(argv=None):
     print("Here is an email template:")
     print format_email(next_version)
 
+# The entry point to the Python script.
 if __name__ == "__main__":
-    sys.exit(main())
-
+    sys.exit(main(sys.argv))
