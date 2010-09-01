@@ -63,13 +63,12 @@ def increment_version(version):
         parts[0] += 1
     return ".".join([str(x) for x in parts])
 
-def site_copy():
-    execute('ant -f release.xml site-copy')
+def site_copy(ant_args):
+    execute("ant -f release.xml %s site-copy" % ant_args)
 
-def site_copy_if_needed():
-    dry_path = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
-    if not os.path.exists(dry_path):
-        return site_copy()
+def site_copy_if_needed(ant_args):
+    if not os.path.exists(DRY_PATH):
+        return site_copy(ant_args)
     return True
 
 def check_command(command):
@@ -168,10 +167,11 @@ Base build
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
     return changelog_header(file)
 
-def make_release(version, real=False, sanitycheck=True):
-    command = 'ant -f release.xml %s -Drelease.ver=%s clean web %s' % (
+def make_release(version, ant_args, real=False, sanitycheck=True):
+    command = 'ant -f release.xml %s -Drelease.ver=%s %s clean web %s' % (
         '-Drelease.is.real=true' if real else '',
         version,
+        ant_args,
         'sanitycheck' if sanitycheck else '',
     )
     print("Actually making the release")
@@ -233,10 +233,14 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+## Define DRY_RUN_LINK (All this is not used, I think; I need to pass in -Dsanitycheck.dry.url=... which is similar but independently defined.)
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
 # Another alternative is: USER = os.getenv('USER')
 USER = pwd.getpwuid(os.geteuid())[0]
-DRY_RUN_LINK = 'http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/' % USER
+DRY_RUN_LINK_HTTP = "http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/" % USER
+DRY_PATH = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
+DRY_RUN_LINK_FILE = "file://%s/jsr308/" % DRY_PATH
+DRY_RUN_LINK = DRY_RUN_LINK_HTTP
 
 TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 def format_email(version, checkers_header=None, langtools_header=None, to=TO):
@@ -267,7 +271,7 @@ Changes for Type Annotations Compiler
     """ % (to, version, checkers_header, langtools_header,)
     return template
 
-def main(argv=None):
+def main(argv):
     append_to_PATH()
     print("Making a new release of the Checker Framework!")
 
@@ -287,16 +291,19 @@ def main(argv=None):
     edit_langtools_changelog(version=next_version)
 
     # Making the first release
-    site_copy_if_needed()
-    make_release(next_version)
+    ant_args = ""
+    for arg in argv[1:]:      # everything but the first element
+        ant_args = ant_args + " '" + arg + "'"
+    site_copy_if_needed(ant_args)
+    make_release(next_version, ant_args)
     checklinks(DRY_RUN_LINK)
 
     print("Pushed to %s" % DRY_RUN_LINK)
-    raw_input("Please check the site.  DONE?  Press ENTER to continue.")
+    raw_input("Please check the site.  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
     # Making the real release
-    make_release(next_version, real=True)
+    make_release(next_version, argv, real=True)
 
     # Make Maven release
     mvn_deploy_jsr308_all(next_version)
@@ -314,6 +321,6 @@ def main(argv=None):
     print("Here is an email template:")
     print format_email(next_version)
 
+# The entry point to the Python script.
 if __name__ == "__main__":
-    sys.exit(main())
-
+    sys.exit(main(sys.argv))
