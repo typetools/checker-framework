@@ -228,6 +228,9 @@
         <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
             match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
+        <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
+            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+
     </target>
 
     <target name="-update-versions-dev" depends="-prep-checkdev"
