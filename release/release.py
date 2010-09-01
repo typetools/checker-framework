@@ -133,11 +133,12 @@ if EDITOR == None:
     raise Exception('EDITOR environment variable is not set')
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
 def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
-    raw_input("About to edit the Checker Framework changelog.  Press ENTER to continue.")
-    if not file_contains(path, version):
-        import datetime
-        today = datetime.datetime.now().strftime("%d %b %Y")
-        file_prepend(path,"""Version %s, %s
+    edit = raw_input("Edit the Checker Framework changelog? [Y/n] ")
+    if not (edit == "n"):
+        if not file_contains(path, version):
+            import datetime
+            today = datetime.datetime.now().strftime("%d %b %Y")
+            file_prepend(path,"""Version %s, %s
 
 ----------------------------------------------------------------------
 """ % (version, today))
@@ -150,11 +151,12 @@ LANGTOOLS_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.tx
 def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
-    raw_input("About to edit the JSR308 langtools changelog.  Press ENTER to continue.")
-    if not file_contains(path, version):
-        import datetime
-        today = datetime.datetime.now().strftime("%d %b %Y")
-        file_prepend(path, """Version %s, %s
+    edit = raw_input("Edit the JSR308 langtools changelog? [Y/n] ")
+    if not (edit == "n"):
+        if not file_contains(path, version):
+            import datetime
+            today = datetime.datetime.now().strftime("%d %b %Y")
+            file_prepend(path, """Version %s, %s
 
 Base build
   Updated to OpenJDK langtools build b%s
@@ -162,7 +164,7 @@ Base build
 ----------------------------------------------------------------------
 """ % (version, today, latest_jdk))
 
-    execute([EDITOR, path])
+        execute([EDITOR, path])
 
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
     return changelog_header(file)
