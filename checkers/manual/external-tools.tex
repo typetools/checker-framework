@@ -18,12 +18,21 @@ Section~\ref{type-inference-tools}).
 
 \section{Javac Compiler\label{javac-installation}}
 
-If you use \code{javac} compiler form the command line, then you can use the
-Java 7 \code{javac} bundled with the Checker Framework.  The bundled
-\code{javac} recognizes type annotations, and type-annotations in
+If you use \code{javac} compiler from the command line, then you can use the
+Java 7 \code{javac} that is bundled with the Checker Framework.  The bundled
+\code{javac} recognizes type annotations, and annotations in
 comments (see Section~\ref{annotations-in-comments}).
+(Eventually, you will be able to use any Java 7 compiler, but Oracle has
+been slow to incorporate all the patches, so the bundled \code{javac} is
+superior, for the purpose of pluggable type-checking.)
 
-This section describes how you can install and use the bundled \code{javac}:
+This section describes how you can install and use the bundled
+\code{javac}, using either Unix/Linux/MacOS (see
+Section~\ref{unix-installation}) or Windows (see
+Section~\ref{windows-installation}).
+The instructions are identical to those of Section~\label{installation},
+but are given as commands that you can cut and paste into your command shell.
+
 
 %%% *****
 %%% UPDATE

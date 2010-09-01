@@ -136,11 +136,15 @@ or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
-The installation process is simple!  Just Download the latest Checker
+The installation process is simple!  Just download the Checker
 Framework distribution
 (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-and unzip it to create \code{checkers} folder.  You can put the it anywhere
-convenient and memorable.
+and unzip it to create a \code{checkers} folder.
+
+(If you wish to have a set of commands that you can copy and paste into
+your command shell, see Section~\ref{javac-installation}.)
+
+% You can put it anywhere convenient and memorable.
 
 To ensure that it was installed properly, run the following command:
 
@@ -161,8 +165,7 @@ The download includes an updated version of the javac compiler, called
 the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
 shipped with Java 7.  In order to use the updated compiler when you type
 \code{javac}, add the directory \code{.../checkers/binary} to the
-beginning of your path.  Detailed installation information are found
-in~\ref{javac-installation}.
+beginning of your path.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
