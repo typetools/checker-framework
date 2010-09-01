@@ -1028,9 +1028,12 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedTypeMirror component;
             while (true) {
                 component = array.getComponentType();
-                sb.append(' ');
-                sb.append(formatAnnotationString(array.getAnnotations()).trim());
-                sb.append(" []");
+				if (array.getAnnotations().size() > 0) {
+					sb.append(' ');
+					sb.append(formatAnnotationString(array.getAnnotations()).trim());
+					sb.append(' ');
+				}
+                sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
                     sb.insert(0, component.getUnderlyingType().toString());
                     break;
