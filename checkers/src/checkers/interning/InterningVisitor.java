@@ -263,7 +263,61 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
                 || (param.equals(lhs) && thisElt.equals(rhs));
-        }
+            
+        } 
+        // looking for ((a == b || a.equals(b))
+    	boolean okay = Heuristics.Matchers.withIn(
+                Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
+
+        			public Boolean visitIf(IfTree tree, Void p) {
+        				ExpressionTree condition = tree.getCondition();
+        				
+        				if (condition.getKind() != Tree.Kind.OR) {
+        					return false;
+        				}
+        				else visit(condition, p);   //???Does this make sense?
+        			}
+
+
+        			public Boolean visitBinary(BinaryTree tree, Void p){
+        				ExpressionTree leftTree = tree.getLeftOperand();   //looking for a==b
+        				ExpressionTree rightTree = tree.getRightOperand(); //looking for a.equals(b) or b.equals(a)
+        				if (leftTree != node){  /*node is the BinaryTree node being inspected. .equals better here?
+        										 Or do I need to break it into the two IdentifierTrees and compare the
+        										 individual components?? */
+        					return false;
+        				}
+        				if(rightTree.getKind() != Tree.Kind.METHOD_INVOCATION){
+        					return false;
+        				} else {
+        					rightTree = (MethodInvocationTree) rightTree; 
+        				}
+        				
+        				/*Having dificulty changing this from pseudo-code to real code.
+        				 * How do I extract whether or not it calls .equals, and get the
+        				 * elements from that to compare? 
+        				 * 
+        				 * MethodInvocationTree has:
+        				 * getTypeArguments()
+        				 * getMethodSelect()
+        				 * getArguments()
+        				 * 
+        				 * but no expanations...
+        				 * */
+        				
+        				if (!(rightTree call on .equals)) return false; 
+        				if (!((rightTree.a.equals(lhs) && rightTree.b.equals(rhs)) ||
+        					 ((rightTree.a.equals(rhs) && rightTree.b.equals(lhs))))) {
+        					return false;
+        				}
+        				
+        				return true;
+                	}  
+        })).match(getCurrentPath());
+                
+        if(okay){
+        	return true;
+        }       
 
         return false;
     }
