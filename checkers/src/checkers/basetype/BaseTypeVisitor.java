@@ -129,7 +129,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         	MethodSymbol ms = (MethodSymbol) ee;        
         	long mod = ms.flags();
         	
-            if ((mod & Flags.SYNTHETIC) != 0) {
+            if ((mod & Flags.SYNTHETIC) == 0) {
             	return true;
             }
         }
