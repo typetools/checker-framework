@@ -168,4 +168,7 @@ public class IGJTest extends CheckerTest {
     // currently failing
     // @Test public void testFailedTests() { test(); }
 
+    @Test public void testALTest1() {
+        test();
+    }
 }
