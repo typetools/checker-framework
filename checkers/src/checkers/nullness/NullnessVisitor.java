@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import checkers.basetype.*;
 import checkers.nullness.quals.LazyNonNull;
 import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.NonNullOnEntry;
 import checkers.nullness.quals.Nullable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -16,6 +17,13 @@ import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Names;
 
 /**
  * A type-checking visitor for the Nullness type system.
@@ -219,7 +227,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             } finally {
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", false)) {
-                        checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
+                        checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
                     }
                     // TODO: warn against uninitialized fields
                 }
@@ -236,7 +244,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
         Set<VariableElement> fields = getUninitializedFields(node);
         if (!fields.isEmpty()) {
-            checker.report(Result.warning("fields.uninitialized", fields), node);
+            checker.report(Result.failure("fields.uninitialized", fields), node);
         }
     }
 
