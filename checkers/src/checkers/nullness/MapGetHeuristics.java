@@ -264,6 +264,10 @@ import com.sun.source.util.TreePath;
         return type.getElement();
     }
 
+    /**
+     * Returns true if the given element is an invocation of the method, or
+     * of any method that overrides that one.
+     */
     private boolean isMethod(Tree tree, ExecutableElement method) {
         if (!(tree instanceof MethodInvocationTree))
             return false;
@@ -272,6 +276,10 @@ import com.sun.source.util.TreePath;
         return isMethod(invoked, method);
     }
 
+    /**
+     * Returns true if the given element is an invocation of the method, or
+     * of any method that overrides that one.
+     */
     private boolean isMethod(ExecutableElement questioned, ExecutableElement method) {
         return (questioned.equals(method)
                 || env.getElementUtils().overrides(questioned, method,
