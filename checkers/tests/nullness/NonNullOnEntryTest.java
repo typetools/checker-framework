@@ -24,8 +24,7 @@ class NonNullOnEntryTest {
 	private @Nullable Object field;
 
 	@NonNullOnEntry("field")
-	public void requiresNonNullField() {
-	}
+	public void requiresNonNullField() {}
 
 	public void clientFail(NonNullOnEntryTest arg) {
 		// XXX TODO FIXME:
@@ -35,8 +34,10 @@ class NonNullOnEntryTest {
 
 	public void clientOK(NonNullOnEntryTest arg) {
 		arg.field = new Object();
-		@NonNull Object o = arg.field;
-		arg.requiresNonNullField();
+		// note that the following line works
+		// @NonNull Object o = arg.field;
+		
+		arg.requiresNonNullField(); // OK, field is known to be non-null
 	}
 
 	// TODO: forbid the field in @NNOE to be less visible than the method
