@@ -216,8 +216,14 @@ public class Flow extends TreePathScanner<Void, Void> {
     public AnnotationMirror test(Tree tree) {
         while (tree.getKind() == Tree.Kind.ASSIGNMENT)
             tree = ((AssignmentTree)tree).getVariable();
-        if (!flowResults.containsKey(tree))
+        if (!flowResults.containsKey(tree)) {
+        	/*for (Tree el : flowResults.keySet()) {
+        		if (el.toString().equals(tree.toString())) {
+        			return flowResults.get(el);
+        		}
+        	}*/
             return null;
+        }
         // a hack needs to be fixed
         // always follow variable declarations
         AnnotationMirror flowResult = flowResults.get(tree);
