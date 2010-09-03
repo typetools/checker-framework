@@ -2,9 +2,12 @@ package checkers.nullness;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import checkers.basetype.*;
 import checkers.nullness.quals.LazyNonNull;
@@ -13,16 +16,21 @@ import checkers.nullness.quals.NonNullOnEntry;
 import checkers.nullness.quals.Nullable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 
 /**
@@ -64,7 +72,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         stringType = elements.getTypeElement("java.lang.String").asType();
     }
 
-    /** Case 1: Check for null dereferecing */
+    /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         if (!TreeUtils.isSelfAccess(node))
@@ -291,6 +299,71 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         return super.checkMethodInvocability(method, node);
     }
 
+    // WMD
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        ExecutableElement method = TreeUtils.elementFromUse(node);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			// System.err.println("NNExprs: " + nnExprs);
+			
+			JavacProcessingEnvironment jpe = (JavacProcessingEnvironment) checker.getProcessingEnvironment();
+			TreeMaker treemaker = TreeMaker.instance(jpe.getContext());
+
+			ExpressionTree recv = TreeUtils.getReceiverTree(node);
+			
+			if (recv==null) {
+				/*
+				Names names = Names.instance(jpe.getContext());
+				com.sun.tools.javac.util.Name th = names._this;
+				
+				ClassTree ct = TreeUtils.enclosingClass(atypeFactory.getPath(node));
+				Symbol syct = (Symbol) TreeUtils.elementFromDeclaration(ct);
+				syct.name = th;
+				
+				System.err.println("Class: " + syct);
+				
+				recv = treemaker.Ident(syct);
+				*/
+				System.err.println("Handle self call: " + node);
+		    	return super.visitMethodInvocation(node, p);
+			}
+			AnnotatedTypeMirror at = atypeFactory.getAnnotatedType(recv);
+			
+			if (!(at instanceof AnnotatedDeclaredType)) {
+				System.err.println("What's wrong with: " + at);
+		    	return super.visitMethodInvocation(node, p);
+			}
+			
+			Element elemrecv = ((AnnotatedDeclaredType)at).getUnderlyingType().asElement();
+			List<? extends Element> atels = ElementFilter.fieldsIn(elemrecv.getEnclosedElements());
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+
+			for (String field : fields) {
+				for (Element el : atels) {			
+					if (el.getSimpleName().toString().equals(field)) {
+						// The declared type does not depend on the receiver!
+						// AnnotatedTypeMirror var =
+						// atypeFactory.getAnnotatedType(el);
+
+						JCExpression fa = treemaker.Select(	(JCTree.JCExpression) recv, (VarSymbol) el);
+
+						System.err.println("Try this: " + fa);
+			        
+						AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(fa);
+						System.err.println("Try 1 gave: " + var);
+						
+						var = atypeFactory.fromExpression(fa);
+						System.err.println("Try 2 gave: " + var);
+					}
+				}
+			}
+		}
+
+    	return super.visitMethodInvocation(node, p);
+    }
+    
     /**
      * Issues a 'dereference.of.nullable' if the type is not of a
      * {@link NonNull} type.
