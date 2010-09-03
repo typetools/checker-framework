@@ -754,8 +754,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
-            		                      constructor.toString(), dt, constructor.getReceiverType()),
-            		       src);
+                    constructor.toString(), dt, constructor.getReceiverType()), src);
         }
         return b;
     }
