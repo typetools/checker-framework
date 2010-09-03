@@ -63,8 +63,8 @@ different shell, you may need to slightly adjust the commands.
   # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
   curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
   unzip checkers.zip
-  chmod +x checkers/binary/javac
-  checkers/binary/javac -version
+  chmod +x checker-framework/checkers/binary/javac
+  checker-framework/checkers/binary/javac -version
 \end{Verbatim}
 % unconfuse Emacs LaTeX mode: $
 
@@ -79,13 +79,13 @@ The output of the last command should be:
   Place the following commands in your \code{.bashrc} file:
 \begin{Verbatim}
   export JSR308=$HOME/jsr308
-  export PATH=$JSR308/checkers/binary:${PATH}
+  export PATH=$JSR308/checker-framework/checkers/binary:${PATH}
 \end{Verbatim}
 % unconfuse Emacs LaTeX mode: $
 
 % It is not necessary to add checkers.jar to your classpath, because the
 % shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+%   export CLASSPATH=$JSR308/checker-framework/checkers/checkers.jar:${CLASSPATH}
 
 Also execute them on the command line, or log out and back in.  Then,
 verify that the installation works.  From the command line, run:
@@ -193,7 +193,7 @@ This is a permanent change that only needs to be done once ever.
 
 % It is not necessary to add checkers.jar to your classpath, because the
 % shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checkers/checkers.jar:${CLASSPATH}
+%   export CLASSPATH=$JSR308/checker-framework/checkers/checkers.jar:${CLASSPATH}
 
 Now, verify that the installation works.  From the command line, run:
 
