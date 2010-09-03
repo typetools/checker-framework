@@ -347,15 +347,15 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 						// AnnotatedTypeMirror var =
 						// atypeFactory.getAnnotatedType(el);
 
-						JCExpression fa = treemaker.Select(	(JCTree.JCExpression) recv, (VarSymbol) el);
+						JCTree.JCExpression jcrecv = (JCTree.JCExpression) recv;
+						JCExpression fa = treemaker.at(jcrecv.pos).Select(jcrecv, (VarSymbol) el);
 
-						System.err.println("Try this: " + fa);
+						System.err.println("Tested field access: " + fa);
 			        
-						AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(fa);
-						System.err.println("Try 1 gave: " + var);
+						checkForNullability(fa, "nonnull.precondition.not.satisfied");
 						
-						var = atypeFactory.fromExpression(fa);
-						System.err.println("Try 2 gave: " + var);
+						AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(fa);
+						System.err.println("Inferred type: " + var);
 					}
 				}
 			}
