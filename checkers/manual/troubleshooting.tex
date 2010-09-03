@@ -302,7 +302,7 @@ Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
 Here is a command that works in the bash shell, for example:
 % Can someone give a simpler command?
 \begin{Verbatim}
-  export JAVA_HOME=$(dirname $(dirname $(readlink -f $(/usr/bin/which javac))))
+  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
 \item
 Compile the Type Annotations javac compiler and the javap tool:
