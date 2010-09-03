@@ -1,0 +1,179 @@
+<html> <body> 
+
+Data structures for handling suppression.  Here is how suppression
+works:
+
+<p>
+
+An invariant is suppressed if it is implied by another invariant.  A
+suppressed invariant is not checked as long as its suppressor is true.
+This saves time for checking long data trace files.  Not outputting
+suppressed invariants reduces output spam for obvious invariants.
+
+In general, the non printing of invariants can be classified into
+"static" and "dynamic" reasons.  A static reason is one that can be
+determined without looking at the dtrace file.  Suppression is a
+dynamic method.  Suppression is only for true invariants.  Suppression
+is different from other non printing methods because it is based on
+other invariants that can later become falsified.
+
+Suppression is NOT:
+
+<p>
+
+<ul>
+
+<li> The non-instantiation of invariants that are obvious in and of
+themselves.  This is instead done by a combination of static methods
+(e.g. A[i] is an element of A[]) and dynamic methods (LinearBinary
+finds out that it reduces to A==B, which is obvious).
+
+<li> The hiding of invariants during printing for various other
+reasons.  For example, some invariants are not printed because their
+VarInfos aren't interesting.  Suppression only works where one
+invariant logically implies another.
+
+<li> A mechanism for (efficiently) handling equality.
+daikon.PptSliceEquality and daikon.inv.Equality do this.  However,
+suppression is able to use Equality invariants for suppressing.
+
+</ul>
+
+<p>
+
+Invariants are suppressed by SuppressionLink's, each of which stores a
+suppressed invariant and a list of suppressors (since a conjunction of
+invariants may together suppress one other invariant).  The class that
+generates SuppressionLink objects is a SuppressionFactory.  There are
+many different kinds of SuppressionFactory's, one for each suppression
+rule we have.  Most SuppressionFactory's are attached to the
+invariant classes that they would suppress.
+
+<p>
+
+Suppression itself happens at the PptTopLevel.  Initially (or after
+some small set of samples are fed) a PptTopLevel iterates through its
+invariants and attempts to suppress them by its attemptSuppression()
+method, which asks the invariant's associated SuppressionFactory's to
+attempt suppression.  Each SuppressionFactory in turn generates
+SuppressionTemplates, which are lists of Invariant types and VarInfos
+that would be able to make a valid SuppressionLink.  The
+SuppressionFactory asks the potential suppressee's PptTopLevel (the
+same one as the one mentioned at the beginning of this paragraph) to
+fillSuppressionTemplate().  If a template is successfully filled, then
+the invariant is suppressed.  During filling, other PptTopLevels are
+accessed to attempt to fill the template.
+
+<p>
+
+During dtrace file reading, when a sample is fed, suppression works
+through PptTopLevel.add():
+
+<ul>
+
+<li> Make a set of PptSlice's called "viewsToCheck" that have to be
+given the sample.  Initially, the set is all the PptSlice's.
+
+<li> Check invariants in viewsToCheck by calling their add() method.
+Attempt suppression on any invariants that fall/flow down and are
+resurrected.  Also attempt suppression on any invariants in this ppt
+that weaken.
+
+<li> For any falsified or flowed invariants, take the invariants they
+were suppressing, and attempt to re-suppress them by creating a new
+SuppressionLink for them.  If an invariant is in the same PptTopLevel
+as its former suppressor, add its PptSlice to the set of slices to
+check.  A suppressed invariant could have been in a different slice
+from its suppressor, but it is not necessary to check such invariants
+because a) The slice can't be higher than this and b) If the slice is
+lower, it will be checked later in the data flow.
+
+<li> Repeat while there are slices to check.
+
+</ul>
+
+<p>
+
+The only interface for suppressing an invariant is through the
+attemptSuppression() method in PptTopLevel (i.e. don't try to suppress
+an Invariant any other way).  The only interface for finding
+invariants that are potential suppressors is through
+PptTopLevel.fillSuppressionTemplate().  SuppressionFactory's should
+not attempt to find invariants on their own, because
+fillSuppressionTemplate respects the global option of whether a
+suppressed invariant may suppress another invariant (and later,
+invariant cycle detection).  However, SuppressionLinks may be
+generated from different template searches (i.e. you don't have to
+only generate SuppressionLinks from one template, just make sure all
+the suppressors were found using fillSuppressionTemplate()).
+
+<p>
+
+How SuppressionFactory's are discovered by Daikon: every time an
+Invariant is checked for whether it is suppressed, its
+getSuppressionFactories() method is called.  Each Invariant subtype
+implements getSuppressionFactories() to return the relevant
+SuppressionFactory's.
+
+<p>
+
+Suppression obeys an "ordering" property or properties.  A suppressee
+is never checked, so it cannot fall down the Ppt partial order while
+suppressed.
+
+<p>
+
+Suppression also relies on the invariant uniqueness property.  That
+is, for a given PptSlice, there exists exactly one instance of an
+invariant subtype.  For example, if the SubSet invariant (which is
+non-commutative) applies to (A, B) and to (B, A) then there is one
+instance of SubSet of the PptSlice for A and B.  Note: different
+invariant subtypes can still overlap: if A < B, then there will be an
+IntLessThan for (A, B) and an IntGreaterThan for (B, A) - however the
+PptSlice may contain exactly one instance of IntLessThan.
+
+<p>
+
+Additionally, suppression relies on the fact that invariants at lower
+ppts are stronger than invariants in their parents.  If this isn't
+true, then the search in the ppt partial order for a potential
+suppressor becomes intractable.  This and the "uniqueness" property
+above are also necessary for the flow algorithm to be correct, since
+an Invariant does not flow to a lower PptSlice if an instance of its
+class already exists in the lower slice.
+
+<p>
+
+Note for Invariant cloning: SuppressionLinks are NEVER shared between
+two Invariants, even if they are clones.  A clone always starts with
+no suppressors or suppressees.
+
+<p>
+
+Suppression has two modes, set by Daikon.suppress_with_suppressed.
+When the flag is on, suppressed invariants can suppress
+others.  When off, only unsuppressed invariants can suppress.  The
+latter is safer, but yields a lower suppression rate.  The former is
+unsafe, because if there is a cyclic suppression pattern between
+invariants, then all of them could be suppressed, giving very little
+information to the user!  The ideal thing to do in the future is to
+use proper cycle detection between invariant dependencies: the
+invariants that remain from suppression must be able to logically get
+the invariants that are suppressed, in some order.  Maybe this is a
+way of saying "suppressors must have path cover".  Then again, if 
+all our SuppressionFactory's are statically proved to be acyclic,
+then we don't need to worry.
+
+<p>
+
+Users can chose whether to use suppression during checking by using
+the "--suppress" flag.  They can no longer choose whether to use
+suppression during printing, because this is now handled by a filter
+(i.e. let them use the GUI; it's on by default for printing).
+
+
+<p>
+
+
+</body>
+</html>
