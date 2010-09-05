@@ -1019,4 +1019,21 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+	public AnnotationMirror WMD_getFlowAnnotatedType(ExpressionTree fieldacc,
+			ExpressionTree recv,
+			Element field) {
+
+		for(Tree t: flowResults.keySet()) {
+			if( t.getKind()==Kind.MEMBER_SELECT) {
+				MemberSelectTree mst = (MemberSelectTree)t;
+
+				// TODO: this check does not succeed. If I relax the condition more, it matches, but shouldn't.
+				if( mst.getExpression().equals(recv) && mst.getIdentifier()==field.getSimpleName()) {
+					return flowResults.get(t);
+				}
+			}
+		}
+		return null;
+	}
+
 }
