@@ -134,6 +134,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawnessFactory = rawness.createFactory(root);
 
         flow = new NullnessFlow(checker, root, this);
+        flow.setDebug(System.err);
         flow.scan(root, null);
     }
 
@@ -505,5 +506,14 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         String qualName = elem.getQualifiedName().toString();
         return aliases == null ? null : aliases.get(qualName);
     }
+
+    // WMD: try to use the flow results!
+	public AnnotationMirror WMD_getFlowAnnotatedType(StatementTree ass,
+			ExpressionTree fieldacc,
+			ExpressionTree recv,
+			Element field) {
+		// ((NullnessFlow)flow).scan(ass, null);
+		return ((NullnessFlow)flow).WMD_getFlowAnnotatedType(fieldacc, recv, field);
+	}
 
 }
