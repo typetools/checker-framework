@@ -21,6 +21,7 @@ import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.comp.Resolve;
@@ -29,6 +30,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
@@ -340,8 +343,8 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
 
-			for (String field : fields) {
-				for (Element el : atels) {			
+			for (Element el : atels) {			
+				for (String field : fields) {
 					if (el.getSimpleName().toString().equals(field)) {
 						// The declared type does not depend on the receiver!
 						// AnnotatedTypeMirror var =
@@ -349,13 +352,32 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
 						JCTree.JCExpression jcrecv = (JCTree.JCExpression) recv;
 						JCExpression fa = treemaker.at(jcrecv.pos).Select(jcrecv, (VarSymbol) el);
-
-						System.err.println("Tested field access: " + fa);
-			        
-						checkForNullability(fa, "nonnull.precondition.not.satisfied");
+					
+						JCStatement ass = treemaker.Assignment((VarSymbol) el, fa);
+						/*
+						JCMethodDecl meth = (JCMethodDecl) TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+						// meth.body.stats.add(ass);
 						
-						AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(fa);
-						System.err.println("Inferred type: " + var);
+						meth.body.stats = meth.body.stats.prepend(ass);
+						System.out.println("Method: " + meth.body.stats);
+						
+						TreePath path = atypeFactory.getPath(fa);
+						if (path==null) {
+							System.err.println("Put it in!!");
+						} else {
+							System.out.println("Good treepath");
+						}
+						*/
+						System.err.println("Testing field access: " + fa);
+						
+						AnnotationMirror type = ((NullnessAnnotatedTypeFactory)atypeFactory).WMD_getFlowAnnotatedType(ass, fa, recv, el);
+						if (type==null) {
+							type = atypeFactory.fromElement(el).getAnnotations().iterator().next();
+						}
+						if (!type.equals(NONNULL)) {
+				            checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
+						}
+						// checkForNullability(fa, "nonnull.precondition.not.satisfied");
 					}
 				}
 			}
