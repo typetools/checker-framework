@@ -101,10 +101,10 @@
 
         <chmod file="${checkers}/binary/javac" perm="+x"/>
         <zip destfile="${tmp.ver.dir}/${checkers.zip}">
-            <zipfileset dir="${checkers}" prefix="checkers"
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
                 includesfile="release/checkers-includes"
                 excludesfile="release/checkers-excludes"/>
-            <zipfileset dir="${checkers}" prefix="checkers"
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
                 includes="**/javac" filemode="755"/>
         </zip>
     </target>
