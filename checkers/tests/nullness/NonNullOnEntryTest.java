@@ -35,7 +35,7 @@ class NonNullOnEntryTest {
 	public void clientOK(NonNullOnEntryTest arg) {
 		arg.field = new Object();
 		// note that the following line works
-		// @NonNull Object o = arg.field;
+		@NonNull Object o = arg.field;
 		
 		arg.requiresNonNullField(); // OK, field is known to be non-null
 	}
