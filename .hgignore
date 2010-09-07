@@ -24,6 +24,7 @@ checkers/jdk/**/*.class
 *.pyc
 
 # manual files
+bib
 doc
 manual.aux
 manual.blg

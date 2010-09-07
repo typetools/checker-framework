@@ -29,6 +29,7 @@ site.</p>
       <li><a href="#Requirements">Requirements</a></li>
       <li><a href="#Setup">Initial setup</a></li>
       <li><a href="#Release">Making a release</a></li>
+      <li><a href="#Release-Manual">Making a manual release</a></li>
     </ul>
 <!-- end toc -->
 
@@ -37,7 +38,7 @@ site.</p>
 <p>To make a release of the JSR 308 langtools and checkers, you need:</p>
 
 <ul>
-<li>JDK &ge; 6</li>
+<li>JDK 6 (JDK 7 seems to be a problem)</li>
 <li>Apache ant &ge; 1.6.5</li>
 <li>Access to <code>/cse/www2/types</code> directory on a cs.washington.edu machine</li>
 <li>Mercurial &ge; 1.2.1</li>
@@ -47,18 +48,16 @@ testing the release)</li>
 </ul>
 
 <p>You should have all of the above if you use a Washington CSE machine
-(e.g. <code>godwit</code>).</p>
+(e.g., <code>jicama</code> or <code>godwit</code>).</p>
 
 
 <h2 id="Setup">Initial setup</h2>
 
 <ol>
 <li>
-<p>Add the <code>scripts</code> directory of the Daikon <code>invariants</code>
-repository to your <code>PATH</code> (see instructions for <a
-href="http://groups.csail.mit.edu/pag/daikon/mit/#getting-daikon">getting
-Daikon</a> if you don't have access to a checkout).  Mike has a (usually)
-fresh checkout at <code>~mernst/research/invariants/scripts</code></p>
+<p>Add <code>plume-lib/bin</code> to your <code>PATH</code>.
+Mike has a (usually) up-to-date checkout at
+<code>~mernst/bin/src/plume-lib/bin</code></p>
 </li>
 
 <li>
@@ -111,13 +110,130 @@ testing site:</p>
 
 <h2 id="Release">Making a release</h2>
 
+<ol>
+
+<li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
+<tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
+what has changed in this version.  (Hopefully, this has already been done by
+each person who made a recent change.)
+The changelogs should focus on user-visible changes, or very significant
+implementation changes that may affect users.
+</p>
+
+<p>
+To double-check that the changelogs are adequate, run the following
+commands, and read the files in <tt>~/tmp</tt> that they create:
+
+<p>
+Determine the revision number for the previous release (TODO:  we should
+tag releases instead) by examining the output of
+</p>
+<pre>
+  (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
+  (cd $anno/jsr308-langtools; hg log /doc/changelog-jsr308.txt)
+</pre>
+<p>
+and setting environment variables accordingly:
+</p>
+<pre>
+  export CF_PREV_REVISION=463
+  export JL_PREV_REVISION=1059
+</pre>
+
+<pre>
+    # Diff the manuals against the previous versions:
+    cd $anno/checker-framework/checkers/manual
+    hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
+    cd $anno/jsr308-langtools
+    hg diff -w -r$JL_PREV_REVISION README-jsr308.html > ~/tmp/langtools-manual-diff
+
+    # Use the version control logs since the last release:
+    # In Emacs, it's useful to do:  (delete-matching-paragraphs "automated merge with " nil nil t)
+    cd $anno/checker-framework
+    hg log -v -r$CF_PREV_REVISION:tip > ~/tmp/checkers-log
+    cd $anno/jsr308-langtools
+    hg log -r$JL_PREV_REVISION:tip > ~/tmp/langtools-log
+    hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
+</pre>
+
+<p>
+OLDER:
+</p>
+
+<p>
+Update file
+<tt>checker-framework/checkers/changelog-checkers.txt</tt>.
+For example, you could run these commands:
+</p>
+<pre>hg log --style changelog --date '>2009-05-14'
+
+<!--  This doesn't work; it gives one diff per changeset, not a single diff.
+hg log -p -d '>2009-05-14' checker-framework/checkers/manual -->
+cd ..
+hg clone checker-framework checker-framework-last-release
+cd checker-framework-last-release
+hg update --date 2009-05-14
+cd ..
+diff -u -b -r --exclude=.hg --exclude=.hgtags --exclude='*.class' --exclude='*~' checker-framework-last-release/checkers/manual/ checker-framework/checkers/manual/
+rm -rf checker-framework-last-release
+</pre>
+<p>
+with the proper date substituted.
+[TODO: should use tags in the command instead.]
+</p>
+
+</li>
+
+<li>
 <p>In <tt>checker-framework/release</tt>, execute:</p>
 
 <pre>
+    export EDITOR=emacs
     python -m release
 </pre>
 
-And follow the instructions it provides, and you are done!
+<p>
+and follow the instructions it provides.
+</p>
+
+<p>
+If you are running on a system without access to the
+<tt>/cse/www2/types</tt> directory, then when the sanity check fails, you
+can do:
+</p>
+<pre>
+(cd $HOME/www; scp -r jsr308test mernst@godwit.cs.washington.edu:./www/)
+</pre>
+<p>
+(which puts the Checker Framework distribution at
+http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/current/checkers-manual.html),
+and then run a <em>second</em> time with
+</p>
+<pre>
+    python -m release -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1
+</pre>
+<p>
+(It would be possible to just run the sanitycheck target directly:
+</p>
+<pre>
+ant -f release.xml -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1 -Drelease.ver=1.1.1 sanitycheck
+</pre>
+<p>
+but that
+fails to check for broken links.)
+</p>
+
+</li>
+
+<li>
+<p>Tag the release, for example [TODO: this should be automated.  TODO: Do
+  this *after* making the release, maybe?]:
+</p>
+<pre>hg tag 1.1.1</pre>
+</li>
+
+</ol>
+
 
 <h2 id="Release-Manual">Making a manual release</h2>
 
@@ -161,7 +277,7 @@ To double-check that the changelogs are adequate, run the following
 commands, and read the files in <tt>~/tmp</tt> that they create:
 
 <p>
-Determine the revision number for the previous release (Yuck; we should
+Determine the revision number for the previous release (TODO:  we should
 tag releases instead) by examining the output of
 </p>
 <pre>
@@ -212,9 +328,9 @@ and setting environment variables accordingly:
 
 <pre>
     cd /scratch/$USER/jsr308-release/checker-framework
-    hg fetch    # eq to 'hg pull; hg up'
+    hg fetch
     cd ../jsr308-langtools
-    hg fetch    # eq to 'hg pull; hg up'
+    hg fetch
 </pre>
 
 <p>There shouldn't be any conflicts, since the release scripts shouldn't
