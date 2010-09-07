@@ -131,22 +131,26 @@ build the latest development version from source
 % Not "\ahrefurl" because it looks bad in the printed manual.
 \textbf{Requirement:}
 You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from
-\ahref{http://java.sun.com/javase/downloads/index.jsp}{Sun}
+\ahref{http://www.oracle.com/technetwork/java/javase/downloads/}{Oracle}
 or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
-The installation process is simple!  Just Download the latest Checker
+The installation process is simple!  Just download the Checker
 Framework distribution
 (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-and unzip it to create \code{checkers} folder.  You can put the it anywhere
-convenient and memorable.
+and unzip it to create a \code{checkers} folder.
+
+(If you wish to have a set of commands that you can copy and paste into
+your command shell, see Section~\ref{javac-installation}.)
+
+% You can put it anywhere convenient and memorable.
 
 To ensure that it was installed properly, run the following command:
 
 \begin{Verbatim}
-  java -jar /path/to/../checkers/binary/jsr308-all.jar -version  # in Linux
-  java -jar c:\Path\To\...\checkers\binary\jsr308-all.jar -version # in Windows
+  java -jar /path/to/../checker-framework/checkers/binary/jsr308-all.jar -version  # in Linux
+  java -jar c:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar -version # in Windows
 \end{Verbatim}
 
 The output should be:
@@ -160,9 +164,8 @@ That's all there is to it!  Now you are ready to start using the checkers.
 The download includes an updated version of the javac compiler, called
 the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
 shipped with Java 7.  In order to use the updated compiler when you type
-\code{javac}, add the directory \code{.../checkers/binary} to the
-beginning of your path.  Detailed installation information are found
-in~\ref{javac-installation}.
+\code{javac}, add the directory \code{.../checker-framework/checkers/binary} to the
+beginning of your path.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
@@ -294,8 +297,8 @@ This section is structured as follows:
 \begin{itemize}
 \item Section~\ref{writing-annotations}: How to write annotations
 \item Section~\ref{running}:  How to run a checker
-\item Section~\ref{tips-about-writing-annotations}: Tips about writing annotations
 \item Section~\ref{checker-guarantees}: What the checker guarantees
+\item Section~\ref{tips-about-writing-annotations}: Tips about writing annotations
 \end{itemize}
 
 Additional topics that apply to all checkers are covered later in the manual:
@@ -343,20 +346,47 @@ Section~\ref{annotations-in-comments}.
 
 \subsection{Distributing your annotated project\label{distributing}}
 
-If your code contains any annotations (outside of comments, see Section~\ref{annotations-in-comments}), or any import
-statements for the annotations, then your code has a dependency on the
-annotation declarations.  You also will need to provide the annotation
-declarations as well, if you decide to distribute your project.
+If your code contains annotations, then your code has a dependency on the
+annotation declarations.  People who want to compile or run your code may
+need declarations of the annotations on their classpath.
 
-For your convenience, inside the Checker Framework distribution \code{.zip} file
-is a jar file,
-\code{checkers-quals.jar}, that only contains the distributed qualifiers.
-You may include the jar file in your distribution.
+\begin{itemize}
+\item
+To perform pluggable type-checking, all of the Checker Framework (which
+also contains the annotation declarations) is needed.
+\item
+To compile the code:
+\begin{itemize}
+\item
+  If you wrote annotations in comments (see
+  Section~\ref{annotations-in-comments}) and used implicit import
+  statements (see Section~\ref{implicit-import-statements}), then the code
+  can be compiled by any Java compiler, without needing declarations of the
+  annotations.
+\item
+  Otherwise, compiling the code requires a declaration of the annotations.
+  These appear in the full Checker Framework.  Additionally, the Checker
+  Framework distribution \code{.zip} file contains a small jar file,
+  \code{checkers-quals.jar}, that only contains the definitions of the
+  distributed qualifiers, without any support for type-checking.
+\end{itemize}
+\item
+To run the code:
+\begin{itemize}
+\item
+  If you compiled the code without using the annotation declarations, then
+  no annotation declarations are needed.
+\item
+  If you compiled the code using the annotation declarations, then users
+  may need to have the annotation declarations on their classpath.
+\end{itemize}
+\end{itemize}
 
-Your clients need to have the annotations jar in the classpath when
-compiling your project.  When running it though, they most likely
-don't require the annotations declarations (unless the annotation
-classes are loaded via reflection, which would be unusual).
+A simple rule of thumb is as follows.  When distributing your source code,
+you may wish to include either the Checker Framework jar file or the
+\code{checkers-quals.jar} file.  When distributing compiled binaries, you
+may wish to compile them without using the annotations, or include the
+contents of \code{checkers-quals.jar} in your distribution.
 
 
 \section{Running a checker\label{running}}
@@ -569,6 +599,29 @@ There are some limitations to the guarantee.
 A checker can be useful in finding bugs or in verifying part of a
 program, even if the checker is unable to verify the correctness of an
 entire program.
+
+In order to avoid a flood of unhelpful warnings, many of the checkers avoid
+issuing the same worning multiple times.  For example, in this code:
+
+\begin{Verbatim}
+  @Nullable Object x = ...;
+  x.toString();                 // warning
+  x.toString();                 // no warning
+\end{Verbatim}
+
+\noindent
+In this case, the second call to \<toString> cannot possibly throw a null
+pointer warning --- \<x> is non-null if control flows to the second
+statement.
+In other cases, a checker avoids issuing later warnings with the same cause
+even when later code in a method might also fail.
+This does not
+affect the soundness guarantee, but a user may need to examine more
+warnings after fixing the first ones identified.  (More often, at least in
+our experience to date, a single fix corrects all the warnings.)
+
+% It might be worthwhile to permit a user to see every warning -- though I
+% would not advocate this setting for daily use.
 
 If you find that a checker fails to issue a warning that it
 should, then please report a bug (see Section~\ref{reporting-bugs}).
@@ -848,4 +901,4 @@ could otherwise be statically dispatched.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse
+% LocalWords:  callees Xmx unconfuse fenum propkey

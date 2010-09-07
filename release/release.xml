@@ -29,9 +29,9 @@
 
     <target name="-init-properties"
         depends="-init-properties-dry,-init-properties-real">
-	<property name="web.jsr308.root.dir" value="${web.root.dir}/../jsr308"/>
-	<property name="web.release.dir" value="${web.root.dir}/releases"/>
-	<property name="web.ver.dir" value="${web.release.dir}/${release.ver}"/>
+        <property name="web.jsr308.root.dir" value="${web.root.dir}/../jsr308"/>
+        <property name="web.release.dir" value="${web.root.dir}/releases"/>
+        <property name="web.ver.dir" value="${web.release.dir}/${release.ver}"/>
     </target>
 
     <target name="-prep-checkdiff">
@@ -90,8 +90,8 @@
               includes="dist/lib/javap.jar"
               fullpath="jsr308-langtools/binary/javap.jar"/>
 
-	    <zipfileset dir="${langtools}" prefix="jsr308-langtools"
-	      includes="dist/bin/**" filemode="755"/>
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+              includes="dist/bin/**" filemode="755"/>
         </zip>
     </target>
 
@@ -101,11 +101,11 @@
 
         <chmod file="${checkers}/binary/javac" perm="+x"/>
         <zip destfile="${tmp.ver.dir}/${checkers.zip}">
-            <zipfileset dir="${checkers}" prefix="checkers"
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
                 includesfile="release/checkers-includes"
                 excludesfile="release/checkers-excludes"/>
-	    <zipfileset dir="${checkers}" prefix="checkers"
-		includes="**/javac" filemode="755"/>
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
+                includes="**/javac" filemode="755"/>
         </zip>
     </target>
 
@@ -228,6 +228,9 @@
         <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
             match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
+        <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
+            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+
     </target>
 
     <target name="-update-versions-dev" depends="-prep-checkdev"
@@ -319,6 +322,10 @@
 
         <confirm message="
 The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"/>
+
+        <!-- Avoid including old files -->
+        <delete dir="${site-copy.to.dir}"/>
+        <mkdir dir="${site-copy.to.dir}"/>
 
         <copy todir="${site-copy.to.dir}" overwrite="true">
             <fileset dir="${site-copy.from.dir}"
