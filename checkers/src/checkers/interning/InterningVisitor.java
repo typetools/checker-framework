@@ -179,8 +179,8 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
-        if (overrides(enclosing, Comparator.class, "compare")) {
-            final boolean returnsZero =
+        if (overrides(enclosing, Comparator.class, "compare")) { 
+            final boolean returnsZero =                           
                 Heuristics.Matchers.withIn(
                         Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
 
@@ -221,7 +221,103 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
                 || (param.equals(lhs) && thisElt.equals(rhs));
-        }
+            
+        } else if (overrides(enclosing, Comparable.class, "compareTo")) {
+        	//Literally a copy-paste of existing code. 
+        	//Check for zero return value from Comparator case, checks 
+        	//against "this" from Object.equals case. I think it makes sense. 
+        	//returnsZero is gonna be a bit redundant, I think...
+        	
+        	final boolean returnsZero =                           
+                Heuristics.Matchers.withIn(
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
+
+                    @Override
+                    public Boolean visitIf(IfTree tree, Void p) {
+                        return visit(tree.getThenStatement(), p);
+                    }
+
+                    @Override
+                    public Boolean visitBlock(BlockTree tree, Void p) {
+                        if (tree.getStatements().size() > 0)
+                            return visit(tree.getStatements().get(0), p);
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitReturn(ReturnTree tree, Void p) {
+                        ExpressionTree expr = tree.getExpression();
+                        return (expr != null &&
+                                expr.getKind() == Tree.Kind.INT_LITERAL &&
+                                ((LiteralTree)expr).getValue().equals(0));
+                    }
+                })).match(getCurrentPath());
+        	
+        	if(!returnsZero) {
+        		return false;
+        	}
+        	
+        	assert enclosing.getParameters().size() == 1;
+            Element param = enclosing.getParameters().get(0);
+            Element thisElt = getThis(trees.getScope(getCurrentPath()));
+            assert thisElt != null;
+            return (thisElt.equals(lhs) && param.equals(rhs))
+                || (param.equals(lhs) && thisElt.equals(rhs));
+            
+        } 
+        // looking for ((a == b || a.equals(b))
+    	boolean okay = Heuristics.Matchers.withIn(
+                Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
+
+        			public Boolean visitIf(IfTree tree, Void p) {
+        				ExpressionTree condition = tree.getCondition();
+        				
+        				if (condition.getKind() != Tree.Kind.OR) {
+        					return false;
+        				}
+        				else visit(condition, p);   //???Does this make sense?
+        			}
+
+
+        			public Boolean visitBinary(BinaryTree tree, Void p){
+        				ExpressionTree leftTree = tree.getLeftOperand();   //looking for a==b
+        				ExpressionTree rightTree = tree.getRightOperand(); //looking for a.equals(b) or b.equals(a)
+        				if (leftTree != node){  /*node is the BinaryTree node being inspected. .equals better here?
+        										 Or do I need to break it into the two IdentifierTrees and compare the
+        										 individual components?? */
+        					return false;
+        				}
+        				if(rightTree.getKind() != Tree.Kind.METHOD_INVOCATION){
+        					return false;
+        				} else {
+        					rightTree = (MethodInvocationTree) rightTree; 
+        				}
+        				
+        				/*Having dificulty changing this from pseudo-code to real code.
+        				 * How do I extract whether or not it calls .equals, and get the
+        				 * elements from that to compare? 
+        				 * 
+        				 * MethodInvocationTree has:
+        				 * getTypeArguments()
+        				 * getMethodSelect()
+        				 * getArguments()
+        				 * 
+        				 * but no expanations...
+        				 * */
+        				
+        				if (!(rightTree call on .equals)) return false; 
+        				if (!((rightTree.a.equals(lhs) && rightTree.b.equals(rhs)) ||
+        					 ((rightTree.a.equals(rhs) && rightTree.b.equals(lhs))))) {
+        					return false;
+        				}
+        				
+        				return true;
+                	}  
+        })).match(getCurrentPath());
+                
+        if(okay){
+        	return true;
+        }       
 
         return false;
     }
