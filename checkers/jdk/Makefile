@@ -1,3 +1,6 @@
+# To use, run this command:
+#   make all
+# which creates the jdk.jar file.
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
