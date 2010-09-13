@@ -115,6 +115,7 @@ public class SwingTest {
 	}
 	
 	boolean flag;
+	
 	Object testInference9() {
 	    Object o = null;
 	    while(flag) {
@@ -129,6 +130,7 @@ public class SwingTest {
 	    //:: (return.type.incompatible)
 	    return o;
 	}
+	
 	@SwingBoxOrientation Object testInference9b() {
 	    Object o = null;
 	    while(flag) {
@@ -142,6 +144,7 @@ public class SwingTest {
 	    }
 	    return o;
 	}
+	
 	@SwingHorizontalOrientation Object testInference9c() {
 	    Object o = null;
 	    while(flag) {
@@ -156,6 +159,7 @@ public class SwingTest {
 	    //:: (return.type.incompatible)
 	    return o;
 	}
+	
 	@SwingVerticalOrientation Object testInference9d() {
 	    Object o = null;
 	    while(flag) {
