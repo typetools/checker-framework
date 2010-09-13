@@ -158,7 +158,7 @@ class NullnessFlow extends Flow {
             }
         }
         // annosWhenFalse.or(before);
-        GenKillBits.orWMD(annosWhenFalse, before, annoRelations);
+        GenKillBits.orlub(annosWhenFalse, before, annoRelations);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
@@ -752,7 +752,7 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         super.visitCompoundAssignment(node, p);
-        inferNullness(node.getVariable());
+    	inferNullness(node.getVariable());
         return null;
     }
 
@@ -915,12 +915,17 @@ class NullnessFlow extends Flow {
 					} else {
 						lookfor = field;
 					}
-					System.out.println("Looking for " + field + " in " + el);
+					System.err.println("Looking for " + field + " in " + el);
 					
 					if (el.getSimpleName().toString().equals(field)) {
+						System.err.println("Looking for " + lookfor);
+						System.err.println("flowresults: " + flowResults);
+						System.err.println("annos: " + annos);
+						System.err.println("annosTrue: " + this.annosWhenTrue);
+						System.err.println("annosFalse: " + annosWhenFalse);
+						System.err.println("nnExprs: " + this.nnExprs);
+
 						boolean notfound = true;
-						System.out.println("Looking for " + lookfor);
-						System.out.println("flowresults: " + flowResults);
 						for (Tree flow : flowResults.keySet()) {
 							// TODO: make sure it's really the right tree, e.g compare element?
 							// Instead of doing toString for all trees, check the Kind first?
@@ -935,7 +940,7 @@ class NullnessFlow extends Flow {
 							}
 						}
 						if (notfound) {
-							System.out.println("Not found means null!");
+							System.err.println("Not found means null!");
 					        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
 						}
 					}
@@ -1092,7 +1097,7 @@ class NullnessFlow extends Flow {
         nnExprs = nnExprsWhenFalse;
         scanExpr(node.getFalseExpression());
         // annos.and(after);
-        GenKillBits.andWMD(annos, after, annoRelations);
+        GenKillBits.andlub(annos, after, annoRelations);
 
         nnExprs = prevNNExprs;
         return null;
