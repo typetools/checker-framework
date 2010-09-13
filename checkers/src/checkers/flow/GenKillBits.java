@@ -115,78 +115,72 @@ public class GenKillBits<K> {
         bitsets.get(key).clear(index);
     }
 
-    /**
-     * Merges each gen-kill set in this group with the one corresponding to the
-     * same key in {@code other} via boolean "and" on each bit. Modifies this
-     * gen-kill set.
-     *
-     * @param other the group to "and" with
-     * @throws IllegalArgumentException if the other group is missing a key from
-     *         this group
-     */
-    /*
-    public void and(GenKillBits<K> other) {
-        for (K key : bitsets.keySet()) {
-            if (!other.bitsets.containsKey(key))
-                throw new IllegalArgumentException();
-            bitsets.get(key).and(other.bitsets.get(key));
-        }
-    }*/
-
-    /**
-     * Merges each gen-kill set in this group with the one corresponding to the
-     * same key in {@code other} via boolean "or" on each bit. Modifies this
-     * gen-kill set.
-     *
-     * @param other the group to "or" with
-     * @throws IllegalArgumentException if the other group is missing a key from
-     *         this group
-     */
-    /*
-    public void or(GenKillBits<K> other) {
-        for (K key : bitsets.keySet()) {
-            if (!other.bitsets.containsKey(key))
-                throw new IllegalArgumentException();
-            bitsets.get(key).or(other.bitsets.get(key));
-        }
-    }*/
-
     public String toString() {
         return "[GenKill: " + bitsets + "]";
     }
 
-	public static void andWMD(GenKillBits<AnnotationMirror> outarg1,
+    /**
+     * Merges each gen-kill set in this group with the one corresponding to the
+     * same key in {@code other} via boolean "and" on each bit. Modifies this
+     * gen-kill set.
+     * TODO: lub
+     * 
+     * @param other the group to "and" with
+     * @throws IllegalArgumentException if the other group is missing a key from
+     *         this group
+     */
+	public static void andlub(GenKillBits<AnnotationMirror> outarg1,
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
-		// outarg1.and(arg2);
-		
 		outarg1.valid();
 		arg2.valid();
 
-		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
-			if (!arg2.bitsets.containsKey(key1))
-				throw new IllegalArgumentException();
-
-			for(AnnotationMirror key2 : arg2.bitsets.keySet()) {
+		// TODO: compute this once somewhere
+		int length = 0;
+		for (BitSet bs : outarg1.bitsets.values()) {
+			if (bs.length()>length) length = bs.length();
+		}
+		for (BitSet bs : arg2.bitsets.values()) {
+			if (bs.length()>length) length = bs.length();
+		}
+				
+		for (int var = 0; var < length; ++var) {
+			for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
+				if (!arg2.bitsets.containsKey(key1))
+					throw new IllegalArgumentException();
 				BitSet lhs = outarg1.bitsets.get(key1);
-				BitSet rhs = arg2.bitsets.get(key2);
-				
-				int length = lhs.length();
-				if(rhs.length() > length) length = rhs.length();
-				
-				for(int var=0; var < length; ++var) {
-					if( lhs.get(var) && rhs.get(var) ) {
-						AnnotationMirror lub = annoRelations.leastUpperBound(key1, key2);
+				boolean notfound = true;
+
+				for (AnnotationMirror key2 : arg2.bitsets.keySet()) {
+					BitSet rhs = arg2.bitsets.get(key2);
+
+					if (lhs.get(var) && rhs.get(var)) {
+						AnnotationMirror lub = annoRelations.leastUpperBound(
+								key1, key2);
 						lhs.clear(var);
 						outarg1.bitsets.get(lub).set(var);
+						notfound = false;
 					}
+				}
+
+				if (notfound) {
+					lhs.clear(var);
 				}
 			}
 		}
 		outarg1.valid();
 	}
 	
-	
-	public static void orWMD(GenKillBits<AnnotationMirror> outarg1,
+    /**
+     * Merges each gen-kill set in this group with the one corresponding to the
+     * same key in {@code other} via boolean "or" on each bit. Modifies this
+     * gen-kill set.
+     * TODO: lub.
+     * 
+     * @param other the group to "or" with
+     * @throws IllegalArgumentException if the other group is missing a key from
+     *         this group
+     */	
+	public static void orlub(GenKillBits<AnnotationMirror> outarg1,
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
 		// outarg1.or(arg2);
 		
