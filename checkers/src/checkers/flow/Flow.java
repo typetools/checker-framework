@@ -335,12 +335,27 @@ public class Flow extends TreePathScanner<Void, Void> {
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
             if (hasAnnotation(type, annotation)
-                    && annoRelations.isSubtype(type.getAnnotations(), eltType.getAnnotations()))
+                    && annoRelations.isSubtype(type.getAnnotations(), eltType.getAnnotations())) {
                 annos.set(annotation, idx);
-            else if (rIdx >= 0 && annos.get(annotation, rIdx))
+                // to ensure that there is always just one annotation set, we clear the
+                // annotation that was previously used
+                // for (AnnotationMirror oldsuper : eltType.getAnnotations()) {
+                for (AnnotationMirror other : annotations) {
+                	if (!other.equals(annotation) &&
+                			annos.contains(other)) {
+                		// The get is not necessary and might observe annos in an invalid state.
+                		// annos.get(other, idx)
+                		annos.clear(other, idx);
+                	}
+                }
+            } else if (rIdx >= 0 && annos.get(annotation, rIdx)) {
                 annos.set(annotation, idx);
-            else annos.clear(annotation, idx);
+            } else {
+            	annos.clear(annotation, idx);
+            }
         }
+        // just to make sure everything worked correctly
+        annos.valid();
     }
 
     /**
