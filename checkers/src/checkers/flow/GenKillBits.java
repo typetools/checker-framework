@@ -61,6 +61,7 @@ public class GenKillBits<K> {
      * @see GenKillBits#copy(GenKillBits)
      */
     public GenKillBits(GenKillBits<K> other) {
+    	// System.err.println("Valid in constructor:");
     	other.valid();
     	
         bitsets = new HashMap<K, BitSet>(other.bitsets);
@@ -94,6 +95,7 @@ public class GenKillBits<K> {
      *         this group
      */
     public boolean get(K key, int index) {
+    	// System.err.println("Valid in get: " + key + " idx: " + index);
     	valid();
     	
         if (!bitsets.containsKey(key))
@@ -101,6 +103,10 @@ public class GenKillBits<K> {
         return bitsets.get(key).get(index);
     }
 
+    public boolean contains(K key) {
+    	return bitsets.containsKey(key);
+    }
+    
     /**
      * Clears the bit (kill) for the key at the specified index.
      *
@@ -131,8 +137,11 @@ public class GenKillBits<K> {
      */
 	public static void andlub(GenKillBits<AnnotationMirror> outarg1,
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
+		// System.err.print("Valid in andlub outarg1 ");
 		outarg1.valid();
+		// System.err.print("Valid in andlub arg2 ");
 		arg2.valid();
+		// System.err.println("");
 
 		// TODO: compute this once somewhere
 		int length = 0;
@@ -167,7 +176,9 @@ public class GenKillBits<K> {
 				}
 			}
 		}
+		// System.err.print("Valid in andlub result ");
 		outarg1.valid();
+		// System.err.println("");
 	}
 	
     /**
@@ -184,9 +195,12 @@ public class GenKillBits<K> {
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
 		// outarg1.or(arg2);
 		
+		// System.err.print("Valid in orlub outarg1 ");
 		outarg1.valid();
+		// System.err.print("Valid in orlub arg2");
 		arg2.valid();
-
+		// System.err.println("");
+		
 		for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
 			if (!arg2.bitsets.containsKey(key1))
 				throw new IllegalArgumentException();
@@ -232,10 +246,12 @@ public class GenKillBits<K> {
 				}
 			}
 		}
+		// System.err.print("Valid in orlub result ");
 		outarg1.valid();
+		// System.err.println("");
 	}
 	
-	private boolean valid() {
+	public boolean valid() {
 		BitSet xorres = new BitSet();
 		BitSet orres = new BitSet();
 
