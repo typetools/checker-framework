@@ -389,7 +389,7 @@ public class Flow extends TreePathScanner<Void, Void> {
     protected void merge() {
         annos = GenKillBits.copy(annos);
         //annos.and(annosWhenFalse);
-        GenKillBits.andWMD(annos, annosWhenFalse, annoRelations);
+        GenKillBits.andlub(annos, annosWhenFalse, annoRelations);
         annosWhenTrue = annosWhenFalse = null;
     }
 
@@ -633,17 +633,9 @@ public class Flow extends TreePathScanner<Void, Void> {
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
-        if (!(var instanceof IdentifierTree))
-            scanExpr(var);
+        scanExpr(var);
         scanExpr(expr);
-        propagate(var, expr);
-        if (var instanceof IdentifierTree)
-            this.scan(var, p);
-
-        // TODO: Handle cases of compound assignment
-        //if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
-        //    clearAnnos(var);
-        
+    	        
         // WMD added this to get (s2 = (s1 += 1)) working.
         // Is something similar needed for other expressions?
         // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
@@ -653,7 +645,6 @@ public class Flow extends TreePathScanner<Void, Void> {
             	flowResults.put(node, a);
             }
         }
-
         return null;
 	}
     
@@ -749,7 +740,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             if (!alive) {
                 alive = aliveAfter;
                 // after.or(annos);
-                GenKillBits.orWMD(after, annos, annoRelations);
+                GenKillBits.orlub(after, annos, annoRelations);
                 annos = GenKillBits.copy(after);
             } else if (!aliveAfter) {
                 annos = annos;  // NOOP
@@ -757,13 +748,13 @@ public class Flow extends TreePathScanner<Void, Void> {
             } else {
                 // both branches are alive
                 alive = true;
-                GenKillBits.andWMD(annos, after, annoRelations);
+                GenKillBits.andlub(annos, after, annoRelations);
             }
         } else {
             if (!alive)
                 annos = GenKillBits.copy(beforeElse);
             else {
-                GenKillBits.andWMD(annos, beforeElse, annoRelations);
+                GenKillBits.andlub(annos, beforeElse, annoRelations);
             }
         }
         popLastLevel();
@@ -787,7 +778,7 @@ public class Flow extends TreePathScanner<Void, Void> {
 
         scanExpr(node.getFalseExpression());
         // annos.and(after);
-        GenKillBits.andWMD(annos, after, annoRelations);
+        GenKillBits.andlub(annos, after, annoRelations);
         
         return null;
     }
@@ -807,9 +798,9 @@ public class Flow extends TreePathScanner<Void, Void> {
             scanStat(node.getStatement());
             if (pass) break;
             // annosWhenTrue.and(annoEntry);
-            GenKillBits.andWMD(annosWhenTrue, annoEntry, annoRelations);
+            GenKillBits.andlub(annosWhenTrue, annoEntry, annoRelations);
             // annos.and(annoEntry);
-            GenKillBits.andWMD(annos, annoEntry, annoRelations);
+            GenKillBits.andlub(annos, annoEntry, annoRelations);
             pass = true;
         } while (true);
         annos = annoCond;
@@ -830,7 +821,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             annos = annosWhenTrue;
             if (pass) break;
             // annosWhenTrue.and(annoEntry);
-            GenKillBits.andWMD(annosWhenTrue, annoEntry, annoRelations);
+            GenKillBits.andlub(annosWhenTrue, annoEntry, annoRelations);
             pass = true;
         } while (true);
         annos = annoCond;
@@ -853,9 +844,9 @@ public class Flow extends TreePathScanner<Void, Void> {
                 scanStat(tree);
             if (pass) break;
             // annosWhenTrue.and(annoEntry);
-            GenKillBits.andWMD(annosWhenTrue, annoEntry, annoRelations);
+            GenKillBits.andlub(annosWhenTrue, annoEntry, annoRelations);
             // annos.and(annoEntry);
-            GenKillBits.andWMD(annos, annoEntry, annoRelations);
+            GenKillBits.andlub(annos, annoEntry, annoRelations);
             pass = true;
         } while (true);
         annos = annoCond;
@@ -899,7 +890,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         pushNewLevel();
         GenKillBits<AnnotationMirror> result = tryBits.pop();
         // annos.and(result);
-        GenKillBits.andWMD(annos, result, annoRelations);
+        GenKillBits.andlub(annos, result, annoRelations);
         popLastLevel();
         if (node.getCatches() != null) {
             boolean catchAlive = false;
@@ -940,7 +931,7 @@ public class Flow extends TreePathScanner<Void, Void> {
                 && TreeUtils.enclosingOfKind(getCurrentPath(), Tree.Kind.TRY) != null) {
             if (!tryBits.isEmpty())
                 // tryBits.peek().and(annos);
-            	GenKillBits.andWMD(tryBits.peek(), annos, annoRelations);
+            	GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
         }
 
         return null;
