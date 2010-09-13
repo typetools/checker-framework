@@ -15,6 +15,6 @@ public class NullnessUninitializedTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nullness/uninit"); }
+    public static Collection<Object[]> data() { return testFiles("nullness-uninit"); }
 
 }
