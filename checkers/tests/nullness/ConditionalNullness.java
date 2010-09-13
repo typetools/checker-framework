@@ -32,9 +32,13 @@ public class ConditionalNullness {
     void testSelfWithCheckNegation() {
         if (checkNonNull()) { }
         else {
-            //:: (dereference.of.nullable)
+        	//:: (dereference.of.nullable)
             field.toString();   // error
         }
+        // TODO: actually, both branches ensure that field is non-null.
+        // However, the NN checker does not recognize the NN in the
+        // if branch, b/c it's implemented with a simple String pattern.
+        //:: (dereference.of.nullable)
         field.toString();       // error
     }
 
