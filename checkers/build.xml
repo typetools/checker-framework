@@ -247,6 +247,7 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
     </target>
 
+    <!-- Per the <test> element, output goes to ${build.reports} -->
     <target name="-run-tests" description="Generalized test runner">
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
