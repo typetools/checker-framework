@@ -1397,7 +1397,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
-            // canno substitute
+            // cannot substitute
             return getCopy(true);
         }
 
