@@ -89,7 +89,7 @@ public class StubParser {
                 }
             } catch (AssertionError error) {
                 // do nothing
-            	// System.err.println("StubParser: " + error);
+            	debug("StubParser: " + error);
             }
         }
         return result;
@@ -130,7 +130,7 @@ public class StubParser {
         if (typeElt == null
                 || typeElt.getKind() == ElementKind.ENUM
                 || typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
-        	  // System.err.println("StubParser: Type not found: " + typeName);
+        	  debug("StubParser: Type not found: " + typeName);
             return;
         }
 
@@ -351,7 +351,7 @@ public class StubParser {
             if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString))
                 return superType;
         }
-        // System.err.println("StubParser: Type " + typeString + " not found");
+        debug("StubParser: Type " + typeString + " not found");
         return null;
     }
     public ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
@@ -367,7 +367,7 @@ public class StubParser {
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
-        // System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
+        debug("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
         return null;
     }
 
@@ -382,7 +382,7 @@ public class StubParser {
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
-        // System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
+        debug("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
         return null;
     }
 
@@ -392,7 +392,11 @@ public class StubParser {
             if (fieldName.contains(field.getSimpleName()))
                 return field;
         }
-        // System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
+        debug("StubParser: Field " + fieldName + " not found in type " + typeElt);
         return null;
+    }
+    
+    private void debug(String arg) {
+    	// System.err.println(arg);
     }
 }
