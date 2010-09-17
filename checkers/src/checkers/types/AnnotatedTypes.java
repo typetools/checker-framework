@@ -30,6 +30,9 @@ public class AnnotatedTypes {
     private ProcessingEnvironment env;
     private AnnotatedTypeFactory factory;
 
+    static int uidCounter = 0;
+    int uid;
+
     /**
      * Constructor for {@code AnnotatedTypes}
      *
@@ -38,6 +41,12 @@ public class AnnotatedTypes {
     public AnnotatedTypes(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
+        uid = ++uidCounter;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "#" + uid;
     }
 
     /**

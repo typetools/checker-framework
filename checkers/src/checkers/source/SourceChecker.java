@@ -226,6 +226,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         }
     }
 
+    // Uses private fields, need to rewrite.
+    // public void dumpState() {
+    //     System.out.printf("SourceChecker = %s%n", this);
+    //     System.out.printf("  env = %s%n", env);
+    //     System.out.printf("    env.elementUtils = %s%n", ((JavacProcessingEnvironment) env).elementUtils);
+    //     System.out.printf("      env.elementUtils.types = %s%n", ((JavacProcessingEnvironment) env).elementUtils.types);
+    //     System.out.printf("      env.elementUtils.enter = %s%n", ((JavacProcessingEnvironment) env).elementUtils.enter);
+    //     System.out.printf("    env.typeUtils = %s%n", ((JavacProcessingEnvironment) env).typeUtils);
+    //     System.out.printf("  trees = %s%n", trees);
+    //     System.out.printf("    trees.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).enter);
+    //     System.out.printf("    trees.elements = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements);
+    //     System.out.printf("      trees.elements.types = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements.types);
+    //     System.out.printf("      trees.elements.enter = %s%n", ((com.sun.tools.javac.api.JavacTrees) trees).elements.enter);
+    // }
+
     /**
      * Returns the localized long message corresponding for this key, and
      * returns the defValue if no localized message is found.

@@ -90,6 +90,9 @@ public class AnnotatedTypeFactory {
 
     private final boolean annotatedTypeParams;
 
+    private static int uidCounter = 0;
+    public final int uid;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
@@ -113,6 +116,7 @@ public class AnnotatedTypeFactory {
     public AnnotatedTypeFactory(ProcessingEnvironment env,
             @Nullable QualifierHierarchy qualHierarchy, @Nullable CompilationUnitTree root,
             Class<? extends SourceChecker> checkerClass) {
+        uid = ++uidCounter;
         this.env = env;
         this.root = root;
         this.checkerClass = checkerClass;
@@ -127,6 +131,11 @@ public class AnnotatedTypeFactory {
         this.indexTypes = buildIndexTypes();
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "#" + uid;
+    }        
 
     /**
      * For an annotated type parameter or wildcard (e.g.
