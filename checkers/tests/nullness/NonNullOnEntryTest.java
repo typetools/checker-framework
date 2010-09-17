@@ -1,5 +1,8 @@
 import checkers.nullness.quals.*;
 
+/*
+ * @skip-test
+ */
 class NonNullOnEntryTest {
 
 	@Nullable Object field1;
