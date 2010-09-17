@@ -201,26 +201,25 @@ following ways:
 
 \end{description}
 
+
 \subsection{Distributing stub files\label{stub-distribution}}
 
-Checker writers are encouraged to provide stub files to the JDK and most
-commonly used libraries.  Similarly, library writers can provide stub files
-for their own libraries and the external libraries they depend on.  The
-distributed stub files don't need to be explicitly specified by programmers.
+A distributed stub files doesn't need to be explicitly specified by the
+programmer; the checker automatically uses it.
 
-Checker writers should include the JDK stub file as \code{jdk.astub} in the
-same directory level as the Checker class (i.e. the subclass of
+A checker writer should include the JDK stub file as \code{jdk.astub} in the
+same directory level as the Checker class (i.e., the subclass of
 \code{BaseTypeVisitor}).  The Checker Framework imports the \code{jdk.astub}
 automatically.
 
-{\textbf The following is not implemented yet}
+% \textbf{The following is not implemented yet}
+% A library writers should create a file \code{library.astub} on the
+% classpath (in the resources directory or the binary jars).
+% The Checker Framework automatically imports all the stub files named
+% \code{library.astub} found in the classpath.  
 
-Also the Checker Framework automatically import all the stub files named
-\code{library.astub} found in the classpath.  Library writers can bundle the
-stub file in their resources directory or binary jars.
 
 \subsection{Known problems}
-
 
 The Checker Framework stub file reader has several limitations:
 

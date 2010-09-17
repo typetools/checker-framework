@@ -216,7 +216,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
         <exec executable="/bin/sh">
             <arg value="-c"/>
-            <arg value="etags `find -name '*.java' | sort-directory-order`"/>
+            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
     </target>
 
@@ -247,6 +247,7 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
     </target>
 
+    <!-- Per the <test> element, output goes to ${build.reports} -->
     <target name="-run-tests" description="Generalized test runner">
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
