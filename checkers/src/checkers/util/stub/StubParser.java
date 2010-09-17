@@ -122,8 +122,8 @@ public class StubParser {
         }
     }
 
-    private void parse(TypeDeclaration type, String packageName, Map<Element, AnnotatedTypeMirror> result) {
-        String typeName = (packageName == null ? "" : packageName + ".") + type.getName();
+    private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> result) {
+        String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName();
         TypeElement typeElt = elements.getTypeElement(typeName);
         // couldn't find type.  not in class path
         // TODO: Should throw exception?!
@@ -134,11 +134,11 @@ public class StubParser {
             return;
         }
 
-        if (type instanceof ClassOrInterfaceDeclaration) {
-            parseType((ClassOrInterfaceDeclaration)type, typeElt, result);
+        if (typeDecl instanceof ClassOrInterfaceDeclaration) {
+            parseType((ClassOrInterfaceDeclaration)typeDecl, typeElt, result);
         }
 
-        Map<Element, BodyDeclaration> elementsToDecl = mapMembers(typeElt, type);
+        Map<Element, BodyDeclaration> elementsToDecl = mapMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration> entry : elementsToDecl.entrySet()) {
             final Element elt = entry.getKey();
             final BodyDeclaration decl = entry.getValue();

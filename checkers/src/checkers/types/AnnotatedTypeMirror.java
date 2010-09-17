@@ -121,6 +121,9 @@ public abstract class AnnotatedTypeMirror {
     // any Annotation type. JSR308 is pushing to have this change.
     protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
+    private static int uidCounter = 0;
+    public int uid;
+
     /**
      * Constructor for AnnotatedTypeMirror.
      *
@@ -136,6 +139,7 @@ public abstract class AnnotatedTypeMirror {
         this.annotationFactory = AnnotationUtils.getInstance(env);
         assert typeFactory != null;
         this.typeFactory = typeFactory;
+        uid = ++uidCounter;
     }
 
     @Override
@@ -383,6 +387,10 @@ public abstract class AnnotatedTypeMirror {
     public String toString() {
         return formatAnnotationString(getAnnotations())
                 + this.actualType;
+    }
+
+    public String toStringDebug() {
+        return toString() + " " + getClass().getSimpleName() + "#" + uid;
     }
 
     /**
@@ -1404,9 +1412,9 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
-            // canno substitute
+            // cannot substitute
             // return getCopy(true);
-        	// WMD wants to substitute primite types!
+        	// WMD wants to substitute primitive types!
             if (mappings.containsKey(this))
                 return mappings.get(this);
             return getCopy(true);

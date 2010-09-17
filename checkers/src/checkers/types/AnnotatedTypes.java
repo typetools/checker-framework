@@ -30,14 +30,23 @@ public class AnnotatedTypes {
     private ProcessingEnvironment env;
     private AnnotatedTypeFactory factory;
 
+    static int uidCounter = 0;
+    int uid;
+
     /**
-     * Constructor for {@code AnnotatedTypeUtils}
+     * Constructor for {@code AnnotatedTypes}
      *
      * @param env  the processing environment for this round
      */
     public AnnotatedTypes(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
+        uid = ++uidCounter;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "#" + uid;
     }
 
     /**
@@ -46,7 +55,7 @@ public class AnnotatedTypes {
      * of {@code superType}.
      *
      * @param t      a type
-     * @param superType   a type that is a supertype of {@code type}
+     * @param superType   a type that is a supertype of {@code t}
      * @return the base type of t of the given element
      */
     public AnnotatedTypeMirror asSuper(AnnotatedTypeMirror t,
@@ -157,13 +166,14 @@ public class AnnotatedTypes {
     }
 
     /*
-     * Helper method that decides whether sup and sub are the same type or that
-     * sub cannot be a subtype of sup.
+     * Returns true if sup and sub are the same type.
+     * Returns false otherwise (including if sub cannot be a subtype of sup).
      */
     private boolean shouldStop(AnnotatedTypeMirror sup, AnnotatedTypeMirror sub) {
         // Check if it's the same type
         // if sup is primitive, but not sub
         if (sup.getKind().isPrimitive() && !sub.getKind().isPrimitive())
+            /// XXX shouldn't this be "return false"?
             return true;
         if (sup.getKind().isPrimitive() && sub.getKind().isPrimitive())
             return sup.getKind() == sub.getKind();
@@ -185,7 +195,7 @@ public class AnnotatedTypes {
             AnnotatedArrayType subat = (AnnotatedArrayType) sub;
             return shouldStop(supat.getComponentType(), subat.getComponentType());
         }
-        // horroble horroble hack
+        // horrible horrible hack
         // Types.isSameType() doesn't work for type variables or wildcards
         return sup.getUnderlyingType().toString().equals(sub.getUnderlyingType().toString());
     }
@@ -304,7 +314,7 @@ public class AnnotatedTypes {
     /**
      * Returns a new type, a copy of the passed {@code t}, with all
      * instances of {@code from} type substituted with their correspondents
-     * in {@code to} and return the substituted in type.
+     * in {@code to}.
      *
      * @param t     the type
      * @param from  the from types
@@ -314,7 +324,6 @@ public class AnnotatedTypes {
     public AnnotatedTypeMirror subst(AnnotatedTypeMirror t,
             List<? extends AnnotatedTypeMirror> from,
             List<? extends AnnotatedTypeMirror> to) {
-        assert from.size() == to.size();
         Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings =
             new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
