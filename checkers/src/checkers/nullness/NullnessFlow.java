@@ -898,7 +898,7 @@ class NullnessFlow extends Flow {
 			
 			
 			if (!(at instanceof AnnotatedDeclaredType)) {
-				System.err.println("What's wrong with: " + at);
+				// System.err.println("What's wrong with: " + at);
 		    	return;
 			}
 			
@@ -915,23 +915,24 @@ class NullnessFlow extends Flow {
 					} else {
 						lookfor = field;
 					}
-					System.err.println("Looking for " + field + " in " + el);
+					// System.err.println("Looking for " + field + " in " + el);
 					
 					if (el.getSimpleName().toString().equals(field)) {
+						/*
 						System.err.println("Looking for " + lookfor);
 						System.err.println("flowresults: " + flowResults);
 						System.err.println("annos: " + annos);
 						System.err.println("annosTrue: " + this.annosWhenTrue);
 						System.err.println("annosFalse: " + annosWhenFalse);
 						System.err.println("nnExprs: " + this.nnExprs);
-
+						 */
 						boolean notfound = true;
 						for (Tree flow : flowResults.keySet()) {
 							// TODO: make sure it's really the right tree, e.g compare element?
 							// Instead of doing toString for all trees, check the Kind first?
 							
 							if(flow.toString().equals(lookfor)) {
-								System.out.println("YEAH: " + flowResults.get(flow));
+								// System.out.println("YEAH: " + flowResults.get(flow));
 								notfound = false;
 								if (!flowResults.get(flow).equals(NONNULL)) {
 							        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
@@ -940,7 +941,7 @@ class NullnessFlow extends Flow {
 							}
 						}
 						if (notfound) {
-							System.err.println("Not found means null!");
+							// System.err.println("Not found means null!");
 					        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
 						}
 					}
