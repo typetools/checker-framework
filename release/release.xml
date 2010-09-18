@@ -74,7 +74,7 @@
         </ant>
     </target>
 
-    <target name="release-compiler" 
+    <target name="release-compiler"
       depends="-prep-checkdiff,-prep-checkdev,-prep-build-langtools"
       description="Creates a zip archive for langtools.">
 
@@ -95,7 +95,7 @@
         </zip>
     </target>
 
-    <target name="release-checkers" 
+    <target name="release-checkers"
       depends="-prep-checkdiff,-prep-checkdev,-prep-build-checkers"
       description="Creates a zip archive for checkers.">
 
@@ -109,7 +109,7 @@
         </zip>
     </target>
 
-    <target name="tools" 
+    <target name="tools"
       depends="-prep-releasedir,update-versions,release-compiler,release-checkers"
       description="builds zip files of the langtools and checkers"/>
 
@@ -142,20 +142,21 @@
     <target name="manual" depends="update-versions"
       description="makes the checkers manual (PDF and HTML)">
 
-        <exec executable="make" dir="${checkers.manual}" 
+        <exec executable="make" dir="${checkers.manual}"
           failonerror="true" taskname="make">
             <arg line="manual.pdf manual.html"/>
         </exec>
     </target>
 
+    <!-- By default, puts the copy in a directory like checker-framework/tmp/1.1.1/ -->
     <target name="local" depends="-init-properties,-prep-checkdev,tools,manual"
       description="creates a local copy of the release directory">
 
-        <copy file="${checkers.manual}/manual.html" 
-            tofile="${tmp.ver.dir}/${manual.name}.html"/> 
-            
-        <copy file="${checkers.manual}/manual.pdf" 
-            tofile="${tmp.ver.dir}/${manual.name}.pdf"/> 
+        <copy file="${checkers.manual}/manual.html"
+            tofile="${tmp.ver.dir}/${manual.name}.html"/>
+
+        <copy file="${checkers.manual}/manual.pdf"
+            tofile="${tmp.ver.dir}/${manual.name}.pdf"/>
 
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
@@ -164,14 +165,10 @@
             </fileset>
         </copy>
 
-        <copy todir="${tmp.ver.dir}" flatten="true">
-            <fileset dir=".">
-                <include name="${langtools}/README-jsr308.html"/>
-                <include name="doc/Makefile-jsr308-install"/>
-                <include name="${checkers}/changelog-*.txt"/>
-                <include name="${langtools}/doc/changelog-*.txt"/>
-            </fileset>
-        </copy>
+        <copy todir="${tmp.ver.dir}" file="${langtools}/README-jsr308.html" />
+        <copy todir="${tmp.ver.dir}" file="${doc}/Makefile-jsr308-install" />
+        <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-*.txt" />
+        <copy todir="${tmp.ver.dir}" file="${langtools}/doc/changelog-*.txt" />
 
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
             <fileset dir="${checkers}/doc">
@@ -286,7 +283,7 @@
         <!-- Update readme -->
 
         <update file="${langtools.readme}"
-            start="${h4.ver.0}" end="${h4.ver.1}" 
+            start="${h4.ver.0}" end="${h4.ver.1}"
             with="Version ${release.ver} (${release.date})"/>
 
         <update file="${checkers.manual}/manual.tex"
@@ -312,7 +309,7 @@
             <condition property="do.abort">
                 <equals arg1="n" arg2="${do.copy}"/>
             </condition>
-            <fail if="do.abort">Build aborted by user.</fail> 
+            <fail if="do.abort">Build aborted by user.</fail>
         </sequential>
     </macrodef>
 
@@ -417,7 +414,7 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
           dest="${sanitycheck.ver.dir}/langtools.zip"/>
         <unzip src="${sanitycheck.ver.dir}/langtools.zip" dest="${sanitycheck.ver.dir}"/>
 
-        <copy file="${langtools.make}/build.properties" 
+        <copy file="${langtools.make}/build.properties"
           todir="${sanitycheck.ver.dir}/jsr308-langtools/make"
           overwrite="true"/>
 
