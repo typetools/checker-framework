@@ -193,8 +193,6 @@ public class GenKillBits<K> {
      */	
 	public static void orlub(GenKillBits<AnnotationMirror> outarg1,
 			GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
-		// outarg1.or(arg2);
-		
 		// System.err.print("Valid in orlub outarg1 ");
 		outarg1.valid();
 		// System.err.print("Valid in orlub arg2");
