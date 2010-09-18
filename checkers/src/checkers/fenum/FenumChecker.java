@@ -8,12 +8,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.fenum.quals.FenumBottom;
+import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -32,9 +37,12 @@ import checkers.basetype.BaseTypeChecker;
  * </li>
  * </ul>
  * 
+ * TODO: document flowinference lint option. 
+ * 
  * @author wmdietl
  */
-@SupportedOptions( { "quals" } )		
+@SupportedOptions( { "quals" } )
+@SupportedLintOptions( { "flowinference" } )
 public class FenumChecker extends BaseTypeChecker {
     /** Copied from BasicChecker.
      * Instead of returning an empty set if no "quals" option is given,
@@ -95,5 +103,36 @@ public class FenumChecker extends BaseTypeChecker {
 		// is used. Just ignore this check here and do them manually in the
 		// visitor.
     	return true;
+    }
+        
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    }
+    
+    /* The user is expected to introduce additional fenum annotations.
+     * These annotations are declared to be subtypes of FenumTop, using the
+     * @SubtypeOf annotation.
+     * However, there is no way to declare that it is a supertype of FenumBottom.
+     * Therefore, we fix the bottom of the type hierarchy here and add a special
+     * case when the subtype has the FenumBottom annotation. 
+     */
+    private final class FenumQualifierHierarchy extends GraphQualifierHierarchy {
+        public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
+        }
+        
+        @Override
+        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
+        	if ( AnnotationUtils.getInstance(env).fromClass(FenumBottom.class).equals(anno1)) {
+        		return true;
+        	}
+        	return super.isSubtype(anno1, anno2);
+        }
+        
+        @Override
+        public AnnotationMirror getBottomQualifier() {
+        	return AnnotationUtils.getInstance(env).fromClass(FenumBottom.class);
+        }
     }
 }
