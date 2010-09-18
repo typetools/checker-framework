@@ -15,6 +15,10 @@ Property Key Checker:
 Javari Checker:
   Added Javari stub classes for more JDK classes.
 
+Distribution:
+  Changed directory structure (top level is "checker-framework"; "checkers"
+  is a under that) for consistency with version control repository.
+
 Many documentation improvements and minor bugfixes.
 
 ----------------------------------------------------------------------
