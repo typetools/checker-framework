@@ -142,7 +142,7 @@ def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
 
 ----------------------------------------------------------------------
 """ % (version, today))
-    execute([EDITOR, path])
+        execute([EDITOR, path])
 
 def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
@@ -163,7 +163,6 @@ Base build
 
 ----------------------------------------------------------------------
 """ % (version, today, latest_jdk))
-
         execute([EDITOR, path])
 
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
@@ -180,9 +179,10 @@ def make_release(version, ant_args, real=False, sanitycheck=True):
     return execute(command)
 
 def checklinks(site_url=None):
+    os.putenv('jsr308_www_online', site_url) # set environment var for subshell
     return execute('make -f %s checklinks' %
-        os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile'),
-        halt_if_fail=False)
+                     os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile'),
+                   halt_if_fail=False)
 
 MAVEN_GROUP_ID = 'types.checkers'
 MAVEN_REPO = 'file:///cse/www2/types/m2-repo'
@@ -235,7 +235,7 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-## Define DRY_RUN_LINK (All this is not used, I think; I need to pass in -Dsanitycheck.dry.url=... which is similar but independently defined.)
+## Define DRY_RUN_LINK
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
 # Another alternative is: USER = os.getenv('USER')
 USER = pwd.getpwuid(os.geteuid())[0]
@@ -305,7 +305,7 @@ def main(argv):
     print("\n\n\n\n\n")
 
     # Making the real release
-    make_release(next_version, argv, real=True)
+    make_release(next_version, ant_args, real=True)
 
     # Make Maven release
     mvn_deploy_jsr308_all(next_version)
