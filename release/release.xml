@@ -427,9 +427,9 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
             <target name="build-javap"/>
         </ant>
 
-        <ant dir="${sanitycheck.ver.dir}/checkers" target="all-tests"/>
+        <ant dir="${sanitycheck.ver.dir}/checker-framework/checkers" target="all-tests"/>
 
-        <ant dir="${sanitycheck.ver.dir}/checkers">
+        <ant dir="${sanitycheck.ver.dir}/checker-framework/checkers">
             <target name="clean"/>
             <target name="all-tests"/>
         </ant>

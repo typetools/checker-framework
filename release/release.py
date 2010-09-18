@@ -142,7 +142,7 @@ def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
 
 ----------------------------------------------------------------------
 """ % (version, today))
-    execute([EDITOR, path])
+        execute([EDITOR, path])
 
 def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
@@ -163,7 +163,6 @@ Base build
 
 ----------------------------------------------------------------------
 """ % (version, today, latest_jdk))
-
         execute([EDITOR, path])
 
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
@@ -180,9 +179,10 @@ def make_release(version, ant_args, real=False, sanitycheck=True):
     return execute(command)
 
 def checklinks(site_url=None):
-    return execute('make -f %s checklinks' %
-        os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile'),
-        halt_if_fail=False)
+    return execute('jsr308_www_online=%s make -f %s checklinks' %
+                   (site_url,
+                    os.path.join(JSR308_LANGTOOLS, 'doc', 'Makefile')),
+                   halt_if_fail=False)
 
 MAVEN_GROUP_ID = 'types.checkers'
 MAVEN_REPO = 'file:///cse/www2/types/m2-repo'
