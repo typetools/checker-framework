@@ -125,8 +125,9 @@ public class QualifierDefaults {
     		switch (t.getKind()) {
     		case VARIABLE:
     			VariableTree vtree = (VariableTree)t;
-    			if (prev==vtree.getInitializer()) {
-    				Element elt = TreeUtils.elementFromDeclaration((VariableTree)t);    				
+    			ExpressionTree vtreeInit = vtree.getInitializer();
+    			if (vtreeInit!=null && prev==vtreeInit) {
+    				Element elt = TreeUtils.elementFromDeclaration((VariableTree)t);
     		        DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
     		        DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
     		        
