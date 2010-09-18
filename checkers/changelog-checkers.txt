@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
-Version 1.1.1, 17 Sep 2010
+Version 1.1.1, 18 Sep 2010
 
 Eclipse support:
   Removed the obsolete Eclipse plug-in from repository.  The new one uses a
