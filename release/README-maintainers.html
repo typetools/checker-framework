@@ -45,6 +45,7 @@ site.</p>
 <li>LaTeX (along with <code>hevea</code> and <code>bibtex</code>)</li>
 <li>a web-accessible directory like <code>public_html</code> (for
 testing the release)</li>
+<li>to be a member of the <code>types_www</code> Unix group</li>
 </ul>
 
 <p>You should have all of the above if you use a Washington CSE machine
@@ -55,6 +56,13 @@ testing the release)</li>
 
 <ol>
 <li>
+<p>Add plume-lib to your path, and set other environment variables.</p>
+<pre>
+  (cd; hg clone https://plume-lib.googlecode.com/hg/ plume-lib)
+  export PATH=${PATH}:$HOME/plume-lib/bin
+  export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
+</pre>
+
 <p>Add <code>plume-lib/bin</code> to your <code>PATH</code>.
 Mike has a (usually) up-to-date checkout at
 <code>~mernst/bin/src/plume-lib/bin</code></p>
@@ -111,6 +119,11 @@ testing site:</p>
 <h2 id="Release">Making a release</h2>
 
 <ol>
+
+<li>Set the <tt>anno</tt> environment variable.
+<pre>
+  export anno=/scratch/$USER/jsr308-release
+</pre>
 
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
@@ -185,10 +198,11 @@ with the proper date substituted.
 </li>
 
 <li>
-<p>In <tt>checker-framework/release</tt>, execute:</p>
+<p>Execute:</p>
 
 <pre>
     export EDITOR=emacs
+    cd $anno/checker-framework/release
     python -m release
 </pre>
 
@@ -226,6 +240,13 @@ fails to check for broken links.)
 </li>
 
 <li>
+Ensure that the files you created are group-writeable.  Ignore any errors
+from this command.
+<pre>
+chmod -R g+w /cse/www2/types/
+</pre>
+
+<li>
 <p>Tag the release, for example [TODO: this should be automated.  TODO: Do
   this *after* making the release, maybe?]:
 </p>
@@ -238,7 +259,8 @@ fails to check for broken links.)
 <h2 id="Release-Manual">Making a manual release</h2>
 
 <p><b>These instructions are deprecated in favor of the python release
-script.  The material will be deleted in its due time</b></p>
+script.  The material will be deleted in due time.  But, for now there is
+information here that is not captured in the python release script.</b></p>
 
 <ol>
 <li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
