@@ -1,0 +1,227 @@
+\htmlhr
+\chapter{Basic checker\label{basic-checker}}
+
+The Basic checker enforces only subtyping rules.  It operates over
+annotations specified by a user on the command line.  Thus, users can
+create a simple type checker without writing any code beyond definitions of
+the type qualifier annotations.
+
+The Basic checker can accommodate all of the type system enhancements that
+can be declaratively specified (see Chapter~\ref{writing-a-checker}).
+This includes type introduction rules (implicit
+annotations, e.g., literals are implicitly considered \code{@\refclass{nullness/quals}{NonNull}}) via
+the \code{@\refclass{quals}{ImplicitFor}} meta-annotation, and other features such as
+flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
+qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
+
+The Basic checker is also useful to type system designers who wish to
+experiment with a checker before writing code; the Basic checker
+demonstrates the functionality that a checker inherits from the Checker
+Framework.
+
+If you need typestate analysis, then you can extend a typestate checker,
+much as you would extend the Basic Checker if you do not need typestate
+analysis.  For more details (including a definition of ``typestate''), see
+Chapter~\ref{typestate-checker}.
+
+For type systems that require special checks (e.g., warning about
+dereferences of possibly-null values), you will need to write code and
+extend the framework as discussed in Chapter~\ref{writing-a-checker}.
+
+
+\section{Using the Basic checker\label{basic-using}}
+
+The Basic checker is used in the same way as other checkers (using the
+\code{-processor checkers.basic.BasicChecker} option; see Chapter~\ref{using-a-checker}), except that it
+requires an additional annotation processor argument via the standard
+``\code{-A}'' switch:
+
+\begin{itemize}
+
+\item
+\code{-Aquals}: this option specifies a comma-no-space-separated list of
+the fully-qualified class
+names of the annotations used as qualifiers in the custom type system.
+%
+It serves the same purpose as the \code{@\refclass{quals}{TypeQualifiers}}
+annotation used by other checkers (see section
+\ref{writing-compiler-interface}).
+
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled before you run the Basic checker with \code{javac}; it
+is not sufficient to supply their source files on the command line.
+
+\end{itemize}
+
+To suppress a warning issued by the basic checker, use a 
+\code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
+annotation, with the argument being the unqualified, uncapitalized name of
+any of the annotations passed to \code{-Aquals}.
+
+
+\section{Basic checker example\label{basic-example}\label{encrypted-example}}
+
+Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
+representation of an object (such as a \code{String}, \code{CharSequence}, or
+\code{byte[]}) is encrypted. To use the Basic checker for the \code{Encrypted}
+type system, follow three steps.
+
+\begin{enumerate}
+\item
+ Define an annotation for the \code{Encrypted} qualifier:
+
+\begin{Verbatim}
+package myquals;
+
+import checkers.quals.*;
+
+/**
+ * Denotes that the representation of an object is encrypted.
+ * ...
+ */
+@TypeQualifier
+@SubtypeOf(Unqualified.class)
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+public @interface Encrypted {}
+\end{Verbatim}
+
+Don't forget to compile this class:
+
+\begin{Verbatim}
+$ javac myquals/Encrypted.java
+\end{Verbatim}
+
+The resulting \<.class> file should either be on your classpath, or on the
+processor path (set via the \<-processorpath> command-line option to javac).
+
+\item 
+  Write \code{@Encrypted} annotations in your program (YourProgram.java):
+
+\begin{Verbatim}
+import myquals.Encrypted;
+
+...
+
+public @Encrypted String encrypt(String text) {
+    // ...
+}
+
+// Only send encrypted data!
+public void sendOverInternet(@Encrypted String msg) {
+    // ...
+}
+
+void sendText() {
+    // ...
+    @Encrypted String ciphertext = encrypt(plaintext);
+    sendOverInternet(ciphertext);
+    // ...
+}
+
+void sendPassword() {
+    String password = getUserPassword();
+    sendOverInternet(password);
+}
+\end{Verbatim}
+
+You may also need to add \code{@SuppressWarnings} annotations to the
+\code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the
+capability of any realistic type system.
+
+\item
+  Invoke the compiler with the Basic checker, specifying the
+  \code{@Encrypted} annotation using the \code{-Aquals} option.
+  You should add the \code{Encrypted} classfile to the processor classpath:
+
+\begin{Verbatim}
+$ javac -processorpath myqualspath -processor checkers.basic.BasicChecker \
+        -Aquals=myquals.Encrypted YourProgram.java
+
+YourProgram.java:42: incompatible types.
+found   : java.lang.String
+required: @myquals.Encrypted java.lang.String
+    sendOverInternet(password);
+                     ^
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\htmlhr
+\chapter{Typestate checker\label{typestate-checker}}
+
+In a regular type system, a variable has the same type throughout its
+scope.
+In a typestate system, a variable's type can change as operations
+are performed on it.
+
+The most common example of typestate is for a \<File> object.  Assume a file
+can be in two states, \<@Open> and \<@Closed>.  Calling the \<close()> method
+changes the file's state.  Any subsequent attempt to read, write, or close
+the file will lead to a run-time error.  It would be better for the type
+system to warn about such problems, or guarantee their absence, at compile
+time.
+
+Just as you can extend the Basic Checker to create a type checker, you can
+extend a typestate checker to create a type checker that supports typestate
+analysis.  Two extensible typestate analyses that build on the Checker
+Framework are available.  One is by Adam Warski:
+\myurl{http://www.warski.org/typestate.html}.
+The other is by Daniel Wand:
+\myurl{http://typestate.ewand.de/}.
+
+
+\section{Comparison to flow-sensitive type refinement\label{typestate-vs-type-refinement}}
+
+The Checker Framework's flow-sensitive type refinement
+(Section~\ref{type-refinement}) implements a form of typestate analysis.
+For example, after code that tests a variable against null, the Nullness
+Checker (Chapter~\ref{nullness-checker}) treats the variable's type as
+\<@NonNull \emph{T}>, for some \<\emph{T}>\@.
+
+For many type systems, flow-sensitive type refinement is sufficient.  But
+sometimes, you need full typestate analysis.  This section compares the
+two.  (Dependent types and unused variables
+(Section~\ref{unused-fields-and-dependent-types}) also have similarities
+with typestate analysis and can occasionally substitute for it.  For
+brevity, this discussion omits them.)
+
+A typestate analysis is easier for a user to create or extend.
+Flow-sensitive type refinement is built into the Checker Framework and is
+optionally extended by each checker.  Modifying the rules requires writing
+Java code in your checker.  By contrast, it is possible to write a simple
+typestate checker declaratively, by writing annotations on the methods
+(such as \<close()>) that change a reference's typestate.
+
+A typestate analysis can change a reference's type to something that is not
+consistent with its original definition.  For example, suppose that a
+programmer decides that the \<@Open> and \<@Closed> qualifiers are
+incomparable --- neither is a subtype of the other.  A typestate analysis
+can specify that the \<close()> operation converts an \<@Open File> into a
+\<@Closed File>.  By contrast, flow-sensitive type refinement can only give
+a new type that is a subtype of the declared type --- for flow-sensitive
+type refinement to be effective, \<@Closed> would need to be a child of
+\<@Open> in the qualifier hierarchy (and \<close()> would need to be
+treated specially by the checker).
+
+
+\htmlhr
+\chapter{External checkers\label{external-checkers}}
+
+The checker framework has been used to build other checkers that are not
+distributed together with the framework.
+
+If you want a reference to your checker included in this chapter,
+send us a link and short description of your checker, 
+
+
+\section{Units and dimensions checker\label{units-checker}}
+
+A checker for units and dimensions is available at
+\url{http://www.lexspoon.org/expannots/}.
+
+
+% LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
+% LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
+% LocalWords:  uncapitalized processorpath Warski
