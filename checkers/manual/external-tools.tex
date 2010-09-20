@@ -127,11 +127,13 @@ the new \code{javac} compiler.
   \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
   \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
 \item
-  Verify that the installation works.  From a Windows command prompt, run:
+  Verify that the installation works.  From a Windows command prompt, run
+  (all on one line):
 
 % Do I need to quote the space in "Program Files"?
 \begin{Verbatim}
-  java -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
+       -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The output should be:
