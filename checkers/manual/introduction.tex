@@ -161,7 +161,8 @@ Section~\ref{javac-installation}.)
   There are no negative consequences to using the Type Annotations
   compiler, but if you choose not to do so, you have alternatives.
   When this document tells you to run \code{javac}, you will instead need
-  to run one of the following commands.
+  to run one of the following commands.  The command should be all on one
+  line, and followed by the javac arguments such as \code{-processor}.
 
 \begin{Verbatim}
   # Unix
@@ -178,8 +179,8 @@ Section~\ref{javac-installation}.)
 
 \end{enumerate}
 
-To ensure that it was installed properly, run one of the following commands:
-
+To ensure that it was installed properly, run \<javac -version> (using a
+variant of \<javac> if you did not add it to your path).
 
 The output should be:
 
