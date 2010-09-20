@@ -9,10 +9,7 @@ import checkers.quals.TypeQualifier;
 import com.sun.source.tree.Tree;
 
 /**
- * The Any modifier expresses no static ownership information, the referenced
- * object can have any owner.
- * 
- * @author wmdietl
+ * The bottom of the type hierarchy.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

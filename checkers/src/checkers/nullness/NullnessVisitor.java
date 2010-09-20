@@ -2,20 +2,39 @@ package checkers.nullness;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import checkers.basetype.*;
 import checkers.nullness.quals.LazyNonNull;
 import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.NonNullOnEntry;
 import checkers.nullness.quals.Nullable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.comp.Resolve;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Names;
 
 /**
  * A type-checking visitor for the Nullness type system.
@@ -56,7 +75,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         stringType = elements.getTypeElement("java.lang.String").asType();
     }
 
-    /** Case 1: Check for null dereferecing */
+    /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         if (!TreeUtils.isSelfAccess(node))
@@ -219,7 +238,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             } finally {
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", false)) {
-                        checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
+                        checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
                     }
                     // TODO: warn against uninitialized fields
                 }
@@ -236,7 +255,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
         Set<VariableElement> fields = getUninitializedFields(node);
         if (!fields.isEmpty()) {
-            checker.report(Result.warning("fields.uninitialized", fields), node);
+            checker.report(Result.failure("fields.uninitialized", fields), node);
         }
     }
 
@@ -282,7 +301,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         }
         return super.checkMethodInvocability(method, node);
     }
-
+    
     /**
      * Issues a 'dereference.of.nullable' if the type is not of a
      * {@link NonNull} type.
