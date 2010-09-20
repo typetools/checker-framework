@@ -537,7 +537,7 @@ These rules must be defined procedurally, not declaratively.
 The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
-Java syntax trees as provided by Sun's
+Java syntax trees as provided by Oracle's
 \ahref{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
@@ -901,7 +901,7 @@ checking (\refclass{types}{TreeAnnotator} implements
 \refTreeclass{tree}{TreeVisitor}).
 
 \emph{Utility classes}:
-Some useful methods appear in a utility class.  The Sun convention is that
+Some useful methods appear in a utility class.  The Oracle convention is that
 the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 \refModelclass{util}{Types}, \refModelclass{util}{Elements}, and
 \refTreeclass{util}{Trees}).  The Checker Framework uses a common
@@ -925,9 +925,9 @@ version 7 of the compiler. Implementing these two methods should be enough
 for a basic plugin; see the Javadoc for the class for other methods that
 you may find useful later on.
 
-The Checker Framework uses Sun's Tree API to access a program's AST\@.
-The Tree API is specific to the Sun JDK, so the Checker Framework only
-works with Sun's javac, not with Eclipse's compiler ecj or with
+The Checker Framework uses Oracle's Tree API to access a program's AST\@.
+The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
+works with the OpenJDK javac, not with Eclipse's compiler ecj or with
 \ahref{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
 the integration of the Checker Framework into other IDEs such as \ahref{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.

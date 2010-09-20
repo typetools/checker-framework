@@ -136,22 +136,51 @@ or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://developer.apple.com/java/}{Apple's implementation} or
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte}.
 
-The installation process is simple!  Just download the Checker
-Framework distribution
-(\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
-and unzip it to create a \code{checkers} folder.
+The installation process is simple!  (For a set of commands that you can
+copy and paste into your command shell, see
+Section~\ref{javac-installation}.)
+\begin{enumerate}
+\item
+  Download the Checker Framework distribution
+  (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}).
+\item 
+  Unzip it to create a \code{checker-framework} directory.
+\item
+  Optionally, update your execution path.
 
-(If you wish to have a set of commands that you can copy and paste into
-your command shell, see Section~\ref{javac-installation}.)
+  When doing pluggable type-checking, you need to use the ``Type
+  Annotations compiler'', which is an updated version of the OpenJDK javac
+  compiler.  If you add directory
+  \code{.../checker-framework/checkers/binary} to your path, then whenever
+  you run \code{javac}, you will use the updated compiler.  Or, you can
+  install the compiler (from \url{http://types.cs.washington.edu/jsr308/})
+  using its own
+  \ahref{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}{installation
+    instructions}.
 
-% You can put it anywhere convenient and memorable.
-
-To ensure that it was installed properly, run the following command:
+  There are no negative consequences to using the Type Annotations
+  compiler, but if you choose not to do so, you have alternatives.
+  When this document tells you to run \code{javac}, you will instead need
+  to run one of the following commands.  The command should be all on one
+  line, and followed by the javac arguments such as \code{-processor}.
 
 \begin{Verbatim}
-  java -jar /path/to/../checker-framework/checkers/binary/jsr308-all.jar -version  # in Linux
-  java -jar c:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar -version # in Windows
+  # Unix
+  /path/to/checker-framework/checkers/binary/javac
+
+  # Unix
+  java -Xbootclasspath/p:$JSR308/checker-framework/checkers/binary/jsr308-all.jar
+       -jar $JSR308/checker-framework/checkers/binary/jsr308-all.jar -version
+
+  # Windows
+  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
+       -jar C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar -version
 \end{Verbatim}
+
+\end{enumerate}
+
+To ensure that it was installed properly, run \<javac -version> (using a
+variant of \<javac> if you did not add it to your path).
 
 The output should be:
 
@@ -161,14 +190,9 @@ The output should be:
 
 That's all there is to it!  Now you are ready to start using the checkers.
 
-The download includes an updated version of the javac compiler, called
-the ``Type Annotations compiler'' or ``JSR 308 compiler'', that will be
-shipped with Java 7.  In order to use the updated compiler when you type
-\code{javac}, add the directory \code{.../checker-framework/checkers/binary} to the
-beginning of your path.
-
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
+
 
 \section{Example use:  detecting a null pointer bug\label{example-use}}
 
@@ -184,18 +208,17 @@ this:
 \end{Verbatim}
 
 \noindent
-then you will instead use one of the two command lines:
+then you will instead use the command line:
 
 \begin{alltt}
-  # Use this version if you ran the optional installation step from Section \ref{installation}.
   javac -processor \textit{ProcessorName} Foo.java Bar.java
-
-  # Use this version if you did not run the optional installation step from Section \ref{installation}.
-  # Give the full pathname to the jsr308-all.jar file.
-  java -jar jsr308-all.jar -processor \textit{ProcessorName} Foo.java Bar.java
 \end{alltt}
 
 \noindent
+but take note that the \code{javac} command must refer to the Type
+Annotations compiler (see Section~\ref{installation}).
+
+
 If you usually do your coding within an IDE, you will need to configure
 the IDE.  This manual contains instructions for
 Ant (Section~\ref{ant-task}),
@@ -223,12 +246,10 @@ public class GetStarted {
 \end{Verbatim}
 
 \item
-  Run the nullness checker on the class.  Either run one of these commands:
-
+  Run the nullness checker on the class.
+  Either run this command:
 \begin{Verbatim}
-  # Use the first line if you ran the optional installation step; use the second line otherwise.
   javac -processor checkers.nullness.NullnessChecker GetStarted.java
-  java -jar ...jsr308-all.jar -processor checkers.nullness.NullnessChecker GetStarted.java
 \end{Verbatim}
 
 \noindent
@@ -318,7 +339,7 @@ Additional topics that apply to all checkers are covered later in the manual:
 
 \section{Writing annotations\label{writing-annotations}}
 
-The syntax of type qualifier annotations in Java 7 is specified by
+The syntax of type annotations in Java is specified by
 \ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{jsr308}.  Ordinary
 Java permits annotations on declarations.  JSR 308 permits annotations
 anywhere that you would write a type, including generics and casts.  You
@@ -339,7 +360,7 @@ You can also write the annotations within comments, as in
 distributed with the Checker Framework, will still process
 the annotations.
 However, your code will remain compilable by people who are not using the
-Type Annotations or Java 7 compiler.  For more details, see
+Type Annotations compiler.  For more details, see
 Section~\ref{annotations-in-comments}.
 
 
@@ -601,7 +622,7 @@ program, even if the checker is unable to verify the correctness of an
 entire program.
 
 In order to avoid a flood of unhelpful warnings, many of the checkers avoid
-issuing the same worning multiple times.  For example, in this code:
+issuing the same warning multiple times.  For example, in this code:
 
 \begin{Verbatim}
   @Nullable Object x = ...;

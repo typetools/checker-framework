@@ -296,14 +296,21 @@ in the Checker Framework release.)
 
 \begin{enumerate}
 \item
+% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
+% the need to set it?  It's used for:
+%  * the location of tools.jar, below.
+%  * the default location of RTJAR, in checkers/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
-7 installation.  (It may already be set for Ant to work.)
+7 installation (not the JRE installation.  (It may already be set for Ant to work.)
 
-Here is a command that works in the bash shell, for example:
-% Can someone give a simpler command?
-\begin{Verbatim}
-  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
-\end{Verbatim}
+%% This does not work, because "java" might be the version in the JDK or in
+%% the JRE.
+% Here is a command that works in the bash shell, for example:
+% % Can someone give a simpler command?
+% \begin{Verbatim}
+%   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+% \end{Verbatim}
+
 \item
 Compile the Type Annotations javac compiler and the javap tool:
 
@@ -324,7 +331,7 @@ Compile the Type Annotations javac compiler and the javap tool:
 
 % JSR 308 extends the Java language to permit annotations to appear on types,
 % as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-% This change will be part of the Java 7 language.  We recommend that you
+% This change will be part of the Java 7 or 8 language.  We recommend that you
 % write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
 % Section~\ref{annotations-in-comments}).  The JSR 308 compiler still reads
 % such annotations, but this syntax permits you to use a compiler other than
