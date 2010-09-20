@@ -19,13 +19,15 @@ import java.util.ArrayList;
 
 /**
  * The main class for the Checkers when using the binary distribution, that
- * delegates the compilation invocation to javac.
+ * delegates the compilation invocation to javac.<p>
  *
  * The class has two responsibilities:
- *   - it adds the annotated JDK to the bootclasspath
- *   - if invoked when the compiler classes in the bootclasspath (e.g. with
- *     Apple JVM), it restarts the JVM and prepend JSR 308 compiler to
+ * <ul>
+ * <li>it adds the annotated JDK to the bootclasspath
+ * <li>if invoked when the compiler classes is in the bootclasspath (e.g. with
+ *     Apple JVM), it restarts the JVM and prepends the JSR 308 compiler to
  *     bootclasspath.
+ * </ul>
  */
 public class CheckerMain {
     private static final String VERSION = "1";
