@@ -259,8 +259,9 @@ Subject: Release %s of the Checker Framework and Type Annotations compiler
 
 We have released a new version of the Type Annotations (JSR 308) compiler
 and of the Checker Framework.  The Type Annotations compiler supports the
-Java 7 annotation syntax.  The Checker Framework lets you create and/or run
-pluggable type-checkers, in order to detect and prevent bugs in your code.
+type annotation syntax that is planned for a future version of the Java
+language.  The Checker Framework lets you create and/or run pluggable
+type-checkers, in order to detect and prevent bugs in your code.
 
 Notable changes include: [[ FILL ME HERE ]]
 
