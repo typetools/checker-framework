@@ -2,10 +2,6 @@ import checkers.interning.quals.*;
 
 import java.util.*;
 
-// The @Interned annotation indicates that much like an enum, all variables
-// declared of this type are interned (except the constuctor return value).
-// (Perhaps unless otherwise annotated with @Uninterned??  Don't bother to
-// implement that yet.)
 public class Constants {
 
   // All but D should be inferred to be @Interned String.

@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
-Version 1.1.1,
+Version 1.1.1, 18 Sep 2010
 
 Eclipse support:
   Removed the obsolete Eclipse plug-in from repository.  The new one uses a
@@ -14,6 +14,10 @@ Property Key Checker:
 
 Javari Checker:
   Added Javari stub classes for more JDK classes.
+
+Distribution:
+  Changed directory structure (top level is "checker-framework"; "checkers"
+  is a under that) for consistency with version control repository.
 
 Many documentation improvements and minor bugfixes.
 

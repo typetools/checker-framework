@@ -4,7 +4,7 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-<title>Releasing the JSR 308 langtools and the Checker Framework</title>
+<title>JSR 308 langtools:  README for maintainers</title>
 <style type="text/css">
 body { font-family: sans-serif; margin: 20px }
 pre { background-color: #CCC; padding: 0.75em; }
@@ -13,27 +13,86 @@ pre { background-color: #CCC; padding: 0.75em; }
 
 <body>
 
-<h1>Releasing the JSR 308 langtools and the Checker Framework</h1> <!-- omit from toc -->
+<h1>JSR 308 langtools:  README for maintainers</h1> <!-- omit from toc -->
 
-<p>This document explains how to make a public release of the JSR 308
+<p>
+This document explains processes for maintaners of the JSR 308 (type
+annotations) tools.
+</p>
+
+
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#updating-from-openjdk">Updating jsr308-langtools from OpenJDK changes</a></li>
+      <li><a href="#release">Releasing the JSR 308 langtools and the Checker Framework</a>
+        <ul>
+          <li><a href="#Requirements">Requirements</a></li>
+          <li><a href="#Setup">Initial setup</a></li>
+          <li><a href="#Release">Making a release</a></li>
+          <li><a href="#Release-Manual">Making a manual release</a></li>
+        </ul></li>
+    </ul>
+<!-- end toc -->
+
+<h2 id="updating-from-openjdk">Updating jsr308-langtools from OpenJDK changes</h2>
+
+<p>
+jsr308-langtools and basic-jsr308-langtools are the same, if one removes
+all edits from mernst, mali, mahmood, notnoop.  That means that they should
+be updated in the same way.  I presume one should update
+basic-jsr308-langtools from OpenJDK, then jsr308-langtools from
+basic-jsr308-langtools.
+</p>
+
+<pre>
+# First, make sure Sun has not broken the OpenJDK version
+# (Sun's repository is at http://hg.openjdk.java.net/jdk7/jdk7/langtools/ ).
+cd ~/research/types/openjdk-langtools
+hg fetch
+cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.java.home=$HOME/java/jdk -Djtreg.home=$HOME/research/types/jtreg clean build-all-tools jtreg
+
+# Next, make sure that we have not broken our version:
+cd ~/research/types/basic-jsr308-langtools
+hg fetch
+cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.java.home=$HOME/java/jdk -Djtreg.home=$HOME/research/types/jtreg clean build-all-tools jtreg
+
+# Incorporate OpenJDK changes into basic.
+# There are tags like "jdk7-b108" that I should take advantage of rather
+# than just blind "hg fetch" to whatever is current.
+cd ~/research/types/basic-jsr308-langtools
+## Alternately:  hg fetch http://hg.openjdk.java.net/jdk7/tl/langtools/
+## which gets patches faster (jdk7/jdk7 version is synced every 3 weeks),
+## which can be good or bad.
+hg fetch http://hg.openjdk.java.net/jdk7/jdk7/langtools/
+cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.java.home=$HOME/java/jdk -Djtreg.home=$HOME/research/types/jtreg clean build-all-tools jtreg
+
+# Incorporate basic changes into jsr308-langtools
+cd ~/research/types/jsr308-langtools
+hg fetch https://basic.jsr308-langtools.googlecode.com/hg/
+cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.java.home=$HOME/java/jdk -Djtreg.home=$HOME/research/types/jtreg clean build-javac build-javap build-javadoc build-doclets javadoc-javac jtreg
+
+# Do not commit any changes to jsr308-langtools yet!
+(make -C $qn) && (make -C $pl/java check-nullness check-interning) && (make -C $inv check-nullness check-interning)
+
+# If the above passes, commit changes to jsr308-langtools.
+</pre>
+
+
+<h2 id="release">Releasing the JSR 308 langtools and the Checker Framework</h2>
+
+<p>This section explains how to make a public release of the JSR 308
 langtools and checkers.</p>
+
+<p>You should first <a href="#updating-from-openjdk">update</a>
+jsr308-langtools from recent OpenJDK changes.</p>
 
 <p>The release process is mostly automated, but you should expect to
 spend 30 to 60 minutes for each release you make. You will actually
 make the release twice &mdash; first to a testing site, and then to the live
 site.</p>
 
-<p>Contents:</p>
-<!-- start toc.  do not edit; run html-update-toc instead -->
-    <ul>
-      <li><a href="#Requirements">Requirements</a></li>
-      <li><a href="#Setup">Initial setup</a></li>
-      <li><a href="#Release">Making a release</a></li>
-      <li><a href="#Release-Manual">Making a manual release</a></li>
-    </ul>
-<!-- end toc -->
-
-<h2 id="Requirements">Requirements</h2>
+<h3 id="Requirements">Requirements</h3>
 
 <p>To make a release of the JSR 308 langtools and checkers, you need:</p>
 
@@ -45,26 +104,30 @@ site.</p>
 <li>LaTeX (along with <code>hevea</code> and <code>bibtex</code>)</li>
 <li>a web-accessible directory like <code>public_html</code> (for
 testing the release)</li>
+<li>to be a member of the <code>types_www</code> Unix group</li>
 </ul>
 
 <p>You should have all of the above if you use a Washington CSE machine
 (e.g., <code>jicama</code> or <code>godwit</code>).</p>
 
 
-<h2 id="Setup">Initial setup</h2>
+<h3 id="Setup">Initial setup</h3>
 
 <ol>
 <li>
-<p>Add <code>plume-lib/bin</code> to your <code>PATH</code>.
-Mike has a (usually) up-to-date checkout at
-<code>~mernst/bin/src/plume-lib/bin</code></p>
+<p>Check out plume-lib</p>
+<pre>
+  (cd; hg clone https://plume-lib.googlecode.com/hg/ plume-lib)
+</pre>
 </li>
 
-<li>
-<p>Ensure that the various tools needed for the release are in your
-<code>PATH</code>.  The files are scattered around the following
-folders: <code>~mernst/bin/share</code>, <code>~mernst/bin/Linux-i686</code>,
-and <code>/uns/bin</code>.
+<li>Set environment variables (in your <tt>.bashrc</tt> file).
+<pre>
+  export PATH=${PATH}:$HOME/plume-lib/bin
+  export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
+  export anno=/scratch/$USER/jsr308-release
+  export EDITOR=emacs
+</pre>
 </li>
 
 <li>If you have never made a release before or no longer have a
@@ -108,7 +171,7 @@ testing site:</p>
 </li>
 </ol>
 
-<h2 id="Release">Making a release</h2>
+<h3 id="Release">Making a release</h3>
 
 <ol>
 
@@ -130,7 +193,7 @@ tag releases instead) by examining the output of
 </p>
 <pre>
   (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
-  (cd $anno/jsr308-langtools; hg log /doc/changelog-jsr308.txt)
+  (cd $anno/jsr308-langtools; hg log doc/changelog-jsr308.txt)
 </pre>
 <p>
 and setting environment variables accordingly:
@@ -185,10 +248,10 @@ with the proper date substituted.
 </li>
 
 <li>
-<p>In <tt>checker-framework/release</tt>, execute:</p>
+<p>Execute:</p>
 
 <pre>
-    export EDITOR=emacs
+    cd $anno/checker-framework/release
     python -m release
 </pre>
 
@@ -226,6 +289,13 @@ fails to check for broken links.)
 </li>
 
 <li>
+Ensure that the files you created are group-writeable.  Ignore any errors
+from this command.
+<pre>
+chmod -R g+w /cse/www2/types/
+</pre>
+
+<li>
 <p>Tag the release, for example [TODO: this should be automated.  TODO: Do
   this *after* making the release, maybe?]:
 </p>
@@ -235,10 +305,11 @@ fails to check for broken links.)
 </ol>
 
 
-<h2 id="Release-Manual">Making a manual release</h2>
+<h3 id="Release-Manual">Making a manual release</h3>
 
 <p><b>These instructions are deprecated in favor of the python release
-script.  The material will be deleted in its due time</b></p>
+script.  The material will be deleted in due time.  But, for now there is
+information here that is not captured in the python release script.</b></p>
 
 <ol>
 <li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.

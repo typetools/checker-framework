@@ -22,15 +22,17 @@ If you use \code{javac} compiler from the command line, then you can use the
 Java 7 \code{javac} that is bundled with the Checker Framework.  The bundled
 \code{javac} recognizes type annotations, and annotations in
 comments (see Section~\ref{annotations-in-comments}).
-(Eventually, you will be able to use any Java 7 compiler, but Oracle has
+(Eventually, you will be able to use any Java 7 compiler, such as the
+OpenJDK compiler, but Oracle has
 been slow to incorporate all the patches, so the bundled \code{javac} is
-superior, for the purpose of pluggable type-checking.)
+superior, for the purpose of pluggable type-checking, and is equivalent in
+all other respects.)
 
 This section describes how you can install and use the bundled
 \code{javac}, using either Unix/Linux/MacOS (see
 Section~\ref{unix-installation}) or Windows (see
 Section~\ref{windows-installation}).
-The instructions are identical to those of Section~\label{installation},
+The instructions are identical to those of Section~\ref{installation},
 but are given as commands that you can cut and paste into your command shell.
 
 
@@ -71,7 +73,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
+  javac 1.7.0-jsr308-1.1.1
 \end{Verbatim}
 
 
@@ -97,7 +99,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
+  javac 1.7.0-jsr308-1.1.1
 \end{Verbatim}
 
 \end{enumerate}
@@ -127,17 +129,19 @@ the new \code{javac} compiler.
   \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
   \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
 \item
-  Verify that the installation works.  From a Windows command prompt, run:
+  Verify that the installation works.  From a Windows command prompt, run
+  (all on one line):
 
 % Do I need to quote the space in "Program Files"?
 \begin{Verbatim}
-  java -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
+       -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
+  javac 1.7.0-jsr308-1.1.1
 \end{Verbatim}
 
 \end{enumerate}
@@ -204,7 +208,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.0.9
+  javac 1.7.0-jsr308-1.1.1
 \end{Verbatim}
 
 \end{enumerate}
