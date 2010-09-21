@@ -1,5 +1,7 @@
 package checkers.interning;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 
 import checkers.source.*;
@@ -70,7 +72,13 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         if (suppressByHeuristic(node))
             return super.visitBinary(node, p);
-
+        
+        if(suppressEarlyEquals(node))
+        	return super.visitBinary(node, p);
+        
+        if(suppressEarlyCompareTo(node))
+        	return super.visitBinary(node, p);
+        	
         if (!(shouldCheckFor(leftOp) && shouldCheckFor(rightOp)))
             return super.visitBinary(node, p);
 
@@ -128,6 +136,22 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
                 // method symbols only have simple names
                 && method.getSimpleName().contentEquals("equals"));
     }
+    
+    /**
+     * Tests whether a method invocation is an invocation of
+     * {@link Comparable#compareTo}.
+     * <p>
+     *
+     * @param node a method invocation node
+     * @return true iff {@code node} is a invocation of {@code compareTo()}
+     */
+    private boolean isInvocationOfCompareTo(MethodInvocationTree node) {
+        ExecutableElement method = TreeUtils.elementFromUse(node);
+        return (method.getParameters().size() == 1
+                && method.getReturnType().getKind() == TypeKind.INT
+                // method symbols only have simple names
+                && method.getSimpleName().contentEquals("compareTo"));
+    }
 
     /**
      * Pattern matches particular comparisons to avoid common false positives
@@ -137,13 +161,18 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
      * Specifically, this method tests if:  the comparison is a == comparison,
      * it is the test of an if statement that's the first statement in the
      * method, and one of the following is true:
-     *
-     * 1. the method overrides {@link Comparator#compare}, the "then" branch
+     *<ol>
+     * <li> the method overrides {@link Comparator#compare}, the "then" branch
      *    of the if statement returns zero, and the comparison tests equality
-     *    of the method's two parameters
+     *    of the method's two parameters</li>
      *
-     * 2. the method overrides {@link Object#equals(Object)} and the
-     *    comparison tests "this" against the method's parameter
+     * <li> the method overrides {@link Object#equals(Object)} and the
+     *    comparison tests "this" against the method's parameter </li>
+     *    
+     * <li> the method overrides {@link Comparable#compareTo(Object)}, the 
+     *    "then" branch of the if statement returns zero, and the comparison
+     *    tests "this" against the method's parameter </li>
+     * </ol>
      *
      * @param node the comparison to check
      * @return true if one of the supported heuristics is matched, false
@@ -151,7 +180,6 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
      */
     // TODO: handle != comparisons too!
     private boolean suppressByHeuristic(final BinaryTree node) {
-
         // Only handle == binary trees
         if (node.getKind() != Tree.Kind.EQUAL_TO)
             return false;
@@ -174,36 +202,38 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
         assert enclosing != null;
 
-        Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
-        Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
+        final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        
+        //Matcher to check for if statement that returns zero
+        Heuristics.Matcher matcher = new Heuristics.Matcher() {
 
+            @Override
+            public Boolean visitIf(IfTree tree, Void p) {
+                return visit(tree.getThenStatement(), p);
+            }
+
+            @Override
+            public Boolean visitBlock(BlockTree tree, Void p) {
+                if (tree.getStatements().size() > 0)
+                    return visit(tree.getStatements().get(0), p);
+                return false;
+            }
+
+            @Override
+            public Boolean visitReturn(ReturnTree tree, Void p) {
+                ExpressionTree expr = tree.getExpression();
+                return (expr != null &&
+                        expr.getKind() == Tree.Kind.INT_LITERAL &&
+                        ((LiteralTree)expr).getValue().equals(0));
+            }
+        };
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
-        if (overrides(enclosing, Comparator.class, "compare")) {
-            final boolean returnsZero =
+        if (overrides(enclosing, Comparator.class, "compare")) { 
+            final boolean returnsZero =                           
                 Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, new Heuristics.Matcher() {
-
-                    @Override
-                    public Boolean visitIf(IfTree tree, Void p) {
-                        return visit(tree.getThenStatement(), p);
-                    }
-
-                    @Override
-                    public Boolean visitBlock(BlockTree tree, Void p) {
-                        if (tree.getStatements().size() > 0)
-                            return visit(tree.getStatements().get(0), p);
-                        return false;
-                    }
-
-                    @Override
-                    public Boolean visitReturn(ReturnTree tree, Void p) {
-                        ExpressionTree expr = tree.getExpression();
-                        return (expr != null &&
-                                expr.getKind() == Tree.Kind.INT_LITERAL &&
-                                ((LiteralTree)expr).getValue().equals(0));
-                    }
-                })).match(getCurrentPath());
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
 
             if (!returnsZero)
                 return false;
@@ -221,10 +251,204 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
                 || (param.equals(lhs) && thisElt.equals(rhs));
-        }
-
+            
+        } else if (overrides(enclosing, Comparable.class, "compareTo")) {
+        	    	
+        	final boolean returnsZero =                           
+                Heuristics.Matchers.withIn(
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
+        	
+        	if(!returnsZero) {
+        		return false;
+        	}
+        	
+        	assert enclosing.getParameters().size() == 1;
+            Element param = enclosing.getParameters().get(0);
+            Element thisElt = getThis(trees.getScope(getCurrentPath()));
+            assert thisElt != null;
+            return (thisElt.equals(lhs) && param.equals(rhs))
+                || (param.equals(lhs) && thisElt.equals(rhs));
+            
+        } 
         return false;
     }
+    
+    /**
+     * Pattern matches to prevent false positives of the form
+     * {@code (a == b || a.equals(b)}. Returns true iff
+     * the given node fits this pattern.
+     * 
+     * @param node
+     * @return true iff the node fits the pattern (a == b || a.equals(b))
+     */
+    private boolean suppressEarlyEquals(final BinaryTree node){
+    	// Only handle == binary trees
+        if (node.getKind() != Tree.Kind.EQUAL_TO)
+            return false;
+
+        Tree left = node.getLeftOperand();
+        Tree right = node.getRightOperand();
+
+        // Only valid if we're comparing identifiers.
+        if (!(left.getKind() == Tree.Kind.IDENTIFIER
+                && right.getKind() == Tree.Kind.IDENTIFIER)) {
+            return false;
+        }
+        
+        final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
+        final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        
+    	// looking for ((a == b || a.equals(b))
+        Heuristics.Matcher matcher = new Heuristics.Matcher() {
+                	
+                	@Override
+        			public Boolean visitBinary(BinaryTree tree, Void p){
+        				ExpressionTree leftTree = tree.getLeftOperand();   //looking for a==b
+        				ExpressionTree rightTree = tree.getRightOperand(); //looking for a.equals(b) or b.equals(a)
+        				if (leftTree != node){  
+        					return false;
+        				}
+        				if(rightTree.getKind() != Tree.Kind.METHOD_INVOCATION){
+        					return false;
+        				}
+        				return visit(rightTree, p);
+        	       	}
+                	
+                	@Override
+                	public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p){
+                		if(!isInvocationOfEquals(tree)){
+        					return false;
+        				}
+        		
+                        List<? extends ExpressionTree> args = tree.getArguments();
+                        if(args.size() != 1){
+                        	return false;
+                        }
+                        ExpressionTree arg = args.get(0);
+                        if(arg.getKind() != Tree.Kind.IDENTIFIER){
+                        	return false;
+                        }
+                        Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
+                        
+                        ExpressionTree exp = tree.getMethodSelect();
+                        if(exp.getKind() != Tree.Kind.MEMBER_SELECT){
+                        	return false;
+                        }
+                        MemberSelectTree member = (MemberSelectTree) exp;
+                        if(member.getExpression().getKind() != Tree.Kind.IDENTIFIER){
+                        	return false;
+                        }
+                        
+                        Element refElt = TreeUtils.elementFromUse((IdentifierTree)member.getExpression());                        
+                                				
+        				if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
+        					 ((refElt.equals(rhs) && argElt.equals(lhs))))) {
+        					return false;
+        				}
+        				return true;
+                	}
+        };
+        boolean okay = Heuristics.Matchers.withIn(
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+    	return okay;
+    }
+    
+    /**
+     * Pattern matches to prevent false positives of the form
+     * {@code (a == b || a.compareTo(b) == 0)}. Returns true iff
+     * the given node fits this pattern.
+     * 
+     * @param node
+     * @return true iff the node fits the pattern (a == b || a.compareTo(b) == 0)
+     */
+    private boolean suppressEarlyCompareTo(final BinaryTree node){
+    	// Only handle == binary trees
+        if (node.getKind() != Tree.Kind.EQUAL_TO)
+            return false;
+
+        Tree left = node.getLeftOperand();
+        Tree right = node.getRightOperand();
+
+        // Only valid if we're comparing identifiers.
+        if (!(left.getKind() == Tree.Kind.IDENTIFIER
+                && right.getKind() == Tree.Kind.IDENTIFIER)) {
+            return false;
+        }
+        
+        final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
+        final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        
+    	// looking for ((a == b || a.compareTo(b) == 0)
+        Heuristics.Matcher matcher = new Heuristics.Matcher() {
+        	
+        	@Override
+        	public Boolean visitBinary(BinaryTree tree, Void p){
+        		if (tree.getKind() == Tree.Kind.EQUAL_TO){ 				// a.compareTo(b) == 0
+        			ExpressionTree leftTree = tree.getLeftOperand();   	//looking for a.compareTo(b) or b.compareTo(a)
+    				ExpressionTree rightTree = tree.getRightOperand(); 	//looking for 0
+    				
+    				if(rightTree.getKind() != Tree.Kind.INT_LITERAL){
+    					return false;
+    				}
+    				LiteralTree rightLiteral = (LiteralTree) rightTree;
+    				if(!rightLiteral.getValue().equals(0)){
+    					return false;
+    				}
+    				
+    				return visit(leftTree, p);
+        		} else {												// a == b || a.compareTo(b) == 0
+					ExpressionTree leftTree = tree.getLeftOperand();   	//looking for a==b
+					ExpressionTree rightTree = tree.getRightOperand(); 	//looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
+					if (leftTree != node){  
+						return false;
+					}
+					if(rightTree.getKind() != Tree.Kind.EQUAL_TO){
+						return false;
+					}
+					return visit(rightTree, p);
+        		}
+        	}
+        	
+        	@Override
+        	public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p){
+        		if(!isInvocationOfCompareTo(tree)){
+        			return false;
+        		}
+    		
+                List<? extends ExpressionTree> args = tree.getArguments();
+                if(args.size() != 1){
+                	return false;
+                }
+                ExpressionTree arg = args.get(0);
+                if(arg.getKind() != Tree.Kind.IDENTIFIER){
+                	return false;
+                }
+                Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
+                
+                ExpressionTree exp = tree.getMethodSelect();
+                if(exp.getKind() != Tree.Kind.MEMBER_SELECT){
+                	return false;
+                }
+                MemberSelectTree member = (MemberSelectTree) exp;
+                if(member.getExpression().getKind() != Tree.Kind.IDENTIFIER){
+                	return false;
+                }
+                
+                Element refElt = TreeUtils.elementFromUse((IdentifierTree)member.getExpression());                        
+                        				
+				if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
+					 ((refElt.equals(rhs) && argElt.equals(lhs))))) {
+					return false;
+				}
+				return true;
+        	}
+        };
+        
+        boolean okay = Heuristics.Matchers.withIn(
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+    	return okay;
+    }
+    
 
     /**
      * Determines the element corresponding to "this" inside a scope.  Returns
