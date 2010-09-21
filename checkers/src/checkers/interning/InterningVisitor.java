@@ -70,7 +70,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
                 rightOp.getKind() == Tree.Kind.NULL_LITERAL)
             return super.visitBinary(node, p);
 
-        if (suppressByHeuristic(node))
+        if (suppressInsideComparison(node))
             return super.visitBinary(node, p);
         
         if(suppressEarlyEquals(node))
@@ -179,7 +179,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
      *         otherwise
      */
     // TODO: handle != comparisons too!
-    private boolean suppressByHeuristic(final BinaryTree node) {
+    private boolean suppressInsideComparison(final BinaryTree node) {
         // Only handle == binary trees
         if (node.getKind() != Tree.Kind.EQUAL_TO)
             return false;
