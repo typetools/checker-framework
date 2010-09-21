@@ -1,0 +1,600 @@
+\htmlhr
+\chapter{Integration with external tools\label{external-tools}}
+
+This section discusses how to run a checker from your favorite IDE\@.
+
+Or, if your favorite isn't here, you should customize how it runs the
+javac command on your behalf.  See the IDE documentation to learn how to
+customize it, adapting the instructions for javac in Section~\ref{running}.
+If you make another tool support running a checker, please
+inform us via the
+\ahref{http://groups.google.com/group/checker-framework-discuss}{mailing
+  list} or
+\ahref{http://code.google.com/p/checker-framework/issues/list}{issue tracker} so
+we can add it to this manual.
+
+This section also discusses type inference tools (see
+Section~\ref{type-inference-tools}).
+
+\section{Javac Compiler\label{javac-installation}}
+
+If you use \code{javac} compiler from the command line, then you can use the
+Java 7 \code{javac} that is bundled with the Checker Framework.  The bundled
+\code{javac} recognizes type annotations, and annotations in
+comments (see Section~\ref{annotations-in-comments}).
+(Eventually, you will be able to use any Java 7 compiler, such as the
+OpenJDK compiler, but Oracle has
+been slow to incorporate all the patches, so the bundled \code{javac} is
+superior, for the purpose of pluggable type-checking, and is equivalent in
+all other respects.)
+
+This section describes how you can install and use the bundled
+\code{javac}, using either Unix/Linux/MacOS (see
+Section~\ref{unix-installation}) or Windows (see
+Section~\ref{windows-installation}).
+The instructions are identical to those of Section~\ref{installation},
+but are given as commands that you can cut and paste into your command shell.
+
+
+%%% *****
+%%% UPDATE
+%%% *****
+
+%%% Note that much of this section is duplicated with the "Windows
+%%% installation" section.  That is better for users, even though it is
+%%% longer and makes the maintainers keep two versions in sync.
+\subsection{Unix/Linux/MacOS installation\label{unix-installation}}
+
+These instructions assume that you use the bash or sh shell.  If you use a
+different shell, you may need to slightly adjust the commands.
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  and unzip it.  You can put it anywhere you like by changing the
+  definition of environment variable \code{JSR308} below; a standard place
+  is in a
+  new directory named \code{jsr308}.
+
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  mkdir -p ${JSR308}
+  cd ${JSR308}
+  # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
+  unzip checkers.zip
+  chmod +x checker-framework/checkers/binary/javac
+  checker-framework/checkers/binary/javac -version
+\end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
+
+The output of the last command should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.1.1
+\end{Verbatim}
+
+
+\item
+  Place the following commands in your \code{.bashrc} file:
+\begin{Verbatim}
+  export JSR308=$HOME/jsr308
+  export PATH=$JSR308/checker-framework/checkers/binary:${PATH}
+\end{Verbatim}
+% unconfuse Emacs LaTeX mode: $
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checker-framework/checkers/checkers.jar:${CLASSPATH}
+
+Also execute them on the command line, or log out and back in.  Then,
+verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.1.1
+\end{Verbatim}
+
+\end{enumerate}
+
+That's all there is to it!  Now you are ready to start using the checkers with
+the new \code{javac} compiler.
+
+\subsection{Windows installation\label{windows-installation}}
+
+\begin{enumerate}
+
+\item
+  Download the latest Checker Framework distribution
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  and unzip it to create a \<checkers> directory.  You can put it anywhere
+  you like; a standard place is in a new directory under \<C:\ttbs{}Program
+  Files>.
+
+\begin{enumerate}
+\item
+  Save the file
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}
+  to your Desktop.
+\item
+  Double-click the \<checkers.zip> file on your computer.  Click on
+  the \<checkers> directory, then Select \<Extract all files>, and use
+  \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
+  \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
+\item
+  Verify that the installation works.  From a Windows command prompt, run
+  (all on one line):
+
+% Do I need to quote the space in "Program Files"?
+\begin{Verbatim}
+  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
+       -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.1.1
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\item
+  In order to use the updated compiler when you type \code{javac}, add the
+  directory \<C:\ttbs{}Program Files\ttbs{}checkers\ttbs{}binary> to the
+  beginning of your path variable.  Also set a CHECKERS variable.
+
+% Instructions stolen from http://www.webreference.com/js/tips/020429.html
+
+To set an environment variable, you have two options:  make the change
+temporarily or permanently.
+\begin{itemize}
+\item
+To make the change \textbf{temporarily}, type at the command shell prompt:
+
+\begin{alltt}
+path = \emph{newdir};%PATH%
+\end{alltt}
+
+For example:
+
+\begin{Verbatim}
+path = C:\Program Files\checkers\binary;%PATH%
+set CHECKERS = C:\Program Files\checkers
+\end{Verbatim}
+
+This is a temporary change that endures until the window is closed, and you
+must re-do it every time you start a new command shell.
+
+\item
+To make the change \textbf{permanently},
+Right-click the \<My Computer> icon and
+select \<Properties>. Select the \<Advanced> tab and click the
+\<Environment Variables> button. You can set the variable as a ``System
+Variable'' (visible to all users) or as a ``User Variable'' (visible to
+just this user).  Both work; the instructions below show how to set as a
+``System Variable''.
+In the \<System Variables> pane, select
+\<Path> from the list and click \<Edit>. In the \<Edit System Variable>
+dialog box, move the cursor to the beginning of the string in the
+\<Variable Value> field and type the full directory name followed by a
+semicolon (\<;>).
+
+% This is for the benefit of the Ant task.
+Similarly, set the CHECKERS variable.
+
+This is a permanent change that only needs to be done once ever.
+\end{itemize}
+
+
+% It is not necessary to add checkers.jar to your classpath, because the
+% shipped compiler already does so.
+%   export CLASSPATH=$JSR308/checker-framework/checkers/checkers.jar:${CLASSPATH}
+
+Now, verify that the installation works.  From the command line, run:
+
+\begin{Verbatim}
+  javac -version
+\end{Verbatim}
+
+The output should be:
+
+\begin{Verbatim}
+  javac 1.7.0-jsr308-1.1.1
+\end{Verbatim}
+
+\end{enumerate}
+
+
+\section{Ant task\label{ant-task}}
+
+If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
+your software, then you can add an Ant task that runs a checker.  We assume
+that your Ant file already contains a compilation target that uses the
+\code{javac} task.
+
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <property environment="env"/>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes">
+      <!-- JSR308 related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg line="-target 5"/>
+      <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
+      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+
+      <classpath>
+        <pathelement location="${env.CHECKERS}/checkers.jar"/>
+      </classpath>
+    </javac>
+  </presetdef>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item Duplicate the compilation target, then modify it slightly as
+indicated in this example, filling in each ellipsis (\ldots) from the
+original compilation target:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target name="check-nullness"
+          description="Check for nullness errors"
+          depends="clean,...">
+    <!-- use jsr308.javac instead of javac -->
+    <jsr308.javac ... >
+      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
+      <!-- optional, to not check library bodies: <compilerarg value="-AskipClasses=^(java\.awt\.|javax\.swing\.)"/> -->
+      ...
+    </jsr308.javac>
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+% Unconfuse Emacs font lock mode: $
+
+In the example, the target is named \code{check-nullness}, but you can
+name it whatever you like.
+
+The target should not include a \code{-source} argument, such as
+\code{-source 1.5}, because doing so will disable the annotations in
+comments feature (see Section~\refwithpage{annotations-in-comments}).
+\end{enumerate}
+
+\subsection{Explanation\label{ant-task-explanation}}
+
+This section explains each part of the Ant task.
+
+\begin{enumerate}
+\item Definition of \code{jsr308.javac}:
+
+The \code{fork} field of the \code{javac} task
+ensures that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the JSR 308 version that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-target 5} compiler argument is optional, if you use Java 5 in
+ordinary compilation when not performing pluggable type-checking.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+The \code{-Awarns ...} compiler argument is optional, and causes the checker to
+treat errors as warnings so that you can see all errors in all files rather
+than only the errors in the first file; see Section~\ref{running}.
+
+\item The \code{check-nullness} target:
+
+The target assumes the existence of a \code{clean} target that removes all
+\code{.class} files.  That is necessary because Ant's \code{javac} target
+doesn't re-compile \code{.java} files for which a \code{.class} file
+already exists.
+
+The \code{-processor ...} compiler argument indicates which checker to
+run.  You can supply additional arguments to the checker as well.
+
+\end{enumerate}
+
+
+\section{Maven plugin\label{maven-plugin}}
+
+If you use the \ahref{http://maven.apache.org/}{Maven} project tool,
+then you can specify the distributed checkers as part of your build
+process.
+
+\begin{enumerate}
+
+\item First, you need to add the repositories in your \code{pom.xml} file:
+
+\begin{Verbatim}
+    <repositories>
+        <repository>
+            <id>checker-framework-repo</id>
+            <url>http://types.cs.washington.edu/m2-repo</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>checker-framework-repo</id>
+            <url>http://types.cs.washington.edu/m2-repo</url>
+        </pluginRepository>
+    </pluginRepositories>
+\end{Verbatim}
+
+\item Then, to use the annotations used by the distributed checkers, you'll
+have to declared as a dependency:
+
+\begin{Verbatim}
+    <dependencies>
+        <!-- annotations for the standard checkers: nullness, interning, mutability -->
+        <dependency>
+            <groupId>com.jolira.types.checkers</groupId>
+            <artifactId>checkers-quals</artifactId>
+            <version>1.0.6</version>
+        </dependency>
+
+        <!-- other dependencies -->
+    </dependencies>
+\end{Verbatim}
+
+\item And finally, you need to attach the plugin to your build lifecycle:
+
+\begin{Verbatim}
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jolira.types.checkers</groupId>
+                <artifactId>checkersplugin</artifactId>
+                <version>0.1</version>
+                <executions>
+                    <execution>
+                        <!-- run the checkers after compilation; this can also be any later phase -->
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- required configuration options -->
+                    <!-- a list of processors to run -->
+                    <processors>
+                        <processor>checkers.nullness.NullnessChecker</processor>
+                        <processor>checkers.interning.InterningChecker</processor>
+                    </processors>
+
+
+                    <!-- other optional configuration -->
+                    <!-- full path to a java executable that should be used to create the forked JVM -->
+                    <executable>/opt/java1.6/bin/java</executable>
+                    <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->
+                    <failOnError>true|false</failOnError>
+                    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->
+                    <includes>
+                        <include>org/company/important/**/*.java</include>
+                    </includes>
+                    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->
+                    <excludes>
+                        <exclude>org/company/notimportant/**/*.java</exclude>
+                    </excludes>
+                    <!-- additional parameters passed to the JSR308 java compiler -->
+                    <javacParams>-Alint</javacParams>
+                    <!-- additional parameters to pass to the forked JVM -->
+                    <javaParams>-Xdebug</javaParams>
+                    <!-- versions of checkers to use; defaults to the current newest version: 1.0.6 -->
+                    <checkersVersion>0.8.8</checkersVersion>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+\end{Verbatim}
+
+\end{enumerate}
+
+The plugin was contributed by Adam Warski.
+% [Thanks Adam!]
+
+\section{IntelliJ IDEA\label{intellij}}
+
+IntelliJ IDEA (Maia release)
+\ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
+the Type Annotations (JSR-308) syntax.
+See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
+
+\section{Eclipse\label{eclipse}}
+
+There are two ways to run a checker from within the Eclipse IDE:  via Ant
+or using an Eclipse plug-in.
+
+
+\paragraph{Using an Ant task}
+
+Add an Ant target as described in Section~\ref{ant-task}.  You can
+run the Ant target by executing the following steps
+(instructions copied from
+\myurl{http://www.eclipse.org/documentation/?topic=/org.eclipse.platform.doc.user/gettingStarted/qs-84_run_ant.htm}):
+
+\begin{enumerate}
+
+\item
+  Select \code{build.xml} in one of the navigation views and choose
+  {\bf Run As $>$ Ant Build...} from its context menu.
+
+\item
+  A launch configuration dialog is opened on a launch configuration
+  for this Ant buildfile.
+
+\item
+  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+
+\item
+  Click {\bf Run}.
+
+\item
+  The Ant buildfile is run, and the output is sent to the Console view.
+
+\end{enumerate}
+
+\paragraph{Eclipse plug-in for the Checker Framework}
+
+The Checker Plugin is an Eclipse plugin that enables the use of the Checker
+Framework.
+Its website (\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}).
+The website contains instructions for installing and using the plugin.
+% The plugin has been substantially improved through a Google Summer of Code 2010 project
+% and supports all checkers that are distributed with the Checker Framework.
+
+\paragraph{Eclipse plug-in for Type Annotations}
+
+A prototype version of Type Annotations support for Eclipse is
+available from the Eclipse project.  The goal is to enable full support for
+writing
+type annotations outside of comments.  You do not need this to run the
+Checker Framework, whether or not you write your type annotations in comments.
+
+% Username/password is necessary according to Jon McCord, 5/23/2010
+(Update:  this apparently needs a username and password, so it may not be
+publicly available.)
+Use the following information to check
+out the CVS repository:
+\begin{description}
+\item[Host:]                 dev.eclipse.org
+\item[Repository path:] /cvsroot/eclipse
+\item[Module name:]    org.eclipse.jdt.core
+\item[Branch:]             JSR\_308
+\end{description}
+
+
+\section{tIDE\label{tide}}
+
+tIDE, an open-source Java IDE, supports the Checker Framework.  See its
+documentation at \myurl{http://tide.olympe-network.com/}.
+
+
+\section{Type inference tools\label{type-inference-tools}}
+
+\subsection{Varieties of type inference}
+
+There are two different tasks that are commonly called ``type inference''.
+
+\begin{enumerate}
+\item
+  Type inference during type checking (Section~\ref{type-refinement}):
+  During type checking, if certain variables have no type qualifier, the
+  type-checker determines whether there is some type qualifier that would
+  permit the program to type check.  If so, the type checker uses that type
+  qualifier, but never tells the programmer what it was.  Each time the
+  type checker runs, it re-infers the type qualifier for that variable.  If
+  no type qualifier exists that permits the program to type-check, the
+  type-checker issues a type warning.
+
+  This variety of type inference is built into the Checker Framework.  Every
+  checker can take advantage of it at no extra effort.  However, it only
+  works within a method, not across method boundaries.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    If the type qualifier is obvious to the programmer, then omitting it
+    can reduce annotation clutter in the program.
+  \item
+    The type inference can take advantage of only the code currently being
+    compiled, rather than having to be correct for all possible calls.
+    Additionally, if the code changes, then there is no old annotation to
+    update.
+  \end{itemize}
+
+
+\item
+  Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
+  As a separate step before type checking, a type inference tool takes the
+  program as input, and outputs a set of type qualifiers that would
+  type-check.  These qualifiers are inserted into the source code or the
+  class file.  They can be viewed and adjusted by the programmer, and can
+  be used by tools such as the type checker.
+
+  This variety of type inference must be provided by a separate tool.  It
+  is not built into the Checker Framework.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    The program contains documentation in the form of type qualifiers,
+    which can aid programmer understanding.
+  \item
+    Error messages may be more comprehensible.  With type inference
+    during type checking, error messages can be obscure, because the
+    compiler has already inferred (possibly incorrect) types for a number
+    of variables.
+  \item
+    A minor advantage is speed:  type-checking can be modular, which can be
+    faster than re-doing type inference every time the
+    program is type-checked.
+  \end{itemize}
+
+\end{enumerate}
+
+Advantages of both varieties of inference include:
+\begin{itemize}
+\item
+  Less work for the programmer.
+\item
+  The tool chooses the most general type, whereas a programmer might
+  accidentally write a more specific, less generally-useful annotation.
+\end{itemize}
+
+
+Each variety of type inference has its place.  When using the Checker
+Framework, type inference during type checking is performed only
+\emph{within} a method (Section~\ref{type-refinement}).  Every method
+signature (arguments and return values) and field must be explicitly annotated,
+either by the programmer or by a separate type checking tool
+(Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
+effort (typically, a programmer does not have to write any qualifiers
+inside the body of a method) while still retaining modular checking and
+documentation benefits.
+
+
+\subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
+
+This section lists tools that take a program and output a set of
+annotations for it.
+
+Section~\ref{nullness-inference} lists several tools that infer
+annotations for the Nullness Checker.
+
+Section~\ref{javari-inference} lists a tool that infers
+annotations for the Javari Checker, which detects mutation errors.
+
+
+% LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
+% LocalWords:  IntelliJ Maia
