@@ -31,19 +31,25 @@ public class Heuristics implements Comparable<Heuristics> {
     return 0;
   }
 
-  public boolean optimizeEqualsClient(Object a, Object b) {
+  public boolean optimizeEqualsClient(Object a, Object b, Object[] arr) {
     // Using == is OK if it's the left-hand side of an || whose right-hand
     // side is a call to equals with the same arguments.
-	if(a == b || a.equals(b)){
-		System.out.println("one");
-	}
-	if(a == b || b.equals(a)){
-		System.out.println("two");
-	}
+    if(a == b || a.equals(b)){
+      System.out.println("one");
+    }
+    if(a == b || b.equals(a)){
+      System.out.println("two");
+    }
 	
-	boolean c = (a == b || a.equals(b));
-	c = (a == b || b.equals(a));
+    boolean c = (a == b || a.equals(b));
+    c = (a == b || b.equals(a));
 	
+    boolean d = (a == b) || (a != null ? a.equals(b) : false);
+
+    boolean e = (a == b || (a != null && a.equals(b)));
+
+    boolean f = (arr[0]==a || arr[0].equals(a));
+
     return (a == b || a.equals(b));
   }
 
@@ -51,14 +57,14 @@ public class Heuristics implements Comparable<Heuristics> {
     // Using == is OK if it's the left-hand side of an || whose right-hand
     // side is a call to compareTo with the same arguments.
     if(a == b || a.compareTo(b) == 0){
-	  	System.out.println("one");
-	}
-	if(a == b || b.compareTo(a) == 0){
-		System.out.println("two");
-	}
+      System.out.println("one");
+    }
+    if(a == b || b.compareTo(a) == 0){
+      System.out.println("two");
+    }
 	
-	boolean c = (a == b || a.compareTo(b) == 0);
-	c = (a == b || a.compareTo(b) == 0);
+    boolean c = (a == b || a.compareTo(b) == 0);
+    c = (a == b || a.compareTo(b) == 0);
 		
     return (a == b || a.compareTo(b) == 0);
   }
