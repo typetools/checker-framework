@@ -47,6 +47,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         typeToCheck = checker.typeToCheck();
     }
 
+    // Handles the -Acheckclass command-line argument
     private boolean shouldCheckFor(ExpressionTree tree) {
         if (typeToCheck == null) return true;
 
@@ -62,24 +63,12 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
               node.getKind() == Tree.Kind.NOT_EQUAL_TO))
             return super.visitBinary(node, p);
 
-        ExpressionTree leftOp = node.getLeftOperand(),
-            rightOp = node.getRightOperand();
+        ExpressionTree leftOp = node.getLeftOperand();
+        ExpressionTree rightOp = node.getRightOperand();
 
         // Check passes if either arg is null.
         if (leftOp.getKind() == Tree.Kind.NULL_LITERAL ||
             rightOp.getKind() == Tree.Kind.NULL_LITERAL)
-            return super.visitBinary(node, p);
-
-        if (suppressInsideComparison(node))
-            return super.visitBinary(node, p);
-
-        if (suppressEarlyEquals(node))
-            return super.visitBinary(node, p);
-
-        if (suppressEarlyCompareTo(node))
-            return super.visitBinary(node, p);
-
-        if (!(shouldCheckFor(leftOp) && shouldCheckFor(rightOp)))
             return super.visitBinary(node, p);
 
         AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
@@ -89,6 +78,21 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         if (left.getKind().isPrimitive() || right.getKind().isPrimitive())
             return super.visitBinary(node, p);
 
+        if (!(shouldCheckFor(leftOp) && shouldCheckFor(rightOp)))
+            return super.visitBinary(node, p);
+
+        // Syntactic checks for legal uses of ==
+        if (suppressInsideComparison(node))
+            return super.visitBinary(node, p);
+        if (suppressEarlyEquals(node))
+            return super.visitBinary(node, p);
+        if (suppressEarlyCompareTo(node))
+            return super.visitBinary(node, p);
+
+        if (suppressClassAnnotation(left, right)) {
+            return super.visitBinary(node, p);
+        }
+            
         if (!left.hasAnnotation(INTERNED))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!right.hasAnnotation(INTERNED))
@@ -503,6 +507,61 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
                                                   Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
         return okay;
     }
+
+    /**
+     * Suppose that we have:
+     * <pre>
+     *   class A { ... }
+     *   @Interned class B { ... }
+     * </pre>
+     * then <code>a == b</code>, where a has type A and b has type B, is
+     * fine because it will be true only if a's run-time type is B (or
+     * lower), in which case a is actually interned.
+     * <p>
+     * More generally, if either of the classes is of a type whose
+     * declaration is annotated with @Interned, then the comparison is OK.
+     */
+    private boolean suppressClassAnnotation(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
+        // It would be better to just test their greatest lower bound.
+        // That could permit some comparisons that this forbids.
+        return classIsAnnotated(left) || classIsAnnotated(right);
+    }
+
+    /** Returns true if the type's declaration has an @Interned annotation. */
+    private boolean classIsAnnotated(AnnotatedTypeMirror type) {
+        
+        TypeMirror tm = type.getUnderlyingType();
+        if (tm instanceof TypeVariable) {
+            tm = ((TypeVariable) tm).getUpperBound();
+        }
+        if (tm instanceof WildcardType) {
+            tm = ((WildcardType) tm).getExtendsBound();
+        }
+        if (tm == null) {
+            // Maybe a type variable or wildcard had no upper bound
+            return false;
+        }
+        if (tm instanceof ArrayType) {
+            return false;
+        }
+        if (! (tm instanceof DeclaredType)) {
+            System.out.printf("InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
+        }
+        Element classElt = ((DeclaredType) tm).asElement();
+        if (classElt == null) {
+            System.out.printf("InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n", tm, tm.getClass());
+        }
+        if (classElt != null) {
+            AnnotatedTypeMirror classType = atypeFactory.fromElement(classElt);
+            assert classType != null;
+            for (AnnotationMirror anno : classType.getAnnotations()) {
+                if (anno.equals(INTERNED)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }        
 
 
     /**
