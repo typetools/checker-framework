@@ -892,6 +892,7 @@ public class AnnotationUtils {
         throw new IllegalArgumentException("No element with name " + name + " in annotation " + anno);
     }
 
+    /** Returns true if the given annotation has a @Inherited meta-annotation. */
     public static boolean hasInheritiedMeta(AnnotationMirror anno) {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
