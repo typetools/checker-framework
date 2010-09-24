@@ -322,7 +322,9 @@ public class StubParser {
     }
 
     private Map<Element, BodyDeclaration> mapMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
-        assert typeElt.getSimpleName().contentEquals(typeDecl.getName());
+        assert (typeElt.getSimpleName().contentEquals(typeDecl.getName())
+                || typeDecl.getName().endsWith("$" + typeElt.getSimpleName().toString()))
+            : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration> result = new HashMap<Element, BodyDeclaration>();
 
