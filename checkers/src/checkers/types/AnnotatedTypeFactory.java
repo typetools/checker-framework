@@ -254,8 +254,8 @@ public class AnnotatedTypeFactory {
     }
 
     // **********************************************************************
-    // Factories for annotated types that do not account for implicit qualifiers
-    // They only include qualifiers explicitly inserted by the user
+    // Factories for annotated types that do not account for implicit qualifiers.
+    // They only include qualifiers explicitly inserted by the user.
     // **********************************************************************
 
     /**
@@ -352,7 +352,7 @@ public class AnnotatedTypeFactory {
 
     /**
      * Determines the annotated type from a type in tree form.  This method
-     * does not add implicit annotations
+     * does not add implicit annotations.
      *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
