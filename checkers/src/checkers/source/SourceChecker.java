@@ -201,6 +201,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
+    // Only output the warning about source level at most once
+    private boolean warnedAboutSourceLevel = false;
+
     /**
      * Type-check the code with Java specifications and then runs the Checker
      * Rule Checking visitor on the processed source.
@@ -209,6 +212,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
+
+        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
+        if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
+            messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
+                                  "-source " + source.name + " does not support type annotations");
+            warnedAboutSourceLevel = true;
+        }
+
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
