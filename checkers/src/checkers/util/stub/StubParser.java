@@ -79,17 +79,17 @@ public class StubParser {
                 if (!importDecl.isAsterisk()) {
                     AnnotationMirror anno = annoUtils.fromName(imported);
                     if (anno != null ) {
-                    	Element annoElt = anno.getAnnotationType().asElement();
-                    	result.put(annoElt.getSimpleName().toString(), anno);
+                        Element annoElt = anno.getAnnotationType().asElement();
+                        result.put(annoElt.getSimpleName().toString(), anno);
                     } else {
-                    	// System.err.println("StubParser: Could not load import: " + imported);
+                        // System.err.println("StubParser: Could not load import: " + imported);
                     }
                 } else {
                     result.putAll(annoWithinPackage(imported));
                 }
             } catch (AssertionError error) {
                 // do nothing
-            	// System.err.println("StubParser: " + error);
+                // System.err.println("StubParser: " + error);
             }
         }
         return result;
@@ -122,15 +122,18 @@ public class StubParser {
         }
     }
 
+    // typeDecl's name may be a binary name such as A$B
+    // That is a hack because the StubParser does not handle nested classes.
     private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> result) {
-        String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName();
+        // System.out.printf("parse(%s.%s, ...)%n", packageName, typeDecl.getName());
+        String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
         // couldn't find type.  not in class path
         // TODO: Should throw exception?!
         if (typeElt == null
                 || typeElt.getKind() == ElementKind.ENUM
                 || typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
-        	  // System.err.println("StubParser: Type not found: " + typeName);
+            // System.err.println("StubParser: Type not found: " + typeName);
             return;
         }
 
@@ -319,7 +322,9 @@ public class StubParser {
     }
 
     private Map<Element, BodyDeclaration> mapMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
-        assert typeElt.getSimpleName().contentEquals(typeDecl.getName());
+        assert (typeElt.getSimpleName().contentEquals(typeDecl.getName())
+                || typeDecl.getName().endsWith("$" + typeElt.getSimpleName().toString()))
+            : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
         Map<Element, BodyDeclaration> result = new HashMap<Element, BodyDeclaration>();
 
@@ -335,10 +340,12 @@ public class StubParser {
                 for (VariableDeclarator var : fieldDecl.getVariables())
                     result.put(findElement(typeElt, var), fieldDecl);
             } else if (member instanceof ClassOrInterfaceDeclaration) {
-            	// TODO: handle nested classes
-            	// ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
+                // TODO: handle nested classes
+                ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
+                System.err.printf("Ignoring nested class in stub file: %s.%s%n", typeDecl.getName(), ciDecl.getName());
+                System.err.printf("Instead, write as a top-level class %s$%s%n", typeDecl.getName(), ciDecl.getName());
             } else {
-            	// System.out.println("StubParser: Ignoring in mapMembers: " + member.getClass());
+                // System.out.println("StubParser: Ignoring in mapMembers: " + member.getClass());
             }
         }
         result.remove(null);

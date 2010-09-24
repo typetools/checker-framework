@@ -82,24 +82,24 @@ public class TypeHierarchy {
         AnnotatedTypeMirror lhsBase = lhs;
         while (lhsBase.getKind() != rhs.getKind()
                 && (lhsBase.getKind() == TypeKind.WILDCARD || lhsBase.getKind() == TypeKind.TYPEVAR)) {
-        if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
-            if (wildcard.getSuperBound() != null
-                && isSubtypeImpl(rhs, wildcard.getSuperBound()))
-                return true;
-            lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
-            if (lhsBase == null || !lhsBase.isAnnotated())
-                return true;
-            visited.add(lhsBase.getElement());
-        } else if (rhs.getKind() == TypeKind.WILDCARD) {
-            rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
-        } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
-            if (!lhsBase.annotations.isEmpty())
-                return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
-            return qualifierHierarchy.getBottomQualifier() == null ?
+            if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
+                AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
+                if (wildcard.getSuperBound() != null
+                    && isSubtypeImpl(rhs, wildcard.getSuperBound()))
+                    return true;
+                lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
+                if (lhsBase == null || !lhsBase.isAnnotated())
+                    return true;
+                visited.add(lhsBase.getElement());
+            } else if (rhs.getKind() == TypeKind.WILDCARD) {
+                rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
+            } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
+                if (!lhsBase.annotations.isEmpty())
+                    return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
+                return qualifierHierarchy.getBottomQualifier() == null ?
                     rhs.getAnnotations().isEmpty() :
                     rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
-        }
+            }
         }
 
         if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {

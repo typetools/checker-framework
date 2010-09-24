@@ -235,7 +235,7 @@ Set the \code{jsr308javac} property:
     <javac fork="yes">
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
-      <compilerarg line="-target 5"/>
+      <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
       <compilerarg line="-Awarns -Xmaxwarns 10000"/>
       <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
@@ -251,8 +251,7 @@ Set the \code{jsr308javac} property:
 %END LATEX
 
 \item Duplicate the compilation target, then modify it slightly as
-indicated in this example, filling in each ellipsis (\ldots) from the
-original compilation target:
+indicated in this example:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -276,12 +275,13 @@ original compilation target:
 %END LATEX
 % Unconfuse Emacs font lock mode: $
 
+Fill in each ellipsis (\ldots) from the original compilation target.  But,
+don't include any \code{-source} argument with value other than \code{1.7}
+or \code{7}.  Doing so will disable the annotations in
+comments feature (see Section~\refwithpage{annotations-in-comments}).
+
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
-
-The target should not include a \code{-source} argument, such as
-\code{-source 1.5}, because doing so will disable the annotations in
-comments feature (see Section~\refwithpage{annotations-in-comments}).
 \end{enumerate}
 
 \subsection{Explanation\label{ant-task-explanation}}

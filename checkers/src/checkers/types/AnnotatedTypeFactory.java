@@ -254,8 +254,8 @@ public class AnnotatedTypeFactory {
     }
 
     // **********************************************************************
-    // Factories for annotated types that do not account for implicit qualifiers
-    // They only include qualifiers explicitly inserted by the user
+    // Factories for annotated types that do not account for implicit qualifiers.
+    // They only include qualifiers explicitly inserted by the user.
     // **********************************************************************
 
     /**
@@ -352,7 +352,7 @@ public class AnnotatedTypeFactory {
 
     /**
      * Determines the annotated type from a type in tree form.  This method
-     * does not add implicit annotations
+     * does not add implicit annotations.
      *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
@@ -556,7 +556,9 @@ public class AnnotatedTypeFactory {
             return getSelfType(tree);
 
         TypeElement typeElt = ElementUtils.enclosingClass(element);
-        assert typeElt != null;
+        if (typeElt == null) {
+            throw new AssertionError("enclosingClass()=>null for element=" + element);
+        }
         return getEnclosingType(typeElt, tree);
     }
 
@@ -576,7 +578,7 @@ public class AnnotatedTypeFactory {
         ClassTree enclosingClass = visitorState.getClassTree();
         if (enclosingClass == null)
             enclosingClass = TreeUtils.enclosingClass(getPath(tree));
-        if (isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt))
+        if (enclosingClass != null && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt))
             return true;
 
         // ran out of options
@@ -1099,6 +1101,10 @@ public class AnnotatedTypeFactory {
             return TreeUtils.elementFromDeclaration(visitorState.getClassTree());
 
         TreePath path = getPath(tree);
+        if (path == null) {
+            throw new AssertionError(String.format("getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
+                                                   TreePath.getPath(root, tree), tree.getClass(), tree, root));
+        }
         for (Tree pathTree : path) {
             if (pathTree instanceof MethodTree)
                 return TreeUtils.elementFromDeclaration((MethodTree)pathTree);
