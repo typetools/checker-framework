@@ -76,6 +76,8 @@ public class FenumChecker extends BaseTypeChecker {
 			qualSet.add(FenumUnqualified.class);
 			qualSet.add(FenumBottom.class);
 		}
+        // TODO: warn if no qualifiers given?
+        // Just Fenum("..") is still valid, though...
         return Collections.unmodifiableSet(qualSet);
     }
 
