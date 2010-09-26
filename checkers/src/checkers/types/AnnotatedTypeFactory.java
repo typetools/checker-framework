@@ -90,6 +90,12 @@ public class AnnotatedTypeFactory {
 
     private final boolean annotatedTypeParams;
 
+    /**
+     * Map from class name (canonical name) of an annotation, to the
+     * annotation in the Checker Framework that will be used in its place.
+     */
+    private Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+
     private static int uidCounter = 0;
     public final int uid;
 
@@ -924,16 +930,22 @@ public class AnnotatedTypeFactory {
         return supportedQuals.contains(name);
     }
 
+    /** Add the annotation clazz as an alias for the annotation type. */
+    protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
+        aliases.put(clazz.getCanonicalName(), type);
+    }
+
     /**
      * Returns the canonical annotation for the passed annotation if it is
      * an alias of a canonical one in the framework.  If it is not an alias,
      * the method returns null.
      *
-     *
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        return null;
+        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+        String qualName = elem.getQualifiedName().toString();
+        return aliases.get(qualName);
     }
 
     /**

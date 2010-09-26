@@ -50,6 +50,9 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         CompilationUnitTree root) {
         super(checker, root);
         this.INTERNED = annotations.fromClass(Interned.class);
+
+        // If you update the following, also update ../../../manual/interning-checker.tex .
+        addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
     }
 
     @Override
@@ -122,6 +125,6 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
     protected void annotateInheritedFromClass(@Mutable AnnotatedTypeMirror type) {
       InheritedFromClassAnnotator.INSTANCE.visit(type, this);
-  }
+    }
 
 }

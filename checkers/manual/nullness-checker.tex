@@ -911,20 +911,21 @@ Run the command \code{make check-nullness}.
 \newcommand{\linktoNonNull}{\code{\refclass{nullness/quals}{NonNull}}}
 \newcommand{\linktoNullable}{\code{\refclass{nullness/quals}{Nullable}}}
 
-The Checker Framework's nullness annotation is similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, and others.  Also
+The Checker Framework's nullness annotations are similar to annotations used
+in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, and other tools.  Also
 see Section~\ref{other-tools} for a comparison to other tools.
 
 You might prefer to use the Checker Framework because it has a more
 powerful analysis that can warn you about more null pointer errors in your
 code.
 
-If you have already annotated your code with a different nullness
+If your code is already annotated with a different nullness
 annotation, you can reuse that effort by converting them to the Checker
 Framework's nullness annotations.  Perform the refactoring described in
-Figure~\ref{fig:findbugs-refactoring}.
+Figure~\ref{fig:nullness-refactoring}.
 
 
+% These lists should be kept in sync with NullnessAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -932,9 +933,11 @@ Figure~\ref{fig:findbugs-refactoring}.
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
 \hline
+ ~com.sun.istack.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -944,12 +947,17 @@ $\Rightarrow$
 \\
 \begin{tabular}{|l|l|}
 \hline
+ ~com.sun.istack.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
+ ~javax.validation.constraints.NotNull~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
+ ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -959,9 +967,9 @@ $\Rightarrow$
 %BEGIN LATEX
 \vspace{-1.5\baselineskip}
 %END LATEX
-\caption{Refactoring for converting nullness annotations from FindBugs, the
-  JSR~305 proposal, and IntelliJ to the Checker Framework.}
-\label{fig:findbugs-refactoring}
+\caption{Refactoring for converting other nullness annotations to the
+  Checker Framework's annotations.}
+\label{fig:nullness-refactoring}
 \end{figure}
 
 %% Removed, because it's tedious and should be obvious to a decent programmer.
@@ -996,18 +1004,17 @@ $\Rightarrow$
 Alternately, the Checker Framework can process those other annotations (as
 well as its own, if they also appear in your program).  The Checker
 Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig:findbugs-refactoring}, so that they can be used as type
+Figure~\ref{fig:nullness-refactoring}, so that they can be used as type
 qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig:findbugs-refactoring}.
+side of Figure~\ref{fig:nullness-refactoring}.
 
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
 the Checker Framework aims at soundness:  it aims to never miss a possible
 null dereference, while at the same time limiting false reports.
 
-Because some of the names are the same (\<NonNull>, \<Nullable>), it is
-unpleasant to use nullness annotations from multiple different packages in
-the same codebase.  You can import at most one of the annotations with
+Because some of the names are the same (\<NonNull>, \<Nullable>), you can
+import at most one of the annotations with
 conflicting names; the other(s) must be written out fully rather than
 imported.  Also, note FindBugs's non-standard meaning for
 \<@Nullable> (Section~\ref{findbugs-nullable}).
@@ -1096,7 +1103,8 @@ clear distinction between annotations that specify whether a reference is
 null, and annotations that suppress false warnings.  The choice of names
 should also have been consistent for other tools, and intuitively clear to
 programmers.  The FindBugs choices make the FindBugs annotations less
-helpful to people, and much less useful for other tools.  The FindBugs
+helpful to people, and much less useful for other tools.  As a separate
+issue, the FindBugs
 analysis is also very imprecise.  For type-related analyses, it is best to
 stay away from the FindBugs nullness annotations, and use a more capable
 tool like the Checker Framework.)
