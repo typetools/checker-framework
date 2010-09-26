@@ -90,6 +90,12 @@ public class AnnotatedTypeFactory {
 
     private final boolean annotatedTypeParams;
 
+    /**
+     * Map from class name (canonical name) of an annotation, to the
+     * annotation in the Checker Framework that will be used in its place.
+     */
+    private Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+
     private static int uidCounter = 0;
     public final int uid;
 
@@ -254,8 +260,8 @@ public class AnnotatedTypeFactory {
     }
 
     // **********************************************************************
-    // Factories for annotated types that do not account for implicit qualifiers
-    // They only include qualifiers explicitly inserted by the user
+    // Factories for annotated types that do not account for implicit qualifiers.
+    // They only include qualifiers explicitly inserted by the user.
     // **********************************************************************
 
     /**
@@ -352,7 +358,7 @@ public class AnnotatedTypeFactory {
 
     /**
      * Determines the annotated type from a type in tree form.  This method
-     * does not add implicit annotations
+     * does not add implicit annotations.
      *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
@@ -408,7 +414,7 @@ public class AnnotatedTypeFactory {
     }
 
     // **********************************************************************
-    // Customization methods meant to be overriden by subclasses to include
+    // Customization methods meant to be overridden by subclasses to include
     // implicit annotations
     // **********************************************************************
 
@@ -556,7 +562,9 @@ public class AnnotatedTypeFactory {
             return getSelfType(tree);
 
         TypeElement typeElt = ElementUtils.enclosingClass(element);
-        assert typeElt != null;
+        if (typeElt == null) {
+            throw new AssertionError("enclosingClass()=>null for element=" + element);
+        }
         return getEnclosingType(typeElt, tree);
     }
 
@@ -576,7 +584,7 @@ public class AnnotatedTypeFactory {
         ClassTree enclosingClass = visitorState.getClassTree();
         if (enclosingClass == null)
             enclosingClass = TreeUtils.enclosingClass(getPath(tree));
-        if (isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt))
+        if (enclosingClass != null && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt))
             return true;
 
         // ran out of options
@@ -773,9 +781,9 @@ public class AnnotatedTypeFactory {
      * returns the annotated boxed type of the given primitive type.
      * The returned type would only have the annotations on the given type.
      *
-     * Subclasses may override this method safely to override this behavour.
+     * Subclasses may override this method safely to override this behavior.
      *
-     * @param type  the primitivate type
+     * @param type  the primitive type
      * @return the boxed declared type of the passed primitive type
      */
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
@@ -795,7 +803,7 @@ public class AnnotatedTypeFactory {
      *
      * @param type  the declared type
      * @return the unboxed primitive type
-     * @throws IllegalArgmentExceptionif the type given has no unbox conversion
+     * @throws IllegalArgumentException if the type given has no unbox conversion
      */
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
     throws IllegalArgumentException {
@@ -922,16 +930,22 @@ public class AnnotatedTypeFactory {
         return supportedQuals.contains(name);
     }
 
+    /** Add the annotation clazz as an alias for the annotation type. */
+    protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
+        aliases.put(clazz.getCanonicalName(), type);
+    }
+
     /**
      * Returns the canonical annotation for the passed annotation if it is
      * an alias of a canonical one in the framework.  If it is not an alias,
      * the method returns null.
      *
-     *
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        return null;
+        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+        String qualName = elem.getQualifiedName().toString();
+        return aliases.get(qualName);
     }
 
     /**
@@ -989,7 +1003,7 @@ public class AnnotatedTypeFactory {
      * {@link QualifierHierarchy#leastUpperBound(Collection, Collection)}.
      *
      * @param c1    type qualifiers for the first type
-     * @param c2    tyep qualifiers for the second type
+     * @param c2    type qualifiers for the second type
      * @return  the least restrictive qualifiers for both types
      */
     protected Collection<AnnotationMirror> unify(Collection<AnnotationMirror> c1,
@@ -1099,6 +1113,10 @@ public class AnnotatedTypeFactory {
             return TreeUtils.elementFromDeclaration(visitorState.getClassTree());
 
         TreePath path = getPath(tree);
+        if (path == null) {
+            throw new AssertionError(String.format("getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
+                                                   TreePath.getPath(root, tree), tree.getClass(), tree, root));
+        }
         for (Tree pathTree : path) {
             if (pathTree instanceof MethodTree)
                 return TreeUtils.elementFromDeclaration((MethodTree)pathTree);
@@ -1135,10 +1153,10 @@ public class AnnotatedTypeFactory {
         }
 
         //
-        // When running on daikon, we noticed that a lot of calls happened
+        // When running on Daikon, we noticed that a lot of calls happened
         // within a small subtree containing the node we are currently visiting
 
-        // When testing on daikon, two steps resulted in the best performance
+        // When testing on Daikon, two steps resulted in the best performance
         if (currentPath.getParentPath() != null)
             currentPath = currentPath.getParentPath();
         if (currentPath.getLeaf() == node) {

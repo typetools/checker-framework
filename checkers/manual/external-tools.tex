@@ -18,13 +18,13 @@ Section~\ref{type-inference-tools}).
 
 \section{Javac Compiler\label{javac-installation}}
 
-If you use \code{javac} compiler from the command line, then you can use the
-Java 7 \code{javac} that is bundled with the Checker Framework.  The bundled
-\code{javac} recognizes type annotations, and annotations in
-comments (see Section~\ref{annotations-in-comments}).
-(Eventually, you will be able to use any Java 7 compiler, such as the
-OpenJDK compiler, but Oracle has
-been slow to incorporate all the patches, so the bundled \code{javac} is
+If you use \code{javac} compiler from the command line, then you can use
+the Type annotations compiler (a variant of the OpenJDK \code{javac}) that
+is bundled with the Checker Framework.  The bundled \code{javac} recognizes
+type annotations, and annotations in comments (see
+Section~\ref{annotations-in-comments}).  (Eventually, you will be able to
+use any Java compiler, such as the OpenJDK compiler, but Oracle has been
+slow to incorporate all the patches, so the bundled \code{javac} is
 superior, for the purpose of pluggable type-checking, and is equivalent in
 all other respects.)
 
@@ -235,7 +235,7 @@ Set the \code{jsr308javac} property:
     <javac fork="yes">
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
-      <compilerarg line="-target 5"/>
+      <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
       <compilerarg line="-Awarns -Xmaxwarns 10000"/>
       <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
@@ -251,8 +251,7 @@ Set the \code{jsr308javac} property:
 %END LATEX
 
 \item Duplicate the compilation target, then modify it slightly as
-indicated in this example, filling in each ellipsis (\ldots) from the
-original compilation target:
+indicated in this example:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -276,12 +275,13 @@ original compilation target:
 %END LATEX
 % Unconfuse Emacs font lock mode: $
 
+Fill in each ellipsis (\ldots) from the original compilation target.  But,
+don't include any \code{-source} argument with value other than \code{1.7}
+or \code{7}.  Doing so will disable the annotations in
+comments feature (see Section~\refwithpage{annotations-in-comments}).
+
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
-
-The target should not include a \code{-source} argument, such as
-\code{-source 1.5}, because doing so will disable the annotations in
-comments feature (see Section~\refwithpage{annotations-in-comments}).
 \end{enumerate}
 
 \subsection{Explanation\label{ant-task-explanation}}
@@ -300,7 +300,8 @@ The \code{-version} compiler argument is just for debugging; you may omit
 it.
 
 The \code{-target 5} compiler argument is optional, if you use Java 5 in
-ordinary compilation when not performing pluggable type-checking.
+ordinary compilation when not performing pluggable type-checking (see
+Section~\refwithpage{java5-class-files}).
 
 The \code{-implicit:class} compiler argument causes annotation processing
 to be performed on implicitly compiled files.  (An implicitly compiled file

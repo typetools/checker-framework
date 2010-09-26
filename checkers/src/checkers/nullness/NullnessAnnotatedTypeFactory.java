@@ -1,9 +1,7 @@
 package checkers.nullness;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.lang.model.element.*;
 
@@ -76,7 +74,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     /** Represents the Nullness Checker qualifiers */
     protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
     protected final AnnotationMirror UNUSED;
-    Map<String, AnnotationMirror> aliases;
 
     private final MapGetHeuristics mapGetHeuristics;
     private final CollectionToArrayHeuristics collectionToArrayHeuristics;
@@ -101,24 +98,25 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
         UNUSED = this.annotations.fromClass(Unused.class);
 
-        aliases = new HashMap<String, AnnotationMirror>();
-
+        // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
-        aliases.put(edu.umd.cs.findbugs.annotations.NonNull.class.getCanonicalName(), NONNULL);
-        aliases.put(javax.annotation.Nonnull.class.getCanonicalName(), NONNULL);
-        aliases.put(org.jetbrains.annotations.NotNull.class.getCanonicalName(), NONNULL);
-        aliases.put(org.netbeans.api.annotations.common.NonNull.class.getCanonicalName(), NONNULL);
-
+        addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
+        addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
+        addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
+        addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         // aliases for nullable
-        aliases.put(edu.umd.cs.findbugs.annotations.CheckForNull.class.getCanonicalName(), NULLABLE);
-        aliases.put(edu.umd.cs.findbugs.annotations.Nullable.class.getCanonicalName(), NULLABLE);
-        aliases.put(edu.umd.cs.findbugs.annotations.UnknownNullness.class.getCanonicalName(), NULLABLE);
-        aliases.put(javax.annotation.CheckForNull.class.getCanonicalName(), NULLABLE);
-        aliases.put(javax.annotation.Nullable.class.getCanonicalName(), NULLABLE);
-        aliases.put(org.jetbrains.annotations.Nullable.class.getCanonicalName(), NULLABLE);
-        aliases.put(org.netbeans.api.annotations.common.CheckForNull.class.getCanonicalName(), NULLABLE);
-        aliases.put(org.netbeans.api.annotations.common.NullAllowed.class.getCanonicalName(), NULLABLE);
-        aliases.put(org.netbeans.api.annotations.common.NullUnknown.class.getCanonicalName(), NULLABLE);
+        addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
+        addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
+        addAliasedAnnotation(org.jetbrains.annotations.Nullable.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
 
         collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
@@ -495,25 +493,4 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             return elt.equals(catchParamElt);
         }
     }
-
-    /**
-     * Aliased annotations.
-     *
-     */
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
-
-        String qualName = elem.getQualifiedName().toString();
-        return aliases == null ? null : aliases.get(qualName);
-    }
-
-    // WMD: try to use the flow results!
-	public AnnotationMirror WMD_getFlowAnnotatedType(StatementTree ass,
-			ExpressionTree fieldacc,
-			ExpressionTree recv,
-			Element field) {
-		// ((NullnessFlow)flow).scan(ass, null);
-		return ((NullnessFlow)flow).WMD_getFlowAnnotatedType(fieldacc, recv, field);
-	}
-
 }

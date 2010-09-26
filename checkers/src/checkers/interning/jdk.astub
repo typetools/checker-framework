@@ -26,7 +26,12 @@ class String {
 class Boolean {
   @Interned Boolean FALSE;
   @Interned Boolean TRUE;
+  public static @Interned Boolean valueOf(String s);
+  public static @Interned Boolean valueOf(boolean b);
 }
+
+// All instances are interned
+@Interned class Character$UnicodeBlock { }
 
 package java.lang.reflect;
 
@@ -487,6 +492,7 @@ package java.util.logging;
 public class Logger {
      public static final @Interned String GLOBAL_LOGGER_NAME = "global";
 }
+@Interned class Level { }
 package javax.accessibility;
 public class AccessibleAction {
      public static final @Interned String CLICK = new String("click");
