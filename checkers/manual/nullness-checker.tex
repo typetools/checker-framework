@@ -1003,14 +1003,15 @@ side of Figure~\ref{fig:findbugs-refactoring}.
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
 the Checker Framework aims at soundness:  it aims to never miss a possible
-null dereference, while at the same time limiting false reports.
+null dereference, while at the same time limiting false reports.  Also,
+note FindBugs's non-standard meaning for \<@Nullable>
+(Section~\ref{findbugs-nullable}).
 
 Because some of the names are the same (\<NonNull>, \<Nullable>), it is
 unpleasant to use nullness annotations from multiple different packages in
 the same codebase.  You can import at most one of the annotations with
 conflicting names; the other(s) must be written out fully rather than
-imported.  Also, note FindBugs's non-standard meaning for
-\<@Nullable> (Section~\ref{findbugs-nullable}).
+imported.
 
 
 \subsection{Which tool is right for you?\label{choosing-nullness-tool}}
