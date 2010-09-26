@@ -161,7 +161,7 @@ Each of the distributed checkers supports at least the following lint options:
 
 \item
   \code{none} The inverse of \<all>:  disable or enable all lint warnings,
-  including checker-specifc ones if any.
+  including checker-specific ones if any.
 
 \end{itemize}
 
@@ -187,13 +187,30 @@ null checks, and the special \<castNonNull> method, to suppress warnings
 
 
 
-\section{Writing annotations in comments for backward compatibility\label{annotations-in-comments}}
+\section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
 
-Sometimes, your code needs to be compilable by people who are not
-using a compiler that supports type annotations.
+Sometimes, your code needs to be compiled by people who are not using a
+compiler that supports type annotations.
+Sections~\ref{annotations-in-comments}--\ref{uncommenting-annotations}
+discuss this situation, which you can handle by writing annotations in
+comments.
+
+In other cases, you code needs to be run by people who are not using a Java
+7 JVM\@.  Section~\ref{java5-class-files} discusses this situation, which
+you can handle by passing the \code{-target 5} command-line argument.
+
+(\textbf{Note:} These are features of the Type Annotations compiler that is
+distributed along with the Checker Framework.  They are \emph{not}
+supported by the mainline OpenJDK compiler.  These features are the key
+difference between the Type Annotations compiler and the OpenJDK compiler
+on which it is built.)
+
+%   For more details
+% about the differences, see file \code{README-jsr308.html} in the Type
+% Annotations distribution.
 
 
-\subsection{Annotations in comments}
+\subsection{Annotations in comments\label{annotations-in-comments}}
 
 A Java 4 compiler does not permit use of
 annotations, and a Java 5 compiler only permits annotations on
@@ -210,15 +227,6 @@ annotation, but your code will still compile with any other Java compiler.
 This feature only works if you provide no \code{-source} command-line
 argument to \code{javac}, or if the \code{-source} argument is \code{1.7}
 or \code{7}.
-
-(\textbf{Note:} This is a feature of the Type Annotations compiler that is
-distributed along with the Checker Framework.  It is \emph{not} supported by the
-mainline OpenJDK compiler, which ignores annotations written in
-comments.  This is the key difference between the Type Annotations
-compiler and the OpenJDK compiler.)
-%   For more details
-% about the differences, see file \code{README-jsr308.html} in the Type
-% Annotations distribution.
 
 In a single program, you may write some annotations in comments, and others
 without comments.
@@ -286,11 +294,12 @@ If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
 you do not need the extra quoting.
 
 
-\subsection{Migrating away from annotations in comments}
+\subsection{Migrating away from annotations in comments\label{uncommenting-annotations}}
 
 Suppose that your codebase currently uses annotations in comments, but you
 wish to remove the comment characters around your annotations, because in
-the future you will use only Java 7 compilers.  This Unix command removes
+the future you will use only compilers that support type annotations.
+This Unix command removes
 the comment characters, for all Java files in the current
 working directory or any subdirectory.
 
@@ -309,17 +318,40 @@ two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
 To ignore comments with leading or trailing spaces, remove the four
 instances of ``\verb|\s*|''.
 \item
-  To not make backups, remove
-``\verb|.bak|''.
+  To not make backups, remove ``\verb|.bak|''.
 \end{itemize}
 
 
-If you are using implicit import statements
-(Section~\ref{implicit-import-statements}), you may also need to introduce
+If your code used implicit import statements
+(Section~\ref{implicit-import-statements}), then after uncommenting the
+annotations, you may also need to introduce
 explicit import statements into your code.
 
+
+\subsection{Annotations in Java 5 \code{.class} files\label{java5-class-files}}
+
+If you supply the \code{-target 5} command-line argument along with no
+\code{-source} argument (or \code{-source 7}, which is equivalent), then the
+Type Annotations compiler creates a \code{.class} file that can be run on a
+Java 5 JVM, but that contains the type annotations.  (It does not matter
+whether the type annotations were written in comments or not.)  The fact
+that the \code{.class} file contains the type annotations is useful when
+type-checking client code.  If you try to type-check client code against a
+library that lacks type annotations, then spurious warnings can result.
+So, use of \code{-target 5} gives backward compatibility with earlier JVMs
+while still permitting pluggable type-checking.
+
+Ordinary Java compilers do not let you use a \code{-target} command-line
+argument with a value less than the \code{-source} argument.
+
+Use of the \code{-source 5} command-line argument produces a \code{.class}
+file that does not contain type annotations.  One reason you might want to
+periodically compile with the \code{-source 5} argument is to ensure that
+your code does not use any Java 7 features other than type annotations in
+comments.
 
 
 % LocalWords:  quals skipClasses un AskipClasses Alint annotationname javac's
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
-% LocalWords:  unselect checkbox classpath Djsr bak
+% LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
+% LocalWords:  checkername util myref nulltest html ESC buildfile

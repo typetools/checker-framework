@@ -414,7 +414,7 @@ public class AnnotatedTypeFactory {
     }
 
     // **********************************************************************
-    // Customization methods meant to be overriden by subclasses to include
+    // Customization methods meant to be overridden by subclasses to include
     // implicit annotations
     // **********************************************************************
 
@@ -781,9 +781,9 @@ public class AnnotatedTypeFactory {
      * returns the annotated boxed type of the given primitive type.
      * The returned type would only have the annotations on the given type.
      *
-     * Subclasses may override this method safely to override this behavour.
+     * Subclasses may override this method safely to override this behavior.
      *
-     * @param type  the primitivate type
+     * @param type  the primitive type
      * @return the boxed declared type of the passed primitive type
      */
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
@@ -803,7 +803,7 @@ public class AnnotatedTypeFactory {
      *
      * @param type  the declared type
      * @return the unboxed primitive type
-     * @throws IllegalArgmentExceptionif the type given has no unbox conversion
+     * @throws IllegalArgumentException if the type given has no unbox conversion
      */
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
     throws IllegalArgumentException {
@@ -1003,7 +1003,7 @@ public class AnnotatedTypeFactory {
      * {@link QualifierHierarchy#leastUpperBound(Collection, Collection)}.
      *
      * @param c1    type qualifiers for the first type
-     * @param c2    tyep qualifiers for the second type
+     * @param c2    type qualifiers for the second type
      * @return  the least restrictive qualifiers for both types
      */
     protected Collection<AnnotationMirror> unify(Collection<AnnotationMirror> c1,
@@ -1153,10 +1153,10 @@ public class AnnotatedTypeFactory {
         }
 
         //
-        // When running on daikon, we noticed that a lot of calls happened
+        // When running on Daikon, we noticed that a lot of calls happened
         // within a small subtree containing the node we are currently visiting
 
-        // When testing on daikon, two steps resulted in the best performance
+        // When testing on Daikon, two steps resulted in the best performance
         if (currentPath.getParentPath() != null)
             currentPath = currentPath.getParentPath();
         if (currentPath.getLeaf() == node) {
