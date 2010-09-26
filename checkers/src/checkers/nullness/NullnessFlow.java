@@ -5,11 +5,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
+import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.*;
 import checkers.nullness.quals.*;
+import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -18,6 +21,12 @@ import checkers.util.TypesUtils;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -148,7 +157,8 @@ class NullnessFlow extends Flow {
                     annosWhenFalse.set(NONNULL, idx);
             }
         }
-        annosWhenFalse.or(before);
+        // annosWhenFalse.or(before);
+        GenKillBits.orlub(annosWhenFalse, before, annoRelations);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
@@ -742,7 +752,7 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         super.visitCompoundAssignment(node, p);
-        inferNullness(node.getVariable());
+    	inferNullness(node.getVariable());
         return null;
     }
 
@@ -834,6 +844,8 @@ class NullnessFlow extends Flow {
 
         super.visitMethodInvocation(node, p);
 
+        checkNonNullOnEntry(node);
+        
         ExecutableElement method = TreeUtils.elementFromUse(node);
         if (method.getAnnotation(AssertParametersNonNull.class) != null) {
             for (ExpressionTree arg : node.getArguments())
@@ -865,6 +877,80 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+
+    private void checkNonNullOnEntry(MethodInvocationTree node) {
+        ExecutableElement method = TreeUtils.elementFromUse(node);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			// System.err.println("NNExprs: " + nnExprs);
+			
+			JavacProcessingEnvironment jpe = (JavacProcessingEnvironment) checker.getProcessingEnvironment();
+			TreeMaker treemaker = TreeMaker.instance(jpe.getContext());
+
+			ExpressionTree recv = TreeUtils.getReceiverTree(node);
+			
+			AnnotatedTypeMirror at;
+			if (recv==null) {
+				at = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(node)));
+			} else {
+				at = factory.getAnnotatedType(recv);
+			}
+			
+			
+			if (!(at instanceof AnnotatedDeclaredType)) {
+				// System.err.println("What's wrong with: " + at);
+		    	return;
+			}
+			
+			Element elemrecv = ((AnnotatedDeclaredType)at).getUnderlyingType().asElement();
+			List<? extends Element> atels = ElementFilter.fieldsIn(elemrecv.getEnclosedElements());
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+
+			for (Element el : atels) {			
+				for (String field : fields) {
+					String lookfor;
+					if (recv != null) {
+						lookfor = recv.toString() + "." + field;
+					} else {
+						lookfor = field;
+					}
+					// System.err.println("Looking for " + field + " in " + el);
+					
+					if (el.getSimpleName().toString().equals(field)) {
+						/*
+						System.err.println("Looking for " + lookfor);
+						System.err.println("flowresults: " + flowResults);
+						System.err.println("annos: " + annos);
+						System.err.println("annosTrue: " + this.annosWhenTrue);
+						System.err.println("annosFalse: " + annosWhenFalse);
+						System.err.println("nnExprs: " + this.nnExprs);
+						 */
+						boolean notfound = true;
+						for (Tree flow : flowResults.keySet()) {
+							// TODO: make sure it's really the right tree, e.g compare element?
+							// Instead of doing toString for all trees, check the Kind first?
+							
+							if(flow.toString().equals(lookfor)) {
+								// System.out.println("YEAH: " + flowResults.get(flow));
+								notfound = false;
+								if (!flowResults.get(flow).equals(NONNULL)) {
+							        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
+								}
+								break;
+							}
+						}
+						if (notfound) {
+							// System.err.println("Not found means null!");
+					        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
+						}
+					}
+				}
+			}
+		}
+    }
+
+    
     private void markTree(Tree node, AnnotationMirror anno) {
         flowResults.put(node, anno);
     }
@@ -1011,10 +1097,28 @@ class NullnessFlow extends Flow {
 
         nnExprs = nnExprsWhenFalse;
         scanExpr(node.getFalseExpression());
-        annos.and(after);
+        // annos.and(after);
+        GenKillBits.andlub(annos, after, annoRelations);
 
         nnExprs = prevNNExprs;
         return null;
     }
+
+	public AnnotationMirror WMD_getFlowAnnotatedType(ExpressionTree fieldacc,
+			ExpressionTree recv,
+			Element field) {
+
+		for(Tree t: flowResults.keySet()) {
+			if( t.getKind()==Kind.MEMBER_SELECT) {
+				MemberSelectTree mst = (MemberSelectTree)t;
+
+				// TODO: this check does not succeed. If I relax the condition more, it matches, but shouldn't.
+				if( mst.getExpression().equals(recv) && mst.getIdentifier()==field.getSimpleName()) {
+					return flowResults.get(t);
+				}
+			}
+		}
+		return null;
+	}
 
 }

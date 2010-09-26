@@ -16,6 +16,8 @@ import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
@@ -122,7 +124,18 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
     private boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
-        return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
+       
+        for ( ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+        	MethodSymbol ms = (MethodSymbol) ee;        
+        	long mod = ms.flags();
+        	
+            if ((mod & Flags.SYNTHETIC) == 0) {
+            	return true;
+            }
+        }
+        return false;
+        // WMD Old impl
+        // return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
     }
 
     @Override
@@ -141,7 +154,6 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             if (!hasExplicitConstructor(node)) {
                 checkDefaultConstructor(node);
             }
-
             return super.visitClass(node, p);
         } finally {
             this.visitorState.setClassType(preACT);

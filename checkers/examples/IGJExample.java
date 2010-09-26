@@ -18,10 +18,11 @@ class Date {
     public int testMutate() {
         this.time = 4;  // Error: Cannot re-assign in a method with RO receiver
         this.time++;    // Error: Cannot re-assign in a method with RO receiver
+	return this.time;
     }
 
     public int mutableReciever() /*@Mutable*/ // Error: No method with mutable receiver within Immutable Class
-    { }
+    { return 0; }
 }
 
 @I
@@ -42,6 +43,7 @@ class Point {
 
     public int hashCode() /*@ReadOnly*/ {
         x += 4; // Error: ReadOnly receiver
+	return 0;
     }
 
     public static @I Point getMidPoint(@I Point p1, @I Point p2) {
