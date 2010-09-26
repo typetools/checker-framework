@@ -301,7 +301,7 @@ in the Checker Framework release.)
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checkers/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
-7 installation (not the JRE installation.  (It may already be set for Ant to work.)
+7 installation (not the JRE installation).  (It may already be set for Ant to work.)
 
 %% This does not work, because "java" might be the version in the JDK or in
 %% the JRE.
@@ -331,7 +331,7 @@ Compile the Type Annotations javac compiler and the javap tool:
 
 % JSR 308 extends the Java language to permit annotations to appear on types,
 % as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
-% This change will be part of the Java 7 or 8 language.  We recommend that you
+% This change will be part of the Java 8 language.  We recommend that you
 % write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
 % Section~\ref{annotations-in-comments}).  The JSR 308 compiler still reads
 % such annotations, but this syntax permits you to use a compiler other than
@@ -388,8 +388,8 @@ Run \code{ant} to create \<checkers.jar>:
 
   \item Run \code{ant all-tests} in the \code{checkers} directory:
 \begin{Verbatim}
- cd $JSR308/checker-framework/checkers
-ant all-tests
+  cd $JSR308/checker-framework/checkers
+  ant all-tests
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -412,7 +412,7 @@ Run \code{make} in the \code{checkers/manual} directory to build both the PDF an
 
 % \subsection{Adjust classpath}
 
-% Building the Checker Framework requires use of a Java 7 compiler.  You may
+% Building the Checker Framework requires use of a Java 8 compiler.  You may
 % use either the OpenJDK compiler or the JSR 308 compiler.  The latter has a
 % few extra features and tends to get bug fixes more quickly.
 
