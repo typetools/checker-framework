@@ -81,7 +81,6 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Character")
                 || qualifiedName.equals("java.lang.Short")
                 || qualifiedName.equals("java.lang.Integer")
-                || qualifiedName.equals("java.lang.Number")
                 || qualifiedName.equals("java.lang.Long")
                 || qualifiedName.equals("java.lang.Double")
                 || qualifiedName.equals("java.lang.Float"));
