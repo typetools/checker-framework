@@ -638,8 +638,17 @@ public class AnnotatedTypes {
         @Override
         public List<AnnotatedTypeMirror>
         visitArray(AnnotatedArrayType type, AnnotatedTypeMirror p) {
-            if (p.getKind() == TypeKind.NULL)
+            if (p.getKind() == TypeKind.NULL) {
                 return Collections.emptyList();
+            } else if (p.getKind() == TypeKind.WILDCARD) {
+            	// WMD was inspired for this test by visitDeclared below.
+            	// For an array type, the only legal upper bound is java.lang.Object.
+                AnnotatedTypeMirror bound = ((AnnotatedWildcardType)p).getExtendsBound();
+                if (bound != null) {
+                	assert bound.getUnderlyingType().toString().equals("java.lang.Object");
+                }
+            	return Collections.emptyList();
+            }
             assert type.getKind() == p.getKind();
             AnnotatedArrayType pArray = (AnnotatedArrayType) p;
 
