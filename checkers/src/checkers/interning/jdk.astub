@@ -17,7 +17,10 @@ public class ObjectStreamField
 package java.lang;
 
 // All instances of Class are interned.
-@Interned class Class<T> { }
+@Interned class Class<T> {
+  // In the Oracle JDK, the result of getName is interned
+  public @Interned String getName();
+}
 
 class String {
   @Interned String intern();
