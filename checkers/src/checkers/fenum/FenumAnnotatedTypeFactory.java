@@ -37,7 +37,7 @@ public class FenumAnnotatedTypeFactory extends
 			// flow.setDebug(System.err);
 			flow.scan(root, null);
 		}
-		// if "flowinferenc" is false, the checker uses the DefaultQualifierInHierarchy.
+		// if "flowinference" is false, the checker uses the DefaultQualifierInHierarchy.
 	}
     
     @Override
