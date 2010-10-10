@@ -8,6 +8,10 @@ public class SwingTest {
 	static @SwingVerticalOrientation int BOTTOM;
 	static @SwingCompassDirection int NORTH;
 	
+	static @SwingHorizontalOrientation int CENTER;
+	static @SwingHorizontalOrientation int LEFT;
+	
+	
 	static void m(@SwingVerticalOrientation int box) {}
 	
 	public static void main(String[] args) {
@@ -87,7 +91,17 @@ public class SwingTest {
 	    // the empty else branch actually covers a different code path!
 	    return o;
 	}
-	
+
+	@SwingHorizontalOrientation int testInference5c() {
+	    int o;
+	    if( 5==4 ) {
+	    	o = CENTER;
+	    } else {
+	    	o = LEFT;
+	    }
+	    return o;
+	}
+
 	int testInference6() {
 		int last = 0;
 		last += 1;
@@ -173,6 +187,16 @@ public class SwingTest {
 	    }
 	    //:: (return.type.incompatible)
 	    return o;
+	}
+
+	int testInferenceThrow() {
+	    int i;
+	    if( 5==4 ) {
+	    	i = 5;
+	    } else {
+	    	throw new RuntimeException("bla");
+	    }
+	    return i;
 	}
 	
 	@SwingVerticalOrientation Object testDefaulting0() {
