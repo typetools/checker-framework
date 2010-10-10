@@ -262,7 +262,7 @@ public class GenKillBits<K> {
 		// elements at the end, b/c length() doesn't count zeros at the end!
         for(int i=0; i<orres.length(); ++i) {
         	if (orres.get(i) && !xorres.get(i)) {
-        		System.err.println("More than one variable true: " + this);
+        		// System.err.println("More than one variable true: " + this);
         		return false;
         	}
         }
