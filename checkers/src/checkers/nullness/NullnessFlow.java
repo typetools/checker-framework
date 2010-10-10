@@ -14,19 +14,13 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -96,20 +90,22 @@ class NullnessFlow extends Flow {
     }
 
     @Override
-    protected void split() {
-        super.split();
+    protected SplitTuple split() {
+    	SplitTuple res = super.split();
         nnExprsWhenFalse = new ArrayList<String>(nnExprs);
         nnExprsWhenTrue = nnExprs;
 //        nnExprs = null;
+        return res;
     }
 
+    /*
     @Override
     protected void merge() {
         super.merge();
         nnExprs = new ArrayList<String>(nnExprs);
         nnExprs.retainAll(nnExprsWhenFalse);
         nnExprsWhenTrue = nnExprsWhenFalse = null;
-    }
+    }*/
 
     private Stack<List<String>> levelnnExprs = new Stack<List<String>>();
 
@@ -124,12 +120,12 @@ class NullnessFlow extends Flow {
         nnExprs = levelnnExprs.pop();
     }
     @Override
-    protected void scanCond(Tree tree) {
-        super.scanCond(tree);
+    protected SplitTuple scanCond(Tree tree) {
+    	SplitTuple res = super.scanCond(tree);
         if (tree == null)
-            return;
+            return res;
 
-        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annosWhenFalse);
+        GenKillBits<AnnotationMirror> before = GenKillBits.copy(res.annosWhenFalse);
 
         Conditions conds = new Conditions();
         conds.visit(tree, null);
@@ -139,9 +135,9 @@ class NullnessFlow extends Flow {
         for (VariableElement elt : conds.getNonnullElements()) {
             int idx = vars.indexOf(elt);
             if (idx >= 0) {
-                annosWhenTrue.set(NONNULL, idx);
+                res.annosWhenTrue.set(NONNULL, idx);
                 if (flippable && !conds.excludes.contains(elt))
-                    annosWhenFalse.clear(NONNULL, idx);
+                    res.annosWhenFalse.clear(NONNULL, idx);
             }
         }
 
@@ -154,15 +150,17 @@ class NullnessFlow extends Flow {
                 // analyzed condition
                 // annosWhenTrue.clear(NONNULL, idx);
                 if (flippable && !conds.excludes.contains(elt))
-                    annosWhenFalse.set(NONNULL, idx);
+                    res.annosWhenFalse.set(NONNULL, idx);
             }
         }
         // annosWhenFalse.or(before);
-        GenKillBits.orlub(annosWhenFalse, before, annoRelations);
+        GenKillBits.orlub(res.annosWhenFalse, before, annoRelations);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
         nnExprsWhenFalse.addAll(conds.nullableExpressions);
+        
+        return res;
     }
 
     @Override
@@ -1083,12 +1081,12 @@ class NullnessFlow extends Flow {
             Void p) {
 
         // Split and merge as for an if/else.
-        scanCond(node.getCondition());
+    	SplitTuple res = scanCond(node.getCondition());
 
         List<String> prevNNExprs = new ArrayList<String>(nnExprs);
 
-        GenKillBits<AnnotationMirror> before = annosWhenFalse;
-        annos = annosWhenTrue;
+        GenKillBits<AnnotationMirror> before = res.annosWhenFalse;
+        annos = res.annosWhenTrue;
 
         nnExprs = nnExprsWhenTrue;
         scanExpr(node.getTrueExpression());
