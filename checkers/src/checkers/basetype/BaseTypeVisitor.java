@@ -230,10 +230,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     public R visitVariable(VariableTree node, P p) {
         validateTypeOf(node);
         // If there's no assignment in this variable declaration, skip it.
-        if (node.getInitializer() == null)
-            return super.visitVariable(node, p);
-
-        commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible", p);
+        if (node.getInitializer() != null) {
+            commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible", p);
+        }
         return super.visitVariable(node, p);
     }
 
@@ -579,7 +578,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value
      * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it does.
+     * messaging interface) if it is not valid.
      *
      * @param varTree the AST node for the variable
      * @param valueExp the AST node for the value
@@ -596,7 +595,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value
      * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it does.
+     * messaging interface) if it is not valid.
      *
      * @param varType the annotated type of the variable
      * @param valueExp the AST node for the value
@@ -623,7 +622,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value
      * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it does.
+     * messaging interface) if it is not valid.
      *
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
