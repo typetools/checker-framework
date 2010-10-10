@@ -263,7 +263,41 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     public Void visitAssignment(AssignmentTree node, Void p) {
         if (nonInitializedFields != null)
             nonInitializedFields.remove(InternalUtils.symbol(node.getVariable()));
+        // WMD: Add additional visitor before flow that adds assignments to a field "@NonNull Object _NON_NULL_OBJECT_"
+        // and before each @NonNullOnEntry call we assign the corresponding fields to this new field ->
+        // we get NN error messages, which we catch here.
+        // At some point we should also remove those assignments... but where? after flow inference in the
+        // NullnessAnnotatedTypeFactory is to soon... it needs to be sometime after the NullnessVisitor is finished...
+        // maybe overwrite NullnessSubchecker.process.
+        // Is adding a field easier than using a local variable within each method?
+        
+        // For method calls with "void" as return:
+        //   m()
+        // becomes
+        //   _NON_NULL_OBJECT_ = f; // for each NNOE field f
+        //   m()
+        
+        // For method call with a return type != void:
+        //   .... m() ....
+        // becomes
+        //   .... idInt(idInt(m(), f), g) 
+        // where f and g are the NNOE fields and idInt is a new method that passes through its first argument
+        // and assigns its second argument to _NON_NULL_OBJECT_.
+        // TODO: this will be hard for the error message!
+        // In a first version require assigning to a local variable?
+        
+        // In boolean conditionals, we can rewrite
+        //   if( ... m() > 5 ) ...
+        // into
+        //   if( ... ((_NON_NULL_OBJECT_=field1)==field1) && (m() > 5)) ...
+        
+        
+        if (InternalUtils.symbol(node.getVariable()).getSimpleName().toString().endsWith("_wmd")) {
+        	commonAssignmentCheck(node.getVariable(), node.getExpression(),
+                    "nonnull.precondition.not.satisfied", p);
+        }
         return super.visitAssignment(node, p);
+        
     }
 
     private Set<VariableElement> getUninitializedFields(ClassTree classTree) {
