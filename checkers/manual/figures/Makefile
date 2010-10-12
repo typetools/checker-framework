@@ -1,6 +1,6 @@
-EPSFILES = igj.eps interning.eps javari.eps nullness.eps nullness-and-raw.eps
-PDFFILES = igj.pdf interning.pdf javari.pdf nullness.pdf nullness-and-raw.pdf
-PNGFILES = igj.png interning.png javari.png nullness.png nullness-and-raw.png
+EPSFILES = igj.eps interning.eps javari.eps nullness.eps nullness-and-raw.eps signature-types.eps
+PDFFILES = igj.pdf interning.pdf javari.pdf nullness.pdf nullness-and-raw.pdf signature-types.pdf
+PNGFILES = igj.png interning.png javari.png nullness.png nullness-and-raw.png signature-types.png
 
 all: ${EPSFILES} ${PDFFILES} ${PNGFILES} png-copy
 
