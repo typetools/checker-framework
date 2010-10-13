@@ -4,16 +4,15 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.signature.quals.*;
 
-@TypeQualifiers
-({
+@TypeQualifiers({
     BinaryName.class, 
     BinarySignature.class, 
     FullyQualifiedName.class, 
     FullyQualifiedSignature.class, 
-	SourceName.class,
+    SourceName.class,
     FieldDescriptor.class, 
     MethodDescriptor.class,
     UnannotatedString.class,
     SignatureBottom.class
-    })
+})
 public final class SignatureChecker extends BaseTypeChecker {}
