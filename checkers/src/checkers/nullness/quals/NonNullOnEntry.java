@@ -3,7 +3,7 @@ package checkers.nullness.quals;
 import java.lang.annotation.*;
 
 /**
- * Indicates a method postcondition:  the method expects the specified
+ * Indicates a method precondition:  the method expects the specified
  * variables (typically field references) to be non-null when the annotated
  * method is invoked.
  *
