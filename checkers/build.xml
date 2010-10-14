@@ -364,6 +364,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="signature-tests" depends="jar,build-tests"
+      description="Run tests for the Signature checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureTest"/>
+        </antcall>
+    </target>
+
     <target name="jtreg-tests" depends="-def-jtreg,jar">
         <jtreg-tool name="all" tests="."/>
     </target>
