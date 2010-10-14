@@ -34,7 +34,7 @@ import checkers.basetype.BaseTypeChecker;
  * 
  * @author wmdietl
  */
-@SupportedOptions( { "quals" } )		
+@SupportedOptions( { "quals" } )
 public class FenumChecker extends BaseTypeChecker {
     /** Copied from BasicChecker.
      * Instead of returning an empty set if no "quals" option is given,
@@ -48,26 +48,26 @@ public class FenumChecker extends BaseTypeChecker {
 
         String qualNames = env.getOptions().get("quals");
         if (qualNames == null) {
-        	// maybe issue a warning?
-        	qualSet.add(FenumTop.class);
-        	qualSet.add(Fenum.class);
-        	qualSet.add(FenumUnqualified.class);
-        	qualSet.add(FenumBottom.class);
-		} else {
-			try {
-				for (String qualName : qualNames.split(",")) {
-					final Class<? extends Annotation> q =
-						(Class<? extends Annotation>) Class.forName(qualName);
-					qualSet.add(q);
-				}
-			} catch (ClassNotFoundException e) {
-				throw new Error(e);
-			}
-			qualSet.add(FenumTop.class);
-			qualSet.add(Fenum.class);
-			qualSet.add(FenumUnqualified.class);
-			qualSet.add(FenumBottom.class);
-		}
+            // maybe issue a warning?
+            qualSet.add(FenumTop.class);
+            qualSet.add(Fenum.class);
+            qualSet.add(FenumUnqualified.class);
+            qualSet.add(FenumBottom.class);
+        } else {
+            try {
+                for (String qualName : qualNames.split(",")) {
+                    final Class<? extends Annotation> q =
+                        (Class<? extends Annotation>) Class.forName(qualName);
+                    qualSet.add(q);
+                }
+            } catch (ClassNotFoundException e) {
+                throw new Error(e);
+            }
+            qualSet.add(FenumTop.class);
+            qualSet.add(Fenum.class);
+            qualSet.add(FenumUnqualified.class);
+            qualSet.add(FenumBottom.class);
+        }
         return Collections.unmodifiableSet(qualSet);
     }
 
@@ -89,11 +89,11 @@ public class FenumChecker extends BaseTypeChecker {
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
-		// The checker calls this method to compare the annotation used in a
-		// type to the modifier it adds to the class declaration. As our default
-		// modifier is Unqualified, this results in an error when a non-subtype
-		// is used. Just ignore this check here and do them manually in the
-		// visitor.
-    	return true;
+        // The checker calls this method to compare the annotation used in a
+        // type to the modifier it adds to the class declaration. As our default
+        // modifier is Unqualified, this results in an error when a non-subtype
+        // is used. Just ignore this check here and do them manually in the
+        // visitor.
+        return true;
     }
 }

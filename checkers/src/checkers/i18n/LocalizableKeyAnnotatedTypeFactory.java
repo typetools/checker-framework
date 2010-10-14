@@ -12,14 +12,14 @@ import com.sun.source.tree.CompilationUnitTree;
  * @author wmdietl
  */
 public class LocalizableKeyAnnotatedTypeFactory extends
-		PropertyKeyAnnotatedTypeFactory<LocalizableKeyChecker> {
+        PropertyKeyAnnotatedTypeFactory<LocalizableKeyChecker> {
 
-	public LocalizableKeyAnnotatedTypeFactory(LocalizableKeyChecker checker,
-			CompilationUnitTree root) {
-		super(checker, root);
-	}
+    public LocalizableKeyAnnotatedTypeFactory(LocalizableKeyChecker checker,
+            CompilationUnitTree root) {
+        super(checker, root);
+    }
 
-	@Override
+    @Override
     public TreeAnnotator createTreeAnnotator(LocalizableKeyChecker checker) {
         return new KeyLookupTreeAnnotator(checker, this, LocalizableKey.class);
     }

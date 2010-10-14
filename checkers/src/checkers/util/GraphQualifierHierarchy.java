@@ -252,10 +252,10 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (ignore != null)
             possibleRoots.remove(ignore);
 
-		assert possibleRoots.size() == 1 : "Other than one possible root: "
-				+ possibleRoots + "\n"
-				+ "Does the checker know about all type qualifiers?";
-		return possibleRoots.get(0);
+        assert possibleRoots.size() == 1 : "Other than one possible root: "
+                + possibleRoots + "\n"
+                + "Does the checker know about all type qualifiers?";
+        return possibleRoots.get(0);
     }
 
     private static AnnotationMirror
@@ -323,7 +323,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
                 return a1Lub;
         }
         throw new AssertionError("Could not determine LUB for " + a1 + " and " + a2 + "\n" +
-        		"Does the checker know about all type qualifiers?");
+                "Does the checker know about all type qualifiers?");
     }
 
     /**

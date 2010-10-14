@@ -293,13 +293,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         assert messages != null : "null messages";
 
-		if (args != null) {
-			// look whether we can expand the arguments, too.
-			for (int i = 0; i < args.length; ++i) {
-				args[i] = (args[i] == null) ? null :
-					messages.getProperty(args[i].toString(), args[i].toString());
-			}
-		}
+        if (args != null) {
+            // look whether we can expand the arguments, too.
+            for (int i = 0; i < args.length; ++i) {
+                args[i] = (args[i] == null) ? null :
+                    messages.getProperty(args[i].toString(), args[i].toString());
+            }
+        }
 
         if (kind == Diagnostic.Kind.NOTE) {
             System.err.println("(NOTE) " + String.format(msgKey, args));
@@ -680,11 +680,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     @Override
     public final SourceVersion getSupportedSourceVersion() {
-    	try {
-    		return SourceVersion.RELEASE_7;
-    	} catch (NoSuchFieldError e) {
-    		// Running in JDK 6
-    		return SourceVersion.latest();
-    	}
+        try {
+            return SourceVersion.RELEASE_7;
+        } catch (NoSuchFieldError e) {
+            // Running in JDK 6
+            return SourceVersion.latest();
+        }
     }
 }
