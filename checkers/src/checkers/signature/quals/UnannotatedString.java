@@ -10,5 +10,4 @@ import checkers.quals.TypeQualifier;
 @DefaultQualifierInHierarchy
 @TypeQualifier
 @SubtypeOf({})
-@Target({})
 public @interface UnannotatedString {}

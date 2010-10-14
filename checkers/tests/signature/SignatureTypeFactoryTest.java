@@ -23,6 +23,7 @@ public class SignatureTypeFactoryTest {
       String s8 = "foo()V";
       String s9 = "java.lang.annotation.Retention";
       String s10 = "dummy";
+      String s11 = null;
 
       String us; // @UnannotatedString 
       @FullyQualifiedName String fqn;
@@ -112,6 +113,12 @@ public class SignatureTypeFactoryTest {
       sn = s10;
       //:: (assignment.type.incompatible)
       fd = s10;
+
+      us = s11;
+      fqn = s11;
+      bn = s11;
+      sn = s11;
+      fd = s11;
 
     }
 
