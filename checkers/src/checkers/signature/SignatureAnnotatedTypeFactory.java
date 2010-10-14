@@ -8,10 +8,7 @@ import java.util.regex.*;
 import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
-import checkers.util.TreeUtils;
+import checkers.types.*;
 
 // This code is copied from SignatureAnnotatedTypeFactory.
 // The two could be generalized and combined, perhaps.
