@@ -2,14 +2,15 @@ import checkers.signature.quals.*;
 
 public class SignatureTypeFactoryTest {
 
-    // The type hierarchy contains:
-    //     BinaryName.class, 
+    // The hierarchy of type representations contains:
     //     FullyQualifiedName.class, 
+    //     BinaryName.class, 
     //     SourceName.class,
     //     FieldDescriptor.class, 
     //     UnannotatedString.class,
     //     SignatureBottom.class
-
+    // There are also signature representations, which are not handled yet.
+  
     void bn() {
       String s1 = "a";
       String s2 = "a.b";
@@ -18,6 +19,10 @@ public class SignatureTypeFactoryTest {
       String s5 = "[B";
       String s6 = "Ljava/lang/String;";
       String s7 = "Ljava/lang/String";
+      // TODO: Should be @MethodDescriptor
+      String s8 = "foo()V";
+      String s9 = "java.lang.annotation.Retention";
+      String s10 = "dummy";
 
       String us; // @UnannotatedString 
       @FullyQualifiedName String fqn;
@@ -83,6 +88,30 @@ public class SignatureTypeFactoryTest {
       sn = s7;
       //:: (assignment.type.incompatible)
       fd = s7;
+
+      us = s8;
+      //:: (assignment.type.incompatible)
+      fqn = s8;
+      //:: (assignment.type.incompatible)
+      bn = s8;
+      //:: (assignment.type.incompatible)
+      sn = s8;
+      //:: (assignment.type.incompatible)
+      fd = s8;
+
+      us = s9;
+      fqn = s9;
+      bn = s9;
+      sn = s9;
+      //:: (assignment.type.incompatible)
+      fd = s9;
+
+      us = s10;
+      fqn = s10;
+      bn = s10;
+      sn = s10;
+      //:: (assignment.type.incompatible)
+      fd = s10;
 
     }
 

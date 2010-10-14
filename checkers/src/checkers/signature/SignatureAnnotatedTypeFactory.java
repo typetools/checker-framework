@@ -5,10 +5,7 @@ import checkers.signature.quals.*;
 import java.lang.annotation.Annotation;
 import java.util.regex.*;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror;
@@ -18,6 +15,9 @@ import checkers.util.TreeUtils;
 
 // This code is copied from SignatureAnnotatedTypeFactory.
 // The two could be generalized and combined, perhaps.
+
+// TODO: Does not yet handle method signature annotations, such as
+// @MethodDescriptor.
 
 /**
  * Adds a signature annotation to the type of every tree that is a {@code
