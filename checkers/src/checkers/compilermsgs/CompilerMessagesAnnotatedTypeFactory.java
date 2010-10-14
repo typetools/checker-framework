@@ -12,14 +12,14 @@ import com.sun.source.tree.CompilationUnitTree;
  * @author wmdietl
  */
 public class CompilerMessagesAnnotatedTypeFactory extends
-		PropertyKeyAnnotatedTypeFactory<CompilerMessagesChecker> {
+        PropertyKeyAnnotatedTypeFactory<CompilerMessagesChecker> {
 
-	public CompilerMessagesAnnotatedTypeFactory(CompilerMessagesChecker checker,
-			CompilationUnitTree root) {
-		super(checker, root);
-	}
+    public CompilerMessagesAnnotatedTypeFactory(CompilerMessagesChecker checker,
+            CompilationUnitTree root) {
+        super(checker, root);
+    }
 
-	@Override
+    @Override
     public TreeAnnotator createTreeAnnotator(CompilerMessagesChecker checker) {
         return new KeyLookupTreeAnnotator(checker, this, CompilerMessageKey.class);
     }
