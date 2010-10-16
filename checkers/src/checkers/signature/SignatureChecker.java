@@ -15,4 +15,12 @@ import checkers.signature.quals.*;
     UnannotatedString.class,
     SignatureBottom.class
 })
-public final class SignatureChecker extends BaseTypeChecker {}
+public final class SignatureChecker extends BaseTypeChecker {
+
+  // This method is needed only under MacOS, perhaps as a result of the
+  // broken Apple Java distribution.
+  public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+    return new SignatureAnnotatedTypeFactory(this, root);
+  }
+
+}
