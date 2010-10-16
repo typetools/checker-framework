@@ -1,8 +1,11 @@
 package checkers.signature;
 
+import checkers.signature.quals.*;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
-import checkers.signature.quals.*;
+import checkers.types.AnnotatedTypeFactory;
+import com.sun.source.tree.CompilationUnitTree;
 
 @TypeQualifiers({
     BinaryName.class, 
