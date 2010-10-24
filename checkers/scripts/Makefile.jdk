@@ -10,7 +10,8 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-AFU_SCRIPTS ?= ../../../../annotation-tools/annotation-file-utilities/scripts
+ANNOTATION_TOOLS ?= ../../../../annotation-tools
+AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
 all: clean classes
 # Separate make command because BUILD_CLASSES needs to be recomputed.

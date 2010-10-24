@@ -526,6 +526,7 @@ ${build.version} of the 'javac.jar' library."/>
             description="creates the instrumented jdk.jar">
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
+         <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
          <arg value="-C"/>
          <arg value="jdk"/>
       </exec>
