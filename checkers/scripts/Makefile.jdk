@@ -31,7 +31,7 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 .PHONY: classes
 classes: $(SOURCES)
 	mkdir -p build
-	echo "building the jdk..."
+	@echo "Building the JDK..."
 	@$(JAVAC) -cp $(CHECKERS_JAR):$(JAVADOCLIB) -d build $?
 
 # This rule does not seem to be used.
