@@ -527,6 +527,7 @@ ${build.version} of the 'javac.jar' library."/>
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
+         <arg value="CHECKERS=${basedir}"/>
          <arg value="-C"/>
          <arg value="jdk"/>
       </exec>
@@ -545,7 +546,8 @@ ${build.version} of the 'javac.jar' library."/>
             </manifest>
         </jar>
 
-        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar"/>
+	<!-- overwrite="true" to avoid failing to copy due to timestamps -->
+        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar" overwrite="true"/>
         <delete dir="${temp.dir}"/>
     </target>
 
