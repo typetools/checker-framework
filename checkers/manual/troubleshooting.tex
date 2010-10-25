@@ -158,6 +158,23 @@ annotation was available, but it was not available at run time.
 You can use JDK 7 at run time, or compile
 with a Java 6 compiler that will ignore the annotations in comments.
 
+\item
+If you use JDK 7 and you get an error that refers to a class that was in a
+previous version of the JDK but has subsequently been removed, such as:
+
+\begin{Verbatim}
+  class file for java.io.File$LazyInitialization not found
+\end{Verbatim}
+% To unconfuse Emacs's LaTeX mode: $
+
+then you probably need to first re-generate \code{jdk/jdk.jar} and
+\code{binary/jdk.jar}.  You can do this by running
+
+\begin{Verbatim}
+  cd checkers
+  ant jdk.jar bindist
+\end{Verbatim}
+
 \end{itemize}
 
 
