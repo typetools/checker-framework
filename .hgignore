@@ -22,6 +22,7 @@ doc
 *.jar
 checkers/jdk/**/*.class
 *.pyc
+checkers/binary/buildbin
 
 # manual files
 bib
