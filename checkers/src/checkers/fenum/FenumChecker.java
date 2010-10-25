@@ -99,12 +99,12 @@ public class FenumChecker extends BaseTypeChecker {
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
-		// The checker calls this method to compare the annotation used in a
-		// type to the modifier it adds to the class declaration. As our default
-		// modifier is Unqualified, this results in an error when a non-subtype
-		// is used. Just ignore this check here and do them manually in the
-		// visitor.
-    	return true;
+        // The checker calls this method to compare the annotation used in a
+        // type to the modifier it adds to the class declaration. As our default
+        // modifier is Unqualified, this results in an error when a non-subtype
+        // is used. Just ignore this check here and do them manually in the
+        // visitor.
+        return true;
     }
         
     @Override

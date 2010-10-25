@@ -12,10 +12,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
 public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
-	public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
+    public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
         super(checker, root);
     }
-		    
+
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
 		if (!TreeUtils.isStringConcatenation(node)) {
@@ -29,9 +29,8 @@ public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
 						Result.failure("binary.type.incompatible", lhs, rhs),
 						node);
 			}
-
 		}
-    	return super.visitBinary(node, p);
+        return super.visitBinary(node, p);
     }
     
     @Override

@@ -10,7 +10,8 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-AFU_SCRIPTS ?= ../../../../annotation-tools/annotation-file-utilities/scripts
+ANNOTATION_TOOLS ?= ../../../../annotation-tools
+AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
 all: clean classes
 # Separate make command because BUILD_CLASSES needs to be recomputed.
@@ -31,7 +32,7 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 .PHONY: classes
 classes: $(SOURCES)
 	mkdir -p build
-	echo "building the jdk..."
+	@echo "Building the JDK..."
 	@$(JAVAC) -cp $(CHECKERS_JAR):$(JAVADOCLIB) -d build $?
 
 # This rule does not seem to be used.

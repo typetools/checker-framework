@@ -371,6 +371,13 @@ ${build.version} of the 'javac.jar' library."/>
             <param name="param" value="tests.LubGlbTest"/>
         </antcall>
     </target>
+    
+    <target name="signature-tests" depends="jar,build-tests"
+      description="Run tests for the Signature checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureTest"/>
+        </antcall>
+    </target>
 
     <target name="jtreg-tests" depends="-def-jtreg,jar">
         <jtreg-tool name="all" tests="."/>
@@ -523,6 +530,17 @@ ${build.version} of the 'javac.jar' library."/>
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
     </target>
 
+    <target name="jdk.jar"
+            description="creates the instrumented jdk.jar">
+      <exec executable="make" failonerror="true">
+         <arg value="LANGTOOLS=${jsr308.langtools}"/>
+         <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
+         <arg value="CHECKERS=${basedir}"/>
+         <arg value="-C"/>
+         <arg value="jdk"/>
+      </exec>
+    </target>
+
     <target name="bindist" depends="-prep-bindist,jar"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
         <delete dir="${temp.dir}"/>
@@ -536,7 +554,8 @@ ${build.version} of the 'javac.jar' library."/>
             </manifest>
         </jar>
 
-        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar"/>
+	<!-- overwrite="true" to avoid failing to copy due to timestamps -->
+        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar" overwrite="true"/>
         <delete dir="${temp.dir}"/>
     </target>
 

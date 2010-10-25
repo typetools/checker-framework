@@ -70,7 +70,7 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     }
 
     private Set<String> buildLookupKeys(Map<String, String> options) {
-		Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<String>();
 
         if (options.containsKey("propfiles")) {
             result.addAll( keysOfPropertyFiles(env.getOptions().get("propfiles")) );
@@ -82,84 +82,84 @@ public class PropertyKeyChecker extends BaseTypeChecker {
         return result;
     }
 
-	private Set<String> keysOfPropertyFiles(String names) {
-		String[] namesArr = names.split(":");
+    private Set<String> keysOfPropertyFiles(String names) {
+        String[] namesArr = names.split(":");
 
-		if (namesArr == null) {
-			System.err.println("Couldn't parse the properties files: <" + names + ">");
-			return Collections.emptySet();
-		}
+        if (namesArr == null) {
+            System.err.println("Couldn't parse the properties files: <" + names + ">");
+            return Collections.emptySet();
+        }
 
-		Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<String>();
 
-		for (String name : namesArr) {
-			try {
-				Properties prop = new Properties();
+        for (String name : namesArr) {
+            try {
+                Properties prop = new Properties();
 
-				InputStream in = null;
+                InputStream in = null;
 
-				ClassLoader cl = this.getClass().getClassLoader();
-				if (cl == null) {
-					// the class loader is null if the system class loader was
-					// used
-					cl = ClassLoader.getSystemClassLoader();
-				}
-				in = cl.getResourceAsStream(name);
+                ClassLoader cl = this.getClass().getClassLoader();
+                if (cl == null) {
+                    // the class loader is null if the system class loader was
+                    // used
+                    cl = ClassLoader.getSystemClassLoader();
+                }
+                in = cl.getResourceAsStream(name);
 
-				if (in == null) {
-					// if the classloader didn't manage to load the file, try
-					// whether a FileInputStream works. For absolute paths this
-					// might help.
-					try {
-						in = new FileInputStream(name);
-					} catch (FileNotFoundException e) {
-						// ignore
-					}
-				}
+                if (in == null) {
+                    // if the classloader didn't manage to load the file, try
+                    // whether a FileInputStream works. For absolute paths this
+                    // might help.
+                    try {
+                        in = new FileInputStream(name);
+                    } catch (FileNotFoundException e) {
+                        // ignore
+                    }
+                }
 
-				if (in == null) {
-					System.err.println("Couldn't find the properties file: " + name);
-					// report(Result.failure("propertykeychecker.filenotfound",
-					// name), null);
-					// return Collections.emptySet();
-					continue;
-				}
+                if (in == null) {
+                    System.err.println("Couldn't find the properties file: " + name);
+                    // report(Result.failure("propertykeychecker.filenotfound",
+                    // name), null);
+                    // return Collections.emptySet();
+                    continue;
+                }
 
-				prop.load(in);
-				result.addAll(prop.stringPropertyNames());
-			} catch (Exception e) {
-				// TODO: is there a nicer way to report messages, that are not
-				// connected to an AST node?
-				// One cannot use report, because it needs a node.
-				System.err.println("Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
-				e.printStackTrace();
-			}
-		}
+                prop.load(in);
+                result.addAll(prop.stringPropertyNames());
+            } catch (Exception e) {
+                // TODO: is there a nicer way to report messages, that are not
+                // connected to an AST node?
+                // One cannot use report, because it needs a node.
+                System.err.println("Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
+                e.printStackTrace();
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	private Set<String> keysOfResourceBundle(String bundleNames) {
-		String[] namesArr = bundleNames.split(":");
+    private Set<String> keysOfResourceBundle(String bundleNames) {
+        String[] namesArr = bundleNames.split(":");
 
-		if (namesArr == null) {
-			System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
-			return Collections.emptySet();
-		}
+        if (namesArr == null) {
+            System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
+            return Collections.emptySet();
+        }
 
-		Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<String>();
 
-		for (String bundleName : namesArr) {	
-			ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-			if (bundle == null) {
-				System.err.println("Couldn't find the resource bundle: <" + bundleName
-					+ "> for locale <" + Locale.getDefault() + ">");
-				continue;
-			}
+        for (String bundleName : namesArr) {    
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
+            if (bundle == null) {
+                System.err.println("Couldn't find the resource bundle: <" + bundleName
+                    + "> for locale <" + Locale.getDefault() + ">");
+                continue;
+            }
 
-			result.addAll(bundle.keySet());
-		}
-		return result;
-	}
+            result.addAll(bundle.keySet());
+        }
+        return result;
+    }
 
 }
