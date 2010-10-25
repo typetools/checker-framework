@@ -232,6 +232,7 @@ ${build.version} of the 'javac.jar' library."/>
             <path>
                 <fileset dir="${tests}">
                     <include name="src/tests/**/*.java"/>
+                    <include name="test-lubglb/**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -364,6 +365,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="lubglb-tests" depends="jar,build-tests"
+      description="Run tests for the lubglb checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LubGlbTest"/>
+        </antcall>
+    </target>
+    
     <target name="signature-tests" depends="jar,build-tests"
       description="Run tests for the Signature checker">
         <antcall target="-run-tests">
@@ -453,7 +461,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- depends on jar, needs classfile of the checker itself -->
     <target name="-run-checker" depends="jar"
-            description="Run Nullness checker on Checker Framework">
+            description="Run a checker on the Checker Framework">
         <pathconvert pathsep=" " property="src.files">
             <path>
                 <fileset dir="${src}">
