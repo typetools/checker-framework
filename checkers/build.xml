@@ -546,7 +546,8 @@ ${build.version} of the 'javac.jar' library."/>
             </manifest>
         </jar>
 
-        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar"/>
+	<!-- overwrite="true" to avoid failing to copy due to timestamps -->
+        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar" overwrite="true"/>
         <delete dir="${temp.dir}"/>
     </target>
 
