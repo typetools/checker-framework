@@ -44,8 +44,9 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{propkey-checker}{Property file checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker}).
-  Also includes a checker that code is properly internationalized
-  and a checker for compiler message keys as used in the Checker Framework.
+  Also includes a checker that code is properly internationalized.
+  %% Not interesting enough to go at the beginning of the introduction.
+  % and a checker for compiler message keys as used in the Checker Framework.
 \item
   \ahrefloc{basic-checker}{Basic checker} for customized checking without
   writing any code (see \chapterpageref{basic-checker})
@@ -702,6 +703,10 @@ output before adding the annotation, and to compare it to the checker
 output after adding the annotation.  This helps you to focus on the
 specific consequences of your change.
 
+Ordinarily, the javac compiler halts processing as soon as it encounters a
+file with compilation errors.  To convert pluggable-type-checking errors
+into warnings so that you can see them all, use \code{-Awarns -Xmaxwarns
+  10000} (see Section~\ref{running}).
 
 Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
 you are unable to eliminate checker warnings.

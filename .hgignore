@@ -22,6 +22,7 @@ doc
 *.jar
 checkers/jdk/**/*.class
 *.pyc
+checkers/binary/buildbin
 
 # manual files
 bib
@@ -51,6 +52,7 @@ manual004.png
 checkers/manual/figures/*.eps
 checkers/manual/figures/*.pdf
 checkers/manual/figures/*.png
+checkers/manual/figures/signature-types-with-canonicalname.dia
 checkers/manual/*.png
 
 # release tmps

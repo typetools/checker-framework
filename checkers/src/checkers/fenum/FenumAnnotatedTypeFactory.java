@@ -15,7 +15,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
 
 
 public class FenumAnnotatedTypeFactory extends
-		BasicAnnotatedTypeFactory<FenumChecker> {
+        BasicAnnotatedTypeFactory<FenumChecker> {
 
 	public FenumAnnotatedTypeFactory(FenumChecker checker,
 			CompilationUnitTree root) {
