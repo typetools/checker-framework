@@ -193,7 +193,7 @@ ${build.version} of the 'javac.jar' library."/>
         </javadoc>
     </target>
 
-    <target name="dist" depends="jar,bindist">
+    <target name="dist" depends="jar,jdk.jar,bindist">
     </target>
 
     <!-- This creates checkers.jar -->
