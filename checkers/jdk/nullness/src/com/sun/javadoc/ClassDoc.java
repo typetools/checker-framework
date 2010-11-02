@@ -26,6 +26,6 @@ public interface ClassDoc extends ProgramElementDoc, Type {
     ClassDoc[] innerClasses();
     ClassDoc[] innerClasses(boolean filter);
     ClassDoc findClass(String className);
-    ClassDoc @Deprecated [] importedClasses();
-    PackageDoc @Deprecated [] importedPackages();
+    @Deprecated ClassDoc[] importedClasses();
+    @Deprecated PackageDoc[] importedPackages();
 }
