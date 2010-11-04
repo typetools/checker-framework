@@ -21,6 +21,7 @@ build
 doc
 *.jar
 checkers/jdk/**/*.class
+checkers/jdk/jdk.jar
 *.pyc
 checkers/binary/buildbin
 
