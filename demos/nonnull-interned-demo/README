@@ -56,6 +56,7 @@ don't appear in your Eclipse.]
 
 3b. If using Emacs:
    Set font; try one of these:
+     (set-frame-font "Inconsolata 14")       ;; for Mike's laptop as of 11/2010
      (set-frame-font "Inconsolata 10")
      (set-default-font "10x20")
      (set-default-font "-b&h-lucidatypewriter-medium-r-normal-sans-*-180-*-*-*-*-iso8859-1")
