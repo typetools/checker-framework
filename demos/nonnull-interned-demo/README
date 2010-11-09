@@ -19,8 +19,8 @@ don't appear in your Eclipse.]
    You never have to redo this step.
 
    (Alternately, you can edit demo.properties directly, but that is bad
-   style and shows up as a change in your repository that will distract you
-   when you do a diff and that you might accidentally check in.)
+   style:  you might accidentally check in your change, or at the least it
+   will show up as a change in your repository that will distract you.)
 
 2. Run
      ant touch-files
