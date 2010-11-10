@@ -64,7 +64,7 @@ don't appear in your Eclipse.]
 
    If C-x r l reveals that no bookmarks are in use, then
    evaluate this form, or do M-x bookmark-load:
-     (if (null (bookmark-maybe-sort-alist)) (bookmark-load ".emacs.bmk"))
+     (if (or (not (featurep 'bookmark)) (null (bookmark-maybe-sort-alist))) (bookmark-load ".emacs.bmk"))
    and if you modify the bookmarks, re-save them with M-x bookmark-write.
    To see all the bookmarks,
      C-x r l
