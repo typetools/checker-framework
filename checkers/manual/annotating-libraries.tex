@@ -14,8 +14,13 @@ because the library is distributed only in binary (\code{.class} or
 \code{.jar}) form.  This section is also useful if you do not wish to edit the
 library's source code.
 
-The Checker Framework distribution contains annotations
-for popular libraries, such as the JDK\@.
+The Checker Framework distribution contains annotations for popular
+libraries, such as the JDK\@.  It does this in two different ways.  The
+Nullness, Javari, and IGJ Checkers use an annotated JDK
+(Section~\ref{skeleton}), and all other checkers use stub classes
+(Section~\ref{stub}).  These annotated libraries are automatically used, so
+usually you do not have to think about them.
+
 If you annotate additional libraries, please share them with us so that we
 can distribute the annotations with the Checker Framework; see
 Section~\ref{reporting-bugs}.
@@ -261,6 +266,27 @@ stub file from the Javadoc or the class file, and then annotate it.
 
 The Checker Framework distribution contains
 annotated JDKs at the path \<checkers/jdk/jdk.jar>.
+The \<javac> that is distributed with the Checker Framework uses the
+annotated JDKs by default.
+
+If you use a different \<javac>, then you must add a
+\code{-Xbootclasspath/p:} argument, which causes the compiler to read
+annotations from annotated JDK classes in preference to the unannotated
+original library classes.  Supply \code{-Xbootclasspath/p} in addition to
+whatever other arguments you usually use, including \code{-classpath}.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:.../checkers/jdk/jdk.jar my_source_files
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+The annotated JDK should \emph{not} be in your classpath at run time.
+
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must
@@ -274,33 +300,11 @@ annotated JDKs at the path \<checkers/jdk/jdk.jar>.
 \begin{enumerate}
 
 \item
-  When you run \code{javac}, add a \code{-Xbootclasspath/p:} argument to indicate
-  where to find the annotated JDK classes.
-  Supply \code{-Xbootclasspath/p} in addition to whatever other arguments you
-  usually use, including \code{-classpath}.
-
-  The \code{-Xbootclasspath/p:} argument causes the compiler to read annotations
-  from annotated JDK classes in preference to the unannotated original
-  library classes.
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:.../checkers/jdk/jdk.jar my_source_files
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
+  When you run \code{javac}, 
 \item
-  Run the compiled code as usual.  The annotated JDK does not need to be
-  in your classpath at run time.
 
 \end{enumerate}
 
-Please note that so far, only three checkers require passing the annotated JDK
-explicitly, and they are the Nullness, the Javari, and the IGJ checkers.
 
 % \section{Installing the skeleton class generator\label{skeleton-installing}}
 %
@@ -338,5 +342,5 @@ explicitly, and they are the Nullness, the Javari, and the IGJ checkers.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  IGJ's jdk Astubs skipClasses astub AskipClasses toArray
-% LocalWords:  CollectionToArrayHeuristics
+% LocalWords:  IGJ's jdk Astubs skipClasses astub AskipClasses toArray IGJ
+% LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
