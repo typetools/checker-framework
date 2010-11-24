@@ -194,9 +194,10 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                     methodElement.getEnclosingElement());
 
         // Find which method this overrides!
-        Map<AnnotatedDeclaredType, ExecutableElement> overridenMethods =
+        Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
             annoTypes.overriddenMethods(methodElement);
-        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overridenMethods.entrySet()) {
+        System.out.printf("overriddenMethods(%s) = %s%n", methodElement, overriddenMethods);
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
             AnnotatedDeclaredType overriddenType = pair.getKey();
             AnnotatedExecutableType overriddenMethod =
                 annoTypes.asMemberOf(overriddenType, pair.getValue());
@@ -792,8 +793,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             AnnotatedDeclaredType overriddenType,
             P p) {
 
-        if (shouldSkip(overriddenType.getElement()))
+        if (shouldSkip(overriddenType.getElement())) {
             return true;
+        }
 
         // Get the type of the overriding method.
         AnnotatedExecutableType overrider =
@@ -806,15 +808,15 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         }
         String overriderMeth = overrider.getElement().toString();
         String overriderTyp = enclosingType.getUnderlyingType().asElement().toString();
-        String overridenMeth = overridden.getElement().toString();
-        String overridenTyp = overriddenType.getUnderlyingType().asElement().toString();
+        String overriddenMeth = overridden.getElement().toString();
+        String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
         // Check the return value.
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)
             && !checker.isSubtype(overrider.getReturnType(),
                 overridden.getReturnType())) {
             checker.report(Result.failure("override.return.invalid",
-                    overriderMeth, overriderTyp, overridenMeth, overridenTyp,
+                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                     overrider.getReturnType().toString(),
                     overridden.getReturnType().toString()),
                     overriderTree.getReturnType());
@@ -830,10 +832,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         for (int i = 0; i < overriderParams.size(); ++i) {
             if (!checker.isSubtype(overriddenParams.get(i), overriderParams.get(i))) {
                 checker.report(Result.failure("override.param.invalid",
-                        overriderMeth, overriderTyp, overridenMeth, overridenTyp,
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderParams.get(i).toString(),
                         overriddenParams.get(i).toString()
-                        ), overriderTree.getParameters().get(i));
+                        ),
+                               overriderTree.getParameters().get(i));
                 // emit error message
                 result = false;
             }
@@ -842,14 +845,14 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         // Check the receiver type.
         // isSubtype() requires its arguments to be actual subtypes with
         // respect to JLS, but overrider receiver is not a subtype of the
-        // overriden receiver.  Hence copying the annotations
-        AnnotatedTypeMirror overridenReceiver =
+        // overridden receiver.  Hence copying the annotations
+        AnnotatedTypeMirror overriddenReceiver =
             overrider.getReceiverType().getErased().getCopy(false);
-        overridenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
-        if (!checker.isSubtype(overridenReceiver,
+        overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
+        if (!checker.isSubtype(overriddenReceiver,
                 overrider.getReceiverType().getErased())) {
             checker.report(Result.failure("override.receiver.invalid",
-                    overriderMeth, overriderTyp, overridenMeth, overridenTyp,
+                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                     overrider.getReceiverType(),
                     overridden.getReceiverType()),
                     overriderTree);

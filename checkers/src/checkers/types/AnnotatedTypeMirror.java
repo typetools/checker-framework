@@ -424,7 +424,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Copy the fields on this type onto the passed type.
-     * This method needs to be overriden by any subclass of
+     * This method needs to be overridden by any subclass of
      * {@code AnnotatedTypeMirror}
      *
      * @param type  an empty type where fields of this are copied to
