@@ -274,12 +274,12 @@ annotated JDKs at the path \<checkers/jdk/jdk.jar>.
 \begin{enumerate}
 
 \item
-  When you run \code{javac}, add a \code{-bootclasspath/p:} argument to indicate
+  When you run \code{javac}, add a \code{-Xbootclasspath/p:} argument to indicate
   where to find the annotated JDK classes.
-  Supply \code{-bootclasspath/p} in addition to whatever other arguments you
+  Supply \code{-Xbootclasspath/p} in addition to whatever other arguments you
   usually use, including \code{-classpath}.
 
-  The \code{-bootclasspath/p:} argument causes the compiler to read annotations
+  The \code{-Xbootclasspath/p:} argument causes the compiler to read annotations
   from annotated JDK classes in preference to the unannotated original
   library classes.
 
@@ -287,7 +287,7 @@ annotated JDKs at the path \<checkers/jdk/jdk.jar>.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/jdk.jar my_source_files
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:.../checkers/jdk/jdk.jar my_source_files
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
