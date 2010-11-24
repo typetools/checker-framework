@@ -84,6 +84,7 @@ public class AnnotatedTypeFactory {
     /** Represent the annotation relations **/
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
+    /** Types read from stub files. */
     private final Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
@@ -299,6 +300,7 @@ public class AnnotatedTypeFactory {
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);
 
+        // TODO: Why is caching disabled if indexTypes == null?
         if (SHOULD_CACHE && indexTypes != null)
             elementCache.put(elt, atypes.deepCopy(type));
         return type;
