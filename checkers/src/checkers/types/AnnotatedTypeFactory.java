@@ -84,11 +84,12 @@ public class AnnotatedTypeFactory {
     /** Represent the annotation relations **/
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
-    /** Types read from stub files. */
+    /** Types read from stub files (but not those from the annotated JDK. */
     private final Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
 
+    /** @see #canHaveAnnotatedTypeParameters() */
     private final boolean annotatedTypeParams;
 
     /**
@@ -121,8 +122,9 @@ public class AnnotatedTypeFactory {
     }
 
     public AnnotatedTypeFactory(ProcessingEnvironment env,
-            @Nullable QualifierHierarchy qualHierarchy, @Nullable CompilationUnitTree root,
-            Class<? extends SourceChecker> checkerClass) {
+                                @Nullable QualifierHierarchy qualHierarchy,
+                                @Nullable CompilationUnitTree root,
+                                Class<? extends SourceChecker> checkerClass) {
         uid = ++uidCounter;
         this.env = env;
         this.root = root;
@@ -958,7 +960,7 @@ public class AnnotatedTypeFactory {
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
      * underlying type
      */
-    /*package-scope*/ final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
+    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
         return AnnotatedTypeMirror.createType(t, env, this);
     }
 
