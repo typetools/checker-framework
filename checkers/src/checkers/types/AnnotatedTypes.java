@@ -236,8 +236,8 @@ public class AnnotatedTypes {
      * @param elem  an element
      */
     public AnnotatedTypeMirror asMemberOf(AnnotatedTypeMirror t, Element elem) {
-        // as Member of is only for fields, variables and methods!
-        // otherwise simply use fromElement
+        // asMemberOf is only for fields, variables, and methods!
+        // Otherwise, simply use fromElement.
         switch (elem.getKind()) {
         case PACKAGE:
         case INSTANCE_INIT:
