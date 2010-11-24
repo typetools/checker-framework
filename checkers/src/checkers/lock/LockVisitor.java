@@ -150,16 +150,16 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
             Void p) {
 
         List<String> overriderLocks = methodHolding(TreeUtils.elementFromDeclaration(overriderTree));
-        List<String> overridenLocks = methodHolding(overridden.getElement());
+        List<String> overriddenLocks = methodHolding(overridden.getElement());
 
-        boolean isValid = overridenLocks.containsAll(overriderLocks);
+        boolean isValid = overriddenLocks.containsAll(overriderLocks);
 
         if (!isValid) {
             checker.report(Result.failure("override.holding.invalid",
                     TreeUtils.elementFromDeclaration(overriderTree),
                     enclosingType.getElement(), overridden.getElement(),
                     overriddenType.getElement(),
-                    overriderLocks, overridenLocks), overriderTree);
+                    overriderLocks, overriddenLocks), overriderTree);
         }
 
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
