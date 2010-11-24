@@ -196,7 +196,6 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         // Find which method this overrides!
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
             annoTypes.overriddenMethods(methodElement);
-        System.out.printf("overriddenMethods(%s) = %s%n", methodElement, overriddenMethods);
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
             AnnotatedDeclaredType overriddenType = pair.getKey();
             AnnotatedExecutableType overriddenMethod =
