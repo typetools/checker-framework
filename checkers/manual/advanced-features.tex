@@ -810,6 +810,33 @@ carry the inferred types across the method invocation boundary.
 
 \end{itemize}
 
+
+\subsection{Inherited defaults}
+
+In certain situations, it would be convenient for an annotation on a
+superclass member to be automatically inherited by subclasses that override
+it.  The Checker Framework does not support this feature, for several
+reasons.
+
+\begin{itemize}
+
+\item
+  Currently, a user can determine the annotation on a parameter or return
+  value by looking at a single file.  If annotations could be inherited
+  from supertypes, then a user would have to examine all of them to
+  understand the meaning of an unannotated type in a given file.
+
+\item
+  Conflicting annotations might be inherited from a supertype and an
+  interface, or from two interfaces.  It is not clear what the semantics of
+  this should be, and whatever is chosen is likely to be surprising.
+
+\end{itemize}
+
+If these issues can be resolved, then the feature may be added in the
+future.
+
+
 \section{Inexpressible types\label{inexpressible-types}}
 
 The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
