@@ -448,7 +448,7 @@ public class AnnotatedTypes {
      *            the overriding method
      * @param supertypes
      *            the set of supertypes to check for methods that are
-     *            overriden by {@code method}
+     *            overridden by {@code method}
      * @return an unmodified set of {@link ExecutableElement}s
      *         representing the elements that {@code method} overrides
      *         among {@code supertypes}
