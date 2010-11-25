@@ -12,6 +12,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
@@ -77,7 +78,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     protected final AnnotationUtils annoFactory;
 
     /** The options that were provided to the checker using this visitor. */
-    private final Map<String, String> options;
+    protected final Map<String, String> options;
 
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     private final SourcePositions positions;
@@ -1088,4 +1089,45 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         r = reduce(scan(node.getTypeDecls(), p), r);
         return r;
     }
+
+
+    // **********************************************************************
+    // Check that the annotated JDK is being used.
+    // **********************************************************************
+
+
+    private static boolean checkedJDK = false;
+
+    // The Nullness JDK serves as a proxy for all annotated JDKs.  (In part
+    // because of problems with IGJAnnotatedTypeFactory.postAsMemberOf that
+    // make it hard to directly check for the IGJ annotated JDK.)
+    // Not all subclasses call this.
+    /** Warn if the annotated JDK is not being used. */
+    protected void checkForAnnotatedJdk() {
+        if (checkedJDK) {
+            return;
+        }
+        checkedJDK = true;
+        if (options.containsKey("nocheckjdk")) {
+            return;
+        }
+        TypeElement objectTE = elements.getTypeElement("java.lang.Object");
+        TypeMirror objectTM = objectTE.asType();
+        AnnotatedTypeMirror objectATM = plainFactory.toAnnotatedType(objectTM);
+        List<? extends Element> members = elements.getAllMembers(objectTE);
+        for (Element member : members) {
+            if (member.toString().equals("equals(java.lang.Object)")) {
+                ExecutableElement m = (ExecutableElement) member;
+                AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
+                AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
+                if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
+                    // TODO: Use standard compiler output mechanism?
+                    System.out.printf("Warning:  you do not seem to be using the nullness-annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
+                }
+            }
+        }
+    }
+
+
+
 }
