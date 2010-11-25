@@ -53,35 +53,8 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         NONNULL = this.annoFactory.fromClass(NonNull.class);
         NULLABLE = this.annoFactory.fromClass(Nullable.class);
         stringType = elements.getTypeElement("java.lang.String").asType();
-
         checkForAnnotatedJdk();
     }
-
-    private static boolean checkedJDK = false;
-
-    /** Warn if the annotated JDK is not being used. */
-    private void checkForAnnotatedJdk() {
-        if (checkedJDK) {
-            return;
-        }
-        checkedJDK = true;
-        TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        TypeMirror objectTM = objectTE.asType();
-        AnnotatedTypeMirror objectATM = plainFactory.toAnnotatedType(objectTM);
-        List<? extends Element> members = elements.getAllMembers(objectTE);
-        for (Element member : members) {
-            if (member.toString().equals("equals(java.lang.Object)")) {
-                ExecutableElement m = (ExecutableElement) member;
-                AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
-                AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
-                if (! objectEqualsParamADT.hasAnnotation(Nullable.class)) {
-                    // TODO: Use standard compiler output mechanism?
-                    System.out.printf("Warning:  you do not seem to be using the nullness-annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
-                }
-            }
-        }
-    }
-
 
     /** Case 1: Check for null dereferecing */
     @Override
