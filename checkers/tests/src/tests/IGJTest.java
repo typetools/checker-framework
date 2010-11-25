@@ -15,7 +15,7 @@ import java.util.*;
 public class IGJTest extends CheckerTest {
 
     public IGJTest() {
-        super("checkers.igj.IGJChecker", "igj", "-Anomsgtext");
+        super("checkers.igj.IGJChecker", "igj", "-Anomsgtext", "-Anocheckjdk");
     }
 
     void runTestWithDefault(String expected, boolean shouldSucceed, String javaFile) {

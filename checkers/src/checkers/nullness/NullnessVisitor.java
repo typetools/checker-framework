@@ -1,7 +1,6 @@
 package checkers.nullness;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -54,6 +53,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         NONNULL = this.annoFactory.fromClass(NonNull.class);
         NULLABLE = this.annoFactory.fromClass(Nullable.class);
         stringType = elements.getTypeElement("java.lang.String").asType();
+        checkForAnnotatedJdk();
     }
 
     /** Case 1: Check for null dereferecing */
