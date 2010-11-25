@@ -33,6 +33,7 @@
         <arg line="-Xprefer:newer"/>
         <arg line="@{files}"/>
         <arg line="-Alint=@{lint}"/>
+        <arg line="-Anocheckjdk"/>
       </java>
     </sequential>
   </macrodef>
