@@ -30,33 +30,7 @@ public class IGJVisitor extends BaseTypeVisitor<Void, Void> {
     public IGJVisitor(IGJChecker checker, CompilationUnitTree root) {
         super(checker, root);
         this.checker = checker;
-
         checkForAnnotatedJdk();
-    }
-
-    private static boolean checkedJDK = false;
-
-    /** Warn if the annotated JDK is not being used. */
-    private void checkForAnnotatedJdk() {
-        if (checkedJDK) {
-            return;
-        }
-        checkedJDK = true;
-        TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        TypeMirror objectTM = objectTE.asType();
-        AnnotatedTypeMirror objectATM = plainFactory.toAnnotatedType(objectTM);
-        List<? extends Element> members = elements.getAllMembers(objectTE);
-        for (Element member : members) {
-            if (member.toString().equals("equals(java.lang.Object)")) {
-                ExecutableElement m = (ExecutableElement) member;
-                AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
-                AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
-                if (! objectEqualsParamADT.hasAnnotation(checkers.igj.quals.ReadOnly.class)) {
-                    // TODO: Use standard compiler output mechanism?
-                    System.out.printf("Warning:  you do not seem to be using the IGJ-annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
-                }
-            }
-        }
     }
 
     @Override
