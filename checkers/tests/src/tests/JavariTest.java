@@ -11,7 +11,7 @@ import java.util.*;
 public class JavariTest extends ParameterizedCheckerTest {
 
     public JavariTest(File testFile) {
-        super(testFile, "checkers.javari.JavariChecker", "javari", "-Anomsgtext");
+        super(testFile, "checkers.javari.JavariChecker", "javari", "-Anomsgtext", "-Anocheckjdk");
     }
 
     @Parameters
