@@ -1085,14 +1085,15 @@ indicate a nullable variable that FindBugs should check.)  For example:
 The Checker Framework does not emulate this non-standard behavior of
 FindBugs, even if the code uses FindBugs annotations.
 
-FindBugs takes the approach of annotating a declaration, and thus
-suppressing checking at \emph{all} client uses, even the places that you
-want to check.
+With FindBugs, you annotate a declaration, which suppresses checking at
+\emph{all} client uses, even the places that you want to check.
 It is better to suppress warnings at only the specific client uses
 where the value is known to be non-null; the Checker Framework supports
 this, if you write \<@SuppressWarnings> at the client uses.
 The Checker Framework also supports suppressing checking at all client uses,
 by writing a \<@SuppressWarnings> annotation at the declaration site.
+Thus, the Checker Framework supports both use cases, whereas FindBugs
+supports only one and gives the programmer less flexibility.
 
 In general, the Checker Framework will issue more warnings than FindBugs,
 and some of them may be about real bugs in your program.
