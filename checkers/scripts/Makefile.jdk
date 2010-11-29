@@ -66,8 +66,6 @@ JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
 ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
 build/%.jaif: build/%.class
-# For Hudson debugging
-	ls -l $(AFU_SCRIPTS)/extract-annotations
 	$(AFU_SCRIPTS)/extract-annotations '$<'
 
 jaifs: $(JAIFS)
