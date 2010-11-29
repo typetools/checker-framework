@@ -1,7 +1,7 @@
 #!/usr/bin/perl -n
-# retarget-hevea-crossrefs
+# hevea-retarget-crossrefs
 # Michael Ernst
-# Last updated: August 11, 2010
+# Last updated: November 29, 2010
 
 # To use:
 #   hevea-retarget-crossrefs < orig.html > new.html
@@ -50,6 +50,12 @@ END {
       if ($debug) { print STDERR "$1 => $mapping{$1}\n";
       }
     }
+    # Move around the "<A NAME=" for sections without htoc (anything not in
+    # tocdepth, which is not in a table of contents).  If the anchor comes
+    # at the end of a header, then when going to that URL, some browsers
+    # will position the header off the top of the screen.  Putting the
+    # anchor at the beginning of the header fixes this problem.
+    $lines[$i] =~ s:(<(H[345]) CLASS="((sub)*section|paragraph)">)(.*)(<A NAME=".*">)(</A></\2>):$1$6$5$7:;
   }
 
   foreach my $line (@lines) {
