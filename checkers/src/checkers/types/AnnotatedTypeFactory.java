@@ -1270,7 +1270,7 @@ public class AnnotatedTypeFactory {
         if (checkerClass != null)
             in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
-            StubParser stubParser = new StubParser(in, this, env);
+            StubParser stubParser = new StubParser("jdk.astub", in, this, env);
             stubParser.parse(result);
         }
 
@@ -1293,7 +1293,7 @@ public class AnnotatedTypeFactory {
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
-                    StubParser stubParser = new StubParser(stubStream, this, env);
+                    StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, env);
                     stubParser.parse(result);
                 }
             } catch (FileNotFoundException e) {
