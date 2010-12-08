@@ -1141,6 +1141,8 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             this.upperBound = type;
+            // What is this supposed to do???
+            // Substituting "this" for "this" seems like a no-op, however, removing it breaks stuff.
             AnnotatedTypeMirror upperBound = type.substitute(Collections.singletonMap(this, this));
             this.upperBound = upperBound;
         }
@@ -1155,15 +1157,24 @@ public abstract class AnnotatedTypeMirror {
                         actualType.getUpperBound(), env, typeFactory));
             return upperBound;
         }
-
+        
+        private boolean inUpperBounds = false;
+        
         @Override
         public AnnotatedTypeVariable getCopy(boolean annotation) {
+        	if (inUpperBounds) return this;
+        	
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, annotation);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (type.getUpperBound().isAnnotated())
-                type.setUpperBound(getUpperBound());
+            if (getUpperBound().isAnnotated() &&
+            		!inUpperBounds) {
+            	inUpperBounds = true;
+            	type.inUpperBounds = true;
+            	type.setUpperBound(getUpperBound());
+            	inUpperBounds = false;
+            }
             return type;
         }
 
