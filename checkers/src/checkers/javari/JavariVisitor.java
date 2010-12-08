@@ -1,13 +1,15 @@
 package checkers.javari;
 
+import java.util.List;
+
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.*;
 
 import com.sun.source.tree.*;
 
 import checkers.source.*;
 import checkers.basetype.*;
-import checkers.javari.quals.Assignable;
+import checkers.javari.quals.*;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.TreeUtils;
@@ -37,6 +39,7 @@ public class JavariVisitor extends BaseTypeVisitor<Void, Void> {
         MUTABLE = checker.MUTABLE;
         POLYREAD = checker.POLYREAD;
         QREADONLY = checker.QREADONLY;
+        checkForAnnotatedJdk();
     }
 
     /**

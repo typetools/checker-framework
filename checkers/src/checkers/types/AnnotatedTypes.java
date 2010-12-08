@@ -236,8 +236,8 @@ public class AnnotatedTypes {
      * @param elem  an element
      */
     public AnnotatedTypeMirror asMemberOf(AnnotatedTypeMirror t, Element elem) {
-        // as Member of is only for fields, variables and methods!
-        // otherwise simply use fromElement
+        // asMemberOf is only for fields, variables, and methods!
+        // Otherwise, simply use fromElement.
         switch (elem.getKind()) {
         case PACKAGE:
         case INSTANCE_INIT:
@@ -448,7 +448,7 @@ public class AnnotatedTypes {
      *            the overriding method
      * @param supertypes
      *            the set of supertypes to check for methods that are
-     *            overriden by {@code method}
+     *            overridden by {@code method}
      * @return an unmodified set of {@link ExecutableElement}s
      *         representing the elements that {@code method} overrides
      *         among {@code supertypes}

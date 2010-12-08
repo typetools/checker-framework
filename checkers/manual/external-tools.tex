@@ -424,6 +424,50 @@ have to declared as a dependency:
 The plugin was contributed by Adam Warski.
 % [Thanks Adam!]
 
+
+\section{Gradle\label{gradle}}
+
+% This information came from:
+% http://jira.codehaus.org/browse/GRADLE-342
+% http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
+
+\ahref{http://gradle.org/}{Gradle} lets you add command-line arguments to a
+\code{javac} invocation by setting the compilerArgs property of the
+compiler options.  This is adequate for running the Checker Framework,
+because it is run by specifying command-line arguments.  See the
+instructions elsewhere in this manual for a list of command-line arguments.
+
+To specify command-line arguments, set
+\code{compile.options.compilerArgs}.  Here is a possible example:
+
+\begin{Verbatim}
+allprojects {
+  tasks.withType(Compile).allTasks { Compile compile ->
+    compile.options.debug = true
+    compile.options.compilerArgs = [
+      '-version',
+      '-implicit:class',
+      '-Awarns', '-Xmaxwarns', '10000',
+      '-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar',
+      '-processor', 'checkers.nullness.NullnessChecker',
+      '-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar']
+  }
+}
+\end{Verbatim}
+
+You don't need to use a special version of \code{javac}; you only need to
+give the \code{-J-Xbootclasspath/p:...} argument.  If you choose to use a
+special version of \code{javac} instead of supplying the command-line
+argument, then you can do so in the following way:
+
+\begin{Verbatim}
+tasks.withType(Compile).allObjects { compile ->
+  compile.options.fork.executable = "$CHECKERS/binary/javac"
+}
+\end{Verbatim}
+% extra $ to unconfuse Emacs's LaTeX mode
+
+
 \section{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
@@ -598,4 +642,5 @@ annotations for the Javari Checker, which detects mutation errors.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
-% LocalWords:  IntelliJ Maia
+% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
+% LocalWords:  compilerArgs Xbootclasspath

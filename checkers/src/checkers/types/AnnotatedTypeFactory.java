@@ -84,10 +84,12 @@ public class AnnotatedTypeFactory {
     /** Represent the annotation relations **/
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
+    /** Types read from stub files (but not those from the annotated JDK. */
     private final Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
 
+    /** @see #canHaveAnnotatedTypeParameters() */
     private final boolean annotatedTypeParams;
 
     /**
@@ -120,8 +122,9 @@ public class AnnotatedTypeFactory {
     }
 
     public AnnotatedTypeFactory(ProcessingEnvironment env,
-            @Nullable QualifierHierarchy qualHierarchy, @Nullable CompilationUnitTree root,
-            Class<? extends SourceChecker> checkerClass) {
+                                @Nullable QualifierHierarchy qualHierarchy,
+                                @Nullable CompilationUnitTree root,
+                                Class<? extends SourceChecker> checkerClass) {
         uid = ++uidCounter;
         this.env = env;
         this.root = root;
@@ -299,6 +302,7 @@ public class AnnotatedTypeFactory {
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);
 
+        // TODO: Why is caching disabled if indexTypes == null?
         if (SHOULD_CACHE && indexTypes != null)
             elementCache.put(elt, atypes.deepCopy(type));
         return type;
@@ -956,7 +960,7 @@ public class AnnotatedTypeFactory {
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
      * underlying type
      */
-    /*package-scope*/ final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
+    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
         return AnnotatedTypeMirror.createType(t, env, this);
     }
 
@@ -1266,7 +1270,7 @@ public class AnnotatedTypeFactory {
         if (checkerClass != null)
             in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
-            StubParser stubParser = new StubParser(in, this, env);
+            StubParser stubParser = new StubParser("jdk.astub", in, this, env);
             stubParser.parse(result);
         }
 
@@ -1289,7 +1293,7 @@ public class AnnotatedTypeFactory {
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
-                    StubParser stubParser = new StubParser(stubStream, this, env);
+                    StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, env);
                     stubParser.parse(result);
                 }
             } catch (FileNotFoundException e) {

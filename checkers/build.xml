@@ -16,7 +16,7 @@
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
     <property name="checkers.jar.file" value="checkers.jar"/>
-    <property name="dist.annos.file" value="checkers-quals.jar"/>
+    <property name="checkers-quals.jar.file" value="checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javaparser.loc" value="../javaparser"/>
     <property name="checkers.rel.jp" value="../checkers"/>
@@ -73,7 +73,7 @@
         <delete dir="${build}"/>
         <delete dir="${dist.doc}"/>
         <delete file="${checkers.jar.file}"/>
-        <delete file="${dist.annos.file}"/>
+        <delete file="${checkers-quals.jar.file}"/>
         <delete dir="${temp.dir}"/>
         <delete file="${bindist.file}"/>
         <delete failonerror="false">
@@ -148,6 +148,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
+            <arg line="-target 5"/>
             <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
         </java>
@@ -206,7 +207,7 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates checkers-quals.jar -->
     <target name="checkers-quals-jar" depends="build"
             description="Create a jar file for annotations">
-        <jar destfile="${dist.annos.file}" basedir="${build}">
+        <jar destfile="${checkers-quals.jar.file}" basedir="${build}">
             <include name="**/quals/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
             <include name="**/NullnessUtils*"/>

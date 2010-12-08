@@ -62,6 +62,7 @@ annotated/%.class:
 	-cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
 
 # Helper targets to invoke subdir make files
+# "$*" expands to the stem that matched the "%".
 %.clean:
 	cd $*; $(MAKE) clean
 

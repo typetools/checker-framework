@@ -78,6 +78,9 @@ TODO: Write this section.
 Annotated JDK
 =============
 
-The tests run without the annotated JDK.
+The tests run without the annotated JDK.  The reason for this is to avoid
+having tests break if the annotated JDK changes, and to permit exercising
+functionality that would be in conflict with the annotated JDK.
+
 If you want to reproduce a problem that you see when using the annotated
 JDK, then copy the relevant parts of the JDK into your test.
