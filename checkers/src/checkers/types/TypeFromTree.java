@@ -155,7 +155,11 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror alub = f.type(node);
             TypeMirror lub = alub.getUnderlyingType();
 
-            // It it anonoymous
+            // WMD: method annotateAsLub has a very similar test for anonymous types and also the asSuper calls,
+            // but seems much more general. Is the code below out of date?
+            // Also, what is the difference in using annoTypes vs. f.atypes? Are they aliases?
+            
+            // It it anonymous
             if (TypesUtils.isAnonymousType(lub)) {
                 // Find the intersect types
                 f.atypes.annotateAsLub(alub, trueType, falseType);
