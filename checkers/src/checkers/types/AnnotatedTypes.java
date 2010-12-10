@@ -749,8 +749,7 @@ public class AnnotatedTypes {
             // FIXME: This may cause infinite loop
             AnnotatedTypeMirror type =
                 factory.getAnnotatedType((NewArrayTree)assignmentContext);
-            while (type.getKind() == TypeKind.ARRAY)
-                type = ((AnnotatedArrayType)type).getComponentType();
+            type = AnnotatedTypes.innerMostType(type);
             return type;
         } else if (assignmentContext instanceof NewClassTree) {
             // This need to be basically like MethodTree
