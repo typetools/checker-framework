@@ -262,6 +262,10 @@ public class TypeFromElement {
         AnnotatedTypes.innerMostType(type).addAnnotations(annotations);
     }
 
+    static void clearAnnotationsFromElt(AnnotatedTypeMirror type) {
+        AnnotatedTypes.innerMostType(type).clearAnnotations();
+    }
+
     /**
      * Extracts type annotations from the element and inserts them into the
      * type of the element.
