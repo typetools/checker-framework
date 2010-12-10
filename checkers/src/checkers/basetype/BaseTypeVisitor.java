@@ -764,10 +764,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs, P p) {
         assert requiredArgs.size() == passedArgs.size();
-        for (int i = 0; i < requiredArgs.size(); ++i)
+        for (int i = 0; i < requiredArgs.size(); ++i) {
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
                     "argument.type.incompatible", p);
+        }
     }
 
     /**
