@@ -265,7 +265,6 @@ abstract class TypeFromTree extends
                 typeElem = ((AnnotatedArrayType)typeElem).getComponentType();
             }
             // Add all dimension annotations.
-            //int idx = arrayDim(result) - 1;
             int idx = 0;
             AnnotatedTypeMirror level = result;
             while (level.getKind() == TypeKind.ARRAY) {
@@ -277,16 +276,6 @@ abstract class TypeFromTree extends
 
             // Add top-level annotations.
             result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
-        }
-
-        private int arrayDim(AnnotatedArrayType array) {
-            AnnotatedTypeMirror type = array;
-            int result = 0;
-            while (type.getKind() == TypeKind.ARRAY) {
-                type = ((AnnotatedArrayType)type).getComponentType();
-                result++;
-            }
-            return result;
         }
 
         private void annotateArrayAsCanonical(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
