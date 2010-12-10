@@ -912,22 +912,6 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the depth of the array type of the provided array.
-     *
-     * @param array the type of the array
-     * @return  the depth of the provided array
-     */
-    public int getArrayDepth(AnnotatedArrayType array) {
-        int counter = 0;
-        AnnotatedTypeMirror type = array;
-        while (type.getKind() == TypeKind.ARRAY) {
-            counter++;
-            type = ((AnnotatedArrayType)type).getComponentType();
-        }
-        return counter;
-    }
-
-    /**
      * Returns the method parameters for the invoked method, with the same number
      * of arguments passed in the methodInvocation tree.
      *
@@ -987,6 +971,23 @@ public class AnnotatedTypes {
         return t1.toString().equals(t2.toString());
     }
 
+    /**
+     * Returns the depth of the array type of the provided array.
+     *
+     * @param array the type of the array
+     * @return  the depth of the provided array
+     */
+    public int getArrayDepth(AnnotatedArrayType array) {
+        int counter = 0;
+        AnnotatedTypeMirror type = array;
+        while (type.getKind() == TypeKind.ARRAY) {
+            counter++;
+            type = ((AnnotatedArrayType)type).getComponentType();
+        }
+        return counter;
+    }
+
+    // The innermost *array* type.
     public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
         AnnotatedTypeMirror inner = t;
         while (inner.getKind() == TypeKind.ARRAY)
