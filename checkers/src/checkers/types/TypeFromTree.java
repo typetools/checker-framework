@@ -44,6 +44,24 @@ abstract class TypeFromTree extends
         }
     }
 
+    static void clearAnnotationsFromElt(AnnotatedTypeMirror type) {
+        // Annotate the inner most array
+        AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
+        // for non-type annotations
+        type.clearAnnotations();
+        // for type annotations
+        innerType.clearAnnotations();
+        if (innerType.getKind() == TypeKind.TYPEVAR) {
+            AnnotatedTypeMirror.AnnotatedTypeVariable typevar = (AnnotatedTypeMirror.AnnotatedTypeVariable) innerType;
+            typevar.getUpperBound().clearAnnotations();
+            typevar.getLowerBound().clearAnnotations();
+        } else if (innerType.getKind() == TypeKind.WILDCARD) {
+            AnnotatedTypeMirror.AnnotatedWildcardType typevar = (AnnotatedTypeMirror.AnnotatedWildcardType) innerType;
+            typevar.getExtendsBound().clearAnnotations();
+            typevar.getSuperBound().clearAnnotations();
+        }
+    }
+
     private static Map<TypeElement, Boolean> isTypeCache = new IdentityHashMap<TypeElement, Boolean>();
     private static boolean isTypeAnnotation(AnnotationMirror anno) {
         TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
@@ -381,6 +399,17 @@ abstract class TypeFromTree extends
             Element elt = TreeUtils.elementFromDeclaration(node);
             result.setElement(elt);
 
+            // Ordinarily, annotations are cumulative.  But, if they are
+            // added to a use of a generic type variable (as in "@Nullable
+            // T"), they replace existing annotations.
+            // Is this feature ever useful?  Should they only be allowed to
+            // augment existing types (as in "@NonNull T" where T might be
+            // nullable), but not remove annotations?
+            com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getType();
+            if ((ntype.type.getKind() == TypeKind.TYPEVAR)
+                && (! elt.getAnnotationMirrors().isEmpty())) {
+                clearAnnotationsFromElt(result);
+            }
             addAnnotationsToElt(result, elt.getAnnotationMirrors());
             return result;
         }
