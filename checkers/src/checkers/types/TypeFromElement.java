@@ -259,11 +259,7 @@ public class TypeFromElement {
 
     static void addAnnotationsToElt(AnnotatedTypeMirror type,
             List<? extends AnnotationMirror> annotations) {
-        // Annotate the inner most array
-        AnnotatedTypeMirror innerType = type;
-        while (innerType.getKind() == TypeKind.ARRAY)
-            innerType = ((AnnotatedArrayType)innerType).getComponentType();
-        innerType.addAnnotations(annotations);
+        AnnotatedTypes.innerMostType(type).addAnnotations(annotations);
     }
 
     /**
