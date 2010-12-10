@@ -231,10 +231,12 @@ public class AnnotatedTypeFactory {
             case VARIABLE:
                 type = fromMember(tree); break;
             default:
-                if (tree instanceof ExpressionTree)
+                if (tree instanceof ExpressionTree) {
                     type = fromExpression((ExpressionTree)tree);
-                else throw new UnsupportedOperationException(
+                } else {
+                    throw new UnsupportedOperationException(
                         "query of annotated type for tree " + tree.getKind());
+                }
         }
         annotateImplicit(TreeUtils.skipParens(tree), type);
 
