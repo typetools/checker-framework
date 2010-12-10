@@ -79,20 +79,20 @@ explicit annotation.  For example, the following pairs of declarations are
 identical.
 
 \begin{Verbatim}
-  class MyClassNN<@A T> { ... }
-  class MyClassNN<T extends @A Object super @A void> { ... }
+  class MyClass<@A T> { ... }
+  class MyClass<T extends @A Object super @A void> { ... }
 
-  class MyClassNN<@A T extends Number> { ... }
-  class MyClassNN<T extends @A Number super @A void> { ... }
+  class MyClass<@A T extends Number> { ... }
+  class MyClass<T extends @A Number super @A void> { ... }
 
-  class MyClassNN<@A T extends @B Number> { ... }
-  class MyClassNN<T extends @B Number super @A void> { ... }
+  class MyClass<@A T extends @B Number> { ... }
+  class MyClass<T extends @B Number super @A void> { ... }
 
-  class MyClassNN<@A T super Number> { ... }
-  class MyClassNN<T extends @A Object super @A Number> { ... }
+  class MyClass<@A T super Number> { ... }
+  class MyClass<T extends @A Object super @A Number> { ... }
 
-  class MyClassNN<@A T super @B Number> { ... }
-  class MyClassNN<T extends @A Object super @B Number> { ... }
+  class MyClass<@A T super @B Number> { ... }
+  class MyClass<T extends @A Object super @B Number> { ... }
 \end{Verbatim}
 
 Note that these types mean different things:
