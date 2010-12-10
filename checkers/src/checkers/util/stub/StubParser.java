@@ -353,7 +353,7 @@ public class StubParser {
                     System.err.printf("  Instead, write the nested class as a top-level class:%n    class %s { ... }%n    class %s$%s { ... }%n", typeDecl.getName(), typeDecl.getName(), ciDecl.getName());
                 }
             } else {
-                System.out.println("StubParser: Ignoring in mapMembers: " + member.getClass());
+                System.out.printf("StubParser: Ignoring element of type %s in mapMembers", member.getClass());
             }
         }
         result.remove(null);
