@@ -31,6 +31,16 @@ public class ElementUtils {
         return (TypeElement) result;
     }
 
+    // WMD TODO: document
+    public static PackageElement enclosingPackage(final Element elem) {
+        Element result = elem;
+        while (result != null && result.getKind()!=ElementKind.PACKAGE) {
+            @Nullable Element encl = result.getEnclosingElement();
+            result = encl;
+        }
+        return (PackageElement) result;
+    }
+    
     /**
      * Returns true if the element is a static element: whether it is a static
      * field, static method, or static class
