@@ -179,7 +179,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the underlying unannotated Java type wrapped with this
+     * Returns the underlying unannotated Java type, which this wraps
      *
      * @return  the underlying type
      */
@@ -455,7 +455,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Sub
+     * Return a copy of this, with the given substitutions performed.
      *
      * @param mappings
      */
@@ -1185,23 +1185,26 @@ public abstract class AnnotatedTypeMirror {
         }
 
         private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
-        V mapGetHelper(
-                Map<K, V> mappings, AnnotatedTypeVariable key) {
+        V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key) {
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
                 K possible = entry.getKey();
-                if (possible == key) return entry.getValue();
+                V possValue = entry.getValue();
+                if (possible == key) return possValue;
                 if (possible instanceof AnnotatedTypeVariable) {
                     AnnotatedTypeVariable other = (AnnotatedTypeVariable)possible;
                     Element oElt = other.getUnderlyingType().asElement();
                     if (key.getUnderlyingType().asElement().equals(oElt)) {
+                        // Not identical AnnotatedTypeMirrors, but they wrap the same TypeMirror.
                         if (!key.annotations.isEmpty()
                                 && !AnnotationUtils.areSame(key.annotations, other.annotations)) {
+                            // An annotated type variable use means to override
+                            // any annotations on the actual type argument.
                             @SuppressWarnings("unchecked")
-                            V found = (V)entry.getValue().getCopy(false);
+                            V found = (V)possValue.getCopy(false);
                             found.addAnnotations(key.annotations);
                             return found;
                         } else
-                            return entry.getValue();
+                            return possValue;
                     }
                 }
             }
