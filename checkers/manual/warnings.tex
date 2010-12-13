@@ -253,6 +253,13 @@ annotation comments are less readable with spaces, so you may wish to disable
 inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
 
+There is no way to turn off the annotations in comments feature.  If you
+don't want this feature, you can use a standard Java 8 compiler that
+supports type annotations but not annotations in comments.  If your code
+already contains comments of the form \</*@...*/> that look like type
+annotations, and you want the Type Annotations compiler not to try to
+interpret them, then you can add spaces to the comments.
+
 
 \subsection{Implicit import statements\label{implicit-import-statements}}
 

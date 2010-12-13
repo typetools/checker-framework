@@ -18,7 +18,7 @@ public class IGJTest extends CheckerTest {
         super("checkers.igj.IGJChecker", "igj", "-Anomsgtext", "-Anocheckjdk");
     }
 
-    void runTestWithDefault(String expected, boolean shouldSucceed, String javaFile) {
+    void runTestWithDefault(String expectedFileName, boolean shouldSucceed, String javaFile) {
         try {
             File tempFile = File.createTempFile("Test", ".java");
             FileWriter temp = new FileWriter(tempFile);
@@ -32,7 +32,7 @@ public class IGJTest extends CheckerTest {
                 temp.write('\n');
             }
             temp.flush();
-            runTest(expected, shouldSucceed, tempFile);
+            runTest(expectedFileName, shouldSucceed, tempFile);
             temp.close();
         } catch (IOException exp) {
             assertFalse("Couldn't compile file! ", true);
