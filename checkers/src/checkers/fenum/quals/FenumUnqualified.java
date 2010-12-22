@@ -7,12 +7,11 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * 
- * @author wmdietl
+ * An unqualified type.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target( {} )
+// @Target( {} )
 @TypeQualifier
 @SubtypeOf( { FenumTop.class } )
 @DefaultQualifierInHierarchy

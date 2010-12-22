@@ -280,7 +280,7 @@ public class AnnotatedTypes {
         // 1. Find the owner of the element
         // 2. Find the base type of owner (e.g. type of owner as supertype
         //      of passed type)
-        // 3. Subsitute for type variables if any exist
+        // 3. Substitute for type variables if any exist
         TypeElement owner = ElementUtils.enclosingClass(elem);
 
         // TODO: Potential bug if Raw type is used
@@ -638,8 +638,17 @@ public class AnnotatedTypes {
         @Override
         public List<AnnotatedTypeMirror>
         visitArray(AnnotatedArrayType type, AnnotatedTypeMirror p) {
-            if (p.getKind() == TypeKind.NULL)
+            if (p.getKind() == TypeKind.NULL) {
                 return Collections.emptyList();
+            } else if (p.getKind() == TypeKind.WILDCARD) {
+            	// WMD was inspired for this test by visitDeclared below.
+            	// For an array type, the only legal upper bound is java.lang.Object.
+                AnnotatedTypeMirror bound = ((AnnotatedWildcardType)p).getExtendsBound();
+                if (bound != null) {
+                	assert bound.getUnderlyingType().toString().equals("java.lang.Object");
+                }
+            	return Collections.emptyList();
+            }
             assert type.getKind() == p.getKind();
             AnnotatedArrayType pArray = (AnnotatedArrayType) p;
 
