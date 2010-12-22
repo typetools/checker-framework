@@ -795,7 +795,7 @@ is a key in Map m.  Another way of saying this is that the expression
 You usually do not have to write \code{@KeyFor} explicitly, because the
 checker infers it based on usage patterns, such as calls to
 \code{containsKey} or iteration over a map's
-\sunjavadoc{java/util/Map.html#keySet()}{key set}.
+\sunjavadoc{java/util/Map.html#keySet()}{\textrm{key set}}.
 
 One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
 user-managed collection that is a subset of the key set:
@@ -814,12 +814,12 @@ slightly refactor your code.  For example, this would be illegal:
 \begin{Verbatim}
   Map<K,V> m;
   Collection<@KeyFor("m") K> coll;
-  coll.add(x);
-  ...            // at this point, the @KeyFor annotation is violated
+  coll.add(x);   // compiler error, because the @KeyFor annotation is violated
   m.put(x, ...);
 \end{Verbatim}
 
-but this would be OK:
+\noindent
+but this would be OK (no compiler error):
 
 \begin{Verbatim}
   Collection<@KeyFor("m") K> coll;
