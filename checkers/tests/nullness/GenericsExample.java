@@ -2,6 +2,7 @@ import checkers.nullness.quals.*;
 
 // This is the example from manual section:
 // "Generics (parametric polymorphism or type polymorphism)"
+// whose source code is ../../manual/advanced-features.tex
 class GenericsExample {
 
   class MyList1<@Nullable T> {
@@ -11,6 +12,11 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
+      t = null;
+      t = nble;
+      nble = null;
+      //:: (assignment.type.incompatible)
+      nn = null;
       t = this.get(0);
       nble = this.get(0);
       //:: (assignment.type.incompatible)
@@ -28,6 +34,13 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
+      //:: (assignment.type.incompatible)
+      t = null;
+      //:: (assignment.type.incompatible)
+      t = nble;
+      nble = null;
+      //:: (assignment.type.incompatible)
+      nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
@@ -45,11 +58,19 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
+      //:: (assignment.type.incompatible)
+      t = null;
+      //:: (assignment.type.incompatible)
+      t = nble;
+      nble = null;
+      //:: (assignment.type.incompatible)
+      nn = null;
       t = this.get(0);
       nble = this.get(0);
       //:: (assignment.type.incompatible)
       nn = this.get(0);
       this.add(t);
+      //:: (argument.type.incompatible)
       this.add(nble);
       this.add(nn);
     }
@@ -62,6 +83,13 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
+      //:: (assignment.type.incompatible)
+      t = null;
+      //:: (assignment.type.incompatible)
+      t = nble;
+      nble = null;
+      //:: (assignment.type.incompatible)
+      nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
