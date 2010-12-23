@@ -1219,6 +1219,11 @@ public abstract class AnnotatedTypeMirror {
 
         // This returns the annotations on the upper bound if the element
         // itself is not annotated.  Is that the right thing?
+        // In particular, the actual type may not be compatible with the
+        // upper bound's annotation.  For example, in "T extends @Nullable
+        // Object", T might be instantiated with "@NonNull Date", in which
+        // case assigning null would not be legal, even though
+        // getAnnotation() returns @Nullable.
         @Override
         public Set<AnnotationMirror> getAnnotations() {
             if (!super.isAnnotated() && getUpperBound() != null)
