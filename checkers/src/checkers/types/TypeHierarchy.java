@@ -75,8 +75,8 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     private final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        // If already checked this type (in case of recusive type bound
-        // return true.  if not subtype, we wouldn't have gotten here again
+        // If already checked this type (in case of recusive type bound)
+        // return true.  If not subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
             return true;
         AnnotatedTypeMirror lhsBase = lhs;
