@@ -956,7 +956,7 @@ public class AnnotatedTypeFactory {
 
     /**
      * A convenience method that converts a {@link TypeMirror} to an {@link
-     * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#create}.
+     * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
      *
      * @param t the {@link TypeMirror}
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
