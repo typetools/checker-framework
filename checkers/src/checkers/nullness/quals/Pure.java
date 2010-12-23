@@ -9,8 +9,6 @@ import java.lang.annotation.*;
  *
  * The method should not have any visible side-effect.
  * Non-visible benevolent side effects (e.g., caching) are possible.
- *
- * TODO: Consider moving Pure to core quals instead of nullness.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
