@@ -106,6 +106,21 @@ different things:
   class MyList4<T extends @NonNull Object> { ... } // same as MyList2
 \end{Verbatim}
 
+\<MyList1> must be instantiated with a nullable type. 
+The implementation must be able to consume (store) a null
+value and produce (retrieve) a null value.
+
+\<MyList2> and \<MyList4> must be instantiated with non-null type.
+The implementation has to account for only non-null values --- it
+does not have to account for consuming or producing null.
+
+\<MyList3> may be instantiated either way:
+with a nullable type or a non-null type.  The implementation must consider
+that it may be instantiated either way --- flexible enough to support either
+instantiation, yet rigorous enough to impose the correct constraints of the
+specific instantiation.  It must also itself comply with the constraints of
+the potential instantiations.
+
 One way to express the difference is by comparing what expressions are
 legal in the implementation of the list --- that is, what expressions may
 appear in the ellipsis, such as inside a method's body.  Suppose each class
@@ -121,6 +136,8 @@ has, in the ellipsis, these declarations:
 
 \noindent
 Then the following expressions would be legal, inside a given implementation.
+(Compilable source code appears as file
+\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
 
 \begin{tabular}{|l|c|c|c|c|} \hline
                         & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
@@ -136,8 +153,6 @@ Then the following expressions would be legal, inside a given implementation.
   this.add(nn);         & OK      & OK      & OK      & OK      \\ \hline
 \end{tabular}
 
-(This complete example appears as file
-\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
 
 %% This text is not very helpful.
 % The
