@@ -94,8 +94,10 @@ public class TypeHierarchy {
             } else if (rhs.getKind() == TypeKind.WILDCARD) {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
-                if (!lhsBase.annotations.isEmpty())
-                    return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lhsBase.annotations);
+                AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
+                Set<AnnotationMirror> lAnnos = lhsb_atv.getLowerBoundAnnotations();
+                if (!lAnnos.isEmpty())
+                    return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
                 return qualifierHierarchy.getBottomQualifier() == null ?
                     rhs.getAnnotations().isEmpty() :
                     rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
@@ -112,6 +114,7 @@ public class TypeHierarchy {
         // related to bug tests/framework/OverrideCrash
         if (rhsBase == null) rhsBase = rhs;
 
+        // Is this test correct in the case of type variables?
         if (!qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations()))
             return false;
 
@@ -121,7 +124,18 @@ public class TypeHierarchy {
             return isSubtypeAsArrayComponent(rhsComponent, lhsComponent);
         } else if (lhsBase.getKind() == TypeKind.DECLARED && rhsBase.getKind() == TypeKind.DECLARED) {
             return isSubtypeTypeArguments((AnnotatedDeclaredType)rhsBase, (AnnotatedDeclaredType)lhsBase);
+        } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhsBase.getKind() == TypeKind.TYPEVAR) {
+            if (lhsBase.equals(rhsBase))
+                return true;
+            // compare lower bound of lhs to upper bound of rhs
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhs).getLowerBoundAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhs).getUpperBoundAnnotations();
+            return qualifierHierarchy.isSubtype(ras, las);
         }
+
+        // It's probably OK to reach this case, because of the isSubtype test above.
+        // Still, the use of this default fallthrough is troubling.
+        // System.out.printf("isSubtypeImpl(%s, %s):%n  return true via default fallthrough case%n", rhs, lhs);
 
         return true;
     }
