@@ -43,4 +43,23 @@
         <jar destfile="${dist.file}" basedir="${build}"/>
     </target>
 
+    <target name="javadoc" depends="build" description="Create Javadoc API documentation">
+      <javadoc
+	  destdir="docs/api">
+	<fileset dir="src">
+	  <include name="**/*.java"/>
+	</fileset>
+	<link href="http://developer.java.sun.com/developer/products/xml/docs/api/"/>
+      </javadoc>
+    </target>
+
+    <target name="etags" depends="tags">
+    </target>
+    <target name="tags" description="Create Emacs TAGS table">
+      <exec executable="/bin/sh">
+	<arg value="-c"/>
+	<arg value="etags `find -name '*.java' | sort-directory-order`"/>
+      </exec>
+    </target>
+
 </project>
