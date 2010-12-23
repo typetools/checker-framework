@@ -237,7 +237,7 @@ public final class ASTHelper {
      * will be initialized if it is <code>null</code>.
      * 
      * @param block
-     * @param stmt
+     * @param expr
      */
     public static void addStmt(BlockStmt block, Expression expr) {
         addStmt(block, new ExpressionStmt(expr));
