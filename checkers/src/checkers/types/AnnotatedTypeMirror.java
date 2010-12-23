@@ -1217,6 +1217,8 @@ public abstract class AnnotatedTypeMirror {
             return super.getAnnotations();
         }
 
+        // This returns the annotations on the upper bound if the element
+        // itself is not annotated.  Is that the right thing?
         @Override
         public Set<AnnotationMirror> getAnnotations() {
             if (!super.isAnnotated() && getUpperBound() != null)
@@ -1235,7 +1237,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(getAnnotations()));
+            sb.append(formatAnnotationString(annotations));
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
