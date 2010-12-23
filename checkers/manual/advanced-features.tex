@@ -125,6 +125,7 @@ Then the following expressions would be legal, inside a given implementation.
 \begin{tabular}{|l|c|c|c|c|} \hline
                         & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
   t = null;             & OK      & error   & error   & error   \\ \hline
+  t = nble;             & OK      & error   & error   & error   \\ \hline
   nble = null;          & OK      & OK      & OK      & OK      \\ \hline
   nn = null;            & error   & error   & error   & error   \\ \hline
   t = this.get(0);      & OK      & OK      & OK      & OK      \\ \hline
