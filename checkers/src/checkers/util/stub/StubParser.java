@@ -23,7 +23,12 @@ import japa.parser.ast.type.*;
 // Main entry points are parse() and parse(Map<Element, AnnotatedTypeMirror>).
 
 public class StubParser {
-    /** file being parsed, to make error messages more informative */
+
+    public static boolean debugStubParser = false;
+
+    /**
+     * This variable records the file being parsed, to make error messages
+     * more informative. */
     final String filename;
     final IndexUnit index;
     final AnnotatedTypeFactory atypeFactory;
@@ -125,19 +130,19 @@ public class StubParser {
         }
     }
 
-    // typeDecl's name may be a binary name such as A$B
+    // typeDecl's name may be a binary name such as "A$B".
     // That is a hack because the StubParser does not handle nested classes.
     private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> result) {
-        // System.out.printf("parse(%s.%s, ...)%n", packageName, typeDecl.getName());
         String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
         // couldn't find type.  not in class path
         // TODO: Should throw exception?!
-        if (typeElt == null
-                || typeElt.getKind() == ElementKind.ENUM
-                || typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
-            // System.err.println("StubParser: Type not found: " + typeName);
+        if (typeElt == null) {
+            System.err.println("StubParser: Type not found: " + typeName);
             return;
+        } else if (typeElt.getKind() == ElementKind.ENUM
+                   || typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
+            System.err.println("StubParser: Skipping enum or annotation type: " + typeName);
         }
 
         if (typeDecl instanceof ClassOrInterfaceDeclaration) {
@@ -366,7 +371,10 @@ public class StubParser {
             if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString))
                 return superType;
         }
-        // System.err.println("StubParser: Type " + typeString + " not found");
+        System.err.println("StubParser: Type " + typeString + " not found");
+        if (debugStubParser)
+            for (AnnotatedDeclaredType superType : types)
+                System.err.printf("  %s%n", superType);
         return null;
     }
     public ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
@@ -382,7 +390,10 @@ public class StubParser {
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
-        // System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
+        System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
+        if (debugStubParser) 
+            for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements()))
+                System.err.printf("  %s%n", method);
         return null;
     }
 
@@ -397,7 +408,10 @@ public class StubParser {
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
-        // System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
+        System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
+        if (debugStubParser) 
+            for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements()))
+                System.err.printf("  %s%n", method);
         return null;
     }
 
@@ -407,7 +421,10 @@ public class StubParser {
             if (fieldName.contains(field.getSimpleName()))
                 return field;
         }
-        // System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
+        System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
+        if (debugStubParser) 
+            for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements()))
+                System.err.printf("  %s%n", field);
         return null;
     }
 }
