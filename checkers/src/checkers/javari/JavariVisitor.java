@@ -114,8 +114,7 @@ public class JavariVisitor extends BaseTypeVisitor<Void, Void> {
 
         // Here we simply test for primitive types
         // they can only occur at raw or array most inner component type
-        while (type.getKind() == TypeKind.ARRAY)
-            type = ((AnnotatedArrayType)type).getComponentType();
+        type = AnnotatedTypes.innerMostType(type);
         if (type.getKind().isPrimitive()) {
             if (type.hasAnnotation(QREADONLY)
                     || type.hasAnnotation(READONLY)
