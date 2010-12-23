@@ -116,7 +116,7 @@ public abstract class AnnotatedTypeMirror {
 
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
-    // the class name of Annotation instead
+    // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
     protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
@@ -1121,11 +1121,66 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @return the lower bound type of this type variable
+         * @see #getLowerBoundAnnotations
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null && actualType.getLowerBound() != null) // lazy init
                 setLowerBound(createType(actualType.getLowerBound(), env, typeFactory));
             return lowerBound;
+        }
+
+        /**
+         * @return the effective lower bound annotations:  the annotations
+         * on this, or if none, those on the lower bound
+         */
+        public Set<AnnotationMirror> getLowerBoundAnnotations() {
+            Set<AnnotationMirror> result = annotations;
+            if (result.isEmpty()) {
+                fixupLowerBoundAnnotations();
+                AnnotatedTypeMirror lb = getLowerBound();
+                if (lb != null)
+                    result = lb.getAnnotations();
+            }
+            return Collections.unmodifiableSet(result);
+        }
+
+        boolean fixedupLowerBoundAnnotations = false;
+
+        // I would like to be able to do something like this from
+        // getLowerBound(), but at that time the lower bound has no
+        // annotations (not even defaulted ones).  So, try calling it from
+        // getLowerBoundAnnotations(), which is called later.
+
+        // If the lower bound was not present in actualType, then its
+        // annotation was defaulted from the AnnotatedTypeFactory.  If the
+        // lower bound annotation is a supertype of the higher bound
+        // annotation, then the type is ill-formed.  In that case, change
+        // the defaulted lower bound to be consistent with the
+        // explicitly-written upper bound.
+        // 
+        // As a concrete example, if the default annotation is @Nullable,
+        // then the type "X extends @NonNull Y" should not be converted
+        // into "X extends @NonNull Y super @Nullable bottomtype" but be
+        // converted into "X extends @NonNull Y super @NonNull bottomtype".
+        private void fixupLowerBoundAnnotations() {
+
+            if (fixedupLowerBoundAnnotations)
+                return;
+            fixedupLowerBoundAnnotations = true;
+            
+            if (actualType.getLowerBound() instanceof NullType) {
+                Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
+                Set<AnnotationMirror> uAnnos = getUpperBound().getAnnotations();
+                if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
+                    // Nothing to do
+                } else if (typeFactory.qualHierarchy.isSubtype(uAnnos, lAnnos)) {
+                    lowerBound.clearAnnotations();
+                    lowerBound.addAnnotations(uAnnos);
+                } else {
+                    throw new Error("Default annotation on lower bound is inconsistent with explicit upper bound: " + this);
+                }
+            }
+
         }
 
         /**
@@ -1140,6 +1195,7 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @return the upper bound type of this type variable
+         * @see #getUpperBoundAnnotations
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null
@@ -1147,6 +1203,20 @@ public abstract class AnnotatedTypeMirror {
                 setUpperBound(createType(
                         actualType.getUpperBound(), env, typeFactory));
             return upperBound;
+        }
+
+        /**
+         * @return the effective upper bound annotations:  the annotations
+         * on this, or if none, those on the upper bound
+        */
+        public Set<AnnotationMirror> getUpperBoundAnnotations() {
+            Set<AnnotationMirror> result = annotations;
+            if (result.isEmpty()) {
+                AnnotatedTypeMirror ub = getUpperBound();
+                if (ub != null)
+                    result = ub.getAnnotations();
+            }
+            return Collections.unmodifiableSet(result);
         }
 
         @Override
@@ -1207,6 +1277,7 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
+        // Shouldn't this check the lower bound too??
         @Override
         public boolean isAnnotated() {
             return (super.isAnnotated()
@@ -1251,6 +1322,8 @@ public abstract class AnnotatedTypeMirror {
                         sb.append(" super ");
                         sb.append(getLowerBound());
                     }
+                    // If the upper bound annotation is not the default, perhaps
+                    // print the upper bound even if its kind is TypeKind.NULL.
                     if (getUpperBound() != null && getUpperBound().getKind() != TypeKind.NULL) {
                         sb.append(" extends ");
                         sb.append(getUpperBound());
@@ -1370,6 +1443,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public String toString() {
+            // This output is not helpful if there is a (non-default) annotation.
             return "null";
         }
     }
