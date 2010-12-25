@@ -266,6 +266,32 @@ immutability type as the \emph{first} collection parameter:
 \end{Verbatim}
 
 
+\section{Iterators and their abstract state\label{igj-library-annotations}}
+
+This section explains why the receiver of \<Iterator.next()> is annotated
+as \<@ReadOnly>.
+
+An iterator conceptually has two pieces of state:
+\begin{enumerate}
+\item
+  the underlying collection
+\item
+  an index into that collection (indicating the next object to be returned)
+\end{enumerate}
+
+We choose to exclude the index from the abstract state of the iterator.
+That is, a change to the index does not count as a mutation of the
+iterator itself.
+
+Changes to the underlying collection are more important and interesting,
+and unintentional changes are much more likely to lead to important
+errors.  Therefore, this choice about the iterator's abstract state
+appears to be more useful than other choices.  For example, if the
+iterator's abstract state included both the underlying collection and
+the index, then there would be no way to express, or check, that
+\<Iterator.next> does not change the underlying collection.
+
+
 \section{Examples\label{igj-example}}
 
 To try the IGJ checker on a source file that uses the IGJ qualifier, use

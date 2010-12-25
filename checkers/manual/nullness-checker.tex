@@ -113,11 +113,12 @@ behavior.
   Javadoc for examples of their use.
 
 \item[\code{@\refclass{nullness/quals}{Pure}}]
-  indicates that the method has no (visible) side effects.  Furthermore,
-  if the method is called multiple times with the same
-  arguments, then it returns the same result.  This property cannot be
-  assumed in general.  For example, suppose that the return value of method
-  \code{m} is nullable.  Then this code will pass the type-checker:
+  indicates that the method has no (visible) side effects.
+
+  Furthermore, if the method is called multiple times with the same
+  arguments, then it returns the same result.  For example, suppose that
+  the return value of method \code{m} is nullable.  Then this code will
+  pass the type-checker:
 
 \begin{Verbatim}
         if (m(arg) != null) {
@@ -125,8 +126,14 @@ behavior.
         }
 \end{Verbatim}
 
-\noindent
-only if method \code{m} is annotated as \code{@Pure}.
+  \noindent
+  only if method \code{m} is annotated as \code{@Pure}.
+
+  If a method is pure, then it would be legal to annotate its receiver and
+  every parameter as \<@ReadOnly>, in the IGJ (Chapter~\ref{igj-checker}) or
+  Javari (Chapter~\ref{javari-checker}) type systems.  The reverse is not
+  true, both because the method might side-effect a global variable and
+  because the method might not be deterministic.
 
 \item[\code{@\refclass{nullness/quals}{AssertParametersNonNull}}]
   % Indicates a method precondition:  The annotated method expects all of
@@ -795,7 +802,7 @@ is a key in Map m.  Another way of saying this is that the expression
 You usually do not have to write \code{@KeyFor} explicitly, because the
 checker infers it based on usage patterns, such as calls to
 \code{containsKey} or iteration over a map's
-\sunjavadoc{java/util/Map.html#keySet()}{key set}.
+\sunjavadoc{java/util/Map.html#keySet()}{\textrm{key set}}.
 
 One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
 user-managed collection that is a subset of the key set:
@@ -814,12 +821,12 @@ slightly refactor your code.  For example, this would be illegal:
 \begin{Verbatim}
   Map<K,V> m;
   Collection<@KeyFor("m") K> coll;
-  coll.add(x);
-  ...            // at this point, the @KeyFor annotation is violated
+  coll.add(x);   // compiler error, because the @KeyFor annotation is violated
   m.put(x, ...);
 \end{Verbatim}
 
-but this would be OK:
+\noindent
+but this would be OK (no compiler error):
 
 \begin{Verbatim}
   Collection<@KeyFor("m") K> coll;
@@ -1160,5 +1167,6 @@ tool like the Checker Framework.)
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
-% LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse
-% LocalWords:  AssertParametersNonNull nonnull
+% LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
+% LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly
+% LocalWords:  keySet
