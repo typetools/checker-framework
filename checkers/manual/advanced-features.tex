@@ -29,6 +29,17 @@ clients supply the qualifier along with the type argument, as in
 
 \paragraph{Restricting instantiation of a generic class}
 
+When you define a generic class, the generic type parameters can restrict
+how the class may be instantiated.  For example, given the definition
+\verb|class G<T extends Number> {...}|,
+a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
+Similarly, type qualifiers on the generic type parameters can restrict on
+how the class may be instantiated.  For example, a generic list class may
+indicate that it can hold only non-null values.  Similarly, a generic map
+class might indicate it requires an immutable key type, but that it
+supports both nullable and non-null value types.
+
+
 There are two ways to restrict the type qualifiers that may be used on
 the actual type argument when instantiating a generic class.
 
@@ -80,20 +91,20 @@ explicit annotation.  For example, the following pairs of declarations are
 identical.
 
 \begin{Verbatim}
-  class MyClassNN<@A T> { ... }
-  class MyClassNN<T extends @A Object super @A void> { ... }
+  class MyClass<@A T> { ... }
+  class MyClass<T extends @A Object super @A void> { ... }
 
-  class MyClassNN<@A T extends Number> { ... }
-  class MyClassNN<T extends @A Number super @A void> { ... }
+  class MyClass<@A T extends Number> { ... }
+  class MyClass<T extends @A Number super @A void> { ... }
 
-  class MyClassNN<@A T extends @B Number> { ... }
-  class MyClassNN<T extends @B Number super @A void> { ... }
+  class MyClass<@A T extends @B Number> { ... }
+  class MyClass<T extends @B Number super @A void> { ... }
 
-  class MyClassNN<@A T super Number> { ... }
-  class MyClassNN<T extends @A Object super @A Number> { ... }
+  class MyClass<@A T super Number> { ... }
+  class MyClass<T extends @A Object super @A Number> { ... }
 
-  class MyClassNN<@A T super @B Number> { ... }
-  class MyClassNN<T extends @A Object super @B Number> { ... }
+  class MyClass<@A T super @B Number> { ... }
+  class MyClass<T extends @A Object super @B Number> { ... }
 \end{Verbatim}
 
 We can see from the above that almost all of the following types mean
@@ -106,6 +117,21 @@ different things:
   class MyList4<T extends @NonNull Object> { ... } // same as MyList2
 \end{Verbatim}
 
+\<MyList1> must be instantiated with a nullable type. 
+The implementation must be able to consume (store) a null
+value and produce (retrieve) a null value.
+
+\<MyList2> and \<MyList4> must be instantiated with non-null type.
+The implementation has to account for only non-null values --- it
+does not have to account for consuming or producing null.
+
+\<MyList3> may be instantiated either way:
+with a nullable type or a non-null type.  The implementation must consider
+that it may be instantiated either way --- flexible enough to support either
+instantiation, yet rigorous enough to impose the correct constraints of the
+specific instantiation.  It must also itself comply with the constraints of
+the potential instantiations.
+
 One way to express the difference is by comparing what expressions are
 legal in the implementation of the list --- that is, what expressions may
 appear in the ellipsis, such as inside a method's body.  Suppose each class
@@ -113,18 +139,21 @@ has, in the ellipsis, these declarations:
 
 \begin{Verbatim}
   T t;
-  @Nullable T nble;
-  @NonNull T nn;
+  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
+  @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
   void add(T arg) { ... }
   T get(int i) { ... }
 \end{Verbatim}
 
 \noindent
 Then the following expressions would be legal, inside a given implementation.
+(Compilable source code appears as file
+\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
 
 \begin{tabular}{|l|c|c|c|c|} \hline
                         & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
   t = null;             & OK      & error   & error   & error   \\ \hline
+  t = nble;             & OK      & error   & error   & error   \\ \hline
   nble = null;          & OK      & OK      & OK      & OK      \\ \hline
   nn = null;            & error   & error   & error   & error   \\ \hline
   t = this.get(0);      & OK      & OK      & OK      & OK      \\ \hline
@@ -135,8 +164,8 @@ Then the following expressions would be legal, inside a given implementation.
   this.add(nn);         & OK      & OK      & OK      & OK      \\ \hline
 \end{tabular}
 
-(This complete example appears as file
-\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
+
+\medskip
 
 %% This text is not very helpful.
 % The
@@ -209,9 +238,8 @@ variable:
 \end{Verbatim}
 
 \noindent
-The type annotation does not restrict how \code{MyClass2} may be instantiated
-(only the optional \code{extends} clause on the declaration of type
-variable \code{T} would do so).  In other words, both
+The type annotation does not restrict how \code{MyClass2} may be
+instantiated.  In other words, both
 \code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
 legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
 In \code{MyClass2<@Interned String>},

@@ -68,8 +68,6 @@ public class Locations extends SourceChecker {
             annotations = options.containsKey("annotations");
         }
 
-        private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
         @Override
         public Void visitAnnotation(AnnotationTree tree, Void p) {
             if (annotations) {
@@ -93,12 +91,11 @@ public class Locations extends SourceChecker {
                     prev = t;
                 }
 
-                System.out.printf(":annotation %s %s %s %s%s",
+                System.out.printf(":annotation %s %s %s %s%n",
                         tree.getAnnotationType(),
                         tree,
                         root.getSourceFile().getName(),
-                        (isBodyAnnotation ? "body" : "sig"),
-                        LINE_SEPARATOR);
+                        (isBodyAnnotation ? "body" : "sig"));
             }
             return super.visitAnnotation(tree, p);
         }

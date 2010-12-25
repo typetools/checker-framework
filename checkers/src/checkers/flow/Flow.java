@@ -84,17 +84,18 @@ public class Flow extends TreePathScanner<Void, Void> {
     /** Utility class for operations on annotated types. */
     protected final AnnotatedTypes atypes;
 
-    /**
-     * Maps variables to a bit index. This index is also used as the bit index
-     * to determine a variable's annotatedness using
-     * annos/annosWhenTrue/annosWhenFalse.
-     * WMD: "maps" above means that the index of the element in this list is
-     * the bitindex in the GenKillBits.
-     */
-    protected final List<VariableElement> vars;
-
     /** Stores the results of the analysis (source location to qualifier). */
     protected final Map<Tree, AnnotationMirror> flowResults;
+
+    /**
+     * Maps variables to a bit index. This index is also used as the bit
+     * index to determine a variable's annotatedness using
+     * annos/annosWhenTrue/annosWhenFalse.
+     * @see #annos
+     * @see #annosWhenTrue
+     * @see #annosWhenFalse
+     */
+    protected final List<VariableElement> vars;
 
     /**
      * Tracks the annotated state of each variable during flow. Bit indices
