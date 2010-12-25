@@ -1349,7 +1349,9 @@ public abstract class AnnotatedTypeMirror {
                 return false;
             AnnotatedTypeVariable other = (AnnotatedTypeVariable) o;
             boolean isSame =
-                this.getUnderlyingType() == other.getUnderlyingType()
+                // isSameType sometimes returns false for identical types.
+                // Callee must deal with this.
+                env.getTypeUtils().isSameType(getUnderlyingType(), other.getUnderlyingType())
                 && AnnotationUtils.areSame(this.annotations, other.annotations);
             return isSame;
         }
