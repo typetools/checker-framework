@@ -15,11 +15,15 @@ public abstract class MethodOverrides {
     public static class SubclassA extends MethodOverrides {
 
         public @Odd String method() {
-            return (@Odd String)"";
+            //:: (assignment.type.incompatible)
+            @Odd String s = "";
+            return s;
         }
 
         public @Odd String methodSub() {
-            return (@Odd String)"";
+            //:: (assignment.type.incompatible)
+            @Odd String s = "";
+            return s;
         }
 
         public void param(@Odd String s) {}
@@ -36,7 +40,8 @@ public abstract class MethodOverrides {
     }
 
     static class Y extends X {
-        @Override <T> T @Odd [] method(T @Odd [] t) {
+        @Override
+        <T> T @Odd [] method(T @Odd [] t) {
             return null;
         }
     }
