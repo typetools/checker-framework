@@ -1122,7 +1122,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
                     // TODO: Use standard compiler output mechanism?
-                    System.out.printf("Warning:  you do not seem to be using the nullness-annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
+                    System.out.printf("Warning:  you do not seem to be using the distributed annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
                 }
             }
         }
