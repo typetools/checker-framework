@@ -19,6 +19,7 @@ tags
 bin
 build
 doc
+javaparser/docs/api
 *.jar
 checkers/jdk/**/*.class
 checkers/jdk/jdk.jar

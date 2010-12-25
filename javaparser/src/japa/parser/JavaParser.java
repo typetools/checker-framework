@@ -33,7 +33,7 @@ import java.io.InputStream;
  * <p>This class was generated automatically by javacc, do not edit.</p>
  * <p>Parse Java 1.5 source code and creates Abstract Syntax Tree classes.</p>
  * <p><b>Note:</b> To use this parser asynchronously, disable de parser cache
- * by calling the method {@link setCacheParser} with <code>false</code>
+ * by calling the method {@link #setCacheParser} with <code>false</code>
  * as argument.</p>
  *
  * @author Júlio Vilmar Gesser

@@ -638,14 +638,13 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         if (options.containsKey("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
-            final String lineSeparator = System.getProperty("line.separator");
             System.out.printf(
-                    " %s (line %3d): %s %s%s     actual: %s %s%s   expected: %s %s%s",
-                    (success ? "success" : "FAILURE"),
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    (success ? "success: actual is subtype of expected" : "FAILURE: actual is not subtype of expected"),
                     root.getLineMap().getLineNumber(valuePos),
-                    valueTree.getKind(), valueTree, lineSeparator,
-                    valueType.getKind(), valueType, lineSeparator,
-                    varType.getKind(), varType, lineSeparator);
+                    valueTree.getKind(), valueTree,
+                    valueType.getKind(), valueType,
+                    varType.getKind(), varType);
         }
 
         // Use an error key only if it's overridden by a checker.
@@ -776,10 +775,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs, P p) {
         assert requiredArgs.size() == passedArgs.size();
-        for (int i = 0; i < requiredArgs.size(); ++i)
+        for (int i = 0; i < requiredArgs.size(); ++i) {
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
                     "argument.type.incompatible", p);
+        }
     }
 
     /**
@@ -1134,7 +1134,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
                     // TODO: Use standard compiler output mechanism?
-                    System.out.printf("Warning:  you do not seem to be using the nullness-annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
+                    System.out.printf("Warning:  you do not seem to be using the distributed annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
                 }
             }
         }

@@ -32,7 +32,7 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getRootAnnotation();
 
     /**
-     * @return the botton type qualifier in the hierarchy
+     * @return the bottom type qualifier in the hierarchy
      */
     public abstract AnnotationMirror getBottomQualifier();
 
@@ -65,13 +65,13 @@ public abstract class QualifierHierarchy {
      *
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
-    // This method requires more revision
+    // This method requires more revision.
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
-    // this case, requires subtyping with respect to one qualifier only
+    // this case, requires subtyping with respect to one qualifier only.
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        Collection<AnnotationMirror> lhsAnnos = wrapCollection(lhs);
         Collection<AnnotationMirror> rhsAnnos = wrapCollection(rhs);
+        Collection<AnnotationMirror> lhsAnnos = wrapCollection(lhs);
 
         for (AnnotationMirror lhsAnno : lhsAnnos)
             for (AnnotationMirror rhsAnno : rhsAnnos)
