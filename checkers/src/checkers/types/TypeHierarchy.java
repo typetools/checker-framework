@@ -75,6 +75,7 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     private final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+        // System.out.printf("isSubtypeImpl(%s (%s, %s), %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
         // If already checked this type (in case of recusive type bound)
         // return true.  If not subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
@@ -114,6 +115,8 @@ public class TypeHierarchy {
         // related to bug tests/framework/OverrideCrash
         if (rhsBase == null) rhsBase = rhs;
 
+        // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n", lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
+
         // Is this test correct in the case of type variables?
         if (!qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations()))
             return false;
@@ -125,8 +128,16 @@ public class TypeHierarchy {
         } else if (lhsBase.getKind() == TypeKind.DECLARED && rhsBase.getKind() == TypeKind.DECLARED) {
             return isSubtypeTypeArguments((AnnotatedDeclaredType)rhsBase, (AnnotatedDeclaredType)lhsBase);
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhsBase.getKind() == TypeKind.TYPEVAR) {
-            if (lhsBase.equals(rhsBase))
-                return true;
+            // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
+            // Should this logic also appear elsewhere?
+            AnnotatedTypeMirror rhsSuperClass = rhsBase;
+            while (rhsSuperClass.getKind() == TypeKind.TYPEVAR) {
+                if (lhsBase.equals(rhsSuperClass))
+                    return true;
+                if (lhsBase.toString().equals(rhsSuperClass.toString())) // hack
+                    return true;
+                rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
+            }
             // compare lower bound of lhs to upper bound of rhs
             Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getLowerBoundAnnotations();
             Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getUpperBoundAnnotations();
