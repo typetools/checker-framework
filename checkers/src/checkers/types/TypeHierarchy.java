@@ -128,9 +128,15 @@ public class TypeHierarchy {
             if (lhsBase.equals(rhsBase))
                 return true;
             // compare lower bound of lhs to upper bound of rhs
-            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhs).getLowerBoundAnnotations();
-            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhs).getUpperBoundAnnotations();
-            return qualifierHierarchy.isSubtype(ras, las);
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getLowerBoundAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getUpperBoundAnnotations();
+            if (!las.isEmpty()) {
+                return qualifierHierarchy.isSubtype(ras, las);
+            }
+            // No annotations on lhs lower bound
+            return qualifierHierarchy.getBottomQualifier() == null ?
+                rhs.getAnnotations().isEmpty() :
+                rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
         }
 
         // It's probably OK to reach this case, because of the isSubtype test above.
