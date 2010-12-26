@@ -224,7 +224,7 @@ qualifier (in the same type hierarchy) on the corresponding actual type
 argument.  For example, suppose that \code{T} is a formal type parameter.
 Then using \code{@Nullable T} within the scope of \code{T} applies the type
 qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}.
-This feature only rarely used.
+This feature is only rarely used.
 
 Here is an example of applying a type annotation to a generic type
 variable:
@@ -232,7 +232,7 @@ variable:
 \begin{Verbatim}
   class MyClass2<T> {
     ...
-    @Nullable T = null;
+    @Nullable T myField = null;
     ...
   }
 \end{Verbatim}
