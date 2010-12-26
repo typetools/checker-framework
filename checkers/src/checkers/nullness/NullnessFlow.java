@@ -917,7 +917,7 @@ class NullnessFlow extends Flow {
 						
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
 			
-			for (String field : fields) {
+			fieldloop: for (String field : fields) {
 				boolean found = false;
 				for (Element el : recvFieldElems) {
 					int index = 0;
@@ -928,6 +928,7 @@ class NullnessFlow extends Flow {
 							checker.report(Result.failure("nonnull.precondition.not.satisfied",	node), node);
 						} else {
 							// System.out.println("Success!");
+							continue fieldloop;
 						}
 					}
 				}
@@ -961,6 +962,7 @@ class NullnessFlow extends Flow {
             tyel = (TypeElement) dtsuty.asElement();
     	}
     	
+    	// TODO: check uniqueness of field names to prevent problems from shadowing.
     	return res;
     }
     
@@ -1117,22 +1119,5 @@ class NullnessFlow extends Flow {
         nnExprs = prevNNExprs;
         return null;
     }
-
-	public AnnotationMirror WMD_getFlowAnnotatedType(ExpressionTree fieldacc,
-			ExpressionTree recv,
-			Element field) {
-
-		for(Tree t: flowResults.keySet()) {
-			if( t.getKind()==Kind.MEMBER_SELECT) {
-				MemberSelectTree mst = (MemberSelectTree)t;
-
-				// TODO: this check does not succeed. If I relax the condition more, it matches, but shouldn't.
-				if( mst.getExpression().equals(recv) && mst.getIdentifier()==field.getSimpleName()) {
-					return flowResults.get(t);
-				}
-			}
-		}
-		return null;
-	}
 
 }
