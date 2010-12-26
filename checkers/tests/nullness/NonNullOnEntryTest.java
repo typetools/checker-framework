@@ -39,7 +39,7 @@ class NonNullOnEntryTest {
 	}
 
 	// TODO: forbid the field in @NNOE to be less visible than the method
-
+	// TODO: field shadowing is probably not handled correctly
 
 	class NNOESubTest extends NonNullOnEntryTest {
 		public void subClientOK(NNOESubTest arg3) {
