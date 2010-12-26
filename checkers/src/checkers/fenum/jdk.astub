@@ -1,5 +1,7 @@
+import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.SwingCompassDirection;
-import checkers.fenum.quals.SwingBoxOrientation;
+import checkers.fenum.quals.SwingHorizontalOrientation;
+import checkers.fenum.quals.SwingVerticalOrientation;
 import checkers.fenum.quals.SwingElementOrientation;
 import checkers.fenum.quals.SwingTextOrientation;
 
@@ -8,21 +10,30 @@ package javax.swing;
 
 interface SwingConstants {
   //
+  // WMD adds this new constant to use instead of literally using -1.
+  //
+  @SwingCompassDirection
+  @SwingHorizontalOrientation
+  @SwingVerticalOrientation
+  public static final int NOTSET = -1;
+    
+  //
   // The central position in an area. Used for
   // both compass-direction constants (NORTH, etc.)
   // and box-orientation constants (TOP, etc.).
   //
   @SwingCompassDirection
-  @SwingBoxOrientation
+  @SwingHorizontalOrientation
+  @SwingVerticalOrientation
   int CENTER  = 0;
 
   //
   // Box-orientation constant used to specify locations in a box.
   //
-  @SwingBoxOrientation int TOP     = 1;
-  @SwingBoxOrientation int LEFT    = 2;
-  @SwingBoxOrientation int BOTTOM  = 3;
-  @SwingBoxOrientation int RIGHT   = 4;
+  @SwingVerticalOrientation int TOP     = 1;
+  @SwingHorizontalOrientation int LEFT    = 2;
+  @SwingVerticalOrientation int BOTTOM  = 3;
+  @SwingHorizontalOrientation int RIGHT   = 4;
 
   //
   // Compass-direction constants used to specify a position.
@@ -49,8 +60,24 @@ interface SwingConstants {
   // left-to-right oriented and some are right-to-left oriented.
   // This orientation is currently used by buttons and labels.
   //
-  @SwingTextOrientation int LEADING  = 10;
-  @SwingTextOrientation int TRAILING = 11;
+  @SwingTextOrientation @SwingHorizontalOrientation int LEADING  = 10;
+  @SwingTextOrientation @SwingHorizontalOrientation int TRAILING = 11;
+  
   @SwingTextOrientation int NEXT = 12;
   @SwingTextOrientation int PREVIOUS = 13;
+}
+
+
+package java.beans;
+
+class PropertyChangeSupport {
+    public void firePropertyChange(String propertyName, @FenumTop int oldValue, @FenumTop int newValue);
+    public void firePropertyChange(String propertyName, @FenumTop Object oldValue, @FenumTop Object newValue);
+}
+
+
+package org.jdesktop.jdnc;
+
+class JNTable {
+  void setColumnHorizontalAlignment(String columnName, @SwingHorizontalOrientation int alignment);
 }
