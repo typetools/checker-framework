@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessUninitializedTest extends ParameterizedCheckerTest {
 
     public NullnessUninitializedTest(File testFile) {
-        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Alint=uninitialized");
+        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Alint=uninitialized", "-Anocheckjdk");
     }
 
     @Parameters
