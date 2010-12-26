@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.*;
@@ -14,6 +16,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
@@ -839,10 +842,13 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
-
-        super.visitMethodInvocation(node, p);
-
+        
+        /* Important: check the NonNullOnEntry annotation before calling the
+         * super method, as the super method clears all knowledge of fields!
+         */
         checkNonNullOnEntry(node);
+        
+        super.visitMethodInvocation(node, p);
         
         ExecutableElement method = TreeUtils.elementFromUse(node);
         if (method.getAnnotation(AssertParametersNonNull.class) != null) {
@@ -875,79 +881,89 @@ class NullnessFlow extends Flow {
         return null;
     }
 
-
     private void checkNonNullOnEntry(MethodInvocationTree node) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
 
 		if (method.getAnnotation(NonNullOnEntry.class) != null) {
-			// System.err.println("NNExprs: " + nnExprs);
-			
-			JavacProcessingEnvironment jpe = (JavacProcessingEnvironment) checker.getProcessingEnvironment();
-			TreeMaker treemaker = TreeMaker.instance(jpe.getContext());
-
-			ExpressionTree recv = TreeUtils.getReceiverTree(node);
-			
-			AnnotatedTypeMirror at;
-			if (recv==null) {
-				at = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(node)));
-			} else {
-				at = factory.getAnnotatedType(recv);
+			if (debug != null) {
+				debug.println("NullnessFlow: Looking at call of: " + method);
+				debug.println("  genkill: " + annos);
+				for (VariableElement ve : vars) {
+					debug.print("  We know about: " + ve);
+					int index = vars.indexOf(ve);
+					debug.println(" NONNULL: " + annos.get(NONNULL, index));
+				}
 			}
-			
-			
-			if (!(at instanceof AnnotatedDeclaredType)) {
-				// System.err.println("What's wrong with: " + at);
-		    	return;
-			}
-			
-			Element elemrecv = ((AnnotatedDeclaredType)at).getUnderlyingType().asElement();
-			List<? extends Element> atels = ElementFilter.fieldsIn(elemrecv.getEnclosedElements());
 
+			List<? extends Element> recvFieldElems;
+			{ // block to get all fields of the receiver type
+				ExpressionTree recv = TreeUtils.getReceiverTree(node);
+				
+				AnnotatedTypeMirror recvType;
+				if (recv==null) {
+					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(node)));
+				} else {
+					recvType = factory.getAnnotatedType(recv);
+				}
+				
+				if (!(recvType instanceof AnnotatedDeclaredType)) {
+					System.err.println("What's wrong with: " + recvType);
+			    	return;
+				}
+				
+				Element recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
+				recvFieldElems = allFields(recvElem);
+			}
+						
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
-
-			for (Element el : atels) {			
-				for (String field : fields) {
-					String lookfor;
-					if (recv != null) {
-						lookfor = recv.toString() + "." + field;
-					} else {
-						lookfor = field;
-					}
-					// System.err.println("Looking for " + field + " in " + el);
-					
+			
+			for (String field : fields) {
+				boolean found = false;
+				for (Element el : recvFieldElems) {
+					int index = 0;
 					if (el.getSimpleName().toString().equals(field)) {
-						/*
-						System.err.println("Looking for " + lookfor);
-						System.err.println("flowresults: " + flowResults);
-						System.err.println("annos: " + annos);
-						System.err.println("annosTrue: " + this.annosWhenTrue);
-						System.err.println("annosFalse: " + annosWhenFalse);
-						System.err.println("nnExprs: " + this.nnExprs);
-						 */
-						boolean notfound = true;
-						for (Tree flow : flowResults.keySet()) {
-							// TODO: make sure it's really the right tree, e.g compare element?
-							// Instead of doing toString for all trees, check the Kind first?
-							
-							if(flow.toString().equals(lookfor)) {
-								// System.out.println("YEAH: " + flowResults.get(flow));
-								notfound = false;
-								if (!flowResults.get(flow).equals(NONNULL)) {
-							        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
-								}
-								break;
-							}
-						}
-						if (notfound) {
-							// System.err.println("Not found means null!");
-					        checker.report(Result.failure("nonnull.precondition.not.satisfied", node), node);
+						found = true;
+						index = vars.indexOf(el);
+						if (!annos.get(NONNULL, index)) {
+							checker.report(Result.failure("nonnull.precondition.not.satisfied",	node), node);
+						} else {
+							// System.out.println("Success!");
 						}
 					}
+				}
+				if(!found) {
+					checker.report(Result.failure("nonnull.precondition.not.satisfied",	node), node);
 				}
 			}
 		}
     }
-
+    
+    /**
+     * Determine all fields that we need to check.
+     * Used for NonNullOnEntry.
+     * 
+     * @param el The TypeElement to start with.
+     * @return All fields declared in el and all superclasses.
+     */
+    private static List<VariableElement> allFields(Element el) {
+    	if (!(el instanceof TypeElement)) {
+    		System.err.println("NullnessFlow::allFields: the argument should be a TypeElement; it is a: " + el.getClass());
+    		return null;
+    	}
+    	TypeElement tyel = (TypeElement) el;
+    	
+    	List<VariableElement> res = ElementFilter.fieldsIn(tyel.getEnclosedElements());
+    	
+    	while (tyel!=null && !ElementUtils.isObject(tyel)) {
+    		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
+    		TypeMirror suty = tyel.getSuperclass();
+    		DeclaredType dtsuty = (DeclaredType) suty;
+            tyel = (TypeElement) dtsuty.asElement();
+    	}
+    	
+    	return res;
+    }
+    
     
     private void markTree(Tree node, AnnotationMirror anno) {
         flowResults.put(node, anno);
