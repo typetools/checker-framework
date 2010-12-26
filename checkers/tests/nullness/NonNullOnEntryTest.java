@@ -1,8 +1,5 @@
 import checkers.nullness.quals.*;
 
-/*
- * @skip-test
- */
 class NonNullOnEntryTest {
 
 	@Nullable Object field1;
@@ -19,29 +16,41 @@ class NonNullOnEntryTest {
 		field1 = new Object();
 		method1(); // OK, satisfies method precondition
 		field1 = null;
-		// XXX TODO FIXME:
 		//:: (nonnull.precondition.not.satisfied)
 		method1(); // error, does not satisfy method precondition
 	}
 
-	private @Nullable Object field;
+	protected @Nullable Object field;
 
 	@NonNullOnEntry("field")
 	public void requiresNonNullField() {}
 
-	public void clientFail(NonNullOnEntryTest arg) {
-		// XXX TODO FIXME:
+	public void clientFail(NonNullOnEntryTest arg1) {
 		//:: (nonnull.precondition.not.satisfied)
-		arg.requiresNonNullField();
+		arg1.requiresNonNullField();
 	}
 
-	public void clientOK(NonNullOnEntryTest arg) {
-		arg.field = new Object();
+	public void clientOK(NonNullOnEntryTest arg2) {
+		arg2.field = new Object();
 		// note that the following line works
-		@NonNull Object o = arg.field;
+		// @NonNull Object o = arg2.field;
 		
-		arg.requiresNonNullField(); // OK, field is known to be non-null
+		arg2.requiresNonNullField(); // OK, field is known to be non-null
 	}
 
 	// TODO: forbid the field in @NNOE to be less visible than the method
+
+
+	class NNOESubTest extends NonNullOnEntryTest {
+		public void subClientOK(NNOESubTest arg3) {
+			arg3.field = new Object();
+			arg3.requiresNonNullField();
+		}
+
+		public void subClientFail(NNOESubTest arg4) {
+			//:: (nonnull.precondition.not.satisfied)
+			arg4.requiresNonNullField();
+		}
+	}
+
 }
