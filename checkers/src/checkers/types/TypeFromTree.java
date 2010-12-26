@@ -177,7 +177,7 @@ abstract class TypeFromTree extends
             // but seems much more general. Is the code below out of date?
             // Also, what is the difference in using annoTypes vs. f.atypes? Are they aliases?
             
-            // It it anonymous
+            // It is anonymous
             if (TypesUtils.isAnonymousType(lub)) {
                 // Find the intersect types
                 f.atypes.annotateAsLub(alub, trueType, falseType);
