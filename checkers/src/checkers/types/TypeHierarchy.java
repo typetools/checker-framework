@@ -44,7 +44,7 @@ public class TypeHierarchy {
     /** The hierarchy of qualifiers */
     private final QualifierHierarchy qualifierHierarchy;
     /** Prevent infinite loops in cases of recursive type bound */
-    private final Set<Element> visited;
+    protected final Set<Element> visited;
 
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system

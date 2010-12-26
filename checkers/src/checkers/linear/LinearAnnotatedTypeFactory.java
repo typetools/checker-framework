@@ -84,7 +84,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
          * If the node is of type {@code Linear}, then transit its type
          * into an {@code Unusable} type.
          *
-         * The method should be called on every every instance of a tree
+         * The method should be called on every instance of a tree
          * that causes the reference to be "used up".
          */
         private void markAsUnusableIfLinear(ExpressionTree node) {
