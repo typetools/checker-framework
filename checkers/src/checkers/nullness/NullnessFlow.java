@@ -914,7 +914,7 @@ class NullnessFlow extends Flow {
 				Element recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
 				recvFieldElems = allFields(recvElem);
 			}
-						
+
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
 			
 			fieldloop: for (String field : fields) {
@@ -922,18 +922,26 @@ class NullnessFlow extends Flow {
 				for (Element el : recvFieldElems) {
 					int index = 0;
 					if (el.getSimpleName().toString().equals(field)) {
-						found = true;
+						if (found) {
+							// We already found a field with the same name before -> hiding.
+							checker.report(Result.failure("nonnull.hiding.violated",	node), node);
+						} else {
+							found = true;
+						}
 						index = vars.indexOf(el);
 						if (!annos.get(NONNULL, index)) {
-							checker.report(Result.failure("nonnull.precondition.not.satisfied",	node), node);
+							checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
 						} else {
 							// System.out.println("Success!");
-							continue fieldloop;
+							// We want to go through all fields to ensure that we have
+							// no problem with hiding of fields.
+							// Once hiding is handled in a nicer way, we can directly jump to the outer loop.
+							// continue fieldloop;
 						}
 					}
 				}
 				if(!found) {
-					checker.report(Result.failure("nonnull.precondition.not.satisfied",	node), node);
+					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
 				}
 			}
 		}
@@ -953,7 +961,7 @@ class NullnessFlow extends Flow {
     	}
     	TypeElement tyel = (TypeElement) el;
     	
-    	List<VariableElement> res = ElementFilter.fieldsIn(tyel.getEnclosedElements());
+    	List<VariableElement> res = new ArrayList<VariableElement>();
     	
     	while (tyel!=null && !ElementUtils.isObject(tyel)) {
     		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
@@ -962,7 +970,6 @@ class NullnessFlow extends Flow {
             tyel = (TypeElement) dtsuty.asElement();
     	}
     	
-    	// TODO: check uniqueness of field names to prevent problems from shadowing.
     	return res;
     }
     

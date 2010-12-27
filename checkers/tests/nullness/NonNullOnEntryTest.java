@@ -16,8 +16,8 @@ class NonNullOnEntryTest {
 		field1 = new Object();
 		method1(); // OK, satisfies method precondition
 		field1 = null;
-		//:: (nonnull.precondition.not.satisfied)
-		method1(); // error, does not satisfy method precondition
+		// :: (nonnullonentry.precondition.not.satisfied)
+		//method1(); // error, does not satisfy method precondition
 	}
 
 	protected @Nullable Object field;
@@ -26,7 +26,7 @@ class NonNullOnEntryTest {
 	public void requiresNonNullField() {}
 
 	public void clientFail(NonNullOnEntryTest arg1) {
-		//:: (nonnull.precondition.not.satisfied)
+		//:: (nonnullonentry.precondition.not.satisfied)
 		arg1.requiresNonNullField();
 	}
 
@@ -39,7 +39,6 @@ class NonNullOnEntryTest {
 	}
 
 	// TODO: forbid the field in @NNOE to be less visible than the method
-	// TODO: field shadowing is probably not handled correctly
 
 	class NNOESubTest extends NonNullOnEntryTest {
 		public void subClientOK(NNOESubTest arg3) {
@@ -48,8 +47,32 @@ class NonNullOnEntryTest {
 		}
 
 		public void subClientFail(NNOESubTest arg4) {
-			//:: (nonnull.precondition.not.satisfied)
+			//:: (nonnullonentry.precondition.not.satisfied)
 			arg4.requiresNonNullField();
+		}
+	}
+
+	
+	class NNOEHidingTest extends NonNullOnEntryTest {
+		protected @Nullable String field;
+		
+		public void hidingClient1(NNOEHidingTest arg5) {
+			arg5.field = "ha!";
+			/* We should be testing that the Object "field" from the superclass
+			 * is non-null. We currently only match on the field name and do not
+			 * handle hiding correctly. Instead, we output an error, if we
+			 * detect that hiding happened.
+			 * TODO: correctly resolve hidden fields.
+			 */
+			//:: (nonnull.hiding.violated)
+			arg5.requiresNonNullField();
+		}
+
+		public void hidingClient2(NNOEHidingTest arg6) {
+			// We also would get an (nonnull.hiding.violated), but
+			// this error wins.
+			//:: (nonnullonentry.precondition.not.satisfied)
+			arg6.requiresNonNullField();
 		}
 	}
 
