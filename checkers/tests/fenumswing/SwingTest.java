@@ -127,7 +127,22 @@ public class SwingTest {
 		int s2 = s1;
 		s1 = (s2 &= c);
 	}
-	
+
+	void testInference8b() {
+		//:: (assignment.type.incompatible)
+		@SwingHorizontalOrientation int s2 = 5;
+		//:: (compoundassign.type.incompatible)
+		s2 += 1;
+		
+		//:: (assignment.type.incompatible)
+		s1 = (s2 += s2);
+		
+		//:: (assignment.type.incompatible)
+		@SwingHorizontalOrientation String str = "abc";
+		// yes, somebody in the Swing API really wrote this.
+		str += null;
+	}
+
 	boolean flag;
 	
 	Object testInference9() {
@@ -189,6 +204,10 @@ public class SwingTest {
 	    return o;
 	}
 
+	/* TODO: Flow inference does not handle dead branches correctly.
+	 * The return statement is only reachable with i being unqualified.
+	 * However, the else-branch does not initialize the variable, leaving it
+	 * at the @FenumTop initial value.
 	int testInferenceThrow() {
 	    int i;
 	    if( 5==4 ) {
@@ -198,6 +217,7 @@ public class SwingTest {
 	    }
 	    return i;
 	}
+	*/
 	
 	@SwingVerticalOrientation Object testDefaulting0() {
 		@checkers.quals.DefaultQualifier("SwingVerticalOrientation")
