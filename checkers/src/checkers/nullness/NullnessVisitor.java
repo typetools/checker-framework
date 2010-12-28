@@ -56,7 +56,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         checkForAnnotatedJdk();
     }
 
-    /** Case 1: Check for null dereferecing */
+    /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         if (!TreeUtils.isSelfAccess(node))
@@ -90,8 +90,8 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
 
-        //checkForNullability(node.getExpression(), "locking.nullable");
-        // raw is suffecient
+        // checkForNullability(node.getExpression(), "locking.nullable");
+        // raw is sufficient
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
         if (type.hasAnnotation(NULLABLE))
             checker.report(Result.failure("locking.nullable", node), node);
@@ -194,7 +194,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey, Void p) {
-        // allow LazyNonNull to be initalized to null at declaration
+        // allow LazyNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils.elementFromDeclaration((VariableTree)varTree);
             if (elem.getAnnotation(LazyNonNull.class) != null)
