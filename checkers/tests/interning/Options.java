@@ -5,21 +5,21 @@ import java.util.*;
 // Test case lifted from plume.Options
 class Options {
 
-	  public void minimal(String s) {
-		    String arg = ""; // interned here
-		    @Interned String arg2 = arg;		
-		    arg += s; // no longer interned
-		    //:: (assignment.type.incompatible)
-		    arg2 = arg;		
-		  }
-	  
-	  public void minimal2(char c) {
-		    String arg = ""; // interned here
-		    @Interned String arg2 = arg;
-		    arg += c; // no longer interned
-		    //:: (assignment.type.incompatible)
-		    arg2 = arg;	
-		  }
+	public void minimal(String s) {
+		String arg = ""; // interned here
+		@Interned String arg2 = arg;
+		arg += s; // no longer interned
+		//:: (assignment.type.incompatible)
+		arg2 = arg;
+	}
+
+	public void minimal2(char c) {
+		String arg = ""; // interned here
+		@Interned String arg2 = arg;
+		arg += c; // no longer interned
+		//:: (assignment.type.incompatible)
+		arg2 = arg;
+	}
 
 	public String[] otherparse(String args) {
 
@@ -37,7 +37,7 @@ class Options {
 				arg += ch;
 			//}
 		//}
-		// :: (assignment.type.incompatible)
+		//:: (assignment.type.incompatible)
 		@Interned String arg2 = arg;
 
 		if (!arg.equals(""))
