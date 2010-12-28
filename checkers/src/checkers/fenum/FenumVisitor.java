@@ -2,6 +2,8 @@ package checkers.fenum;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseTypeVisitor;
@@ -31,6 +33,22 @@ public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
 			}
 		}
         return super.visitBinary(node, p);
+    }
+    
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+    	ExpressionTree var = node.getVariable();
+        ExpressionTree expr = node.getExpression();
+        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
+
+		if (!(checker.getQualifierHierarchy().isSubtype(exprType.getAnnotations(), varType.getAnnotations()))) {
+			checker.report(
+					Result.failure("compoundassign.type.incompatible", varType, exprType),
+					node);
+		}
+        
+    	return super.visitCompoundAssignment(node, p);
     }
     
     @Override
