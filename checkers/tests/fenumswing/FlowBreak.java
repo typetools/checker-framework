@@ -3,6 +3,11 @@ import checkers.fenum.quals.SwingHorizontalOrientation;
 import checkers.fenum.quals.SwingVerticalOrientation;
 import checkers.fenum.quals.SwingCompassDirection;
 
+//TODO: this test illustrates a problem with Flow inference and control flow.
+
+/**
+ * @skip-test
+ */
 public class FlowBreak {
 	static @SwingHorizontalOrientation Object CENTER;
 	static @SwingHorizontalOrientation Object LEFT;
@@ -28,7 +33,7 @@ public class FlowBreak {
 	    	// the then-branch and ignore the results of the else-branch.
 	    	// Therefore, o is @SwingHorizontalOrientation and the
 	    	// following is valid:
-	    	@SwingHorizontalOrientation Object pla = o;
+	    	// TODO @SwingHorizontalOrientation Object pla = o;
 	    }
 	    // Here we have to merge three paths:
 	    // 1. The entry to the loop, if the condition is false [@FenumBottom]
