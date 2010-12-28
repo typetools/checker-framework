@@ -665,16 +665,13 @@ public class Flow extends TreePathScanner<Void, Void> {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
     	// System.err.println("in vCA: " + node);
-        /*ExpressionTree var = node.getVariable();
-        ExpressionTree expr = node.getExpression();
-        scanExpr(var);
-        scanExpr(expr);*/
-        ExpressionTree var = node.getVariable();
+
+    	ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         // if (!(var instanceof IdentifierTree))
-            scanExpr(var);
+        scanExpr(var);
         scanExpr(expr);
-        // propagate(var, node);
+        propagate(var, node);
         // if (var instanceof IdentifierTree)
         //     this.scan(var, p);
         
@@ -688,8 +685,12 @@ public class Flow extends TreePathScanner<Void, Void> {
             }
         }
 
+        // Clearing out the Annotations is only the correct solution for the
+        // Interning Checker, where the result of a compound assignment is never
+        // interned. For other checkers, this behavior is wrong, e.g. in the Fenum Checker
+        // it leads to FenumTop being determined instead of a FenumUnqualified.
         // if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
-        //    clearAnnos(var);
+        // 	 clearAnnos(var);
 
         return null;
 	}
@@ -705,8 +706,9 @@ public class Flow extends TreePathScanner<Void, Void> {
                 annos.clear(anno, idx);
             }
         }
-    }*/
-
+    }
+    */
+    
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         scan(node.getVariable(), p);
