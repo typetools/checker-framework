@@ -22,8 +22,7 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.TreeMaker;
+
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -917,7 +916,8 @@ class NullnessFlow extends Flow {
 
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
 			
-			fieldloop: for (String field : fields) {
+			// fieldloop:
+			for (String field : fields) {
 				boolean found = false;
 				for (Element el : recvFieldElems) {
 					int index = 0;
