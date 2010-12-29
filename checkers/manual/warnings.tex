@@ -97,11 +97,16 @@ You can suppress specific errors and warnings by use of the
 The argument \emph{checkername} is in lower case and is derived from the
 way you invoke the checker; for example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...}, then you would suppress its
-error messages with \code{@SuppressWarnings("mynifty")}.
+error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
+the Basic Checker, for which you use the annotation name (see
+Section~\ref{basic-using}).
 
 A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
 annotation may be placed on program elements such as a local
-variable declaration, a method, or a class.  For instance, one common use is
+variable declaration, a method, or a class.  It suppresses all warnings
+related to the given checker, for that program element.
+
+For instance, one common use is
 to suppress warnings at a cast that you know is safe.  Here is an example
 that uses the Tainting Checker (Section~\ref{tainting-checker}):
 
