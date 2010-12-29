@@ -57,7 +57,11 @@ is not sufficient to supply their source files on the command line.
 To suppress a warning issued by the basic checker, use a 
 \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
 annotation, with the argument being the unqualified, uncapitalized name of
-any of the annotations passed to \code{-Aquals}.
+any of the annotations passed to \code{-Aquals}.  This will suppress all
+warnings, regardless of which of the annotations is involved in the
+warning.  (As a matter of style, you should choose one of the annotations
+as your \code{@SuppressWarnings} key and stick with it for that entire type
+hierarchy.)
 
 
 \section{Basic checker example\label{basic-example}\label{encrypted-example}}
