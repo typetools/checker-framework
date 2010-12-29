@@ -94,10 +94,10 @@ We now explain these mechanisms in turn.
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings("\emph{checkername}")} annotation, for example
 \code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
-The argument \emph{checkername} is the lower-case name of the checker; for
-example, if you invoke a checker as \code{javac -processor MyNiftyChecker
-  ...}, then you would suppress its error messages with 
-\code{@SuppressWarnings("mynifty")}.
+The argument \emph{checkername} is in lower case and is derived from the
+way you invoke the checker; for example, if you invoke a checker as
+\code{javac -processor MyNiftyChecker ...}, then you would suppress its
+error messages with \code{@SuppressWarnings("mynifty")}.
 
 A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
 annotation may be placed on program elements such as a local
