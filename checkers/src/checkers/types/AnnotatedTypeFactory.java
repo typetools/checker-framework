@@ -84,7 +84,7 @@ public class AnnotatedTypeFactory {
     /** Represent the annotation relations **/
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
-    /** Types read from stub files (but not those from the annotated JDK. */
+    /** Types read from stub files (but not those from the annotated JDK jar file). */
     private final Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
