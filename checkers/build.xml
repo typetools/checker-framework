@@ -1,7 +1,7 @@
 <!--
   This is an Ant build file for compiling the Checker Framework.
 -->
-<project name="checkers" default="dist" basedir=".">
+<project name="checkers" default="bindist" basedir=".">
 
     <description>
       Builds the Checker Framework for the JSR 308 compiler.
