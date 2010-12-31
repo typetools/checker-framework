@@ -81,6 +81,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 break;
             }
         }
+        postInit();
     }
 
     /**

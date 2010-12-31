@@ -132,6 +132,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawnessFactory = rawness.createFactory(root);
 
         flow = new NullnessFlow(checker, root, this);
+
+        postInit();
+    }
+
+    @Override
+    protected void postInit() {
+        super.postInit();
         flow.scan(root, null);
     }
 
