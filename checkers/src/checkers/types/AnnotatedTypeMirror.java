@@ -542,6 +542,8 @@ public abstract class AnnotatedTypeMirror {
          * Sets the type arguments on this type
          * @param t the type arguments
          */
+        // WMD
+        public
         void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
             typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
         }
@@ -980,6 +982,8 @@ public abstract class AnnotatedTypeMirror {
          *
          * @param type the component type
          */
+        // WMD
+        public
         void setComponentType(AnnotatedTypeMirror type) {
             this.componentType = type;
         }
@@ -1032,9 +1036,12 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedTypeMirror component;
             while (true) {
                 component = array.getComponentType();
-                sb.append(' ');
-                sb.append(formatAnnotationString(array.getAnnotations()).trim());
-                sb.append(" []");
+				if (array.getAnnotations().size() > 0) {
+					sb.append(' ');
+					sb.append(formatAnnotationString(array.getAnnotations()).trim());
+					sb.append(' ');
+				}
+                sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
                     sb.insert(0, component.getUnderlyingType().toString());
                     break;
@@ -1169,7 +1176,7 @@ public abstract class AnnotatedTypeMirror {
             fixedupLowerBoundAnnotations = true;
             
             if (actualType.getLowerBound() instanceof NullType) {
-                Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
+                Set<AnnotationMirror> lAnnos = getLowerBound().getAnnotations();
                 Set<AnnotationMirror> uAnnos = getUpperBound().getAnnotations();
                 if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
                     // Nothing to do
@@ -1189,6 +1196,8 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             this.upperBound = type;
+            // What is this supposed to do???
+            // Substituting "this" for "this" seems like a no-op, however, removing it breaks stuff.
             AnnotatedTypeMirror upperBound = type.substitute(Collections.singletonMap(this, this));
             this.upperBound = upperBound;
         }
@@ -1219,14 +1228,26 @@ public abstract class AnnotatedTypeMirror {
             return Collections.unmodifiableSet(result);
         }
 
+        /**
+         *  Used to terminate recursion into upper bounds.
+         */
+        private boolean inUpperBounds = false;
+        
         @Override
         public AnnotatedTypeVariable getCopy(boolean annotation) {
+        	if (inUpperBounds) return this;
+        	
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, annotation);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (type.getUpperBound().isAnnotated())
-                type.setUpperBound(getUpperBound());
+            if (getUpperBound().isAnnotated() &&
+            		!inUpperBounds) {
+            	inUpperBounds = true;
+            	type.inUpperBounds = true;
+            	type.setUpperBound(getUpperBound());
+            	inUpperBounds = false;
+            }
             return type;
         }
 
@@ -1492,6 +1513,10 @@ public abstract class AnnotatedTypeMirror {
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
             // cannot substitute
+            // return getCopy(true);
+        	// WMD wants to substitute primitive types!
+            if (mappings.containsKey(this))
+                return mappings.get(this);
             return getCopy(true);
         }
 

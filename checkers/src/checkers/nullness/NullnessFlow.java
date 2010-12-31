@@ -5,19 +5,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.*;
 import checkers.nullness.quals.*;
+import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.InternalUtils;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
+
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -87,20 +92,22 @@ class NullnessFlow extends Flow {
     }
 
     @Override
-    protected void split() {
-        super.split();
+    protected SplitTuple split() {
+    	SplitTuple res = super.split();
         nnExprsWhenFalse = new ArrayList<String>(nnExprs);
         nnExprsWhenTrue = nnExprs;
 //        nnExprs = null;
+        return res;
     }
 
+    /*
     @Override
     protected void merge() {
         super.merge();
         nnExprs = new ArrayList<String>(nnExprs);
         nnExprs.retainAll(nnExprsWhenFalse);
         nnExprsWhenTrue = nnExprsWhenFalse = null;
-    }
+    }*/
 
     private Stack<List<String>> levelnnExprs = new Stack<List<String>>();
 
@@ -115,12 +122,12 @@ class NullnessFlow extends Flow {
         nnExprs = levelnnExprs.pop();
     }
     @Override
-    protected void scanCond(Tree tree) {
-        super.scanCond(tree);
+    protected SplitTuple scanCond(Tree tree) {
+    	SplitTuple res = super.scanCond(tree);
         if (tree == null)
-            return;
+            return res;
 
-        GenKillBits<AnnotationMirror> before = GenKillBits.copy(annosWhenFalse);
+        GenKillBits<AnnotationMirror> before = GenKillBits.copy(res.annosWhenFalse);
 
         Conditions conds = new Conditions();
         conds.visit(tree, null);
@@ -130,9 +137,9 @@ class NullnessFlow extends Flow {
         for (VariableElement elt : conds.getNonnullElements()) {
             int idx = vars.indexOf(elt);
             if (idx >= 0) {
-                annosWhenTrue.set(NONNULL, idx);
+                res.annosWhenTrue.set(NONNULL, idx);
                 if (flippable && !conds.excludes.contains(elt))
-                    annosWhenFalse.clear(NONNULL, idx);
+                    res.annosWhenFalse.clear(NONNULL, idx);
             }
         }
 
@@ -145,14 +152,17 @@ class NullnessFlow extends Flow {
                 // analyzed condition
                 // annosWhenTrue.clear(NONNULL, idx);
                 if (flippable && !conds.excludes.contains(elt))
-                    annosWhenFalse.set(NONNULL, idx);
+                    res.annosWhenFalse.set(NONNULL, idx);
             }
         }
-        annosWhenFalse.or(before);
+        // annosWhenFalse.or(before);
+        GenKillBits.orlub(res.annosWhenFalse, before, annoRelations);
 
         isNullPolyNull = conds.isNullPolyNull;
         nnExprsWhenTrue.addAll(conds.nonnullExpressions);
         nnExprsWhenFalse.addAll(conds.nullableExpressions);
+        
+        return res;
     }
 
     @Override
@@ -742,7 +752,7 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         super.visitCompoundAssignment(node, p);
-        inferNullness(node.getVariable());
+    	inferNullness(node.getVariable());
         return null;
     }
 
@@ -831,9 +841,14 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
-
+        
+        /* Important: check the NonNullOnEntry annotation before calling the
+         * super method, as the super method clears all knowledge of fields!
+         */
+        checkNonNullOnEntry(node);
+        
         super.visitMethodInvocation(node, p);
-
+        
         ExecutableElement method = TreeUtils.elementFromUse(node);
         if (method.getAnnotation(AssertParametersNonNull.class) != null) {
             for (ExpressionTree arg : node.getArguments())
@@ -865,6 +880,100 @@ class NullnessFlow extends Flow {
         return null;
     }
 
+    private void checkNonNullOnEntry(MethodInvocationTree node) {
+        ExecutableElement method = TreeUtils.elementFromUse(node);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			if (debug != null) {
+				debug.println("NullnessFlow: Looking at call of: " + method);
+				debug.println("  genkill: " + annos);
+				for (VariableElement ve : vars) {
+					debug.print("  We know about: " + ve);
+					int index = vars.indexOf(ve);
+					debug.println(" NONNULL: " + annos.get(NONNULL, index));
+				}
+			}
+
+			List<? extends Element> recvFieldElems;
+			{ // block to get all fields of the receiver type
+				ExpressionTree recv = TreeUtils.getReceiverTree(node);
+				
+				AnnotatedTypeMirror recvType;
+				if (recv==null) {
+					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(node)));
+				} else {
+					recvType = factory.getAnnotatedType(recv);
+				}
+				
+				if (!(recvType instanceof AnnotatedDeclaredType)) {
+					System.err.println("What's wrong with: " + recvType);
+			    	return;
+				}
+				
+				Element recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
+				recvFieldElems = allFields(recvElem);
+			}
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+			
+			// fieldloop:
+			for (String field : fields) {
+				boolean found = false;
+				for (Element el : recvFieldElems) {
+					int index = 0;
+					if (el.getSimpleName().toString().equals(field)) {
+						if (found) {
+							// We already found a field with the same name before -> hiding.
+							checker.report(Result.failure("nonnull.hiding.violated",	node), node);
+						} else {
+							found = true;
+						}
+						index = vars.indexOf(el);
+						if (!annos.get(NONNULL, index)) {
+							checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
+						} else {
+							// System.out.println("Success!");
+							// We want to go through all fields to ensure that we have
+							// no problem with hiding of fields.
+							// Once hiding is handled in a nicer way, we can directly jump to the outer loop.
+							// continue fieldloop;
+						}
+					}
+				}
+				if(!found) {
+					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
+				}
+			}
+		}
+    }
+    
+    /**
+     * Determine all fields that we need to check.
+     * Used for NonNullOnEntry.
+     * 
+     * @param el The TypeElement to start with.
+     * @return All fields declared in el and all superclasses.
+     */
+    private static List<VariableElement> allFields(Element el) {
+    	if (!(el instanceof TypeElement)) {
+    		System.err.println("NullnessFlow::allFields: the argument should be a TypeElement; it is a: " + el.getClass());
+    		return null;
+    	}
+    	TypeElement tyel = (TypeElement) el;
+    	
+    	List<VariableElement> res = new ArrayList<VariableElement>();
+    	
+    	while (tyel!=null && !ElementUtils.isObject(tyel)) {
+    		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
+    		TypeMirror suty = tyel.getSuperclass();
+    		DeclaredType dtsuty = (DeclaredType) suty;
+            tyel = (TypeElement) dtsuty.asElement();
+    	}
+    	
+    	return res;
+    }
+    
+    
     private void markTree(Tree node, AnnotationMirror anno) {
         flowResults.put(node, anno);
     }
@@ -997,12 +1106,12 @@ class NullnessFlow extends Flow {
             Void p) {
 
         // Split and merge as for an if/else.
-        scanCond(node.getCondition());
+    	SplitTuple res = scanCond(node.getCondition());
 
         List<String> prevNNExprs = new ArrayList<String>(nnExprs);
 
-        GenKillBits<AnnotationMirror> before = annosWhenFalse;
-        annos = annosWhenTrue;
+        GenKillBits<AnnotationMirror> before = res.annosWhenFalse;
+        annos = res.annosWhenTrue;
 
         nnExprs = nnExprsWhenTrue;
         scanExpr(node.getTrueExpression());
@@ -1011,7 +1120,8 @@ class NullnessFlow extends Flow {
 
         nnExprs = nnExprsWhenFalse;
         scanExpr(node.getFalseExpression());
-        annos.and(after);
+        // annos.and(after);
+        GenKillBits.andlub(annos, after, annoRelations);
 
         nnExprs = prevNNExprs;
         return null;
