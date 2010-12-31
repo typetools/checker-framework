@@ -85,7 +85,8 @@ public class AnnotatedTypeFactory {
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
-    private final Map<Element, AnnotatedTypeMirror> indexTypes;
+    // not final, because it is assigned in postInit()
+    private Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
 
@@ -121,6 +122,7 @@ public class AnnotatedTypeFactory {
                 checker == null ? null : checker.getClass());
     }
 
+    /** A subclass must call postInit at the end of its constructor. */
     public AnnotatedTypeFactory(ProcessingEnvironment env,
                                 @Nullable QualifierHierarchy qualHierarchy,
                                 @Nullable CompilationUnitTree root,
@@ -137,8 +139,18 @@ public class AnnotatedTypeFactory {
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
         this.supportedQuals = getSupportedQualifiers();
-        this.indexTypes = buildIndexTypes();
+        this.indexTypes = null; // will be set by postInit()
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
+    }
+
+    /**
+     * Actions that logically belong in the constructor, but need to run
+     * after the subclass constructor has completed.  In particular,
+     * buildIndexTypes may try to do type resolution with this
+     * AnnotatedTypeFactory.
+     */
+    protected void postInit() {
+        this.indexTypes = buildIndexTypes();
     }
 
     @Override

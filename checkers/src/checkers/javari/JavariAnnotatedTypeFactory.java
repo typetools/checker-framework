@@ -81,6 +81,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         this.MUTABLE = checker.MUTABLE;
         this.POLYREAD = checker.POLYREAD;
         this.QREADONLY = checker.QREADONLY;
+        postInit();
     }
 
     /**
