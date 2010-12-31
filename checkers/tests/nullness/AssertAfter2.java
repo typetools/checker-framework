@@ -15,7 +15,7 @@ public class AssertAfter2 {
 
     public void addEdge( T parent, T child ) {
       addNode(parent);
-      @NonNull List<T> l = childMap.get(parent);
+      @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent);
     }
 
   }
