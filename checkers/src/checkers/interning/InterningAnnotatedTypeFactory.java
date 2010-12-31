@@ -87,9 +87,18 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
                 type.addAnnotation(INTERNED);
             }
 
-
             return super.visitBinary(node, type);
         }
+        
+        /* Compound assignments never result in an interned result.
+         * I expected that I would need to clear some annotations here, but it doesn't seem necessary.
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        	System.out.println("InternintATF::visitCompoundAssignment: " + type);
+        	// type.clearAnnotations();
+        	return super.visitCompoundAssignment(node, type);
+        }
+        */
     }
 
     /**

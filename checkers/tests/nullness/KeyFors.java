@@ -14,6 +14,7 @@ public class KeyFors {
 
     public void withKeyFor() {
         Map<String, String> map = new HashMap<String, String>();
+        @SuppressWarnings("assignment.type.incompatible")
         @KeyFor("map") String key = "key";
 
         @NonNull String value = map.get(key);
@@ -32,6 +33,7 @@ public class KeyFors {
         }
 
         Container container = new Container();
+        @SuppressWarnings("assignment.type.incompatible")
         @KeyFor("container.map") String key = "m";
 
         @NonNull String value = container.map.get(key);
@@ -62,8 +64,9 @@ public class KeyFors {
 
     public void addEdge2( T parent, T child ) {
       addNode(parent);
+      @SuppressWarnings("cast.unsafe")
       @KeyFor("childMap") T parent2 = (@KeyFor("childMap") T) parent;
-      @NonNull List<T> l = childMap.get(parent2);
+      @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent2);
     }
 
     // This is a feature request to have KeyFor can be inferred

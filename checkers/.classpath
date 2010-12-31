@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry excluding="checkers/nullness/NullnessUtils.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="tests/src"/>
+	<classpathentry kind="src" path="tests/test-lubglb"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javaparser"/>
 	<classpathentry kind="lib" path="lib/asmx.jar"/>
 	<classpathentry kind="lib" path="tests/junit-4.7.jar"/>

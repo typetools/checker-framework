@@ -14,7 +14,7 @@ public class TestRun implements Iterable<Diagnostic<? extends JavaFileObject>> {
 
     TestRun(/*@PolyRead*/ Boolean result, /*@PolyRead*/ String output,
             /*@PolyRead*/ List<Diagnostic<? extends JavaFileObject>> diagnostics) /*@PolyRead*/ {
-       this.result = (result == true);
+       this.result = result.booleanValue();
        this.output = output;
        this.diagnostics = Collections.unmodifiableList(diagnostics);
     }
