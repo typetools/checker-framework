@@ -17,19 +17,19 @@ public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
   public abstract @Pure boolean containsKey(@Nullable Object a1);
   public abstract boolean containsValue(@Nullable Object a1);
   // The parameter is not nullable, because implementations of Map.get and
-  // Map.put are specifically premitted to throw NullPointerException if
+  // Map.put are specifically permitted to throw NullPointerException if
   // any of the arguments is a null).  And some implementations do not
   // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
-  // collections).  Some other implementation do accept nulls and aro so
+  // collections).  Some other implementation do accept nulls and are so
   // annotatied (see ArrayList, LinkedList, HashMap).
   public abstract @Pure @Nullable V get(@Nullable Object a1);
   public abstract @Nullable V put(K a1, V a2);
   public abstract @Nullable V remove(@Nullable Object a1);
   public abstract void putAll(Map<? extends K, ? extends V> a1);
   public abstract void clear();
-  public abstract Set<K> keySet();
+  public abstract Set<@KeyFor("this") K> keySet();
   public abstract Collection<V> values();
-  public abstract Set<Map.Entry<K, V>> entrySet();
+  public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
   public abstract boolean equals(@Nullable Object a1);
   public abstract int hashCode();
 }
