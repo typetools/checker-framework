@@ -44,7 +44,7 @@ public class TypeHierarchy {
     /** The hierarchy of qualifiers */
     private final QualifierHierarchy qualifierHierarchy;
     /** Prevent infinite loops in cases of recursive type bound */
-    private final Set<Element> visited;
+    protected final Set<Element> visited;
 
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
@@ -74,7 +74,7 @@ public class TypeHierarchy {
      * Private method to be called internally only.
      * It populates the visited field.
      */
-    private final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+    protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
         // System.out.printf("isSubtypeImpl(%s (%s, %s), %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
         // If already checked this type (in case of recusive type bound)
         // return true.  If not subtype, we wouldn't have gotten here again.
