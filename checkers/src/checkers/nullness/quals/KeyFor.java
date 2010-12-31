@@ -30,6 +30,8 @@ import checkers.quals.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TypeQualifier
+@SubtypeOf( Unqualified.class )
 public @interface KeyFor {
     /**
      * One or more Java expressions.
