@@ -1176,7 +1176,7 @@ public abstract class AnnotatedTypeMirror {
             fixedupLowerBoundAnnotations = true;
             
             if (actualType.getLowerBound() instanceof NullType) {
-                Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
+                Set<AnnotationMirror> lAnnos = getLowerBound().getAnnotations();
                 Set<AnnotationMirror> uAnnos = getUpperBound().getAnnotations();
                 if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
                     // Nothing to do
