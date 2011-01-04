@@ -47,10 +47,12 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
     	m.put("c", new Object());
     	
     	Collection<@KeyFor("m") String> coll = m.keySet();
+    	
     	@SuppressWarnings("assignment.type.incompatible")
     	@KeyFor("m") String newkey = "new";
+    	
     	coll.add(newkey);
-    	// at this point, the @KeyFor annotation is violated
+    	// TODO: at this point, the @KeyFor annotation is violated
     	m.put("new", new Object());
     }
     
@@ -61,7 +63,11 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
     	m.put("c", new Object());
     	
     	Collection<@KeyFor("m") String> coll = m.keySet();
-    	m.put("new", new Object());
-    	coll.add("new");
+    	
+    	@SuppressWarnings("assignment.type.incompatible")
+    	@KeyFor("m") String newkey = "new";
+
+    	m.put(newkey, new Object());
+    	coll.add(newkey);
     }
 }
