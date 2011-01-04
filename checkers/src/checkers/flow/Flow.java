@@ -226,11 +226,6 @@ public class Flow extends TreePathScanner<Void, Void> {
         while (tree.getKind() == Tree.Kind.ASSIGNMENT)
             tree = ((AssignmentTree)tree).getVariable();
         if (!flowResults.containsKey(tree)) {
-        	/*for (Tree el : flowResults.keySet()) {
-        		if (el.toString().equals(tree.toString())) {
-        			return flowResults.get(el);
-        		}
-        	}*/
             return null;
         }
         // a hack needs to be fixed
