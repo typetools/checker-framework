@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 
@@ -17,18 +14,14 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
-import checkers.nullness.quals.AssertNonNullIfTrue;
 import checkers.nullness.quals.KeyFor;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.TreeUtils;
@@ -37,7 +30,9 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
 	public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
 			CompilationUnitTree root) {
-		super(checker, root);
+		super(checker, root, false);
+		// The "false" above disables flow inference, because the current implementation
+		// ignores annotation attributes. Enable once Flow supports attributes.
 	}
 
 
@@ -57,7 +52,8 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
 	// TODO
 	/* Once the method substitution is stable, create 
-	 * substituteNewClass. Look whether they can share code somehow.
+	 * substituteNewClass. Look whether they can share code somehow 
+	 * (the two classes don't share a common interface).
 	@Override
 	public AnnotatedExecutableType constructorFromUse(NewClassTree call) {
 		assert call != null;
@@ -89,19 +85,31 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 		assert call != null;
 		// System.out.println("looking at call: " + call);
 		
+		ExecutableElement methodElt = TreeUtils.elementFromUse(call);
+		AnnotatedExecutableType declMethod = this.getAnnotatedType(methodElt);
+		
 		AnnotatedExecutableType method = super.methodFromUse(call);
 
 		Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
 		// Modify parameters
-		for (AnnotatedTypeMirror parameterType : method.getParameterTypes()) {
-			AnnotatedTypeMirror subst = substituteCall(call, parameterType);
-			mappings.put(parameterType, subst);
+		List<AnnotatedTypeMirror> params = method.getParameterTypes();
+		List<AnnotatedTypeMirror> declParams = declMethod.getParameterTypes();
+		assert params.size() == declParams.size();
+		for (int i=0; i<params.size(); ++i) {
+			// Do not substitute the annotations that were originally type variables.
+			// These were already substituted by the super call.
+			if (declParams.get(i).getKind() != TypeKind.TYPEVAR) {
+				AnnotatedTypeMirror subst = substituteCall(call, params.get(i));
+				mappings.put(params.get(i), subst);
+			}
 		}
 
 		// Modify return type
 		AnnotatedTypeMirror returnType = method.getReturnType();
-		if (returnType.getKind() != TypeKind.VOID) {
+		AnnotatedTypeMirror declReturnType = declMethod.getReturnType();
+		if (returnType.getKind() != TypeKind.VOID &&
+				declReturnType.getKind() != TypeKind.TYPEVAR) {
 			AnnotatedTypeMirror subst = substituteCall(call, returnType);
 			mappings.put(returnType, subst);
 		}
@@ -123,8 +131,19 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 	 */
     private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
 
+    // TODO: duplicated from NullnessFlow
+    private String receiver(MethodInvocationTree node) {
+        ExpressionTree sel = node.getMethodSelect();
+        if (sel.getKind() == Tree.Kind.IDENTIFIER)
+            return "";
+        else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
+            return ((MemberSelectTree)sel).getExpression().toString();
+        throw new AssertionError("Cannot be here");
+    }
+    
     // TODO: doc
 	private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror inType) {
+		
 		// System.out.println("input type: " + inType);
 		AnnotatedTypeMirror outType = inType.getCopy(true);
 
@@ -134,62 +153,27 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
             List<String> inMaps = AnnotationUtils.parseStringArrayValue(anno, "value");
             List<String> outMaps = new ArrayList<String>();
             
-            // receiver method is in NullnessFlow
-            // String receiver = receiver(call);
-            /*
-    		// Set the receiver type?
-    		AnnotatedTypeMirror receiverType = null;
-    		ExpressionTree exprTree = call.getMethodSelect();
-    		if (exprTree.getKind() == Kind.MEMBER_SELECT) {
-    			MemberSelectTree memberSelectTree = (MemberSelectTree) exprTree;
-    			receiverType = getAnnotatedType(memberSelectTree.getExpression());
-    		} else {
-    			receiverType = getSelfType(call);
-    			// is the following needed? remove!
-    			// receiverType.clearAnnotations();
-    			// receiverType.addAnnotation(GUTChecker.SELF);
-    		}
-    		assert receiverType != null;
-    		System.out.println("Receiver: " + receiverType);
-    		*/
+            String receiver = receiver(call);
             
             for (String inMapName : inMaps) {
-            	// TODO: substitute "this" by receiver expression.
-            	// What else should be supported?
-            	
                 if (parameterPtn.matcher(inMapName).matches()) {
                     int param = Integer.valueOf(inMapName.substring(1));
                     if (param < call.getArguments().size()) {
                     	String res = call.getArguments().get(param).toString();
                     	outMaps.add(res);
                     }
+                } else if (inMapName.equals("this")) {
+                	outMaps.add(receiver);
                 } else {
                 	// TODO: look at the code below, copied from NullnessFlow
-                	System.out.println("KeyFor argument unhandled: " + inMapName);
+                	// System.out.println("KeyFor argument unhandled: " + inMapName + " using " + receiver + "." + inMapName);
                 	// just copy name for now, better than doing nothing
-                	outMaps.add(inMapName);
+                	outMaps.add(receiver + "." + inMapName);
                 }
-                	/* if (parameterPtn.matcher(inMapName).find()) {
-                	// TODO
-                	/*
-                    Matcher matcher = parameterPtn.matcher(inMapName);
-                    matcher.find();
-                    int param = Integer.valueOf(matcher.group(1));
-                    if (param < call.getArguments().size()) {
-                        String rep = call.getArguments().get(param).toString();
-
-                        String val = matcher.replaceAll(rep);
-                        System.out.println("What should be done with: " + val);
-                        // asserts.add(receiver + val);
-                        outMaps.add(val);
-                    }
-                    
-                } else {
-                	// TODO
-                	// System.out.println("The last option is: " + inMapName);
-                    // asserts.add(receiver + s);
-                } */
+                // TODO: look at code in NullnessFlow and decide whether there
+                // are more cases to copy. 
             }
+            
             AnnotationBuilder builder = new AnnotationBuilder(env, KeyFor.class);
             builder.setValue("value", outMaps);
             AnnotationMirror newAnno =  builder.build();
