@@ -27,9 +27,11 @@ public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
   public abstract @Nullable V remove(@Nullable Object a1);
   public abstract void putAll(Map<? extends K, ? extends V> a1);
   public abstract void clear();
-  public abstract Set<@KeyFor("this") K> keySet();
+  // TODO: public abstract Set<@KeyFor("this") K> keySet();
+  public abstract Set<K> keySet();
   public abstract Collection<V> values();
-  public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
+  // TODO: public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
+  public abstract Set<Map.Entry<K, V>> entrySet();
   public abstract boolean equals(@Nullable Object a1);
   public abstract int hashCode();
 }
