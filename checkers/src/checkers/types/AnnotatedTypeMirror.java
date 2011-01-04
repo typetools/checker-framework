@@ -1228,26 +1228,14 @@ public abstract class AnnotatedTypeMirror {
             return Collections.unmodifiableSet(result);
         }
 
-        /**
-         *  Used to terminate recursion into upper bounds.
-         */
-        private boolean inUpperBounds = false;
-        
         @Override
         public AnnotatedTypeVariable getCopy(boolean annotation) {
-        	if (inUpperBounds) return this;
-        	
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, annotation);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (getUpperBound().isAnnotated() &&
-            		!inUpperBounds) {
-            	inUpperBounds = true;
-            	type.inUpperBounds = true;
-            	type.setUpperBound(getUpperBound());
-            	inUpperBounds = false;
-            }
+            if (type.getUpperBound().isAnnotated())
+                type.setUpperBound(getUpperBound());
             return type;
         }
 
