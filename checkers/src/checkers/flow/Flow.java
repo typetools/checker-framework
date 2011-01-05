@@ -92,8 +92,7 @@ public class Flow extends TreePathScanner<Void, Void> {
      * index to determine a variable's annotatedness using
      * annos/annosWhenTrue/annosWhenFalse.
      * @see #annos
-     * @see #annosWhenTrue
-     * @see #annosWhenFalse
+     * @see SplitTuple
      */
     protected final List<VariableElement> vars;
 
@@ -101,10 +100,10 @@ public class Flow extends TreePathScanner<Void, Void> {
      * Tracks the annotated state of each variable during flow. Bit indices
      * correspond exactly to indices in {@link #vars}. This field is set to
      * null immediately after splitting for a branch, and is set to some
-     * combination (usually boolean "and") of {@link #annosWhenTrue} and
-     * {@link #annosWhenFalse} after merging. Since it is used when visiting the
+     * combination (usually boolean "and") of {@link SplitTuple}'s annosWhenTrue and
+     * annosWhenFalse after merging. Since it is used when visiting the
      * true and false branches, however, it may be non-null concurrently with
-     * {@link #annosWhenTrue} and {@link #annosWhenFalse}.
+     * {@link SplitTuple}'s annosWhenTrue and annosWhenFalse.
      */
     protected GenKillBits<AnnotationMirror> annos;
 
