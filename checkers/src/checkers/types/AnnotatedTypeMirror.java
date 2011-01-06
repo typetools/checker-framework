@@ -441,10 +441,10 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Returns a shallow copy of this type.
      *
-     * @param annotation
+     * @param copyAnnotations
      *            whether copy should have annotations
      */
-    public abstract AnnotatedTypeMirror getCopy(boolean annotation);
+    public abstract AnnotatedTypeMirror getCopy(boolean copyAnnotations);
 
     protected static AnnotatedDeclaredType createTypeOfObject(AnnotatedTypeFactory typeFactory) {
         AnnotatedDeclaredType objectType =
@@ -644,10 +644,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedDeclaredType getCopy(boolean annotation) {
+        public AnnotatedDeclaredType getCopy(boolean copyAnnotations) {
             AnnotatedDeclaredType type =
                 new AnnotatedDeclaredType(this.getUnderlyingType(), this.env, this.typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
 
             type.setTypeArguments(getTypeArguments());
 
@@ -864,10 +864,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedExecutableType getCopy(boolean annotation) {
+        public AnnotatedExecutableType getCopy(boolean copyAnnotations) {
             AnnotatedExecutableType type =
                 new AnnotatedExecutableType(getUnderlyingType(), env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             type.setParameterTypes(getParameterTypes());
             type.setReceiverType(getReceiverType());
             type.setReturnType(getReturnType());
@@ -1000,9 +1000,9 @@ public abstract class AnnotatedTypeMirror {
 
 
         @Override
-        public AnnotatedArrayType getCopy(boolean annotation) {
+        public AnnotatedArrayType getCopy(boolean copyAnnotations) {
             AnnotatedArrayType type = new AnnotatedArrayType(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             type.setComponentType(getComponentType());
             return type;
         }
@@ -1229,10 +1229,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedTypeVariable getCopy(boolean annotation) {
+        public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             type.setTypeVariableElement(getTypeVariableElement());
             if (type.getUpperBound().isAnnotated())
                 type.setUpperBound(getUpperBound());
@@ -1401,9 +1401,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedNoType getCopy(boolean annotation) {
+        public AnnotatedNoType getCopy(boolean copyAnnotations) {
             AnnotatedNoType type = new AnnotatedNoType(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             return type;
         }
 
@@ -1440,10 +1440,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedNullType getCopy(boolean annotation) {
+        public AnnotatedNullType getCopy(boolean copyAnnotations) {
 
             AnnotatedNullType type = new AnnotatedNullType(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             return type;
         }
 
@@ -1489,10 +1489,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedPrimitiveType getCopy(boolean annotation) {
+        public AnnotatedPrimitiveType getCopy(boolean copyAnnotations) {
             AnnotatedPrimitiveType type =
                 new AnnotatedPrimitiveType(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
             return type;
         }
 
@@ -1590,9 +1590,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedWildcardType getCopy(boolean annotation) {
+        public AnnotatedWildcardType getCopy(boolean copyAnnotations) {
             AnnotatedWildcardType type = new AnnotatedWildcardType(actualType, env, typeFactory);
-            copyFields(type, annotation);
+            copyFields(type, copyAnnotations);
 
             type.setExtendsBound(getExtendsBound());
             type.setSuperBound(getSuperBound());
