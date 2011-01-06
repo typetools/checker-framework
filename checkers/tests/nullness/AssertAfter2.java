@@ -66,5 +66,26 @@ public class AssertAfter2 {
 		  //:: (assignment.type.incompatible)
 		  @NonNull Object nn = get(f1, f2, f3);
 	  }
+	  
+	  void addBad2() {
+		  thing.add(f1, f2, f3);
+		  f1 = new Object();
+		  //:: (assignment.type.incompatible)
+		  @NonNull Object nn = thing.get(f1, f2, f3);
+	  }
+
+	  void addBad3() {
+		  thing.add(f1, f2, f3);
+		  f2 = new Object();
+		  //:: (assignment.type.incompatible)
+		  @NonNull Object nn = thing.get(f1, f2, f3);
+	  }
+	  
+	  void addBad4() {
+		  thing.add(f1, f2, f3);
+		  f3 = new Object();
+		  //:: (assignment.type.incompatible)
+		  @NonNull Object nn = thing.get(f1, f2, f3);
+	  }
   }
 }
