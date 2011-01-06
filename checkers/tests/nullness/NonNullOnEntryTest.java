@@ -43,10 +43,14 @@ class NonNullOnEntryTest {
 	protected static @Nullable Object staticfield;
 
 	@NonNullOnEntry("staticfield")
-	public void reqStaticName() {}
+	public void reqStaticName() {
+		reqStaticQualName();
+	}
 	
 	@NonNullOnEntry("NonNullOnEntryTest.staticfield")
-	public void reqStaticQualName() {}
+	public void reqStaticQualName() {
+		reqStaticName();
+	}
 
 	public void statClientOK(NonNullOnEntryTest arg1) {
 		staticfield = new Object();
