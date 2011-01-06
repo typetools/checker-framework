@@ -111,9 +111,9 @@ class NonNullOnEntryTest {
 		}
 
 		public void hidingClient2(NNOEHidingTest arg6) {
-			// We also would get an (nonnull.hiding.violated), but
+			// We also would get an (nonnullonentry.precondition.not.satisfied), but
 			// this error wins.
-			//:: (nonnullonentry.precondition.not.satisfied)
+			//:: (nonnull.hiding.violated)
 			arg6.requiresNonNullField();
 		}
 	}
