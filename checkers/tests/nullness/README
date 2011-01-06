@@ -1,0 +1,6 @@
+To add a new file to the test suite, just add it to this directory.
+For more details, see
+  ../README
+
+To run the tests, do
+  ant -e -find build.xml nullness-tests
