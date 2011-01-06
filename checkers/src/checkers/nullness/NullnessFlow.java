@@ -511,7 +511,7 @@ class NullnessFlow extends Flow {
         }
     }
 
-    private String receiver(MethodInvocationTree node) {
+    private static String receiver(MethodInvocationTree node) {
         ExpressionTree sel = node.getMethodSelect();
         if (sel.getKind() == Tree.Kind.IDENTIFIER)
             return "";
@@ -529,8 +529,36 @@ class NullnessFlow extends Flow {
     }
 
     private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
+    
+    private static List<String> substitutePatterns(MethodInvocationTree methodInvok, String[] annoValues) {
+        List<String> asserts = new ArrayList<String>();
+        String receiver = receiver(methodInvok);
+        for (String s : annoValues) {
+            if (parameterPtn.matcher(s).matches()) {
+                int param = Integer.valueOf(s.substring(1));
+                if (param < methodInvok.getArguments().size()) {
+                    asserts.add(methodInvok.getArguments().get(param).toString());
+                }
+            } else if (parameterPtn.matcher(s).find()) {
+                Matcher matcher = parameterPtn.matcher(s);
+                matcher.find();
+                int param = Integer.valueOf(matcher.group(1));
+                if (param < methodInvok.getArguments().size()) {
+                    String rep = methodInvok.getArguments().get(param).toString();
+
+                    String val = matcher.replaceAll(rep);
+                    asserts.add(receiver + val);
+                }
+            } else {
+                asserts.add(receiver + s);
+            }
+        }
+        return asserts;
+    }
+    
     private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
+        
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
             BinaryTree bin = (BinaryTree)node;
             List<String> asserts = new ArrayList<String>();
@@ -541,34 +569,15 @@ class NullnessFlow extends Flow {
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
 
-        List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)node;
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
-        // Handle AssertNonNullIfTrue
+        
+        List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
             AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
-
-            String receiver = receiver(methodInvok);
-            for (String s : anno.value()) {
-                if (parameterPtn.matcher(s).matches()) {
-                    int param = Integer.valueOf(s.substring(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        asserts.add(methodInvok.getArguments().get(param).toString());
-                    }
-                } else if (parameterPtn.matcher(s).find()) {
-                    Matcher matcher = parameterPtn.matcher(s);
-                    matcher.find();
-                    int param = Integer.valueOf(matcher.group(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        String rep = methodInvok.getArguments().get(param).toString();
-
-                        String val = matcher.replaceAll(rep);
-                        asserts.add(receiver + val);
-                    }
-                } else {
-                    asserts.add(receiver + s);
-                }
-            }
+            asserts = substitutePatterns(methodInvok, anno.value());
+        } else {
+        	asserts = Collections.emptyList();
         }
 
         return asserts;
@@ -576,6 +585,7 @@ class NullnessFlow extends Flow {
 
     private List<String> shouldInferNullnessAfter(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
+        
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
             BinaryTree bin = (BinaryTree)node;
             List<String> asserts = new ArrayList<String>();
@@ -586,33 +596,15 @@ class NullnessFlow extends Flow {
         if (node.getKind() != Tree.Kind.METHOD_INVOCATION)
             return Collections.emptyList();
 
-        List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)node;
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
+        
+        List<String> asserts;
         if (method.getAnnotation(AssertNonNullAfter.class) != null) {
             AssertNonNullAfter anno = method.getAnnotation(AssertNonNullAfter.class);
-
-            String receiver = receiver(methodInvok);
-            for (String s : anno.value()) {
-                if (parameterPtn.matcher(s).matches()) {
-                    int param = Integer.valueOf(s.substring(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        asserts.add(methodInvok.getArguments().get(param).toString());
-                    }
-                } else if (parameterPtn.matcher(s).find()) {
-                    Matcher matcher = parameterPtn.matcher(s);
-                    matcher.find();
-                    int param = Integer.valueOf(matcher.group(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        String rep = methodInvok.getArguments().get(param).toString();
-
-                        String val = matcher.replaceAll(rep);
-                        asserts.add(receiver + val);
-                    }
-                } else {
-                    asserts.add(receiver + s);
-                }
-            }
+            asserts = substitutePatterns(methodInvok, anno.value());
+        } else {
+        	asserts = Collections.emptyList();
         }
 
         return asserts;
@@ -624,34 +616,15 @@ class NullnessFlow extends Flow {
             return Collections.emptyList();
         }
 
-        List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)((UnaryTree)node).getExpression();
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
-        // Handle AssertNonNullIfTrue
+        
+        List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
             AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-
-            String receiver = receiver(methodInvok);
-            for (String s : anno.value()) {
-                if (parameterPtn.matcher(s).matches()) {
-                    int param = Integer.valueOf(s.substring(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        asserts.add(methodInvok.getArguments().get(param).toString());
-                    }
-                } else if (parameterPtn.matcher(s).find()) {
-                    Matcher matcher = parameterPtn.matcher(s);
-                    matcher.find();
-                    int param = Integer.valueOf(matcher.group(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        String rep = methodInvok.getArguments().get(param).toString();
-
-                        String val = matcher.replaceAll(rep);
-                        asserts.add(receiver + val);
-                    }
-                } else {
-                    asserts.add(receiver + s);
-                }
-            }
+            asserts = substitutePatterns(methodInvok, anno.value());
+        } else {
+        	asserts = Collections.emptyList();
         }
 
         return asserts;
@@ -663,34 +636,15 @@ class NullnessFlow extends Flow {
             return Collections.emptyList();
         }
 
-        List<String> asserts = new ArrayList<String>();
         MethodInvocationTree methodInvok = (MethodInvocationTree)node;
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
-        // Handle AssertNonNullIfTrue
+        
+        List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
             AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-
-            String receiver = receiver(methodInvok);
-            for (String s : anno.value()) {
-                if (parameterPtn.matcher(s).matches()) {
-                    int param = Integer.valueOf(s.substring(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        asserts.add(methodInvok.getArguments().get(param).toString());
-                    }
-                } else if (parameterPtn.matcher(s).find()) {
-                    Matcher matcher = parameterPtn.matcher(s);
-                    matcher.find();
-                    int param = Integer.valueOf(matcher.group(1));
-                    if (param < methodInvok.getArguments().size()) {
-                        String rep = methodInvok.getArguments().get(param).toString();
-
-                        String val = matcher.replaceAll(rep);
-                        asserts.add(receiver + val);
-                    }
-                } else {
-                    asserts.add(receiver + s);
-                }
-            }
+            asserts = substitutePatterns(methodInvok, anno.value());
+        } else {
+        	asserts = Collections.emptyList();
         }
 
         return asserts;
@@ -745,10 +699,27 @@ class NullnessFlow extends Flow {
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
         // clean nnExprs when they are reassigned
-        this.nnExprs.remove(node.getVariable().toString());
         // TODO: need to look deeper into the nnExprs, e.g. see test case in 
         // AssertAfter2, where "get(parent)" is in nnExprs and "parent" is re-assigned.
-        // Contains might be too coarse grained?
+    	// The following is too simplistic:
+    	//   this.nnExprs.remove(node.getVariable().toString());
+    	// Just doing a "contains" on each string is probably too coarse, but
+    	// would ensure that we do not miss a case.
+    	// Instead look in more detail:
+    	String var = node.getVariable().toString();
+    	Iterator<String> iter = nnExprs.iterator();
+    	while (iter.hasNext()) {
+    		String nnExp = iter.next();
+    		if (var.equals(nnExp) ||
+    				nnExp.contains("(" + var + ")") ||
+    				nnExp.contains("(" + var + ",") ||
+    				nnExp.contains("," + var + ")") ||
+    				nnExp.contains("," + var + ",") ||
+    				nnExp.contains("." + var) ||
+    				nnExp.contains(var + ".")) {
+    			iter.remove();
+    		}
+    	}
         return super.visitAssignment(node, p);
     }
 
