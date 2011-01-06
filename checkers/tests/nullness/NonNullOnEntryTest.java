@@ -40,6 +40,37 @@ class NonNullOnEntryTest {
 
 	// TODO: forbid the field in @NNOE to be less visible than the method
 
+	protected static @Nullable Object staticfield;
+
+	@NonNullOnEntry("staticfield")
+	public void reqStaticName() {}
+	
+	@NonNullOnEntry("NonNullOnEntryTest.staticfield")
+	public void reqStaticQualName() {}
+
+	public void statClientOK(NonNullOnEntryTest arg1) {
+		staticfield = new Object();
+		arg1.reqStaticName();
+
+		staticfield = new Object();
+		arg1.reqStaticQualName();
+
+		NonNullOnEntryTest.staticfield = new Object();
+		arg1.reqStaticName();
+		NonNullOnEntryTest.staticfield = new Object();
+		arg1.reqStaticQualName();
+
+	}
+	
+	public void statClientFail(NonNullOnEntryTest arg1) {
+		//:: (nonnullonentry.precondition.not.satisfied)
+		arg1.reqStaticName();
+		//:: (nonnullonentry.precondition.not.satisfied)
+		arg1.reqStaticQualName();
+	}
+	
+	
+	
 	class NNOESubTest extends NonNullOnEntryTest {
 		public void subClientOK(NNOESubTest arg3) {
 			arg3.field = new Object();
@@ -49,6 +80,17 @@ class NonNullOnEntryTest {
 		public void subClientFail(NNOESubTest arg4) {
 			//:: (nonnullonentry.precondition.not.satisfied)
 			arg4.requiresNonNullField();
+		}
+		
+		public void subStat(NNOESubTest arg5) {
+			NonNullOnEntryTest.staticfield = new Object();
+			arg5.reqStaticQualName();
+			
+			staticfield = new Object();
+			arg5.reqStaticQualName();
+
+			NNOESubTest.staticfield = new Object();
+			arg5.reqStaticQualName();
 		}
 	}
 
