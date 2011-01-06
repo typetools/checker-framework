@@ -20,6 +20,7 @@ import checkers.nullness.NullnessChecker;
  * <p>
  *
  * @see NonNull
+ * @see AssertNonNullIfFalse
  * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
