@@ -915,7 +915,10 @@ class NullnessFlow extends Flow {
 			
 			// fieldloop:
 			for (String field : fields) {
+				// whether a field with the name was already found
 				boolean found = false;
+				// whether a field without the NonNull annotation was found
+				boolean error = false;
 				for (Element el : recvFieldElems) {
 					int index = 0;
 					String elName = el.getSimpleName().toString();
@@ -924,13 +927,17 @@ class NullnessFlow extends Flow {
 							field.equals(elClass + "." + elName)) {
 						if (found) {
 							// We already found a field with the same name before -> hiding.
-							checker.report(Result.failure("nonnull.hiding.violated",	node), node);
+							checker.report(Result.failure("nonnull.hiding.violated", field), node);
 						} else {
 							found = true;
 						}
 						index = vars.indexOf(el);
 						if (!annos.get(NONNULL, index)) {
-							checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
+							error = true;
+							// Instead of reporting the error here, just record it.
+							// Then, if there is hiding, we report hiding first.
+							// If there is an error, we report it after the loop.
+							// checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
 						} else {
 							// System.out.println("Success!");
 							// We want to go through all fields to ensure that we have
@@ -940,8 +947,8 @@ class NullnessFlow extends Flow {
 						}
 					}
 				}
-				if(!found) {
-					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
+				if(!found || error) {
+					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), node);
 				}
 			}
 		}
