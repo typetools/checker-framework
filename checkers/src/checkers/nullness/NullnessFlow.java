@@ -720,9 +720,9 @@ class NullnessFlow extends Flow {
     		String nnExp = iter.next();
     		if (var.equals(nnExp) ||
     				nnExp.contains("(" + var + ")") ||
-    				nnExp.contains("(" + var + ",") ||
-    				nnExp.contains("," + var + ")") ||
-    				nnExp.contains("," + var + ",") ||
+    				nnExp.contains("(" + var + ", ") ||
+    				nnExp.contains(", " + var + ")") ||
+    				nnExp.contains(", " + var + ", ") ||
     				nnExp.contains("." + var) ||
     				nnExp.contains(var + ".")) {
     			iter.remove();
