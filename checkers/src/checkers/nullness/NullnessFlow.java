@@ -746,6 +746,9 @@ class NullnessFlow extends Flow {
     public Void visitAssignment(AssignmentTree node, Void p) {
         // clean nnExprs when they are reassigned
         this.nnExprs.remove(node.getVariable().toString());
+        // TODO: need to look deeper into the nnExprs, e.g. see test case in 
+        // AssertAfter2, where "get(parent)" is in nnExprs and "parent" is re-assigned.
+        // Contains might be too coarse grained?
         return super.visitAssignment(node, p);
     }
 
@@ -885,13 +888,7 @@ class NullnessFlow extends Flow {
 
 		if (method.getAnnotation(NonNullOnEntry.class) != null) {
 			if (debug != null) {
-				debug.println("NullnessFlow: Looking at call of: " + method);
-				debug.println("  genkill: " + annos);
-				for (VariableElement ve : vars) {
-					debug.print("  We know about: " + ve);
-					int index = vars.indexOf(ve);
-					debug.println(" NONNULL: " + annos.get(NONNULL, index));
-				}
+				debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + node);
 			}
 
 			List<? extends Element> recvFieldElems;
@@ -921,7 +918,10 @@ class NullnessFlow extends Flow {
 				boolean found = false;
 				for (Element el : recvFieldElems) {
 					int index = 0;
-					if (el.getSimpleName().toString().equals(field)) {
+					String elName = el.getSimpleName().toString();
+					String elClass = el.getEnclosingElement().getSimpleName().toString();
+					if (elName.equals(field) ||
+							field.equals(elClass + "." + elName)) {
 						if (found) {
 							// We already found a field with the same name before -> hiding.
 							checker.report(Result.failure("nonnull.hiding.violated",	node), node);
