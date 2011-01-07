@@ -36,9 +36,9 @@ public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull 
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public Set<K> keySet() { throw new RuntimeException("skeleton method"); }
+  public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
-  public abstract Set<Map.Entry<K, V>> entrySet();
+  public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
   public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public String toString() { throw new RuntimeException("skeleton method"); }
