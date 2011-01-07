@@ -8,6 +8,7 @@ class NonNullOnEntryTest {
 	@NonNullOnEntry("field1")
 	void method1() {
 		field1.toString(); // OK, field1 is known to be non-null
+		this.field1.toString(); // OK, field1 is known to be non-null
 		//:: (dereference.of.nullable)
 		field2.toString(); // error, might throw NullPointerException
 	}
