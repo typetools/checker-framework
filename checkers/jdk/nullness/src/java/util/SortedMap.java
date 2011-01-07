@@ -10,7 +10,7 @@ public interface SortedMap<K extends @NonNull Object, V extends @NonNull Object>
   public abstract SortedMap<K, V> tailMap(K a1);
   public abstract K firstKey();
   public abstract K lastKey();
-  public abstract Set<K> keySet();
+  public abstract Set<@KeyFor("this") K> keySet();
   public abstract Collection<V> values();
-  public abstract Set<Map.Entry<K, V>> entrySet();
+  public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
 }
