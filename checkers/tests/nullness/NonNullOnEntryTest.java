@@ -1,3 +1,4 @@
+w
 import checkers.nullness.quals.*;
 
 class NonNullOnEntryTest {
