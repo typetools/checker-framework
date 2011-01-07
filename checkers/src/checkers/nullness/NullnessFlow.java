@@ -535,20 +535,28 @@ class NullnessFlow extends Flow {
         String receiver = receiver(methodInvok);
         for (String s : annoValues) {
             if (parameterPtn.matcher(s).matches()) {
+            	// exactly one parameter index, e.g. "#0"
                 int param = Integer.valueOf(s.substring(1));
                 if (param < methodInvok.getArguments().size()) {
                     asserts.add(methodInvok.getArguments().get(param).toString());
                 }
             } else if (parameterPtn.matcher(s).find()) {
-                Matcher matcher = parameterPtn.matcher(s);
-                matcher.find();
-                int param = Integer.valueOf(matcher.group(1));
-                if (param < methodInvok.getArguments().size()) {
-                    String rep = methodInvok.getArguments().get(param).toString();
-
-                    String val = matcher.replaceAll(rep);
-                    asserts.add(receiver + val);
-                }
+            	// parameter pattern(s) within the string
+            	Matcher matcher = parameterPtn.matcher(s);
+				StringBuffer sb = new StringBuffer();
+				while (matcher.find()) {
+					int param = Integer.valueOf(matcher.group(1));
+					if (param < methodInvok.getArguments().size()) {
+						String rep = methodInvok.getArguments().get(param).toString();
+						matcher.appendReplacement(sb, rep);
+					} else {
+						// TODO: use a compiler message
+						System.err.println("NullnessFlow: invalid annotation argument: " + param);
+					}
+				}
+				matcher.appendTail(sb);
+				
+				asserts.add(receiver + sb.toString());
             } else {
                 asserts.add(receiver + s);
             }
@@ -712,9 +720,9 @@ class NullnessFlow extends Flow {
     		String nnExp = iter.next();
     		if (var.equals(nnExp) ||
     				nnExp.contains("(" + var + ")") ||
-    				nnExp.contains("(" + var + ",") ||
-    				nnExp.contains("," + var + ")") ||
-    				nnExp.contains("," + var + ",") ||
+    				nnExp.contains("(" + var + ", ") ||
+    				nnExp.contains(", " + var + ")") ||
+    				nnExp.contains(", " + var + ", ") ||
     				nnExp.contains("." + var) ||
     				nnExp.contains(var + ".")) {
     			iter.remove();
@@ -903,7 +911,7 @@ class NullnessFlow extends Flow {
 							found = true;
 						}
 						index = vars.indexOf(el);
-						if (!annos.get(NONNULL, index)) {
+						if (index==-1 || !annos.get(NONNULL, index)) {
 							error = true;
 							// Instead of reporting the error here, just record it.
 							// Then, if there is hiding, we report hiding first.
