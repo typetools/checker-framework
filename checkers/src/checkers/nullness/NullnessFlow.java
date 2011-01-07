@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
@@ -17,6 +18,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
@@ -530,7 +532,8 @@ class NullnessFlow extends Flow {
 
     private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
     
-    private static List<String> substitutePatterns(MethodInvocationTree methodInvok, String[] annoValues) {
+    // substitute patterns and ensure that the Strings are formatted according to our conventions
+    private List<String> substitutePatterns(MethodInvocationTree methodInvok, String[] annoValues) {
         List<String> asserts = new ArrayList<String>();
         String receiver = receiver(methodInvok);
         for (String s : annoValues) {
@@ -539,6 +542,8 @@ class NullnessFlow extends Flow {
                 int param = Integer.valueOf(s.substring(1));
                 if (param < methodInvok.getArguments().size()) {
                     asserts.add(methodInvok.getArguments().get(param).toString());
+                } else {
+                	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
                 }
             } else if (parameterPtn.matcher(s).find()) {
             	// parameter pattern(s) within the string
@@ -550,8 +555,7 @@ class NullnessFlow extends Flow {
 						String rep = methodInvok.getArguments().get(param).toString();
 						matcher.appendReplacement(sb, rep);
 					} else {
-						// TODO: use a compiler message
-						System.err.println("NullnessFlow: invalid annotation argument: " + param);
+	                	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
 					}
 				}
 				matcher.appendTail(sb);
@@ -683,7 +687,7 @@ class NullnessFlow extends Flow {
             return Collections.emptyList();
         }
     }
-
+        
     @Override
     public Void visitAssert(AssertTree node, Void p) {
 
@@ -861,104 +865,6 @@ class NullnessFlow extends Flow {
 
         return null;
     }
-
-    private void checkNonNullOnEntry(MethodInvocationTree node) {
-        ExecutableElement method = TreeUtils.elementFromUse(node);
-
-		if (method.getAnnotation(NonNullOnEntry.class) != null) {
-			if (debug != null) {
-				debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + node);
-			}
-
-			List<? extends Element> recvFieldElems;
-			{ // block to get all fields of the receiver type
-				ExpressionTree recv = TreeUtils.getReceiverTree(node);
-				
-				AnnotatedTypeMirror recvType;
-				if (recv==null) {
-					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(node)));
-				} else {
-					recvType = factory.getAnnotatedType(recv);
-				}
-				
-				if (!(recvType instanceof AnnotatedDeclaredType)) {
-					System.err.println("What's wrong with: " + recvType);
-			    	return;
-				}
-				
-				Element recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
-				recvFieldElems = allFields(recvElem);
-			}
-
-			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
-			
-			// fieldloop:
-			for (String field : fields) {
-				// whether a field with the name was already found
-				boolean found = false;
-				// whether a field without the NonNull annotation was found
-				boolean error = false;
-				for (Element el : recvFieldElems) {
-					int index = 0;
-					String elName = el.getSimpleName().toString();
-					String elClass = el.getEnclosingElement().getSimpleName().toString();
-					if (elName.equals(field) ||
-							field.equals(elClass + "." + elName)) {
-						if (found) {
-							// We already found a field with the same name before -> hiding.
-							checker.report(Result.failure("nonnull.hiding.violated", field), node);
-						} else {
-							found = true;
-						}
-						index = vars.indexOf(el);
-						if (index==-1 || !annos.get(NONNULL, index)) {
-							error = true;
-							// Instead of reporting the error here, just record it.
-							// Then, if there is hiding, we report hiding first.
-							// If there is an error, we report it after the loop.
-							// checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",	node), node);
-						} else {
-							// System.out.println("Success!");
-							// We want to go through all fields to ensure that we have
-							// no problem with hiding of fields.
-							// Once hiding is handled in a nicer way, we can directly jump to the outer loop.
-							// continue fieldloop;
-						}
-					}
-				}
-				if(!found || error) {
-					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), node);
-				}
-			}
-		}
-    }
-    
-    /**
-     * Determine all fields that we need to check.
-     * Used for NonNullOnEntry.
-     * 
-     * @param el The TypeElement to start with.
-     * @return All fields declared in el and all superclasses.
-     */
-    private static List<VariableElement> allFields(Element el) {
-    	if (!(el instanceof TypeElement)) {
-    		System.err.println("NullnessFlow::allFields: the argument should be a TypeElement; it is a: " + el.getClass());
-    		return null;
-    	}
-    	TypeElement tyel = (TypeElement) el;
-    	
-    	List<VariableElement> res = new ArrayList<VariableElement>();
-    	
-    	while (tyel!=null && !ElementUtils.isObject(tyel)) {
-    		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
-    		TypeMirror suty = tyel.getSuperclass();
-    		DeclaredType dtsuty = (DeclaredType) suty;
-            tyel = (TypeElement) dtsuty.asElement();
-    	}
-    	
-    	return res;
-    }
-    
     
     private void markTree(Tree node, AnnotationMirror anno) {
         flowResults.put(node, anno);
@@ -988,36 +894,428 @@ class NullnessFlow extends Flow {
     }
 
     @Override
-    public Void visitMethod(MethodTree node, Void p) {
+    public Void visitMethod(MethodTree meth, Void p) {
 
         // Cancel assumptions about fields (of this class) for a method with a
         // @Raw receiver.
 
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
 
-        if (hasRawReceiver(node)) {
+        if (hasRawReceiver(meth)) {
             for (int i = 0; i < vars.size(); i++) {
                 Element var = vars.get(i);
                 if (var.getKind() == ElementKind.FIELD)
                     annos.clear(NONNULL, i);
             }
         }
+
         List<String> prevNnExprs = new ArrayList<String>(nnExprs);
 
-        Element elem = TreeUtils.elementFromDeclaration(node);
-        if (elem.getAnnotation(NonNullOnEntry.class) != null) {
-            String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
-            this.nnExprs.addAll(Arrays.asList(fields));
-        }
+        Element elem = TreeUtils.elementFromDeclaration(meth);
+		if (elem.getAnnotation(NonNullOnEntry.class) != null
+				|| elem.getAnnotation(AssertNonNullIfTrue.class) != null
+				|| elem.getAnnotation(AssertNonNullIfFalse.class) != null
+				|| elem.getAnnotation(AssertNonNullAfter.class) != null) {
 
+			List<? extends Element> myFieldElems;
+			{ // block to get all fields of the current class
+
+				AnnotatedTypeMirror myType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(meth)));
+
+				if (!(myType instanceof AnnotatedDeclaredType)) {
+					System.err.println("NullnessFlow::visitMethod: What's wrong with: " + myType);
+					return null;
+				}
+
+				Element myElem = ((AnnotatedDeclaredType) myType).getUnderlyingType().asElement();
+				myFieldElems = allFields(myElem);
+			}
+
+			if (elem.getAnnotation(NonNullOnEntry.class) != null) {
+				String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
+				List<String> fieldsList = validateNonNullOnEntry(meth, myFieldElems, fields);
+				this.nnExprs.addAll(fieldsList);
+			}
+
+			List<String> assertAnnos = new LinkedList<String>();
+			if (elem.getAnnotation(AssertNonNullIfTrue.class) != null) {
+				String[] patterns = elem.getAnnotation(AssertNonNullIfTrue.class).value();
+				assertAnnos.addAll(Arrays.asList(patterns));
+			}
+			if (elem.getAnnotation(AssertNonNullIfFalse.class) != null) {
+				String[] patterns = elem.getAnnotation(AssertNonNullIfFalse.class).value();
+				assertAnnos.addAll(Arrays.asList(patterns));
+			}
+			
+			validateAsserts(meth, myFieldElems, assertAnnos);
+			
+			// AssertNonNullAfter is checked in visitMethodEndCallback and visitReturn
+		}
+        
         try {
-            return super.visitMethod(node, p);
+            return super.visitMethod(meth, p);
         } finally {
             annos = prev;
             this.nnExprs = prevNnExprs;
         }
     }
+    
+    // Callback at the end of a method body. Use this for void methods that have
+    // an AssertNonNullAfter annotation.
+    public void visitMethodEndCallback(MethodTree meth) {
+    	ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
+    	TypeMirror retType = methElem.getReturnType();
+    	
+    	if (retType.getKind() == TypeKind.VOID &&
+    			methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+    		checkAssertNonNullAfter(meth, methElem);
+    	}
+    	
+    }
+    
+    // Also see checkNonNullOnEntry for comparison 
+    private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
+		String[] annoValues = methElem.getAnnotation(AssertNonNullAfter.class).value();
 
+		for (String annoVal : annoValues) {
+			// whether a field with the name was already found
+			boolean found = false;
+			// whether a field without the NonNull annotation was found
+			boolean error = false;
+
+			List<? extends Element> elemsToSearch;
+			String fieldName;
+			
+			if (parameterPtn.matcher(annoVal).find()) {
+            	checker.report(Result.warning("nullness.parse.error", annoVal), meth);
+            	continue;
+			} else if (annoVal.contains(".")) {
+				// we only support single static field accesses, i.e. C.f
+				String[] parts = annoVal.split("\\.");
+				if (parts.length!=2) {
+					checker.report(Result.failure("dots.nullness.parse.error", annoVal), meth);
+				}
+				String className = parts[0];
+				fieldName = parts[1];
+				
+				Element findClass = methElem;
+				while (findClass!=null &&
+					!findClass.getSimpleName().toString().equals(className)) {
+					findClass=findClass.getEnclosingElement();
+				}
+				if (findClass==null) {
+					checker.report(Result.failure("class.not.found.nullness.parse.error", annoVal), meth);
+					continue;
+				}
+				
+				elemsToSearch = allFields(findClass);
+			} else {
+				// interpret as an instance field of "this".
+				fieldName = annoVal;
+				elemsToSearch = allFields(ElementUtils.enclosingClass(methElem));
+			}
+			
+			for (Element el : elemsToSearch) {
+				String elName = el.getSimpleName().toString();
+				String elClass = el.getEnclosingElement().getSimpleName().toString();
+
+				if (fieldName.equals(elName)) {
+					if (found) {
+						// We already found a field with the same name
+						// before -> hiding.
+						checker.report(Result.failure("nonnull.hiding.violated", annoVal), meth);
+					} else {
+						found = true;
+					}
+					int index = vars.indexOf(el);
+					if (index == -1 || !annos.get(NONNULL, index)) {
+						if (!this.nnExprs.contains(elName)
+								&& !this.nnExprs.contains(elClass + "."	+ elName)) {
+							error = true;
+						}
+						// Instead of reporting the error here, just
+						// record it.
+						// Then, if there is hiding, we report hiding
+						// first.
+						// If there is an error, we report it after the
+						// loop.
+						// checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",
+						// node), node);
+					} else {
+						// System.out.println("Success!");
+						// We want to go through all fields to ensure
+						// that we have
+						// no problem with hiding of fields.
+						// Once hiding is handled in a nicer way, we can
+						// directly jump to the outer loop.
+						// continue fieldloop;
+					}
+				}
+			}
+
+			if(!found || error) {
+				checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
+			}
+		}
+	}
+
+    	
+    
+    
+    
+    // at call sites, ensure that the NNOE entries hold
+    private void checkNonNullOnEntry(MethodInvocationTree call) {
+        ExecutableElement method = TreeUtils.elementFromUse(call);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			if (debug != null) {
+				debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + call);
+			}
+
+			Element recvElem;
+			List<? extends Element> recvFieldElems;
+			{ // block to get all fields of the receiver type
+				// TODO: move to a separate method and only call when it's needed in
+				// the loop. Now we create this list even for static fields where it is not used.
+				ExpressionTree recv = TreeUtils.getReceiverTree(call);
+				
+				AnnotatedTypeMirror recvType;
+				if (recv==null) {
+					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(call)));
+				} else {
+					recvType = factory.getAnnotatedType(recv);
+				}
+				
+				if (!(recvType instanceof AnnotatedDeclaredType)) {
+					System.err.println("What's wrong with: " + recvType);
+			    	return;
+				}
+				
+				recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
+				recvFieldElems = allFields(recvElem);
+			}
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+
+			// fieldloop:
+			for (String field : fields) {
+				// whether a field with the name was already found
+				boolean found = false;
+				// whether a field without the NonNull annotation was found
+				boolean error = false;
+
+				List<? extends Element> elemsToSearch;
+				String fieldName;
+				
+				if (field.contains(".")) {
+					// we only support single static field accesses, i.e. C.f
+					String[] parts = field.split("\\.");
+					if (parts.length!=2) {
+						checker.report(Result.failure("dots.nullness.parse.error", field), call);
+					}
+					String className = parts[0];
+					fieldName = parts[1];
+					
+					Element findClass = recvElem;
+					while (findClass!=null &&
+						!findClass.getSimpleName().toString().equals(className)) {
+						findClass=findClass.getEnclosingElement();
+					}
+					if (findClass==null) {
+						checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
+					}
+					
+					elemsToSearch = allFields(findClass);
+				} else {
+					fieldName = field;
+					elemsToSearch = recvFieldElems;
+				}
+				
+				for (Element el : elemsToSearch) {
+					String elName = el.getSimpleName().toString();
+					String elClass = el.getEnclosingElement().getSimpleName().toString();
+
+					if (fieldName.equals(elName)) {
+							// ||	field.equals(elClass + "." + elName)) {
+						// TODO: remove checks for hiding?
+						if (found) {
+							// We already found a field with the same name
+							// before -> hiding.
+							checker.report(Result.failure("nonnull.hiding.violated", field), call);
+						} else {
+							found = true;
+						}
+						int index = vars.indexOf(el);
+						if (index == -1 || !annos.get(NONNULL, index)) {
+							if (!this.nnExprs.contains(elName)
+									&& !this.nnExprs.contains(elClass + "."	+ elName)) {
+								error = true;
+							}
+							// Instead of reporting the error here, just
+							// record it.
+							// Then, if there is hiding, we report hiding
+							// first.
+							// If there is an error, we report it after the
+							// loop.
+							// checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",
+							// node), node);
+						} else {
+							// System.out.println("Success!");
+							// We want to go through all fields to ensure
+							// that we have
+							// no problem with hiding of fields.
+							// Once hiding is handled in a nicer way, we can
+							// directly jump to the outer loop.
+							// continue fieldloop;
+						}
+					}
+				}
+
+				if(!found || error) {
+					checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), call);
+				}
+			}
+		}
+    }
+    
+    /**
+     * Determine all fields that we need to check.
+     * Used for NonNullOnEntry.
+     * 
+     * @param el The TypeElement to start with.
+     * @return All fields declared in el and all superclasses.
+     */
+    private static List<VariableElement> allFields(Element el) {
+    	if (!(el instanceof TypeElement)) {
+    		System.err.println("NullnessFlow::allFields: the argument should be a TypeElement; it is a: " +
+    				el!=null ? el.getClass() : null);
+    		return null;
+    	}
+    	TypeElement tyel = (TypeElement) el;
+    	
+    	List<VariableElement> res = new ArrayList<VariableElement>();
+    	
+    	while (tyel!=null && !ElementUtils.isObject(tyel)) {
+    		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
+    		TypeMirror suty = tyel.getSuperclass();
+    		if (suty instanceof DeclaredType) {
+    			DeclaredType dtsuty = (DeclaredType) suty;
+    			tyel = (TypeElement) dtsuty.asElement();
+    		} else {
+    			System.out.println("What's happening here?? " + el);
+    			break;
+    		}
+    	}
+    	
+    	return res;
+    }
+    
+
+    // Make sure that the Strings in the NNOE annotation are valid.
+    // The returned list contains supported strings
+    private List<String> validateNonNullOnEntry(MethodTree meth, List<? extends Element> myFieldElems, String[] fields) {
+    	List<String> res = new LinkedList<String>();
+    	
+		for (String field : fields) {
+			// whether a field with the name was already found
+			boolean found = false;
+
+			List<? extends Element> elemsToSearch;
+			
+			if (field.contains(".")) {
+				// we only support single static field accesses, i.e. C.f
+				String[] parts = field.split("\\.");
+				if (parts.length!=2) {
+					checker.report(Result.failure("dots.nullness.parse.error", field), meth);
+				}
+				String className = parts[0];
+				
+				Element findClass = ElementUtils.enclosingClass(TreeUtils.elementFromDeclaration(meth));
+				while (findClass!=null &&
+					!findClass.getSimpleName().toString().equals(className)) {
+					findClass=findClass.getEnclosingElement();
+				}
+				if (findClass==null) {
+					checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
+				}
+				
+				elemsToSearch = allFields(findClass);
+			} else {
+				elemsToSearch = myFieldElems;
+			}
+
+			
+			for (Element el : elemsToSearch) {
+				// whether one of the cases matched
+				boolean matched = false;
+				
+				String elName = el.getSimpleName().toString();
+				String elClass = el.getEnclosingElement().getSimpleName().toString();
+				// System.out.println("field: " + field);
+				// System.out.println("elName: " + elName);
+								
+				if (field.equals(elName)) {
+					// if the field is static, add the class name
+					if (el.getModifiers().contains(Modifier.STATIC)) {
+						res.add(elClass + "." + elName);
+					}
+					res.add(elName);
+					matched = true;
+				} else if (field.equals("this." + elName)) {
+					// remove the explicit "this"
+					res.add(elName);
+					matched = true;
+				} else if (field.equals(elClass + "." + elName)) {
+					if (!el.getModifiers().contains(Modifier.STATIC)) {
+						checker.report(Result.failure("nonnull.nonstatic.with.class", field), meth);
+					}
+					res.add(field);
+					res.add(elName);
+					matched = true;
+				}
+				
+				if (matched) {
+					if (found) {
+						// We already found a field with the same name before -> hiding.
+						checker.report(Result.failure("nonnull.hiding.violated", field), meth);
+					} else {
+						found = true;
+					}
+				}
+			}
+			// TODO: Method calls?
+			
+			if (!found) {
+				checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+			}
+		}
+		return res;
+    }
+
+    private void validateAsserts(MethodTree meth, List<? extends Element> myFieldElems, List<String> patterns) {
+    	// System.out.println("TODO: look at Assert annot");
+    }
+    
+
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+    	super.visitReturn(node, p);
+    	
+    	checkAssertsOnReturn(node);
+    	
+        return null;
+    }
+
+    private void checkAssertsOnReturn(ReturnTree ret) {
+    	MethodTree meth = TreeUtils.enclosingMethod(factory.getPath(ret));
+    	ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
+    	
+    	if ( methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+    		checkAssertNonNullAfter(meth, methElem);
+    	}
+    }
+  
+    
     /**
      * Determines whether a method has a receiver that is {@link Raw} given the
      * AST node for the method's declaration.

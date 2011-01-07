@@ -8,8 +8,8 @@ public class AssertAfter2 {
 
     HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
-    @AssertNonNullAfter("childMap.get(#0)")
-    public void addNode( T n ) {
+    //:: warning: (nullness.parse.error)
+    @AssertNonNullAfter("childMap.get(#0)") public void addNode( T n ) {
       // body omitted, not relevant to test case
     }
 
@@ -46,8 +46,8 @@ public class AssertAfter2 {
 	  
 	  // TODO: doc: spaces important
 	  // TODO: doc: no explicit this!
-	  @AssertNonNullAfter("get(#0, #1, #2)")
-	  void add( Object o1, Object o2, Object o3 ) {
+	  //:: warning: (nullness.parse.error)
+	  @AssertNonNullAfter("get(#0, #1, #2)") void add( Object o1, Object o2, Object o3 ) {
 		  // body omitted, not relevant to test case
 	  }
 

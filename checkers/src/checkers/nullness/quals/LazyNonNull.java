@@ -19,7 +19,7 @@ import checkers.quals.TypeQualifier;
  *
  * </ol>
  *
- * When the field is first read withn a method, the field cannot be assumed
+ * When the field is first read within a method, the field cannot be assumed
  * to be non-null.  The benefit of LazyNonNull over Nullable is its
  * different interaction with flow-sensitive type qualifier refinement.
  * After a check of a LazyNonNull field, all subsequent accesses <em>within
