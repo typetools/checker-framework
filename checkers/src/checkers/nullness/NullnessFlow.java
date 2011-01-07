@@ -536,7 +536,7 @@ class NullnessFlow extends Flow {
     private List<String> substitutePatterns(MethodInvocationTree methodInvok, String[] annoValues) {
         List<String> asserts = new ArrayList<String>();
         String receiver = receiver(methodInvok);
-        for (String s : annoValues) {
+        fields: for (String s : annoValues) {
             if (parameterPtn.matcher(s).matches()) {
             	// exactly one parameter index, e.g. "#0"
                 int param = Integer.valueOf(s.substring(1));
@@ -544,6 +544,7 @@ class NullnessFlow extends Flow {
                     asserts.add(methodInvok.getArguments().get(param).toString());
                 } else {
                 	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
+                	continue;
                 }
             } else if (parameterPtn.matcher(s).find()) {
             	// parameter pattern(s) within the string
@@ -556,6 +557,7 @@ class NullnessFlow extends Flow {
 						matcher.appendReplacement(sb, rep);
 					} else {
 	                	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
+	                	continue fields;
 					}
 				}
 				matcher.appendTail(sb);
@@ -994,6 +996,7 @@ class NullnessFlow extends Flow {
 				String[] parts = annoVal.split("\\.");
 				if (parts.length!=2) {
 					checker.report(Result.failure("dots.nullness.parse.error", annoVal), meth);
+					continue;
 				}
 				String className = parts[0];
 				fieldName = parts[1];
@@ -1024,6 +1027,7 @@ class NullnessFlow extends Flow {
 						// We already found a field with the same name
 						// before -> hiding.
 						checker.report(Result.failure("nonnull.hiding.violated", annoVal), meth);
+						continue;
 					} else {
 						found = true;
 					}
@@ -1112,6 +1116,7 @@ class NullnessFlow extends Flow {
 					String[] parts = field.split("\\.");
 					if (parts.length!=2) {
 						checker.report(Result.failure("dots.nullness.parse.error", field), call);
+						continue;
 					}
 					String className = parts[0];
 					fieldName = parts[1];
@@ -1123,6 +1128,7 @@ class NullnessFlow extends Flow {
 					}
 					if (findClass==null) {
 						checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
+						continue;
 					}
 					
 					elemsToSearch = allFields(findClass);
@@ -1142,6 +1148,7 @@ class NullnessFlow extends Flow {
 							// We already found a field with the same name
 							// before -> hiding.
 							checker.report(Result.failure("nonnull.hiding.violated", field), call);
+							continue;
 						} else {
 							found = true;
 						}
@@ -1227,6 +1234,7 @@ class NullnessFlow extends Flow {
 				String[] parts = field.split("\\.");
 				if (parts.length!=2) {
 					checker.report(Result.failure("dots.nullness.parse.error", field), meth);
+					continue;
 				}
 				String className = parts[0];
 				
@@ -1237,6 +1245,7 @@ class NullnessFlow extends Flow {
 				}
 				if (findClass==null) {
 					checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
+					continue;
 				}
 				
 				elemsToSearch = allFields(findClass);
@@ -1268,6 +1277,7 @@ class NullnessFlow extends Flow {
 				} else if (field.equals(elClass + "." + elName)) {
 					if (!el.getModifiers().contains(Modifier.STATIC)) {
 						checker.report(Result.failure("nonnull.nonstatic.with.class", field), meth);
+						continue;
 					}
 					res.add(field);
 					res.add(elName);
