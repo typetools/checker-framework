@@ -946,11 +946,10 @@ class NullnessFlow extends Flow {
 				String[] patterns = elem.getAnnotation(AssertNonNullIfFalse.class).value();
 				assertAnnos.addAll(Arrays.asList(patterns));
 			}
-			if (elem.getAnnotation(AssertNonNullAfter.class) != null) {
-				String[] patterns = elem.getAnnotation(AssertNonNullAfter.class).value();
-				assertAnnos.addAll(Arrays.asList(patterns));
-			}
+			
 			validateAsserts(meth, myFieldElems, assertAnnos);
+			
+			// AssertNonNullAfter is checked in visitMethodEndCallback and visitReturn
 		}
         
         try {
@@ -974,6 +973,7 @@ class NullnessFlow extends Flow {
     	
     }
     
+    // Also see checkNonNullOnEntry for comparison 
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
 		String[] annoValues = methElem.getAnnotation(AssertNonNullAfter.class).value();
 
@@ -1306,12 +1306,13 @@ class NullnessFlow extends Flow {
         return null;
     }
 
-    // Also see checkNonNullOnEntry for comparison 
     private void checkAssertsOnReturn(ReturnTree ret) {
-    	// System.out.println("Check returns!");
+    	MethodTree meth = TreeUtils.enclosingMethod(factory.getPath(ret));
+    	ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
     	
-    	// assert.postcondition.not.satisfied
-    	// TODO: how can I check the AssertNonNullAfter annotation in void methods without return???
+    	if ( methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+    		checkAssertNonNullAfter(meth, methElem);
+    	}
     }
   
     
