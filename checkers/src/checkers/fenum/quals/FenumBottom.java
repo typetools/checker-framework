@@ -2,9 +2,7 @@ package checkers.fenum.quals;
 
 import java.lang.annotation.*;
 
-import checkers.quals.ImplicitFor;
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
+import checkers.quals.*;
 
 import com.sun.source.tree.Tree;
 
