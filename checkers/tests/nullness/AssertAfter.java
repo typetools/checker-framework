@@ -7,7 +7,8 @@ public class AssertAfter {
   @AssertNonNullAfter("value")
   @Pure
   public boolean repNulled() {
-    return value == null;
+	value = "";
+    return true;
   }
 
   public void plain() {
