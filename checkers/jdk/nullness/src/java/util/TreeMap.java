@@ -32,11 +32,11 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public @Nullable K ceilingKey(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable Map.Entry<K, V> higherEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K higherKey(K a1) { throw new RuntimeException("skeleton method"); }
-  public Set<K> keySet() { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<K> navigableKeySet() { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<K> descendingKeySet() { throw new RuntimeException("skeleton method"); }
+  public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
+  public NavigableSet<@KeyFor("this") K> navigableKeySet() { throw new RuntimeException("skeleton method"); }
+  public NavigableSet<@KeyFor("this") K> descendingKeySet() { throw new RuntimeException("skeleton method"); }
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
-  public Set<Map.Entry<K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
+  public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
   public NavigableMap<K, V> descendingMap() { throw new RuntimeException("skeleton method"); }
   public NavigableMap<K, V> subMap(K a1, boolean a2, K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
   public NavigableMap<K, V> headMap(K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
