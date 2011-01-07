@@ -2,8 +2,7 @@ package checkers.fenum.quals;
 
 import java.lang.annotation.*;
 
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
+import checkers.quals.*;
 
 /**
  * A generic fake enumeration qualifier that is parameterized by a name.
