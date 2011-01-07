@@ -17,8 +17,8 @@ public interface NavigableMap<K extends @NonNull Object, V extends @NonNull Obje
   public abstract @Nullable Map.Entry<K, V> pollFirstEntry();
   public abstract @Nullable Map.Entry<K, V> pollLastEntry();
   public abstract NavigableMap<K, V> descendingMap();
-  public abstract NavigableSet<K> navigableKeySet();
-  public abstract NavigableSet<K> descendingKeySet();
+  public abstract NavigableSet<@KeyFor("this") K> navigableKeySet();
+  public abstract NavigableSet<@KeyFor("this") K> descendingKeySet();
   public abstract NavigableMap<K, V> subMap(K a1, boolean a2, K a3, boolean a4);
   public abstract NavigableMap<K, V> headMap(K a1, boolean a2);
   public abstract NavigableMap<K, V> tailMap(K a1, boolean a2);
