@@ -12,12 +12,18 @@ class NonNullOnEntryTest {
 		field2.toString(); // error, might throw NullPointerException
 	}
 
+	@NonNullOnEntry("field1")
+	void method1also() {
+		// ok, precondition satisfied by NNOE
+		method1();
+	}
+	
 	void method2() {
 		field1 = new Object();
 		method1(); // OK, satisfies method precondition
 		field1 = null;
-		// :: (nonnullonentry.precondition.not.satisfied)
-		//method1(); // error, does not satisfy method precondition
+		//:: (nonnullonentry.precondition.not.satisfied)
+		method1(); // error, does not satisfy method precondition
 	}
 
 	protected @Nullable Object field;
@@ -33,7 +39,7 @@ class NonNullOnEntryTest {
 	public void clientOK(NonNullOnEntryTest arg2) {
 		arg2.field = new Object();
 		// note that the following line works
-		// @NonNull Object o = arg2.field;
+		@NonNull Object o = arg2.field;
 		
 		arg2.requiresNonNullField(); // OK, field is known to be non-null
 	}
@@ -43,11 +49,15 @@ class NonNullOnEntryTest {
 	protected static @Nullable Object staticfield;
 
 	@NonNullOnEntry("staticfield")
-	public void reqStaticName() {}
+	public void reqStaticName() {
+		reqStaticQualName();
+	}
 	
 	@NonNullOnEntry("NonNullOnEntryTest.staticfield")
-	public void reqStaticQualName() {}
-
+	public void reqStaticQualName() {
+		reqStaticName();
+	}
+	
 	public void statClientOK(NonNullOnEntryTest arg1) {
 		staticfield = new Object();
 		arg1.reqStaticName();
