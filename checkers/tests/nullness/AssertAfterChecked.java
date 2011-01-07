@@ -109,4 +109,47 @@ public class AssertAfterChecked {
 		}
 
 	}
+	
+	class WithReturn {
+		@Nullable Object f;
+
+		@AssertNonNullAfter("f")
+		int init1() {
+			f = new Object();
+			return 0;
+		}
+
+		@AssertNonNullAfter("f")
+		int init2() {
+			if (5==5) {
+				f = new Object();
+				return 0;
+			} else {
+				f = new Object();
+				return 1;
+			}
+		}
+
+		//:: (assert.postcondition.not.satisfied)
+		@AssertNonNullAfter("f") int initBad1() {
+			return 0;
+		}
+
+		//:: (assert.postcondition.not.satisfied)
+		@AssertNonNullAfter("f") int initBad2() {
+			if (5==5) {
+				return 0;
+			} else {
+				f = new Object();
+				return 1;
+			}
+		}
+		
+		void testInit() {
+			init1();
+			f.toString();
+		}
+	}
+
+	
 }
