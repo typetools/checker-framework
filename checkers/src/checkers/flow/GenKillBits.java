@@ -126,12 +126,13 @@ public class GenKillBits<K> {
     }
 
     /**
-     * Merges each gen-kill set in this group with the one corresponding to the
-     * same key in {@code other} via boolean "and" on each bit. Modifies this
+     * Merges each gen-kill set in outarg1 with the one corresponding to the
+     * same key in {@code arg2} via boolean "and" on each bit. Modifies outarg1's
      * gen-kill set.
      * TODO: lub
      * 
-     * @param other the group to "and" with
+     * @param outarg1 the group to modify
+     * @param arg2 the group to "and" with
      * @throws IllegalArgumentException if the other group is missing a key from
      *         this group
      */
@@ -182,12 +183,13 @@ public class GenKillBits<K> {
 	}
 	
     /**
-     * Merges each gen-kill set in this group with the one corresponding to the
-     * same key in {@code other} via boolean "or" on each bit. Modifies this
+     * Merges each gen-kill set outarg1 with the one corresponding to the
+     * same key in {@code arg2} via boolean "or" on each bit. Modifies outarg1
      * gen-kill set.
      * TODO: lub.
      * 
-     * @param other the group to "or" with
+     * @param outarg1 the group to modify
+     * @param arg2 the group to "or" with
      * @throws IllegalArgumentException if the other group is missing a key from
      *         this group
      */	
