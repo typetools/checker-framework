@@ -1026,10 +1026,16 @@ public class Flow extends TreePathScanner<Void, Void> {
             super.visitMethod(node, p);
             return null;
         } finally {
+        	visitMethodEndCallback(node);
             annos = prev;
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
+    }
+    
+    // TODO: documentation.
+    public void visitMethodEndCallback(MethodTree node) {
+    	
     }
 
     // **********************************************************************
