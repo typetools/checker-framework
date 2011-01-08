@@ -900,6 +900,63 @@ future.  Or, it may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 
+% If you add a Javadoc link to this location, also add the qualifier to the
+% list below.
+\section{Writing Java expressions as annotation arguments\label{java-expressions-as-arguments}}
+
+Sometimes, it is necessary to write a Java expression as the argument to an
+annotation.  As of this writing, tho annotations that take a Java
+expression as an argument are:
+
+\begin{itemize}
+\item \code{@\refclass{nullness/quals}{KeyFor}}
+\item \code{@\refclass{nullness/quals}{NonNullOnEntry}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullAfter}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}
+\end{itemize}
+
+The expression is a subset of legal Java expressions:
+
+\begin{itemize}
+\item
+  the receiver object, \<this>.
+\item
+  a formal parameter.  Write \<\#> followed by the zero-based parameter
+  index.  For example: \<\#0>, \<\#2>.
+\item
+  a local variable.  This is not applicable for method annotations, but is
+  applicable to type annotations such as
+  \code{@\refclass{nullness/quals}{KeyFor}}.  Write the variable name.  For
+  example: \<myLocalVar>.
+\item
+  a field of any expression.  For example:  \<next>,
+  \<this.next>, \<\#0.next>, \<myLocalVar.next>.
+\item a method invocation on any expression.
+  The method must be pure and have no formal parameters.  For example:
+  \<myClass.getPackage()>, \<myClass.getSuperclass()>,
+  \<myClass.getComponentType()>.
+
+  \textbf{Warning:}  currently, annotations that use method calls are
+  \emh{not} checked.  The annotation is trusted, and other code will rely
+  on it, but it is not verified that other code establishes or maintains
+  the validity of the annotation.  Such expressions are still useful if a
+  human verifies their correctness.  They are used in the JDK annotations,
+  for example.
+\end{itemize}
+
+You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
+\<this.next> and \<next> are equivalent, assuming that there is no
+shadowing definition of \<next>.
+
+(A side note:  The formal parameter syntax \<\#0> may seem less convenient
+than writing the formal parameter name.  This syntax is necessary because
+in the \<.class> file, no parameter name information is available.  Running
+the compiler without a checker should create legal annotations in the
+\<.class> file, so we cannot rely on the checker to translate names to
+indices.)
+
+
 \section{Inexpressible types\label{inexpressible-types}}
 
 The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
