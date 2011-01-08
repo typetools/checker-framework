@@ -1202,9 +1202,26 @@ class NullnessFlow extends Flow {
     	
     	List<VariableElement> res = new ArrayList<VariableElement>();
     	
+    	boolean inSuper = false;
+    	
     	while (tyel!=null && !ElementUtils.isObject(tyel)) {
-    		res.addAll(ElementFilter.fieldsIn(tyel.getEnclosedElements()));
+    		List<VariableElement> toAdd = ElementFilter.fieldsIn(tyel.getEnclosedElements());
+    		
+    		if (inSuper) {
+    			Iterator<VariableElement> it = toAdd.iterator();
+    			while (it.hasNext()) {
+    				VariableElement newel = it.next();
+    				if (newel.getModifiers().contains(Modifier.PRIVATE)) {
+    					// do not add private fields from superclasses
+    					it.remove();
+    				}
+    			}
+    		}
+    		
+    		res.addAll(toAdd);
+    		
     		TypeMirror suty = tyel.getSuperclass();
+    		inSuper = true;
     		if (suty instanceof DeclaredType) {
     			DeclaredType dtsuty = (DeclaredType) suty;
     			tyel = (TypeElement) dtsuty.asElement();
