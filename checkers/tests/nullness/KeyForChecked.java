@@ -6,6 +6,7 @@ public class KeyForChecked {
 
 // Taken from the annotated JDK, because tests execute without the JDK.
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
+	@KeyForCovariant
 	public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
 		K getKey();
 	    V getValue();
@@ -24,7 +25,6 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
 	public Set<@KeyFor("this") K> keySet() { return new HashSet<@KeyFor("this") K>(); }
 	public Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K, V>>(); }
 }
-
 	
     void incorrect1() {
         String nonkey = "";
@@ -76,5 +76,29 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
     	Iterator<@KeyFor("emap") String> it2 = s.iterator();
     	
     	Collection<@KeyFor("emap") String> x = Collections.unmodifiableSet(emap.keySet());
+    	
+    	for (@KeyFor("emap") String st : s) {}
+    	for (String st : s) {}
+    	
+    	//:: (enhancedfor.type.incompatible)
+    	for (@KeyFor("bubu") String st : s) {}
+    }
+    
+    <T> void dominators(KFMap<T,List<T>> preds) {
+    	for (T node : preds.keySet()) {}
+    	
+    	for (@KeyFor("preds") T node : preds.keySet()) {}
+    }
+    
+    void entrySet() {
+    	KFMap<String, Object> emap = new KFHashMap<String, Object>();
+    	Set<KFMap.Entry<@KeyFor("emap") String, Object>> es = emap.entrySet();
+    	Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
+    }
+    
+    public static <K,V> void mapToString(KFMap<K,V> m) {
+    	Set<KFMap.Entry<K, V>> eset = m.entrySet();
+    	
+    	for (KFMap.Entry<K, V> entry : m.entrySet()) {}
     }
 }
