@@ -85,31 +85,20 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 		assert call != null;
 		// System.out.println("looking at call: " + call);
 		
-		ExecutableElement methodElt = TreeUtils.elementFromUse(call);
-		AnnotatedExecutableType declMethod = this.getAnnotatedType(methodElt);
-		
 		AnnotatedExecutableType method = super.methodFromUse(call);
 
 		Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
 		// Modify parameters
 		List<AnnotatedTypeMirror> params = method.getParameterTypes();
-		List<AnnotatedTypeMirror> declParams = declMethod.getParameterTypes();
-		assert params.size() == declParams.size();
-		for (int i=0; i<params.size(); ++i) {
-			// Do not substitute the annotations that were originally type variables.
-			// These were already substituted by the super call.
-			if (declParams.get(i).getKind() != TypeKind.TYPEVAR) {
-				AnnotatedTypeMirror subst = substituteCall(call, params.get(i));
-				mappings.put(params.get(i), subst);
-			}
+		for (AnnotatedTypeMirror param : params) {
+			AnnotatedTypeMirror subst = substituteCall(call, param);
+			mappings.put(param, subst);
 		}
 
 		// Modify return type
 		AnnotatedTypeMirror returnType = method.getReturnType();
-		AnnotatedTypeMirror declReturnType = declMethod.getReturnType();
-		if (returnType.getKind() != TypeKind.VOID &&
-				declReturnType.getKind() != TypeKind.TYPEVAR) {
+		if (returnType.getKind() != TypeKind.VOID ) {
 			AnnotatedTypeMirror subst = substituteCall(call, returnType);
 			mappings.put(returnType, subst);
 		}
@@ -167,8 +156,10 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
                 } else {
                 	// TODO: look at the code below, copied from NullnessFlow
                 	// System.out.println("KeyFor argument unhandled: " + inMapName + " using " + receiver + "." + inMapName);
+                	// do not always add the receiver, e.g. for local variables this creates a mess
+                	// outMaps.add(receiver + "." + inMapName);
                 	// just copy name for now, better than doing nothing
-                	outMaps.add(receiver + "." + inMapName);
+                	outMaps.add(inMapName);
                 }
                 // TODO: look at code in NullnessFlow and decide whether there
                 // are more cases to copy. 
