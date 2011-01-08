@@ -17,8 +17,8 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public Set<K> keySet() { throw new RuntimeException("skeleton method"); }
+  public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
-  public Set<Map.Entry<K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
+  public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 }
