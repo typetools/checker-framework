@@ -105,6 +105,7 @@ class NonNullOnEntryTest {
 		}
 	}
 
+	private Object notHidden;
 	
 	class NNOEHidingTest extends NonNullOnEntryTest {
 		protected @Nullable String field;
@@ -127,6 +128,18 @@ class NonNullOnEntryTest {
 			//:: (nonnull.hiding.violated)
 			arg6.requiresNonNullField();
 		}
+		
+		// the field in the super class is also visible
+		//:: (nonnull.hiding.violated)
+		@NonNullOnEntry("field") void hiddenTest() {}
+		
+		
+		protected Object notHidden;
+		@NonNullOnEntry("notHidden")
+		void notHiddenTest() {
+			// the field in the superclass is private -> don't complain about hiding
+		}
+		
 	}
 
 }
