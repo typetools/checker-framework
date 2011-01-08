@@ -540,7 +540,7 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * Sets the type arguments on this type
-         * @param t the type arguments
+         * @param ts the type arguments
          */
         // WMD
         public
