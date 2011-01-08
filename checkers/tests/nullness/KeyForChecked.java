@@ -1,8 +1,6 @@
 import checkers.nullness.quals.*;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collection;
+import java.util.*;
 
 public class KeyForChecked {
 
@@ -69,5 +67,14 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
 
     	m.put(newkey, new Object());
     	coll.add(newkey);
+    }
+
+    void iter() {
+    	KFMap<String, Object> emap = new KFHashMap<String, Object>();
+    	Set<@KeyFor("emap") String> s = emap.keySet();
+    	Iterator<@KeyFor("emap") String> it = emap.keySet().iterator();
+    	Iterator<@KeyFor("emap") String> it2 = s.iterator();
+    	
+    	Collection<@KeyFor("emap") String> x = Collections.unmodifiableSet(emap.keySet());
     }
 }
