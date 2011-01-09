@@ -78,4 +78,12 @@ public class KeyFors {
 
   }
 
+    void keyForFlow() {
+        Map<String, String> leaders = new LinkedHashMap<String, String>();
+        Set<@KeyFor("leaders") String> varsUsedPreviously = new LinkedHashSet<@KeyFor("leaders") String>();
+        String varName = "hello";
+        leaders.put(varName, "goodbye");
+        @KeyFor("leaders") String kf = varName;
+    }
+
 }
