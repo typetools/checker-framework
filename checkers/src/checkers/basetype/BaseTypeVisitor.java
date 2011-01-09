@@ -22,6 +22,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
+import checkers.quals.MarkerQualifier;
 import checkers.quals.Unused;
 import checkers.source.*;
 import checkers.types.*;
@@ -110,6 +111,8 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
         this.visitorState = atypeFactory.getVisitorState();
         this.plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
+        
+        checker.setCurrentAnnotatedTypeFactory(atypeFactory);
     }
 
     // **********************************************************************
@@ -705,11 +708,23 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             }
 
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
-                if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
-                    checker.report(Result.failure("generic.argument.invalid",
-                            typearg, typeVar),
-                            typeargTrees.get(typeargs.indexOf(typearg)));
-                }
+            	Set<AnnotationMirror> annos = typeVar.getAnnotationsOnTypeVar();
+            	Set<AnnotationMirror> newAnnos = new HashSet<AnnotationMirror>(annos);
+            	
+            	for(AnnotationMirror an : newAnnos) {
+            		if (an.getAnnotationType().asElement().getAnnotation(MarkerQualifier.class) !=null) {
+            			newAnnos.remove(an);
+            		}
+            	}
+            	// I'm a bit confused by the logic, but whatever.
+            	// If the annotations are emtpy now, don't complain.
+				if (!newAnnos.isEmpty()) {
+					if (!typearg.getAnnotations().equals(newAnnos)) {
+						checker.report(Result.failure(
+								"generic.argument.invalid", typearg, typeVar),
+								typeargTrees.get(typeargs.indexOf(typearg)));
+					}
+				}
             }
 
         }
