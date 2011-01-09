@@ -3,6 +3,9 @@ package checkers.nullness.quals;
 import java.lang.annotation.*;
 
 import checkers.quals.MarkerQualifier;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 
 /**
  * TODO: doc.
@@ -16,6 +19,12 @@ import checkers.quals.MarkerQualifier;
  */
 
 @Documented
+// TODO: I had a special case in BaseTypeChecker, similar to PolymorphicQualifier, but that didn't work :-(
 @MarkerQualifier
+// TODO: Who checks this annotation??? I don't find it's uses :-(
+@TypeQualifier
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+// TODO: Without this, the checks fail, without any helpful output :-((
+@SubtypeOf( Unqualified.class )
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Covariant {}
