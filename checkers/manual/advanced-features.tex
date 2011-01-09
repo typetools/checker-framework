@@ -9,112 +9,6 @@ sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
 
 
-\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
-
-In an inheritance hierarchy, subclasses often introduce new methods and
-fields.  For example, a \<Marsupial> (and its subclasses such as
-\<Kangaroo>) might have a variable indicating the size of the animal's
-pouch.  Because such variables would not exist in superclasses such as
-\<Mammal> and \<Animal>, any attempt to use them would be a compile-time
-error.
-
-If you cannot use subtypes but wish to enforce similar requirements using
-type qualifiers, you can do so.  To restrict which methods may be invoked,
-you can write an annotation on a method receiver; then the method may only
-be invoked on an expression whose type has the given annotation (or one of
-its subtypes).  Section~\ref{unused-fields} describes how to restrict which
-fields may be accessed:  in other words, a given field may only be accessed
-from an expression whose type has a given qualifier.  Then,
-Section~\ref{dependent-types} describes an even more powerful mechanism, by
-which the qualifier of a field depends on the qualifier of the expression
-from which the field was accessed.
-(Also see the discussion of typestate checkers, in
-Chapter~\ref{typestate-checker}.)
-
-
-\subsection{Unused fields\label{unused-fields}}
-
-A Java subtype can have more fields than its supertype.  For example:
-
-\begin{Verbatim}
-class Mammal extends Animal { ... }
-class Marsupial extends Mammal {
-  ...
-  int pouchSize;  // pouch capacity, in cubic centimeters
-  ...
-}
-\end{Verbatim}
-
-You can simulate
-the same effect for type qualifiers:  a given field may not be accessed via
-a reference with a supertype qualifier, but can be accessed via a reference
-with a subtype qualifier.
-For example:
-
-\begin{Verbatim}
-@interface Mammal { }
-@interface Marsupial { }
-class Animal {
-  @Unused(when=Mammal.class)
-  int pouchSize;  // pouch capacity, in cubic centimeters
-  ...
-}
-
-@Marsupial Animal joey = ...;
-... joey.pouchSize ...    // OK
-@Mammal Animal mae = ...;
-... mae.pouchSize ...    // compile-time error
-\end{Verbatim}
-
-The \code{@\refclass{quals}{Unused}} annotation
-on a field declares that the field may \emph{not} be accessed via a receiver of
-the given qualified type (or any \emph{super}type).
-
-(It would probably be clearer to replace \<@Unused> by an annotation that
-indicates when the field \emph{may} be used.)
-
-
-\subsection{Dependent types\label{dependent-types}}
-
-A variable has a \emph{dependent type} if its type depends on some other
-value or type.
-%  --- the type is dynamically, not statically, determined.
-% (Type-safety can still be statically determined, though.)
-
-The Checker Framework supports a form of dependent types, via the
-\code{@\refclass{quals}{Dependent}}\code{@\refclass{quals}{Dependent}} annotation.
-This annotation changes the type of a field or variable, based on the
-qualified type of the receiver (\code{this}).  This can be viewed as a more
-expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
-also be seen as a way of linking the meanings of two type qualifier
-hierarchies.
-
-Here is a restatement of the example of Section~\ref{unused-fields}, using
-\code{@\refclass{quals}{Dependent}}:
-
-\begin{Verbatim}
-@interface Mammal { }
-@interface Marsupial { }
-class Animal { ...
-  // pouch capacity, in cubic centimeters
-  // (non-null if this animal is a marsupial)
-  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
-  ...
-}
-
-@Marsupial Animal joey = ...;
-... joey.pouchSize.intValue() ...    // OK
-@Mammal Animal mae = ...;
-... mae.pouchSize.intValue() ...    // compile-time error:
-                                    //   dereference of possibly-null mae.pouchSize
-\end{Verbatim}
-
-However, when the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
-should use it instead of \code{@Dependent}.
-
-% TO DO:  give an example where @Dependent is actually needed
-
-
 \section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
 
 A checker sometimes treats a type as having a slightly different qualifier
@@ -552,6 +446,112 @@ are currently being handled are described in
 \refclass{nullness}{CollectionToArrayHeuristics}.
 This approach would be possible for other checkers and other methods as the
 need arises.
+
+
+\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+
+In an inheritance hierarchy, subclasses often introduce new methods and
+fields.  For example, a \<Marsupial> (and its subclasses such as
+\<Kangaroo>) might have a variable indicating the size of the animal's
+pouch.  Because such variables would not exist in superclasses such as
+\<Mammal> and \<Animal>, any attempt to use them would be a compile-time
+error.
+
+If you cannot use subtypes but wish to enforce similar requirements using
+type qualifiers, you can do so.  To restrict which methods may be invoked,
+you can write an annotation on a method receiver; then the method may only
+be invoked on an expression whose type has the given annotation (or one of
+its subtypes).  Section~\ref{unused-fields} describes how to restrict which
+fields may be accessed:  in other words, a given field may only be accessed
+from an expression whose type has a given qualifier.  Then,
+Section~\ref{dependent-types} describes an even more powerful mechanism, by
+which the qualifier of a field depends on the qualifier of the expression
+from which the field was accessed.
+(Also see the discussion of typestate checkers, in
+Chapter~\ref{typestate-checker}.)
+
+
+\subsection{Unused fields\label{unused-fields}}
+
+A Java subtype can have more fields than its supertype.  For example:
+
+\begin{Verbatim}
+class Mammal extends Animal { ... }
+class Marsupial extends Mammal {
+  ...
+  int pouchSize;  // pouch capacity, in cubic centimeters
+  ...
+}
+\end{Verbatim}
+
+You can simulate
+the same effect for type qualifiers:  a given field may not be accessed via
+a reference with a supertype qualifier, but can be accessed via a reference
+with a subtype qualifier.
+For example:
+
+\begin{Verbatim}
+@interface Mammal { }
+@interface Marsupial { }
+class Animal {
+  @Unused(when=Mammal.class)
+  int pouchSize;  // pouch capacity, in cubic centimeters
+  ...
+}
+
+@Marsupial Animal joey = ...;
+... joey.pouchSize ...    // OK
+@Mammal Animal mae = ...;
+... mae.pouchSize ...    // compile-time error
+\end{Verbatim}
+
+The \code{@\refclass{quals}{Unused}} annotation
+on a field declares that the field may \emph{not} be accessed via a receiver of
+the given qualified type (or any \emph{super}type).
+
+(It would probably be clearer to replace \<@Unused> by an annotation that
+indicates when the field \emph{may} be used.)
+
+
+\subsection{Dependent types\label{dependent-types}}
+
+A variable has a \emph{dependent type} if its type depends on some other
+value or type.
+%  --- the type is dynamically, not statically, determined.
+% (Type-safety can still be statically determined, though.)
+
+The Checker Framework supports a form of dependent types, via the
+\code{@\refclass{quals}{Dependent}}\code{@\refclass{quals}{Dependent}} annotation.
+This annotation changes the type of a field or variable, based on the
+qualified type of the receiver (\code{this}).  This can be viewed as a more
+expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
+also be seen as a way of linking the meanings of two type qualifier
+hierarchies.
+
+Here is a restatement of the example of Section~\ref{unused-fields}, using
+\code{@\refclass{quals}{Dependent}}:
+
+\begin{Verbatim}
+@interface Mammal { }
+@interface Marsupial { }
+class Animal { ...
+  // pouch capacity, in cubic centimeters
+  // (non-null if this animal is a marsupial)
+  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
+  ...
+}
+
+@Marsupial Animal joey = ...;
+... joey.pouchSize.intValue() ...    // OK
+@Mammal Animal mae = ...;
+... mae.pouchSize.intValue() ...    // compile-time error:
+                                    //   dereference of possibly-null mae.pouchSize
+\end{Verbatim}
+
+However, when the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+should use it instead of \code{@Dependent}.
+
+% TO DO:  give an example where @Dependent is actually needed
 
 
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
