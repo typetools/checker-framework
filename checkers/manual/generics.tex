@@ -1,7 +1,7 @@
 \htmlhr
 \chapter{Generics and polymorphism\label{polymorphism}}
 
-This chapter describes support for Java generics and for the anologous
+This chapter describes support for Java generics and for the analogous
 capability over type qualifiers.
 
 
@@ -188,7 +188,7 @@ example:
 
 \noindent
 However, instantiation may be restricted if a default qualifier is in
-effect (see Section~\ref{defaults}).  For example, the Nullness checker
+effect (see Section~\ref{defaults}).  For example, the Nullness Checker
 (Chapter~\ref{nullness-checker}) uses a (configurable) default of
 \<@NonNull> (see Section~\ref{null-defaults}).  That means that either
 declaration above is interpreted as
@@ -251,6 +251,38 @@ In \code{MyClass2<@Interned String>},
 % constructor is \code{[]}.  Just as \code{T[]} is not the same type as
 % \code{T}, \code{@Nullable T} is not (necessarily) the same type as
 % \code{T}.
+
+
+\subsection{Covariant type parameters\label{covariant-type-parameters}}
+
+Java types are \emph{invariant} in their type parameter.  This means that
+\code{A<X>} is a subtype of \code{B<Y>} only if $\<X> \equiv \<Y>$.  For
+example, \code{ArrayList<Number>} is a subtype of \code{List<Number>}, but
+neither \code{ArrayList<Integer>} nor \code{List<Integer>} is a subtype of
+\code{List<Number>}.  (If they were, there would be a type hole in the Java
+type system.)  For the same reason, type parameter annotations are treated
+invariantly.  For example, \code{List<@Nullable String>} is not a subtype
+of \code{List<String>}.
+
+When a type parameter is used in a read-only way --- that is, when values
+of that type are read but are never assigned --- then it is safe for the
+type to be \emph{covariant} in the type parameter.  This means that a
+subtype's type parameter can be a subtype of the supertype's type
+parameter.  Use the \<@\refclass{quals}{Covariant}> annotation to indicate
+this.
+
+For example, consider \<Iterator>.  Its elements can be read but not
+written, so \code{Iterator<@Nullable String>} can be a subtype of
+\code{Iterator<String>} without introducing a hole in the type system.
+Therefore, its type parameter is annotated with \<@Covariant>.
+The first type parameter of \<Map.Entry> is also covariant.
+Another example would be a hypothetical class \<ImmutableList>.
+
+The \<@Covariant> annotation is trusted but not checked.
+If you write \<@Covariant> in a position that can be written (say, by a
+\<set> operation), then you have created an unsoundness in the type system.
+For example, it would be incorrect to annotate the type parameter of
+\<ListIterator>, which supports a \<set> operation.
 
 
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
@@ -432,3 +464,7 @@ of these signatures (and likewise for the \<Collection> version):
 
 In conclusion, use of a single polymorphic qualifier may be necessary in
 legacy code, but can be avoided by use of better code style.
+
+% LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
+% LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
+% LocalWords:  PolymorphicQualifier PolyNull java lub
