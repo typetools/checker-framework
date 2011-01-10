@@ -393,6 +393,11 @@ The expression is a subset of legal Java expressions:
   \code{@\refclass{nullness/quals}{KeyFor}}.  Write the variable name.  For
   example: \<myLocalVar>.
 \item
+  a static variable.  Write the class name and the variable, as in
+  \<System.out>.
+  % It may also work to use an instance variable and the static variable
+  % name, but I'm not sure about that.
+\item
   a field of any expression.  For example:  \<next>,
   \<this.next>, \<\#0.next>, \<myLocalVar.next>.
 \item a method invocation on any expression.
