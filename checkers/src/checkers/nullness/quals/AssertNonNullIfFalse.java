@@ -30,18 +30,8 @@ import checkers.nullness.NullnessChecker;
 public @interface AssertNonNullIfFalse {
 
     /**
-     * The value can be:
-     *
-     * <ol>
-     * <li>fields on receiver object.  The value should simply be the
-     * field name, e.g. {@code next}, {@code parent}.
-     *
-     * <li>no-arg method members on the receiver object:  The value
-     * would be the method signature, e.g. {@code list()}
-     *
-     * <li>method argument:  The value should be {@code #} followed
-     * by the parameter index (index starts with 0), e.g. {@code #2}.
-     * </ol>
+     * Java expression(s) that are non-null after the method returns false.
+     * @see <a href="http://types.cs.washington.edu/checker-framework/#java-expressions-as-arguments">Syntax of Java expressions</a>
      */
     String[] value();
 }

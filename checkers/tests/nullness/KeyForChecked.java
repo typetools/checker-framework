@@ -6,8 +6,7 @@ public class KeyForChecked {
 
 // Taken from the annotated JDK, because tests execute without the JDK.
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
-	@KeyForCovariant
-	public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
+	public static interface Entry<@Covariant K extends @Nullable Object, V extends @Nullable Object> {
 		K getKey();
 	    V getValue();
 	}
@@ -16,6 +15,7 @@ interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
 	@Nullable V put(K a1, V a2);
 	Set<@KeyFor("this") K> keySet();
 	Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet();
+	KFIterator<K> iterator();
 }
 
 class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements KFMap<K, V> {
@@ -24,8 +24,13 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
 	public @Nullable V put(K a1, V a2) { return null; }
 	public Set<@KeyFor("this") K> keySet() { return new HashSet<@KeyFor("this") K>(); }
 	public Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K, V>>(); }
+	public KFIterator<K> iterator() { return new KFIterator<K>(); }
 }
+
+class KFIterator<@Covariant E extends @Nullable Object> {
 	
+}
+
     void incorrect1() {
         String nonkey = "";
         //:: (assignment.type.incompatible)
@@ -100,5 +105,9 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
     	Set<KFMap.Entry<K, V>> eset = m.entrySet();
     	
     	for (KFMap.Entry<K, V> entry : m.entrySet()) {}
+    }
+    
+    void testWF(KFMap<String, Object> m) {
+    	KFIterator<String> it = m.iterator();
     }
 }

@@ -429,4 +429,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // On failure, return null.
         return null;
     }
+
+    // TODO: this is a hack. Find a nicer way to do this.
+    protected AnnotatedTypeFactory currentATF;
+	public void setCurrentAnnotatedTypeFactory(AnnotatedTypeFactory atypeFactory) {
+		currentATF = atypeFactory;
+	}
 }

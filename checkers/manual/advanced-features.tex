@@ -1,549 +1,12 @@
 \htmlhr
 \chapter{Advanced type system features\label{advanced-type-system-features}}
 
-This section describes features that are automatically supported by every
+This chapter describes features that are automatically supported by every
 checker written with the Checker Framework.
 You may wish to skim or skip this section on first reading.  After you have
 used a checker for a little while and want to be able to express more
 sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
-
-
-\section{Polymorphism and generics\label{polymorphism}}
-
-\subsection{Generics (parametric polymorphism or type polymorphism)\label{generics}}
-
-The Checker Framework fully supports
-type-qualified Java generic types (also known in the research literature as ``parametric
-polymorphism'').  Before running any checker, we recommend that you eliminate
-raw types from your code (e.g., your code should use \code{List<...>} as
-opposed to \code{List}).
-Using generics helps prevent type errors just as using a pluggable
-type-checker does.
-% Should say why, or what are the consequences of violating this.
-
-When instantiating a generic type,
-clients supply the qualifier along with the type argument, as in
-\code{List<@NonNull String>}.
-
-
-\paragraph{Restricting instantiation of a generic class}
-
-When you define a generic class, the generic type parameters can restrict
-how the class may be instantiated.  For example, given the definition
-\verb|class G<T extends Number> {...}|,
-a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
-Similarly, type qualifiers on the generic type parameters can restrict on
-how the class may be instantiated.  For example, a generic list class may
-indicate that it can hold only non-null values.  Similarly, a generic map
-class might indicate it requires an immutable key type, but that it
-supports both nullable and non-null value types.
-
-
-There are two ways to restrict the type qualifiers that may be used on
-the actual type argument when instantiating a generic class.
-
-The first technique is the standard Java approach of using the
-\code{extends} or \code{super} clause to supply an upper or lower bound.
-For example:
-
-\begin{Verbatim}
-  MyClass<T extends @NonNull Object> { ... }
-
-  MyClass<@NonNull String> m1;       // OK
-  MyClass<@Nullable String> m2;      // error
-\end{Verbatim}
-
-The second technique is to write a type annotation on the declaration of a
-generic type parameter, which specifies the exact annotation that is
-required on the actual type argument, rather than just a bound.  For example:
-
-\begin{Verbatim}
-  class MyClassNN<@NonNull T> { ... }
-  class MyClassNble<@Nullable T> { ... }
-
-  MyClassNN<@NonNull Number> v1;     // OK
-  MyClassNN<@Nullable Number> v2;    // error
-  MyClassNble<@NonNull Number> v4;   // error
-  MyClassNble<@Nullable Number> v3;  // OK
-\end{Verbatim}
-
-A way to view a type annotation on a generic type parameter declaration is
-as syntactic sugar for the annotation on both the \<extends> and the
-\<super> clauses of the declaration.  For example, these two declarations
-have the same effect:
-
-\begin{Verbatim}
-  class MyClassNN<@NonNull T> { ... }
-  class MyClassNN<T extends @NonNull Object super @NonNull void> { ... }
-\end{Verbatim}
-
-\noindent
-except that the latter is not legal Java syntax.  The syntactic sugar is
-necessary because of two limitations in Java syntax:  it is illegal to
-specify both the upper and the
-lower bound, and it is impossible to specify a type annotation for a lower
-bound without also specifying a type (use of \<void> is illegal).
-
-If a type parameter declaration is annotated with \code{@A}, and a bound is
-also given, then the annotation applies everywhere that there is no
-explicit annotation.  For example, the following pairs of declarations are
-identical.
-
-\begin{Verbatim}
-  class MyClass<@A T> { ... }
-  class MyClass<T extends @A Object super @A void> { ... }
-
-  class MyClass<@A T extends Number> { ... }
-  class MyClass<T extends @A Number super @A void> { ... }
-
-  class MyClass<@A T extends @B Number> { ... }
-  class MyClass<T extends @B Number super @A void> { ... }
-
-  class MyClass<@A T super Number> { ... }
-  class MyClass<T extends @A Object super @A Number> { ... }
-
-  class MyClass<@A T super @B Number> { ... }
-  class MyClass<T extends @A Object super @B Number> { ... }
-\end{Verbatim}
-
-We can see from the above that almost all of the following types mean
-different things:
-
-\begin{Verbatim}
-  class MyList1<@Nullable T> { ... }
-  class MyList2<@NonNull T> { ... }
-  class MyList3<T extends @Nullable Object> { ... }
-  class MyList4<T extends @NonNull Object> { ... } // same as MyList2
-\end{Verbatim}
-
-\<MyList1> must be instantiated with a nullable type. 
-The implementation must be able to consume (store) a null
-value and produce (retrieve) a null value.
-
-\<MyList2> and \<MyList4> must be instantiated with non-null type.
-The implementation has to account for only non-null values --- it
-does not have to account for consuming or producing null.
-
-\<MyList3> may be instantiated either way:
-with a nullable type or a non-null type.  The implementation must consider
-that it may be instantiated either way --- flexible enough to support either
-instantiation, yet rigorous enough to impose the correct constraints of the
-specific instantiation.  It must also itself comply with the constraints of
-the potential instantiations.
-
-One way to express the difference is by comparing what expressions are
-legal in the implementation of the list --- that is, what expressions may
-appear in the ellipsis, such as inside a method's body.  Suppose each class
-has, in the ellipsis, these declarations:
-
-\begin{Verbatim}
-  T t;
-  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
-  @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
-  void add(T arg) { ... }
-  T get(int i) { ... }
-\end{Verbatim}
-
-\noindent
-Then the following expressions would be legal, inside a given implementation.
-(Compilable source code appears as file
-\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
-
-\begin{tabular}{|l|c|c|c|c|} \hline
-                        & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
-  t = null;             & OK      & error   & error   & error   \\ \hline
-  t = nble;             & OK      & error   & error   & error   \\ \hline
-  nble = null;          & OK      & OK      & OK      & OK      \\ \hline
-  nn = null;            & error   & error   & error   & error   \\ \hline
-  t = this.get(0);      & OK      & OK      & OK      & OK      \\ \hline
-  nble = this.get(0);   & OK      & OK      & OK      & OK      \\ \hline
-  nn = this.get(0);     & error   & OK      & error   & OK      \\ \hline
-  this.add(t);          & OK      & OK      & OK      & OK      \\ \hline
-  this.add(nble);       & OK      & error   & error   & error   \\ \hline
-  this.add(nn);         & OK      & OK      & OK      & OK      \\ \hline
-\end{tabular}
-
-
-\medskip
-
-%% This text is not very helpful.
-% The
-% implementation of \code{MyList2} may only place non-null objects in the
-% list and may assume that retrieved elements are non-null.  The
-% implementation of \code{MyList3} is similar in that it may only place
-% non-null objects in the list, because it might be instantiated as, say,
-% \code{MyList3<@NonNull Date>}.  When retrieving elements from the list,
-% the implementation of \code{MyList3} must account for the fact that
-% elements of \code{MyList3} may be null, because it might be instantiated
-% as, say, \code{MyList3<@Nullable Date>}.
-The differences are more
-significant when the qualifier hierarchy is more complicated than just
-\<@Nullable> and \<@NonNull>.
-
-
-\paragraph{Defaults for bounds}
-Ordinarily, a type parameter declaration with no extends clause means the
-type parameter can be instantiated with any type argument at all.  For
-example:
-
-\begin{Verbatim}
-  class C<T> { ... }
-  class C<T extends Object> { ... }  // identical to previous line
-\end{Verbatim}
-
-\noindent
-However, instantiation may be restricted if a default qualifier is in
-effect (see Section~\ref{defaults}).  For example, the Nullness checker
-(Chapter~\ref{nullness-checker}) uses a (configurable) default of
-\<@NonNull> (see Section~\ref{null-defaults}).  That means that either
-declaration above is interpreted as
-
-\begin{Verbatim}
-  class C<T extends @NonNull Object> { ... }
-\end{Verbatim}
-
-\noindent
-and an instantiation such as \code{C<@Nullable Number>} is illegal.
-In such a case, to permit all type arguments, the programmer would write
-
-\begin{Verbatim}
-  class C<T extends @Nullable Object> { ... }
-\end{Verbatim}
-
-
-It is possible to set the default qualifier for upper bounds separately
-from other default qualifiers, by writing an annotation such as
-\<@DefaultQualifier(value="Nullable", locations={DefaultLocation.UPPER\_BOUNDS})>.
-
-
-\paragraph{Type annotations on a use of a generic type variable}
-
-A type annotation on a generic type variable overrides/ignores any type
-qualifier (in the same type hierarchy) on the corresponding actual type
-argument.  For example, suppose that \code{T} is a formal type parameter.
-Then using \code{@Nullable T} within the scope of \code{T} applies the type
-qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}.
-This feature is only rarely used.
-
-Here is an example of applying a type annotation to a generic type
-variable:
-
-\begin{Verbatim}
-  class MyClass2<T> {
-    ...
-    @Nullable T myField = null;
-    ...
-  }
-\end{Verbatim}
-
-\noindent
-The type annotation does not restrict how \code{MyClass2} may be
-instantiated.  In other words, both
-\code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
-legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
-In \code{MyClass2<@Interned String>},
-\code{@Nullable T} means \code{@Nullable @Interned String}.
-
-% Note that a type annotation on a generic type variable does not act like
-% other type qualifiers.  In both cases the type annotation acts as a type
-% constructor, but as noted above they act slightly differently.
-
-
-% %% This isn't quite right because a type qualifier is itself a type
-% %% constructor.
-% More formally, a type annotation on a generic type variable acts as a type
-% constructor rather than a type qualifier.  Another example of a type
-% constructor is \code{[]}.  Just as \code{T[]} is not the same type as
-% \code{T}, \code{@Nullable T} is not (necessarily) the same type as
-% \code{T}.
-
-
-\subsection{Qualifier polymorphism\label{qualifier-polymorphism}}
-
-The Checker Framework also supports type \emph{qualifier} polymorphism for
-methods, which permits a single method to have multiple different qualified
-type signatures.
-
-To \emph{define} a polymorphic qualifier, mark the definition with
-\<@\refclass{quals}{PolymorphicQualifier}>.  For example,
-\<@\refclass{nullness/quals}{PolyNull}> is a polymorphic type
-qualifier for the Nullness type system:
-
-\begin{Verbatim}
-  @PolymorphicQualifier
-  @Target(ElementType.TYPE_USE)
-  public @interface PolyNull { }
-\end{Verbatim}
-
-To \emph{use} a polymorphic qualifier, just write it on a type.
-For example, you can write \<@PolyNull> anywhere that you would write
-\<@NonNull> or \<@Nullable>.
-
-A method written using a polymorphic qualifier conceptually has multiple
-versions, somewhat like a template in C++ or the generics feature of Java.
-In each version, each instance of the polymorphic qualifier has been
-replaced by the same other qualifier from the hierarchy.  See the examples
-below in Section~\ref{qualifier-polymorphism-examples}.
-
-The method body must type-check with all signatures.  A method call is
-type-correct if it type-checks under any one of the signatures.  If a call
-matches multiple signatures, then the compiler uses the most specific
-matching signature for the purpose of type-checking.  This is just like
-Java's rule for resolving overriding methods, though there is no effect on
-run-time dispatch or behavior.
-
-Polymorphic qualifiers can be used on a method signature or body.
-They may not be used on classes or fields.
-
-%% I don't see why this is necessarily true; one could define @PolyNull1
-%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
-%% the point just makes type system bigots criticize the Checker Framework.
-% Qualifier polymorphism is limited to a single qualifier variable per method.
-
-
-\paragraph{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
-
-As an example of the use of \<@PolyNull>, method \sunjavadoc{java/lang/Class.html#cast(java.lang.Object)}{Class.cast}
-returns null if and only if its argument is \<null>:
-
-\begin{Verbatim}
-  @PolyNull T cast(@PolyNull Object obj) { ... }
-\end{Verbatim}
-
-\noindent
-This is like writing:
-
-\begin{Verbatim}
-   @NonNull T cast( @NonNull Object obj) { ... }
-  @Nullable T cast(@Nullable Object obj) { ... }
-\end{Verbatim}
-
-\noindent
-except that the latter is not legal Java, since it defines two
-methods with the same Java signature.
-
-
-As another example, consider
-
-\begin{Verbatim}
-  @PolyNull T max(@PolyNull T x, @PolyNull T y);
-\end{Verbatim}
-
-\noindent
-which is like writing
-
-\begin{Verbatim}
-   @NonNull T max( @NonNull T x,  @NonNull T y);
-  @Nullable T max(@Nullable T x, @Nullable T y);
-\end{Verbatim}
-
-\noindent
-Another way of thinking about which one of the two \code{max} variants is
-selected is that the nullness annotations of (the declared types of) both
-arguments are \emph{unified} to a type that is a supertype of both, also
-known as the \emph{least upper bound} or lub.  If both
-arguments are \code{@NonNull}, their unification (lub) is \<@NonNull>, and the
-method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
-then the unification (lub) is \<@Nullable>, and so is the return type.
-
-
-\paragraph{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
-
-%% I can't think of a non-clumsy way to say this.
-% Each method containing a polymorphic qualifier is (conceptually) expanded
-% into multiple versions completely independently.
-
-Usually, it does not make sense to write only a single instance of a polymorphic
-qualifier in a method definition:  if you write one instance of (say)
-\<@PolyNull>, then you should use at least two.  (An exception is a
-polymorphic qualifier on an array element type; this section ignores that
-case, but see below for further details.)
-
-For example, there is no point to writing
-
-\begin{Verbatim}
-  void m(@PolyNull Object obj)
-\end{Verbatim}
-
-\noindent
-which expands to
-
-\begin{Verbatim}
-  void m(@NonNull Object obj)
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-This is no different (in terms of which calls to the method will
-type-check) than writing just
-
-\begin{Verbatim}
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-The benefit of polymorphic qualifiers comes when one is used multiple times
-in a method, since then each instance turns into the same type qualifier.
-Most frequently, the polymorphic qualifier appears on at least one formal
-parameter and also on the return type.  It can also be useful to have
-polymorphic qualifiers on (only) multiple formal parameters, especially if
-the method side-effects one of its arguments.
-For example, consider
-
-\begin{Verbatim}
-void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
-  s1.push(s2.pop());
-}
-\end{Verbatim}
-
-\noindent
-In this example, if it is acceptable to rewrite your code to use Java
-generics, the code can be even cleaner:
-
-\begin{Verbatim}
-<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
-  s1.push(s2.pop());
-}
-\end{Verbatim}
-
-
-%% It would be nice to give an example that isn't too contrived.
-
-
-\paragraph{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
-
-There is an exception to the general rule that a polymorphic qualifier
-should be used multiple times in a signature.  It can make sense to use a
-polymorphic qualifier just once, if it is on an array or generic element
-type.
-
-For example, consider a routine that returns the first index, in an array
-or collection, of a given element:
-
-\begin{Verbatim}
-  public static int indexOf(@PolyNull Object[] a, Object elt) { ... }
-
-  public static int indexOf(Collection<@PolyNull Object> a, Object elt) { ... }
-\end{Verbatim}
-
-If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
-some safe client calls would be rejected.
-
-Of course, it would be better style to use a generic method, as in either
-of these signatures (and likewise for the \<Collection> version):
-
-\begin{Verbatim}
- public static <T> int indexOf(T[] a, /*@Nullable*/ Object elt) { ... }
- public static <T> int indexOf(T[] a, T elt) { ... }
-\end{Verbatim}
-
-In conclusion, use of a single polymorphic qualifier may be necessary in
-legacy code, but can be avoided by use of better code style.
-
-
-\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
-
-In an inheritance hierarchy, subclasses often introduce new methods and
-fields.  For example, a \<Marsupial> (and its subclasses such as
-\<Kangaroo>) might have a variable indicating the size of the animal's
-pouch.  Because such variables would not exist in superclasses such as
-\<Mammal> and \<Animal>, any attempt to use them would be a compile-time
-error.
-
-If you cannot use subtypes but wish to enforce similar requirements using
-type qualifiers, you can do so.  To restrict which methods may be invoked,
-you can write an annotation on a method receiver; then the method may only
-be invoked on an expression whose type has the given annotation (or one of
-its subtypes).  Section~\ref{unused-fields} describes how to restrict which
-fields may be accessed:  in other words, a given field may only be accessed
-from an expression whose type has a given qualifier.  Then,
-Section~\ref{dependent-types} describes an even more powerful mechanism, by
-which the qualifier of a field depends on the qualifier of the expression
-from which the field was accessed.
-(Also see the discussion of typestate checkers, in
-Chapter~\ref{typestate-checker}.)
-
-
-\subsection{Unused fields\label{unused-fields}}
-
-A Java subtype can have more fields than its supertype.  For example:
-
-\begin{Verbatim}
-class Mammal extends Animal { ... }
-class Marsupial extends Mammal {
-  ...
-  int pouchSize;  // pouch capacity, in cubic centimeters
-  ...
-}
-\end{Verbatim}
-
-You can simulate
-the same effect for type qualifiers:  a given field may not be accessed via
-a reference with a supertype qualifier, but can be accessed via a reference
-with a subtype qualifier.
-For example:
-
-\begin{Verbatim}
-@interface Mammal { }
-@interface Marsupial { }
-class Animal {
-  @Unused(when=Mammal.class)
-  int pouchSize;  // pouch capacity, in cubic centimeters
-  ...
-}
-
-@Marsupial Animal joey = ...;
-... joey.pouchSize ...    // OK
-@Mammal Animal mae = ...;
-... mae.pouchSize ...    // compile-time error
-\end{Verbatim}
-
-The \code{@\refclass{quals}{Unused}} annotation
-on a field declares that the field may \emph{not} be accessed via a receiver of
-the given qualified type (or any \emph{super}type).
-
-(It would probably be clearer to replace \<@Unused> by an annotation that
-indicates when the field \emph{may} be used.)
-
-
-\subsection{Dependent types\label{dependent-types}}
-
-A variable has a \emph{dependent type} if its type depends on some other
-value or type.
-%  --- the type is dynamically, not statically, determined.
-% (Type-safety can still be statically determined, though.)
-
-The Checker Framework supports a form of dependent types, via the
-\code{@\refclass{quals}{Dependent}}\code{@\refclass{quals}{Dependent}} annotation.
-This annotation changes the type of a field or variable, based on the
-qualified type of the receiver (\code{this}).  This can be viewed as a more
-expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
-also be seen as a way of linking the meanings of two type qualifier
-hierarchies.
-
-Here is a restatement of the example of Section~\ref{unused-fields}, using
-\code{@\refclass{quals}{Dependent}}:
-
-\begin{Verbatim}
-@interface Mammal { }
-@interface Marsupial { }
-class Animal { ...
-  // pouch capacity, in cubic centimeters
-  // (non-null if this animal is a marsupial)
-  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
-  ...
-}
-
-@Marsupial Animal joey = ...;
-... joey.pouchSize.intValue() ...    // OK
-@Mammal Animal mae = ...;
-... mae.pouchSize.intValue() ...    // compile-time error:
-                                    //   dereference of possibly-null mae.pouchSize
-\end{Verbatim}
-
-However, when the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
-should use it instead of \code{@Dependent}.
-
-% TO DO:  give an example where @Dependent is actually needed
 
 
 \section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
@@ -900,6 +363,68 @@ future.  Or, it may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 
+% If you add a Javadoc link to this location, also add the qualifier to the
+% list below.
+\section{Writing Java expressions as annotation arguments\label{java-expressions-as-arguments}}
+
+Sometimes, it is necessary to write a Java expression as the argument to an
+annotation.  As of this writing, tho annotations that take a Java
+expression as an argument are:
+
+\begin{itemize}
+\item \code{@\refclass{nullness/quals}{KeyFor}}
+\item \code{@\refclass{nullness/quals}{NonNullOnEntry}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullAfter}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}
+\item \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}
+\end{itemize}
+
+The expression is a subset of legal Java expressions:
+
+\begin{itemize}
+\item
+  the receiver object, \<this>.
+\item
+  a formal parameter.  Write \<\#> followed by the zero-based parameter
+  index.  For example: \<\#0>, \<\#2>.
+\item
+  a local variable.  This is not applicable for method annotations, but is
+  applicable to type annotations such as
+  \code{@\refclass{nullness/quals}{KeyFor}}.  Write the variable name.  For
+  example: \<myLocalVar>.
+\item
+  a static variable.  Write the class name and the variable, as in
+  \<System.out>.
+  % It may also work to use an instance variable and the static variable
+  % name, but I'm not sure about that.
+\item
+  a field of any expression.  For example:  \<next>,
+  \<this.next>, \<\#0.next>, \<myLocalVar.next>.
+\item a method invocation on any expression.
+  The method must be pure and have no formal parameters.  For example:
+  \<myClass.getPackage()>, \<myClass.getSuperclass()>,
+  \<myClass.getComponentType()>.
+
+  \textbf{Warning:}  currently, annotations that use method calls are
+  \emph{not} checked.  The annotation is trusted, and other code will rely
+  on it, but it is not verified that other code establishes or maintains
+  the validity of the annotation.  Such expressions are still useful if a
+  human verifies their correctness.  They are used in the JDK annotations,
+  for example.
+\end{itemize}
+
+You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
+\<this.next> and \<next> are equivalent, assuming that there is no
+shadowing definition of \<next>.
+
+(A side note:  The formal parameter syntax \<\#0> may seem less convenient
+than writing the formal parameter name.  This syntax is necessary because
+in the \<.class> file, no parameter name information is available.  Running
+the compiler without a checker should create legal annotations in the
+\<.class> file, so we cannot rely on the checker to translate names to
+indices.)
+
+
 \section{Inexpressible types\label{inexpressible-types}}
 
 The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
@@ -926,6 +451,112 @@ are currently being handled are described in
 \refclass{nullness}{CollectionToArrayHeuristics}.
 This approach would be possible for other checkers and other methods as the
 need arises.
+
+
+\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+
+In an inheritance hierarchy, subclasses often introduce new methods and
+fields.  For example, a \<Marsupial> (and its subclasses such as
+\<Kangaroo>) might have a variable indicating the size of the animal's
+pouch.  Because such variables would not exist in superclasses such as
+\<Mammal> and \<Animal>, any attempt to use them would be a compile-time
+error.
+
+If you cannot use subtypes but wish to enforce similar requirements using
+type qualifiers, you can do so.  To restrict which methods may be invoked,
+you can write an annotation on a method receiver; then the method may only
+be invoked on an expression whose type has the given annotation (or one of
+its subtypes).  Section~\ref{unused-fields} describes how to restrict which
+fields may be accessed:  in other words, a given field may only be accessed
+from an expression whose type has a given qualifier.  Then,
+Section~\ref{dependent-types} describes an even more powerful mechanism, by
+which the qualifier of a field depends on the qualifier of the expression
+from which the field was accessed.
+(Also see the discussion of typestate checkers, in
+Chapter~\ref{typestate-checker}.)
+
+
+\subsection{Unused fields\label{unused-fields}}
+
+A Java subtype can have more fields than its supertype.  For example:
+
+\begin{Verbatim}
+class Mammal extends Animal { ... }
+class Marsupial extends Mammal {
+  ...
+  int pouchSize;  // pouch capacity, in cubic centimeters
+  ...
+}
+\end{Verbatim}
+
+You can simulate
+the same effect for type qualifiers:  a given field may not be accessed via
+a reference with a supertype qualifier, but can be accessed via a reference
+with a subtype qualifier.
+For example:
+
+\begin{Verbatim}
+@interface Mammal { }
+@interface Marsupial { }
+class Animal {
+  @Unused(when=Mammal.class)
+  int pouchSize;  // pouch capacity, in cubic centimeters
+  ...
+}
+
+@Marsupial Animal joey = ...;
+... joey.pouchSize ...    // OK
+@Mammal Animal mae = ...;
+... mae.pouchSize ...    // compile-time error
+\end{Verbatim}
+
+The \code{@\refclass{quals}{Unused}} annotation
+on a field declares that the field may \emph{not} be accessed via a receiver of
+the given qualified type (or any \emph{super}type).
+
+(It would probably be clearer to replace \<@Unused> by an annotation that
+indicates when the field \emph{may} be used.)
+
+
+\subsection{Dependent types\label{dependent-types}}
+
+A variable has a \emph{dependent type} if its type depends on some other
+value or type.
+%  --- the type is dynamically, not statically, determined.
+% (Type-safety can still be statically determined, though.)
+
+The Checker Framework supports a form of dependent types, via the
+\code{@\refclass{quals}{Dependent}}\code{@\refclass{quals}{Dependent}} annotation.
+This annotation changes the type of a field or variable, based on the
+qualified type of the receiver (\code{this}).  This can be viewed as a more
+expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
+also be seen as a way of linking the meanings of two type qualifier
+hierarchies.
+
+Here is a restatement of the example of Section~\ref{unused-fields}, using
+\code{@\refclass{quals}{Dependent}}:
+
+\begin{Verbatim}
+@interface Mammal { }
+@interface Marsupial { }
+class Animal { ...
+  // pouch capacity, in cubic centimeters
+  // (non-null if this animal is a marsupial)
+  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
+  ...
+}
+
+@Marsupial Animal joey = ...;
+... joey.pouchSize.intValue() ...    // OK
+@Mammal Animal mae = ...;
+... mae.pouchSize.intValue() ...    // compile-time error:
+                                    //   dereference of possibly-null mae.pouchSize
+\end{Verbatim}
+
+However, when the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+should use it instead of \code{@Dependent}.
+
+% TO DO:  give an example where @Dependent is actually needed
 
 
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
