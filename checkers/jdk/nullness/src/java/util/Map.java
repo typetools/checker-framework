@@ -5,8 +5,7 @@ import checkers.nullness.quals.*;
 // Subclasses of this interface/class may opt to prohibit null elements.
 // We write "extends @NonNull Object" for emphasis even though it's the default.
 public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
-  @KeyForCovariant
-  public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
+  public static interface Entry<@Covariant K extends @Nullable Object, V extends @Nullable Object> {
     public abstract K getKey();
     public abstract V getValue();
     public abstract V setValue(V a1);

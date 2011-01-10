@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.processing.Messager;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -24,7 +25,20 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
-
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacMessager;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.comp.Attr;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.MemberEnter;
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -54,6 +68,15 @@ class NullnessFlow extends Flow {
     private List<String> nnExprs, nnExprsWhenTrue, nnExprsWhenFalse;
     private final AnnotatedTypeFactory rawFactory;
 
+    /*
+    protected Context context;
+    protected TreeMaker maker;
+    protected Names names;
+    protected Attr attr;
+    protected Enter enter;
+    protected MemberEnter memberEnter;
+    */
+
     /**
      * Creates a NonNull-specific flow-sensitive inference.
      *
@@ -72,6 +95,16 @@ class NullnessFlow extends Flow {
         this.rawFactory = factory.rawnessFactory;
         nnExprs = new ArrayList<String>();
         nnExprsWhenTrue = nnExprsWhenFalse = null;
+      
+        /*
+        JavacProcessingEnvironment env = (JavacProcessingEnvironment)checker.getProcessingEnvironment();
+        context = env.getContext();
+        maker = TreeMaker.instance(context);
+        names = Names.instance(context);
+        attr = Attr.instance(context);
+        enter = Enter.instance(context);
+        memberEnter = MemberEnter.instance(context);
+        */
     }
 
     /**
@@ -264,6 +297,7 @@ class NullnessFlow extends Flow {
                 this.excludes.remove(var(expr));
             }
 
+            // TODO: why is this from the surrounding class and not this.nonnullExpressions???
             nnExprs.addAll(shouldInferNullness(node));
             return null;
         }
@@ -484,6 +518,7 @@ class NullnessFlow extends Flow {
             assert e instanceof VariableElement;
             if (!vars.contains(e))
                 vars.add((VariableElement) e);
+            // TODO: why is this from the surrounding class and not this.nonnullExpressions???
             if (nnExprs.contains(node.toString())) {
                 markTree(node, NONNULL);
             }
@@ -532,18 +567,42 @@ class NullnessFlow extends Flow {
 
     private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
     
+    
     // substitute patterns and ensure that the Strings are formatted according to our conventions
-    private List<String> substitutePatterns(MethodInvocationTree methodInvok, String[] annoValues) {
+    private List<String> substitutePatternsDecl(MethodTree method, String[] annoValues) {
+    	List<? extends VariableTree> paramTrees = method.getParameters();
+    	List<String> params = new ArrayList<String>(paramTrees.size());
+    	for(VariableTree vt : paramTrees) {
+    		params.add(vt.getName().toString());
+    	}
+    	
+    	return substitutePatternsGeneric(method, null, params, annoValues);
+    }
+    
+    // substitute patterns and ensure that the Strings are formatted according to our conventions
+    private List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
+    	String receiver = receiver(methodInvok);
+    	
+    	List<? extends ExpressionTree> argExps = methodInvok.getArguments();
+    	List<String> args = new ArrayList<String>(argExps.size());
+    	for(ExpressionTree et : argExps) {
+    		args.add(et.toString());
+    	}
+    	
+    	return substitutePatternsGeneric(methodInvok, receiver, args, annoValues);
+    }
+    
+    private List<String> substitutePatternsGeneric(Tree node, String receiver, List<String> argparams, String[] annoValues) {
         List<String> asserts = new ArrayList<String>();
-        String receiver = receiver(methodInvok);
+        
         fields: for (String s : annoValues) {
             if (parameterPtn.matcher(s).matches()) {
             	// exactly one parameter index, e.g. "#0"
                 int param = Integer.valueOf(s.substring(1));
-                if (param < methodInvok.getArguments().size()) {
-                    asserts.add(methodInvok.getArguments().get(param).toString());
+                if (param < argparams.size()) {
+                    asserts.add(argparams.get(param).toString());
                 } else {
-                	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
+                	checker.report(Result.failure("param.index.nullness.parse.error", s), node);
                 	continue;
                 }
             } else if (parameterPtn.matcher(s).find()) {
@@ -552,19 +611,27 @@ class NullnessFlow extends Flow {
 				StringBuffer sb = new StringBuffer();
 				while (matcher.find()) {
 					int param = Integer.valueOf(matcher.group(1));
-					if (param < methodInvok.getArguments().size()) {
-						String rep = methodInvok.getArguments().get(param).toString();
+					if (param < argparams.size()) {
+						String rep = argparams.get(param).toString();
 						matcher.appendReplacement(sb, rep);
 					} else {
-	                	checker.report(Result.failure("param.index.nullness.parse.error", s), methodInvok);
+	                	checker.report(Result.failure("param.index.nullness.parse.error", s), node);
 	                	continue fields;
 					}
 				}
 				matcher.appendTail(sb);
 				
-				asserts.add(receiver + sb.toString());
+				if (receiver!=null) {
+					asserts.add(receiver + sb.toString());
+				} else {
+					asserts.add(sb.toString());
+				}
             } else {
-                asserts.add(receiver + s);
+            	if (receiver!=null) {
+            		asserts.add(receiver + s);
+            	} else {
+					asserts.add(s);
+				}
             }
         }
         return asserts;
@@ -589,7 +656,7 @@ class NullnessFlow extends Flow {
         List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
             AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
-            asserts = substitutePatterns(methodInvok, anno.value());
+            asserts = substitutePatternsCall(methodInvok, anno.value());
         } else {
         	asserts = Collections.emptyList();
         }
@@ -616,7 +683,7 @@ class NullnessFlow extends Flow {
         List<String> asserts;
         if (method.getAnnotation(AssertNonNullAfter.class) != null) {
             AssertNonNullAfter anno = method.getAnnotation(AssertNonNullAfter.class);
-            asserts = substitutePatterns(methodInvok, anno.value());
+            asserts = substitutePatternsCall(methodInvok, anno.value());
         } else {
         	asserts = Collections.emptyList();
         }
@@ -636,7 +703,7 @@ class NullnessFlow extends Flow {
         List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
             AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-            asserts = substitutePatterns(methodInvok, anno.value());
+            asserts = substitutePatternsCall(methodInvok, anno.value());
         } else {
         	asserts = Collections.emptyList();
         }
@@ -656,7 +723,7 @@ class NullnessFlow extends Flow {
         List<String> asserts;
         if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
             AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-            asserts = substitutePatterns(methodInvok, anno.value());
+            asserts = substitutePatternsCall(methodInvok, anno.value());
         } else {
         	asserts = Collections.emptyList();
         }
@@ -938,20 +1005,20 @@ class NullnessFlow extends Flow {
 				List<String> fieldsList = validateNonNullOnEntry(meth, myFieldElems, fields);
 				this.nnExprs.addAll(fieldsList);
 			}
-
-			List<String> assertAnnos = new LinkedList<String>();
-			if (elem.getAnnotation(AssertNonNullIfTrue.class) != null) {
-				String[] patterns = elem.getAnnotation(AssertNonNullIfTrue.class).value();
-				assertAnnos.addAll(Arrays.asList(patterns));
-			}
-			if (elem.getAnnotation(AssertNonNullIfFalse.class) != null) {
-				String[] patterns = elem.getAnnotation(AssertNonNullIfFalse.class).value();
-				assertAnnos.addAll(Arrays.asList(patterns));
-			}
 			
-			validateAsserts(meth, myFieldElems, assertAnnos);
-			
+			// AssertNonNullIfXX is checked in visitReturn
 			// AssertNonNullAfter is checked in visitMethodEndCallback and visitReturn
+			
+			if (elem.getAnnotation(AssertNonNullIfTrue.class) != null
+					|| elem.getAnnotation(AssertNonNullIfFalse.class) != null) {
+
+				if (factory.getAnnotatedType(meth.getReturnType()).getKind() != TypeKind.BOOLEAN) {
+					checker.report(
+							Result.failure("assert.nullness.only.on.boolean"),
+							meth);
+				}
+			}
+			
 		}
         
         try {
@@ -1063,12 +1130,126 @@ class NullnessFlow extends Flow {
 		}
 	}
 
+    private void checkAssertNonNullIfTrue(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
+    	String[] annoValues = methElem.getAnnotation(AssertNonNullIfTrue.class).value();
+    	checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, true);
+    }
+    
+    
+    private void checkAssertNonNullIfFalse(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
+    	String[] annoValues = methElem.getAnnotation(AssertNonNullIfFalse.class).value();
+    	checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, false);
+    }
+    
+    private void checkAssertNonNullIfXXX(MethodTree meth, ExecutableElement methElem, ReturnTree ret,
+    		String[] annoValues, boolean ifTrue) {
+    	ExpressionTree retExp = ret.getExpression();
+    	if (factory.getAnnotatedType(retExp).getKind() != TypeKind.BOOLEAN) {
+    		checker.report(Result.failure("assert.nullness.only.on.boolean"), meth);
+			return;
+    	}
     	
+    	List<String> toCheck = substitutePatternsDecl(meth, annoValues);
+            	
+        Conditions conds = new Conditions();
+        conds.visit(retExp, null);
+
+        // When would this help?
+        // boolean flippable = isFlippableLogic(retExp);
+    	
+        
+        Stack<ExpressionTree> worklist = new Stack<ExpressionTree>();
+        worklist.push(retExp);
+        
+        // make sure that only the right kind of boolean operation is used
+        // TODO: this is a bit too coarse grained I think, subexpressions might be allowed to use
+        // other operations.
+        while (!worklist.isEmpty()) {
+        	ExpressionTree cond = TreeUtils.skipParens(worklist.pop());
+
+        	if (cond.getKind() == Tree.Kind.CONDITIONAL_AND) {
+        		if (!ifTrue) {
+            		checker.report(Result.failure("assertiffalse.nullness.condition.error"), ret);
+        		}
+        		
+        		BinaryTree bin = (BinaryTree) cond;
+        		worklist.push(bin.getLeftOperand());
+        		worklist.push(bin.getRightOperand());
+        	}
+
+        	if (cond.getKind() == Tree.Kind.CONDITIONAL_OR) {
+        		if (ifTrue) {
+            		checker.report(Result.failure("assertiftrue.nullness.condition.error"), ret);
+        		}
+        		
+        		BinaryTree bin = (BinaryTree) cond;
+        		worklist.push(bin.getLeftOperand());
+        		worklist.push(bin.getRightOperand());
+        	}
+        }
+        
+		for (String check : toCheck) {
+			if (ifTrue) {
+				boolean found = false;
+				for (VariableElement ve : conds.getNonnullElements()) {
+					if (ve.getSimpleName().toString().equals(check)) {
+						found = true;
+					}
+				}
+				if (!found) {
+					checker.report(Result.failure("assertiftrue.postcondition.not.satisfied"), ret);
+				}
+			} else {
+				boolean found = false;
+				for (VariableElement ve : conds.getNullableElements()) {
+					if (ve.getSimpleName().toString().equals(check)) {
+						found = true;
+					}
+				}
+				if (!found) {
+					checker.report(Result.failure("assertiffalse.postcondition.not.satisfied"), ret);
+				}
+			}
+		}
+            
+    }
     
-    
-    
+    /*
     // at call sites, ensure that the NNOE entries hold
-    private void checkNonNullOnEntry(MethodInvocationTree call) {
+    private void checkNonNullOnEntryNew(MethodInvocationTree call) {
+        ExecutableElement method = TreeUtils.elementFromUse(call);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			if (debug != null) {
+				debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + call);
+			}
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+			ExpressionTree recvTree = TreeUtils.getReceiverTree(call);
+			
+			// fieldloop:
+			for (String field : fields) {				
+				Element el = findElementCall(call, field);
+				if (el!=null) {
+					int index = vars.indexOf(el);
+					if (index == -1 || !annos.get(NONNULL, index)) {
+						// matching on nnExprs might be unsound, e.g. if both the
+						// caller and callee have a field with the same name
+						if (!this.nnExprs.contains(field)
+								&& !this.nnExprs.contains(recvTree + "." + field)) {
+							checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), call);
+						}
+					}
+				}
+			}
+		}
+    }
+    */
+    
+    
+    /*
+    // at call sites, ensure that the NNOE entries hold
+    private void checkNonNullOnEntryOld(MethodInvocationTree call) {
         ExecutableElement method = TreeUtils.elementFromUse(call);
 
 		if (method.getAnnotation(NonNullOnEntry.class) != null) {
@@ -1184,6 +1365,182 @@ class NullnessFlow extends Flow {
 			}
 		}
     }
+    */
+    
+    // at call sites, ensure that the NNOE entries hold
+    private void checkNonNullOnEntry(MethodInvocationTree call) {
+        ExecutableElement method = TreeUtils.elementFromUse(call);
+
+		if (method.getAnnotation(NonNullOnEntry.class) != null) {
+			if (debug != null) {
+				debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + call);
+			}
+
+			Element recvElem;
+			List<? extends Element> recvFieldElems;
+			{ // block to get all fields of the receiver type
+				// TODO: move to a separate method and only call when it's needed in
+				// the loop. Now we create this list even for static fields where it is not used.
+				ExpressionTree recv = TreeUtils.getReceiverTree(call);
+				
+				AnnotatedTypeMirror recvType;
+				if (recv==null) {
+					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(call)));
+				} else {
+					recvType = factory.getAnnotatedType(recv);
+				}
+				
+				if (!(recvType instanceof AnnotatedDeclaredType)) {
+					System.err.println("What's wrong with: " + recvType);
+			    	return;
+				}
+				
+				recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
+				recvFieldElems = allFields(recvElem);
+			}
+
+			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+
+			// fieldloop:
+			for (String field : fields) {
+				Element el = findElementInCall(recvElem, recvFieldElems, call, field);
+				if (el==null) {
+					// we've already output an error message
+					continue;
+				}
+				
+				String elName = el.getSimpleName().toString();
+				String elClass = el.getEnclosingElement().getSimpleName().toString();
+				
+				int index = vars.indexOf(el);
+				if (index == -1 || !annos.get(NONNULL, index)) {
+					if (!this.nnExprs.contains(elName)
+							&& !this.nnExprs.contains(elClass + "."	+ elName)) {
+						checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), call);
+					}
+				} else {
+					// System.out.println("Success!");
+				}
+			}
+		}
+    }
+
+    private Element findElementInCall(Element recvElem, List<? extends Element> recvFieldElems,
+    		MethodInvocationTree call, String field) {
+		List<? extends Element> elemsToSearch;
+		String fieldName;
+    
+		if (field.contains(".")) {
+			// we only support single static field accesses, i.e. C.f
+			String[] parts = field.split("\\.");
+			if (parts.length!=2) {
+				checker.report(Result.failure("dots.nullness.parse.error", field), call);
+				return null;
+			}
+			String className = parts[0];
+			fieldName = parts[1];
+			
+			Element findClass = recvElem;
+			while (findClass!=null &&
+				!findClass.getSimpleName().toString().equals(className)) {
+				findClass=findClass.getEnclosingElement();
+			}
+			if (findClass==null) {
+				checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
+				return null;
+			}
+			
+			elemsToSearch = allFields(findClass);
+		} else {
+			fieldName = field;
+			elemsToSearch = recvFieldElems;
+		}
+
+		// whether a field with the name was already found
+		boolean found = false;
+
+		Element res = null;
+		
+		for (Element el : elemsToSearch) {
+			String elName = el.getSimpleName().toString();
+
+			if (fieldName.equals(elName)) {
+					// ||	field.equals(elClass + "." + elName)) {
+				// TODO: remove checks for hiding?
+				if (found) {
+					// We already found a field with the same name
+					// before -> hiding.
+					checker.report(Result.failure("nonnull.hiding.violated", field), call);
+					return null;
+				} else {
+					found = true;
+					res = el;
+				}
+			}
+		}
+		
+		if (!found) {
+			checker.report(Result.failure("nullness.parse.error", field), call);
+		}
+		return res;
+    }
+
+    
+    /*
+    private Element findElementCall(MethodInvocationTree call, String field) {
+		Element elem;
+
+		ExpressionTree recvTree = TreeUtils.getReceiverTree(call);
+
+		elem = findElementCallHelper(call, field);
+		if (elem != null) {
+			if (elem.getModifiers().contains(Modifier.STATIC)) {
+				System.out.println("static");
+				// TODO: I think we might have taken the wrong static field,
+				// if the field has the same name in two classes and was
+				// specified without the class name.
+				// How can we disambiguate??
+				return elem;
+			} else if (recvTree == null) {
+				System.out.println("on this");
+				// It was a "this" access -> done
+				return elem;
+			}
+		}
+		// If elem is null or it's not a static field/this access, it's
+		// certainly the wrong field.
+		// Add the receiver expression and try again.
+		elem = findElementCallHelper(call, recvTree + "." + field);
+
+		System.out.println("Elem: " + elem.getModifiers() + " "
+				+ elem.getSimpleName());
+		System.out.println("Elem: " + elem.getEnclosingElement());
+
+		return elem;
+	}
+
+    private Element findElementCallHelper(MethodInvocationTree call, String field) {
+    	// problems: method elementFromUse always returns an element, even if it
+    	// wasn't found
+    	// I also didn't find a way to prevent the error message.
+    	Element elem;
+		try {
+			JCTree.JCExpression exp = this.dotsExp(field);
+			System.out.println("here: " + exp);
+			this.attribute(exp, (JCTree.JCExpression) call, Type.noType);
+			System.out.println("or here: " + exp);
+			elem = TreeUtils.elementFromUse(exp);
+			System.out.println("result: " + exp);
+		} catch (Throwable e) {
+			System.out
+					.println("Ok, \"" + field + "\" is not valid for " + call);
+			System.out.println("Exception: " + e);
+			e.printStackTrace();
+			elem = null;
+		}
+		return elem;
+	}    
+    */
     
     /**
      * Determine all fields that we need to check.
@@ -1319,10 +1676,6 @@ class NullnessFlow extends Flow {
 		return res;
     }
 
-    private void validateAsserts(MethodTree meth, List<? extends Element> myFieldElems, List<String> patterns) {
-    	// System.out.println("TODO: look at Assert annot");
-    }
-    
 
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
@@ -1337,11 +1690,71 @@ class NullnessFlow extends Flow {
     	MethodTree meth = TreeUtils.enclosingMethod(factory.getPath(ret));
     	ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
     	
-    	if ( methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+    	if (methElem.getAnnotation(AssertNonNullAfter.class) != null) {
     		checkAssertNonNullAfter(meth, methElem);
     	}
+    	
+		if (methElem.getAnnotation(AssertNonNullIfTrue.class) != null) {
+			checkAssertNonNullIfTrue(meth, methElem, ret);
+		}
+
+		if (methElem.getAnnotation(AssertNonNullIfFalse.class) != null) {
+			checkAssertNonNullIfFalse(meth, methElem, ret);
+		}
     }
   
+    
+    /*********************************************/
+    // Begin tree manipulation section
+    // This was largely taken from the EnerJ HelpfulTreeTranslator,
+    // which will be integrated into the checker-framework-runtime project
+    // TODO: remove redundancies.
+    
+    /*
+     * 
+     
+    // Create an expression from a string consisting of "dot" accessess --
+    // package/subpackage accesses, field accesses, etc.
+    // For example: dotsExp("java.util.List")
+    protected JCTree.JCExpression dotsExp(String chain) {
+        String[] symbols = chain.split("\\.");
+        JCTree.JCExpression node = maker.Ident(names.fromString(symbols[0]));
+        for (int i = 1; i < symbols.length; i++) {
+            Name nextName = names.fromString(symbols[i]);
+            node = maker.Select(node, nextName);
+        }
+        return node;
+    }
+    
+    // Succinctly attribute expressions and statements.
+    public void attribute(JCTree.JCExpression expr, JCTree.JCExpression repl, Type type) {        
+        attr.attribExpr(expr, getAttrEnv(repl), type);
+    }
+    
+    public void attribute(JCTree.JCExpression expr, JCTree.JCExpression repl) {
+        attribute(expr, repl, repl.type);
+    }
+
+    protected Env<AttrContext> getAttrEnv(JCTree leaf) {
+        JCTree.JCClassDecl class_ = null;
+        JCTree.JCMethodDecl method = null;
+        
+        TreePath path = factory.getPath(leaf);
+        class_ = (JCTree.JCClassDecl) TreeUtils.enclosingClass(path);
+        method = (JCTree.JCMethodDecl) TreeUtils.enclosingMethod(path);
+                
+        Env<AttrContext> env = enter.getClassEnv(class_.sym);
+        
+        env = memberEnter.getMethodEnv(method, env);
+
+        // TODO: local variables from blocks, loops, etc.
+        
+        return env;
+    }
+    */
+    // End of Tree manipulation section
+    /*********************************************/
+    
     
     /**
      * Determines whether a method has a receiver that is {@link Raw} given the
