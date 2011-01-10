@@ -5,7 +5,11 @@ public class AssertIfFalseTest {
     @Nullable Object get() { return "m"; }
 
     @AssertNonNullIfFalse("get()")
-    boolean isGettable() { return false; }
+    boolean isGettable() {
+    	// don't bother with the implementation
+    	//:: (assertiffalse.postcondition.not.satisfied)
+    	return false;
+    }
 
     void simple() {
         //:: (dereference.of.nullable)
