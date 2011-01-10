@@ -4,7 +4,7 @@ Previously-unannounced checkers:
 
   Fake enum checker to allow type-safe fake enum patterns.
 
-  Property file checker} to ensure that valid keys are used for property
+  Property file checker to ensure that valid keys are used for property
   files and resource bundles.  Also includes a checker that code is properly
   internationalized and a checker for compiler message keys as used in the
   Checker Framework.
