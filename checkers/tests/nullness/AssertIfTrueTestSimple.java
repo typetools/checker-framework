@@ -1,23 +1,20 @@
 import checkers.nullness.quals.*;
 
 /*
- * @skip-test
- * This tests ensure that Pure and AssertNonNullIfTrue methods
- * are verified
+ * This tests ensure that AssertNonNullIfTrue methods
+ * are verified.
  */
 public class AssertIfTrueTestSimple {
 
   protected int @Nullable [] values;
 
   @AssertNonNullIfTrue("values")
-  @Pure
   public boolean repNulledBAD() {
-    //:: (some.error.here)
+    //:: (assertiftrue.postcondition.not.satisfied)
     return values == null;
   }
 
   @AssertNonNullIfFalse("values")
-  @Pure
   public boolean repNulled() {
     return values == null;
   }
