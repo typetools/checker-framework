@@ -3,7 +3,11 @@ import java.util.*;
 public class ConditionalNullness {
 
     @AssertNonNullIfTrue({"field", "method()"})
-    boolean checkNonNull() { return false; }
+    boolean checkNonNull() {
+    	// don't bother with the implementation
+    	//:: (assertiftrue.postcondition.not.satisfied)
+    	return false;
+    }
 
     @Nullable Object field = null;
     @Nullable Object method() { return "m"; }
