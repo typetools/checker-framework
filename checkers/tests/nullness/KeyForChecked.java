@@ -6,7 +6,8 @@ public class KeyForChecked {
 
 // Taken from the annotated JDK, because tests execute without the JDK.
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
-	public static interface Entry<@Covariant K extends @Nullable Object, V extends @Nullable Object> {
+	@Covariant(0)
+	public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
 		K getKey();
 	    V getValue();
 	}
@@ -27,7 +28,8 @@ class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements
 	public KFIterator<K> iterator() { return new KFIterator<K>(); }
 }
 
-class KFIterator<@Covariant E extends @Nullable Object> {
+@Covariant(0)
+class KFIterator<E extends @Nullable Object> {
 	
 }
 
