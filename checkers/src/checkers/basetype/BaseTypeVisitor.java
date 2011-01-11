@@ -22,7 +22,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
-import checkers.quals.MarkerQualifier;
 import checkers.quals.Unused;
 import checkers.source.*;
 import checkers.types.*;
@@ -708,23 +707,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             }
 
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
-            	Set<AnnotationMirror> annos = typeVar.getAnnotationsOnTypeVar();
-            	Set<AnnotationMirror> newAnnos = new HashSet<AnnotationMirror>(annos);
-            	
-            	for(AnnotationMirror an : newAnnos) {
-            		if (an.getAnnotationType().asElement().getAnnotation(MarkerQualifier.class) !=null) {
-            			newAnnos.remove(an);
-            		}
-            	}
-            	// I'm a bit confused by the logic, but whatever.
-            	// If the annotations are emtpy now, don't complain.
-				if (!newAnnos.isEmpty()) {
-					if (!typearg.getAnnotations().equals(newAnnos)) {
-						checker.report(Result.failure(
-								"generic.argument.invalid", typearg, typeVar),
-								typeargTrees.get(typeargs.indexOf(typearg)));
-					}
-				}
+                if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
+                    checker.report(Result.failure("generic.argument.invalid",
+                            typearg, typeVar),
+                            typeargTrees.get(typeargs.indexOf(typearg)));
+                }
             }
 
         }
