@@ -69,7 +69,7 @@ public class KeyFors {
       @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent2);
     }
 
-    // This is a feature request to have KeyFor can be inferred
+    // TODO: This is a feature request to have KeyFor inferred
 //    public void addEdge3( T parent, T child ) {
 //      addNode(parent);
 //      parent = (@KeyFor("childMap") T) parent;
@@ -78,12 +78,19 @@ public class KeyFors {
 
   }
 
+  /* TODO: add logic that after a call to "put" the first argument is
+      annotated with @KeyFor. A "@KeyForAfter" annotation to
+      support this in a general way might be overkill.
+      Similarly, for calls to "remove" we need to invalidate all (?)
+      KeyFor annotations.
+
     void keyForFlow() {
         Map<String, String> leaders = new LinkedHashMap<String, String>();
         Set<@KeyFor("leaders") String> varsUsedPreviously = new LinkedHashSet<@KeyFor("leaders") String>();
         String varName = "hello";
         leaders.put(varName, "goodbye");
+        // TODO: add @KeyFor("leaders") to varName after put
         @KeyFor("leaders") String kf = varName;
     }
-
+  */
 }
