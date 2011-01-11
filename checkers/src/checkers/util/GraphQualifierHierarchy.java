@@ -342,6 +342,13 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             if (a1Lub != null) {
                 outset.add(a1Lub);
             }
+        	if (a1Lub==null && a1Super==null) {
+        		// null is also used for Unqualified! If two qualifiers are separate
+        		// subtypes of unqualifed, this might happen.
+        		// I ran into this when KeyFor <: Unqualified and Covariant <: Unqualified.
+        		// I think it would be much nicer if Unqualified would not be optimized away...
+        		outset.add(null);
+        	}
         }
         if (outset.size()==1) {
         	return outset.iterator().next();
