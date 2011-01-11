@@ -94,7 +94,7 @@ public class Flow extends TreePathScanner<Void, Void> {
      * @see #annos
      * @see SplitTuple
      */
-    protected final List<VariableElement> vars;
+    protected List<VariableElement> vars;
 
     /**
      * Tracks the annotated state of each variable during flow. Bit indices
@@ -1000,11 +1000,13 @@ public class Flow extends TreePathScanner<Void, Void> {
         if (node.isStatic()) {
             pushNewLevel();
             GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
+            List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
             try {
                 super.visitBlock(node, p);
                 return null;
             } finally {
                 annos = prev;
+                vars = prevVars;
                 popLastLevel();
             }
         }
@@ -1021,12 +1023,15 @@ public class Flow extends TreePathScanner<Void, Void> {
 
         // Intraprocedural, so save and restore bits.
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
+        List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
+        
         try {
             super.visitMethod(node, p);
             return null;
         } finally {
         	visitMethodEndCallback(node);
             annos = prev;
+            vars = prevVars;
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
