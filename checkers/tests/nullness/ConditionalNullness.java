@@ -6,7 +6,7 @@ public class ConditionalNullness {
     boolean checkNonNull() {
     	// don't bother with the implementation
     	//:: (assertiftrue.postcondition.not.satisfied)
-    	return false;
+    	return true;
     }
 
     @Nullable Object field = null;
