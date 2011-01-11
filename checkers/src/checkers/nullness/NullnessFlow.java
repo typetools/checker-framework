@@ -1202,11 +1202,39 @@ class NullnessFlow extends Flow {
         Stack<ExpressionTree> worklist = new Stack<ExpressionTree>();
         worklist.push(retExp);
         
+        boolean checkedAll = true;
+		for (String check : toCheck) {
+			boolean checked = false;
+			
+			for (VariableElement ve : this.vars) {
+				if (ve.getSimpleName().toString().equals(check)) {
+					if (annos.get(NONNULL, vars.indexOf(ve))
+							|| nnExprs.contains(check)) {
+						checked = true;
+					}
+					break;
+				}
+			}
+			
+			if (!checked) {
+				checkedAll = false;
+			}
+		}
+		
+		if (checkedAll) {
+			// We successfully found all Strings to check in annos or nnExprs.
+			// We do not have to look at the condition and can go home.
+			return;
+		}
+		
+		
         // make sure that only the right kind of boolean operation is used
         // TODO: this is a bit too coarse grained I think, subexpressions might be allowed to use
         // other operations.
         while (!worklist.isEmpty()) {
-        	ExpressionTree cond = TreeUtils.skipParens(worklist.pop());
+        	// By not skipping the parens we keep on the top level.
+        	// ExpressionTree cond = TreeUtils.skipParens(worklist.pop());
+        	ExpressionTree cond = worklist.pop();
         	
         	if (cond.getKind() == Tree.Kind.CONDITIONAL_AND) {
         		if (!ifTrue) {
@@ -1231,37 +1259,22 @@ class NullnessFlow extends Flow {
         
 		for (String check : toCheck) {
 			boolean found = false;
-			boolean error = false;
-			
-			for (VariableElement ve : this.vars) {
-				if (ve.getSimpleName().toString().equals(check)) {
-					found = true;
-					if (!annos.get(NONNULL, vars.indexOf(ve))
-							&& !nnExprs.contains(check)) {
-						error = true;
-					}
-				}
-			}
 			
 			if (ifTrue) {
 				for (VariableElement ve : conds.getNonnullElements()) {
 					if (ve.getSimpleName().toString().equals(check)) {
 						found = true;
-						// the condition result complements the one from annos and nnExprs
-						error = false;
 					}
 				}
 			} else {
 				for (VariableElement ve : conds.getNullableElements()) {
 					if (ve.getSimpleName().toString().equals(check)) {
 						found = true;
-						// the condition result complements the one from annos and nnExprs
-						error = false;
 					}
 				}
 			}
 
-			if (!found || error) {
+			if (!found) {
 				if (ifTrue) {
 					checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
 				} else {
