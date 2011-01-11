@@ -18,7 +18,7 @@ import checkers.types.TypeHierarchy;
 /**
  * TODO: doc
  */
-@TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class, Covariant.class })
+@TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
 public class KeyForSubchecker extends BaseTypeChecker {
     protected TypeHierarchy createTypeHierarchy() {
         return new KeyForTypeHierarchy(getQualifierHierarchy());
@@ -56,17 +56,29 @@ public class KeyForSubchecker extends BaseTypeChecker {
 	            return true;
 
 	        TypeElement lhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-	        TypeElement rhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-	        AnnotatedDeclaredType lhsDecl = currentATF.fromElement(lhsElem);
-	        AnnotatedDeclaredType rhsDecl = currentATF.fromElement(rhsElem);
-	        List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
-	        List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
+	        // TypeElement rhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
+	        // the following would be needed if Covariant were per type parameter
+	        // AnnotatedDeclaredType lhsDecl = currentATF.fromElement(lhsElem);
+	        // AnnotatedDeclaredType rhsDecl = currentATF.fromElement(rhsElem);
+	        // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
+	        // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
+
+	        int[] covarVals = null;
+	        if (lhsElem.getAnnotation(Covariant.class)!=null) {
+	        	covarVals = lhsElem.getAnnotation(Covariant.class).value();
+	        }
 	        
 	        assert lhsTypeArgs.size() == rhsTypeArgs.size();
 	        for (int i = 0; i < lhsTypeArgs.size(); ++i) {
-		        boolean covar = lhsTVs.get(i).getAnnotation(Covariant.class) != null ||
-		        	rhsTVs.get(i).getAnnotation(Covariant.class) != null;
-
+	        	boolean covar = false;
+				if (covarVals != null) {
+					for (int cvv = 0; cvv < covarVals.length; ++cvv) {
+						if (covarVals[cvv] == i) {
+							covar = true;
+						}
+					}
+				}
+	        	
 	        	if (covar) {
 	        		if (!KeyForSubchecker.this.isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
 	        			return false;
