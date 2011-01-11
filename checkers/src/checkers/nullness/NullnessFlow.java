@@ -1014,7 +1014,7 @@ class NullnessFlow extends Flow {
 
 				if (factory.getAnnotatedType(meth.getReturnType()).getKind() != TypeKind.BOOLEAN) {
 					checker.report(
-							Result.failure("assert.nullness.only.on.boolean"),
+							Result.failure("assertifxxx.only.on.boolean"),
 							meth);
 				}
 			}
@@ -1145,7 +1145,7 @@ class NullnessFlow extends Flow {
     		String[] annoValues, boolean ifTrue) {
     	ExpressionTree retExp = ret.getExpression();
     	if (factory.getAnnotatedType(retExp).getKind() != TypeKind.BOOLEAN) {
-    		checker.report(Result.failure("assert.nullness.only.on.boolean"), meth);
+    		checker.report(Result.failure("assertifxxx.only.on.boolean"), meth);
 			return;
     	}
     	
@@ -1158,6 +1158,47 @@ class NullnessFlow extends Flow {
         // boolean flippable = isFlippableLogic(retExp);
     	
         
+        retExp = TreeUtils.skipParens(retExp);
+
+    	if (retExp.getKind() == Tree.Kind.BOOLEAN_LITERAL) {
+    		LiteralTree b = (LiteralTree) retExp;
+    		boolean val = (Boolean) b.getValue();
+    		
+    		if (ifTrue && val ||
+    				!ifTrue && !val) {
+    			// Check annos?
+    			
+				for (String check : toCheck) {
+					boolean found = false;
+					for (VariableElement ve : this.vars) {
+						if (ve.getSimpleName().toString().equals(check)) {
+							found = true;
+							if (!annos.get(NONNULL, vars.indexOf(ve))
+									&& !nnExprs.contains(check)) {
+								if (ifTrue) {
+									checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
+								} else {
+									checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
+								}
+							}
+						}
+					}
+					if (!found) {
+						if (ifTrue) {
+							checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
+						} else {
+							checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
+						}
+					}
+				}
+    		} else {
+    			// We have an IfTrue annotation and visit a "return false"
+    			// or we have an IfFalse annotation and visit a "return true"
+    			// -> nothing to do
+    		}
+    		return;
+    	}
+        
         Stack<ExpressionTree> worklist = new Stack<ExpressionTree>();
         worklist.push(retExp);
         
@@ -1166,7 +1207,7 @@ class NullnessFlow extends Flow {
         // other operations.
         while (!worklist.isEmpty()) {
         	ExpressionTree cond = TreeUtils.skipParens(worklist.pop());
-
+        	
         	if (cond.getKind() == Tree.Kind.CONDITIONAL_AND) {
         		if (!ifTrue) {
             		checker.report(Result.failure("assertiffalse.nullness.condition.error"), ret);
@@ -1189,27 +1230,44 @@ class NullnessFlow extends Flow {
         }
         
 		for (String check : toCheck) {
+			boolean found = false;
+			boolean error = false;
+			
+			for (VariableElement ve : this.vars) {
+				if (ve.getSimpleName().toString().equals(check)) {
+					found = true;
+					if (!annos.get(NONNULL, vars.indexOf(ve))
+							&& !nnExprs.contains(check)) {
+						error = true;
+					}
+				}
+			}
+			
 			if (ifTrue) {
-				boolean found = false;
 				for (VariableElement ve : conds.getNonnullElements()) {
 					if (ve.getSimpleName().toString().equals(check)) {
 						found = true;
+						// the condition result complements the one from annos and nnExprs
+						error = false;
 					}
 				}
-				if (!found) {
-					checker.report(Result.failure("assertiftrue.postcondition.not.satisfied"), ret);
-				}
 			} else {
-				boolean found = false;
 				for (VariableElement ve : conds.getNullableElements()) {
 					if (ve.getSimpleName().toString().equals(check)) {
 						found = true;
+						// the condition result complements the one from annos and nnExprs
+						error = false;
 					}
 				}
-				if (!found) {
-					checker.report(Result.failure("assertiffalse.postcondition.not.satisfied"), ret);
-				}
 			}
+
+			if (!found || error) {
+				if (ifTrue) {
+					checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
+				} else {
+					checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
+				}
+			}			
 		}
             
     }
