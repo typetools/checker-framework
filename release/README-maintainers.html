@@ -128,6 +128,8 @@ testing the release)</li>
   export PATH=${PATH}:$anno/plume-lib/bin
   export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
   export EDITOR=emacs
+  export PERLLIB=${PERLLIB}:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0
+  export PERL5LIB=${PERL5LIB}:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0
   # If dia and hevea are not on your path, add them, from either /uns or Michael Ernst's directory:
   export PATH=${PATH}:/homes/gws/mernst/bin/install/dia-0.97.1-install/bin:/homes/gws/mernst/bin/install/hevea-1.10/bin
 </pre>
@@ -210,7 +212,7 @@ have changed, then do:
 
 <pre>
   cd $anno/jsr308-langtools && hg revert --all
-  cd $anno/annotation-tools && hg revert --all
+  cd $anno/checker-framework && hg revert --all
 </pre>
 
 and then redo the above.
