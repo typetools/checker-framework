@@ -10,8 +10,8 @@ public class Throwable implements java.io.Serializable{
   public Throwable(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
   public Throwable(@Nullable String a1, @Nullable Throwable a2) { throw new RuntimeException("skeleton method"); }
   public Throwable(@Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable String getMessage() { throw new RuntimeException("skeleton method"); }
-  public @Nullable String getLocalizedMessage() { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable String getMessage() { throw new RuntimeException("skeleton method"); }
+  public @Pure @Nullable String getLocalizedMessage() { throw new RuntimeException("skeleton method"); }
   public @Nullable Throwable getCause() { throw new RuntimeException("skeleton method"); }
   public synchronized @PolyRaw Throwable initCause(@Nullable Throwable a1) @PolyRaw { throw new RuntimeException("skeleton method"); }
   public String toString() { throw new RuntimeException("skeleton method"); }
