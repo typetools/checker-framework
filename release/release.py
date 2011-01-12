@@ -64,7 +64,7 @@ def increment_version(version):
     return ".".join([str(x) for x in parts])
 
 def site_copy(ant_args):
-    execute("ant -f release.xml %s site-copy" % ant_args)
+    execute("ant -e -f release.xml %s site-copy" % ant_args)
 
 def site_copy_if_needed(ant_args):
     if not os.path.exists(DRY_PATH):
@@ -169,7 +169,7 @@ def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
     return changelog_header(file)
 
 def make_release(version, ant_args, real=False, sanitycheck=True):
-    command = 'ant -f release.xml %s -Drelease.ver=%s %s clean web %s' % (
+    command = 'ant -e -f release.xml %s -Drelease.ver=%s %s clean web %s' % (
         '-Drelease.is.real=true' if real else '',
         version,
         ant_args,
