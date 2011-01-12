@@ -220,7 +220,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", false)) {
                         // warn against uninitialized fields
-                    	// TODO: we really only want a warning, but the testing framework doesn't support this
+                        // TODO: we really only want a warning, but the testing framework doesn't support this
                         checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
                     }
                 }
@@ -237,7 +237,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
         Set<VariableElement> fields = getUninitializedFields(node);
         if (!fields.isEmpty()) {
-        	// TODO: we really only want a warning, but the testing framework doesn't support this
+                // TODO: we really only want a warning, but the testing framework doesn't support this
             checker.report(Result.failure("fields.uninitialized", fields), node);
         }
     }

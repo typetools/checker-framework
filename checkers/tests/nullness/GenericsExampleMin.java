@@ -21,11 +21,11 @@ class GenericsExampleMin {
 
     // When the assignment to nn is added, the assignments to t and nble also fail, which is unexpected.
     void m2() {
-    	//:: (assignment.type.incompatible)
+        //:: (assignment.type.incompatible)
         nn = null;
         t = this.get(0);
         nble = this.get(0);
     }
-    
+
   }
 }

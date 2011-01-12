@@ -8,7 +8,7 @@ import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * A PropertyKeyATF that uses LocalizableKey to annotate the keys.
- * 
+ *
  * @author wmdietl
  */
 public class LocalizableKeyAnnotatedTypeFactory extends

@@ -20,42 +20,42 @@ public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
 
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-		if (!TreeUtils.isStringConcatenation(node)) {
-			// TODO: ignore string concatenations
-			
-			AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
-			AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
-			if (!(checker.getQualifierHierarchy().isSubtype(lhs.getAnnotations(), rhs.getAnnotations())
-					|| checker.getQualifierHierarchy().isSubtype(rhs.getAnnotations(), lhs.getAnnotations()))) {
-				checker.report(
-						Result.failure("binary.type.incompatible", lhs, rhs),
-						node);
-			}
-		}
+        if (!TreeUtils.isStringConcatenation(node)) {
+            // TODO: ignore string concatenations
+
+            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
+            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
+            if (!(checker.getQualifierHierarchy().isSubtype(lhs.getAnnotations(), rhs.getAnnotations())
+                  || checker.getQualifierHierarchy().isSubtype(rhs.getAnnotations(), lhs.getAnnotations()))) {
+                checker.report(
+                               Result.failure("binary.type.incompatible", lhs, rhs),
+                               node);
+            }
+        }
         return super.visitBinary(node, p);
     }
-    
+
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-    	ExpressionTree var = node.getVariable();
+        ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-		if (!(checker.getQualifierHierarchy().isSubtype(exprType.getAnnotations(), varType.getAnnotations()))) {
-			checker.report(
-					Result.failure("compoundassign.type.incompatible", varType, exprType),
-					node);
-		}
-        
-    	return super.visitCompoundAssignment(node, p);
+        if (!(checker.getQualifierHierarchy().isSubtype(exprType.getAnnotations(), varType.getAnnotations()))) {
+            checker.report(
+                           Result.failure("compoundassign.type.incompatible", varType, exprType),
+                           node);
+        }
+
+        return super.visitCompoundAssignment(node, p);
     }
-    
+
     @Override
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
-    	// Ignore the default annotation on the constructor
-    	return true;
+        // Ignore the default annotation on the constructor
+        return true;
     }
 
     // TODO: should we require a match between switch expression and cases?

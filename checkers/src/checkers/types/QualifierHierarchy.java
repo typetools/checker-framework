@@ -93,13 +93,13 @@ public abstract class QualifierHierarchy {
 
     /**
      * Returns the greatest lower bound for the qualifiers a1 and a2.
-     * 
+     *
      * @param a1 First annotation
      * @param a2 Second annotation
      * @return Greatest lower bound of the two annotations
      */
-	public abstract AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2);
-	
+    public abstract AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2);
+
     /**
      * Returns the type qualifiers that are the least upper bound of
      * the qualifiers in annos1 and annos2.

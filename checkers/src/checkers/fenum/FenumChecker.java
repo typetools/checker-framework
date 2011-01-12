@@ -23,22 +23,22 @@ import checkers.basetype.BaseTypeChecker;
 
 /**
  * The main checker class for the fake enum checker.
- * 
+ *
  * There are two options to distinguish different enumerators:
- * 
+ *
  * <ol>
  * <li> {@code @Fenum("Name")}: introduces a fake enumerator with the name
  * "Name". Enumerators with different names are distinct. The default name is
  * empty, but you are encouraged to use a unique name for your purpose.
  * </li>
- * 
+ *
  * <li> Alternatively, you can specify the annotation to use with the
- * {@code -Aqual} command line argument. 
+ * {@code -Aqual} command line argument.
  * </li>
  * </ul>
- * 
- * TODO: document flowinference lint option. 
- * 
+ *
+ * TODO: document flowinference lint option.
+ *
  * @author wmdietl
  */
 @SupportedOptions( { "quals" } )
@@ -56,26 +56,26 @@ public class FenumChecker extends BaseTypeChecker {
 
         String qualNames = env.getOptions().get("quals");
         if (qualNames == null) {
-        	// maybe issue a warning?
-        	qualSet.add(FenumTop.class);
-        	qualSet.add(Fenum.class);
-        	qualSet.add(FenumUnqualified.class);
-        	qualSet.add(FenumBottom.class);
-		} else {
-			try {
-				for (String qualName : qualNames.split(",")) {
-					final Class<? extends Annotation> q =
-						(Class<? extends Annotation>) Class.forName(qualName);
-					qualSet.add(q);
-				}
-			} catch (ClassNotFoundException e) {
-				throw new Error(e);
-			}
-			qualSet.add(FenumTop.class);
-			qualSet.add(Fenum.class);
-			qualSet.add(FenumUnqualified.class);
-			qualSet.add(FenumBottom.class);
-		}
+          // maybe issue a warning?
+          qualSet.add(FenumTop.class);
+          qualSet.add(Fenum.class);
+          qualSet.add(FenumUnqualified.class);
+          qualSet.add(FenumBottom.class);
+        } else {
+          try {
+            for (String qualName : qualNames.split(",")) {
+              final Class<? extends Annotation> q =
+                (Class<? extends Annotation>) Class.forName(qualName);
+              qualSet.add(q);
+            }
+          } catch (ClassNotFoundException e) {
+            throw new Error(e);
+          }
+          qualSet.add(FenumTop.class);
+          qualSet.add(Fenum.class);
+          qualSet.add(FenumUnqualified.class);
+          qualSet.add(FenumBottom.class);
+        }
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
         return Collections.unmodifiableSet(qualSet);
@@ -95,7 +95,7 @@ public class FenumChecker extends BaseTypeChecker {
 
         return swKeys;
     }
-    
+
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
@@ -106,35 +106,35 @@ public class FenumChecker extends BaseTypeChecker {
         // visitor.
         return true;
     }
-        
+
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
     }
-    
+
     /* The user is expected to introduce additional fenum annotations.
      * These annotations are declared to be subtypes of FenumTop, using the
      * @SubtypeOf annotation.
      * However, there is no way to declare that it is a supertype of FenumBottom.
      * Therefore, we fix the bottom of the type hierarchy here and add a special
-     * case when the subtype has the FenumBottom annotation. 
+     * case when the subtype has the FenumBottom annotation.
      */
     private final class FenumQualifierHierarchy extends GraphQualifierHierarchy {
         public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
             super(hierarchy);
         }
-        
+
         @Override
         public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-        	if ( AnnotationUtils.getInstance(env).fromClass(FenumBottom.class).equals(anno1)) {
-        		return true;
-        	}
-        	return super.isSubtype(anno1, anno2);
+          if ( AnnotationUtils.getInstance(env).fromClass(FenumBottom.class).equals(anno1)) {
+            return true;
+          }
+          return super.isSubtype(anno1, anno2);
         }
-        
+
         @Override
         public AnnotationMirror getBottomQualifier() {
-        	return AnnotationUtils.getInstance(env).fromClass(FenumBottom.class);
+          return AnnotationUtils.getInstance(env).fromClass(FenumBottom.class);
         }
     }
 }

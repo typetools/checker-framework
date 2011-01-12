@@ -45,7 +45,7 @@ import checkers.quals.Unqualified;
  * </li>
  *
  * </ol>
- * 
+ *
  */
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, Unqualified.class} )
@@ -149,7 +149,7 @@ public class PropertyKeyChecker extends BaseTypeChecker {
 
         Set<String> result = new HashSet<String>();
 
-        for (String bundleName : namesArr) {    
+        for (String bundleName : namesArr) {
             ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
             if (bundle == null) {
                 System.err.println("Couldn't find the resource bundle: <" + bundleName

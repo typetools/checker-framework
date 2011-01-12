@@ -12,7 +12,7 @@ import checkers.quals.TypeQualifier;
  * The annotation to distinguish compiler message Strings from
  * normal Strings. The programmer should hardly ever need to use it
  * explicitly.
- * 
+ *
  * @author wmdietl
  */
 @TypeQualifier

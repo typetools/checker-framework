@@ -11,7 +11,7 @@ import checkers.quals.Unqualified;
 /**
  * A PropertyKeyChecker for the compiler message keys that are used
  * in the Checker framework.
- * 
+ *
  * @author wmdietl
  */
 @TypeQualifiers( {CompilerMessageKey.class, PropertyKey.class, Unqualified.class} )

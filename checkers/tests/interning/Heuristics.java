@@ -40,10 +40,10 @@ public class Heuristics implements Comparable<Heuristics> {
     if(a == b || b.equals(a)){
       System.out.println("two");
     }
-	
+
     boolean c = (a == b || a.equals(b));
     c = (a == b || b.equals(a));
-	
+
     boolean d = (a == b) || (a != null ? a.equals(b) : false);
 
     boolean e = (a == b || (a != null && a.equals(b)));
@@ -62,10 +62,10 @@ public class Heuristics implements Comparable<Heuristics> {
     if(a == b || b.compareTo(a) == 0){
       System.out.println("two");
     }
-	
+
     boolean c = (a == b || a.compareTo(b) == 0);
     c = (a == b || a.compareTo(b) == 0);
-		
+
     return (a == b || a.compareTo(b) == 0);
   }
 }

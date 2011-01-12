@@ -176,7 +176,7 @@ abstract class TypeFromTree extends
             // WMD: method annotateAsLub has a very similar test for anonymous types and also the asSuper calls,
             // but seems much more general. Is the code below out of date?
             // Also, what is the difference in using annoTypes vs. f.atypes? Are they aliases?
-            
+
             // It is anonymous
             if (TypesUtils.isAnonymousType(lub)) {
                 // Find the intersect types

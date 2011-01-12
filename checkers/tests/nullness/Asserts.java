@@ -39,8 +39,8 @@ public class Asserts {
 
     @AssertNonNullIfTrue({"#0", "#1"})
     boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
-    	// dont' bother with the implementation
-    	//:: (assertiftrue.postcondition.not.satisfied)
+        // don't bother with the implementation
+        //:: (assertiftrue.postcondition.not.satisfied)
         return true;
     }
 
