@@ -244,32 +244,6 @@ and setting environment variables accordingly:
     hg log -r$JL_PREV_REVISION:tip --style changelog > ~/tmp/langtools-log-with-filenames
 </pre>
 
-<p>
-OLDER:
-</p>
-
-<p>
-Update file
-<tt>checker-framework/checkers/changelog-checkers.txt</tt>.
-For example, you could run these commands:
-</p>
-<pre>hg log --style changelog --date '>2009-05-14'
-
-<!--  This doesn't work; it gives one diff per changeset, not a single diff.
-hg log -p -d '>2009-05-14' checker-framework/checkers/manual -->
-cd ..
-hg clone checker-framework checker-framework-last-release
-cd checker-framework-last-release
-hg update --date 2009-05-14
-cd ..
-diff -u -b -r --exclude=.hg --exclude=.hgtags --exclude='*.class' --exclude='*~' checker-framework-last-release/checkers/manual/ checker-framework/checkers/manual/
-rm -rf checker-framework-last-release
-</pre>
-<p>
-with the proper date substituted.
-[TODO: should use tags in the command instead.]
-</p>
-
 </li>
 
 <li>
