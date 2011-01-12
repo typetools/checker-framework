@@ -14,6 +14,7 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -1127,14 +1128,17 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         TypeMirror objectTM = objectTE.asType();
         AnnotatedTypeMirror objectATM = plainFactory.toAnnotatedType(objectTM);
         List<? extends Element> members = elements.getAllMembers(objectTE);
+
         for (Element member : members) {
             if (member.toString().equals("equals(java.lang.Object)")) {
                 ExecutableElement m = (ExecutableElement) member;
                 AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
-                    // TODO: Use standard compiler output mechanism?
-                    System.out.printf("Warning:  you do not seem to be using the distributed annotated JDK.%nSupply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar%n");
+                	checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                			"you do not seem to be using the distributed annotated JDK." +
+                			System.getProperty("line.separator") +
+                			"Supply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
                 }
             }
         }
