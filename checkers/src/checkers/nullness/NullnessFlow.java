@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.Messager;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -19,26 +18,11 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacMessager;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.comp.Attr;
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.Enter;
-import com.sun.tools.javac.comp.Env;
-import com.sun.tools.javac.comp.MemberEnter;
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -1008,17 +992,6 @@ class NullnessFlow extends Flow {
 
 			// AssertNonNullIfXX is checked in visitReturn
 			// AssertNonNullAfter is checked in visitMethodEndCallback and visitReturn
-
-			if (elem.getAnnotation(AssertNonNullIfTrue.class) != null
-					|| elem.getAnnotation(AssertNonNullIfFalse.class) != null) {
-
-				if (factory.getAnnotatedType(meth.getReturnType()).getKind() != TypeKind.BOOLEAN) {
-					checker.report(
-							Result.failure("assertifxxx.only.on.boolean"),
-							meth);
-				}
-			}
-
 		}
 
 		try {
@@ -1146,7 +1119,6 @@ class NullnessFlow extends Flow {
 			String[] annoValues, boolean ifTrue) {
 		ExpressionTree retExp = ret.getExpression();
 		if (factory.getAnnotatedType(retExp).getKind() != TypeKind.BOOLEAN) {
-			checker.report(Result.failure("assertifxxx.only.on.boolean"), meth);
 			return;
 		}
 
