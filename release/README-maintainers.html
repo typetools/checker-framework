@@ -157,7 +157,7 @@ prepared release directory, set up a release directory as follows:
 
     hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
-    hg clone https://jsr308-langtools.googlecode.com/hg/ annotation-tools
+    hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
     # Just to be on the safe side.
     cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
 
@@ -187,25 +187,45 @@ disk space.  Or, just link from that directory to elsewhere.]
 <ol>
 
 <li><p>Ensure that your checkouts are up to date and you have no
-    uncommitted changes.  Each one of these <tt>hg</tt> commands should
-    print "no changes found":</p>
+    uncommitted changes.  Each of these commands should succeed, printing
+    "no changes found":</p>
 <pre>
-  cd $anno/plume-lib
-  hg fetch
-  hg outgoing
-  cd $anno/jsr308-langtools
-  hg fetch
-  hg outgoing
-  cd $anno/annotation-tools
-  hg fetch
-  hg outgoing
-  cd $anno/checker-framework
-  hg fetch
-  hg outgoing
+  cd $anno/plume-lib && hg fetch && hg outgoing
+  cd $anno/jsr308-langtools && hg fetch && hg outgoing
+  cd $anno/annotation-tools && hg fetch && hg outgoing
+  cd $anno/checker-framework && hg fetch && hg outgoing
 </pre>
+
+If any "fetch" fails, you can see the differences with:
+
+<pre>
+  cd $anno/plume-lib && hg diff
+  cd $anno/jsr308-langtools && hg diff
+  cd $anno/annotation-tools && hg diff
+  cd $anno/checker-framework && hg diff
+</pre>
+
+If you want to revert the  have to start over and 
+have changed, then do:
+
+<pre>
+  cd $anno/jsr308-langtools && hg revert --all
+  cd $anno/annotation-tools && hg revert --all
+</pre>
+
+and then redo the above.
+
 </li>
 
 <li><p>Ensure that all regression tests pass.</p>
+
+<li><p>Run:</p>
+<pre>
+  cd $anno/annotation-tools/annotation-file-utilities
+  ant zipfile
+</pre>
+
+<p>TODO: merge this into the main script: in python or, better, in the Ant file.</p>
 
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
