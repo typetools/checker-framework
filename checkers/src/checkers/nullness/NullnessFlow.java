@@ -1062,9 +1062,10 @@ class NullnessFlow extends Flow {
 				// we only support single static field accesses, i.e. C.f
 				String[] parts = annoVal.split("\\.");
 				if (parts.length!=2) {
-					checker.report(Result.failure("dots.nullness.parse.error", annoVal), meth);
+					checker.report(Result.failure("nullness.parse.error", annoVal), meth);
 					continue;
 				}
+				// TODO: check for explicit "this" first!
 				String className = parts[0];
 				fieldName = parts[1];
 				
@@ -1505,7 +1506,8 @@ class NullnessFlow extends Flow {
 			// we only support single static field accesses, i.e. C.f
 			String[] parts = field.split("\\.");
 			if (parts.length!=2) {
-				checker.report(Result.failure("dots.nullness.parse.error", field), call);
+				// TODO: check for explicit "this"
+				checker.report(Result.failure("nullness.parse.error", field), call);
 				return null;
 			}
 			String className = parts[0];
@@ -1664,7 +1666,7 @@ class NullnessFlow extends Flow {
     
 
     // Make sure that the Strings in the NNOE annotation are valid.
-    // The returned list contains supported strings
+    // The returned list still contains all strings.
     private List<String> validateNonNullOnEntry(MethodTree meth, List<? extends Element> myFieldElems, String[] fields) {
     	List<String> res = new LinkedList<String>();
     	
@@ -1678,7 +1680,9 @@ class NullnessFlow extends Flow {
 				// we only support single static field accesses, i.e. C.f
 				String[] parts = field.split("\\.");
 				if (parts.length!=2) {
-					checker.report(Result.failure("dots.nullness.parse.error", field), meth);
+					checker.report(Result.failure("nullness.parse.error", field), meth);
+					// TODO: check for explicit "this"
+					res.add(field);
 					continue;
 				}
 				String className = parts[0];
@@ -1690,6 +1694,7 @@ class NullnessFlow extends Flow {
 				}
 				if (findClass==null) {
 					checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
+					res.add(field);
 					continue;
 				}
 				
@@ -1697,7 +1702,6 @@ class NullnessFlow extends Flow {
 			} else {
 				elemsToSearch = myFieldElems;
 			}
-
 			
 			for (Element el : elemsToSearch) {
 				// whether one of the cases matched
@@ -1722,6 +1726,7 @@ class NullnessFlow extends Flow {
 				} else if (field.equals(elClass + "." + elName)) {
 					if (!el.getModifiers().contains(Modifier.STATIC)) {
 						checker.report(Result.failure("nonnull.nonstatic.with.class", field), meth);
+						res.add(field);
 						continue;
 					}
 					res.add(field);
@@ -1742,6 +1747,7 @@ class NullnessFlow extends Flow {
 			
 			if (!found) {
 				checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+				res.add(field);
 			}
 		}
 		return res;
@@ -1781,6 +1787,10 @@ class NullnessFlow extends Flow {
     // which will be integrated into the checker-framework-runtime project
     // TODO: remove redundancies.
     
+	// TODO: can we use as an easier alternative?
+	// TypeElement e = env.getElementUtils().getTypeElement("java.lang.Object");
+	// to find the class? But how do we find the package??? 
+
     /*
      * 
      
