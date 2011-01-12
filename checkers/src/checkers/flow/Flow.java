@@ -836,6 +836,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits<AnnotationMirror> annoEntry;
         GenKillBits<AnnotationMirror> annoCondTrue;
         
+		// compare this to the loop implementation in the other loop visitors and decide which is nicer.
         // 1:
         annoEntry = GenKillBits.copy(annos);
         SplitTuple split = scanCond(node.getCondition());
