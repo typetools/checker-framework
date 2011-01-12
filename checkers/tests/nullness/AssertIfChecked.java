@@ -6,12 +6,21 @@ public class AssertIfChecked {
 
   @Nullable Object value;
 
-  //:: (assertifxxx.only.on.boolean)
+  //:: (assertiftrue.only.on.boolean)
   @AssertNonNullIfTrue("value") public void badform1() {
   }
 
-  //:: (assertifxxx.only.on.boolean)
+  //:: (assertiftrue.only.on.boolean)
   @AssertNonNullIfTrue("value") public Object badform2() {
+    return new Object();
+  }
+
+  //:: (assertiffalse.only.on.boolean)
+  @AssertNonNullIfFalse("value") public void badform3() {
+  }
+
+  //:: (assertiffalse.only.on.boolean)
+  @AssertNonNullIfFalse("value") public Object badform4() {
     return new Object();
   }
 
