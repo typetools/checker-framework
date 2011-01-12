@@ -92,6 +92,13 @@ spend 30 to 60 minutes for each release you make. You will actually
 make the release twice &mdash; first to a testing site, and then to the live
 site.</p>
 
+<p>
+[I'm not sure whether this is a good or a bad idea.]
+You may wish to make the release as a fresh user that has no
+customizations.
+</p>
+
+
 <h3 id="Requirements">Requirements</h3>
 
 <p>To make a release of the JSR 308 langtools and checkers, you need:</p>
@@ -127,6 +134,8 @@ testing the release)</li>
   export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
   export anno=/scratch/$USER/jsr308-release
   export EDITOR=emacs
+  # If dia and hevea are not on your path, add them, from either /uns or Michael Ernst's directory:
+  export PATH=${PATH}:/homes/gws/mernst/bin/install/dia-0.97.1-install/bin:/homes/gws/mernst/bin/install/hevea-1.10/bin
 </pre>
 </li>
 
@@ -175,6 +184,21 @@ testing site:</p>
 
 <ol>
 
+<li><p>Ensure that your checkouts are up to date and you have no
+    uncommitted changes.  Each one of these <tt>hg</tt> commands should
+    print "no changes found":</p>
+<pre>
+  cd $anno/checker-framework
+  hg fetch
+  hg outgoing
+  cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+</pre>
+</li>
+
+<li><p>Ensure that all regression tests pass.</p>
+
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
 what has changed in this version.  (Hopefully, this has already been done by
@@ -192,18 +216,19 @@ Determine the revision number for the previous release (TODO:  we should
 tag releases instead) by examining the output of
 </p>
 <pre>
-  (cd $anno/checker-framework; hg log checkers/changelog-checkers.txt)
-  (cd $anno/jsr308-langtools; hg log doc/changelog-jsr308.txt)
+  (cd $anno/checker-framework; hg log .hgtags)
+  (cd $anno/jsr308-langtools; hg log .hgtags)
 </pre>
 <p>
 and setting environment variables accordingly:
 </p>
 <pre>
-  export CF_PREV_REVISION=463
-  export JL_PREV_REVISION=1059
+  export CF_PREV_REVISION=78cb6185e063
+  export JL_PREV_REVISION=f448d3583dff
 </pre>
 
 <pre>
+    mkdir -p ~/tmp
     # Diff the manuals against the previous versions:
     cd $anno/checker-framework/checkers/manual
     hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
@@ -335,6 +360,16 @@ For example,
 
 <li><p>Ensure that all regression tests pass.</p>
 
+<li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
+<tt>CFVERSION</tt> is for the version being released.
+For example,
+<pre>
+  export anno=$HOME/research/types
+  export CFVERSION=1.0.3
+</pre>
+
+<li><p>Ensure that all regression tests pass.</p>
+
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate
 what has changed in this version.  (Hopefully, this has already been done by
@@ -359,11 +394,12 @@ tag releases instead) by examining the output of
 and setting environment variables accordingly:
 </p>
 <pre>
-  export CF_PREV_REVISION=463
-  export JL_PREV_REVISION=1059
+  export CF_PREV_REVISION=78cb6185e063
+  export JL_PREV_REVISION=f448d3583dff
 </pre>
 
 <pre>
+    mkdir -p ~/tmp
     # Diff the manuals against the previous versions:
     cd $anno/checker-framework/checkers/manual
     hg diff -w -r$CF_PREV_REVISION . > ~/tmp/checkers-manual-diff
