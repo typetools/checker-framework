@@ -308,9 +308,10 @@ def main(argv):
     # Making the real release
     make_release(next_version, ant_args, real=True)
 
-    # Make Maven release
-    mvn_deploy_jsr308_all(next_version)
-    mvn_deploy_quals(next_version)
+# Temporarily commented out, mvn is not installed at CSE.  MDE 1/12/2011
+#    # Make Maven release
+#    mvn_deploy_jsr308_all(next_version)
+#    mvn_deploy_quals(next_version)
 
     checklinks(DEFAULT_SITE)
 
