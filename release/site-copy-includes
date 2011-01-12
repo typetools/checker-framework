@@ -4,4 +4,5 @@ checker-framework/specification/**
 checker-framework/*.html
 checker-framework/*.pdf
 jsr308/*.html
+jsr308/specification/*.html
 jsr308/*pdf
