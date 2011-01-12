@@ -1,13 +1,67 @@
 ----------------------------------------------------------------------
+Version 1.1.2, 12 Jan 2011
 
 Previously-unannounced checkers:
 
-  Fake enum checker to allow type-safe fake enum patterns.
+Fake Enum Checker (new):
+  A "fake enum" is a set of integers rather than a proper Java enum.  They
+  are used in legacy code and for efficiency (e.g., in Android).  The Fake
+  Enum Checker gives them the same safety guarantees as a proper Java enum.
 
-  Property file checker to ensure that valid keys are used for property
-  files and resource bundles.  Also includes a checker that code is properly
-  internationalized and a checker for compiler message keys as used in the
-  Checker Framework.
+Property File Checker (new):
+  Ensures that valid keys are used for property files and resource bundles.
+  Also includes a checker that code is properly internationalized and a
+  checker for compiler message keys as used in the Checker Framework.
+
+Signature Checker (new):
+  Ensures that different string representations of a Java type (e.g.,
+  "package.Outer.Inner" vs. "package.Outer$Inner" vs. "Lpackage/Outer$Inner;")
+  are not misused.
+
+Interning Checker enhancements:
+  Issues fewer false positives for code like "a==b || a.equals(b)"
+
+Foreign annotations:
+  The Checker Framework supports more non-Checker-Framework annotations.
+  This means that it can check already-annotated code without requiring you
+  to rewrite your annotations.
+    Add as an alias for checkers.interning.quals.Interned:
+      com.sun.istack.Interned
+    Add as aliases for checkers.nullness.quals.NonNull:
+      com.sun.istack.NotNull
+      org.netbeans.api.annotations.common.NonNull
+    Add as aliases for checkers.nullness.quals.Nullable:
+      com.sun.istack.Nullable
+      javax.validation.constraints.NotNull
+      org.netbeans.api.annotations.common.CheckForNull
+      org.netbeans.api.annotations.common.NullAllowed
+      org.netbeans.api.annotations.common.NullUnknown
+
+Manual improvements:
+  Improve installation instructions
+  Rewrite section on generics (thanks to Bert Fernandez and David Cok)
+    Also refactor the generics section into its own chapter
+  Rewrite section on @Unused and @Dependent
+  New manual section: Writing Java expressions as annotation arguments
+  Better explanation of warning suppression
+  JSR 308 is planned for Java 8, not Java 7
+
+Stub files:
+  Support nested classes by expressing them at top level in binary form: A$B
+  Improved error reporting when parsing stub files
+
+Annotated JDK:
+  New way of generating annotated JDK
+  jdk.jar file no longer appears in repository
+  Warning if you are not using the annotated JDK.
+
+Miscellaneous:
+  Warn if -source command-line argument does not support type annotations
+
+Many bug fixes
+  There are too many to list, but some notable ones are to local type
+  inference, generics, pre- and post-conditions (e.g., @NonNullOnEntry,
+  @AssertNonNull*), and map keys (@KeyFor).
 
 ----------------------------------------------------------------------
 Version 1.1.1, 18 Sep 2010
