@@ -110,8 +110,6 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
         this.visitorState = atypeFactory.getVisitorState();
         this.plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
-        
-        checker.setCurrentAnnotatedTypeFactory(atypeFactory);
     }
 
     // **********************************************************************
