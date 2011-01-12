@@ -121,18 +121,12 @@ testing the release)</li>
 <h3 id="Setup">Initial setup</h3>
 
 <ol>
-<li>
-<p>Check out plume-lib</p>
-<pre>
-  (cd; hg clone https://plume-lib.googlecode.com/hg/ plume-lib)
-</pre>
-</li>
 
 <li>Set environment variables (in your <tt>.bashrc</tt> file).
 <pre>
-  export PATH=${PATH}:$HOME/plume-lib/bin
-  export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
   export anno=/scratch/$USER/jsr308-release
+  export PATH=${PATH}:$anno/plume-lib/bin
+  export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
   export EDITOR=emacs
   # If dia and hevea are not on your path, add them, from either /uns or Michael Ernst's directory:
   export PATH=${PATH}:/homes/gws/mernst/bin/install/dia-0.97.1-install/bin:/homes/gws/mernst/bin/install/hevea-1.10/bin
@@ -158,10 +152,15 @@ prepared release directory, set up a release directory as follows:
 <li>
 <p>Check out the jsr308-langtools and checker-framework repositories:</p>
 <pre>
+    # First, plume-lib
+    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
+
     hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
+    hg clone https://jsr308-langtools.googlecode.com/hg/ annotation-tools
     # Just to be on the safe side.
     cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
+
 </pre>
 </li>
 
@@ -169,12 +168,15 @@ prepared release directory, set up a release directory as follows:
 testing site:</p>
 
 <pre>
-    cd release
+    cd /scratch/$USER/jsr308-release/checker-framework/release
     ant -f release.xml site-copy
 </pre>
 
 <p>and answer the prompt accordingly. The site will be created in
-<code>~/www/jsr308test</code> by default.</p></li>
+<code>~/www/jsr308test</code> by default.
+[TODO: make it possible to be created elsewhere, for users with limited
+disk space.  Or, just link from that directory to elsewhere.]
+</p></li>
 
 </ol>
 </li>
@@ -188,10 +190,16 @@ testing site:</p>
     uncommitted changes.  Each one of these <tt>hg</tt> commands should
     print "no changes found":</p>
 <pre>
-  cd $anno/checker-framework
+  cd $anno/plume-lib
   hg fetch
   hg outgoing
   cd $anno/jsr308-langtools
+  hg fetch
+  hg outgoing
+  cd $anno/annotation-tools
+  hg fetch
+  hg outgoing
+  cd $anno/checker-framework
   hg fetch
   hg outgoing
 </pre>
@@ -318,21 +326,6 @@ For example,
   export anno=$HOME/research/types
   export CFVERSION=1.0.3
 </pre>
-
-<li><p>Ensure that your checkouts are up to date and you have no
-    uncommitted changes.  Each one of these <tt>hg</tt> commands should
-    print "no changes found":</p>
-<pre>
-  cd $anno/checker-framework
-  hg fetch
-  hg outgoing
-  cd $anno/jsr308-langtools
-  hg fetch
-  hg outgoing
-</pre>
-</li>
-
-<li><p>Ensure that all regression tests pass.</p>
 
 <li>Set the <tt>anno</tt> and <tt>CFVERSION</tt> environment variables.
 <tt>CFVERSION</tt> is for the version being released.
