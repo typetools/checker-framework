@@ -6,7 +6,6 @@ import checkers.quals.*;
 
 /**
  * A generic fake enumeration qualifier that is parameterized by a name.
- * 
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

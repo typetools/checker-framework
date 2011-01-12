@@ -2,51 +2,51 @@ import checkers.fenum.quals.*;
 
 @SuppressWarnings("fenum:assignment.type.incompatible")
 public class TestPrimitive {
-	public final @Fenum("A") int ACONST1 = 1;
-	public final @Fenum("A") int ACONST2 = 2;
-	public final @Fenum("A") int ACONST3 = 3;
+  public final @Fenum("A") int ACONST1 = 1;
+  public final @Fenum("A") int ACONST2 = 2;
+  public final @Fenum("A") int ACONST3 = 3;
 
-	public final @Fenum("B") int BCONST1 = 4;
-	public final @Fenum("B") int BCONST2 = 5;
-	public final @Fenum("B") int BCONST3 = 6;
+  public final @Fenum("B") int BCONST1 = 4;
+  public final @Fenum("B") int BCONST2 = 5;
+  public final @Fenum("B") int BCONST3 = 6;
 }
 
 class FenumUser {
-	@Fenum("A") int state1 = new TestPrimitive().ACONST1;
-	@Fenum("A") int state3 = this.state1;
+  @Fenum("A") int state1 = new TestPrimitive().ACONST1;
+  @Fenum("A") int state3 = this.state1;
 
-	//:: (assignment.type.incompatible)
-	@Fenum("B") int state2 = new TestPrimitive().ACONST1;
-	
-	void foo(TestPrimitive t) {
-		//:: (assignment.type.incompatible)
-		state1 = 4;
-		
-		state1 = t.ACONST2;
-		state1 = t.ACONST3;
-		
-		//:: (assignment.type.incompatible)
-		state1 = t.BCONST1;
-		
-		//:: (assignment.type.incompatible)
-		int x = t.ACONST1;
-		
-		if( t.ACONST1 < t.ACONST2  ) {
-			// ok
-		}
+  //:: (assignment.type.incompatible)
+  @Fenum("B") int state2 = new TestPrimitive().ACONST1;
 
-		//:: (binary.type.incompatible)
-		if( t.ACONST1 < t.BCONST2  ) {
-		}
-		//:: (binary.type.incompatible)
-		if( t.ACONST1 == t.BCONST2  ) {
-		}
+  void foo(TestPrimitive t) {
+    //:: (assignment.type.incompatible)
+    state1 = 4;
 
-		//:: (binary.type.incompatible)
-		if( t.ACONST1 < 5 ) {
-		}
-		//:: (binary.type.incompatible)
-		if( t.ACONST1 == 5 ) {
-		}
-	}
+    state1 = t.ACONST2;
+    state1 = t.ACONST3;
+
+    //:: (assignment.type.incompatible)
+    state1 = t.BCONST1;
+
+    //:: (assignment.type.incompatible)
+    int x = t.ACONST1;
+
+    if( t.ACONST1 < t.ACONST2  ) {
+      // ok
+    }
+
+    //:: (binary.type.incompatible)
+    if( t.ACONST1 < t.BCONST2  ) {
+    }
+    //:: (binary.type.incompatible)
+    if( t.ACONST1 == t.BCONST2  ) {
+    }
+
+    //:: (binary.type.incompatible)
+    if( t.ACONST1 < 5 ) {
+    }
+    //:: (binary.type.incompatible)
+    if( t.ACONST1 == 5 ) {
+    }
+  }
 }

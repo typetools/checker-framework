@@ -1036,11 +1036,11 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedTypeMirror component;
             while (true) {
                 component = array.getComponentType();
-				if (array.getAnnotations().size() > 0) {
-					sb.append(' ');
-					sb.append(formatAnnotationString(array.getAnnotations()).trim());
-					sb.append(' ');
-				}
+                if (array.getAnnotations().size() > 0) {
+                    sb.append(' ');
+                    sb.append(formatAnnotationString(array.getAnnotations()).trim());
+                    sb.append(' ');
+                }
                 sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
                     sb.insert(0, component.getUnderlyingType().toString());
@@ -1164,7 +1164,7 @@ public abstract class AnnotatedTypeMirror {
         // annotation, then the type is ill-formed.  In that case, change
         // the defaulted lower bound to be consistent with the
         // explicitly-written upper bound.
-        // 
+        //
         // As a concrete example, if the default annotation is @Nullable,
         // then the type "X extends @NonNull Y" should not be converted
         // into "X extends @NonNull Y super @Nullable bottomtype" but be
@@ -1174,7 +1174,7 @@ public abstract class AnnotatedTypeMirror {
             if (fixedupLowerBoundAnnotations)
                 return;
             fixedupLowerBoundAnnotations = true;
-            
+
             if (actualType.getLowerBound() instanceof NullType) {
                 Set<AnnotationMirror> lAnnos = getLowerBound().getAnnotations();
                 Set<AnnotationMirror> uAnnos = getUpperBound().getAnnotations();
@@ -1502,7 +1502,7 @@ public abstract class AnnotatedTypeMirror {
                         ? extends AnnotatedTypeMirror> mappings) {
             // cannot substitute
             // return getCopy(true);
-        	// WMD wants to substitute primitive types!
+            // WMD wants to substitute primitive types!
             if (mappings.containsKey(this))
                 return mappings.get(this);
             return getCopy(true);

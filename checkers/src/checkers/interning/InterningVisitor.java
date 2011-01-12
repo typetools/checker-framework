@@ -92,7 +92,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         if (suppressClassAnnotation(left, right)) {
             return super.visitBinary(node, p);
         }
-            
+
         if (!left.hasAnnotation(INTERNED))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!right.hasAnnotation(INTERNED))
@@ -529,7 +529,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
     /** Returns true if the type's declaration has an @Interned annotation. */
     private boolean classIsAnnotated(AnnotatedTypeMirror type) {
-        
+
         TypeMirror tm = type.getUnderlyingType();
         if (tm instanceof TypeVariable) {
             tm = ((TypeVariable) tm).getUpperBound();
@@ -561,7 +561,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             }
         }
         return false;
-    }        
+    }
 
 
     /**

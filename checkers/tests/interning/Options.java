@@ -5,47 +5,47 @@ import java.util.*;
 // Test case lifted from plume.Options
 class Options {
 
-	public void minimal(String s) {
-		String arg = ""; // interned here
-		@Interned String arg2 = arg;
-		arg += s; // no longer interned
-		//:: (assignment.type.incompatible)
-		arg2 = arg;
-	}
+  public void minimal(String s) {
+    String arg = ""; // interned here
+    @Interned String arg2 = arg;
+    arg += s; // no longer interned
+    //:: (assignment.type.incompatible)
+    arg2 = arg;
+  }
 
-	public void minimal2(char c) {
-		String arg = ""; // interned here
-		@Interned String arg2 = arg;
-		arg += c; // no longer interned
-		//:: (assignment.type.incompatible)
-		arg2 = arg;
-	}
+  public void minimal2(char c) {
+    String arg = ""; // interned here
+    @Interned String arg2 = arg;
+    arg += c; // no longer interned
+    //:: (assignment.type.incompatible)
+    arg2 = arg;
+  }
 
-	public String[] otherparse(String args) {
+  public String[] otherparse(String args) {
 
-		// Split the args string on whitespace boundaries accounting for quoted
-		// strings.
-		args = args.trim();
-		List<String> arg_list = new ArrayList<String>();
-		String arg = "";
-		char active_quote = 0;
-		//for (int ii = 0; ii < args.length(); ii++) {
-			char ch = args.charAt(0);
-			// arg = arg + ch;
-			
-			//if ((ch == '\'') || (ch == '"')) {
-				arg += ch;
-			//}
-		//}
-		//:: (assignment.type.incompatible)
-		@Interned String arg2 = arg;
+    // Split the args string on whitespace boundaries accounting for quoted
+    // strings.
+    args = args.trim();
+    List<String> arg_list = new ArrayList<String>();
+    String arg = "";
+    char active_quote = 0;
+    //for (int ii = 0; ii < args.length(); ii++) {
+      char ch = args.charAt(0);
+      // arg = arg + ch;
 
-		if (!arg.equals(""))
-			arg_list.add(arg);
+      //if ((ch == '\'') || (ch == '"')) {
+        arg += ch;
+      //}
+    //}
+    //:: (assignment.type.incompatible)
+    @Interned String arg2 = arg;
 
-		String[] argsArray = arg_list.toArray(new String[arg_list.size()]);
-		return null;
-	}
+    if (!arg.equals(""))
+      arg_list.add(arg);
+
+    String[] argsArray = arg_list.toArray(new String[arg_list.size()]);
+    return null;
+  }
 
   public String[] parse (String args) {
 

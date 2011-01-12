@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 class NNOEStaticFields {
     static @Nullable String nullable = null;
     static @Nullable String otherNullable = null;
-	
+
     @NonNullOnEntry("nullable")
     void testF() {
         nullable.toString();
@@ -16,31 +16,31 @@ class NNOEStaticFields {
 
     @NonNullOnEntry("nullable")
     void testF3() {
-    	NNOEStaticFields.nullable.toString();
+        NNOEStaticFields.nullable.toString();
     }
 
     @NonNullOnEntry("NNOEStaticFields.nullable")
     void testF4() {
-    	NNOEStaticFields.nullable.toString();
+        NNOEStaticFields.nullable.toString();
     }
 
     class Inner {
-    	void m1(NNOEStaticFields out) {
-    		NNOEStaticFields.nullable = "haha!";
-    		out.testF4();
-    	}
+        void m1(NNOEStaticFields out) {
+                NNOEStaticFields.nullable = "haha!";
+                out.testF4();
+        }
 
-    	@NonNullOnEntry("NNOEStaticFields.nullable")
-    	void m2(NNOEStaticFields out) {
-    		out.testF4();
-    	}
+        @NonNullOnEntry("NNOEStaticFields.nullable")
+        void m2(NNOEStaticFields out) {
+                out.testF4();
+        }
     }
-    
-    
+
+
     //:: (field.not.found.nullness.parse.error)
     @NonNullOnEntry("NoClueWhatThisShouldBe") void testF5() {
-    	//:: (dereference.of.nullable)
-    	NNOEStaticFields.nullable.toString();
+        //:: (dereference.of.nullable)
+        NNOEStaticFields.nullable.toString();
     }
 
     void trueNegative() {

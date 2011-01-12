@@ -193,7 +193,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (areSameIgnoringValues(a1, a2))
             return areSame(a1, a2) ? a1 : root;
         if (lubs == null) {
-        	// WMD TODO: this does not seem to be needed
+            // WMD TODO: this does not seem to be needed
             // lubs = new HashMap<AnnotationPair, AnnotationMirror>();
             lubs = calculateLubs();
         }
@@ -204,17 +204,17 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
     // For caching results of glbs
     Map<AnnotationPair, AnnotationMirror> glbs = null;
-	@Override
-	public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-		if (areSameIgnoringValues(a1, a2))
+    @Override
+    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+        if (areSameIgnoringValues(a1, a2))
             return areSame(a1, a2) ? a1 : bottom;
         if (glbs == null) {
-        	glbs = calculateGlbs();
+            glbs = calculateGlbs();
         }
         AnnotationPair pair = new AnnotationPair(a1, a2);
         return glbs.get(pair);
-	}
-    
+    }
+
     /**
      * Most qualifiers have no value fields.  However, two annotations with
      * values are subtype of each other only if they have the same values.
@@ -333,53 +333,53 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             return a2;
         if (isSubtype(a2, a1))
             return a1;
-        
-    	Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
+
+        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
         for (AnnotationMirror a1Super : findSmallestTypes(supertypesMap.get(a1))) {
-        	// TODO: we take the first of the smallest supertypes, maybe we would
-        	// get a different LUB if we used a different one?
+            // TODO: we take the first of the smallest supertypes, maybe we would
+            // get a different LUB if we used a different one?
             AnnotationMirror a1Lub = findLub(a1Super, a2);
             if (a1Lub != null) {
                 outset.add(a1Lub);
             }
-        	if (a1Lub==null && a1Super==null) {
-        		// null is also used for Unqualified! If two qualifiers are separate
-        		// subtypes of unqualifed, this might happen.
-        		// I ran into this when KeyFor <: Unqualified and Covariant <: Unqualified.
-        		// I think it would be much nicer if Unqualified would not be optimized away...
-        		outset.add(null);
-        	}
+            if (a1Lub==null && a1Super==null) {
+                // null is also used for Unqualified! If two qualifiers are separate
+                // subtypes of unqualifed, this might happen.
+                // I ran into this when KeyFor <: Unqualified and Covariant <: Unqualified.
+                // I think it would be much nicer if Unqualified would not be optimized away...
+                outset.add(null);
+            }
         }
         if (outset.size()==1) {
-        	return outset.iterator().next();
+            return outset.iterator().next();
         }
         if (outset.size()>1) {
-        	outset = findSmallestTypes(outset);
-        	// TODO: more than one, incomparable supertypes. Just pick the first one.
-        	// if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
-        	return outset.iterator().next();
+            outset = findSmallestTypes(outset);
+            // TODO: more than one, incomparable supertypes. Just pick the first one.
+            // if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
+            return outset.iterator().next();
         }
         throw new AssertionError("Could not determine LUB for " + a1 + " and " + a2 + "\n" +
-                "Does the checker know about all type qualifiers?");
+                                 "Does the checker know about all type qualifiers?");
     }
 
     // remove all supertypes of elements contained in the set
     private Set<AnnotationMirror> findSmallestTypes(Set<AnnotationMirror> inset) {
-    	Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
-    	
-    	for( AnnotationMirror a1 : inset ) {
-    		Iterator<AnnotationMirror> outit = outset.iterator();
-    		while( outit.hasNext() ) {
-    			AnnotationMirror a2 = outit.next();
-    			if( a1!=a2 && isSubtype(a1, a2) ) {
-    				outit.remove();
-    			}
-    		}
-    	}
-		return outset;
-	}
+        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
 
-	/**
+        for( AnnotationMirror a1 : inset ) {
+            Iterator<AnnotationMirror> outit = outset.iterator();
+            while( outit.hasNext() ) {
+                AnnotationMirror a2 = outit.next();
+                if( a1!=a2 && isSubtype(a1, a2) ) {
+                    outit.remove();
+                }
+            }
+        }
+        return outset;
+    }
+
+    /**
      * Finds all the super qualifiers for an qualifier
      *
      * @param anno
@@ -402,7 +402,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         return supers;
     }
 
-    
+
     private Map<AnnotationPair, AnnotationMirror>  calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<AnnotationPair, AnnotationMirror>();
         for (AnnotationMirror a1 : supertypesGraph.keySet())
@@ -423,45 +423,45 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             return a1;
         if (isSubtype(a2, a1))
             return a2;
-        
-    	Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
+
+        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
         for (AnnotationMirror a1Sub : supertypesGraph.keySet()) {
-        	if (isSubtype(a1Sub, a1) && !a1Sub.equals(a1)) {
-        		AnnotationMirror a1lb = findGlb(a1Sub, a2);
-        		if (a1lb != null)
-        			outset.add(a1lb);
-        	}
+            if (isSubtype(a1Sub, a1) && !a1Sub.equals(a1)) {
+                AnnotationMirror a1lb = findGlb(a1Sub, a2);
+                if (a1lb != null)
+                    outset.add(a1lb);
+            }
         }
         if (outset.size()==1) {
-        	return outset.iterator().next();
+            return outset.iterator().next();
         }
         if (outset.size()>1) {
-        	outset = findGreatestTypes(outset);
-        	// TODO: more than one, incomparable subtypes. Pick the first one.
-        	// if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
-        	return outset.iterator().next();
+            outset = findGreatestTypes(outset);
+            // TODO: more than one, incomparable subtypes. Pick the first one.
+            // if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
+            return outset.iterator().next();
         }
         throw new AssertionError("Could not determine GLB for " + a1 + " and " + a2 + "\n" +
-        		"Does the checker know about all type qualifiers?");
+                "Does the checker know about all type qualifiers?");
     }
 
     // remove all subtypes of elements contained in the set
     private Set<AnnotationMirror> findGreatestTypes(Set<AnnotationMirror> inset) {
-    	Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
-    	
-    	for( AnnotationMirror a1 : inset ) {
-    		Iterator<AnnotationMirror> outit = outset.iterator();
-    		while( outit.hasNext() ) {
-    			AnnotationMirror a2 = outit.next();
-    			if( a1!=a2 && isSubtype(a2, a1) ) {
-    				outit.remove();
-    			}
-    		}
-    	}
-		return outset;
-	}
-    
-    
+        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
+
+        for( AnnotationMirror a1 : inset ) {
+            Iterator<AnnotationMirror> outit = outset.iterator();
+            while( outit.hasNext() ) {
+                AnnotationMirror a2 = outit.next();
+                if( a1!=a2 && isSubtype(a2, a1) ) {
+                    outit.remove();
+                }
+            }
+        }
+        return outset;
+    }
+
+
     private static class AnnotationPair {
         public final AnnotationMirror a1;
         public final AnnotationMirror a2;

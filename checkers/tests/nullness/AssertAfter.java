@@ -7,38 +7,38 @@ public class AssertAfter {
   @AssertNonNullAfter("value")
   @Pure
   public boolean repNulled() {
-	value = "";
+    value = "";
     return true;
   }
 
   public void plain() {
-      //:: (dereference.of.nullable)
-      value.toString();
+    //:: (dereference.of.nullable)
+    value.toString();
   }
 
   public void testAfter() {
-      repNulled();
-      value.toString();
+    repNulled();
+    value.toString();
   }
 
   public void testBefore() {
-      //:: (dereference.of.nullable)
-      value.toString();
-      repNulled();
+    //:: (dereference.of.nullable)
+    value.toString();
+    repNulled();
   }
 
   public void withCondition() {
-      if (toString() == null) {
-          repNulled();
-      }
-      //:: (dereference.of.nullable)
-      value.toString();
+    if (toString() == null) {
+      repNulled();
+    }
+    //:: (dereference.of.nullable)
+    value.toString();
   }
 
   public void inConditionInTrue() {
-      if (repNulled()) {
-          value.toString();
-      } else { }
+    if (repNulled()) {
+      value.toString();
+    } else { }
   }
 
   // skip-test: Come back when working on improved flow

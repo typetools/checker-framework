@@ -3,14 +3,14 @@ import checkers.signature.quals.*;
 public class SignatureTypeFactoryTest {
 
     // The hierarchy of type representations contains:
-    //     FullyQualifiedName.class, 
-    //     BinaryName.class, 
+    //     FullyQualifiedName.class,
+    //     BinaryName.class,
     //     SourceName.class,
-    //     FieldDescriptor.class, 
+    //     FieldDescriptor.class,
     //     UnannotatedString.class,
     //     SignatureBottom.class
     // There are also signature representations, which are not handled yet.
-  
+
     void bn() {
       String s1 = "a";
       String s2 = "a.b";
@@ -25,7 +25,7 @@ public class SignatureTypeFactoryTest {
       String s10 = "dummy";
       String s11 = null;
 
-      String us; // @UnannotatedString 
+      String us; // @UnannotatedString
       @FullyQualifiedName String fqn;
       @BinaryName String bn;
       @SourceName String sn;

@@ -1,7 +1,7 @@
 import checkers.igj.quals.*;
 
 /**
- * An Immutable class that represent a date
+ * An Immutable class that represents a date
  */
 @Immutable
 class Date {
@@ -18,7 +18,7 @@ class Date {
     public int testMutate() {
         this.time = 4;  // Error: Cannot re-assign in a method with RO receiver
         this.time++;    // Error: Cannot re-assign in a method with RO receiver
-	return this.time;
+        return this.time;
     }
 
     public int mutableReciever() /*@Mutable*/ // Error: No method with mutable receiver within Immutable Class
@@ -43,7 +43,7 @@ class Point {
 
     public int hashCode() /*@ReadOnly*/ {
         x += 4; // Error: ReadOnly receiver
-	return 0;
+        return 0;
     }
 
     public static @I Point getMidPoint(@I Point p1, @I Point p2) {

@@ -4,152 +4,152 @@ import java.util.*;
 
 public class AssertAfterChecked {
 
-	class InitField {
-		@Nullable Object f;
+  class InitField {
+    @Nullable Object f;
 
-		@AssertNonNullAfter("f")
-		void init() {
-			f = new Object();
-		}
+    @AssertNonNullAfter("f")
+    void init() {
+      f = new Object();
+    }
 
-		//:: (assert.postcondition.not.satisfied)
-		@AssertNonNullAfter("f") void initBad() {
-		}
+    //:: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("f") void initBad() {
+    }
 
-		void testInit() {
-			init();
-			f.toString();
-		}
-	}
-	
-	static class InitStaticField {
-		static @Nullable Object f;
+    void testInit() {
+      init();
+      f.toString();
+    }
+  }
 
-		@AssertNonNullAfter("f")
-		void init() {
-			f = new Object();
-		}
+  static class InitStaticField {
+    static @Nullable Object f;
 
-		@AssertNonNullAfter("f")
-		void init2() {
-			InitStaticField.f = new Object();
-		}
+    @AssertNonNullAfter("f")
+    void init() {
+      f = new Object();
+    }
 
-		//:: (assert.postcondition.not.satisfied)
-		@AssertNonNullAfter("f") void initBad() {
-		}
+    @AssertNonNullAfter("f")
+    void init2() {
+      InitStaticField.f = new Object();
+    }
 
-		void testInit() {
-			init();
-			f.toString();
-		}
-		
-		@AssertNonNullAfter("InitStaticField.f")
-		void initE() {
-			f = new Object();
-		}
+    //:: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("f") void initBad() {
+    }
 
-		@AssertNonNullAfter("InitStaticField.f")
-		void initE2() {
-			InitStaticField.f = new Object();
-		}
+    void testInit() {
+      init();
+      f.toString();
+    }
 
-		//:: (assert.postcondition.not.satisfied)
-		@AssertNonNullAfter("InitStaticField.f") void initBadE() {
-		}
+    @AssertNonNullAfter("InitStaticField.f")
+    void initE() {
+      f = new Object();
+    }
 
-		void testInitE() {
-			initE();
-			// TODO: we need to also support the unqualified static field access?
-			// f.toString();
-		}
+    @AssertNonNullAfter("InitStaticField.f")
+    void initE2() {
+      InitStaticField.f = new Object();
+    }
 
-		void testInitE2() {
-			initE();
-			InitStaticField.f.toString();
-		}
-	}
-	
-	class TestParams {
-		//:: warning: (nullness.parse.error)
-		@AssertNonNullAfter("get(#0)") void init(TestParams p) {
-			
-		}
+    //:: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("InitStaticField.f") void initBadE() {
+    }
 
-		@Nullable Object get(Object o) {
-			return null;
-		}
-		
-		
-		void testInit1() {
-			init(this);
-			get(this).toString();
-		}
+    void testInitE() {
+      initE();
+      // TODO: we need to also support the unqualified static field access?
+      // f.toString();
+    }
 
-		void testInit1b() {
-			init(this);
-			// TODO: the explicit this does not work :-((
-			// this.get(this).toString();
-		}
+    void testInitE2() {
+      initE();
+      InitStaticField.f.toString();
+    }
+  }
 
-		void testInit2(TestParams p) {
-			init(p);
-			get(p).toString();
-		}
+  class TestParams {
+    //:: warning: (nullness.parse.error)
+    @AssertNonNullAfter("get(#0)") void init(TestParams p) {
 
-		void testInit3(TestParams p) {
-			p.init(this);
-			p.get(this).toString();
-		}
+    }
 
-		void testInit4(TestParams p) {
-			p.init(this);
-			//:: (dereference.of.nullable)
-			this.get(this).toString();
-		}
+    @Nullable Object get(Object o) {
+      return null;
+    }
 
-	}
-	
-	class WithReturn {
-		@Nullable Object f;
 
-		@AssertNonNullAfter("f")
-		int init1() {
-			f = new Object();
-			return 0;
-		}
+    void testInit1() {
+      init(this);
+      get(this).toString();
+    }
 
-		@AssertNonNullAfter("f")
-		int init2() {
-			if (5==5) {
-				f = new Object();
-				return 0;
-			} else {
-				f = new Object();
-				return 1;
-			}
-		}
+    void testInit1b() {
+      init(this);
+      // TODO: the explicit this does not work :-((
+      // this.get(this).toString();
+    }
 
-		//:: (assert.postcondition.not.satisfied)
-		@AssertNonNullAfter("f") int initBad1() {
-			return 0;
-		}
+    void testInit2(TestParams p) {
+      init(p);
+      get(p).toString();
+    }
 
-		//:: (assert.postcondition.not.satisfied)
-		@AssertNonNullAfter("f") int initBad2() {
-			if (5==5) {
-				return 0;
-			} else {
-				f = new Object();
-				return 1;
-			}
-		}
-		
-		void testInit() {
-			init1();
-			f.toString();
-		}
-	}
+    void testInit3(TestParams p) {
+      p.init(this);
+      p.get(this).toString();
+    }
 
-	
+    void testInit4(TestParams p) {
+      p.init(this);
+      //:: (dereference.of.nullable)
+      this.get(this).toString();
+    }
+
+  }
+
+  class WithReturn {
+    @Nullable Object f;
+
+    @AssertNonNullAfter("f")
+    int init1() {
+      f = new Object();
+      return 0;
+    }
+
+    @AssertNonNullAfter("f")
+    int init2() {
+      if (5==5) {
+        f = new Object();
+        return 0;
+      } else {
+        f = new Object();
+        return 1;
+      }
+    }
+
+    //:: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("f") int initBad1() {
+      return 0;
+    }
+
+    //:: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("f") int initBad2() {
+      if (5==5) {
+        return 0;
+      } else {
+        f = new Object();
+        return 1;
+      }
+    }
+
+    void testInit() {
+      init1();
+      f.toString();
+    }
+  }
+
+
 }

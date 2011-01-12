@@ -125,13 +125,13 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
     private boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
-       
+
         for ( ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-        	MethodSymbol ms = (MethodSymbol) ee;        
-        	long mod = ms.flags();
-        	
+            MethodSymbol ms = (MethodSymbol) ee;
+            long mod = ms.flags();
+
             if ((mod & Flags.SYNTHETIC) == 0) {
-            	return true;
+                return true;
             }
         }
         return false;

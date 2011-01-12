@@ -8,12 +8,12 @@ import checkers.types.AnnotatedTypeFactory;
 import com.sun.source.tree.CompilationUnitTree;
 
 @TypeQualifiers({
-    BinaryName.class, 
-    BinarySignature.class, 
-    FullyQualifiedName.class, 
-    FullyQualifiedSignature.class, 
+    BinaryName.class,
+    BinarySignature.class,
+    FullyQualifiedName.class,
+    FullyQualifiedSignature.class,
     SourceName.class,
-    FieldDescriptor.class, 
+    FieldDescriptor.class,
     MethodDescriptor.class,
     UnannotatedString.class,
     SignatureBottom.class

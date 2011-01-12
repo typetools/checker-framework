@@ -400,7 +400,7 @@ public class StubParser {
         }
         if (warnIfNotFound || debugStubParser)
             System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
-        if (debugStubParser) 
+        if (debugStubParser)
             for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", method);
         return null;
@@ -419,7 +419,7 @@ public class StubParser {
         }
         if (warnIfNotFound || debugStubParser)
             System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
-        if (debugStubParser) 
+        if (debugStubParser)
             for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", method);
         return null;
@@ -433,7 +433,7 @@ public class StubParser {
         }
         if (warnIfNotFound || debugStubParser)
             System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
-        if (debugStubParser) 
+        if (debugStubParser)
             for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", field);
         return null;
