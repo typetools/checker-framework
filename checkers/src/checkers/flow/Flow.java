@@ -130,11 +130,11 @@ public class Flow extends TreePathScanner<Void, Void> {
     // protected GenKillBits<AnnotationMirror> annosWhenFalse;
 
     public static class SplitTuple {
-    	public GenKillBits<AnnotationMirror> annosWhenTrue;
-    	public GenKillBits<AnnotationMirror> annosWhenFalse;
+        public GenKillBits<AnnotationMirror> annosWhenTrue;
+        public GenKillBits<AnnotationMirror> annosWhenFalse;
     }
-    
-    
+
+
     /**
      * Stores the result of liveness analysis, required by the GEN-KILL analysis
      * for proper handling of jumps (break, return, throw, etc.).
@@ -344,17 +344,17 @@ public class Flow extends TreePathScanner<Void, Void> {
                 // annotation that was previously used
                 // for (AnnotationMirror oldsuper : eltType.getAnnotations()) {
                 for (AnnotationMirror other : annotations) {
-                	if (!other.equals(annotation) &&
-                			annos.contains(other)) {
-                		// The get is not necessary and might observe annos in an invalid state.
-                		// annos.get(other, idx)
-                		annos.clear(other, idx);
-                	}
+                        if (!other.equals(annotation) &&
+                                        annos.contains(other)) {
+                                // The get is not necessary and might observe annos in an invalid state.
+                                // annos.get(other, idx)
+                                annos.clear(other, idx);
+                        }
                 }
             } else if (rIdx >= 0 && annos.get(annotation, rIdx)) {
                 annos.set(annotation, idx);
             } else {
-            	annos.clear(annotation, idx);
+                annos.clear(annotation, idx);
             }
         }
         // just to make sure everything worked correctly
@@ -385,12 +385,12 @@ public class Flow extends TreePathScanner<Void, Void> {
         int idx = vars.indexOf(elt);
         if (idx < 0) return;
 
-        // WMD: if we're setting something, can the GenKillBits invariant be violated? 
+        // WMD: if we're setting something, can the GenKillBits invariant be violated?
         for (AnnotationMirror annotation : annotations) {
             if (hasAnnotation(rhs, annotation))
                 annos.set(annotation, idx);
             else
-            	annos.clear(annotation, idx);
+                annos.clear(annotation, idx);
         }
     }
 
@@ -514,8 +514,8 @@ public class Flow extends TreePathScanner<Void, Void> {
             scan(tree, null);
         }
         if (annos != null) {
-        	SplitTuple res = split();
-        	return res;
+                SplitTuple res = split();
+                return res;
         }
         return new SplitTuple();
     }
@@ -524,10 +524,10 @@ public class Flow extends TreePathScanner<Void, Void> {
      * Split the bitset before a conditional branch.
      */
     protected SplitTuple split() {
-    	SplitTuple res = new SplitTuple();
+        SplitTuple res = new SplitTuple();
         res.annosWhenFalse = GenKillBits.copy(annos);
         res.annosWhenTrue = annos;
-    	annos = null;
+        annos = null;
         return res;
     }
 
@@ -658,9 +658,9 @@ public class Flow extends TreePathScanner<Void, Void> {
     // This is an exact copy of visitAssignment()
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-    	// System.err.println("in vCA: " + node);
+        // System.err.println("in vCA: " + node);
 
-    	ExpressionTree var = node.getVariable();
+        ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         // if (!(var instanceof IdentifierTree))
         scanExpr(var);
@@ -668,14 +668,14 @@ public class Flow extends TreePathScanner<Void, Void> {
         propagate(var, node);
         // if (var instanceof IdentifierTree)
         //     this.scan(var, p);
-        
+
         // WMD added this to get (s2 = (s1 += 1)) working.
         // Is something similar needed for other expressions?
         // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
         AnnotatedTypeMirror t = factory.getAnnotatedType(var);
         for (AnnotationMirror a : annotations) {
             if (hasAnnotation(t, a)) {
-            	flowResults.put(node, a);
+                flowResults.put(node, a);
             }
         }
 
@@ -684,11 +684,11 @@ public class Flow extends TreePathScanner<Void, Void> {
         // interned. For other checkers, this behavior is wrong, e.g. in the Fenum Checker
         // it leads to FenumTop being determined instead of a FenumUnqualified.
         // if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
-        // 	 clearAnnos(var);
+        //       clearAnnos(var);
 
         return null;
-	}
-    
+        }
+
     /*
     private void clearAnnos(Tree tree) {
         Element elt = InternalUtils.symbol(tree);
@@ -702,7 +702,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         }
     }
     */
-    
+
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
         scan(node.getVariable(), p);
@@ -766,12 +766,12 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits<AnnotationMirror> annosBeforeElse = split.annosWhenFalse;
         annos = split.annosWhenTrue;
         // annosWhenTrue = annosWhenFalse = null;
-        
+
         boolean aliveBeforeThen = alive;
 
         scanStat(node.getThenStatement());
         popLastLevel();
-        
+
         pushNewLevel();
         StatementTree elseStmt = node.getElseStatement();
         if (elseStmt != null ) {
@@ -783,8 +783,8 @@ public class Flow extends TreePathScanner<Void, Void> {
             scanStat(elseStmt);
 
             if (!alive) {
-            	// the else branch is not alive at the end
-            	// we use the liveness-result from the then branch
+                // the else branch is not alive at the end
+                // we use the liveness-result from the then branch
                 alive = aliveAfterThen;
                 // annosAfterThen.or(annos);
                 GenKillBits.orlub(annosAfterThen, annos, annoRelations);
@@ -814,7 +814,7 @@ public class Flow extends TreePathScanner<Void, Void> {
             Void p) {
 
         // Split and merge as for an if/else.
-    	SplitTuple split = scanCond(node.getCondition());
+        SplitTuple split = scanCond(node.getCondition());
 
         GenKillBits<AnnotationMirror> before = split.annosWhenFalse;
         annos = split.annosWhenTrue;
@@ -826,7 +826,7 @@ public class Flow extends TreePathScanner<Void, Void> {
         scanExpr(node.getFalseExpression());
         // annos.and(after);
         GenKillBits.andlub(annos, after, annoRelations);
-        
+
         return null;
     }
 
@@ -835,8 +835,8 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits<AnnotationMirror> annoCond;
         GenKillBits<AnnotationMirror> annoEntry;
         GenKillBits<AnnotationMirror> annoCondTrue;
-        
-		// compare this to the loop implementation in the other loop visitors and decide which is nicer.
+
+                // compare this to the loop implementation in the other loop visitors and decide which is nicer.
         // 1:
         annoEntry = GenKillBits.copy(annos);
         SplitTuple split = scanCond(node.getCondition());
@@ -850,15 +850,15 @@ public class Flow extends TreePathScanner<Void, Void> {
         GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
         // annos.and(annoEntry);
         GenKillBits.andlub(annos, annoEntry, annoRelations);
-        
-        // 3 (like 1):    
+
+        // 3 (like 1):
         annoEntry = GenKillBits.copy(annos);
         split = scanCond(node.getCondition());
         annoCond = split.annosWhenFalse;
         annos = split.annosWhenTrue;
         scanStat(node.getStatement());
 
-        
+
         annos = annoCond;
         return null;
     }
@@ -895,13 +895,13 @@ public class Flow extends TreePathScanner<Void, Void> {
             annoCond = split.annosWhenFalse;
             annos = split.annosWhenTrue;
             annoCondTrue = split.annosWhenTrue;
-            
+
             scanStat(node.getStatement());
             for (StatementTree tree : node.getUpdate())
                 scanStat(tree);
-            
+
             if (pass) break;
-            
+
             // annosWhenTrue.and(annoEntry);
             GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
             // annos.and(annoEntry);
@@ -990,7 +990,7 @@ public class Flow extends TreePathScanner<Void, Void> {
                 && TreeUtils.enclosingOfKind(getCurrentPath(), Tree.Kind.TRY) != null) {
             if (!tryBits.isEmpty())
                 // tryBits.peek().and(annos);
-            	GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
+                GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
         }
 
         return null;
@@ -1025,22 +1025,22 @@ public class Flow extends TreePathScanner<Void, Void> {
         // Intraprocedural, so save and restore bits.
         GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
         List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
-        
+
         try {
             super.visitMethod(node, p);
             return null;
         } finally {
-        	visitMethodEndCallback(node);
+                visitMethodEndCallback(node);
             annos = prev;
             vars = prevVars;
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
     }
-    
+
     // TODO: documentation.
     public void visitMethodEndCallback(MethodTree node) {
-    	
+
     }
 
     // **********************************************************************

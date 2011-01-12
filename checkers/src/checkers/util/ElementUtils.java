@@ -40,7 +40,7 @@ public class ElementUtils {
         }
         return (PackageElement) result;
     }
-    
+
     /**
      * Returns true if the element is a static element: whether it is a static
      * field, static method, or static class

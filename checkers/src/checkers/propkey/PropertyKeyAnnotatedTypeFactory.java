@@ -17,7 +17,7 @@ import checkers.types.TreeAnnotator;
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
  * that contain values from lookupKeys.
- *  
+ *
  * @author wmdietl
  */
 public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
@@ -36,16 +36,16 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
            return new KeyLookupTreeAnnotator(checker, this, PropertyKey.class);
     }
 
-       
+
     /**
      * This TreeAnnotator checks for every String literal whether it is included in the lookup
      * keys. If it is, the given annotation is added to the literal; otherwise, nothing happens.
      * Subclasses of this AnnotatedTypeFactory can directly reuse this class and use a different
-     * annotation as parameter. 
-     */ 
+     * annotation as parameter.
+     */
     protected class KeyLookupTreeAnnotator extends TreeAnnotator {
         Class<? extends Annotation> theAnnot;
-        
+
         public KeyLookupTreeAnnotator(BaseTypeChecker checker,
                 AnnotatedTypeFactory tf, Class<? extends Annotation> annot) {
             super(checker, tf);

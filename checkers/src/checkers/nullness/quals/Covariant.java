@@ -10,7 +10,7 @@ import java.lang.annotation.*;
  * The prime example is Map.Entry<K>.
  * It is not checked whether the annotated class is immutable.
  * The value is the set of zero-based indices of the type parameters that should be covariant.
- * 
+ *
  * TODO: move to a different package?
  *
  */
@@ -19,5 +19,5 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Covariant {
-	int[] value();
+  int[] value();
 }

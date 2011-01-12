@@ -156,7 +156,7 @@ public class AnnotatedTypeFactory {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "#" + uid;
-    }        
+    }
 
     /**
      * For an annotated type parameter or wildcard (e.g.

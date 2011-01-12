@@ -7,10 +7,10 @@ import checkers.quals.ImplicitFor;
 import com.sun.source.tree.Tree;
 
 @TypeQualifier
-@SubtypeOf({SourceName.class, 
-    BinarySignature.class, 
-    FullyQualifiedSignature.class, 
-    FieldDescriptor.class, 
+@SubtypeOf({SourceName.class,
+    BinarySignature.class,
+    FullyQualifiedSignature.class,
+    FieldDescriptor.class,
     MethodDescriptor.class
     })
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})

@@ -4,9 +4,9 @@ public class ConditionalNullness {
 
     @AssertNonNullIfTrue({"field", "method()"})
     boolean checkNonNull() {
-    	// don't bother with the implementation
-    	//:: (assertiftrue.postcondition.not.satisfied)
-    	return true;
+        // don't bother with the implementation
+        //:: (assertiftrue.postcondition.not.satisfied)
+        return true;
     }
 
     @Nullable Object field = null;
@@ -36,7 +36,7 @@ public class ConditionalNullness {
     void testSelfWithCheckNegation() {
         if (checkNonNull()) { }
         else {
-        	//:: (dereference.of.nullable)
+                //:: (dereference.of.nullable)
             field.toString();   // error
         }
         // TODO: actually, both branches ensure that field is non-null.

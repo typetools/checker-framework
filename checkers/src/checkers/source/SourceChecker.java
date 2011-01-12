@@ -212,15 +212,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-    	if(e==null) {
-    		System.err.println("Refusing to process empty TypeElement");
-    		return;
-    	}
-    	if(p==null) {
-    		System.err.println("Refusing to process empty TreePath in TypeElement: " + e);
-    		return;
-    	}
-    	
+        if(e==null) {
+                System.err.println("Refusing to process empty TypeElement");
+                return;
+        }
+        if(p==null) {
+                System.err.println("Refusing to process empty TreePath in TypeElement: " + e);
+                return;
+        }
+
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
