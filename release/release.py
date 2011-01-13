@@ -262,13 +262,16 @@ def format_email(version, checkers_header=None, langtools_header=None, to=TO):
 To:  %s
 Subject: Release %s of the Checker Framework and Type Annotations compiler
 
-We have released a new version of the Type Annotations (JSR 308) compiler
-and of the Checker Framework.  The Type Annotations compiler supports the
-type annotation syntax that is planned for a future version of the Java
-language.  The Checker Framework lets you create and/or run pluggable
-type-checkers, in order to detect and prevent bugs in your code.
+We have released a new version of the Type Annotations (JSR 308) compiler,
+the Checker Framework, and the Eclipse plugin for the Checker Framework.
+ * The Type Annotations compiler supports the type annotation syntax that is
+   planned for a future version of the Java language.
+ * The Checker Framework lets you create and/or run pluggable type-checkers,
+   in order to detect and prevent bugs in your code.  
+ * The Eclipse plugin makes it more convenient to run the Checker Framework.
 
-Notable changes include: [[ FILL ME HERE ]]
+Notable changes include:
+[[ FILL ME HERE ]]
 
 Changes for Checker Framework
 %s
