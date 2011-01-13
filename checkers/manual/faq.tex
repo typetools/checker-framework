@@ -328,10 +328,15 @@ lacks.
 
 \section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
 
+You should parse this as:
+(\textbf{\<@NonNull Object>}) (\textbf{\<@Nullable []>}).
+Each annotation precedes the component of the type that it qualifies.
+
+Thus,
 \<@NonNull Object @Nullable []> is a possibly-null array of non-null
-objects.  Note that even though the first token in the type is
-``\<@NonNull>'', that annotation applies to the element
-type \<Object>.  The annotation \<@Nullable> applies to the
+objects.  Note that the first token in the type,
+``\<@NonNull>'', applies to the element
+type \<Object>, not to the array type as a whole.  The annotation \<@Nullable> applies to the
 array (\<[]>).
 
 Similarly,
