@@ -82,6 +82,7 @@ DEFAULT_PATHS = (
 #    '/homes/gws/mernst/bin/share-plume',
     '/homes/gws/mernst/bin/Linux-i686',
     '/uns/bin',
+    '/homes/gws/mali/local/share/maven/bin',
     '.',
 )
 
@@ -308,10 +309,9 @@ def main(argv):
     # Making the real release
     make_release(next_version, ant_args, real=True)
 
-# Temporarily commented out, mvn is not installed at CSE.  MDE 1/12/2011
-#    # Make Maven release
-#    mvn_deploy_jsr308_all(next_version)
-#    mvn_deploy_quals(next_version)
+    # Make Maven release
+    mvn_deploy_jsr308_all(next_version)
+    mvn_deploy_quals(next_version)
 
     checklinks(DEFAULT_SITE)
 
