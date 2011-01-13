@@ -108,7 +108,7 @@ def update_projects(paths=PROJECT_ROOTS):
         print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
-def commit_and_push(version, paths=PROJECT_ROOTS, tag_prefix="checkeres-"):
+def commit_and_push(version, paths=PROJECT_ROOTS, tag_prefix="checkers-"):
     for path in PROJECT_ROOTS:
         execute('hg -R %s commit -m "new release %s"' % (path, version))
         execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
