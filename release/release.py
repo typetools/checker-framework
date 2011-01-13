@@ -108,10 +108,14 @@ def update_projects(paths=PROJECT_ROOTS):
         print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
-def commit_and_push(version, paths=PROJECT_ROOTS):
+def commit_and_push(version, paths=PROJECT_ROOTS, tag_prefix="checkers-"):
     for path in PROJECT_ROOTS:
         execute('hg -R %s commit -m "new release %s"' % (path, version))
+        execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
         execute('hg -R %s push' % path)
+
+def ensure_group_access(path="/cse/www2/types/"):
+    execute('chmod -R g+w %s' % path)
 
 def file_contains(path, text):
     f = open(path, 'r')
@@ -320,6 +324,7 @@ def main(argv):
     print("\n\n\n\n\n")
 
     commit_and_push(next_version)
+    ensure_group_access()
 
     print("You have just made the release.  Please announce it to the world")
     print("Here is an email template:")
