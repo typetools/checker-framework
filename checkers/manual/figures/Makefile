@@ -21,6 +21,9 @@ igj.png: igj.pdf
 	convert -geometry 406x224 $< $@
 javari.png: javari.pdf
 	convert -geometry 406x224 $< $@
+# Direct dia translation overlays the "" and vowel in "Fully" and "Field".
+signature-types.png: signature-types.pdf
+	convert -geometry 406x224 $< $@
 
 clean:
 	@\rm *.eps
