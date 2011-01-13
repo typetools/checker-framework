@@ -3,9 +3,12 @@ package checkers.nullness;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.*;
+import checkers.nullness.quals.AssertNonNullIfFalse;
+import checkers.nullness.quals.AssertNonNullIfTrue;
 import checkers.nullness.quals.LazyNonNull;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
@@ -227,6 +230,24 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 nonInitializedFields = oldFields;
             }
         }
+
+        ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
+        if (elt.getAnnotation(AssertNonNullIfTrue.class) != null
+        	&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
+
+        	checker.report(
+        			Result.failure("assertiftrue.only.on.boolean"),
+        			node);
+        }
+
+        if (elt.getAnnotation(AssertNonNullIfFalse.class) != null
+        		&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
+
+        	checker.report(
+        			Result.failure("assertiffalse.only.on.boolean"),
+        			node);
+        }
+
         return super.visitMethod(node, p);
     }
 
