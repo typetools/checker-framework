@@ -1,7 +1,13 @@
 ----------------------------------------------------------------------
-Version 1.1.2, 12 Jan 2011
+Version 1.1.3
 
-Previously-unannounced checkers:
+@Covariant annotation
+
+Manual:
+  Signature Checker is now documented
+
+----------------------------------------------------------------------
+Version 1.1.2, 12 Jan 2011
 
 Fake Enum Checker (new):
   A "fake enum" is a set of integers rather than a proper Java enum.  They
