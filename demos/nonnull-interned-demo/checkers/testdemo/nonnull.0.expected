@@ -1,0 +1,12 @@
+src/checkers/nonnull/NonnullAnnotatedTypeFactory.java:201: incompatible types.
+        Element elt = InternalUtils.symbol(id);
+                                          ^
+  found   : @Nullable Element
+  required: @NonNull Element
+1 error
+
+BUILD FAILED
+build.xml:9: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 1 second
