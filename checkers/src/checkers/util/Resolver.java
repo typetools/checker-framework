@@ -138,11 +138,17 @@ public class Resolver {
         try {
             return (Symbol)method.invoke(resolve, args);
         } catch (IllegalAccessException e) {
-            throw new AssertionError("Unexpected Reflection error", e);
+            Error err = new AssertionError("Unexpected Reflection error");
+            err.initCause(e);
+            throw err;
         } catch (IllegalArgumentException e) {
-            throw new AssertionError("Unexpected Reflection error", e);
+            Error err = new AssertionError("Unexpected Reflection error");
+            err.initCause(e);
+            throw err;
         } catch (InvocationTargetException e) {
-            throw new AssertionError("Unexpected Reflection error", e);
+            Error err = new AssertionError("Unexpected Reflection error");
+            err.initCause(e);
+            throw err;
         }
     }
 }
