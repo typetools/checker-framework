@@ -2,6 +2,7 @@ package checkers.signature.quals;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import java.lang.annotation.Target;
 
 /**
  * Since binary names (@BinaryName) and fully qualified names (@FullyQualifiedName) differ only
