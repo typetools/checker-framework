@@ -104,7 +104,7 @@ PROJECT_ROOTS = (
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
         execute('hg -R %s pull' % path)
-	execute('hg -R %s update' % path)
+        execute('hg -R %s update' % path)
         print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
@@ -133,11 +133,17 @@ def file_prepend(path, text):
     f.write(contents)
     f.close()
 
+def retrieve_changes(root, prev_version, prefix="checkers-"):
+    return execute(
+            "hg -R %s log -r %s%s:tip --template ' * {desc}\n'" %
+                (root, prefix, prev_version),
+                capture_output=True)
+
 EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     raise Exception('EDITOR environment variable is not set')
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
-def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
+def edit_checkers_changelog(version, changes="", path=CHECKERS_CHANGELOG):
     edit = raw_input("Edit the Checker Framework changelog? [Y/n] ")
     if not (edit == "n"):
         if not file_contains(path, version):
@@ -145,15 +151,18 @@ def edit_checkers_changelog(version, path=CHECKERS_CHANGELOG):
             today = datetime.datetime.now().strftime("%d %b %Y")
             file_prepend(path,"""Version %s, %s
 
+
+%s
+
 ----------------------------------------------------------------------
-""" % (version, today))
+""" % (version, today, changes))
         execute([EDITOR, path])
 
 def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
 
 LANGTOOLS_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
-def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
+def edit_langtools_changelog(version, changes="", path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
     edit = raw_input("Edit the JSR308 langtools changelog? [Y/n] ")
@@ -166,8 +175,10 @@ def edit_langtools_changelog(version, path=LANGTOOLS_CHANGELOG):
 Base build
   Updated to OpenJDK langtools build b%s
 
+%s
+
 ----------------------------------------------------------------------
-""" % (version, today, latest_jdk))
+""" % (version, today, latest_jdk, changes))
         execute([EDITOR, path])
 
 def changelog_header_langtools(file=LANGTOOLS_CHANGELOG):
@@ -213,17 +224,18 @@ CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers-quals.jar')
 def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
 
-def execute(command_args, halt_if_fail=True):
+def execute(command_args, halt_if_fail=True, capture_output=False):
     print("Executing: %s" % (command_args))
     import shlex
-    if isinstance(command_args, str):
-        arg = shlex.split(command_args)
-        r = subprocess.call(arg)
+    args = shlex.split(command_args) if isinstance(command_args, str) else command_args
+
+    if capture_output:
+        return subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
     else:
-        r = subprocess.call(command_args)
-    if halt_if_fail and r:
-        raise Exception('Error %s while executing %s' % (r, command_args))
-    return r
+        r = subprocess.call(args)
+        if halt_if_fail and r:
+            raise Exception('Error %s while executing %s' % (r, command_args))
+        return r
 
 def changelog_header(filename):
     f = open(filename, 'r')
@@ -298,8 +310,10 @@ def main(argv):
     # Update repositories
     update_projects()
 
-    edit_checkers_changelog(version=next_version)
-    edit_langtools_changelog(version=next_version)
+    checkers_changes = retrieve_changes(REPO_ROOT, curr_version)
+    edit_checkers_changelog(version=next_version,changes=checkers_changes)
+    langtools_changes = retrieve_changes(JSR308_LANGTOOLS, curr_version)
+    edit_langtools_changelog(version=next_version,changes=langtools_changes)
 
     # Making the first release
     ant_args = ""
