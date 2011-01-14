@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
  */
 @TypeQualifier
 @SubtypeOf({BinaryName.class, FullyQualifiedName.class})
-@Target( {} )
+@Target({}) // empty target prevents programmers from writing this in a program
 public @interface SourceName {}
