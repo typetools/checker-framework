@@ -1,7 +1,7 @@
 package checkers.signature.quals;
 
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
+import checkers.quals.*;
+import java.lang.annotation.Target;
 
 /**
  * Since binary names (@BinaryName) and fully qualified names (@FullyQualifiedName) differ only
@@ -16,8 +16,6 @@ import checkers.quals.TypeQualifier;
  * @author Kivanc Muslu
  */
 @TypeQualifier
-@SubtypeOf({BinaryName.class,
-            FullyQualifiedName.class
-           })
+@SubtypeOf({BinaryName.class, FullyQualifiedName.class})
 @Target( {} )
 public @interface SourceName {}

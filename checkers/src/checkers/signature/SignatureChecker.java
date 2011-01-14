@@ -9,9 +9,7 @@ import com.sun.source.tree.CompilationUnitTree;
 
 @TypeQualifiers({
     BinaryName.class,
-    BinarySignature.class,
     FullyQualifiedName.class,
-    FullyQualifiedSignature.class,
     SourceName.class,
     FieldDescriptor.class,
     MethodDescriptor.class,
