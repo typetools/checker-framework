@@ -13,8 +13,6 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @SubtypeOf({SourceName.class,
-    BinarySignature.class,
-    FullyQualifiedSignature.class,
     FieldDescriptor.class,
     MethodDescriptor.class
     })
