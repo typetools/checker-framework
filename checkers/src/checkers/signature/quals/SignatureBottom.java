@@ -5,6 +5,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 import checkers.quals.ImplicitFor;
 import com.sun.source.tree.Tree;
+import java.lang.annotation.Target;
 
 /**
  * Represents the bottom of the type-qualifier hierarchy.
@@ -13,8 +14,6 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @SubtypeOf({SourceName.class,
-    BinarySignature.class,
-    FullyQualifiedSignature.class,
     FieldDescriptor.class,
     MethodDescriptor.class
     })
