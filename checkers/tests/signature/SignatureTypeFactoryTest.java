@@ -28,7 +28,6 @@ public class SignatureTypeFactoryTest {
       String us; // @UnannotatedString
       @FullyQualifiedName String fqn;
       @BinaryName String bn;
-      @SourceName String sn;
       @FieldDescriptor String fd;
       // not public, so a user can't write it.
       // @SignatureBottom String sb;
@@ -36,14 +35,12 @@ public class SignatureTypeFactoryTest {
       us = s1;
       fqn = s1;
       bn = s1;
-      sn = s1;
       //:: (assignment.type.incompatible)
       fd = s1;
 
       us = s2;
       fqn = s2;
       bn = s2;
-      sn = s2;
       //:: (assignment.type.incompatible)
       fd = s2;
 
@@ -52,14 +49,11 @@ public class SignatureTypeFactoryTest {
       fqn = s3;
       bn = s3;
       //:: (assignment.type.incompatible)
-      sn = s3;
-      //:: (assignment.type.incompatible)
       fd = s3;
 
       us = s4;
       fqn = s4;
       bn = s4;
-      sn = s4;
       fd = s4;
 
       us = s5;
@@ -67,8 +61,6 @@ public class SignatureTypeFactoryTest {
       fqn = s5;
       //:: (assignment.type.incompatible)
       bn = s5;
-      //:: (assignment.type.incompatible)
-      sn = s5;
       fd = s5;
 
       us = s6;
@@ -76,8 +68,6 @@ public class SignatureTypeFactoryTest {
       fqn = s6;
       //:: (assignment.type.incompatible)
       bn = s6;
-      //:: (assignment.type.incompatible)
-      sn = s6;
       fd = s6;
 
       us = s7;
@@ -85,8 +75,6 @@ public class SignatureTypeFactoryTest {
       fqn = s7;
       //:: (assignment.type.incompatible)
       bn = s7;
-      //:: (assignment.type.incompatible)
-      sn = s7;
       //:: (assignment.type.incompatible)
       fd = s7;
 
@@ -96,28 +84,23 @@ public class SignatureTypeFactoryTest {
       //:: (assignment.type.incompatible)
       bn = s8;
       //:: (assignment.type.incompatible)
-      sn = s8;
-      //:: (assignment.type.incompatible)
       fd = s8;
 
       us = s9;
       fqn = s9;
       bn = s9;
-      sn = s9;
       //:: (assignment.type.incompatible)
       fd = s9;
 
       us = s10;
       fqn = s10;
       bn = s10;
-      sn = s10;
       //:: (assignment.type.incompatible)
       fd = s10;
 
       us = s11;
       fqn = s11;
       bn = s11;
-      sn = s11;
       fd = s11;
 
     }
