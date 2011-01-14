@@ -1,6 +1,9 @@
 package checkers.signature.quals;
 
-import checkers.quals.*;
+import checkers.signature.quals.BinaryName;
+import checkers.signature.quals.FullyQualifiedName;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 import java.lang.annotation.Target;
 
 /**
