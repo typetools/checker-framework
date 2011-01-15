@@ -15,6 +15,16 @@ public class AssertIfTrueTest {
         File1 /*@NonNull*/ [] files = dbdir.listFiles(killfile_filter);
     }
 
+    private Long id;
+    public @Pure @Nullable Long getId(){
+        return id;
+    }
+    // TODO: re-enable, because this annotation should work.
+    // @AssertNonNullIfTrue("getId()")
+    public boolean hasId2(){
+        return getId() != null;
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     /// Classes copied from the annotated JDK
