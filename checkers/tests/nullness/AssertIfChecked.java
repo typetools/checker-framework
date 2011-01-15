@@ -101,4 +101,17 @@ public class AssertIfChecked {
     return false;
   }
 
+  @Nullable Object getValueUnpure() { return value; }
+  @Pure @Nullable Object getValuePure() { return value; }
+  
+  @AssertNonNullIfTrue("getValueUnpure()")
+  public boolean hasValueUnpure() {
+      //:: (assertiftrue.postcondition.not.satisfied)
+      return getValueUnpure() != null;
+  }
+  
+  @AssertNonNullIfTrue("getValuePure()")
+  public boolean hasValuePure() {
+      return getValuePure() != null;
+  }
 }
