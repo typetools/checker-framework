@@ -67,7 +67,10 @@ Miscellaneous:
 Many bug fixes
   There are too many to list, but some notable ones are to local type
   inference, generics, pre- and post-conditions (e.g., @NonNullOnEntry,
-  @AssertNonNull*), and map keys (@KeyFor).
+  @AssertNonNull*), and map keys (@KeyFor).  In particular, preconditions
+  and map key annotations are now checked, and if they cannot be verified,
+  an error is raised; previously, they were not verified, just unsoundly
+  trusted.
 
 ----------------------------------------------------------------------
 Version 1.1.1, 18 Sep 2010
