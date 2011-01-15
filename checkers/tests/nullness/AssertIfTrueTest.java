@@ -19,8 +19,7 @@ public class AssertIfTrueTest {
     public @Pure @Nullable Long getId(){
         return id;
     }
-    // TODO: re-enable, because this annotation should work.
-    // @AssertNonNullIfTrue("getId()")
+    @AssertNonNullIfTrue("getId()")
     public boolean hasId2(){
         return getId() != null;
     }
