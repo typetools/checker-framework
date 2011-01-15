@@ -1239,12 +1239,14 @@ class NullnessFlow extends Flow {
 						found = true;
 					}
 				}
+				found |= conds.nonnullExpressions.contains(check);
 			} else {
 				for (VariableElement ve : conds.getNullableElements()) {
 					if (ve.getSimpleName().toString().equals(check)) {
 						found = true;
 					}
 				}
+				found |= conds.nullableExpressions.contains(check);
 			}
 
 			if (!found) {
