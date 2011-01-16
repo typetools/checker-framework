@@ -112,7 +112,6 @@ public class TreeParser {
                 while (!")".equals(token)) {
                     JCExpression arg = parseExpression();
                     args.append(arg);
-                    nextToken();
                     if (",".equals(token))
                         nextToken();
                 }
