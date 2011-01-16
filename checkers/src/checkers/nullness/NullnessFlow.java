@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -1626,11 +1627,13 @@ class NullnessFlow extends Flow {
 
 			TypeMirror suty = tyel.getSuperclass();
 			inSuper = true;
-			if (suty instanceof DeclaredType) {
+			if (suty instanceof NoType) {
+				break;
+			} else if (suty instanceof DeclaredType) {
 				DeclaredType dtsuty = (DeclaredType) suty;
 				tyel = (TypeElement) dtsuty.asElement();
 			} else {
-				System.out.println("What's happening here?? " + el);
+				System.out.printf("unexpected supertype suty=%s (%s)%n  el=%s (%s)%n", suty, suty.getClass(), el, el.getClass());
 				break;
 			}
 		}
