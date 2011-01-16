@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 
 /**
- * Documented in Issue 62
+ * Test case for issue 62: http://code.google.com/p/checker-framework/issues/detail?id=62
  * @skip-test
  */
 public class AssertIfTrueTest {
@@ -13,15 +13,6 @@ public class AssertIfTrueTest {
             throw new Error("Not a directory: " + dbdir);
         }
         File1 /*@NonNull*/ [] files = dbdir.listFiles(killfile_filter);
-    }
-
-    private Long id;
-    public @Pure @Nullable Long getId(){
-        return id;
-    }
-    @AssertNonNullIfTrue("getId()")
-    public boolean hasId2(){
-        return getId() != null;
     }
 
 
