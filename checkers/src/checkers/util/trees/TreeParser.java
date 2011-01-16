@@ -13,6 +13,27 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 
+/**
+ * A Utility class for parsing Java expression snippets, and converting them
+ * to proper Javac AST nodes.
+ *
+ * This is useful for parsing {@code AssertNonNullIfTrue},
+ * {@code AssertNonNull*}, and {@code KeyFor} values.
+ *
+ * Currently, it handles four tree types only:
+ * <ul>
+ *  <li>Identifier tree (e.g. {@code id}</li>
+ *  <li>Literal tree (e.g. 2, 3)</li>
+ *  <li>Method invocation (e.g. {@code method(2, 3)}</li>
+ *  <li>Member Select Tree (e.g. {@code Class.field}, {@code instance.method()}
+ *  <li>Array access (e.g. {@code array[id]})</li>
+ * </ul>
+ *
+ * Notable limitation: Doesn't handle spaces, or non-method-argument
+ * parenthesis.
+ *
+ *  It's implemented via a Recursive-Descend parser.
+ */
 public class TreeParser {
     private static final String DELIMS = ".[](),";
     private static final String SENTINAL = "";
@@ -26,6 +47,13 @@ public class TreeParser {
         names = Names.instance(context);
     }
 
+    /**
+     * Parses the snippet in the string as an internal Javac AST expression
+     * node
+     *
+     * @param s the java snippet
+     * @return  the AST corresponding to the snippet
+     */
     public ExpressionTree parseTree(String s) {
         tokenizer = new StringTokenizer(s, DELIMS, true);
         token = tokenizer.nextToken();
@@ -69,7 +97,7 @@ public class TreeParser {
         return maker.Literal(value);
     }
 
-    public JCExpression parseExpression() {
+    JCExpression parseExpression() {
         JCExpression tree = fromToken(token);
 
         while (tokenizer.hasMoreTokens()) {
