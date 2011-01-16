@@ -10,6 +10,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 
 public class TreeParser {
@@ -79,18 +80,24 @@ public class TreeParser {
                         names.fromString(token));
             } else if ("(".equals(delim)) {
                 nextToken();
+                ListBuffer<JCExpression> args = ListBuffer.lb();
+                while (!")".equals(token)) {
+                    JCExpression arg = parseExpression();
+                    args.append(arg);
+                    nextToken();
+                    if (",".equals(token))
+                        nextToken();
+                }
                 // For now, handle empty args only
                 assert ")".equals(token);
                 tree = maker.Apply(List.<JCExpression>nil(),
-                        tree, List.<JCExpression>nil());
+                        tree, args.toList());
             } else if ("[".equals(token)) {
                 nextToken();
                 JCExpression index = parseExpression();
                 assert "]".equals(token);
                 tree = maker.Indexed(tree, index);
-            } else if ("]".equals(token)) {
-                return tree;
-            } else if (SENTINAL.equals(token)) {
+            } else {
                 return tree;
             }
         }

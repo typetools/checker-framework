@@ -86,4 +86,11 @@ public class TreeParserTest {
         Assert.assertEquals("field", array.getIdentifier().toString());
         Assert.assertTrue(array.getExpression() instanceof ArrayAccessTree);
     }
+    
+    @Test
+    public void parsesMethodArguments() {
+        parser.parseTree("method()");
+        parser.parseTree("method(1)");
+        parser.parseTree("method(1,2)");
+    }
 }
