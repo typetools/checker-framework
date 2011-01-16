@@ -6,7 +6,7 @@ public class AssertAfter {
 
   @AssertNonNullAfter("value")
   @Pure
-  public boolean repNulled() {
+  public boolean setRepNonNull() {
     value = "";
     return true;
   }
@@ -17,35 +17,35 @@ public class AssertAfter {
   }
 
   public void testAfter() {
-    repNulled();
+    setRepNonNull();
     value.toString();
   }
 
   public void testBefore() {
     //:: (dereference.of.nullable)
     value.toString();
-    repNulled();
+    setRepNonNull();
   }
 
   public void withCondition() {
     if (toString() == null) {
-      repNulled();
+      setRepNonNull();
     }
     //:: (dereference.of.nullable)
     value.toString();
   }
 
   public void inConditionInTrue() {
-    if (repNulled()) {
+    if (setRepNonNull()) {
       value.toString();
     } else { }
   }
 
   // skip-test: Come back when working on improved flow
 //  public void asCondition() {
-//      if (repNulled()) {
+//      if (setRepNonNull()) {
 //      } else {
-//          value.toString(); valid!
+//        value.toString(); // valid!
 //      }
 //  }
 }
