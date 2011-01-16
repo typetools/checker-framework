@@ -165,17 +165,26 @@ public class NonNullMapValue {
 
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
-  void testAnd() {
-    Map<String, String> map = new HashMap<String, String>();
+  void testAnd(MyMap2<String, String> map) {
     if (map.containsKey(KEY)) {
       map.get(KEY).toString();
     }
-    // BUG: this suppression is temporary until the bug fix is done
-    // issue #67:  http://code.google.com/p/checker-framework/issues/detail?id=67
-    //:: (dereference.of.nullable)
     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
       // do nothing
     }
   }
+
+  interface MyMap2<K, V> {
+    @Pure
+    // This annotation is not legal on containsKey in general.
+    // If the Map is declared as (say) Map<Object, @Nullable Object>,
+    // then get returns a nullable value.  We really want to say that if
+    // containsKey returns non-null, then get returns V rather than
+    // @Nullable V, but I don't know how to say that.
+    @AssertNonNullIfTrue("get(#0)")
+    public abstract boolean containsKey(@Nullable Object a1);
+    public abstract @Pure @Nullable V get(@Nullable Object a1);
+  }
+
 
 }
