@@ -174,15 +174,29 @@ class RawTypes {
 
     }
 
-    class RawAfterConstructor {
+    class RawAfterConstructorBad {
+        Object o;
+        // Should err, because some non-null variables are not yet
+        // initialized when the constructor exits.
+        RawAfterConstructorBad() {
+        }
+    }
+
+    class RawAfterConstructorOK1 {
+        @Nullable Object o;
+        RawAfterConstructorOK1() {
+        }
+    }
+
+    class RawAfterConstructorOK2 {
         int a;
-        // Should err, because some variables are not yet initialized when
-        // the constructor exits.
-        RawAfterConstructor() {
+        RawAfterConstructorOK2() {
         }
     }
 
 
+
+// skip-test
 //     // TODO: reinstate.  This shows desired features, for initialization in
 //     // a helper method rather than in the constructor.
 //     class InitInHelperMethod {
