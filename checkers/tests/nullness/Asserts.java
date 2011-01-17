@@ -7,13 +7,12 @@ public class Asserts {
         assert false : s.getClass();
     }
 
-    // @skip-test fix me in a bit
-//    void incorrectAssertExpr() {
-//        String s = null;
-//        //:: (dereference.of.nullable)
-//        assert s != null : s.getClass() + " suppress nullness";  // error
-//        s.getClass();  // OK
-//    }
+    void incorrectAssertExpr() {
+        String s = null;
+        //:: (dereference.of.nullable)
+        assert s != null : s.getClass() + " suppress nullness";  // error
+        s.getClass();  // OK
+    }
 
     void correctAssertExpr() {
         String s = null;
