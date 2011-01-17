@@ -50,7 +50,7 @@ class NullnessFlow extends Flow {
 
 	private final AnnotationMirror POLYNULL, RAW, NONNULL;
 	private boolean isNullPolyNull;
-	private List<String> nnExprs, nnExprsWhenTrue, nnExprsWhenFalse;
+	private List<String> nnExprs;
 	private final AnnotatedTypeFactory rawFactory;
 
 	/*
@@ -62,6 +62,11 @@ class NullnessFlow extends Flow {
     protected MemberEnter memberEnter;
 	 */
 
+    public static class NullnessSplitTuple extends SplitTuple {
+    	public List<String> nnExprsWhenTrue;
+    	public List<String> nnExprsWhenFalse;
+    }
+	
 	/**
 	 * Creates a NonNull-specific flow-sensitive inference.
 	 *
@@ -79,7 +84,6 @@ class NullnessFlow extends Flow {
 		isNullPolyNull = false;
 		this.rawFactory = factory.rawnessFactory;
 		nnExprs = new ArrayList<String>();
-		nnExprsWhenTrue = nnExprsWhenFalse = null;
 
 		/*
         JavacProcessingEnvironment env = (JavacProcessingEnvironment)checker.getProcessingEnvironment();
@@ -110,13 +114,18 @@ class NullnessFlow extends Flow {
 			return false;
 		}
 	}
+	
+	@Override
+    protected SplitTuple createSplitTuple() {
+    	return new NullnessSplitTuple();
+    }
 
 	@Override
 	protected SplitTuple split() {
-		SplitTuple res = super.split();
-		nnExprsWhenFalse = new ArrayList<String>(nnExprs);
-		nnExprsWhenTrue = nnExprs;
-		//        nnExprs = null;
+		NullnessSplitTuple res = (NullnessSplitTuple) super.split();
+		res.nnExprsWhenFalse = new ArrayList<String>(nnExprs);
+		res.nnExprsWhenTrue = nnExprs;
+		this.nnExprs = null;
 		return res;
 	}
 
@@ -143,7 +152,7 @@ class NullnessFlow extends Flow {
 	}
 	@Override
 	protected SplitTuple scanCond(Tree tree) {
-		SplitTuple res = super.scanCond(tree);
+		NullnessSplitTuple res = (NullnessSplitTuple) super.scanCond(tree);
 		if (tree == null)
 			return res;
 
@@ -179,8 +188,8 @@ class NullnessFlow extends Flow {
 		GenKillBits.orlub(res.annosWhenFalse, before, annoRelations);
 
 		isNullPolyNull = conds.isNullPolyNull;
-		nnExprsWhenTrue.addAll(conds.nonnullExpressions);
-		nnExprsWhenFalse.addAll(conds.nullableExpressions);
+		res.nnExprsWhenTrue.addAll(conds.nonnullExpressions);
+		res.nnExprsWhenFalse.addAll(conds.nullableExpressions);
 
 		return res;
 	}
@@ -744,6 +753,7 @@ class NullnessFlow extends Flow {
 
 	@Override
 	public Void visitAssert(AssertTree node, Void p) {
+		super.visitAssert(node, p);
 
 		ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
 		this.nnExprs.addAll(shouldInferNullness(cond));
@@ -757,7 +767,6 @@ class NullnessFlow extends Flow {
 			if (!nnExprs.contains(s))
 				nnExprs.add(s);
 		}
-		super.visitAssert(node, p);
 
 		return null;
 	}
@@ -1888,19 +1897,19 @@ class NullnessFlow extends Flow {
 			Void p) {
 
 		// Split and merge as for an if/else.
-		SplitTuple res = scanCond(node.getCondition());
+		NullnessSplitTuple res = (NullnessSplitTuple) scanCond(node.getCondition());
 
 		List<String> prevNNExprs = new ArrayList<String>(nnExprs);
 
 		GenKillBits<AnnotationMirror> before = res.annosWhenFalse;
 		annos = res.annosWhenTrue;
 
-		nnExprs = nnExprsWhenTrue;
+		nnExprs = res.nnExprsWhenTrue;
 		scanExpr(node.getTrueExpression());
 		GenKillBits<AnnotationMirror> after = GenKillBits.copy(annos);
 		annos = before;
 
-		nnExprs = nnExprsWhenFalse;
+		nnExprs = res.nnExprsWhenFalse;
 		scanExpr(node.getFalseExpression());
 		// annos.and(after);
 		GenKillBits.andlub(annos, after, annoRelations);
