@@ -1,0 +1,10 @@
+src/utilMDE/UtilMDE.java:564: dereference of possibly-null reference files
+    for (int i = 0; i < files.length; i++) {
+                        ^
+1 error
+
+BUILD FAILED
+build.xml:9: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 5 seconds
