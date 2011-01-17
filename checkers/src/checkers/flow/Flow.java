@@ -517,14 +517,22 @@ public class Flow extends TreePathScanner<Void, Void> {
                 SplitTuple res = split();
                 return res;
         }
-        return new SplitTuple();
+        return createSplitTuple();
     }
 
+    /**
+     * Factory method to create the correct subtype of SplitTuple.
+     * @return A new instance of a subtype of SplitTuple.
+     */
+    protected SplitTuple createSplitTuple() {
+    	return new SplitTuple();
+    }
+    
     /**
      * Split the bitset before a conditional branch.
      */
     protected SplitTuple split() {
-        SplitTuple res = new SplitTuple();
+        SplitTuple res = createSplitTuple();
         res.annosWhenFalse = GenKillBits.copy(annos);
         res.annosWhenTrue = annos;
         annos = null;
