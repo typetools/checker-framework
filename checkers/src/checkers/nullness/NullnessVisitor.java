@@ -86,6 +86,9 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitThrow(ThrowTree node, Void p) {
         checkForNullability(node.getExpression(), "throwing.nullable");
+        if (nonInitializedFields != null) {
+        	this.nonInitializedFields.clear();
+        }
         return super.visitThrow(node, p);
     }
 
