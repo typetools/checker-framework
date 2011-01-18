@@ -6,7 +6,6 @@ public class Uninit9 {
 }
 
 class Uninit9Sub extends Uninit9 {
-  public Object g;
   Uninit9Sub() {
     super();
     fIsSetOnEntry();

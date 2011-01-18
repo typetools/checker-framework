@@ -1425,6 +1425,7 @@ class NullnessFlow extends Flow {
 
 			Element recvElem;
 			List<? extends Element> recvFieldElems;
+			List<VariableElement> recvImediateFields;
 			{ // block to get all fields of the receiver type
 				// TODO: move to a separate method and only call when it's needed in
 				// the loop. Now we create this list even for static fields where it is not used.
@@ -1444,6 +1445,7 @@ class NullnessFlow extends Flow {
 
 				recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
 				recvFieldElems = allFields(recvElem);
+				recvImediateFields = ElementFilter.fieldsIn(recvElem.getEnclosedElements());
 			}
 
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
@@ -1453,6 +1455,11 @@ class NullnessFlow extends Flow {
 				Element el = findElementInCall(recvElem, recvFieldElems, call, field);
 				if (el==null) {
 					// we've already output an error message
+					continue;
+				}
+				if (!recvImediateFields.contains(el)) {
+					// super class fields already initialized
+					// TODO: Handle nullable and raw fields
 					continue;
 				}
 
