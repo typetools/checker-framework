@@ -244,6 +244,12 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
   modified or re-assigned between the check of \code{containsKey} and the
   call to \code{get}.
 
+% This description really needs an example of a case where the checker
+% fails.  Right now, it is impossible for a reader to tell what the problem
+% is or whether a particular piece of code triggers it.
+% Do we have a test case?
+
+
 % The solution is to merge flow with the Map.get heuristics.
 % And to do forward instead of backward analysis.
 
