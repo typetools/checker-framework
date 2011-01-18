@@ -1457,7 +1457,7 @@ class NullnessFlow extends Flow {
 					// we've already output an error message
 					continue;
 				}
-				if (!recvImediateFields.contains(el)) {
+				if (TreeUtils.isSelfAccess(call) && !recvImediateFields.contains(el)) {
 					// super class fields already initialized
 					// TODO: Handle nullable and raw fields
 					continue;
