@@ -303,6 +303,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             // only consider fields that are uninitialized at the declaration
             // and are qualified as nonnull
             if (var.getInitializer() == null
+            		&& !varElt.asType().getKind().isPrimitive()
                     && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
                     && varElt.getAnnotation(LazyNonNull.class) == null
                     && !varElt.getModifiers().contains(Modifier.STATIC))
