@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.*;
+import checkers.nullness.quals.AssertNonNullAfter;
 import checkers.nullness.quals.AssertNonNullIfFalse;
 import checkers.nullness.quals.AssertNonNullIfTrue;
 import checkers.nullness.quals.LazyNonNull;
@@ -252,6 +253,24 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         }
 
         return super.visitMethod(node, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+    	if (nonInitializedFields != null
+    		&& TreeUtils.isSelfAccess(node)) {
+    		
+    		AssertNonNullAfter nnAfter =
+    			TreeUtils.elementFromUse(node).getAnnotation(AssertNonNullAfter.class);
+    		if (nnAfter != null) {
+    			Set<VariableElement> elts = 
+    				ElementUtils.findFieldsInType(
+    						TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
+    						Arrays.asList(nnAfter.value()));
+    			nonInitializedFields.removeAll(elts);
+    		}
+    	}
+    	return super.visitMethodInvocation(node, p);
     }
 
     @Override
