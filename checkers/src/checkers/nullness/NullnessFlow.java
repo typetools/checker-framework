@@ -16,6 +16,7 @@ import checkers.nullness.quals.*;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.TypeFromElement;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
@@ -1426,17 +1427,9 @@ class NullnessFlow extends Flow {
 			Element recvElem;
 			List<? extends Element> recvFieldElems;
 			List<VariableElement> recvImediateFields;
-			{ // block to get all fields of the receiver type
-				// TODO: move to a separate method and only call when it's needed in
-				// the loop. Now we create this list even for static fields where it is not used.
-				ExpressionTree recv = TreeUtils.getReceiverTree(call);
 
-				AnnotatedTypeMirror recvType;
-				if (recv==null) {
-					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(call)));
-				} else {
-					recvType = factory.getAnnotatedType(recv);
-				}
+			{
+				AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
 
 				if (!(recvType instanceof AnnotatedDeclaredType)) {
 					System.err.println("What's wrong with: " + recvType);
