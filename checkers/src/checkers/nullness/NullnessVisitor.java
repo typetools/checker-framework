@@ -221,7 +221,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 return super.visitMethod(node, p);
             } finally {
                 if (!nonInitializedFields.isEmpty()) {
-                    if (checker.getLintOption("uninitialized", false)) {
+                    if (checker.getLintOption("uninitialized", true)) {
                         // warn against uninitialized fields
                         // TODO: we really only want a warning, but the testing framework doesn't support this
                         checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
@@ -253,7 +253,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
     @Override
     protected void checkDefaultConstructor(ClassTree node) {
-        if (!checker.getLintOption("uninitialized", false))
+        if (!checker.getLintOption("uninitialized", true))
             return;
 
         Set<VariableElement> fields = getUninitializedFields(node);
