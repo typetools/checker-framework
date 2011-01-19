@@ -75,10 +75,10 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
         AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
 
-        //Is this ok? What kind of type mirror is it really?
-        TypeElement leftType = (TypeElement)((DeclaredType)left.getUnderlyingType()).asElement();
-        TypeElement rightType = (TypeElement)((DeclaredType)right.getUnderlyingType()).asElement();
-                
+        //Get annotation on Element to check for @UsesObjectEquals later
+        TypeElement leftType = (left instanceof DeclaredType)? (TypeElement)((DeclaredType)left.getUnderlyingType()).asElement() : null;
+        TypeElement rightType = (right instanceof DeclaredType)? (TypeElement)((DeclaredType)right.getUnderlyingType()).asElement() : null;
+        
         // If either argument is a primitive, check passes due to auto-unboxing
         if (left.getKind().isPrimitive() || right.getKind().isPrimitive())
             return super.visitBinary(node, p);
@@ -98,11 +98,10 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             return super.visitBinary(node, p);
         }
 
-        if (!(left.hasAnnotation(INTERNED) || leftType.getAnnotation(UsesObjectEquals.class) != null))
+        if (!(left.hasAnnotation(INTERNED) || (leftType != null && leftType.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
-        if (!(right.hasAnnotation(INTERNED) || rightType.getAnnotation(UsesObjectEquals.class) != null))
+        if (!(right.hasAnnotation(INTERNED) || (rightType != null && rightType.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", right), rightOp);
-
         return super.visitBinary(node, p);
     }
 
@@ -141,8 +140,10 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	//Looking for an @UsesObjectEquals class declaration
     	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
-    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
-    	   	
+    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class); 
+    	
+    	//A a = elt.getAnnotation(Class<A> annotationtype);  What is the problem????
+    	
     	//if it's there, check to make sure does not override equals
     	//supertype is Object or @UsesObjectEquals
     	if (annotation != null){
@@ -166,7 +167,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	} else { //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
     		Class<?> superClass = node.getClass().getSuperclass();
     		if(superClass.getAnnotation(UsesObjectEquals.class) != null){ //superclass is annotated
-    			checker.report(Result.failure("subclasses must be marked @UsesObjectEquals"), node)
+    			checker.report(Result.failure("subclasses must be marked @UsesObjectEquals"), node);
     		}
     	}
     	
