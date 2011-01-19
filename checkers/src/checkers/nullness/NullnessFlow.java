@@ -978,7 +978,8 @@ class NullnessFlow extends Flow {
 				AnnotatedTypeMirror myType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(meth)));
 
 				if (!(myType instanceof AnnotatedDeclaredType)) {
-					System.err.println("NullnessFlow::visitMethod: What's wrong with: " + myType);
+					System.err.println("NullnessFlow::visitMethod: Bad myType: " + myType + ((myType == null) ? "" : ("  " + myType.getClass())));
+					System.err.println("  for method: " + meth);
 					return null;
 				}
 
@@ -1432,7 +1433,8 @@ class NullnessFlow extends Flow {
 				AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
 
 				if (!(recvType instanceof AnnotatedDeclaredType)) {
-					System.err.println("What's wrong with: " + recvType);
+					System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
+					System.err.println("  for call: " + call);
 					return;
 				}
 
