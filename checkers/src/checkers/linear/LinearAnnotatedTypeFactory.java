@@ -8,6 +8,9 @@ import javax.lang.model.element.Element;
 import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.AbstractFlow;
+import checkers.flow.DefaultFlow;
+import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
 import checkers.linear.quals.*;
 import checkers.types.AnnotatedTypeFactory;
@@ -59,7 +62,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      * an {@link IdentifierTree}.
      *
      */
-    private static class LinearFlow extends Flow {
+    private static class LinearFlow extends DefaultFlow<DefaultFlowState> {
         private final AnnotationMirror LINEAR, UNUSABLE;
 
         public LinearFlow(BaseTypeChecker checker, CompilationUnitTree root,
@@ -93,11 +96,11 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
 
             Element elem = TreeUtils.elementFromUse(node);
             assert elem != null;
-            if (vars.contains(elem)) {
-                int idx = vars.indexOf(elem);
-                if (annos.get(LINEAR, idx)) {
-                    annos.set(UNUSABLE, idx);
-                    annos.clear(LINEAR, idx);
+            if (this.flowState.vars.contains(elem)) {
+                int idx = this.flowState.vars.indexOf(elem);
+                if (this.flowState.annos.get(LINEAR, idx)) {
+                	this.flowState.annos.set(UNUSABLE, idx);
+                	this.flowState.annos.clear(LINEAR, idx);
                 }
             }
         }
