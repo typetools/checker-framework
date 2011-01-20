@@ -1,0 +1,926 @@
+package checkers.flow;
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.nullness.quals.Pure;
+import checkers.source.SourceChecker;
+import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.*;
+import checkers.util.*;
+
+import java.io.PrintStream;
+import java.util.*;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.*;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
+import javax.lang.model.util.Elements;
+
+/**
+ * Provides a generalized flow-sensitive qualifier inference for the checkers
+ * framework.
+ *
+ * <p>
+ *
+ * This implementation is based largely on {@code javac}'s dataflow analysis
+ * module, which may be found in {@code com.sun.tools.javac.comp.Flow} from 13
+ * Sep 2007. It differs from that class in two ways:
+ *
+ * <ol>
+ * <li value="1">
+ * It performs a GEN-KILL analysis for qualifiers that is similar to the
+ * initialization/uninitialization analysis in {@code javac}'s {@code Flow}.
+ * It does not perform exception analysis, and performs liveness analysis only
+ * to the extent required for the GEN-KILL analysis.
+ *
+ * <li value="2">
+ * Whenever possible, this implementation prefers the use of classes in the
+ * public API ({@link BitSet}, the Compiler Tree API) over those in
+ * {@code com.sun.tools.javac} (for these reasons, examining a diff against that
+ * class would not be particularly enlightening).
+ * </ol>
+ *
+ * As in {@code javac}'s {@code Flow} class, methods named "visit*" perform
+ * analysis for a particular type of tree node, while methods named "scan*"
+ * perform the analysis for a general, higher-level class of structural element.
+ * Typically "visit*" methods delegate to "scan*" methods. As an example,
+ * {@link #visitIf}, {@link #visitWhileLoop}, {@link #visitAssert}, and
+ * {@link #visitConditionalExpression} all use {@link #scanCond} for analyzing
+ * conditions and handling branching.
+ *
+ * <p>
+ *
+ * A separate instance of the analysis must be created for each compilation
+ * unit.
+ */
+public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner<Void, Void>
+	implements Flow {
+
+    /** Where to print debugging messages; set via {@link #setDebug}. */
+    protected PrintStream debug = null;
+
+    /** The checker to which this instance belongs. */
+    protected final SourceChecker checker;
+
+    /** The processing environment to use. */
+    protected final ProcessingEnvironment env;
+
+    /** The file that's being analyzed. */
+    protected final CompilationUnitTree root;
+
+    /**
+     * The annotations (qualifiers) to infer. The relationship among them is
+     * determined using {@link BaseTypeChecker#getQualifierHierarchy()}. By
+     * consulting the hierarchy, the analysis will only infer a qualifier on a
+     * type if it is more restrictive (i.e. a subtype) than the existing
+     * qualifier for that type.
+     */
+    protected final Set<AnnotationMirror> annotations;
+
+    /** Utility class for determining annotated types. */
+    protected final AnnotatedTypeFactory factory;
+
+    /** Utility class for operations on annotated types. */
+    protected final AnnotatedTypes atypes;
+
+    /** Stores the results of the analysis (source location to qualifier). */
+    protected final Map<Tree, AnnotationMirror> flowResults;
+
+
+    // static
+    public class SplitTuple { // <ST extends FlowState> {
+        public ST whenTrue;
+        public ST whenFalse;
+    }
+
+    protected ST flowState;
+    
+    /**
+     * Stores the result of liveness analysis, required by the GEN-KILL analysis
+     * for proper handling of jumps (break, return, throw, etc.).
+     */
+    protected boolean alive = true;
+
+    /** Tracks annotations in try blocks to support exceptions. */
+    private final Deque<ST> tryBits;
+
+    /** Visitor state; tracking is required for checking receiver types. */
+    private final VisitorState visitorState;
+
+    /** The hierarchy for the type qualifiers that this class infers. */
+    protected final QualifierHierarchy annoRelations;
+
+    /** Utilities for {@link Element}s. */
+    protected final Elements elements;
+
+    /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
+    private Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
+
+    /**
+     * Creates a new analysis. The analysis will use the given {@link
+     * AnnotatedTypeFactory} to obtain annotated types.
+     *
+     * @param checker the current checker
+     * @param root the compilation unit that will be scanned
+     * @param annotations the annotations to track
+     * @param factory the factory class that will be used to get annotated
+     *        types, or {@code null} if the default factory should be used
+     */
+    public AbstractFlow(BaseTypeChecker checker, CompilationUnitTree root,
+            Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
+
+        this.checker = checker;
+        this.env = checker.getProcessingEnvironment();
+        this.root = root;
+        this.annotations = annotations;
+
+        if (factory == null)
+            this.factory = new AnnotatedTypeFactory(checker, root);
+        else
+            this.factory = factory;
+
+        this.atypes = new AnnotatedTypes(env, factory);
+
+        this.visitorState = this.factory.getVisitorState();
+
+        this.flowResults = new IdentityHashMap<Tree, AnnotationMirror>();
+
+        this.tryBits = new LinkedList<ST>();
+
+        this.annoRelations = checker.getQualifierHierarchy();
+        this.elements = env.getElementUtils();
+        
+		this.flowState = createFlowState(annotations);
+        // TODO: set flowState in subclasses
+    }
+
+    protected abstract ST createFlowState(Set<AnnotationMirror> annotations);
+    
+    /**
+     * Sets the {@link PrintStream} for printing debug messages, such as
+     * {@link System#out} or {@link System#err}, or null if no debugging output
+     * should be emitted.
+     */
+    public void setDebug(PrintStream debug) {
+        this.debug = debug;
+    }
+
+    public void scan(Tree tree) {
+    	this.scan(tree, null);
+    }
+    
+    @Override
+    public Void scan(Tree tree, Void p) {
+        if (tree != null && tree.getKind() == Tree.Kind.COMPILATION_UNIT)
+            return scan(checker.currentPath, p);
+        if (tree != null && getCurrentPath() != null)
+            this.visitorState.setPath(new TreePath(getCurrentPath(), tree));
+        return super.scan(tree, p);
+    }
+
+    /**
+     * Determines the inference result for tree.
+     *
+     * @param tree the tree to test
+     * @return the annotation inferred for a tree, or null if no annotation was
+     *         inferred for that tree
+     */
+    public AnnotationMirror test(Tree tree) {
+        while (tree.getKind() == Tree.Kind.ASSIGNMENT)
+            tree = ((AssignmentTree)tree).getVariable();
+        if (!flowResults.containsKey(tree)) {
+            return null;
+        }
+        // a hack needs to be fixed
+        // always follow variable declarations
+        AnnotationMirror flowResult = flowResults.get(tree);
+
+        return flowResult;
+    }
+
+    /**
+     * Registers a new variable for flow tracking.
+     *
+     * @param tree the variable to register
+     */
+    protected abstract void newVar(VariableTree tree);
+    
+    /**
+     * Determines whether a type has an annotation. If the type is not a
+     * wildcard, it checks the type directly; if it is a wildcard, it checks the
+     * wildcard's "extends" bound (if it has one).
+     *
+     * @param type the type to check
+     * @param annotation the annotation to check for
+     * @return true if the (non-wildcard) type has the annotation or, if a
+     *         wildcard, the type has the annotation on its extends bound
+     */
+    protected boolean hasAnnotation(AnnotatedTypeMirror type,
+            AnnotationMirror annotation) {
+        if (!(type instanceof AnnotatedWildcardType))
+            return type.hasAnnotation(annotation);
+        AnnotatedWildcardType wc = (AnnotatedWildcardType) type;
+        AnnotatedTypeMirror bound = wc.getExtendsBound();
+        if (bound != null && bound.hasAnnotation(annotation))
+            return true;
+        return false;
+    }
+
+    /**
+     * Moves bits as assignments are made.
+     *
+     * <p>
+     *
+     * If only type information (and not a {@link Tree}) is available, use
+     * {@link #propagateFromType(Tree, AnnotatedTypeMirror)} instead.
+     *
+     * @param lhs the left-hand side of the assignment
+     * @param rhs the right-hand side of the assignment
+     */
+    protected abstract void propagate(Tree lhs, ExpressionTree rhs);
+    
+    /**
+     * Moves bits in an assignment using a type instead of a tree.
+     *
+     * <p>
+     *
+     * {@link #propagate(Tree, Tree)} is preferred, since it is able to use
+     * extra information about the right-hand side (such as its element). This
+     * method should only be used when a type (and nothing else) is available,
+     * such as when checking the variable in an enhanced for loop against the
+     * iterated type (which is the type argument of an {@link Iterable}).
+     *
+     * @param lhs the left-hand side of the assignment
+     * @param rhs the type of the right-hand side of the assignment
+     */
+    abstract void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs);
+    
+    /**
+     * @param path the path to check
+     * @return true if the path leaf is part of an expression used as an lvalue
+     */
+    private boolean isLValue(TreePath path) {
+        Tree last = null;
+        // In the following loop, "tree" refers to the current path element
+        // and "last" refers to the most recent path element (which is a child
+        // of "tree". The loop determines whether the path leaf is a variable
+        // immediately enclosed by an assignment or compound assignment.
+        for (Tree tree : path) {
+            if (tree.getKind() == Tree.Kind.IDENTIFIER) { break; } // TODO: do nothing
+            else if (tree instanceof AssignmentTree)
+                return last == ((AssignmentTree)tree).getVariable();
+            else if (tree instanceof CompoundAssignmentTree)
+                return last == ((CompoundAssignmentTree)tree).getVariable();
+            if (last != null) break;
+            last = tree;
+        }
+        return false;
+    }
+
+    /**
+     * Record the value of the annotation bit for the given usage of a
+     * variable, so that a type-checker may use its value after the analysis
+     * has finished.
+     *
+     * @param path
+     */
+    protected void recordBits(TreePath path) {
+
+        if (isLValue(path))
+            return;
+
+        Tree tree = path.getLeaf();
+
+        Element elt;
+        if (tree instanceof MemberSelectTree)
+            elt = TreeUtils.elementFromUse((MemberSelectTree)tree);
+        else if (tree instanceof IdentifierTree)
+            elt = TreeUtils.elementFromUse((IdentifierTree)tree);
+        else if (tree instanceof VariableTree)
+            elt = TreeUtils.elementFromDeclaration((VariableTree)tree);
+        else
+            return;
+
+        recordBitsImps(tree, elt);
+    }
+
+    // **********************************************************************
+
+    protected abstract void recordBitsImps(Tree tree, Element elt);
+
+	/**
+     * Called whenever a definition is scanned.
+     *
+     * @param tree the definition being scanned
+     */
+    protected void scanDef(Tree tree) {
+        alive = true;
+        scan(tree, null);
+    }
+
+    /**
+     * Called whenever a statement is scanned.
+     *
+     * @param tree the statement being scanned
+     */
+    protected void scanStat(StatementTree tree) {
+        alive = true;
+        scan(tree, null);
+    }
+
+    /**
+     * Called whenever a block of statements is scanned.
+     *
+     * @param trees the statements being scanned
+     */
+    protected void scanStats(List<? extends StatementTree> trees) {
+        scan(trees, null);
+    }
+
+    /**
+     * Called whenever a conditional expression is scanned.
+     *
+     * @param tree the condition being scanned
+     */
+    protected SplitTuple scanCond(ExpressionTree tree) {
+        alive = true;
+        if (tree != null) {
+            scan(tree, null);
+        }
+        if (flowState != null) {
+        	SplitTuple res = split();
+        	return res;
+        }
+        return new SplitTuple();
+    }
+    
+    /**
+     * Split the bitset before a conditional branch.
+     */
+    // assumes flowState != null
+    protected SplitTuple split() {
+        SplitTuple res = new SplitTuple();
+        res.whenFalse = copyState();
+        res.whenTrue = flowState;
+        flowState = null;
+        return res;
+    }
+    
+    ST copyState() {
+    	return (ST) flowState.copy();
+    }
+
+    /**
+     * Merge the bitset after a conditional branch.
+     *//*
+    protected void merge() {
+        annos = GenKillBits.copy(annosWhenTrue);
+        //annos.and(annosWhenFalse);
+        GenKillBits.andlub(annos, annosWhenFalse, annoRelations);
+        annosWhenTrue = annosWhenFalse = null;
+    }*/
+
+    /**
+     * Called whenever an expression is scanned.
+     *
+     * @param tree the expression being scanned
+     */
+    protected void scanExpr(ExpressionTree tree) {
+        alive = true;
+        scan(tree, null);
+        assert flowState != null;
+        // if (annos == null) merge();
+    }
+
+    // **********************************************************************
+
+    @Override
+    public Void visitClass(ClassTree node, Void p) {
+        AnnotatedDeclaredType preClassType = visitorState.getClassType();
+        ClassTree preClassTree = visitorState.getClassTree();
+        AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
+        MethodTree preMT = visitorState.getMethodTree();
+
+        visitorState.setClassType(factory.getAnnotatedType(node));
+        visitorState.setClassTree(node);
+        visitorState.setMethodReceiver(null);
+        visitorState.setMethodTree(null);
+
+        try {
+            scan(node.getModifiers(), p);
+            scan(node.getTypeParameters(), p);
+            scan(node.getExtendsClause(), p);
+            scan(node.getImplementsClause(), p);
+            // Ensure that all fields are scanned before scanning methods.
+            for (Tree t : node.getMembers()) {
+                if (t.getKind() == Tree.Kind.METHOD) continue;
+                scan(t, p);
+            }
+            for (Tree t : node.getMembers()) {
+                if (t.getKind() != Tree.Kind.METHOD) continue;
+                scan(t, p);
+            }
+            return null;
+        } finally {
+            this.visitorState.setClassType(preClassType);
+            this.visitorState.setClassTree(preClassTree);
+            this.visitorState.setMethodReceiver(preAMT);
+            this.visitorState.setMethodTree(preMT);
+        }
+    }
+
+    @Override
+    public Void visitImport(ImportTree tree, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitTypeCast(TypeCastTree node, Void p) {
+        super.visitTypeCast(node, p);
+        if (factory.fromTypeTree(node.getType()).isAnnotated())
+            return null;
+        AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
+        for (AnnotationMirror a : annotations)
+            if (hasAnnotation(t, a))
+                flowResults.put(node, a);
+        return null;
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree tree, Void p) {
+        return null;
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+        super.visitIdentifier(node, p);
+        recordBits(getCurrentPath());
+        return null;
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree node, Void p) {
+        super.visitMemberSelect(node, p);
+        recordBits(getCurrentPath());
+        return null;
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+        newVar(node);
+        ExpressionTree init = node.getInitializer();
+        if (init != null) {
+            scanExpr(init);
+            VariableElement elem = TreeUtils.elementFromDeclaration(node);
+            AnnotatedTypeMirror type = factory.fromMember(node);
+            if (!isNonFinalField(elem) && !type.isAnnotated()) {
+                propagate(node, init);
+                recordBits(getCurrentPath());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void p) {
+        ExpressionTree var = node.getVariable();
+        ExpressionTree expr = node.getExpression();
+        if (!(var instanceof IdentifierTree))
+            scanExpr(var);
+        scanExpr(expr);
+        propagate(var, expr);
+        if (var instanceof IdentifierTree)
+            this.scan(var, p);
+        return null;
+    }
+
+    // This is an exact copy of visitAssignment()
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        // System.err.println("in vCA: " + node);
+
+        ExpressionTree var = node.getVariable();
+        ExpressionTree expr = node.getExpression();
+        // if (!(var instanceof IdentifierTree))
+        scanExpr(var);
+        scanExpr(expr);
+        propagate(var, node);
+        // if (var instanceof IdentifierTree)
+        //     this.scan(var, p);
+
+        // WMD added this to get (s2 = (s1 += 1)) working.
+        // Is something similar needed for other expressions?
+        // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
+        AnnotatedTypeMirror t = factory.getAnnotatedType(var);
+        for (AnnotationMirror a : annotations) {
+            if (hasAnnotation(t, a)) {
+                flowResults.put(node, a);
+            }
+        }
+
+        // Clearing out the Annotations is only the correct solution for the
+        // Interning Checker, where the result of a compound assignment is never
+        // interned. For other checkers, this behavior is wrong, e.g. in the Fenum Checker
+        // it leads to FenumTop being determined instead of a FenumUnqualified.
+        // if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
+        //       clearAnnos(var);
+
+        return null;
+        }
+
+    /*
+    private void clearAnnos(Tree tree) {
+        Element elt = InternalUtils.symbol(tree);
+        if (elt == null)
+            return;
+        int idx = vars.indexOf(elt);
+        if (idx >= 0) {
+            for (AnnotationMirror anno : annotations) {
+                annos.clear(anno, idx);
+            }
+        }
+    }
+    */
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        scan(node.getVariable(), p);
+
+        VariableTree var = node.getVariable();
+        newVar(var);
+
+        ExpressionTree expr = node.getExpression();
+        scanExpr(expr);
+
+        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
+        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+        if (iter != null)
+            propagateFromType(var, iter);
+
+        // only visit statement. skip variable and expression..
+        // visited variable and expression already
+        scanStat(node.getStatement());
+        return null;
+    }
+
+    protected static boolean containsKey(Tree tree, Collection<String> keys) {
+        if (tree == null)
+            return false;
+
+        String treeStr = tree.toString();
+        for (String key : keys) {
+            if (treeStr.contains(key))
+                return true;
+        }
+        return false;
+    }
+
+    // protected void pushNewLevel() { }
+    // protected void popLastLevel() { }
+
+    @Override
+    public Void visitAssert(AssertTree node, Void p) {
+        boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey());
+        ST afterAssert = copyState();
+        // pushNewLevel();
+        SplitTuple split = scanCond(node.getCondition());
+        if (inferFromAsserts) {
+            afterAssert = (ST) split.whenTrue.copy();
+        }
+        this.setStateWhenFalse(split);
+        scanExpr(node.getDetail());
+        if (inferFromAsserts) {
+        	this.setStateWhenTrue(split);
+        } else {
+        	// TODO: when does this happen? Fields from subclass might still be set
+        	// to StateWhenFalse!
+        	this.flowState = afterAssert;
+        }
+        // popLastLevel();
+        return null;
+    }
+
+    protected final void setStateWhenTrue(SplitTuple s) {
+    	this.flowState = s.whenTrue;
+    }
+    
+    protected final void setStateWhenFalse(SplitTuple s) {
+    	this.flowState = s.whenFalse;
+    }
+    
+    @Override
+    public Void visitIf(IfTree node, Void p) {
+        SplitTuple split = scanCond(node.getCondition());
+
+        ST beforeElse = split.whenFalse;
+        
+        setStateWhenTrue(split);
+        boolean aliveBeforeThen = alive;
+        scanStat(node.getThenStatement());
+
+        StatementTree elseStmt = node.getElseStatement();
+        if (elseStmt != null ) {
+            boolean aliveAfterThen = alive;
+            alive = aliveBeforeThen;
+            ST afterThen = copyState();
+            setStateWhenFalse(split);
+            scanStat(elseStmt);
+
+            if (!alive) {
+                // the else branch is not alive at the end
+                // we use the liveness-result from the then branch
+                alive = aliveAfterThen;
+                // annosAfterThen.or(annos);
+                // GenKillBits.orlub(annosAfterThen, annos, annoRelations);
+                afterThen.or(flowState, annoRelations);
+                // annos = GenKillBits.copy(annosAfterThen);
+                flowState = (ST) afterThen.copy();
+            } else if (!aliveAfterThen) {
+                // annos = annos;  // NOOP
+                // TODO: what's the point of this branch?
+            } else {
+                // both branches are alive
+                // alive = true;
+                // GenKillBits.andlub(annos, annosAfterThen, annoRelations);
+            	flowState.and(afterThen, annoRelations);
+            }
+        } else {
+            if (!alive) {
+                // annos = GenKillBits.copy(annosBeforeElse);
+            	flowState = (ST) beforeElse.copy();
+            } else {
+                // GenKillBits.andlub(annos, annosBeforeElse, annoRelations);
+            	flowState.and(beforeElse, annoRelations);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node,
+            Void p) {
+
+        // Split and merge as for an if/else.
+        SplitTuple split = scanCond(node.getCondition());
+
+        setStateWhenTrue(split);
+        scanExpr(node.getTrueExpression());
+        ST after = copyState();
+
+        setStateWhenFalse(split);
+        scanExpr(node.getFalseExpression());
+        // annos.and(after);
+        flowState.and(after, annoRelations);
+        
+        return null;
+    }
+
+    @Override
+    public Void visitWhileLoop(WhileLoopTree node, Void p) {
+        ST stCond;
+        ST stEntry;
+        ST stCondTrue;
+        boolean pass = false;
+
+        do {
+            stEntry = (ST) flowState.copy();
+            SplitTuple split = scanCond(node.getCondition());
+            stCond = split.whenFalse;
+            stCondTrue = split.whenTrue;
+            flowState = split.whenTrue;
+            scanStat(node.getStatement());
+
+            if (pass) break;
+
+            // annosWhenTrue.and(annoEntry);
+            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
+            stCondTrue.and(stEntry, annoRelations);
+            // annos.and(annoEntry);
+            // GenKillBits.andlub(annos, annoEntry, annoRelations);
+            flowState.and(stEntry, annoRelations);
+
+            pass = true;
+        } while (true);
+        
+        // flowState = stCond;
+        flowState = stEntry;
+        return null;
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+        boolean pass = false;
+        ST stCond;
+        do {
+            ST stEntry = (ST) flowState.copy();
+            scanStat(node.getStatement());
+            SplitTuple split = scanCond(node.getCondition());
+            stCond = split.whenFalse;
+            flowState = split.whenTrue;
+            if (pass) break;
+            // annosWhenTrue.and(annoEntry);
+            // GenKillBits.andlub(split.annosWhenTrue, annoEntry, annoRelations);
+            split.whenTrue.and(stEntry, annoRelations);
+            pass = true;
+        } while (true);
+        flowState = stCond;
+        return null;
+    }
+
+    @Override
+    public Void visitForLoop(ForLoopTree node, Void p) {
+        boolean pass = false;
+        for (StatementTree initalizer : node.getInitializer())
+            scanStat(initalizer);
+        ST stCond;
+        ST stCondTrue;
+        do {
+            ST stEntry = (ST) flowState.copy();
+            SplitTuple split = scanCond(node.getCondition());
+            stCond = split.whenFalse;
+            flowState = split.whenTrue;
+            stCondTrue = split.whenTrue;
+
+            scanStat(node.getStatement());
+            for (StatementTree tree : node.getUpdate())
+                scanStat(tree);
+
+            if (pass) break;
+
+            // annosWhenTrue.and(annoEntry);
+            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
+            stCondTrue.and(stEntry, annoRelations);
+            // annos.and(annoEntry);
+            // GenKillBits.andlub(annos, annoEntry, annoRelations);
+            flowState.and(stEntry, annoRelations);
+            pass = true;
+        } while (true);
+        flowState = stCond;
+        return null;
+    }
+
+    @Override
+    public Void visitBreak(BreakTree node, Void p) {
+        alive = false;
+        //alive = true;
+        return null;
+    }
+
+    @Override
+    public Void visitContinue(ContinueTree node, Void p) {
+        alive = false;
+        //alive = true;
+        return null;
+    }
+
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+        if (node.getExpression() != null)
+            scanExpr(node.getExpression());
+        alive = false;
+        return null;
+    }
+
+    @Override
+    public Void visitThrow(ThrowTree node, Void p) {
+        scanExpr(node.getExpression());
+        alive = false;
+        return null;
+    }
+
+    @Override
+    public Void visitTry(TryTree node, Void p) {
+        tryBits.push((ST)flowState.copy());
+        scan(node.getBlock(), p);
+        ST stAfterBlock = (ST) flowState.copy();
+        // pushNewLevel();
+        ST result = tryBits.pop();
+        // annos.and(result);
+        // GenKillBits.andlub(annos, result, annoRelations);
+        flowState.and(result, annoRelations);
+        // popLastLevel();
+        if (node.getCatches() != null) {
+            boolean catchAlive = false;
+            for (CatchTree ct : node.getCatches()) {
+                scan(ct, p);
+                catchAlive |= alive;
+            }
+            // Conservative: only if there's no finally
+            if (!catchAlive && node.getFinallyBlock() == null) {
+            	// annos = GenKillBits.copy(annoAfterBlock);
+            	flowState = (ST) stAfterBlock.copy();
+            }
+        }
+        scan(node.getFinallyBlock(), p);
+        return null;
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        super.visitMethodInvocation(node, p);
+
+        ExecutableElement method = TreeUtils.elementFromUse(node);
+        if (method.getSimpleName().contentEquals("exit")
+                && method.getEnclosingElement().getSimpleName().contentEquals("System"))
+            alive = false;
+
+        this.clearOnCall(method);
+
+        List<? extends TypeMirror> thrown = method.getThrownTypes();
+        if (!thrown.isEmpty()
+                && TreeUtils.enclosingOfKind(getCurrentPath(), Tree.Kind.TRY) != null) {
+            if (!tryBits.isEmpty())
+                // tryBits.peek().and(annos);
+                // GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
+            	tryBits.peek().and(flowState, annoRelations);
+        }
+
+        return null;
+    }
+
+    protected abstract void clearOnCall(ExecutableElement method);
+
+	@Override
+    public Void visitBlock(BlockTree node, Void p) {
+        if (node.isStatic()) {
+            // pushNewLevel();
+            // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
+            ST prev = (ST) flowState.copy();
+            // TODO: optimize and add a parameter to determine whether
+            // vars should also be copied?
+            // List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
+            try {
+                super.visitBlock(node, p);
+                return null;
+            } finally {
+                flowState = prev;
+                // vars = prevVars;
+                // popLastLevel();
+            }
+        }
+        return super.visitBlock(node, p);
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
+        MethodTree preMT = visitorState.getMethodTree();
+        visitorState.setMethodReceiver(
+                factory.getAnnotatedType(node).getReceiverType());
+        visitorState.setMethodTree(node);
+
+        // Intraprocedural, so save and restore bits.
+        // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
+        ST prev = (ST) flowState.copy();
+        // TODO: optimize and determine whether vars should also be copied
+        // List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
+
+        try {
+            super.visitMethod(node, p);
+            return null;
+        } finally {
+                visitMethodEndCallback(node);
+            flowState = prev;
+            // vars = prevVars;
+            visitorState.setMethodReceiver(preMRT);
+            visitorState.setMethodTree(preMT);
+        }
+    }
+
+    // TODO: documentation.
+    public void visitMethodEndCallback(MethodTree node) {
+
+    }
+
+    // **********************************************************************
+
+    /**
+     * Determines whether a variable definition has been annotated.
+     *
+     * @param annotation the annotation to check for
+     * @param var the variable to check
+     * @return true if the variable has the given annotation, false otherwise
+     */
+    protected boolean varDefHasAnnotation(AnnotationMirror annotation, Element var) {
+
+        if (annotatedVarDefs.containsKey(var))
+            return annotatedVarDefs.get(var);
+
+        boolean result = hasAnnotation(factory.getAnnotatedType(var), annotation);
+        annotatedVarDefs.put(var, result);
+        return result;
+    }
+
+    /**
+     * Tests whether the element is of a non-final field
+     *
+     * @return true iff element is a non-final field
+     */
+    protected static final boolean isNonFinalField(Element element) {
+        return (element.getKind().isField()
+                && !ElementUtils.isFinal(element));
+    }
+}
