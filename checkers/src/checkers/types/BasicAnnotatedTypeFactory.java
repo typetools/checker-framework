@@ -14,6 +14,8 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.Flow;
+import checkers.flow.DefaultFlow;
+import checkers.flow.DefaultFlowState;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
@@ -133,7 +135,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     protected Flow createFlow(Checker checker, CompilationUnitTree root,
             Set<AnnotationMirror> flowQuals) {
-        return new Flow(checker, root, flowQuals, this);
+        return new DefaultFlow<DefaultFlowState>(checker, root, flowQuals, this);
     }
 
     // **********************************************************************
@@ -163,7 +165,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             // so scanned is set to true before flow.scan
             scanned = true;
             // Apply flow-sensitive qualifier inference.
-            flow.scan(root, null);
+            flow.scan(root);
             super.fromTreeCache.clear();
             finishedScanning = true;
         }

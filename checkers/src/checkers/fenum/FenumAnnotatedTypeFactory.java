@@ -39,7 +39,7 @@ public class FenumAnnotatedTypeFactory extends
       defaults.setLocalDefault(annotations.fromClass(FenumTop.class));
 
       // flow.setDebug(System.err);
-      flow.scan(root, null);
+      flow.scan(root);
     }
     // if "flowinference" is false, the checker uses the DefaultQualifierInHierarchy.
   }
