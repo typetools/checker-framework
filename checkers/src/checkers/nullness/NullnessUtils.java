@@ -69,8 +69,8 @@ public final class NullnessUtils {
      */
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends @Nullable Object> @NonNull T castNonNull(T ref) {
+    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (@NonNull T)ref;
+        return (/*@NonNull*/ T)ref;
     }
 }
