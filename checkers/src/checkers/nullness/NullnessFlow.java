@@ -135,7 +135,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 			return false;
 		}
 	}
-		
+
 	@Override
 	protected SplitTuple scanCond(ExpressionTree tree) {
 		SplitTuple res = super.scanCond(tree);
@@ -976,7 +976,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 				AnnotatedTypeMirror myType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(meth)));
 
 				if (!(myType instanceof AnnotatedDeclaredType)) {
-					System.err.println("NullnessFlow::visitMethod: What's wrong with: " + myType);
+					System.err.println("NullnessFlow::visitMethod: Bad myType: " + myType + ((myType == null) ? "" : ("  " + myType.getClass())));
+					System.err.println("  for method: " + meth);
 					return null;
 				}
 
@@ -1271,25 +1272,20 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
 			Element recvElem;
 			List<? extends Element> recvFieldElems;
-			{ // block to get all fields of the receiver type
-				// TODO: move to a separate method and only call when it's needed in
-				// the loop. Now we create this list even for static fields where it is not used.
-				ExpressionTree recv = TreeUtils.getReceiverTree(call);
+			List<VariableElement> recvImediateFields;
 
-				AnnotatedTypeMirror recvType;
-				if (recv==null) {
-					recvType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(call)));
-				} else {
-					recvType = factory.getAnnotatedType(recv);
-				}
+			{
+				AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
 
 				if (!(recvType instanceof AnnotatedDeclaredType)) {
-					System.err.println("What's wrong with: " + recvType);
+					System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
+					System.err.println("  for call: " + call);
 					return;
 				}
 
 				recvElem = ((AnnotatedDeclaredType)recvType).getUnderlyingType().asElement();
 				recvFieldElems = allFields(recvElem);
+				recvImediateFields = ElementFilter.fieldsIn(recvElem.getEnclosedElements());
 			}
 
 			String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
@@ -1299,6 +1295,11 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 				Element el = findElementInCall(recvElem, recvFieldElems, call, field);
 				if (el==null) {
 					// we've already output an error message
+					continue;
+				}
+				if (TreeUtils.isSelfAccess(call) && !recvImediateFields.contains(el)) {
+					// super class fields already initialized
+					// TODO: Handle nullable and raw fields
 					continue;
 				}
 

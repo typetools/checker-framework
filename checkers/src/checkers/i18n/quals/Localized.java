@@ -18,7 +18,7 @@ import checkers.quals.*;
         LONG_LITERAL,
         FLOAT_LITERAL,
         DOUBLE_LITERAL,
-        BOOLEAN_LITERAL,
+        BOOLEAN_LITERAL
 
         //CHAR_LITERAL,
         //STRING_LITERAL,

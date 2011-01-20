@@ -19,6 +19,8 @@ import java.lang.annotation.Target;
  * the same location, use {@link DefaultQualifiers}.
  *
  * @see DefaultLocation
+ * @see DefaultQualifiers
+ * @see DefaultQualifierInHierarchy
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
