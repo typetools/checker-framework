@@ -174,10 +174,11 @@ class RawTypes {
 
     }
 
+    // TODO: These cases already covered in nullness-uninit
+    // However, these shouldn't generate errors as this folder
+    // is compiled with lint:uninitialized off
     class RawAfterConstructorBad {
         Object o;
-        // Should err, because some non-null variables are not yet
-        // initialized when the constructor exits.
         RawAfterConstructorBad() {
         }
     }
@@ -202,35 +203,35 @@ class RawTypes {
 //     class InitInHelperMethod {
 //         int a;
 //         int b;
-// 
+//
 //         InitInHelperMethod(short constructor_inits_ab) {
 //             a = 1;
 //             b = 1;
 //             nonRawMethod();
 //         }
-// 
+//
 //         InitInHelperMethod(boolean constructor_inits_a) {
 //             a = 1;
 //             init_b();
 //             nonRawMethod();
 //         }
-// 
+//
 //         void init_b() @Raw {
 //             b = 2;
 //             nonRawMethod();
 //         }
-// 
+//
 //         InitInHelperMethod(int constructor_inits_none) {
 //             init_ab();
 //             nonRawMethod();
 //         }
-// 
+//
 //         void init_ab() @Raw {
 //             a = 1;
 //             b = 2;
 //             nonRawMethod();
 //         }
-// 
+//
 //         void nonRawMethod() { }
 //     }
 

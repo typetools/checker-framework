@@ -1,10 +1,15 @@
 package checkers.util;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import checkers.nullness.quals.Nullable;
 import checkers.quals.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 /**
  * A Utility class for analyzing {@code Element}s
@@ -120,6 +125,28 @@ public class ElementUtils {
         return elt != null
             && elt.getKind() == ElementKind.FIELD
             && ((VariableElement)elt).getConstantValue() != null;
+    }
+
+    /**
+     * Returns the field of the class
+     */
+    public static VariableElement findFieldInType(TypeElement type, String name) {
+    	for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+    		if (field.getSimpleName().toString().equals(name)) {
+    			return field;
+    		}
+    	}
+    	return null;
+    }
+
+    public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
+    	Set<VariableElement> results = new HashSet<VariableElement>();
+    	for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+    		if (names.contains(field.getSimpleName().toString())) {
+    			results.add(field);
+    		}
+    	}
+    	return results;
     }
 
 }

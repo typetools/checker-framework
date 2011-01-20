@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.*;
+import checkers.nullness.quals.AssertNonNullAfter;
 import checkers.nullness.quals.AssertNonNullIfFalse;
 import checkers.nullness.quals.AssertNonNullIfTrue;
 import checkers.nullness.quals.LazyNonNull;
@@ -86,6 +87,9 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     @Override
     public Void visitThrow(ThrowTree node, Void p) {
         checkForNullability(node.getExpression(), "throwing.nullable");
+        if (nonInitializedFields != null) {
+        	this.nonInitializedFields.clear();
+        }
         return super.visitThrow(node, p);
     }
 
@@ -221,7 +225,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 return super.visitMethod(node, p);
             } finally {
                 if (!nonInitializedFields.isEmpty()) {
-                    if (checker.getLintOption("uninitialized", false)) {
+                    if (checker.getLintOption("uninitialized", true)) {
                         // warn against uninitialized fields
                         // TODO: we really only want a warning, but the testing framework doesn't support this
                         checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
@@ -252,8 +256,26 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     }
 
     @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+    	if (nonInitializedFields != null
+    		&& TreeUtils.isSelfAccess(node)) {
+    		
+    		AssertNonNullAfter nnAfter =
+    			TreeUtils.elementFromUse(node).getAnnotation(AssertNonNullAfter.class);
+    		if (nnAfter != null) {
+    			Set<VariableElement> elts = 
+    				ElementUtils.findFieldsInType(
+    						TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
+    						Arrays.asList(nnAfter.value()));
+    			nonInitializedFields.removeAll(elts);
+    		}
+    	}
+    	return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
     protected void checkDefaultConstructor(ClassTree node) {
-        if (!checker.getLintOption("uninitialized", false))
+        if (!checker.getLintOption("uninitialized", true))
             return;
 
         Set<VariableElement> fields = getUninitializedFields(node);
@@ -282,6 +304,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             // and are qualified as nonnull
             if (var.getInitializer() == null
                     && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
+                    && varElt.getAnnotation(LazyNonNull.class) == null
                     && !varElt.getModifiers().contains(Modifier.STATIC))
                 fields.add(varElt);
         }
