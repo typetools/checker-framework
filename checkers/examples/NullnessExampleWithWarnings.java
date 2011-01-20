@@ -2,22 +2,23 @@ import checkers.nullness.quals.*;
 import java.util.*;
 
 /**
- * This class illustrates an incorrect use of the @NonNull type annotation.
+ * This class illustrates use of nullness type annotations.
  * The class doesn't do anything -- it is merely meant to be compiled.
  * Compilation will produce warning messages.
  * <p>
-
- * Also see {@link NullnessExample}, an example of correct use
- * of the @NonNull type annotation.  See the Nullness checker documentation
- * for larger examples of annotated code.
+ *
+ * There are two related files that differ only slightly:
+ * {@link NullnessExample}, an example of correct use, and {@link
+ * NullnessExampleWithWarnings}, an example of incorrect use.
+ * See the Nullness checker documentation for larger examples of annotated code.
  **/
 public class NullnessExampleWithWarnings {
 
   public void example() {
 
-    // This type annotation is redundant -- the Nullness Checker will
-    // infer it, but it is written here in the example for emhpasis.
-    // In general, you do not have to annotate local variables.
+    // In general, you do not have to annotate local variables, because the
+    // Nullness Checker infers such annotations.  It is written here in the
+    // example for emhpasis.
     @NonNull String foo = "foo";
     String bar = null;
 
