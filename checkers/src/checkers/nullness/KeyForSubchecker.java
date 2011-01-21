@@ -2,7 +2,6 @@ package checkers.nullness;
 
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
@@ -20,6 +19,7 @@ import checkers.types.TypeHierarchy;
  */
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
 public class KeyForSubchecker extends BaseTypeChecker {
+  @Override
   protected TypeHierarchy createTypeHierarchy() {
     return new KeyForTypeHierarchy(getQualifierHierarchy());
   }
