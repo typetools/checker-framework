@@ -1,7 +1,5 @@
 package checkers.util.debug;
 
-import checkers.source.*;
-
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -12,7 +10,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import java.util.*;
 
 import javax.annotation.processing.*;
-import javax.lang.model.SourceVersion;
+// import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
