@@ -90,7 +90,7 @@ implements Flow {
      * {@code javac}'s {@code Flow}, saving/restoring via local variables
      * handles nested branches.
      * This field is only non-null/valid if flowState is null.
-     * 
+     *
      * @see #flowState
      */
     protected ST flowState_whenTrue;
@@ -100,7 +100,7 @@ implements Flow {
      * {@code javac}'s {@code Flow}, saving/restoring via local variables
      * handles nested branches.
      * This field is only non-null/valid if flowState is null.
-     * 
+     *
      * @see #flowState
      */
     protected ST flowState_whenFalse;
@@ -165,7 +165,7 @@ implements Flow {
 
     /**
      * Create the correct instance of FlowState.
-     * 
+     *
      * @param annotations The annotations that can be inferred.
      * @return A new instance of the FlowState to use.
      */
@@ -376,7 +376,7 @@ implements Flow {
      * Copy the current state.
      * We need the unchecked cast, because there is no way to
      * type that "copy" will return the same type.
-     * 
+     *
      * @return A deep copy of the current state.
      */
     @SuppressWarnings("unchecked")
@@ -656,13 +656,13 @@ implements Flow {
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
         ST stEntry;
         ST stCondTrue;
-        // ST stCondFalse;
+        ST stCondFalse;
         boolean pass = false;
 
         do {
             stEntry = copyState(flowState);
             scanCond(node.getCondition());
-            // stCondFalse = flowState_whenFalse;
+            stCondFalse = flowState_whenFalse;
             stCondTrue = flowState_whenTrue;
             flowState = flowState_whenTrue;
             scanStat(node.getStatement());
@@ -679,18 +679,29 @@ implements Flow {
             pass = true;
         } while (true);
 
-        // flowState = stCondFalse;
-        flowState = stEntry;
+        if (alive) {
+            // If the loop is exited without a "dead" instruction like break,
+            // we can assume the negated condition.
+            // TODO: is this check too simplistic?
+            flowState = stCondFalse;
+        } else {
+            // If there is a break or something similar within the body of the
+            // loop, we cannot ensure that the negated condition holds.
+            flowState = stEntry;
+        }
         return null;
     }
 
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
         boolean pass = false;
+        ST stEntry;
         ST stCond;
+        boolean aliveAfterStat;
         do {
-            ST stEntry = copyState(flowState);
+            stEntry = copyState(flowState);
             scanStat(node.getStatement());
+            aliveAfterStat = alive;
             scanCond(node.getCondition());
             stCond = flowState_whenFalse;
             flowState = flowState_whenTrue;
@@ -700,7 +711,12 @@ implements Flow {
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
-        flowState = stCond;
+
+        if (aliveAfterStat) {
+            flowState = stCond;
+        } else {
+            flowState = stEntry;
+        }
         return null;
     }
 
@@ -709,12 +725,13 @@ implements Flow {
         boolean pass = false;
         for (StatementTree initalizer : node.getInitializer())
             scanStat(initalizer);
-        ST stCond;
+        ST stCondFalse;
         ST stCondTrue;
+        ST stEntry;
         do {
-            ST stEntry = copyState(flowState);
+            stEntry = copyState(flowState);
             scanCond(node.getCondition());
-            stCond = flowState_whenFalse;
+            stCondFalse = flowState_whenFalse;
             flowState = flowState_whenTrue;
             stCondTrue = flowState_whenTrue;
 
@@ -732,7 +749,12 @@ implements Flow {
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
-        flowState = stCond;
+
+        if (alive) {
+            flowState = stCondFalse;
+        } else {
+            flowState = stEntry;
+        }
         return null;
     }
 
@@ -818,7 +840,7 @@ implements Flow {
     /**
      * Clear whatever part of the state that gets invalidated by
      * invoking the method.
-     * 
+     *
      * @param method The invoked method.
      */
     protected abstract void clearOnCall(ExecutableElement method);
@@ -865,7 +887,7 @@ implements Flow {
      * This method is invoked by visitMethod before restoring the previous
      * state before visiting the method.
      * This method is used to investigate the state at that point.
-     * 
+     *
      * @param node
      */
     public void visitMethodEndCallback(MethodTree node) {
