@@ -28,27 +28,23 @@ public class DefaultFlowState implements FlowState {
      * to determine a variable's annotatedness using annos.
      * In a previous implementation, vars was only copied when visitBlock or
      * visitMethod was invoked. We now copy this field whenever we need to copy the
-     * state. TODO: look whether it's worth to optimize this.
-     * 
+     * state.
+     * TODO: look whether it's worth to optimize this.
+     *
      * @see #annos
      */
     public List<VariableElement> vars;
 
     /**
      * Tracks the annotated state of each variable during flow. Bit indices
-     * correspond exactly to indices in {@link #vars}. This field is set to null
-     * immediately after splitting for a branch, and is set to some combination
-     * (usually boolean "and") of {@link SplitTuple}'s annosWhenTrue and
-     * annosWhenFalse after merging. Since it is used when visiting the true and
-     * false branches, however, it may be non-null concurrently with
-     * {@link SplitTuple}'s annosWhenTrue and annosWhenFalse.
+     * correspond exactly to indices in {@link #vars}.
      */
     // public needed for an access in NullnessFlow :-(
     public GenKillBits<AnnotationMirror> annos;
 
     /**
      * Create a new default flow state.
-     * 
+     *
      * @param annotations The annotations that can be inferred.
      */
     public DefaultFlowState(Set<AnnotationMirror> annotations) {

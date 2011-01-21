@@ -12,8 +12,8 @@ public interface FlowState {
     /**
      * Create a new instance of the current flow state class.
      * The type of the returned object has to be the same as the type of the receiver.
-     * This is used in {@link copy} to create a new instance of the correct type.
-     * 
+     * This is used in {@link #copy()} to create a new instance of the correct type.
+     *
      * @param annotations The annotations that can be inferred.
      * @return A new flow state instance.
      */
@@ -21,7 +21,7 @@ public interface FlowState {
 
     /**
      * The current set of annotations that can be inferred.
-     * 
+     *
      * @return A reference to the set of annotations.
      */
     // TODO: for annotations with values, we will need to modify this.
@@ -30,14 +30,14 @@ public interface FlowState {
     /**
      * Deeply copy the state of the current flow state.
      * The type of the returned object has to be the same as the type of the receiver.
-     * 
+     *
      * @return A completely independent copy of this.
      */
     FlowState copy();
 
     /**
      * "Or" the current state with an other state, modifying only the current state.
-     * 
+     *
      * @param other The other state, will not be modified.
      * @param annoRelations The relationship between the qualifiers.
      */
@@ -45,7 +45,7 @@ public interface FlowState {
 
     /**
      * "And" the current state with an other state, modifying only the current state.
-     * 
+     *
      * @param other The other state, will not be modified.
      * @param annoRelations The relationship between the qualifiers.
      */
