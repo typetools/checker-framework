@@ -77,6 +77,7 @@ class Explosion {
             while (z == null){
                 break;
             }
+            //:: (assignment.type.incompatible)
             nnz = z;
             while (z == null){
                 ; //do nothing
