@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import checkers.nullness.quals.Nullable;
-import checkers.quals.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -36,7 +35,12 @@ public class ElementUtils {
         return (TypeElement) result;
     }
 
-    // WMD TODO: document
+    /**
+     * Returns the innermost package element enclosing the given element.
+     *
+     * @param elem the enclosed element of a package
+     * @return the innermost package element
+     */
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
         while (result != null && result.getKind()!=ElementKind.PACKAGE) {
