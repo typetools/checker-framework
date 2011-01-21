@@ -1,7 +1,6 @@
 package checkers.flow;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.Pure;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -56,7 +55,7 @@ import javax.lang.model.util.Elements;
  * unit.
  */
 public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner<Void, Void>
-	implements Flow {
+implements Flow {
 
     /** Where to print debugging messages; set via {@link #setDebug}. */
     protected PrintStream debug = null;
@@ -70,15 +69,6 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
     /** The file that's being analyzed. */
     protected final CompilationUnitTree root;
 
-    /**
-     * The annotations (qualifiers) to infer. The relationship among them is
-     * determined using {@link BaseTypeChecker#getQualifierHierarchy()}. By
-     * consulting the hierarchy, the analysis will only infer a qualifier on a
-     * type if it is more restrictive (i.e. a subtype) than the existing
-     * qualifier for that type.
-     */
-    protected final Set<AnnotationMirror> annotations;
-
     /** Utility class for determining annotated types. */
     protected final AnnotatedTypeFactory factory;
 
@@ -88,22 +78,41 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
     /** Stores the results of the analysis (source location to qualifier). */
     protected final Map<Tree, AnnotationMirror> flowResults;
 
-
-    // static
-    public class SplitTuple { // <ST extends FlowState> {
-        public ST whenTrue;
-        public ST whenFalse;
-    }
-
+    /**
+     * Tracks the state of the inference.
+     * If this field is non-null, the flowState_whenTrue and flowState_whenFalse
+     * fields are null/ignored.
+     */
     protected ST flowState;
-    
+
+    /**
+     * Tracks the state of the inference in a true branch. As in
+     * {@code javac}'s {@code Flow}, saving/restoring via local variables
+     * handles nested branches.
+     * This field is only non-null/valid if flowState is null.
+     * 
+     * @see #flowState
+     */
+    protected ST flowState_whenTrue;
+
+    /**
+     * Tracks the state of the inference in a false branch. As in
+     * {@code javac}'s {@code Flow}, saving/restoring via local variables
+     * handles nested branches.
+     * This field is only non-null/valid if flowState is null.
+     * 
+     * @see #flowState
+     */
+    protected ST flowState_whenFalse;
+
+
     /**
      * Stores the result of liveness analysis, required by the GEN-KILL analysis
      * for proper handling of jumps (break, return, throw, etc.).
      */
     protected boolean alive = true;
 
-    /** Tracks annotations in try blocks to support exceptions. */
+    /** Tracks the state in try blocks to support exceptions. */
     private final Deque<ST> tryBits;
 
     /** Visitor state; tracking is required for checking receiver types. */
@@ -134,7 +143,6 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         this.checker = checker;
         this.env = checker.getProcessingEnvironment();
         this.root = root;
-        this.annotations = annotations;
 
         if (factory == null)
             this.factory = new AnnotatedTypeFactory(checker, root);
@@ -151,13 +159,18 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
 
         this.annoRelations = checker.getQualifierHierarchy();
         this.elements = env.getElementUtils();
-        
-		this.flowState = createFlowState(annotations);
-        // TODO: set flowState in subclasses
+
+        this.flowState = createFlowState(annotations);
     }
 
+    /**
+     * Create the correct instance of FlowState.
+     * 
+     * @param annotations The annotations that can be inferred.
+     * @return A new instance of the FlowState to use.
+     */
     protected abstract ST createFlowState(Set<AnnotationMirror> annotations);
-    
+
     /**
      * Sets the {@link PrintStream} for printing debug messages, such as
      * {@link System#out} or {@link System#err}, or null if no debugging output
@@ -167,10 +180,11 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         this.debug = debug;
     }
 
+    @Override
     public void scan(Tree tree) {
-    	this.scan(tree, null);
+        this.scan(tree, null);
     }
-    
+
     @Override
     public Void scan(Tree tree, Void p) {
         if (tree != null && tree.getKind() == Tree.Kind.COMPILATION_UNIT)
@@ -187,6 +201,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      * @return the annotation inferred for a tree, or null if no annotation was
      *         inferred for that tree
      */
+    @Override
     public AnnotationMirror test(Tree tree) {
         while (tree.getKind() == Tree.Kind.ASSIGNMENT)
             tree = ((AssignmentTree)tree).getVariable();
@@ -206,7 +221,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      * @param tree the variable to register
      */
     protected abstract void newVar(VariableTree tree);
-    
+
     /**
      * Determines whether a type has an annotation. If the type is not a
      * wildcard, it checks the type directly; if it is a wildcard, it checks the
@@ -240,7 +255,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      * @param rhs the right-hand side of the assignment
      */
     protected abstract void propagate(Tree lhs, ExpressionTree rhs);
-    
+
     /**
      * Moves bits in an assignment using a type instead of a tree.
      *
@@ -256,7 +271,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      * @param rhs the type of the right-hand side of the assignment
      */
     abstract void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs);
-    
+
     /**
      * @param path the path to check
      * @return true if the path leaf is part of an expression used as an lvalue
@@ -287,7 +302,6 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      * @param path
      */
     protected void recordBits(TreePath path) {
-
         if (isLValue(path))
             return;
 
@@ -310,7 +324,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
 
     protected abstract void recordBitsImps(Tree tree, Element elt);
 
-	/**
+    /**
      * Called whenever a definition is scanned.
      *
      * @param tree the definition being scanned
@@ -344,43 +358,32 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
      *
      * @param tree the condition being scanned
      */
-    protected SplitTuple scanCond(ExpressionTree tree) {
+    protected void scanCond(ExpressionTree tree) {
         alive = true;
         if (tree != null) {
             scan(tree, null);
         }
         if (flowState != null) {
-        	SplitTuple res = split();
-        	return res;
+            flowState_whenFalse = copyState(flowState);
+            flowState_whenTrue = flowState;
+            flowState = null;
+        } else {
+            assert false : "Incorrect call of scanCond!";
         }
-        return new SplitTuple();
-    }
-    
-    /**
-     * Split the bitset before a conditional branch.
-     */
-    // assumes flowState != null
-    protected SplitTuple split() {
-        SplitTuple res = new SplitTuple();
-        res.whenFalse = copyState();
-        res.whenTrue = flowState;
-        flowState = null;
-        return res;
-    }
-    
-    ST copyState() {
-    	return (ST) flowState.copy();
     }
 
     /**
-     * Merge the bitset after a conditional branch.
-     *//*
-    protected void merge() {
-        annos = GenKillBits.copy(annosWhenTrue);
-        //annos.and(annosWhenFalse);
-        GenKillBits.andlub(annos, annosWhenFalse, annoRelations);
-        annosWhenTrue = annosWhenFalse = null;
-    }*/
+     * Copy the current state.
+     * We need the unchecked cast, because there is no way to
+     * type that "copy" will return the same type.
+     * 
+     * @return A deep copy of the current state.
+     */
+    @SuppressWarnings("unchecked")
+    protected ST copyState(ST in) {
+        return (ST) in.copy();
+    }
+
 
     /**
      * Called whenever an expression is scanned.
@@ -391,7 +394,6 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         alive = true;
         scan(tree, null);
         assert flowState != null;
-        // if (annos == null) merge();
     }
 
     // **********************************************************************
@@ -442,7 +444,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         if (factory.fromTypeTree(node.getType()).isAnnotated())
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
-        for (AnnotationMirror a : annotations)
+        for (AnnotationMirror a : this.flowState.getAnnotations())
             if (hasAnnotation(t, a))
                 flowResults.put(node, a);
         return null;
@@ -514,35 +516,14 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         // Is something similar needed for other expressions?
         // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
         AnnotatedTypeMirror t = factory.getAnnotatedType(var);
-        for (AnnotationMirror a : annotations) {
+        for (AnnotationMirror a : this.flowState.getAnnotations()) {
             if (hasAnnotation(t, a)) {
                 flowResults.put(node, a);
             }
         }
 
-        // Clearing out the Annotations is only the correct solution for the
-        // Interning Checker, where the result of a compound assignment is never
-        // interned. For other checkers, this behavior is wrong, e.g. in the Fenum Checker
-        // it leads to FenumTop being determined instead of a FenumUnqualified.
-        // if (var.getKind() != Tree.Kind.ARRAY_ACCESS)
-        //       clearAnnos(var);
-
         return null;
-        }
-
-    /*
-    private void clearAnnos(Tree tree) {
-        Element elt = InternalUtils.symbol(tree);
-        if (elt == null)
-            return;
-        int idx = vars.indexOf(elt);
-        if (idx >= 0) {
-            for (AnnotationMirror anno : annotations) {
-                annos.clear(anno, idx);
-            }
-        }
     }
-    */
 
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
@@ -577,46 +558,39 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         return false;
     }
 
-    // protected void pushNewLevel() { }
-    // protected void popLastLevel() { }
-
     @Override
     public Void visitAssert(AssertTree node, Void p) {
         boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey());
-        ST afterAssert = copyState();
-        // pushNewLevel();
-        SplitTuple split = scanCond(node.getCondition());
+        ST afterAssert = copyState(flowState);
+        scanCond(node.getCondition());
+        ST whenTrue = flowState_whenTrue;
+        ST whenFalse = flowState_whenFalse;
+
         if (inferFromAsserts) {
-            afterAssert = (ST) split.whenTrue.copy();
+            afterAssert = copyState(whenTrue);
         }
-        this.setStateWhenFalse(split);
+        flowState = whenFalse;
         scanExpr(node.getDetail());
         if (inferFromAsserts) {
-        	this.setStateWhenTrue(split);
+            flowState = whenTrue;
         } else {
-        	// TODO: when does this happen? Fields from subclass might still be set
-        	// to StateWhenFalse!
-        	this.flowState = afterAssert;
+            // TODO: when does this happen? Fields from subclass might still be set
+            // to StateWhenFalse!
+            this.flowState = afterAssert;
         }
-        // popLastLevel();
         return null;
     }
 
-    protected final void setStateWhenTrue(SplitTuple s) {
-    	this.flowState = s.whenTrue;
-    }
-    
-    protected final void setStateWhenFalse(SplitTuple s) {
-    	this.flowState = s.whenFalse;
-    }
-    
     @Override
     public Void visitIf(IfTree node, Void p) {
-        SplitTuple split = scanCond(node.getCondition());
+        scanCond(node.getCondition());
+        ST whenTrue = flowState_whenTrue;
+        ST whenFalse = flowState_whenFalse;
 
-        ST beforeElse = split.whenFalse;
-        
-        setStateWhenTrue(split);
+        ST beforeElse = whenFalse;
+
+        flowState = whenTrue;
+
         boolean aliveBeforeThen = alive;
         scanStat(node.getThenStatement());
 
@@ -624,8 +598,8 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         if (elseStmt != null ) {
             boolean aliveAfterThen = alive;
             alive = aliveBeforeThen;
-            ST afterThen = copyState();
-            setStateWhenFalse(split);
+            ST afterThen = copyState(flowState);
+            flowState = whenFalse;
             scanStat(elseStmt);
 
             if (!alive) {
@@ -636,7 +610,7 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
                 // GenKillBits.orlub(annosAfterThen, annos, annoRelations);
                 afterThen.or(flowState, annoRelations);
                 // annos = GenKillBits.copy(annosAfterThen);
-                flowState = (ST) afterThen.copy();
+                flowState = copyState(afterThen);
             } else if (!aliveAfterThen) {
                 // annos = annos;  // NOOP
                 // TODO: what's the point of this branch?
@@ -644,15 +618,15 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
                 // both branches are alive
                 // alive = true;
                 // GenKillBits.andlub(annos, annosAfterThen, annoRelations);
-            	flowState.and(afterThen, annoRelations);
+                flowState.and(afterThen, annoRelations);
             }
         } else {
             if (!alive) {
                 // annos = GenKillBits.copy(annosBeforeElse);
-            	flowState = (ST) beforeElse.copy();
+                flowState = copyState(beforeElse);
             } else {
                 // GenKillBits.andlub(annos, annosBeforeElse, annoRelations);
-            	flowState.and(beforeElse, annoRelations);
+                flowState.and(beforeElse, annoRelations);
             }
         }
 
@@ -660,37 +634,37 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
     }
 
     @Override
-    public Void visitConditionalExpression(ConditionalExpressionTree node,
-            Void p) {
-
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         // Split and merge as for an if/else.
-        SplitTuple split = scanCond(node.getCondition());
+        scanCond(node.getCondition());
+        ST whenTrue = flowState_whenTrue;
+        ST whenFalse = flowState_whenFalse;
 
-        setStateWhenTrue(split);
+        flowState = whenTrue;
         scanExpr(node.getTrueExpression());
-        ST after = copyState();
+        ST after = copyState(flowState);
 
-        setStateWhenFalse(split);
+        flowState = whenFalse;
         scanExpr(node.getFalseExpression());
         // annos.and(after);
         flowState.and(after, annoRelations);
-        
+
         return null;
     }
 
     @Override
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
-        ST stCond;
         ST stEntry;
         ST stCondTrue;
+        // ST stCondFalse;
         boolean pass = false;
 
         do {
-            stEntry = (ST) flowState.copy();
-            SplitTuple split = scanCond(node.getCondition());
-            stCond = split.whenFalse;
-            stCondTrue = split.whenTrue;
-            flowState = split.whenTrue;
+            stEntry = copyState(flowState);
+            scanCond(node.getCondition());
+            // stCondFalse = flowState_whenFalse;
+            stCondTrue = flowState_whenTrue;
+            flowState = flowState_whenTrue;
             scanStat(node.getStatement());
 
             if (pass) break;
@@ -704,8 +678,8 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
 
             pass = true;
         } while (true);
-        
-        // flowState = stCond;
+
+        // flowState = stCondFalse;
         flowState = stEntry;
         return null;
     }
@@ -715,15 +689,15 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         boolean pass = false;
         ST stCond;
         do {
-            ST stEntry = (ST) flowState.copy();
+            ST stEntry = copyState(flowState);
             scanStat(node.getStatement());
-            SplitTuple split = scanCond(node.getCondition());
-            stCond = split.whenFalse;
-            flowState = split.whenTrue;
+            scanCond(node.getCondition());
+            stCond = flowState_whenFalse;
+            flowState = flowState_whenTrue;
             if (pass) break;
             // annosWhenTrue.and(annoEntry);
             // GenKillBits.andlub(split.annosWhenTrue, annoEntry, annoRelations);
-            split.whenTrue.and(stEntry, annoRelations);
+            flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
         flowState = stCond;
@@ -738,11 +712,11 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
         ST stCond;
         ST stCondTrue;
         do {
-            ST stEntry = (ST) flowState.copy();
-            SplitTuple split = scanCond(node.getCondition());
-            stCond = split.whenFalse;
-            flowState = split.whenTrue;
-            stCondTrue = split.whenTrue;
+            ST stEntry = copyState(flowState);
+            scanCond(node.getCondition());
+            stCond = flowState_whenFalse;
+            flowState = flowState_whenTrue;
+            stCondTrue = flowState_whenTrue;
 
             scanStat(node.getStatement());
             for (StatementTree tree : node.getUpdate())
@@ -793,15 +767,15 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
 
     @Override
     public Void visitTry(TryTree node, Void p) {
-        tryBits.push((ST)flowState.copy());
+        tryBits.push(copyState(flowState));
         scan(node.getBlock(), p);
-        ST stAfterBlock = (ST) flowState.copy();
-        // pushNewLevel();
+        ST stAfterBlock = copyState(flowState);
         ST result = tryBits.pop();
+
         // annos.and(result);
         // GenKillBits.andlub(annos, result, annoRelations);
         flowState.and(result, annoRelations);
-        // popLastLevel();
+
         if (node.getCatches() != null) {
             boolean catchAlive = false;
             for (CatchTree ct : node.getCatches()) {
@@ -810,8 +784,8 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
             }
             // Conservative: only if there's no finally
             if (!catchAlive && node.getFinallyBlock() == null) {
-            	// annos = GenKillBits.copy(annoAfterBlock);
-            	flowState = (ST) stAfterBlock.copy();
+                // annos = GenKillBits.copy(annoAfterBlock);
+                flowState = copyState(stAfterBlock);
             }
         }
         scan(node.getFinallyBlock(), p);
@@ -835,30 +809,30 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
             if (!tryBits.isEmpty())
                 // tryBits.peek().and(annos);
                 // GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
-            	tryBits.peek().and(flowState, annoRelations);
+                tryBits.peek().and(flowState, annoRelations);
         }
 
         return null;
     }
 
+    /**
+     * Clear whatever part of the state that gets invalidated by
+     * invoking the method.
+     * 
+     * @param method The invoked method.
+     */
     protected abstract void clearOnCall(ExecutableElement method);
 
-	@Override
+    @Override
     public Void visitBlock(BlockTree node, Void p) {
         if (node.isStatic()) {
-            // pushNewLevel();
             // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
-            ST prev = (ST) flowState.copy();
-            // TODO: optimize and add a parameter to determine whether
-            // vars should also be copied?
-            // List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
+            ST prev = copyState(flowState);
             try {
                 super.visitBlock(node, p);
                 return null;
             } finally {
                 flowState = prev;
-                // vars = prevVars;
-                // popLastLevel();
             }
         }
         return super.visitBlock(node, p);
@@ -874,25 +848,28 @@ public abstract class AbstractFlow<ST extends FlowState> extends TreePathScanner
 
         // Intraprocedural, so save and restore bits.
         // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
-        ST prev = (ST) flowState.copy();
-        // TODO: optimize and determine whether vars should also be copied
-        // List<VariableElement> prevVars = new ArrayList<VariableElement>(this.vars);
+        ST prev = copyState(flowState);
 
         try {
             super.visitMethod(node, p);
             return null;
         } finally {
-                visitMethodEndCallback(node);
+            visitMethodEndCallback(node);
             flowState = prev;
-            // vars = prevVars;
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
     }
 
-    // TODO: documentation.
+    /**
+     * This method is invoked by visitMethod before restoring the previous
+     * state before visiting the method.
+     * This method is used to investigate the state at that point.
+     * 
+     * @param node
+     */
     public void visitMethodEndCallback(MethodTree node) {
-
+        // Usually there is nothing to do.
     }
 
     // **********************************************************************
