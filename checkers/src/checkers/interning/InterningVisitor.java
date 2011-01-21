@@ -98,7 +98,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             return super.visitBinary(node, p);
         }
 
-        if (!(left.hasAnnotation(INTERNED) || (leftType != null && leftType.getAnnotation(UsesObjectEquals.class) != null)))
+        if (!(left.hasAnnotation(INTERNED) || (leftType != null && leftType.getAnnotation((Class<UsesObjectEquals>) UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!(right.hasAnnotation(INTERNED) || (rightType != null && rightType.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", right), rightOp);
