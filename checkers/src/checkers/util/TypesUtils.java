@@ -3,8 +3,6 @@ package checkers.util;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
-import checkers.quals.*;
-
 /**
  * A Utilities class that helps with {@link Element}s.
  *
@@ -86,7 +84,7 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Float"));
     }
 
-    /** @return type represents a Trowable type (e.g. Exception, Error) **/
+    /** @return type represents a Throwable type (e.g. Exception, Error) **/
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) type;
