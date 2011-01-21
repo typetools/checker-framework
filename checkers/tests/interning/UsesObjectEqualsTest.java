@@ -10,16 +10,16 @@ public class UsesObjectEqualsTest {
 	@UsesObjectEquals
 	class B extends A {}
 	
-	//:: Should fail because superclass has @UsesObjectEquals annotation.
+	//:: (name.of.error)
 	class C extends A {}
 	
 	class D {}
 	
-	//:: Should fail because superclass does not have annotation.
+	//:: (name.of.error)
 	@UsesObjectEquals
 	class E extends D {}
 	
-	//:: Should fail because overrides equals(Object)
+	//:: (name.of.error)
 	@UsesObjectEquals
 	class TestEquals {
 		
