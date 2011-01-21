@@ -76,8 +76,14 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
 
         //Get annotation on Element to check for @UsesObjectEquals later
+        //System.out.println("left DeclaredType?: " + (left instanceof DeclaredType));
+        //System.out.println("right DeclaredType?: "+ (right instanceof DeclaredType));
+        
         TypeElement leftType = (left instanceof DeclaredType)? (TypeElement)((DeclaredType)left.getUnderlyingType()).asElement() : null;
         TypeElement rightType = (right instanceof DeclaredType)? (TypeElement)((DeclaredType)right.getUnderlyingType()).asElement() : null;
+        
+        System.out.println("leftType is null: " + (leftType == null) +", left.isAnnotated: " + left.isAnnotated());
+        System.out.println("rightType is null: " + (rightType == null) +", right.isAnnotated: " + right.isAnnotated());
         
         // If either argument is a primitive, check passes due to auto-unboxing
         if (left.getKind().isPrimitive() || right.getKind().isPrimitive())
@@ -98,6 +104,8 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
             return super.visitBinary(node, p);
         }
 
+        //Ok, so printlns confirm that leftType is always null, because it never passes the instance of DeclaredType. Obviously the
+        //second part to this test will always fail then. the getAnnotation is never even called)
         if (!(left.hasAnnotation(INTERNED) || (leftType != null && leftType.getAnnotation((Class<UsesObjectEquals>) UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!(right.hasAnnotation(INTERNED) || (rightType != null && rightType.getAnnotation(UsesObjectEquals.class) != null)))
@@ -141,6 +149,8 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
     	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class); 
+    	System.out.println("\nclassname: " + node.getSimpleName());
+    	System.out.println("annotation: "+ annotation +"\n");
     	
     	//A a = elt.getAnnotation(Class<A> annotationtype);  What is the problem????
     	
@@ -154,20 +164,22 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     				MethodTree mTree = (MethodTree) member;
     				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
     				if(overrides(enclosing, Object.class, "equals")){
-    					checker.report(Result.failure("marked @UsesObjectEquals but overrides .equals(Object)"), node);
+    					checker.report(Result.failure("overrides.equals"), node);
     				}
     			}
     		}
     		
+    		//TODO use the classIsAnnotated method as a framework 
+    		//and make a method to check the superclass stuff. Better.
     		//check parent is Object or @UsesObjectEquals
     		Class<?> superClass = node.getClass().getSuperclass();
     		if(!(superClass.equals(Object.class) || superClass.getAnnotation(UsesObjectEquals.class) != null)){
-    			checker.report(Result.failure("superclass must be Object or marked @UsesObjectEquals"), node);
+    			checker.report(Result.failure("superclass.unmarked"), node);
     		}
     	} else { //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
     		Class<?> superClass = node.getClass().getSuperclass();
     		if(superClass.getAnnotation(UsesObjectEquals.class) != null){ //superclass is annotated
-    			checker.report(Result.failure("subclasses must be marked @UsesObjectEquals"), node);
+    			checker.report(Result.failure("superclass.marked"), node);
     		}
     	}
     	

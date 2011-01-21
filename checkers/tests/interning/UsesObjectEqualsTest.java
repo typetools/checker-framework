@@ -4,22 +4,22 @@ import checkers.interning.quals.UsesObjectEquals;
 
 public class UsesObjectEqualsTest {
 	
-	@UsesObjectEquals
+	@UsesObjectEquals 
 	class A {}
 	
 	@UsesObjectEquals
 	class B extends A {}
 	
-	//:: (name.of.error)
+	//:: (superclass.marked)
 	class C extends A {}
 	
 	class D {}
 	
-	//:: (name.of.error)
+	//:: (superclass.unmarked)
 	@UsesObjectEquals
 	class E extends D {}
 	
-	//:: (name.of.error)
+	//:: (overrides.equals)
 	@UsesObjectEquals
 	class TestEquals {
 		
