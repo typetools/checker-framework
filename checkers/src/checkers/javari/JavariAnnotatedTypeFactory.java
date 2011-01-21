@@ -216,6 +216,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         typePost.visit(type, element.getKind());
     }
 
+    @Override
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
@@ -367,7 +368,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
     public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
         AnnotatedExecutableType type = super.methodFromUse(tree);
 
-        ExecutableElement executableElt = type.getElement();
         AnnotatedTypeMirror returnType = type.getReturnType();
 
         List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(tree.getArguments());
