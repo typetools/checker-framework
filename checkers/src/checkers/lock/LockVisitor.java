@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -143,6 +142,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         return super.visitMethodInvocation(node, p);
     }
 
+    @Override
     protected boolean checkOverride(MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,
@@ -165,6 +165,7 @@ public class LockVisitor extends BaseTypeVisitor<Void, Void> {
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
     }
 
+    @Override
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         return true;
