@@ -1,7 +1,5 @@
 package checkers.interning;
 
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.*;
 
 import checkers.source.*;

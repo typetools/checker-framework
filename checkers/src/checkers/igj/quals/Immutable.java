@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 import checkers.quals.*;
 
-import static java.lang.annotation.ElementType.*;
+// import static java.lang.annotation.ElementType.*;
 
 /**
  * Indicates that the annotated reference is an immutable reference to an

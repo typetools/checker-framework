@@ -8,7 +8,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
@@ -914,6 +913,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             return null;
     }
 
+    @Override
     public R visitIdentifier(IdentifierTree node, P p) {
         checkAccess(node, p);
         return super.visitIdentifier(node, p);

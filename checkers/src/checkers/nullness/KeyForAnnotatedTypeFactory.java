@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -24,7 +23,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
-import checkers.util.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
 

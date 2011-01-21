@@ -519,6 +519,7 @@ public class Skeleton implements ClassVisitor {
         }
     }
 
+    @Override
     public void visit(final int version, final int access, final String name,
             final String signature, final String superName, final String[] interfaces) {
         if ((access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) == 0) {
@@ -554,29 +555,35 @@ public class Skeleton implements ClassVisitor {
         text.add(buf.toString());
     }
 
+    @Override
     public void visitSource(final String file, final String debug) {
         // Do nothing.
     }
 
+    @Override
     public void visitOuterClass(final String owner, final String name, final
             String desc) {
         // Do nothing.
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation( final String desc, final boolean
             visible) {
         return new EmptyVisitor();
     }
 
+    @Override
     public ExtendedAnnotationVisitor visitExtendedAnnotation( final String
             desc, final boolean visible) {
         return new EmptyVisitor();
     }
 
+    @Override
     public void visitAttribute(final Attribute attr) {
         // Do nothing.
     }
 
+    @Override
     public void visitInnerClass(final String name, final String outerName,
             final String innerName, final int access) {
         if (this.aborted) return;
@@ -594,6 +601,7 @@ public class Skeleton implements ClassVisitor {
         text.add(buf.toString());
     }
 
+    @Override
     public FieldVisitor visitField(int access, String name, String desc, String
             signature, Object value) {
         if (this.aborted)
@@ -624,6 +632,7 @@ public class Skeleton implements ClassVisitor {
         return new EmptyVisitor();
     }
 
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
         if (this.aborted || name.equals("<clinit>") || name.equals("clone")
@@ -640,7 +649,6 @@ public class Skeleton implements ClassVisitor {
             appendAccess(access, Opcodes.ACC_TRANSIENT | Opcodes.ACC_VOLATILE);
             appendMethodTypeParams(access, signature, desc);
 
-            String methodName;
             if (name.equals("<init>"))
                 appendName(this.name.substring(this.name.lastIndexOf('.')+1));
             else {
@@ -670,6 +678,7 @@ public class Skeleton implements ClassVisitor {
         return new EmptyVisitor();
     }
 
+    @Override
     public void visitEnd() {
         if (this.aborted) return;
         text.add(base);
