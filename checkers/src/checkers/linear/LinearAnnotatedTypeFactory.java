@@ -8,7 +8,6 @@ import javax.lang.model.element.Element;
 import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.AbstractFlow;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
@@ -77,6 +76,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
         /**
          * Case 2: add {@code Unusable} to node type, if it is {@code Linear}.
          */
+        @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             super.visitIdentifier(node, p);
             markAsUnusableIfLinear(node);
