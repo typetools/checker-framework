@@ -1,9 +1,7 @@
 package checkers.javari;
 
-import java.util.List;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
 
 import com.sun.source.tree.*;
 
