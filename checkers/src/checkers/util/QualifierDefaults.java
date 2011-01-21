@@ -90,31 +90,14 @@ public class QualifierDefaults {
      * Determines the nearest enclosing element for a tree by climbing the tree
      * toward the root and obtaining the element for the first declaration
      * (variable, method, or class) that encloses the tree.
+     * Initializers of local variables are handled in a special way:
+     * within an initializer we look for the DefaultQualifier(s) annotation and
+     * keep track of the previously visited tree.
+     * TODO: explain the behavior better.
      *
      * @param tree the tree
      * @return the nearest enclosing element for a tree
      */
-    private Element nearestEnclosing(Tree tree) {
-
-        TreePath path = factory.getPath(tree);
-        if (path == null) return InternalUtils.symbol(tree);
-
-        for (Tree t : path) {
-            switch (t.getKind()) {
-            case VARIABLE:
-                return TreeUtils.elementFromDeclaration((VariableTree)t);
-            case METHOD:
-                return TreeUtils.elementFromDeclaration((MethodTree)t);
-            case CLASS:
-                return TreeUtils.elementFromDeclaration((ClassTree)t);
-            default: // Do nothing.
-            }
-        }
-
-        return null;
-    }
-
-    // WMD TODO
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = factory.getPath(tree);
         if (path == null) return InternalUtils.symbol(tree);
