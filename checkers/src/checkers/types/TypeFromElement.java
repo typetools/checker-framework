@@ -40,7 +40,6 @@ public class TypeFromElement {
      * 4. {@link TypeParameterElement} of a method or a class type parameter
      *
      */
-    @SuppressWarnings("deprecation")
     public static void annotate(AnnotatedTypeMirror type, Element element) {
         if (element == null)
             throw new IllegalArgumentException("element cannot be null");
@@ -105,7 +104,6 @@ public class TypeFromElement {
      * @param type  the type of the field
      * @param element the element of a field
      */
-    @SuppressWarnings("deprecation")
     public static void annotate(AnnotatedTypeMirror type, VariableElement element) {
         if (!element.getKind().isField())
             throw new IllegalArgumentException("element is not a field: " + element.getKind());

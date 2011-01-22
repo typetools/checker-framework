@@ -1771,7 +1771,7 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedDeclaredType> visitDeclared(AnnotatedDeclaredType type, Void p) {
             List<AnnotatedDeclaredType> supertypes =
                 new ArrayList<AnnotatedDeclaredType>();
-            Set<AnnotationMirror> annotations = type.getAnnotations();
+            // Set<AnnotationMirror> annotations = type.getAnnotations();
 
             TypeElement typeElement =
                 (TypeElement) type.getUnderlyingType().asElement();
@@ -1793,7 +1793,7 @@ public abstract class AnnotatedTypeMirror {
                 supertypes.addAll(supertypesFromTree(classTree));
             } else {
                 supertypes.addAll(supertypesFromElement(typeElement));
-                final Element elem = type.getElement() == null ? typeElement : type.getElement();
+                // final Element elem = type.getElement() == null ? typeElement : type.getElement();
             }
 
             for (AnnotatedDeclaredType dt : supertypes) {
@@ -1925,6 +1925,7 @@ public abstract class AnnotatedTypeMirror {
             this.types = types;
         }
 
+        @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Map<TypeParameterElement, AnnotatedTypeMirror> mapping) {
             List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror arg : type.getTypeArguments()) {

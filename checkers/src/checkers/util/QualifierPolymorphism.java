@@ -13,7 +13,6 @@ import checkers.quals.PolymorphicQualifier;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 
 import com.sun.source.tree.*;
@@ -42,7 +41,6 @@ public class QualifierPolymorphism {
     private final AnnotationUtils annoFactory;
     private final AnnotatedTypes atypes;
 
-    private final Resolver resolver;
     private final Completer completer;
 
     /** The polymorphic qualifier. */
@@ -82,7 +80,6 @@ public class QualifierPolymorphism {
         this.rootQual = root;
 
         this.collector = new PolyCollector();
-        this.resolver = new Resolver();
         this.completer = new Completer();
     }
 
@@ -148,7 +145,8 @@ public class QualifierPolymorphism {
      * Resolves the actual qualifiers to replace polymorphism qualifiers based
      * on the arguments of a method invocation.
      */
-    class Resolver extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
+    // TODO: this class is never used!
+    private class Resolver extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
         /**
          * Given a method invocation along with the return, parameter, and
