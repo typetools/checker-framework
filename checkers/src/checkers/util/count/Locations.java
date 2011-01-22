@@ -9,7 +9,6 @@ import java.util.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
 
 /**
  * A utility class for listing the potential locations of annotations.
@@ -113,7 +112,7 @@ public class Locations extends SourceChecker {
                 System.out.println("class");
                 if (tree.getExtendsClause() != null)
                     System.out.println("class extends");
-                for (Tree t : tree.getImplementsClause())
+                for (@SuppressWarnings("unused") Tree t : tree.getImplementsClause())
                     System.out.println("class implements");
             }
             return super.visitClass(tree, p);
@@ -124,9 +123,9 @@ public class Locations extends SourceChecker {
             if (locations) {
                 System.out.println("method return");
                 System.out.println("method receiver");
-                for (Tree t : tree.getThrows())
+                for (@SuppressWarnings("unused") Tree t : tree.getThrows())
                     System.out.println("method throws");
-                for (Tree t : tree.getParameters())
+                for (@SuppressWarnings("unused") Tree t : tree.getParameters())
                     System.out.println("method param");
             }
             return super.visitMethod(tree, p);
@@ -142,7 +141,7 @@ public class Locations extends SourceChecker {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
             if (locations) {
-                for (Tree t : tree.getTypeArguments())
+                for (@SuppressWarnings("unused") Tree t : tree.getTypeArguments())
                     System.out.println("method invocation type argument");
             }
             return super.visitMethodInvocation(tree, p);
@@ -152,7 +151,7 @@ public class Locations extends SourceChecker {
         public Void visitNewClass(NewClassTree tree, Void p) {
             if (locations) {
                 System.out.println("new class");
-                for (Tree t : tree.getTypeArguments())
+                for (@SuppressWarnings("unused") Tree t : tree.getTypeArguments())
                     System.out.println("new class type argument");
             }
             return super.visitNewClass(tree, p);
@@ -162,7 +161,7 @@ public class Locations extends SourceChecker {
         public Void visitNewArray(NewArrayTree tree, Void p) {
             if (locations) {
                 System.out.println("new array");
-                for (Tree t : tree.getDimensions())
+                for (@SuppressWarnings("unused") Tree t : tree.getDimensions())
                     System.out.println("new array dimension");
             }
             return super.visitNewArray(tree, p);
@@ -185,7 +184,7 @@ public class Locations extends SourceChecker {
         @Override
         public Void visitParameterizedType(ParameterizedTypeTree tree, Void p) {
             if (locations) {
-                for (Tree t : tree.getTypeArguments())
+                for (@SuppressWarnings("unused") Tree t : tree.getTypeArguments())
                     System.out.println("parameterized type");
             }
             return super.visitParameterizedType(tree, p);
@@ -194,7 +193,7 @@ public class Locations extends SourceChecker {
         @Override
         public Void visitTypeParameter(TypeParameterTree tree, Void p) {
             if (locations) {
-                for (Tree t : tree.getBounds())
+                for (@SuppressWarnings("unused") Tree t : tree.getBounds())
                     System.out.println("type parameter bound");
             }
             return super.visitTypeParameter(tree, p);

@@ -6,7 +6,6 @@ import java.util.*;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
-import javax.swing.event.ListSelectionEvent;
 
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
@@ -298,10 +297,6 @@ abstract class TypeFromTree extends
 
             // Add top-level annotations.
             result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
-        }
-
-        private void annotateArrayAsCanonical(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
-            annotateArrayAsArray(result, node, f);
         }
 
         @Override

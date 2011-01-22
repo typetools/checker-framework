@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 
 import checkers.nullness.quals.KeyFor;
 
@@ -19,7 +18,6 @@ import checkers.util.AnnotationUtils;
 import checkers.util.Heuristics.Matcher;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
-import checkers.util.Heuristics.Matchers;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -64,7 +62,6 @@ import com.sun.source.util.TreePath;
 /*package-scope*/ class MapGetHeuristics {
 
     private final ProcessingEnvironment env;
-    private final Elements elements;
     private final NullnessAnnotatedTypeFactory factory;
     private final AnnotatedTypeFactory keyForFactory;
 
@@ -77,7 +74,6 @@ import com.sun.source.util.TreePath;
             NullnessAnnotatedTypeFactory factory,
             AnnotatedTypeFactory keyForFactory) {
         this.env = env;
-        this.elements = env.getElementUtils();
         this.factory = factory;
         this.keyForFactory = keyForFactory;
 
@@ -91,7 +87,7 @@ import com.sun.source.util.TreePath;
         if (isMethod(tree, mapGet)) {
             AnnotatedTypeMirror type = method.getReturnType();
             type.clearAnnotations();
-            if (!isSuppressable((MethodInvocationTree)tree)) {
+            if (!isSuppressable(tree)) {
                 type.addAnnotation(factory.NULLABLE);
             } else {
                 type.addAnnotation(factory.NONNULL);

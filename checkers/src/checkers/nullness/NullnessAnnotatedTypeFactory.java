@@ -139,7 +139,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     protected void postInit() {
         super.postInit();
-        flow.scan(root, null);
+        flow.scan(root);
     }
 
     @Override

@@ -1,13 +1,10 @@
 package checkers.util.test;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -68,6 +65,7 @@ public class TypeOutputtingChecker extends SourceChecker {
         }
 
         // Print types of classes, methods, and fields
+        @Override
         public Void visitClass(ClassTree node, Void p) {
             TypeElement element = TreeUtils.elementFromDeclaration(node);
             currentClass = element.getSimpleName().toString();
@@ -78,6 +76,7 @@ public class TypeOutputtingChecker extends SourceChecker {
             return super.visitClass(node, p);
         }
 
+        @Override
         public Void visitMethod(MethodTree node, Void p) {
             ExecutableElement elem = TreeUtils.elementFromDeclaration(node);
 
@@ -87,6 +86,7 @@ public class TypeOutputtingChecker extends SourceChecker {
             return null;
         }
 
+        @Override
         public Void visitVariable(VariableTree node, Void p) {
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
             if (elem.getKind().isField()) {
