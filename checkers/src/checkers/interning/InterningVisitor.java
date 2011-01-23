@@ -5,6 +5,7 @@ import java.util.*;
 import checkers.source.*;
 import checkers.basetype.*;
 import checkers.interning.quals.Interned;
+import checkers.interning.quals.UsesObjectEquals;
 import checkers.types.*;
 import checkers.util.*;
 import com.sun.source.tree.*;
@@ -90,12 +91,22 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         if (suppressClassAnnotation(left, right)) {
             return super.visitBinary(node, p);
         }
+        
+        Element leftElt = null;
+        Element rightElt = null;
+        if(left instanceof checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType){
+        	leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
+        }
+        if(right instanceof checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType){
+        	rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
+        }
 
-        if (!left.hasAnnotation(INTERNED))
+        //Ok, so printlns confirm that leftType is always null, because it never passes the instance of DeclaredType. Obviously the
+        //second part to this test will always fail then. the getAnnotation is never even called)
+        if (!(left.hasAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
-        if (!right.hasAnnotation(INTERNED))
+        if (!(right.hasAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", right), rightOp);
-
         return super.visitBinary(node, p);
     }
 
@@ -112,6 +123,62 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         }
 
         return super.visitMethodInvocation(node, p);
+    }
+    
+    
+    /*
+     * Method to implement the @UsesObjectEquals functionality. 
+     * If a class is marked @UsesObjectEquals, it must:
+     * 
+     *    -not override .equals(Object)
+     *    -be a subclass of Object or another class marked @UsesObjectEquals
+     * 
+     * If a class is not marked @UsesObjectEquals, it must:
+     * 
+     * 	  -not have a superclass marked @UsesObjectEquals
+     * 
+     * 
+     * @see checkers.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
+     */
+    @Override
+    public Void visitClass(ClassTree node, Void p){
+    	//Looking for an @UsesObjectEquals class declaration
+    	
+    	TypeElement elt = TreeUtils.elementFromDeclaration(node);
+    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class); 
+    	
+    	Tree superClass = node.getExtendsClause();
+		Element elmt = null;
+		if (superClass!= null && superClass instanceof IdentifierTree){
+			elmt = TreeUtils.elementFromUse((IdentifierTree)superClass);
+		}
+		
+		//if it's there, check to make sure does not override equals
+    	//and supertype is Object or @UsesObjectEquals
+		if (annotation != null){
+    		//check methods to ensure no .equals
+    		List<? extends Tree> members = node.getMembers();
+    		for(Tree member : members){
+    			if(member instanceof MethodTree){
+    				MethodTree mTree = (MethodTree) member;
+    				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
+    				if(overrides(enclosing, Object.class, "equals")){
+    					checker.report(Result.failure("overrides.equals"), node);
+    				}
+    			}
+    		}
+    		
+    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
+    			checker.report(Result.failure("superclass.unmarked"), node);
+    		}
+    	} else { 
+    		//the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
+  			if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
+    			checker.report(Result.failure("superclass.marked"), node);
+    		}
+    	}
+    	
+    	return super.visitClass(node, p);
     }
 
     // **********************************************************************
