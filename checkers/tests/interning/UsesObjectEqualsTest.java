@@ -16,18 +16,16 @@ public class UsesObjectEqualsTest {
 	class D {}
 	
 	//:: (superclass.unmarked)
-	@UsesObjectEquals
-	class E extends D {}
+	@UsesObjectEquals class E extends D {}
 	
 	//:: (overrides.equals)
-	@UsesObjectEquals
-	class TestEquals {
+	@UsesObjectEquals class TestEquals {
 		
 		public boolean equals(Object o){
 			return true;
 		}
 	}
-	
+		
 	class TestComparison {
 		
 		public void comp(@Interned Object o, A a1, A a2){
