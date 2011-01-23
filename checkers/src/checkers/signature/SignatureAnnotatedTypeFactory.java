@@ -53,9 +53,9 @@ public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Sig
 
     }
 
-    private Pattern fqnPat = Pattern.compile("^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\[\\])*$");
-    private Pattern bnPat = Pattern.compile("^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?(\\[\\])*$");
-    private Pattern fdPat = Pattern.compile("^\\[*([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?;)$");
+    private static final Pattern fqnPat = Pattern.compile("^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\[\\])*$");
+    private static final Pattern bnPat = Pattern.compile("^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?(\\[\\])*$");
+    private static final Pattern fdPat = Pattern.compile("^\\[*([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?;)$");
 
     private Class<? extends Annotation> bestSignatureAnnotation(String s) {
         if (fdPat.matcher(s).matches()) {
