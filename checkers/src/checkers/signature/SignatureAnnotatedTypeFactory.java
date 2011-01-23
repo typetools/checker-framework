@@ -45,7 +45,7 @@ public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Sig
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotated()
                 && tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                String s = (String)((LiteralTree)tree).getValue();
+                String s = (String)(tree).getValue();
                 type.addAnnotation(bestSignatureAnnotation(s));
             }
             return super.visitLiteral(tree, type);
@@ -57,7 +57,7 @@ public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Sig
     private static final Pattern bnPat = Pattern.compile("^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?(\\[\\])*$");
     private static final Pattern fdPat = Pattern.compile("^\\[*([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?;)$");
 
-    private Class<? extends Annotation> bestSignatureAnnotation(String s) {
+    private static Class<? extends Annotation> bestSignatureAnnotation(String s) {
         if (fdPat.matcher(s).matches()) {
             if (bnPat.matcher(s).matches()) {
                 return SignatureBottom.class;
