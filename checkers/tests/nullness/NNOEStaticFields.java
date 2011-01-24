@@ -70,4 +70,8 @@ class NNOEStaticFields {
         otherNullable.toString();
     }
 
+    @NonNullOnEntry("System.out")
+    void test4() {
+        @NonNull Object f = System.out;
+    }
 }
