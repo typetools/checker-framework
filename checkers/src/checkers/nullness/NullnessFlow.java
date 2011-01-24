@@ -28,7 +28,7 @@ import com.sun.source.util.*;
 
 /**
  * The state needed for NullnessFlow.
- * 
+ *
  * @see DefaultFlowState
  * @see NullnessFlow
  */
@@ -53,6 +53,7 @@ class NullnessFlowState extends DefaultFlowState {
     public NullnessFlowState copy() {
         NullnessFlowState res = (NullnessFlowState) super.copy();
         res.nnExprs = new ArrayList<String>(this.nnExprs);
+        // TODO: Copy initializedFields
         return res;
     }
 
@@ -104,7 +105,7 @@ class NullnessFlowState extends DefaultFlowState {
  *   {@link AssertNonNullIfNonNull}, and
  *   {@link NonNullOnEntry}
  * annotations.
- * 
+ *
  * @see Flow
  * @see DefaultFlow
  * @see NullnessSubchecker
@@ -114,6 +115,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     private final AnnotationMirror POLYNULL, RAW, NONNULL;
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
+    private final Map<ExecutableElement, Set<VariableElement>> initializedFields;
 
 
     /**
@@ -132,6 +134,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         NONNULL = factory.NONNULL;
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
+        initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
     }
 
     @Override
@@ -581,7 +584,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Substitute patterns and ensure that the Strings are formatted according to our conventions.
      * Use the information from the given method declaration.
-     * 
+     *
      * @param method The method declaration to use.
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
@@ -599,7 +602,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Substitute patterns and ensure that the Strings are formatted according to our conventions.
      * Use the information from the given method invocation.
-     * 
+     *
      * @param methodInvok The method invocation to use.
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
@@ -619,7 +622,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Substitute patterns and ensure that the Strings are formatted according to our conventions.
      * This method is used by {@link substitutePatternsCall} and {@link substitutePatternsDecl}.
-     * 
+     *
      * @param node Tree used only for error messages.
      * @param receiver String representation of the receiver, if non-null.
      * @param argparams The values to substitute for parameter patterns.
@@ -998,7 +1001,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
         NullnessFlowState prev = this.flowState.copy();
 
-        if (hasRawReceiver(meth)) {
+        if (hasRawReceiver(meth) || TreeUtils.isConstructor(meth)) {
             for (int i = 0; i < this.flowState.vars.size(); i++) {
                 Element var = this.flowState.vars.get(i);
                 if (var.getKind() == ElementKind.FIELD)
@@ -1055,6 +1058,28 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 methElem.getAnnotation(AssertNonNullAfter.class) != null) {
             checkAssertNonNullAfter(meth, methElem);
         }
+
+        if (TreeUtils.isConstructor(meth)) {
+        	initializedFields.put(methElem, calcInitializedFields());
+        }
+    }
+
+    private Set<VariableElement> calcInitializedFields() {
+    	Set<VariableElement> initialized = new HashSet<VariableElement>();
+
+    	int i = 0;
+    	for (VariableElement f: flowState.vars) {
+    		if (f.getKind().isField() && flowState.annos.get(NONNULL, i)) {
+    			initialized.add(f);
+    		}
+    		i++;
+    	}
+
+    	return initialized;
+    }
+
+    public Set<VariableElement> initializedFieldsAfter(ExecutableElement method) {
+    	return initializedFields.get(method);
     }
 
     // Also see checkNonNullOnEntry for comparison
@@ -1143,7 +1168,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     /**
      * Verify that the AssertNonNullIfTrue annotation is valid.
-     * 
+     *
      * @param meth The method declaration.
      * @param methElem The corresponding executable element.
      * @param ret The specific return statement within the method.
@@ -1155,7 +1180,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     /**
      * Verify that the AssertNonNullIfFalse annotation is valid.
-     * 
+     *
      * @param meth The method declaration.
      * @param methElem The corresponding executable element.
      * @param ret The specific return statement within the method.
@@ -1167,7 +1192,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     /**
      * Verify that the AssertNonNullIfTrue or AssertNonNullIfFalse annotation is valid.
-     * 
+     *
      * @param meth The method declaration.
      * @param methElem The corresponding executable element.
      * @param ret The specific return statement within the method.
@@ -1320,7 +1345,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     /**
      * At call sites, verify that the NonNullOnEntry annotations hold.
-     * 
+     *
      * @param call The method call to check.
      */
     private void checkNonNullOnEntry(MethodInvocationTree call) {
@@ -1382,7 +1407,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Find the Element that corresponds to the field from the point of view of the
      * method declaration.
-     * 
+     *
      * @param recvElem The receiver element.
      * @param recvFieldElems All visible fields in the receiver element.
      * @param call The method call.

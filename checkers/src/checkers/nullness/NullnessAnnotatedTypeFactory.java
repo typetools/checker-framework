@@ -2,6 +2,7 @@ package checkers.nullness;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.*;
 
@@ -224,6 +225,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         AnnotatedExecutableType constructor = super.constructorFromUse(tree);
         dependentTypes.handleConstructor(tree, constructor);
         return constructor;
+    }
+
+    public Set<VariableElement> initializedAfter(MethodTree node) {
+    	return ((NullnessFlow)flow).initializedFieldsAfter(
+    			TreeUtils.elementFromDeclaration(node));
     }
 
     private boolean substituteUnused(Tree tree, AnnotatedTypeMirror type) {
