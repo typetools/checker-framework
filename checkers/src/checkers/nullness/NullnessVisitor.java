@@ -224,6 +224,8 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 nonInitializedFields = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()));
                 return super.visitMethod(node, p);
             } finally {
+            	nonInitializedFields.removeAll(
+            			((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node));
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", true)) {
                         // warn against uninitialized fields
