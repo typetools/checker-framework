@@ -1,8 +1,11 @@
 package checkers.nullness;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -13,6 +16,7 @@ import checkers.nullness.quals.AssertNonNullIfTrue;
 import checkers.nullness.quals.LazyNonNull;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
+import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -221,7 +225,8 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
             Set<VariableElement> oldFields = nonInitializedFields;
             try {
-                nonInitializedFields = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()));
+                nonInitializedFields = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()),
+                		TreeUtils.elementFromDeclaration(node).getAnnotationMirrors());
                 return super.visitMethod(node, p);
             } finally {
             	nonInitializedFields.removeAll(
@@ -280,7 +285,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         if (!checker.getLintOption("uninitialized", true))
             return;
 
-        Set<VariableElement> fields = getUninitializedFields(node);
+        Set<VariableElement> fields = getUninitializedFields(node, Collections.<AnnotationMirror>emptyList());
         if (!fields.isEmpty()) {
                 // TODO: we really only want a warning, but the testing framework doesn't support this
             checker.report(Result.failure("fields.uninitialized", fields), node);
@@ -294,7 +299,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         return super.visitAssignment(node, p);
     }
 
-    private Set<VariableElement> getUninitializedFields(ClassTree classTree) {
+    private Set<VariableElement> getUninitializedFields(ClassTree classTree, List<? extends AnnotationMirror> annos) {
         Set<VariableElement> fields = new HashSet<VariableElement>();
 
         for (Tree member : classTree.getMembers()) {
@@ -307,10 +312,34 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             if (var.getInitializer() == null
                     && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
                     && varElt.getAnnotation(LazyNonNull.class) == null
-                    && !varElt.getModifiers().contains(Modifier.STATIC))
+                    && !varElt.getModifiers().contains(Modifier.STATIC)
+                    && !isUnused(varElt, annos))
                 fields.add(varElt);
         }
         return fields;
+    }
+
+    private boolean isUnused(VariableElement field, Collection<? extends AnnotationMirror> annos) {
+    	if (annos.isEmpty()) {
+    		return false;
+    	}
+    	
+        Unused unused = field.getAnnotation(Unused.class);
+        if (unused == null)
+            return false;
+
+        try {
+            unused.when();
+        } catch (MirroredTypeException exp) {
+            Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
+            for (AnnotationMirror anno : annos) {
+            	if (((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName().equals(whenName)) {
+            		return true;
+            	}
+            }
+        }
+
+    	return false;
     }
 
     /** Special casing NonNull and Raw method calls */
