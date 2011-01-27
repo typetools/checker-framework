@@ -162,7 +162,11 @@ public class NonNullMapValue {
   interface MyMap<K, V> extends Map<K, V> {
     //TODO: @AssertGenericNullnessIfTrue("get(#0)")
     public abstract boolean containsKey(@Nullable Object a1);
-    @Pure public @Nullable V get(Object o);
+    
+    // We get an override warning, because we do not use the annotated JDK in the
+    // test suite. Ignore this.
+    @SuppressWarnings("override.return.invalid")
+    @Pure public @Nullable V get(@Nullable Object o);
   }
 
   private static final String KEY = "key";
