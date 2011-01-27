@@ -1,0 +1,12 @@
+src/daikon/FileIO.java:1205: incompatible types.
+      if (is_declaration_header (line)) {
+                                 ^
+  found   : String
+  required: @Interned String
+1 error
+
+BUILD FAILED
+build.xml:21: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 4 seconds

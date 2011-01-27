@@ -1,0 +1,12 @@
+; -*- lisp -*- style
+
+(DEFPRED (|lexical-<| a i j b ip jp))
+(DEFPRED (|lexical->| a i j b ip jp))
+(DEFPRED (|lexical-==| a i j b ip jp))
+(DEFPRED (|lexical-<=| a i j b ip jp))
+(DEFPRED (|lexical->=| a i j b ip jp))
+(DEFPRED (|lexical-!=| a i j b ip jp))
+(DEFPRED (subsequence a start end b i j))
+(DEFPRED (|is-reverse-of| a i j b ip jp))
+(DEFPRED (subset a i j b ip jp))
+(DEFPRED (member e a i j))

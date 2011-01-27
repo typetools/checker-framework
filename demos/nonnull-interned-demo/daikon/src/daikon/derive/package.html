@@ -1,0 +1,18 @@
+<html>
+<body>
+For derived variables, holds Derivations and Factories for producing
+Derivations.  All derived variables are produced by their specific
+subclass of DerivationFactory.  A class interested in generating
+Derivations will ask various DerivationFactories to instantiate them
+from a number of VarInfos, and each DerivationFactory determines how
+many (if any) Derivations are worth generating.
+
+<br>
+Each Derivation holds a set of base variables as VarInfo.  The
+Derivation can generate: VarInfo of the derived variable it
+represents; the value of the variable when given a ValueTuple.
+
+
+
+</body>
+</html>
