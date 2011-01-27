@@ -485,7 +485,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${checkers.jar.file}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${checkers.jar.file}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -495,6 +495,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
+	    <arg line="${checker-args}"/>
         </java>
     </target>
 
@@ -511,6 +512,14 @@ ${build.version} of the 'javac.jar' library."/>
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.igj.IGJChecker"/>
             <param name="checker-jdk" value="jdk/igj/src"/>
+        </antcall>
+    </target>
+
+    <target name="check-compilermsgs"
+      description="Run the compiler message keys checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="checkers.compilermsgs.CompilerMessagesChecker"/>
+            <param name="checker-args" value="-Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/linear/messages.properties"/>
         </antcall>
     </target>
 
