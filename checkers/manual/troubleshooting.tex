@@ -128,7 +128,8 @@ You can use JDK 7 at run time, or compile
 with a Java 6 compiler that will ignore the annotations in comments.
 
 \item
-If you use JDK 7 and you get an error that refers to a class that was in a
+A ``class file not found'' error may be due to a JDK version mismatch.
+For instance, you might be using JDK 7, but you get an error that refers to a class that was in a
 previous version of the JDK but has subsequently been removed, such as:
 
 \begin{Verbatim}
@@ -136,7 +137,19 @@ previous version of the JDK but has subsequently been removed, such as:
 \end{Verbatim}
 % To unconfuse Emacs's LaTeX mode: $
 
-then you probably need to first re-generate \code{jdk/jdk.jar} and
+Or, you might be using JDK 6, but you get an error that refers to a class
+that has been introduced in a newer version of the JDK, such as:
+
+\begin{Verbatim}
+  class file for java.util.Vector$Itr not found
+\end{Verbatim}
+% To unconfuse Emacs's LaTeX mode: $
+
+This problem occurs when your classpath contains code that was compiled
+with one version of the JDK and refers to its implementation details, but
+your classpath does not contain that version of the JDK itself.
+
+You can solve the problem by re-generating \code{jdk/jdk.jar} and
 \code{binary/jdk.jar}.  You can do this by running
 
 \begin{Verbatim}
