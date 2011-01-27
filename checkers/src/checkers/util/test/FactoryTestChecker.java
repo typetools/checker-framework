@@ -27,11 +27,11 @@ import checkers.types.AnnotatedTypeFactory;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
- * annotated type to an exprected type.
+ * annotated type to an expected type.
  *
  * The expected type is written in a stylized comment (starting with '///')
  * in the same Java source file.  The comment appears either on the same
- * line as the expression, or else by itself on the line preceeding the
+ * line as the expression, or else by itself on the line preceding the
  * expression.
  *
  * The comments are of two forms:
@@ -66,7 +66,7 @@ import checkers.types.AnnotatedTypeFactory;
  *  The fully qualified name of the custom <i>AnnotatedTypeFactory</i> is
  *  specified through an -Afactory argument (e.g.
  *  -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory).  The factory needs
- *  to have a constractor of the form
+ *  to have a constructor of the form
  *  {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
  */
 /*
@@ -190,7 +190,7 @@ public class FactoryTestChecker extends SourceChecker {
     }
 
     /**
-     * A method to canonize type string representation.  It removes any unecessary
+     * A method to canonize type string representation.  It removes any unnecessary
      * white spaces and finds the type simple name instead of the fully qualified name.
      *
      * @param str   the type string representation
@@ -223,9 +223,11 @@ public class FactoryTestChecker extends SourceChecker {
             this.treeString = canonizeTreeString(treeString);
             this.lineNumber = lineNumber;
         }
+        @Override
         public int hashCode() {
             return (int) (31 + 3 * treeString.hashCode() + 7 * lineNumber);
         }
+        @Override
         public boolean equals(Object o) {
             if (o instanceof TreeSpec) {
                 TreeSpec other = (TreeSpec) o;
@@ -234,6 +236,7 @@ public class FactoryTestChecker extends SourceChecker {
             }
             return false;
         }
+        @Override
         public String toString() {
             return lineNumber + ":" + treeString;
         }
