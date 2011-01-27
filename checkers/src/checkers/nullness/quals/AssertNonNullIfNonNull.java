@@ -11,10 +11,10 @@ import checkers.nullness.NullnessChecker;
  *
  * Here is an example use::
  *
- * <pre><code>       @AssertNonNullIfNonNull("id")
- *    public boolean hasId2(){
- *        return id != null;
- *    }
+ * <pre><code>           @AssertNonNullIfNonNull("id")
+ *     public @Pure @Nullable Long getId(){
+ *         return id;
+ *     }
  * </code></pre>
  *
  * You should <emph>not</em> write a formal parameter name or <tt>this</tt>
