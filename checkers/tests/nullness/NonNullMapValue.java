@@ -160,12 +160,28 @@ public class NonNullMapValue {
   }
 
   interface MyMap<K, V> extends Map<K, V> {
-    @Pure public V get(Object o);
+    //TODO: @AssertGenericNullnessIfTrue("get(#0)")
+    public abstract boolean containsKey(@Nullable Object a1);
+    @Pure public @Nullable V get(Object o);
   }
 
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
-  void testAnd(MyMap2<String, String> map) {
+
+  // Disabled.  Re-enable when bug 67 is fixed.
+//   void testAnd(MyMap<String, String> map, MyMap<String, @Nullable String> map2) {
+//     if (map.containsKey(KEY)) {
+//       map.get(KEY).toString();
+//     }
+//     // Should not get a diagnostic here
+//     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
+//     }
+//     //:: (dereference.of.nullable)
+//     if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {
+//     }
+//   }
+
+  void testAndWithIllegalMapAnnotation(MyMap2<String, String> map) {
     if (map.containsKey(KEY)) {
       map.get(KEY).toString();
     }
