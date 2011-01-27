@@ -31,7 +31,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         this.lookupKeys = checker.getLookupKeys();
     }
 
-       @Override
+    @Override
     public TreeAnnotator createTreeAnnotator(Checker checker) {
            return new KeyLookupTreeAnnotator(checker, this, PropertyKey.class);
     }
@@ -56,7 +56,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotated()
                 && tree.getKind() == Tree.Kind.STRING_LITERAL
-                && lookupKeys.contains((String)tree.getValue())) {
+                && lookupKeys.contains(tree.getValue())) {
                 type.addAnnotation(theAnnot);
             }
             // A possible extension is to record all the keys that have been used and
