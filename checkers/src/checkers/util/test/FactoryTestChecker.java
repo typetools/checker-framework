@@ -265,9 +265,12 @@ public class FactoryTestChecker extends SourceChecker {
                 if (expected.containsKey(treeSpec)) {
                     String actualType = canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
                     String expectedType = expected.get(treeSpec);
-                    if (!actualType.equals(expectedType))
-                        FactoryTestChecker.this.report(Result.failure("type.unexpected",
-                                tree.toString(), actualType, expectedType), tree);
+                    if (!actualType.equals(expectedType)) {
+                        // The key is added above using a setProperty call, which is not supported by the CompilerMessageChecker
+                        @SuppressWarnings("compilermessages")
+                        Result res = Result.failure("type.unexpected", tree.toString(), actualType, expectedType);
+                        FactoryTestChecker.this.report(res, tree);
+                    }
                 }
             }
             return super.scan(tree, p);
