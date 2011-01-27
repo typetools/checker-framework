@@ -198,8 +198,14 @@ public abstract class QualifierHierarchy {
      * @return annos if not empty, otherwise a singleton whose element is {@code null}
      */
     protected Collection<AnnotationMirror> wrapCollection(Collection<AnnotationMirror> annos) {
-        if (annos.size() == 0)
-            return Collections.singleton(null);
+        if (annos.size() == 0) {
+            // The compiler message checker determines Collection<@Bottom AnnotationMirror> here.
+            // This is incompatible to the return type.
+            // Ignore the error. TODO: is there a general way around this?
+            @SuppressWarnings("compilermessages")
+            Collection<AnnotationMirror> ret = Collections.singleton(null);
+            return ret;
+        }
         return annos;
     }
 

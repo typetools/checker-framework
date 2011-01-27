@@ -13,11 +13,15 @@ import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.propkey.quals.Bottom;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationUtils;
 
 
 /**
@@ -48,7 +52,7 @@ import checkers.quals.Unqualified;
  *
  */
 // Subclasses need something similar to this:
-@TypeQualifiers( {PropertyKey.class, Unqualified.class} )
+@TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )
 // Subclasses need exactly this:
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class PropertyKeyChecker extends BaseTypeChecker {
@@ -162,4 +166,12 @@ public class PropertyKeyChecker extends BaseTypeChecker {
         return result;
     }
 
+    @Override
+    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+        AnnotationMirror bot = AnnotationUtils.getInstance(env).fromClass(Bottom.class);
+        if (sub.getAnnotations().contains(bot)) {
+            return true;
+        }
+        return super.isSubtype(sub, sup);
+    }
 }

@@ -10,6 +10,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.*;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.AssertNonNullAfter;
 import checkers.nullness.quals.AssertNonNullIfFalse;
 import checkers.nullness.quals.AssertNonNullIfTrue;
@@ -204,7 +205,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     }
 
     @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, String errorKey, Void p) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey, Void p) {
         // allow LazyNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils.elementFromDeclaration((VariableTree)varTree);
@@ -266,11 +267,11 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
     	if (nonInitializedFields != null
     		&& TreeUtils.isSelfAccess(node)) {
-    		
+
     		AssertNonNullAfter nnAfter =
     			TreeUtils.elementFromUse(node).getAnnotation(AssertNonNullAfter.class);
     		if (nnAfter != null) {
-    			Set<VariableElement> elts = 
+    			Set<VariableElement> elts =
     				ElementUtils.findFieldsInType(
     						TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
     						Arrays.asList(nnAfter.value()));
@@ -323,7 +324,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     	if (annos.isEmpty()) {
     		return false;
     	}
-    	
+
         Unused unused = field.getAnnotation(Unused.class);
         if (unused == null)
             return false;
@@ -367,7 +368,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
      * @param type  type to be checked nullability
      * @param tree  the tree where the error is to reported
      */
-    private void checkForNullability(ExpressionTree tree, String errMsg) {
+    private void checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         if (!type.hasAnnotation(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
