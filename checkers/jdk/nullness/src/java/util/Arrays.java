@@ -97,7 +97,7 @@ public class Arrays{
   public static int hashCode(boolean @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static int hashCode(Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  public static int hashCode(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int deepHashCode(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static boolean deepEquals(@Nullable Object @Nullable [] a1, @Nullable Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static String toString(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
