@@ -1,0 +1,10 @@
+src/checkers/nonnull/NonnullAnnotatedTypeFactory.java:204: dereference of possibly-null reference elt
+        if (elt.getKind() == ElementKind.ENUM_CONSTANT)
+            ^
+1 error
+
+BUILD FAILED
+build.xml:9: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 2 seconds
