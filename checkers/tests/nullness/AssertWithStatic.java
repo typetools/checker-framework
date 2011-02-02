@@ -1,5 +1,6 @@
 import checkers.nullness.quals.*;
 
+// @skip-test
 public class AssertWithStatic {
     
     @AssertNonNullIfTrue("System.out")
