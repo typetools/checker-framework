@@ -153,6 +153,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 			elmt = TreeUtils.elementFromUse((IdentifierTree)superClass);
 		}
 		
+		
 		//if it's there, check to make sure does not override equals
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
@@ -168,7 +169,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     			}
     		}
     		
-    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
+    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){		  
     			checker.report(Result.failure("superclass.unmarked"), node);
     		}
     	} else { 
