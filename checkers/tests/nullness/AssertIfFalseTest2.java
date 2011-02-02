@@ -1,5 +1,6 @@
 import checkers.nullness.quals.*;
 
+// @skip-test
 public class AssertIfFalseTest2 {
 
   public static void usePriorityQueue(PriorityQueue1<@NonNull Object> active) {
