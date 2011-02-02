@@ -147,7 +147,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
         // equality tests
         if ((node.getKind() == Tree.Kind.EQUAL_TO
                 || node.getKind() == Tree.Kind.NOT_EQUAL_TO)
-                && checker.getLintOption("nulltest", false)) {
+                && checker.getLintOption("nulltest", NullnessSubchecker.NULLTEST_DEFAULT)) {
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
@@ -233,7 +233,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
             	nonInitializedFields.removeAll(
             			((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node));
                 if (!nonInitializedFields.isEmpty()) {
-                    if (checker.getLintOption("uninitialized", true)) {
+                    if (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)) {
                         // warn against uninitialized fields
                         // TODO: we really only want a warning, but the testing framework doesn't support this
                         checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
@@ -283,7 +283,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
 
     @Override
     protected void checkDefaultConstructor(ClassTree node) {
-        if (!checker.getLintOption("uninitialized", true))
+        if (!checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT))
             return;
 
         Set<VariableElement> fields = getUninitializedFields(node, Collections.<AnnotationMirror>emptyList());
