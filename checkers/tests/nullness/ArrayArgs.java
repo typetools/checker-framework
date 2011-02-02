@@ -9,6 +9,8 @@ public class ArrayArgs {
     }
 
     public void test() {
+        test(NonNull.class);
+
         String[] s1 = new String[] { null, null, null };
         //:: (argument.type.incompatible)
         test(s1);
@@ -19,9 +21,11 @@ public class ArrayArgs {
         @NonNull String[] s3 = new String[] { "hello", null, "goodbye" };
         //:: (assignment.type.incompatible)
         @NonNull String[] s4 = new String[3];
+
         // TODO:  uncomment when issue 25 is fixed
         // String[] s5 = new String[] { "hello", "goodbye" };
         // test(s5);
-        test(NonNull.class);
+        // @NonNull String[] s6 = new String[] { "hello", "goodbye" };
+        // test(s6);
     }
 }
