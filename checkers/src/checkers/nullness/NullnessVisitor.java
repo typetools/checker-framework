@@ -1,6 +1,5 @@
 package checkers.nullness;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;

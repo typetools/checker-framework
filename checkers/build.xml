@@ -551,7 +551,7 @@ ${build.version} of the 'javac.jar' library."/>
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
     </target>
 
-    <target name="jdk.jar"
+    <target name="jdk.jar" depends="jar"
             description="creates the instrumented jdk.jar">
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
