@@ -74,10 +74,20 @@ class NullnessFlowState extends DefaultFlowState {
 
     @Override
     public void and(FlowState other, QualifierHierarchy annoRelations) {
-        // NullnessFlowState dfs = (NullnessFlowState) other;
+        NullnessFlowState nfs = (NullnessFlowState) other;
         super.and(other, annoRelations);
-        // TODO: should we do something more refined?
-        nnExprs = new ArrayList<String>();
+        keepIfInBoth(nnExprs, nfs.nnExprs);
+    }
+
+    private static void keepIfInBoth(List<String> mod, List<String> other) {
+        Iterator<String> it = mod.iterator();
+        while(it.hasNext()) {
+            String el = it.next();
+
+            if (!other.contains(el)) {
+                it.remove();
+            }
+        }
     }
 
     @Override
