@@ -1542,6 +1542,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> res = new LinkedList<String>();
 
         for (String field : fields) {
+            // Always add the string as is as assumption
+            res.add(field);
+
             // whether a field with the name was already found
             boolean found = false;
 
@@ -1553,7 +1556,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (parts.length!=2) {
                     checker.report(Result.failure("nullness.parse.error", field), meth);
                     // TODO: check for explicit "this"
-                    res.add(field);
                     continue;
                 }
                 String className = parts[0];
@@ -1565,7 +1567,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 }
                 if (findClass==null) {
                     checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
-                    res.add(field);
                     continue;
                 }
 
