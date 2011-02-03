@@ -119,6 +119,13 @@ class NullnessFlowState extends DefaultFlowState {
  */
 class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
+    /**
+     * A temporary flag to disable error messages from parsing the
+     * AssertNonNullXXX and NonNullOnEntry annotations.
+     * Once these annotations are parsed reliably, remove this flag.
+     */
+    private final boolean DO_ADVANCED_CHECKS;
+
     private final AnnotationMirror POLYNULL, RAW, NONNULL;
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
@@ -142,6 +149,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
         initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
+
+        DO_ADVANCED_CHECKS = checker.getLintOption("advancedchecks", NullnessSubchecker.ADVANCEDCHECKS_DEFAULT);
     }
 
     @Override
@@ -647,7 +656,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (param < argparams.size()) {
                     asserts.add(argparams.get(param).toString());
                 } else {
-                    checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                    }
                     continue;
                 }
             } else if (parameterPtn.matcher(s).find()) {
@@ -660,7 +671,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         String rep = argparams.get(param).toString();
                         matcher.appendReplacement(sb, rep);
                     } else {
-                        checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                        if (DO_ADVANCED_CHECKS) {
+                            checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                        }
                         continue fields;
                     }
                 }
@@ -1028,8 +1041,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 AnnotatedTypeMirror myType = factory.getAnnotatedType(TreeUtils.enclosingClass(factory.getPath(meth)));
 
                 if (!(myType instanceof AnnotatedDeclaredType)) {
-                    System.err.println("NullnessFlow::visitMethod: Bad myType: " + myType + ((myType == null) ? "" : ("  " + myType.getClass())));
-                    System.err.println("  for method: " + meth);
+                    if (DO_ADVANCED_CHECKS) {
+                        System.err.println("NullnessFlow::visitMethod: Bad myType: " + myType + ((myType == null) ? "" : ("  " + myType.getClass())));
+                        System.err.println("  for method: " + meth);
+                    }
                     return null;
                 }
 
@@ -1103,13 +1118,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             String fieldName;
 
             if (parameterPtn.matcher(annoVal).find()) {
-                checker.report(Result.warning("nullness.parse.error", annoVal), meth);
+                if (DO_ADVANCED_CHECKS) {
+                    checker.report(Result.warning("nullness.parse.error", annoVal), meth);
+                }
                 continue;
             } else if (annoVal.contains(".")) {
                 // we only support single static field accesses, i.e. C.f
                 String[] parts = annoVal.split("\\.");
                 if (parts.length!=2) {
-                    checker.report(Result.failure("nullness.parse.error", annoVal), meth);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("nullness.parse.error", annoVal), meth);
+                    }
                     continue;
                 }
                 // TODO: check for explicit "this" first!
@@ -1122,7 +1141,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     findClass=findClass.getEnclosingElement();
                 }
                 if (findClass==null) {
-                    checker.report(Result.failure("class.not.found.nullness.parse.error", annoVal), meth);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("class.not.found.nullness.parse.error", annoVal), meth);
+                    }
                     continue;
                 }
 
@@ -1141,7 +1162,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     if (found) {
                         // We already found a field with the same name
                         // before -> hiding.
-                        checker.report(Result.failure("nonnull.hiding.violated", annoVal), meth);
+                        if (DO_ADVANCED_CHECKS) {
+                            checker.report(Result.failure("nonnull.hiding.violated", annoVal), meth);
+                        }
                         continue;
                     } else {
                         found = true;
@@ -1371,8 +1394,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
 
                 if (!(recvType instanceof AnnotatedDeclaredType)) {
-                    System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
-                    System.err.println("  for call: " + call);
+                    if (DO_ADVANCED_CHECKS) {
+                        System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
+                        System.err.println("  for call: " + call);
+                    }
                     return;
                 }
 
@@ -1431,7 +1456,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             String[] parts = field.split("\\.");
             if (parts.length!=2) {
                 // TODO: check for explicit "this"
-                checker.report(Result.failure("nullness.parse.error", field), call);
+                if (DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure("nullness.parse.error", field), call);
+                }
                 return null;
             }
             String className = parts[0];
@@ -1443,7 +1470,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 findClass=findClass.getEnclosingElement();
             }
             if (findClass==null) {
-                checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
+                if (DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
+                }
                 return null;
             }
 
@@ -1467,7 +1496,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (found) {
                     // We already found a field with the same name
                     // before -> hiding.
-                    checker.report(Result.failure("nonnull.hiding.violated", field), call);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("nonnull.hiding.violated", field), call);
+                    }
                     return null;
                 } else {
                     found = true;
@@ -1477,7 +1508,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         if (!found) {
-            checker.report(Result.failure("nullness.parse.error", field), call);
+            if (DO_ADVANCED_CHECKS) {
+                checker.report(Result.failure("nullness.parse.error", field), call);
+            }
         }
         return res;
     }
@@ -1561,7 +1594,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 // we only support single static field accesses, i.e. C.f
                 String[] parts = field.split("\\.");
                 if (parts.length!=2) {
-                    checker.report(Result.failure("nullness.parse.error", field), meth);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("nullness.parse.error", field), meth);
+                    }
                     // TODO: check for explicit "this"
                     continue;
                 }
@@ -1573,7 +1608,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     findClass=findClass.getEnclosingElement();
                 }
                 if (findClass==null) {
-                    checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
+                    if (DO_ADVANCED_CHECKS) {
+                        checker.report(Result.failure("class.not.found.nullness.parse.error", field), meth);
+                    }
                     continue;
                 }
 
@@ -1604,7 +1641,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     matched = true;
                 } else if (field.equals(elClass + "." + elName)) {
                     if (!el.getModifiers().contains(Modifier.STATIC)) {
-                        checker.report(Result.failure("nonnull.nonstatic.with.class", field), meth);
+                        if (DO_ADVANCED_CHECKS) {
+                            checker.report(Result.failure("nonnull.nonstatic.with.class", field), meth);
+                        }
                         res.add(field);
                         continue;
                     }
@@ -1616,7 +1655,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (matched) {
                     if (found) {
                         // We already found a field with the same name before -> hiding.
-                        checker.report(Result.failure("nonnull.hiding.violated", field), meth);
+                        if (DO_ADVANCED_CHECKS) {
+                            checker.report(Result.failure("nonnull.hiding.violated", field), meth);
+                        }
                     } else {
                         found = true;
                     }
@@ -1625,7 +1666,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Method calls?
 
             if (!found) {
-                checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+                if (DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+                }
                 res.add(field);
             }
         }
