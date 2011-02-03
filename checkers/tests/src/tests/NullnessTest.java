@@ -11,7 +11,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessTest extends ParameterizedCheckerTest {
 
     public NullnessTest(File testFile) {
-        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Anocheckjdk", "-Alint=-uninitialized");
+        // TODO: remove advancedchecks option once its no longer needed
+        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Anocheckjdk", "-Alint=uninitialized", "-Alint=advancedchecks");
     }
 
     @Parameters
