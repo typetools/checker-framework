@@ -59,10 +59,17 @@ class NullnessFlowState extends DefaultFlowState {
 
     @Override
     public void or(FlowState other, QualifierHierarchy annoRelations) {
-        // NullnessFlowState dfs = (NullnessFlowState) other;
+        NullnessFlowState nfs = (NullnessFlowState) other;
         super.or(other, annoRelations);
-        // TODO: should we do something more refined?
-        nnExprs = new ArrayList<String>();
+        addExtras(nnExprs, nfs.nnExprs);
+    }
+
+    private static void addExtras(List<String> mod, List<String> add) {
+        for (String a : add) {
+            if (!mod.contains(a)) {
+                mod.add(a);
+            }
+        }
     }
 
     @Override
