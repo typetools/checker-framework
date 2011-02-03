@@ -15,10 +15,13 @@ import checkers.source.*;
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, PolyNull.class })
-@SupportedLintOptions({"nulltest", "uninitialized"})
+@SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
     public static final boolean UNINIT_DEFAULT = false;
     public static final boolean NULLTEST_DEFAULT = false;
+
+    // TODO: This lint option should only be temporary, until all checks are implemented correctly.
+    public static final boolean ADVANCEDCHECKS_DEFAULT = false;
 
 }
