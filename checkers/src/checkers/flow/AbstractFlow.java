@@ -560,7 +560,9 @@ implements Flow {
 
     @Override
     public Void visitAssert(AssertTree node, Void p) {
-        boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey());
+        boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey()) ||
+            checker.getLintOption("flow:inferFromAsserts", false);
+
         ST beforeAssert = copyState(flowState);
         scanCond(node.getCondition());
         ST whenTrue = flowState_whenTrue;
@@ -571,8 +573,6 @@ implements Flow {
         if (inferFromAsserts) {
             flowState = whenTrue;
         } else {
-            // TODO: when does this happen? Fields from subclass might still be set
-            // to StateWhenFalse!
             flowState = beforeAssert;
         }
         return null;
