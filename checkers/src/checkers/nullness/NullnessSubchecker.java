@@ -15,7 +15,7 @@ import checkers.source.*;
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, PolyNull.class })
-@SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
+@SupportedLintOptions({"nulltest", "uninitialized", "inferFromAsserts", "advancedchecks"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
     public static final boolean UNINIT_DEFAULT = false;
