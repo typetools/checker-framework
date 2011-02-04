@@ -527,7 +527,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Helper method to find the parent of a lint key.  The lint hierarchy
-     * level is donated by a color ':'.  'all' is the root for all hierarchy.
+     * level is donated by a colon ':'.  'all' is the root for all hierarchy.
      *
      * Example
      *    cast:unsafe --> cast
