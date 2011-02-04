@@ -114,4 +114,34 @@ public class AssertIfChecked {
   public boolean hasValuePure() {
       return getValuePure() != null;
   }
+
+  
+  /*
+   * The next two methods are from Daikon's class Quant. They verify that
+   * AssertNonNullIfTrue is correctly added to the assumptions after a check.
+   */
+
+  /*@AssertNonNullIfTrue({"#0", "#1"}) */
+  /* pure */ public static boolean sameLength(boolean /*@Nullable */[] seq1,
+          boolean /*@Nullable */[] seq2) {
+      return ((seq1 != null) && (seq2 != null) && seq1.length == seq2.length);
+  }
+
+  /* pure */public static boolean isReverse(boolean /*@Nullable */[] seq1,
+          boolean /*@Nullable */[] seq2) {
+      if (!sameLength(seq1, seq2)) {
+          return false;
+      }
+      // This assert is not needed for inference.
+      // assert seq1 != null && seq2 != null; // because sameLength() = true
+
+      int length = seq1.length;
+      for (int i = 0; i < length; i++) {
+          if (seq1[i] != seq2[length - i - 1]) {
+              return false;
+          }
+      }
+      return true;
+  }
+
 }
