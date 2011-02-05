@@ -196,8 +196,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         FlowState before = flowState_whenFalse.copy();
 
-        Conditions conds = new Conditions();
+        Conditions conds = new Conditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(tree, null);
+        flowResults.putAll(conds.getTreeResults());
 
         boolean flippable = isFlippableLogic(tree);
 
@@ -248,12 +249,16 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             NullnessFlowState before = flowState.copy();
             scan(node.getRightOperand(), p);
             flowState = before;
+
+            // TODO: what is the motivation in only taking the state of the left operand??
+            // This results in that (A || B) and (B || A) result in different inferences.
         } else {
             scan(node.getLeftOperand(), p);
             scan(node.getRightOperand(), p);
         }
-        Conditions conds = new Conditions();
+        Conditions conds = new Conditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(node, null);
+        this.flowResults.putAll(conds.getTreeResults());
         return null;
     }
 
@@ -266,7 +271,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * This class is implemented as a visitor; it should only be initially
      * invoked on the conditions of e.g. if statements.
      */
-    class Conditions extends SimpleTreeVisitor<Void, Void> {
+    static class Conditions extends SimpleTreeVisitor<Void, Void> {
 
         private BitSet nonnull = new BitSet(0);
         private BitSet nullable = new BitSet(0);
@@ -277,7 +282,19 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
         /** Variables that should be ignored when setting annoWhenFalse. */
-        final Set<Element> excludes = new HashSet<Element>();
+        private final Set<Element> excludes = new HashSet<Element>();
+
+        /**
+         * People, don't modify the enclosing flowResults directly!
+         * Instead, mark the results here and then let the outside query for it.
+         */
+        private Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
+
+        private final NullnessAnnotatedTypeFactory typefactory;
+
+        public Conditions(NullnessAnnotatedTypeFactory tf) {
+            this.typefactory = tf;
+        }
 
         /**
          * @return the elements that this analysis has determined to be NonNull when
@@ -323,6 +340,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             return isNullPolyNull;
         }
 
+        public @ReadOnly Map<Tree, AnnotationMirror> getTreeResults() {
+            return treeResults;
+        }
 
         @Override
         public Void visitUnary(final UnaryTree node, final Void p) {
@@ -397,11 +417,11 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     int idx = vars.indexOf(e);
                     if (idx >= 0) {
                         if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
-                            markTree(node, NONNULL);
+                            treeResults.put(node, typefactory.NONNULL);
                         }
                     }
                     if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                        markTree(node, NONNULL);
+                        treeResults.put(node, typefactory.NONNULL);
                     }
                 }
 
@@ -422,7 +442,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 @Override
                 public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
                     if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                        markTree(node, NONNULL);
+                        treeResults.put(node, typefactory.NONNULL);
                     }
                     return super.visitMethodInvocation(node, p);
                 }
@@ -518,14 +538,14 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 mark(var, false);
 
                 if (var != null) {
-                    if (factory.getAnnotatedType(var).getAnnotation(PolyNull.class.getName()) != null)
+                    if (typefactory.getAnnotatedType(var).getAnnotation(PolyNull.class.getName()) != null)
                         isNullPolyNull = true;
                 } else {
-                    AnnotatedTypeMirror leftType = factory.getAnnotatedType(left);
-                    AnnotatedTypeMirror rightType = factory.getAnnotatedType(right);
-                    if (leftType.hasAnnotation(NONNULL) && !rightType.hasAnnotation(NONNULL))
+                    AnnotatedTypeMirror leftType = typefactory.getAnnotatedType(left);
+                    AnnotatedTypeMirror rightType = typefactory.getAnnotatedType(right);
+                    if (leftType.hasAnnotation(typefactory.NONNULL) && !rightType.hasAnnotation(typefactory.NONNULL))
                         mark(var(right), true);
-                    if (rightType.hasAnnotation(NONNULL) && !leftType.hasAnnotation(NONNULL))
+                    if (rightType.hasAnnotation(typefactory.NONNULL) && !leftType.hasAnnotation(typefactory.NONNULL))
                         mark(var(left), true);
                 }
 
@@ -572,7 +592,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             if (!vars.contains(e))
                 vars.add((VariableElement) e);
             if (this.nonnullExpressions.contains(node.toString())) {
-                markTree(node, NONNULL);
+                treeResults.put(node, typefactory.NONNULL);
             }
             return super.visitMemberSelect(node, p);
         }
@@ -609,7 +629,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         throw new AssertionError("Cannot be here");
     }
 
-    private List<String> shouldInferNullness(ExpressionTree node) {
+    private static List<String> shouldInferNullness(ExpressionTree node) {
         List<String> result = new ArrayList<String>();
         result.addAll(shouldInferNullnessIfTrue(node));
         result.addAll(shouldInferNullnessIfFalse(node));
@@ -647,7 +667,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
+    private static List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
         String receiver = receiver(methodInvok);
 
         List<? extends ExpressionTree> argExps = methodInvok.getArguments();
@@ -669,7 +689,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private List<String> substitutePatternsGeneric(Tree node, String receiver,
+    private static List<String> substitutePatternsGeneric(Tree node, String receiver,
             List<String> argparams, String[] annoValues) {
         List<String> asserts = new ArrayList<String>();
 
@@ -680,9 +700,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (param < argparams.size()) {
                     asserts.add(argparams.get(param).toString());
                 } else {
-                    if (DO_ADVANCED_CHECKS) {
-                        checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                    }
+                    //if (DO_ADVANCED_CHECKS) {
+                        // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                        System.err.println(Result.failure("param.index.nullness.parse.error", s));
+                    // }
                     continue;
                 }
             } else if (parameterPtn.matcher(s).find()) {
@@ -695,9 +716,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         String rep = argparams.get(param).toString();
                         matcher.appendReplacement(sb, rep);
                     } else {
-                        if (DO_ADVANCED_CHECKS) {
-                            checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                        }
+                        // if (DO_ADVANCED_CHECKS) {
+                            // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                            System.err.println(Result.failure("param.index.nullness.parse.error", s));
+                        // }
                         continue fields;
                     }
                 }
@@ -719,7 +741,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
+    private static List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
 
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
@@ -773,7 +795,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
+    private static List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT
                 || ((UnaryTree)node).getExpression().getKind() != Tree.Kind.METHOD_INVOCATION) {
             return Collections.emptyList();
@@ -813,7 +835,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
+    private static List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
         if (node.getKind() == Tree.Kind.EQUAL_TO) {
             BinaryTree binary = (BinaryTree)node;
             if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
@@ -1263,8 +1285,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
 
-        Conditions conds = new Conditions();
+        Conditions conds = new Conditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(retExp, null);
+        flowResults.putAll(conds.getTreeResults());
 
         // When would this help?
         // boolean flippable = isFlippableLogic(retExp);
@@ -1744,7 +1767,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree is the null literal, false otherwise
      */
-    private final boolean isNull(final Tree tree) {
+    private static final boolean isNull(final Tree tree) {
         return tree != null && tree.getKind() == Tree.Kind.NULL_LITERAL;
     }
 
@@ -1755,7 +1778,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree may have a variable element, false otherwise
      */
-    private final boolean hasVar(final Tree tree) {
+    private static final boolean hasVar(final Tree tree) {
         Tree tr = TreeUtils.skipParens(tree);
         if (tr.getKind() == Tree.Kind.ASSIGNMENT)
             tr = ((AssignmentTree)tr).getVariable();
@@ -1769,7 +1792,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return the element for the variable in the tree
      */
-    private final Element var(Tree tree) {
+    private static final Element var(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case IDENTIFIER:
@@ -1788,7 +1811,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Returns true if it's a method invocation of pure
      */
-    private boolean isPure(Tree tree) {
+    private static final boolean isPure(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
             return false;
