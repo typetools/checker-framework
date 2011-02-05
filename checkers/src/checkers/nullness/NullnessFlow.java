@@ -1340,7 +1340,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree is the null literal, false otherwise
      */
-    public static final boolean isNull(final Tree tree) {
+    static final boolean isNull(final Tree tree) {
         return tree != null && tree.getKind() == Tree.Kind.NULL_LITERAL;
     }
 
@@ -1351,7 +1351,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree may have a variable element, false otherwise
      */
-    public static final boolean hasVar(final Tree tree) {
+    static final boolean hasVar(final Tree tree) {
         Tree tr = TreeUtils.skipParens(tree);
         if (tr.getKind() == Tree.Kind.ASSIGNMENT)
             tr = ((AssignmentTree)tr).getVariable();
@@ -1365,7 +1365,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return the element for the variable in the tree
      */
-    public static final Element var(Tree tree) {
+    static final Element var(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case IDENTIFIER:
@@ -1384,7 +1384,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     /**
      * Returns true if it's a method invocation of pure
      */
-    public static final boolean isPure(Tree tree) {
+    static final boolean isPure(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
             return false;
