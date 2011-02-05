@@ -200,13 +200,11 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             private void record(Element e, Tree node) {
                 int idx = vars.indexOf(e);
                 if (idx >= 0) {
-                    if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit
-                            .get(idx)) {
+                    if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
                         treeResults.put(node, typefactory.NONNULL);
                     }
                 }
-                if ((mergeAnd ? nullableExpressions : nonnullExpressions)
-                        .contains(node.toString())) {
+                if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
                     treeResults.put(node, typefactory.NONNULL);
                 }
             }
@@ -227,8 +225,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
             @Override
             public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-                if ((mergeAnd ? nullableExpressions : nonnullExpressions)
-                        .contains(node.toString())) {
+                if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
                     treeResults.put(node, typefactory.NONNULL);
                 }
                 return super.visitMethodInvocation(node, p);
@@ -261,8 +258,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
     }
 
     @Override
-    public Void visitConditionalExpression(ConditionalExpressionTree node,
-            Void p) {
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
 
         // (a ? b : c) --> (a && b) || c
 
@@ -325,14 +321,11 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             mark(var, false);
 
             if (var != null) {
-                if (typefactory.getAnnotatedType(var).getAnnotation(
-                        PolyNull.class.getName()) != null)
+                if (typefactory.getAnnotatedType(var).getAnnotation(PolyNull.class.getName()) != null)
                     isNullPolyNull = true;
             } else {
-                AnnotatedTypeMirror leftType = typefactory
-                        .getAnnotatedType(left);
-                AnnotatedTypeMirror rightType = typefactory
-                        .getAnnotatedType(right);
+                AnnotatedTypeMirror leftType = typefactory.getAnnotatedType(left);
+                AnnotatedTypeMirror rightType = typefactory.getAnnotatedType(right);
                 if (leftType.hasAnnotation(typefactory.NONNULL)
                         && !rightType.hasAnnotation(typefactory.NONNULL))
                     mark(var(right), true);
