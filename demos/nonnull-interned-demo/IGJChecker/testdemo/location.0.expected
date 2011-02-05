@@ -1,0 +1,12 @@
+src/checkers/types/AnnotationLocation.java:111: incompatible types.
+        this.location = Collections.unmodifiableList(location);
+                                                    ^
+  found   : @ReadOnly List<@IGJBottom Integer>
+  required: @Immutable List<@IGJBottom Integer>
+1 error
+
+BUILD FAILED
+build.xml:14: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 0 seconds
