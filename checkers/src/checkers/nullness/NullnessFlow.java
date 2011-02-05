@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.*;
+import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
@@ -225,7 +226,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         // GenKillBits.orlub(res.annosWhenFalse, before, annoRelations);
         flowState_whenFalse.or(before, annoRelations);
 
-        isNullPolyNull = conds.isNullPolyNull;
+        isNullPolyNull = conds.isNullPolyNull();
         flowState_whenTrue.nnExprs.addAll(conds.nonnullExpressions);
         flowState_whenFalse.nnExprs.addAll(conds.nullableExpressions);
 
@@ -269,9 +270,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         private BitSet nonnull = new BitSet(0);
         private BitSet nullable = new BitSet(0);
-        public boolean isNullPolyNull = false;
-        public List<String> nonnullExpressions = new LinkedList<String>();
-        public List<String> nullableExpressions = new LinkedList<String>();
+        private boolean isNullPolyNull = false;
+        private List<String> nonnullExpressions = new LinkedList<String>();
+        private List<String> nullableExpressions = new LinkedList<String>();
 
         private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
@@ -282,7 +283,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
          * @return the elements that this analysis has determined to be NonNull when
          *         the condition being analyzed is true
          */
-        public Set<VariableElement> getNonnullElements() {
+        public @ReadOnly Set<VariableElement> getNonnullElements() {
             return getElements(true);
         }
 
@@ -290,7 +291,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
          * @return the elements that this analysis has determined to be Nullable
          *         when the condition being analyzed is true
          */
-        public Set<VariableElement> getNullableElements() {
+        public @ReadOnly Set<VariableElement> getNullableElements() {
             return getElements(false);
         }
 
@@ -301,7 +302,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
          *         isNN is true) or Nullable (if isNN is false) when the condition
          *         being analyzed is true
          */
-        private Set<VariableElement> getElements(boolean isNN) {
+        private @ReadOnly Set<VariableElement> getElements(boolean isNN) {
             Set<VariableElement> result = new HashSet<VariableElement>();
             for (int i = 0; i < vars.size(); i++)
                 if ((isNN && nonnull.get(i) && !nullable.get(i))
@@ -309,6 +310,19 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     result.add(vars.get(i));
             return Collections.unmodifiableSet(result);
         }
+
+        public @ReadOnly List<String> getNonnullExpressions() {
+            return nonnullExpressions;
+        }
+
+        public @ReadOnly List<String> getNullableExpressions() {
+            return nullableExpressions;
+        }
+
+        public boolean isNullPolyNull() {
+            return isNullPolyNull;
+        }
+
 
         @Override
         public Void visitUnary(final UnaryTree node, final Void p) {
