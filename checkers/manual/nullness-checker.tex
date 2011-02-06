@@ -84,7 +84,8 @@ most type qualifiers, because the default annotation
 type hierarchy for rawness (Section~\ref{raw-partially-initialized}), which
 indicates whether
 initialization has completed.  The two type hierarchies are independent but
-inter-related, and the Nullness Checker verifies them both.}
+inter-related.  The Nullness Checker verifies both of these, as well as
+another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
 \label{fig:nonnull-hierarchy}
 \end{figure}
 
@@ -833,6 +834,12 @@ but this would be OK (no compiler error):
   m.put(x, ...);
   coll.add(x);
 \end{Verbatim}
+
+
+Because the \<@KeyFor> type hierarchy is independent from the nullness and
+rawness hierarchies, it uses a different warning suppression key.
+You can suppress warnings related to map keys with
+\<@SuppressWarnings("keyfor")>.
 
 
 \section{Examples\label{nullness-example}}
