@@ -16,86 +16,13 @@ import checkers.nullness.quals.*;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.*;
 
-/**
- * The state needed for NullnessFlow.
- *
- * @see DefaultFlowState
- * @see NullnessFlow
- */
-class NullnessFlowState extends DefaultFlowState {
-    /**
-     * A list of non-null expressions.
-     * These are exact String representations of the corresponding Tree instances.
-     */
-    List<String> nnExprs;
-
-    NullnessFlowState(Set<AnnotationMirror> annotations) {
-        super(annotations);
-        nnExprs = new ArrayList<String>();
-    }
-
-    @Override
-    public NullnessFlowState createFlowState(Set<AnnotationMirror> annotations) {
-        return new NullnessFlowState(annotations);
-    }
-
-    @Override
-    public NullnessFlowState copy() {
-        NullnessFlowState res = (NullnessFlowState) super.copy();
-        res.nnExprs = new ArrayList<String>(this.nnExprs);
-        // TODO: Copy initializedFields
-        return res;
-    }
-
-    @Override
-    public void or(FlowState other, QualifierHierarchy annoRelations) {
-        NullnessFlowState nfs = (NullnessFlowState) other;
-        super.or(other, annoRelations);
-        addExtras(nnExprs, nfs.nnExprs);
-    }
-
-    private static void addExtras(List<String> mod, List<String> add) {
-        for (String a : add) {
-            if (!mod.contains(a)) {
-                mod.add(a);
-            }
-        }
-    }
-
-    @Override
-    public void and(FlowState other, QualifierHierarchy annoRelations) {
-        NullnessFlowState nfs = (NullnessFlowState) other;
-        super.and(other, annoRelations);
-        keepIfInBoth(nnExprs, nfs.nnExprs);
-    }
-
-    private static void keepIfInBoth(List<String> mod, List<String> other) {
-        Iterator<String> it = mod.iterator();
-        while(it.hasNext()) {
-            String el = it.next();
-
-            if (!other.contains(el)) {
-                it.remove();
-            }
-        }
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + "\n" +
-        "  nnExprs: " + nnExprs;
-    }
-}
 
 /**
  * Implements Nullness-specific customizations of the flow-sensitive type
@@ -195,8 +122,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         FlowState before = flowState_whenFalse.copy();
 
-        Conditions conds = new Conditions();
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(tree, null);
+        this.flowResults.putAll(conds.getTreeResults());
 
         boolean flippable = isFlippableLogic(tree);
 
@@ -204,7 +132,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             int idx = flowState_whenFalse.vars.indexOf(elt);
             if (idx >= 0) {
                 flowState_whenTrue.annos.set(NONNULL, idx);
-                if (flippable && !conds.excludes.contains(elt))
+                if (flippable && !conds.getExcludes().contains(elt))
                     flowState_whenFalse.annos.clear(NONNULL, idx);
             }
         }
@@ -217,7 +145,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 // on indicate extra information not captured within the
                 // analyzed condition
                 // annosWhenTrue.clear(NONNULL, idx);
-                if (flippable && !conds.excludes.contains(elt))
+                if (flippable && !conds.getExcludes().contains(elt))
                     flowState_whenFalse.annos.set(NONNULL, idx);
             }
         }
@@ -225,13 +153,14 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         // GenKillBits.orlub(res.annosWhenFalse, before, annoRelations);
         flowState_whenFalse.or(before, annoRelations);
 
-        isNullPolyNull = conds.isNullPolyNull;
-        flowState_whenTrue.nnExprs.addAll(conds.nonnullExpressions);
-        flowState_whenFalse.nnExprs.addAll(conds.nullableExpressions);
+        isNullPolyNull = conds.isNullPolyNull();
+        flowState_whenTrue.nnExprs.addAll(conds.getNonnullExpressions());
+        flowState_whenFalse.nnExprs.addAll(conds.getNullableExpressions());
 
-        // previously was in whenConditionFalse
+        // previously was in whenConditionFalse and/or visitIf
         tree = TreeUtils.skipParens(tree);
         flowState_whenFalse.nnExprs.addAll(shouldInferNullnessIfFalseNullable(tree));
+        flowState_whenFalse.nnExprs.addAll(shouldInferNullnessPureNegation(tree));
         if (tree.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
             ExpressionTree unary = ((UnaryTree)tree).getExpression();
             flowState_whenFalse.nnExprs.addAll(shouldInferNullnessAfter(unary));
@@ -241,6 +170,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
+        // TODO: Why is this not handled by NullnessFlowConditions???
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND
                 || node.getKind() == Tree.Kind.CONDITIONAL_OR) {
             scan(node.getLeftOperand(), p);
@@ -251,340 +181,19 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             scan(node.getLeftOperand(), p);
             scan(node.getRightOperand(), p);
         }
-        Conditions conds = new Conditions();
+
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(node, null);
+        this.takeFromConds(conds);
         return null;
     }
 
-    /**
-     * A utility class used by a NonNull-specific flow-sensitive qualifier
-     * inference to determine nullness in conditionally-executed scopes.
-     *
-     * <p>
-     *
-     * This class is implemented as a visitor; it should only be initially
-     * invoked on the conditions of e.g. if statements.
-     */
-    class Conditions extends SimpleTreeVisitor<Void, Void> {
-
-        private BitSet nonnull = new BitSet(0);
-        private BitSet nullable = new BitSet(0);
-        public boolean isNullPolyNull = false;
-        public List<String> nonnullExpressions = new LinkedList<String>();
-        public List<String> nullableExpressions = new LinkedList<String>();
-
-        private final List<VariableElement> vars = new LinkedList<VariableElement>();
-
-        /** Variables that should be ignored when setting annoWhenFalse. */
-        final Set<Element> excludes = new HashSet<Element>();
-
-        /**
-         * @return the elements that this analysis has determined to be NonNull when
-         *         the condition being analyzed is true
-         */
-        public Set<VariableElement> getNonnullElements() {
-            return getElements(true);
-        }
-
-        /**
-         * @return the elements that this analysis has determined to be Nullable
-         *         when the condition being analyzed is true
-         */
-        public Set<VariableElement> getNullableElements() {
-            return getElements(false);
-        }
-
-        /**
-         * @param isNN true to get NonNull elements, false to get Nullable
-         *             elements
-         * @return the elements that this analysis has determined to be NonNull (if
-         *         isNN is true) or Nullable (if isNN is false) when the condition
-         *         being analyzed is true
-         */
-        private Set<VariableElement> getElements(boolean isNN) {
-            Set<VariableElement> result = new HashSet<VariableElement>();
-            for (int i = 0; i < vars.size(); i++)
-                if ((isNN && nonnull.get(i) && !nullable.get(i))
-                        || (!isNN && nullable.get(i) && !nonnull.get(i)))
-                    result.add(vars.get(i));
-            return Collections.unmodifiableSet(result);
-        }
-
-        @Override
-        public Void visitUnary(final UnaryTree node, final Void p) {
-
-            visit(node.getExpression(), p);
-
-            if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT)
-                return null;
-
-            // only invert if cardinal is one
-            if (nonnull.cardinality() + nullable.cardinality() == 1) {
-                nonnull.xor(nullable);
-                nullable.xor(nonnull);
-                nonnull.xor(nullable);
-            } else {
-                // give up
-                nonnull.clear();
-                nullable.clear();
-            }
-            isNullPolyNull = false;
-
-            // the false branch of a logic complement of instance is nonnull!
-            if (TreeUtils.skipParens(node.getExpression()).getKind() == Tree.Kind.INSTANCE_OF) {
-                ExpressionTree expr = ((InstanceOfTree)TreeUtils.skipParens(node.getExpression())).getExpression();
-                this.excludes.remove(var(expr));
-            }
-
-            this.nonnullExpressions.addAll(shouldInferNullness(node));
-
-            return null;
-        }
-
-        @Override
-        public Void visitInstanceOf(InstanceOfTree node, Void p) {
-
-            Tree expr = node.getExpression();
-            visit(expr, p);
-
-            if (hasVar(expr)) {
-                int idx = vars.indexOf(var(expr));
-                nonnull.set(idx);
-                nullable.clear(idx);
-                excludes.add(var(expr));
-            }
-
-            return super.visitInstanceOf(node, p);
-        }
-
-        /**
-         * Splits the gen-kill sets at a branch, descends into each branch (the
-         * left and right children), and merges the gen-kill when the branches
-         * rejoin in one of two ways ("and" or "or").
-         *
-         * @param left the left branch child
-         * @param right the right branch child
-         * @param mergeAnd true if merging should be done using boolean "and",
-         *        false if it should be done using boolean "or"
-         */
-        private void splitAndMerge(Tree left, Tree right, final boolean mergeAnd) {
-
-            BitSet nonnullOld = (BitSet)nonnull.clone();
-            BitSet nullableOld = (BitSet)nullable.clone();
-
-            visit(left, null);
-
-            final BitSet nonnullSplit = (BitSet)nonnull.clone();
-            final BitSet nullableSplit = (BitSet)nullable.clone();
-
-            new TreeScanner<Void, Void>() {
-
-                private void record(Element e, Tree node) {
-                    int idx = vars.indexOf(e);
-                    if (idx >= 0) {
-                        if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
-                            markTree(node, NONNULL);
-                        }
-                    }
-                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                        markTree(node, NONNULL);
-                    }
-                }
-
-                @Override
-                public Void visitIdentifier(IdentifierTree node, Void p) {
-                    Element e = TreeUtils.elementFromUse(node);
-                    record(e, node);
-                    return super.visitIdentifier(node, p);
-                }
-
-                @Override
-                public Void visitMemberSelect(MemberSelectTree node, Void p) {
-                    Element e = TreeUtils.elementFromUse(node);
-                    record(e, node);
-                    return super.visitMemberSelect(node, p);
-                }
-
-                @Override
-                public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-                    if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                        markTree(node, NONNULL);
-                    }
-                    return super.visitMethodInvocation(node, p);
-                }
-            }.scan(right, null);
-
-            nonnull = (BitSet)nonnullOld.clone();
-            nullable = (BitSet)nullableOld.clone();
-
-            visit(right, null);
-
-            if (mergeAnd) {
-                nonnullSplit.and(nonnull);
-                nullableSplit.or(nullable);
-            } else {
-                nonnullSplit.or(nonnull);
-                nullableSplit.or(nullable);
-                //                nnExprs.clear();
-            }
-
-            nonnull = nonnullOld;
-            nullable = nullableOld;
-
-            nonnull.or(nonnullSplit);
-            nullable.or(nullableSplit);
-
-            // when flow leads to a contradiction: a var is both nullable
-            // and nonnull, treat it as a nonnull
-            nullable.andNot(nonnull);
-        }
-
-        @Override
-        public Void visitConditionalExpression(ConditionalExpressionTree node,
-                Void p) {
-
-            // (a ? b : c) --> (a && b) || c
-
-            BitSet nonnullOld = (BitSet)nonnull.clone();
-            BitSet nullableOld = (BitSet)nullable.clone();
-
-            splitAndMerge(node.getCondition(), node.getTrueExpression(), false);
-
-            BitSet nonnullSplit = (BitSet)nonnull.clone();
-            BitSet nullableSplit = (BitSet)nullable.clone();
-
-            visit(node.getFalseExpression(), p);
-
-            nonnullSplit.and(nonnull);
-            nullableSplit.and(nullable);
-
-            nonnull = nonnullOld;
-            nullable = nullableOld;
-
-            nonnull.or(nonnullSplit);
-            nullable.or(nullableSplit);
-
-            return super.visitConditionalExpression(node, p);
-        }
-
-        private void mark(Element var, boolean isNonnull) {
-            if (var == null)
-                return;
-            int idx = vars.indexOf(var);
-            if (isNonnull) {
-                nonnull.set(idx);
-                nullable.clear(idx);
-            } else {
-                nullable.set(idx);
-                nonnull.clear(idx);
-            }
-        }
-
-        @Override
-        public Void visitBinary(final BinaryTree node, final Void p) {
-
-            final Tree left = node.getLeftOperand();
-            final Tree right = node.getRightOperand();
-            final Kind oper = node.getKind();
-
-            if (oper == Tree.Kind.CONDITIONAL_AND)
-                splitAndMerge(left, right, false);
-            else if (oper == Tree.Kind.CONDITIONAL_OR)
-                splitAndMerge(left, right, true);
-            else if (oper == Tree.Kind.EQUAL_TO) {
-                visit(left, p);
-                visit(right, p);
-
-                Element var = null;
-                if (hasVar(left) && isNull(right))
-                    var = var(left);
-                else if (isNull(left) && hasVar(right))
-                    var = var(right);
-
-                mark(var, false);
-
-                if (var != null) {
-                    if (factory.getAnnotatedType(var).getAnnotation(PolyNull.class.getName()) != null)
-                        isNullPolyNull = true;
-                } else {
-                    AnnotatedTypeMirror leftType = factory.getAnnotatedType(left);
-                    AnnotatedTypeMirror rightType = factory.getAnnotatedType(right);
-                    if (leftType.hasAnnotation(NONNULL) && !rightType.hasAnnotation(NONNULL))
-                        mark(var(right), true);
-                    if (rightType.hasAnnotation(NONNULL) && !leftType.hasAnnotation(NONNULL))
-                        mark(var(left), true);
-                }
-
-                if (isNull(right) && isPure(left))
-                    this.nullableExpressions.add(left.toString());
-                else if (isNull(left) && isPure(right))
-                    this.nullableExpressions.add(right.toString());
-
-            } else if (oper == Tree.Kind.NOT_EQUAL_TO) {
-                visit(left, p);
-                visit(right, p);
-
-                Element var = null;
-                if (hasVar(left) && isNull(right))
-                    var = var(left);
-                else if (isNull(left) && hasVar(right))
-                    var = var(right);
-
-                mark(var, true);
-
-                // Handle Pure methods
-                if (isNull(right) && isPure(left))
-                    this.nonnullExpressions.add(left.toString());
-                else if (isNull(left) && isPure(right))
-                    this.nonnullExpressions.add(right.toString());
-            }
-
-            return null;
-        }
-
-        @Override
-        public Void visitIdentifier(final IdentifierTree node, final Void p) {
-            final Element e = TreeUtils.elementFromUse(node);
-            assert e instanceof VariableElement;
-            if (!vars.contains(e))
-                vars.add((VariableElement) e);
-            return super.visitIdentifier(node, p);
-        }
-
-        @Override
-        public Void visitMemberSelect(final MemberSelectTree node, final Void p) {
-            final Element e = TreeUtils.elementFromUse(node);
-            assert e instanceof VariableElement;
-            if (!vars.contains(e))
-                vars.add((VariableElement) e);
-            if (this.nonnullExpressions.contains(node.toString())) {
-                markTree(node, NONNULL);
-            }
-            return super.visitMemberSelect(node, p);
-        }
-
-        @Override
-        public Void visitParenthesized(final ParenthesizedTree node, final Void p) {
-            // Skip parens.
-            return visit(node.getExpression(), p);
-        }
-
-        @Override
-        public Void visitAssignment(final AssignmentTree node, final Void p) {
-            visit(node.getVariable(), p);
-            visit(node.getExpression(), p);
-            return null;
-        }
-
-        @Override
-        public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-            super.visitMethodInvocation(node, p);
-
-            this.nonnullExpressions.addAll(shouldInferNullness(node));
-
-            return null;
-        }
+    private void takeFromConds(NullnessFlowConditions conds) {
+        this.flowResults.putAll(conds.getTreeResults());
+        this.flowState.nnExprs.addAll(conds.getNonnullExpressions());
+        this.flowState.nnExprs.removeAll(conds.getNullableExpressions());
     }
+
 
     private static String receiver(MethodInvocationTree node) {
         ExpressionTree sel = node.getMethodSelect();
@@ -595,7 +204,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         throw new AssertionError("Cannot be here");
     }
 
-    private List<String> shouldInferNullness(ExpressionTree node) {
+    // TODO: move shouldInferNullness somewhere more appropriate. Maybe NullnessFlowConditions.
+    public static List<String> shouldInferNullness(ExpressionTree node) {
         List<String> result = new ArrayList<String>();
         result.addAll(shouldInferNullnessIfTrue(node));
         result.addAll(shouldInferNullnessIfFalse(node));
@@ -633,7 +243,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
+    private static List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
         String receiver = receiver(methodInvok);
 
         List<? extends ExpressionTree> argExps = methodInvok.getArguments();
@@ -655,7 +265,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private List<String> substitutePatternsGeneric(Tree node, String receiver,
+    private static List<String> substitutePatternsGeneric(Tree node, String receiver,
             List<String> argparams, String[] annoValues) {
         List<String> asserts = new ArrayList<String>();
 
@@ -666,9 +276,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 if (param < argparams.size()) {
                     asserts.add(argparams.get(param).toString());
                 } else {
-                    if (DO_ADVANCED_CHECKS) {
-                        checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                    }
+                    //if (DO_ADVANCED_CHECKS) {
+                        // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                        System.err.println(Result.failure("param.index.nullness.parse.error", s));
+                    // }
                     continue;
                 }
             } else if (parameterPtn.matcher(s).find()) {
@@ -681,9 +292,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         String rep = argparams.get(param).toString();
                         matcher.appendReplacement(sb, rep);
                     } else {
-                        if (DO_ADVANCED_CHECKS) {
-                            checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                        }
+                        // if (DO_ADVANCED_CHECKS) {
+                            // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
+                            System.err.println(Result.failure("param.index.nullness.parse.error", s));
+                        // }
                         continue fields;
                     }
                 }
@@ -705,7 +317,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
+    private static List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
 
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
@@ -759,7 +371,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
+    private static List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT
                 || ((UnaryTree)node).getExpression().getKind() != Tree.Kind.METHOD_INVOCATION) {
             return Collections.emptyList();
@@ -799,7 +411,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
+    private static List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
         if (node.getKind() == Tree.Kind.EQUAL_TO) {
             BinaryTree binary = (BinaryTree)node;
             if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
@@ -823,28 +435,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    @Override
-    public Void visitAssert(AssertTree node, Void p) {
-
-        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        this.flowState.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
-
-        super.visitAssert(node, p);
-
-        this.flowState.nnExprs.addAll(shouldInferNullness(cond));
-
-        if (containsKey(node.getDetail(), checker.getSuppressWarningsKey())
-                && cond.getKind() == Tree.Kind.NOT_EQUAL_TO
-                && ((BinaryTree)cond).getRightOperand().getKind() == Tree.Kind.NULL_LITERAL) {
-            ExpressionTree expr = ((BinaryTree)cond).getLeftOperand();
-            String s = TreeUtils.skipParens(expr).toString();
-            if (!this.flowState.nnExprs.contains(s))
-                this.flowState.nnExprs.add(s);
-        }
-
-        return null;
     }
 
     @Override
@@ -881,44 +471,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return null;
     }
 
-    private boolean isTerminating(BlockTree stmt) {
-        for (StatementTree tr : stmt.getStatements()) {
-            if (isTerminating(tr))
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isTerminating(StatementTree stmt) {
-        if (stmt instanceof BlockTree) {
-            return isTerminating((BlockTree)stmt);
-        }
-
-        switch (stmt.getKind()) {
-        case THROW:
-        case RETURN:
-        case BREAK:
-        case CONTINUE:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    @Override
-    public Void visitIf(IfTree node, Void p) {
-        super.visitIf(node, p);
-
-        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        if (isTerminating(node.getThenStatement())) {
-            if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT)
-                this.flowState.nnExprs.addAll(shouldInferNullness(((UnaryTree)cond).getExpression()));
-            this.flowState.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
-            this.flowState.nnExprs.addAll(shouldInferNullnessPureNegation(cond));
-        }
-        return null;
-    }
-
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
 
@@ -950,6 +502,34 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             markTree(node, NONNULL);
 
         return null;
+    }
+
+    @Override
+    protected void clearOnCall(ExecutableElement method) {
+        super.clearOnCall(method);
+
+        boolean isPure = method.getAnnotation(Pure.class) != null;
+        final String methodPackage = elements.getPackageOf(method).getQualifiedName().toString();
+        boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
+
+        if (!(isPure || isJDKMethod)) {
+            // The first idea is this:
+            // this.flowState.nnExprs.clear();
+            // however, this clears out an assumption that might exist about the current method
+            // call itself, i.e. something added by an earlier "AssertNonNullIfFalse".
+            // As a first approximation, let's throw out everything that doesn't contain
+            // the current method name.
+
+            Iterator<String> it = this.flowState.nnExprs.iterator();
+            while (it.hasNext()) {
+                String s = it.next();
+                if (!s.contains(method.getSimpleName() + "(")) {
+                    it.remove();
+                }
+            }
+            // TODO: we need to be more fine grained and look at the receiver, etc.
+            // Or maybe we can change the order of when things get cleared out?
+        }
     }
 
     @Override
@@ -1249,8 +829,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
 
-        Conditions conds = new Conditions();
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(retExp, null);
+        this.takeFromConds(conds);
 
         // When would this help?
         // boolean flippable = isFlippableLogic(retExp);
@@ -1363,14 +944,14 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         found = true;
                     }
                 }
-                found |= conds.nonnullExpressions.contains(check);
+                found |= conds.getNonnullExpressions().contains(check);
             } else {
                 for (VariableElement ve : conds.getNullableElements()) {
                     if (ve.getSimpleName().toString().equals(check)) {
                         found = true;
                     }
                 }
-                found |= conds.nullableExpressions.contains(check);
+                found |= conds.getNullableExpressions().contains(check);
             }
 
             if (!found) {
@@ -1730,7 +1311,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree is the null literal, false otherwise
      */
-    private final boolean isNull(final Tree tree) {
+    static final boolean isNull(final Tree tree) {
         return tree != null && tree.getKind() == Tree.Kind.NULL_LITERAL;
     }
 
@@ -1741,7 +1322,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree may have a variable element, false otherwise
      */
-    private final boolean hasVar(final Tree tree) {
+    static final boolean hasVar(final Tree tree) {
         Tree tr = TreeUtils.skipParens(tree);
         if (tr.getKind() == Tree.Kind.ASSIGNMENT)
             tr = ((AssignmentTree)tr).getVariable();
@@ -1755,7 +1336,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return the element for the variable in the tree
      */
-    private final Element var(Tree tree) {
+    static final Element var(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case IDENTIFIER:
@@ -1772,14 +1353,20 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     /**
-     * Returns true if it's a method invocation of pure
+     * Returns true if it's a pure method invocation or array access.
+     * TODO: what if the receiver or array index are not pure?
      */
-    private boolean isPure(Tree tree) {
+    static final boolean isPure(Tree tree) {
         tree = TreeUtils.skipParens(tree);
-        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
-            return false;
-        ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
-        return (method.getAnnotation(Pure.class)) != null;
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+            return (method.getAnnotation(Pure.class)) != null;
+        }
+        if (tree.getKind() == Tree.Kind.ARRAY_ACCESS ) {
+            return true;
+        }
+
+        return false;
     }
 
 }

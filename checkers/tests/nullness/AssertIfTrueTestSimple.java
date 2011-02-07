@@ -25,7 +25,19 @@ public class AssertIfTrueTestSimple {
     @NonNull Object x = values;
 
     if (s.repNulled()) {
-      @NonNull Object y = values;
+        //:: (dereference.of.nullable)
+        values.hashCode();
+    } else {
+        // we called on "s", so we don't know anything about "values".
+        //:: (assignment.type.incompatible)
+        @NonNull Object y = values;
+    }
+    
+    if (s.repNulled()) {
+        //:: (dereference.of.nullable)
+        s.values.hashCode();
+    } else {
+        @NonNull Object y = s.values;
     }
   }
 

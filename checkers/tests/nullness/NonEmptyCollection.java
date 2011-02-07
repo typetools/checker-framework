@@ -36,6 +36,6 @@ public class NonEmptyCollection {
     public E remove() { throw new RuntimeException("skeleton method"); }
 
     @AssertNonNullIfFalse("poll()")
-      public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+    public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   }
 }
