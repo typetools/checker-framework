@@ -124,7 +124,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(tree, null);
-        flowResults.putAll(conds.getTreeResults());
+        this.flowResults.putAll(conds.getTreeResults());
 
         boolean flippable = isFlippableLogic(tree);
 
@@ -157,9 +157,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         flowState_whenTrue.nnExprs.addAll(conds.getNonnullExpressions());
         flowState_whenFalse.nnExprs.addAll(conds.getNullableExpressions());
 
-        // previously was in whenConditionFalse
+        // previously was in whenConditionFalse and/or visitIf
         tree = TreeUtils.skipParens(tree);
         flowState_whenFalse.nnExprs.addAll(shouldInferNullnessIfFalseNullable(tree));
+        flowState_whenFalse.nnExprs.addAll(shouldInferNullnessPureNegation(tree));
         if (tree.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
             ExpressionTree unary = ((UnaryTree)tree).getExpression();
             flowState_whenFalse.nnExprs.addAll(shouldInferNullnessAfter(unary));
@@ -169,24 +170,30 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
+        // TODO: Why is this not handled by NullnessFlowConditions???
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND
                 || node.getKind() == Tree.Kind.CONDITIONAL_OR) {
             scan(node.getLeftOperand(), p);
             NullnessFlowState before = flowState.copy();
             scan(node.getRightOperand(), p);
             flowState = before;
-
-            // TODO: what is the motivation in only taking the state of the left operand??
-            // This results in that (A || B) and (B || A) result in different inferences.
         } else {
             scan(node.getLeftOperand(), p);
             scan(node.getRightOperand(), p);
         }
+
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(node, null);
-        this.flowResults.putAll(conds.getTreeResults());
+        this.takeFromConds(conds);
         return null;
     }
+
+    private void takeFromConds(NullnessFlowConditions conds) {
+        this.flowResults.putAll(conds.getTreeResults());
+        this.flowState.nnExprs.addAll(conds.getNonnullExpressions());
+        this.flowState.nnExprs.removeAll(conds.getNullableExpressions());
+    }
+
 
     private static String receiver(MethodInvocationTree node) {
         ExpressionTree sel = node.getMethodSelect();
@@ -464,45 +471,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return null;
     }
 
-    private boolean isTerminating(BlockTree stmt) {
-        for (StatementTree tr : stmt.getStatements()) {
-            if (isTerminating(tr))
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isTerminating(StatementTree stmt) {
-        if (stmt instanceof BlockTree) {
-            return isTerminating((BlockTree)stmt);
-        }
-
-        switch (stmt.getKind()) {
-        case THROW:
-        case RETURN:
-        case BREAK:
-        case CONTINUE:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    // TODO: remove the special case here and also merge it with scanCond and make it usable in general.
-    @Override
-    public Void visitIf(IfTree node, Void p) {
-        super.visitIf(node, p);
-
-        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        if (isTerminating(node.getThenStatement())) {
-            if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT)
-                this.flowState.nnExprs.addAll(shouldInferNullness(((UnaryTree)cond).getExpression()));
-            this.flowState.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
-            this.flowState.nnExprs.addAll(shouldInferNullnessPureNegation(cond));
-        }
-        return null;
-    }
-
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
 
@@ -534,6 +502,34 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             markTree(node, NONNULL);
 
         return null;
+    }
+
+    @Override
+    protected void clearOnCall(ExecutableElement method) {
+        super.clearOnCall(method);
+
+        boolean isPure = method.getAnnotation(Pure.class) != null;
+        final String methodPackage = elements.getPackageOf(method).getQualifiedName().toString();
+        boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
+
+        if (!(isPure || isJDKMethod)) {
+            // The first idea is this:
+            // this.flowState.nnExprs.clear();
+            // however, this clears out an assumption that might exist about the current method
+            // call itself, i.e. something added by an earlier "AssertNonNullIfFalse".
+            // As a first approximation, let's throw out everything that doesn't contain
+            // the current method name.
+
+            Iterator<String> it = this.flowState.nnExprs.iterator();
+            while (it.hasNext()) {
+                String s = it.next();
+                if (!s.contains(method.getSimpleName() + "(")) {
+                    it.remove();
+                }
+            }
+            // TODO: we need to be more fine grained and look at the receiver, etc.
+            // Or maybe we can change the order of when things get cleared out?
+        }
     }
 
     @Override
@@ -835,7 +831,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
         conds.visit(retExp, null);
-        flowResults.putAll(conds.getTreeResults());
+        this.takeFromConds(conds);
 
         // When would this help?
         // boolean flippable = isFlippableLogic(retExp);
