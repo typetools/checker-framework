@@ -36,8 +36,13 @@ class PureTest {
 
         puremethod(x).toString();
         puremethod(x).toString();
+        puremethod(x).toString();
 
         x = new Object();
+        
+        //:: (dereference.of.nullable)
+        puremethod(x).toString();
+        
         //:: (dereference.of.nullable)
         puremethod("n").toString();
 
@@ -76,6 +81,22 @@ class PureTest {
         pt.getSuperclass().toString();
     }
 
+    static void testInstanceofPositive2(PureTest pt) {
+        if (!(pt.getSuperclass() instanceof Object)) {
+        } else {
+            pt.getSuperclass().toString();
+        }
+    }
+
+    static void testInstanceofNegative2(PureTest pt) {
+        if (pt.getSuperclass() instanceof Object) {
+        } else {
+            return;
+        }
+        //:: (dereference.of.nullable)
+        pt.getSuperclass().toString();
+    }
+
     static void testInstanceofString(PureTest pt) {
         if (!(pt.getSuperclass() instanceof String)) {
             return;
@@ -92,4 +113,19 @@ class PureTest {
             pt.getSuperclass().toString();
         }
     }
+
+    void setSuperclass(@Nullable Object no) {
+        // set the field returned by getSuperclass.
+    }
+    
+    static void testInstanceofPositive3(PureTest pt) {
+        if (!(pt.getSuperclass() instanceof Object)) {
+            return;
+        } else {
+            pt.setSuperclass(null);
+        }
+        //:: (dereference.of.nullable)
+        pt.getSuperclass().toString();
+    }
+
 }
