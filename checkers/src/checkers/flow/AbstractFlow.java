@@ -558,11 +558,18 @@ implements Flow {
         return false;
     }
 
+    /**
+     * Determine whether information should be inferred from the assert tree.
+     *
+     * @return true iff information should be inferred.
+     */
+    protected static boolean inferFromAssert(AssertTree node, SourceChecker checker) {
+        return containsKey(node.getDetail(), checker.getSuppressWarningsKey())
+                || checker.getLintOption("flow:inferFromAsserts", false);
+    }
+
     @Override
     public Void visitAssert(AssertTree node, Void p) {
-        boolean inferFromAsserts = containsKey(node.getDetail(), checker.getSuppressWarningsKey()) ||
-            checker.getLintOption("flow:inferFromAsserts", false);
-
         ST beforeAssert = copyState(flowState);
         scanCond(node.getCondition());
         ST whenTrue = flowState_whenTrue;
@@ -570,7 +577,7 @@ implements Flow {
 
         flowState = whenFalse;
         scanExpr(node.getDetail());
-        if (inferFromAsserts) {
+        if (inferFromAssert(node, checker)) {
             flowState = whenTrue;
         } else {
             flowState = beforeAssert;
