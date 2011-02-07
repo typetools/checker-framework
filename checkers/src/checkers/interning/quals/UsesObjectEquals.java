@@ -20,6 +20,7 @@ import checkers.quals.*;
  */
 
 @Documented
+@Inherited 
 @Target(ElementType.TYPE)
 //@Retention(...) ??
 public @interface UsesObjectEquals {
