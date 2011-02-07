@@ -518,17 +518,20 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // however, this clears out an assumption that might exist about the current method
             // call itself, i.e. something added by an earlier "AssertNonNullIfFalse".
             // As a first approximation, let's throw out everything that doesn't contain
-            // the current method name.
+            // the current method name, but is a method call.
+            // This might leave too many fields in nnExprs, but otherwise we
+            // would also clean out fields of LazyNonNull type, which will not become null again.
+            // TODO: we need to be more fine grained and look at the receiver, etc.
+            // Or maybe we can change the order of when things get cleared out?
 
             Iterator<String> it = this.flowState.nnExprs.iterator();
             while (it.hasNext()) {
                 String s = it.next();
-                if (!s.contains(method.getSimpleName() + "(")) {
+                if (!s.contains(method.getSimpleName() + "(") &&
+                        s.contains("(")) {
                     it.remove();
                 }
             }
-            // TODO: we need to be more fine grained and look at the receiver, etc.
-            // Or maybe we can change the order of when things get cleared out?
         }
     }
 
