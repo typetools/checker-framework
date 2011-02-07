@@ -12,20 +12,16 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.*;
-import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.*;
 
 
 /**
@@ -435,28 +431,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     @Override
-    public Void visitAssert(AssertTree node, Void p) {
-
-        ExpressionTree cond = TreeUtils.skipParens(node.getCondition());
-        this.flowState.nnExprs.addAll(shouldInferNullnessIfFalseNullable(cond));
-
-        super.visitAssert(node, p);
-
-        this.flowState.nnExprs.addAll(shouldInferNullness(cond));
-
-        if (containsKey(node.getDetail(), checker.getSuppressWarningsKey())
-                && cond.getKind() == Tree.Kind.NOT_EQUAL_TO
-                && ((BinaryTree)cond).getRightOperand().getKind() == Tree.Kind.NULL_LITERAL) {
-            ExpressionTree expr = ((BinaryTree)cond).getLeftOperand();
-            String s = TreeUtils.skipParens(expr).toString();
-            if (!this.flowState.nnExprs.contains(s))
-                this.flowState.nnExprs.add(s);
-        }
-
-        return null;
-    }
-
-    @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
         // clean nnExprs when they are reassigned
         // TODO: need to look deeper into the nnExprs, e.g. see test case in
@@ -514,6 +488,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
     }
 
+    // TODO: remove the special case here and also merge it with scanCond and make it usable in general.
     @Override
     public Void visitIf(IfTree node, Void p) {
         super.visitIf(node, p);
@@ -1382,14 +1357,20 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     /**
-     * Returns true if it's a method invocation of pure
+     * Returns true if it's a pure method invocation or array access.
+     * TODO: what if the receiver or array index are not pure?
      */
     static final boolean isPure(Tree tree) {
         tree = TreeUtils.skipParens(tree);
-        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION)
-            return false;
-        ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
-        return (method.getAnnotation(Pure.class)) != null;
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+            return (method.getAnnotation(Pure.class)) != null;
+        }
+        if (tree.getKind() == Tree.Kind.ARRAY_ACCESS ) {
+            return true;
+        }
+
+        return false;
     }
 
 }
