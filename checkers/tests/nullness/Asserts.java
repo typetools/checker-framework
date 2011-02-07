@@ -45,4 +45,27 @@ public class Asserts {
 
     static boolean ne(boolean a, boolean b) { return true; }
 
+
+    void testAssertBad(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
+        assert sameLength(seq1, seq2);
+        // the AssertNonNullIfTrue is not taken from the assert, as it doesn't contain "nullness"
+        //:: (accessing.nullable)
+        if (seq1[0]);        
+    }
+    
+    void testAssertGood(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
+        assert sameLength(seq1, seq2) : "@SuppressWarnings(nullness)";
+        // The explanation contains "nullness" and we therefore take the additional assumption
+        if (seq1[0]);        
+    }
+    
+    void testAssertAnd(@Nullable Object o) {
+        assert o!=null && o.hashCode() > 6;
+    }
+
+    void testAssertOr(@Nullable Object o) {
+        //:: (dereference.of.nullable)
+        assert o!=null || o.hashCode() > 6;
+    }
+    
 }
