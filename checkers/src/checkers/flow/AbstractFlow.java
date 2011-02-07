@@ -585,6 +585,36 @@ implements Flow {
         return null;
     }
 
+    /*
+     * What is the difference between the "alive" field and using isTerminating?
+     * I move isTerminating from NullnessFlow to up here.
+     */
+    /*
+    protected static boolean isTerminating(BlockTree stmt) {
+        for (StatementTree tr : stmt.getStatements()) {
+            if (isTerminating(tr))
+                return true;
+        }
+        return false;
+    }
+
+    protected static boolean isTerminating(StatementTree stmt) {
+        if (stmt instanceof BlockTree) {
+            return isTerminating((BlockTree)stmt);
+        }
+
+        switch (stmt.getKind()) {
+        case THROW:
+        case RETURN:
+        case BREAK:
+        case CONTINUE:
+            return true;
+        default:
+            return false;
+        }
+    }
+    */
+
     @Override
     public Void visitIf(IfTree node, Void p) {
         scanCond(node.getCondition());
@@ -614,10 +644,13 @@ implements Flow {
                 // GenKillBits.orlub(annosAfterThen, annos, annoRelations);
                 afterThen.or(flowState, annoRelations);
                 // annos = GenKillBits.copy(annosAfterThen);
-                flowState = copyState(afterThen);
+                // flowState = copyState(afterThen);
+                flowState = afterThen;
             } else if (!aliveAfterThen) {
                 // annos = annos;  // NOOP
                 // TODO: what's the point of this branch?
+                // We are at the end of an else branch, where the then branch is dead.
+                // We continue to use the state at the end of the else branch.
             } else {
                 // both branches are alive
                 // alive = true;
@@ -627,7 +660,9 @@ implements Flow {
         } else {
             if (!alive) {
                 // annos = GenKillBits.copy(annosBeforeElse);
-                flowState = copyState(beforeElse);
+                // there is no alias to beforeElse, so copy is not needed
+                // flowState = copyState(beforeElse);
+                flowState = beforeElse;
             } else {
                 // GenKillBits.andlub(annos, annosBeforeElse, annoRelations);
                 flowState.and(beforeElse, annoRelations);
