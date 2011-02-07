@@ -1,6 +1,5 @@
 import checkers.nullness.quals.*;
 
-// @skip-test
 /*
  * Miscellaneous tests based on problems found when checking Daikon.
  */
@@ -9,13 +8,16 @@ public class DaikonTests {
     // Based on a problem found in PPtSlice.
     class Bug1 {
         @Nullable Object field;
-        
+
+        // skip-test TODO
+        /*
         public void cond1() {
             if ( this.hashCode() > 6 && Bug1Other.field != null ) {
                 // spurious dereference error
                 Bug1Other.field.toString();
             }
         }
+        */
         public void cond1(Bug1 p) {
             if ( this.hashCode() > 6 && p.field != null ) {
                 // works
@@ -56,18 +58,23 @@ public class DaikonTests {
         }
         @Nullable Object derived;
         
-        void bad(Bug3 v1) {
+        void good1(Bug3 v1) {
             if (!v1.isDerived() || !(5 > 9))
                 return;
-            // unexpected dereference raised here.
-            // parsing the condition does not work good enough.
             v1.derived.hashCode();
         }
         
-        void good(Bug3 v1) {
+        void good2(Bug3 v1) {
             if (!(v1.isDerived() && (5 > 9)))
                 return;
             v1.derived.hashCode();
+        }
+        
+        void good3(Bug3 v1) {
+            if (!v1.isDerived() || !(v1 instanceof Bug3))
+                return;
+            Object o = (Object) v1.derived;
+            o.hashCode();
         }
     }
  
