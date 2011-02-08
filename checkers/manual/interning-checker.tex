@@ -3,6 +3,7 @@
 
 If the Interning checker issues no warnings for a given program, then all
 reference equality tests (i.e., all uses of ``\code{==}'') are proper;
+that is,
 \code{==} is not misused where \code{equals()} should have been used instead.
 
 Interning is a design pattern in which the same object is used whenever two
@@ -67,9 +68,10 @@ this property could hold:
 
 To eliminate Interning Checker warnings, you will need to annotate your
 code regarding all legal uses of \code{==}.  Thus, the Interning Checker
-should perhaps have been called the Reference Equality Checker.  In the
+could also have been called the Reference Equality Checker.  In the
 future, the checker will include annotations that target the non-interning
-cases above, but for now you need to use \<@Interned> and/or
+cases above, but for now you need to use \<@Interned>, \<@UsesObjectEquals>
+(which handles a surprising number of cases), and/or
 \<@SuppressWarnings>.
 
 To run the Interning Checker, supply the \code{-processor
@@ -91,6 +93,14 @@ Two qualifiers are part of the Interning type system.
   indicates qualifier polymorphism.  For a description of
   \<@\refclass{interning/quals}{PolyInterned}>, see
   Section~\ref{qualifier-polymorphism}.
+
+\item[\<@\refclass{interning/quals}{UsesObjectEquals}>]
+  is a class (not type) annotation that indicates that this class's
+  \<equals> method is the same as that of \<Object>.  In other words,
+  neither this class nor any of its superclasses overrides the \<equals>
+  method.  Since \<Object.equals> uses reference equality, this means that
+  for such as class, \<==> and \<equals> are equivalent, and so the
+  Interning Checker does not issue warnings for either one.
 
 \end{description}
 
