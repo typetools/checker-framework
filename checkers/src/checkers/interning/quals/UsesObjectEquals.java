@@ -6,13 +6,16 @@ import checkers.interning.InterningChecker;
 import checkers.quals.*;
 
 /**
- * Class declaration to indicate the class does not override .equals(Object),
- * and therefore .equals and == have no difference in behavior.
+ * Class declaration to indicate the class does not override
+ * <tt>equals(Object)</tt>, and therefore <tt>a.equals(b)</tt> and <tt>a ==
+ * b</tt> behave identically.
+ * <p>
  * 
- * Specifically, a class may only be @UsesObjectEquals if it's super type is
- * Object, or is also annotated @UsesObjectEquals. Similarly, once a class is 
- * documented as @UsesObjectEquals every subtype must also use the declaration.
- * 
+ * A class may be annotated @UsesObjectEquals if neither it, nor any of its
+ * supertypes or subtypes, overrides <tt>equals</tt>.  Therefore, it is
+ * most commonly written on a direct subclass of <tt>Object</tt>.
+ * <p>
+ *
  * This annotation is associated with the {@link InterningChecker}.
  *
  * @see InterningChecker
