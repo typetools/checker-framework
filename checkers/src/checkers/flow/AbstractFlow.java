@@ -171,11 +171,6 @@ implements Flow {
      */
     protected abstract ST createFlowState(Set<AnnotationMirror> annotations);
 
-    /**
-     * Sets the {@link PrintStream} for printing debug messages, such as
-     * {@link System#out} or {@link System#err}, or null if no debugging output
-     * should be emitted.
-     */
     public void setDebug(PrintStream debug) {
         this.debug = debug;
     }

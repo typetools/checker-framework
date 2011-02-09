@@ -572,8 +572,8 @@ public class AnnotatedTypeFactory {
 
         Element element = InternalUtils.symbol(tree);
         assert element != null;
-                if (ElementUtils.isStatic(element)
-                        || element.getKind() == ElementKind.PACKAGE)
+        if (ElementUtils.isStatic(element)
+                || element.getKind() == ElementKind.PACKAGE)
             return null;
 
         if (isMostEnclosingThisDeref(tree))
@@ -581,11 +581,19 @@ public class AnnotatedTypeFactory {
 
         TypeElement typeElt = ElementUtils.enclosingClass(element);
         if (typeElt == null) {
-            throw new AssertionError("enclosingClass()=>null for element=" + element);
+            throw new AssertionError("enclosingClass()==null for element: " + element);
         }
         return getEnclosingType(typeElt, tree);
     }
 
+    /**
+     * Determine whether the tree references the most enclosing "this" object.
+     *
+     * @param tree
+     *            The tree to check.
+     * @return True, iff the tree is an explicit or implicit reference to the
+     *         most enclosing "this".
+     */
     protected final boolean isMostEnclosingThisDeref(Tree tree) {
         // check local variables or expressions
         Element element = InternalUtils.symbol(tree);
@@ -608,6 +616,7 @@ public class AnnotatedTypeFactory {
         // ran out of options
         return false;
     }
+
     private final boolean isThisDereference(Tree tree) {
         if (tree.getKind() != Tree.Kind.MEMBER_SELECT)
             return false;

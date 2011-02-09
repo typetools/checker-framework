@@ -116,13 +116,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     protected void scanCond(ExpressionTree tree) {
+        if (debug != null) {
+            debug.println("NullnessFlow::scanCond: " + tree);
+        }
+
         super.scanCond(tree);
         if (tree == null)
             return;
 
         FlowState before = flowState_whenFalse.copy();
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
         conds.visit(tree, null);
         this.flowResults.putAll(conds.getTreeResults());
 
@@ -170,6 +174,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitBinary: " + node);
+        }
+
         // TODO: Why is this not handled by NullnessFlowConditions???
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND
                 || node.getKind() == Tree.Kind.CONDITIONAL_OR) {
@@ -182,7 +190,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             scan(node.getRightOperand(), p);
         }
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
         conds.visit(node, null);
         this.takeFromConds(conds);
         return null;
@@ -439,6 +447,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitAssignment: " + node);
+        }
+
         // clean nnExprs when they are reassigned
         // TODO: need to look deeper into the nnExprs, e.g. see test case in
         // AssertAfter2, where "get(parent)" is in nnExprs and "parent" is re-assigned.
@@ -466,6 +478,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitCompoundAssignment: " + node);
+        }
+
         super.visitCompoundAssignment(node, p);
         inferNullness(node.getVariable());
         return null;
@@ -473,6 +489,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitMemberSelect: " + node);
+        }
 
         super.visitMemberSelect(node, p);
 
@@ -486,6 +505,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitIdentifier: " + node);
+        }
+
         super.visitIdentifier(node, p);
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
@@ -496,6 +519,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitArrayAccess: " + node);
+        }
+
         super.visitArrayAccess(node, p);
 
         if (this.flowState.nnExprs.contains(node.toString()))
@@ -506,6 +533,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     protected void clearOnCall(ExecutableElement method) {
+        if (debug != null) {
+            debug.println("NullnessFlow::clearOnCall: " + method);
+        }
+
         super.clearOnCall(method);
 
         boolean isPure = method.getAnnotation(Pure.class) != null;
@@ -537,6 +568,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitMethodInvocation: " + node);
+        }
+
         // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
         NullnessFlowState prev = flowState.copy();
 
@@ -584,6 +619,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitLiteral(LiteralTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitLiteral: " + node);
+        }
+
         super.visitLiteral(node, p);
 
         if (isNullPolyNull && node.getKind() == Tree.Kind.NULL_LITERAL) {
@@ -592,7 +631,11 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return null;
     }
 
-    void inferNullness(ExpressionTree expr) {
+    private void inferNullness(ExpressionTree expr) {
+        if (debug != null) {
+            debug.println("NullnessFlow::inferNullness: " + expr);
+        }
+
         Element elt = var(expr);
         if (expr instanceof IdentifierTree)
             elt = TreeUtils.elementFromUse((IdentifierTree) expr);
@@ -607,6 +650,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitMethod(MethodTree meth, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitMethod: " + meth);
+        }
 
         // Cancel assumptions about fields (of this class) for a method with a
         // @Raw receiver.
@@ -666,6 +712,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // an AssertNonNullAfter annotation.
     @Override
     public void visitMethodEndCallback(MethodTree meth) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitMethodEndCallback: " + meth);
+        }
+
         ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
         TypeMirror retType = methElem.getReturnType();
 
@@ -832,7 +882,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
         conds.visit(retExp, null);
         this.takeFromConds(conds);
 
@@ -1272,6 +1322,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlow::visitReturn: " + node);
+        }
+
         super.visitReturn(node, p);
 
         checkAssertsOnReturn(node);
