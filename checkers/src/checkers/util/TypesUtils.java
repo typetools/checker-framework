@@ -26,7 +26,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.Object declared type
+     * Checks if the type represents a java.lang.Object declared type.
      *
      * @param type  the type
      * @return true iff type represents java.lang.Object
@@ -36,10 +36,10 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.Object declared type
+     * Checks if the type represents a java.lang.Class declared type.
      *
      * @param type  the type
-     * @return true iff type represents java.lang.Object
+     * @return true iff type represents java.lang.Class
      */
     public static boolean isClass(TypeMirror type) {
         return isDeclaredOfName(type, "java.lang.Class");
