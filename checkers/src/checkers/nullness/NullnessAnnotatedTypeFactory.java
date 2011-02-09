@@ -107,6 +107,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
+        addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
+
         // aliases for nullable
         addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
@@ -118,6 +120,10 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         addAliasedAnnotation(org.netbeans.api.annotations.common.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
+        addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
+
+        // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
+        // it above does not work.
 
         collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
