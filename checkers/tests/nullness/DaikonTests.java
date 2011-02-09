@@ -24,6 +24,7 @@ public class DaikonTests {
                 p.field.toString();
             }
         }
+
         public void cond2() {
             if ( Bug1Other.field != null && this.hashCode() > 6 ) {
                 // works
@@ -31,7 +32,7 @@ public class DaikonTests {
             }
         }
     }
-    
+
     // Based on problem found in PptCombined.
     // Not yet able to reproduce the problem :-(
     
@@ -89,6 +90,33 @@ public class DaikonTests {
                 p.field.hashCode();
         }
     }
+    
+    // Based on problem found in chicory.Runtime:
+    
+    // skip-test TODO
+    /*
+    class Bug5 {
+        @Nullable Object clazz;
+        
+        @AssertNonNullAfter("clazz")
+        void init() {
+            clazz = new Object();
+        }
+        
+        void test(Bug5 b) {
+            if (b.clazz == null)
+                b.init();
+
+            // The problem is:
+            // In the "then" branch, we have in "nnExpr" that "clazz" is non-null.
+            // In the "else" branch, we have in "annos" that the variable is non-null.
+            // However, as these are facts in two different representations, the merge keeps neither!
+            //
+            // no error message expected
+            b.clazz.hashCode();
+        }
+    }
+    */
 }
 
 class Bug1Other {

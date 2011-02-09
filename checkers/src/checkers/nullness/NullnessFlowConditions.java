@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import java.io.PrintStream;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,27 +50,28 @@ import static checkers.nullness.NullnessFlow.*;
  */
 public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
+    private final List<VariableElement> vars = new LinkedList<VariableElement>();
+
     private BitSet nonnull = new BitSet(0);
     private BitSet nullable = new BitSet(0);
+
     private boolean isNullPolyNull = false;
+
     private List<String> nonnullExpressions = new LinkedList<String>();
     private List<String> nullableExpressions = new LinkedList<String>();
-
-    private final List<VariableElement> vars = new LinkedList<VariableElement>();
 
     /** Variables that should be ignored when setting annoWhenFalse. */
     private final Set<Element> excludes = new HashSet<Element>();
 
-    /**
-     * People, don't modify the enclosing flowResults directly! Instead, mark
-     * the results here and then let the outside query for it.
-     */
     private Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
 
-    private final NullnessAnnotatedTypeFactory typefactory;
+    protected final NullnessAnnotatedTypeFactory typefactory;
 
-    public NullnessFlowConditions(NullnessAnnotatedTypeFactory tf) {
+    protected final PrintStream debug;
+
+    public NullnessFlowConditions(NullnessAnnotatedTypeFactory tf, PrintStream debug) {
         this.typefactory = tf;
+        this.debug = debug;
     }
 
     /**
@@ -124,14 +126,19 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         return treeResults;
     }
 
+
     @Override
     public Void visitUnary(final UnaryTree node, final Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitUnary: " + node);
+        }
 
         visit(node.getExpression(), p);
 
         if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT)
             return null;
 
+        // TODO
         // only invert if cardinal is one
         if (nonnull.cardinality() + nullable.cardinality() == 1) {
             nonnull.xor(nullable);
@@ -142,6 +149,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             nonnull.clear();
             nullable.clear();
         }
+
         isNullPolyNull = false;
 
         // the false branch of a logic complement of instance is nonnull!
@@ -158,6 +166,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitInstanceOf: " + node);
+        }
 
         Tree expr = node.getExpression();
         visit(expr, p);
@@ -186,6 +197,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
      *            it should be done using boolean "or"
      */
     private void splitAndMerge(Tree left, Tree right, final boolean mergeAnd) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::splitAndMerge; left: " + left + " right: " + right + " mergeAnd: " + mergeAnd);
+        }
 
         BitSet nonnullOld = (BitSet) nonnull.clone();
         BitSet nullableOld = (BitSet) nullable.clone();
@@ -259,6 +273,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitConditionalExpression: " + node);
+        }
 
         // (a ? b : c) --> (a && b) || c
 
@@ -285,6 +302,10 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
     }
 
     private void mark(Element var, boolean isNonnull) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::mark; var: " + var + " isNonnull: " + isNonnull);
+        }
+
         if (var == null)
             return;
         int idx = vars.indexOf(var);
@@ -299,16 +320,19 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitBinary(final BinaryTree node, final Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitBinary: " + node);
+        }
 
         final Tree left = node.getLeftOperand();
         final Tree right = node.getRightOperand();
         final Kind oper = node.getKind();
 
-        if (oper == Tree.Kind.CONDITIONAL_AND)
+        if (oper == Tree.Kind.CONDITIONAL_AND) {
             splitAndMerge(left, right, false);
-        else if (oper == Tree.Kind.CONDITIONAL_OR)
+        } else if (oper == Tree.Kind.CONDITIONAL_OR) {
             splitAndMerge(left, right, true);
-        else if (oper == Tree.Kind.EQUAL_TO) {
+        } else if (oper == Tree.Kind.EQUAL_TO) {
             visit(left, p);
             visit(right, p);
 
@@ -351,18 +375,28 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
             mark(var, true);
 
+            // TODO: why is there no handling of Poly and NONNULL here??
+
             // Handle Pure methods
             if (isNull(right) && isPure(left))
                 this.nonnullExpressions.add(left.toString());
             else if (isNull(left) && isPure(right))
                 this.nonnullExpressions.add(right.toString());
-        }
+        } /* else {
+            System.out.println("Also looking at: " + left + " " + oper + " " + right);
+            visit(left, p);
+            visit(right, p);
+        } */
 
         return null;
     }
 
     @Override
     public Void visitIdentifier(final IdentifierTree node, final Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitIdentifier: " + node);
+        }
+
         final Element e = TreeUtils.elementFromUse(node);
         assert e instanceof VariableElement;
         if (!vars.contains(e))
@@ -372,6 +406,10 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitMemberSelect(final MemberSelectTree node, final Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitMemberSelect: " + node);
+        }
+
         final Element e = TreeUtils.elementFromUse(node);
         assert e instanceof VariableElement;
         if (!vars.contains(e))
@@ -390,6 +428,10 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitAssignment(final AssignmentTree node, final Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitAssignment: " + node);
+        }
+
         visit(node.getVariable(), p);
         visit(node.getExpression(), p);
         return null;
@@ -397,6 +439,10 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        if (debug != null) {
+            debug.println("NullnessFlowConditions::visitMethodInvocation: " + node);
+        }
+
         super.visitMethodInvocation(node, p);
 
         this.nonnullExpressions.addAll(shouldInferNullness(node));
