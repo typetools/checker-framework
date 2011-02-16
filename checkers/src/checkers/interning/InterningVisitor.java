@@ -149,11 +149,11 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	
     	Tree superClass = node.getExtendsClause();
 		Element elmt = null;
-		if (superClass!= null && superClass instanceof IdentifierTree){
-			elmt = TreeUtils.elementFromUse((IdentifierTree)superClass);
+		if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)){
+			elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
 		}
 		
-		
+	
 		//if it's there, check to make sure does not override equals
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
