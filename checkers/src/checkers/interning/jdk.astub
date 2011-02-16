@@ -5,6 +5,10 @@ import checkers.interning.quals.Interned;
 //   search -i -n '\bintern(|alized?|ed|ing)\b'
 //   search -n -n 'public static final String[^;]*"'
 // and examining the search results.
+package java.util.regex;
+
+@UsesObjectEquals class Pattern {
+}
 
 package java.io;
 
