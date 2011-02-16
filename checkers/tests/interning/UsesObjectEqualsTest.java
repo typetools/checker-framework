@@ -21,9 +21,9 @@ public class UsesObjectEqualsTest {
     //:: (overrides.equals)
     @UsesObjectEquals class TestEquals {
 		
-	public boolean equals(Object o){
-	    return true;
-	}
+		public boolean equals(Object o){
+		    return true;
+		}
     }
 		
     class TestComparison {
@@ -41,5 +41,9 @@ public class UsesObjectEqualsTest {
 	}
 		
     }
+    
+    @UsesObjectEquals class ExtendsInner1 extends UsesObjectEqualsTest.A {}
+    
+    class ExtendsInner2 extends UsesObjectEqualsTest.A {}
 	
 }
