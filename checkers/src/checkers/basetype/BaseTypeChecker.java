@@ -189,10 +189,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
+
         QualifierHierarchy hierarchy = factory.build();
-        if (hierarchy.getTypeQualifiers().size() < 2) {
-            throw new IllegalStateException("Invalid qualifier hierarchy: hierarchy requires at least two annotations: " + hierarchy.getTypeQualifiers());
+        if (hierarchy.getTypeQualifiers().size() < 1) {
+            throw new IllegalStateException("Invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
         }
+
         return hierarchy;
     }
 
