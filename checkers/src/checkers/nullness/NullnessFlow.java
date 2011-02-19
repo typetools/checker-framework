@@ -795,7 +795,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             int index = this.flowState.vars.indexOf(e);
             if (!this.flowState.nnElems.contains(e) &&
-            	!(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+            	!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
+            	DO_ADVANCED_CHECKS) {
             	checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
@@ -877,7 +878,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     int index = this.flowState.vars.indexOf(e);
                    	if (!this.flowState.nnElems.contains(e) &&
                    		!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
-                   		!this.flowState.nnExprs.contains(check)) {
+                   		!this.flowState.nnExprs.contains(check) &&
+                   		DO_ADVANCED_CHECKS) {
                    		checker.report(Result.failure(
                    				(ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
                    				check), ret);
@@ -964,7 +966,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
            	if (ifTrue) {
            		if (!conds.getNonnullExpressions().contains(check) &&
            				!conds.getNonnullElements().contains(e) &&
-           				!conds.getExplicitNonnullElements().contains(e)) {
+           				!conds.getExplicitNonnullElements().contains(e) &&
+           				DO_ADVANCED_CHECKS) {
            			checker.report(Result.failure(
            				"assertiftrue.postcondition.not.satisfied",
            				check), ret);
@@ -972,7 +975,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
            	} else {
            		if (!conds.getNullableExpressions().contains(check) &&
            				!conds.getNullableElements().contains(e) &&
-           				!conds.getExplicitNullableElements().contains(e)) {
+           				!conds.getExplicitNullableElements().contains(e) &&
+                        DO_ADVANCED_CHECKS) {
            			checker.report(Result.failure(
            				"assertiffalse.postcondition.not.satisfied",
            				check), ret);
@@ -1034,7 +1038,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 int index = this.flowState.vars.indexOf(el);
                 if (index == -1 || !this.flowState.annos.get(NONNULL, index)) {
                     if (!this.flowState.nnExprs.contains(elName)
-                            && !this.flowState.nnExprs.contains(elClass + "." + elName)) {
+                            && !this.flowState.nnExprs.contains(elClass + "." + elName) &&
+                            DO_ADVANCED_CHECKS) {
                         checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), call);
                     }
                 } else {
