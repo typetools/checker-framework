@@ -167,10 +167,13 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         isNullPolyNull = conds.isNullPolyNull();
         flowState_whenTrue.nnExprs.addAll(conds.getNonnullExpressions());
+        flowState_whenTrue.nnElems.addAll(conds.getExplicitNonnullElements());
         flowState_whenFalse.nnExprs.addAll(conds.getNullableExpressions());
+        flowState_whenFalse.nnElems.addAll(conds.getExplicitNullableElements());
 
         // previously was in whenConditionFalse and/or visitIf
         tree = TreeUtils.skipParens(tree);
+        // TODO: Add nnElems
         flowState_whenFalse.nnExprs.addAll(shouldInferNullnessIfFalseNullable(tree));
         flowState_whenFalse.nnExprs.addAll(shouldInferNullnessPureNegation(tree));
         if (tree.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
@@ -506,8 +509,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         inferNullness(node.getExpression());
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
-        }
-        if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
+            // else is needed to avoid the double marking bug
+        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
         	markTree(node, NONNULL);
         }
 
@@ -523,8 +526,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.visitIdentifier(node, p);
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
-        }
-        if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
+            // else is needed to avoid the double marking bug
+        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
         	markTree(node, NONNULL);
         }
 
@@ -768,91 +771,32 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
         String[] annoValues = methElem.getAnnotation(AssertNonNullAfter.class).value();
+        TreePath path = TreePath.getPath(TreeUtils.pathTillOfKind(getCurrentPath(), Tree.Kind.CLASS), meth);
 
         for (String annoVal : annoValues) {
-            // whether a field with the name was already found
-            boolean found = false;
-            // whether a field without the NonNull annotation was found
-            boolean error = false;
-
-            List<? extends Element> elemsToSearch;
-            String fieldName;
 
             if (parameterPtn.matcher(annoVal).find()) {
                 if (DO_ADVANCED_CHECKS) {
                     checker.report(Result.warning("nullness.parse.error", annoVal), meth);
                 }
                 continue;
-            } else if (annoVal.contains(".")) {
-                // we only support single static field accesses, i.e. C.f
-                String[] parts = annoVal.split("\\.");
-                if (parts.length!=2) {
-                    if (DO_ADVANCED_CHECKS) {
-                        checker.report(Result.failure("nullness.parse.error", annoVal), meth);
-                    }
-                    continue;
-                }
-                // TODO: check for explicit "this" first!
-                String className = parts[0];
-                fieldName = parts[1];
-
-                Element findClass = methElem;
-                while (findClass!=null &&
-                        !findClass.getSimpleName().toString().equals(className)) {
-                    findClass=findClass.getEnclosingElement();
-                }
-                if (findClass==null) {
-                    if (DO_ADVANCED_CHECKS) {
-                        checker.report(Result.failure("class.not.found.nullness.parse.error", annoVal), meth);
-                    }
-                    continue;
-                }
-
-                elemsToSearch = allFields(findClass);
-            } else {
-                // interpret as an instance field of "this".
-                fieldName = annoVal;
-                elemsToSearch = allFields(ElementUtils.enclosingClass(methElem));
             }
 
-            for (Element el : elemsToSearch) {
-                String elName = el.getSimpleName().toString();
-                String elClass = el.getEnclosingElement().getSimpleName().toString();
-
-                if (fieldName.equals(elName)) {
-                    if (found) {
-                        // We already found a field with the same name
-                        // before -> hiding.
-                        if (DO_ADVANCED_CHECKS) {
-                            checker.report(Result.failure("nonnull.hiding.violated", annoVal), meth);
-                        }
-                        continue;
-                    } else {
-                        found = true;
-                    }
-                    int index = this.flowState.vars.indexOf(el);
-                    if (index == -1 || !this.flowState.annos.get(NONNULL, index)) {
-                        if (!this.flowState.nnExprs.contains(elName)
-                                && !this.flowState.nnExprs.contains(elClass + "." + elName)) {
-                            error = true;
-                        }
-                        // Instead of reporting the error here, just record it.
-                        // Then, if there is hiding, we report hiding first.
-                        // If there is an error, we report it after the loop.
-                        // checker.report(Result.failure("nonnullonentry.precondition.not.satisfied",
-                        // node), node);
-                    } else {
-                        // System.out.println("Success!");
-                        // We want to go through all fields to ensure that we have
-                        // no problem with hiding of fields.
-                        // Once hiding is handled in a nicer way, we can directly jump to the outer loop.
-                        // continue fieldloop;
-                    }
-                }
+            Element e = resolver.findVariable(annoVal, path);
+            // TODO: Handles static fields only as they are
+            // resolved in compile time
+            if (ElementUtils.isError(e)) {
+            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+            		checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
+            	}
+            	// TODO: Check this
+            	e = findElement(annoVal, flowState.vars);
             }
 
-            if(!found || error) {
-                checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
+            int index = this.flowState.vars.indexOf(e);
+            if (!this.flowState.nnElems.contains(e) &&
+            	!(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+            	checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
     }
@@ -899,6 +843,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
+        TreePath path = TreePath.getPath(TreeUtils.pathTillOfKind(getCurrentPath(), Tree.Kind.CLASS), meth);
 
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
         conds.visit(retExp, null);
@@ -918,27 +863,26 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 // Check annos?
 
                 for (String check : toCheck) {
-                    boolean found = false;
-                    for (VariableElement ve : this.flowState.vars) {
-                        if (ve.getSimpleName().toString().equals(check)) {
-                            found = true;
-                            if (!this.flowState.annos.get(NONNULL, this.flowState.vars.indexOf(ve))
-                                    && !this.flowState.nnExprs.contains(check)) {
-                                if (ifTrue) {
-                                    checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
-                                } else {
-                                    checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
-                                }
-                            }
-                        }
+                    Element e = resolver.findVariable(check, path);
+                    // TODO: Handles static fields only as they are
+                    // resolved in compile time
+                    if (ElementUtils.isError(e)) {
+                    	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                    		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+                    	}
+                    	// TODO: Check this
+                    	e = findElement(check, flowState.vars);
                     }
-                    if (!found) {
-                        if (ifTrue) {
-                            checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
-                        } else {
-                            checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
-                        }
-                    }
+
+                    int index = this.flowState.vars.indexOf(e);
+                   	if (!this.flowState.nnElems.contains(e) &&
+                   		!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
+                   		!this.flowState.nnExprs.contains(check)) {
+                   		checker.report(Result.failure(
+                   				(ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
+                   				check), ret);
+                   	}
+
                 }
             } else {
                 // We have an IfTrue annotation and visit a "return false"
@@ -1007,30 +951,32 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         for (String check : toCheck) {
-            boolean found = false;
-
-            if (ifTrue) {
-                for (VariableElement ve : conds.getNonnullElements()) {
-                    if (ve.getSimpleName().toString().equals(check)) {
-                        found = true;
-                    }
-                }
-                found |= conds.getNonnullExpressions().contains(check);
-            } else {
-                for (VariableElement ve : conds.getNullableElements()) {
-                    if (ve.getSimpleName().toString().equals(check)) {
-                        found = true;
-                    }
-                }
-                found |= conds.getNullableExpressions().contains(check);
+            Element e = resolver.findVariable(check, path);
+            // TODO: Handles static fields only as they are
+            // resolved in compile time
+            if (ElementUtils.isError(e)) {
+            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+            		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+            	}
+            	// TODO: Check this
+            	e = findElement(check, flowState.vars);
             }
-
-            if (!found) {
-                if (ifTrue) {
-                    checker.report(Result.failure("assertiftrue.postcondition.not.satisfied", check), ret);
-                } else {
-                    checker.report(Result.failure("assertiffalse.postcondition.not.satisfied", check), ret);
-                }
+           	if (ifTrue) {
+           		if (!conds.getNonnullExpressions().contains(check) &&
+           				!conds.getNonnullElements().contains(e) &&
+           				!conds.getExplicitNonnullElements().contains(e)) {
+           			checker.report(Result.failure(
+           				"assertiftrue.postcondition.not.satisfied",
+           				check), ret);
+           		}
+           	} else {
+           		if (!conds.getNullableExpressions().contains(check) &&
+           				!conds.getNullableElements().contains(e) &&
+           				!conds.getExplicitNullableElements().contains(e)) {
+           			checker.report(Result.failure(
+           				"assertiffalse.postcondition.not.satisfied",
+           				check), ret);
+           		}
             }
         }
     }
@@ -1370,4 +1316,11 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return false;
     }
 
+    private VariableElement findElement(String elem, Collection<? extends VariableElement> vars) {
+    	for (VariableElement v: vars) {
+    		if (v.getSimpleName().toString().equals(elem))
+    			return v;
+    	}
+    	return null;
+    }
 }
