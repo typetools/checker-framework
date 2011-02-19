@@ -1,6 +1,5 @@
 import checkers.nullness.quals.*;
 
-// @skip-test
 public class AssertWithStatic {
     
     @AssertNonNullIfTrue("System.out")
@@ -14,6 +13,7 @@ public class AssertWithStatic {
     }
     
     @AssertNonNullAfter("System.out")
+    //:: (assert.postcondition.not.satisfied)
     public void sysOutAfter(){
     }
 }

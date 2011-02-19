@@ -131,6 +131,27 @@ public final class TreeUtils {
     }
 
     /**
+     * Gets path to the the first enclosing tree of the specified kind.
+     *
+     * @param path  the path defining the tree node
+     * @param kind  the kind of the desired tree
+     * @return the path to the enclosing tree of the given type
+     */
+    public static TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
+        TreePath p = path;
+
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (leaf.getKind() == kind)
+                return p;
+            p = p.getParentPath();
+        }
+
+        return null;
+    }
+
+    /**
      * Gets the first enclosing tree in path, of the specified class
      *
      * @param path  the path defining the tree node
@@ -327,6 +348,7 @@ public final class TreeUtils {
     }
 
     public static final boolean isUseOfElement(Tree node) {
+        node = TreeUtils.skipParens(node);
         switch (node.getKind()) {
             case IDENTIFIER:
             case MEMBER_SELECT:
@@ -338,6 +360,7 @@ public final class TreeUtils {
     }
 
     public static final Element elementFromUse(ExpressionTree node) {
+        node = TreeUtils.skipParens(node);
         switch (node.getKind()) {
         case IDENTIFIER:
         case MEMBER_SELECT:
