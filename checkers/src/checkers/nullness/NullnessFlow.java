@@ -484,6 +484,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 iter.remove();
             }
         }
+        if (TreeUtils.isUseOfElement(node)) {
+            flowState.nnElems.remove(TreeUtils.elementFromUse(node));
+        }
         return super.visitAssignment(node, p);
     }
 
