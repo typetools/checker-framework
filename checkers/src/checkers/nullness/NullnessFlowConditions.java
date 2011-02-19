@@ -17,6 +17,7 @@ import javax.lang.model.element.VariableElement;
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.PolyNull;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AssignmentTree;
@@ -397,9 +398,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             else if (isNull(left) && isPure(right))
                 this.nonnullExpressions.add(right.toString());
 
-            if (isNull(right) && TreeUtils.isUseOfElement(left) && TreeUtils.elementFromUse(left) instanceof VariableElement)
+            if (isNull(right) && isUseOfStaticVariableElement(left))
                 this.nonnullElements.add((VariableElement)TreeUtils.elementFromUse(left));
-            else if (isNull(left) && TreeUtils.isUseOfElement(right) && TreeUtils.elementFromUse(right) instanceof VariableElement)
+            else if (isNull(left) && isUseOfStaticVariableElement(right))
                 this.nonnullElements.add((VariableElement)TreeUtils.elementFromUse(right));
 
         } /* else {
@@ -409,6 +410,14 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         } */
 
         return null;
+    }
+
+    private boolean isUseOfStaticVariableElement(ExpressionTree tree) {
+        if (!TreeUtils.isUseOfElement(tree)) {
+            return false;
+        }
+        Element elem = TreeUtils.elementFromUse(tree);
+        return elem instanceof VariableElement && ElementUtils.isStatic(elem);
     }
 
     @Override
