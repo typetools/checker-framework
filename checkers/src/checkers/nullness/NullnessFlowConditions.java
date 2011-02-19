@@ -60,6 +60,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
     private List<String> nonnullExpressions = new LinkedList<String>();
     private List<String> nullableExpressions = new LinkedList<String>();
 
+    private List<VariableElement> nonnullElements = new LinkedList<VariableElement>();
+    private List<VariableElement> nullableElements = new LinkedList<VariableElement>();
+
     /** Variables that should be ignored when setting annoWhenFalse. */
     private final Set<Element> excludes = new HashSet<Element>();
 
@@ -112,6 +115,14 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     public @ReadOnly List<String> getNullableExpressions() {
         return nullableExpressions;
+    }
+
+    public @ReadOnly List<VariableElement> getExplicitNonnullElements() {
+        return nonnullElements;
+    }
+
+    public @ReadOnly List<VariableElement> getExplicitNullableElements() {
+        return nullableElements;
     }
 
     public boolean isNullPolyNull() {
@@ -221,6 +232,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
                 if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
                     treeResults.put(node, typefactory.NONNULL);
                 }
+                if ((mergeAnd ? nullableElements : nonnullElements).contains(e)) {
+                    treeResults.put(node, typefactory.NONNULL);
+                }
             }
 
             @Override
@@ -324,8 +338,8 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             debug.println("NullnessFlowConditions::visitBinary: " + node);
         }
 
-        final Tree left = node.getLeftOperand();
-        final Tree right = node.getRightOperand();
+        final ExpressionTree left = node.getLeftOperand();
+        final ExpressionTree right = node.getRightOperand();
         final Kind oper = node.getKind();
 
         if (oper == Tree.Kind.CONDITIONAL_AND) {
@@ -382,6 +396,12 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
                 this.nonnullExpressions.add(left.toString());
             else if (isNull(left) && isPure(right))
                 this.nonnullExpressions.add(right.toString());
+
+            if (isNull(right) && TreeUtils.isUseOfElement(left) && TreeUtils.elementFromUse(left) instanceof VariableElement)
+                this.nonnullElements.add((VariableElement)TreeUtils.elementFromUse(left));
+            else if (isNull(left) && TreeUtils.isUseOfElement(right) && TreeUtils.elementFromUse(right) instanceof VariableElement)
+                this.nonnullElements.add((VariableElement)TreeUtils.elementFromUse(right));
+
         } /* else {
             System.out.println("Also looking at: " + left + " " + oper + " " + right);
             visit(left, p);
@@ -414,7 +434,8 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         assert e instanceof VariableElement;
         if (!vars.contains(e))
             vars.add((VariableElement) e);
-        if (this.nonnullExpressions.contains(node.toString())) {
+        if (this.nonnullExpressions.contains(node.toString()) ||
+            this.nonnullElements.contains(e)) {
             treeResults.put(node, typefactory.NONNULL);
         }
         return super.visitMemberSelect(node, p);

@@ -135,22 +135,25 @@ public class ElementUtils {
      * Returns the field of the class
      */
     public static VariableElement findFieldInType(TypeElement type, String name) {
-    	for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
-    		if (field.getSimpleName().toString().equals(name)) {
-    			return field;
-    		}
-    	}
-    	return null;
+        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+            if (field.getSimpleName().toString().equals(name)) {
+                return field;
+            }
+        }
+        return null;
     }
 
     public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    	Set<VariableElement> results = new HashSet<VariableElement>();
-    	for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
-    		if (names.contains(field.getSimpleName().toString())) {
-    			results.add(field);
-    		}
-    	}
-    	return results;
+        Set<VariableElement> results = new HashSet<VariableElement>();
+        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+            if (names.contains(field.getSimpleName().toString())) {
+                results.add(field);
+            }
+        }
+        return results;
     }
 
+    public static boolean isError(Element element) {
+        return element.getClass().getName().equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+    }
 }
