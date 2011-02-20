@@ -221,7 +221,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         poly.annotate(tree, method);
 //        poly.annotate(method.getElement(), method);
 
-        mapGetHeuristics.handle(tree, method);
+        TreePath path = this.getPath(tree);
+        mapGetHeuristics.handle(path, method);
         collectionToArrayHeuristics.handle(tree, method);
         return method;
     }

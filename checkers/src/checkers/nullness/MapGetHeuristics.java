@@ -16,8 +16,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
 import checkers.util.Heuristics.Matcher;
+import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.util.Resolver;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -64,6 +66,7 @@ import com.sun.source.util.TreePath;
     private final ProcessingEnvironment env;
     private final NullnessAnnotatedTypeFactory factory;
     private final AnnotatedTypeFactory keyForFactory;
+    private final Resolver resolver;
 
     private final ExecutableElement mapGet;
     private final ExecutableElement mapPut;
@@ -76,6 +79,7 @@ import com.sun.source.util.TreePath;
         this.env = env;
         this.factory = factory;
         this.keyForFactory = keyForFactory;
+        this.resolver = new Resolver(env);
 
         mapGet = getMethod("java.util.Map", "get", 1);
         mapPut = getMethod("java.util.Map", "put", 2);
@@ -83,11 +87,12 @@ import com.sun.source.util.TreePath;
         mapContains = getMethod("java.util.Map", "containsKey", 1);
     }
 
-    public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
+    public void handle(TreePath path, AnnotatedExecutableType method) {
+        MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
         if (isMethod(tree, mapGet)) {
             AnnotatedTypeMirror type = method.getReturnType();
             type.clearAnnotations();
-            if (!isSuppressable(tree)) {
+            if (!isSuppressable(path)) {
                 type.addAnnotation(factory.NULLABLE);
             } else {
                 type.addAnnotation(factory.NONNULL);
@@ -101,7 +106,8 @@ import com.sun.source.util.TreePath;
      *
      * TODO: Document when this method returns true
      */
-    private boolean isSuppressable(MethodInvocationTree tree) {
+    private boolean isSuppressable(TreePath path) {
+        MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
         Element elt = getSite(tree);
 
         if (elt instanceof VariableElement
@@ -113,8 +119,9 @@ import com.sun.source.util.TreePath;
 
         if (elt instanceof VariableElement) {
             ExpressionTree arg = tree.getArguments().get(0);
-            return keyForInMap(arg, ((VariableElement)elt).getSimpleName().toString())
-                 || keyForInMap(arg, String.valueOf(TreeUtils.getReceiverTree(tree)));
+            return keyForInMap(arg, elt, path)
+                || keyForInMap(arg, ((VariableElement)elt).getSimpleName().toString())
+                || keyForInMap(arg, String.valueOf(TreeUtils.getReceiverTree(tree)));
         }
 
         return false;
@@ -134,6 +141,38 @@ import com.sun.source.util.TreePath;
         List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
 
         return maps.contains(mapName);
+    }
+
+    private boolean keyForInMap(ExpressionTree key,
+            Element mapElement, TreePath path) {
+        AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);
+
+        AnnotationMirror anno = keyForType.getAnnotation(KeyFor.class);
+        if (anno == null)
+            return false;
+
+        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
+        for (String map: maps) {
+            Element elt = resolver.findVariable(map, path);
+            if (elt.equals(mapElement) &&
+                    !isSiteRequired(TreeUtils.getReceiverTree((ExpressionTree)path.getLeaf()), elt)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Helper function to determine if the passed element is sufficient
+     * to resolve a reference at compile time, without needing to
+     * represent the call/derefence site.
+     */
+    private boolean isSiteRequired(ExpressionTree node, Element elt) {
+        boolean r = ElementUtils.isStatic(elt) ||
+            !elt.getKind().isField() ||
+            TreeUtils.isSelfAccess(node);
+        return !r;
     }
 
     /**
