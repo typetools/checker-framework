@@ -167,9 +167,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         isNullPolyNull = conds.isNullPolyNull();
         flowState_whenTrue.nnExprs.addAll(conds.getNonnullExpressions());
-        flowState_whenTrue.nnElems.addAll(conds.getExplicitNonnullElements());
         flowState_whenFalse.nnExprs.addAll(conds.getNullableExpressions());
-        flowState_whenFalse.nnElems.addAll(conds.getExplicitNullableElements());
 
         // previously was in whenConditionFalse and/or visitIf
         tree = TreeUtils.skipParens(tree);
@@ -484,9 +482,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 iter.remove();
             }
         }
-        if (TreeUtils.isUseOfElement(node)) {
-            flowState.nnElems.remove(TreeUtils.elementFromUse(node));
-        }
         return super.visitAssignment(node, p);
     }
 
@@ -513,8 +508,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
             // else is needed to avoid the double marking bug
-        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
-        	markTree(node, NONNULL);
+//        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
+//                !isNonNull(TreeUtils.elementFromUse(node))) {
+//        	markTree(node, NONNULL);
         }
 
         return null;
@@ -530,11 +526,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
             // else is needed to avoid the double marking bug
-        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node))) {
-        	markTree(node, NONNULL);
+//        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
+//                !isNonNull(TreeUtils.elementFromUse(node))) {
+//        	markTree(node, NONNULL);
         }
 
         return null;
+    }
+
+    private boolean isNonNull(Element e) {
+        int index = flowState.vars.indexOf(e);
+        return flowState.annos.get(NONNULL, index);
     }
 
     @Override
@@ -715,10 +717,16 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             if (elem.getAnnotation(NonNullOnEntry.class) != null) {
                 String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
-                Pair<List<String>, List<Element>> fieldsList =
+                Pair<List<String>, List<VariableElement>> fieldsList =
                 	validateNonNullOnEntry(path, myFieldElems, fields);
                 this.flowState.nnExprs.addAll(fieldsList.first);
-                this.flowState.nnElems.addAll(fieldsList.second);
+
+                for (VariableElement elt: fieldsList.second) {
+                    if (!flowState.vars.contains(elt)) {
+                        flowState.vars.add(elt);
+                    }
+                    flowState.annos.set(NONNULL, flowState.vars.indexOf(elt));
+                }
             }
 
             // AssertNonNullIfXXX is checked in visitReturn
@@ -797,9 +805,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             }
 
             int index = this.flowState.vars.indexOf(e);
-            if (!this.flowState.nnElems.contains(e) &&
-            	!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
-            	DO_ADVANCED_CHECKS) {
+            if (DO_ADVANCED_CHECKS &&
+            	!(index != -1 && this.flowState.annos.get(NONNULL, index))) {
             	checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
@@ -879,10 +886,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     }
 
                     int index = this.flowState.vars.indexOf(e);
-                   	if (!this.flowState.nnElems.contains(e) &&
+                   	if (DO_ADVANCED_CHECKS &&
                    		!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
-                   		!this.flowState.nnExprs.contains(check) &&
-                   		DO_ADVANCED_CHECKS) {
+                   		!this.flowState.nnExprs.contains(check)) {
                    		checker.report(Result.failure(
                    				(ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
                    				check), ret);
@@ -1194,10 +1200,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param fields The NNOE annotation values.
      * @return The validated list of fields.
      */
-    private Pair<List<String>, List<Element>> validateNonNullOnEntry(TreePath path, List<? extends Element> myFieldElems, String[] fields) {
+    private Pair<List<String>, List<VariableElement>> validateNonNullOnEntry(TreePath path, List<? extends Element> myFieldElems, String[] fields) {
     	MethodTree meth = (MethodTree)path.getLeaf();
         List<String> nnExprs = new LinkedList<String>();
-        List<Element> nnElems = new LinkedList<Element>();
+        List<VariableElement> nnElems = new LinkedList<VariableElement>();
 
         for (String field : fields) {
             // Always add the string as is as assumption
@@ -1209,8 +1215,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // resolved in compile time
             if (DO_ADVANCED_CHECKS && ElementUtils.isError(e)) {
             	checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
-            } else if (ElementUtils.isStatic(e)) {
-            	nnElems.add(e);
+            } else if (ElementUtils.isStatic(e) && e instanceof VariableElement) {
+            	nnElems.add((VariableElement)e);
             }
         }
 
