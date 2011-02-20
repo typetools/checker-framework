@@ -143,4 +143,9 @@ class NonNullOnEntryTest {
 
   }
 
+  static @Nullable Object o = "m";
+  @NonNullOnEntry("o")
+  void test() {
+      o = null;
+  }
 }

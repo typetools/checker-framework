@@ -24,12 +24,10 @@ public class NullnessFlowState extends DefaultFlowState {
      * These are exact String representations of the corresponding Tree instances.
      */
     List<String> nnExprs;
-    List<Element> nnElems;
 
     NullnessFlowState(Set<AnnotationMirror> annotations) {
         super(annotations);
         nnExprs = new ArrayList<String>();
-        nnElems = new ArrayList<Element>();
     }
 
     @Override
@@ -41,7 +39,6 @@ public class NullnessFlowState extends DefaultFlowState {
     public NullnessFlowState copy() {
         NullnessFlowState res = (NullnessFlowState) super.copy();
         res.nnExprs = new ArrayList<String>(this.nnExprs);
-        res.nnElems = new ArrayList<Element>(this.nnElems);
         // TODO: Copy initializedFields
         return res;
     }
@@ -51,7 +48,6 @@ public class NullnessFlowState extends DefaultFlowState {
         NullnessFlowState nfs = (NullnessFlowState) other;
         super.or(other, annoRelations);
         addExtras(nnExprs, nfs.nnExprs);
-        addExtras(nnElems, nfs.nnElems);
     }
 
     private static <T> void addExtras(List<T> mod, List<T> add) {
@@ -67,7 +63,6 @@ public class NullnessFlowState extends DefaultFlowState {
         NullnessFlowState nfs = (NullnessFlowState) other;
         super.and(other, annoRelations);
         nnExprs.retainAll(nfs.nnExprs);
-        nnElems.retainAll(nfs.nnElems);
     }
 
     @Override
