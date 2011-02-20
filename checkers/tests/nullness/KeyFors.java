@@ -52,7 +52,21 @@ public class KeyFors {
             @NonNull String al = lastMap.get(key);
         }
     }
+    
+    static class Otherclass {
+        static Map<String, String> map = new HashMap<String, String>();
+    }
 
+    public void testStaticKeyFor(@KeyFor("Otherclass.map") String s1, String s2) {
+        Otherclass.map.get(s1).toString();
+        //:: (dereference.of.nullable)
+        Otherclass.map.get(s2).toString();
+
+        Otherclass o = new Otherclass();
+        o.map.get(s1).toString();
+        //:: (dereference.of.nullable)
+        o.map.get(s2).toString();        
+    }
 
   public class Graph<T> {
 
