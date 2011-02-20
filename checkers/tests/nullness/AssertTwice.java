@@ -22,4 +22,10 @@ public class AssertTwice {
         methodDeclaration = null;
     }
 
+
+    public static @checkers.nullness.quals.Nullable Object n = "m";
+    private void twiceWithChecks() {
+        assert n != null : "@SuppressWarnings(nullness)";
+        n = null;
+    }
 }
