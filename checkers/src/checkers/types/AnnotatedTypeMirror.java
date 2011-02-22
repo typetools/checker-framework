@@ -1071,6 +1071,8 @@ public abstract class AnnotatedTypeMirror {
 
         private final TypeVariable actualType;
 
+        // TODO: why is the constructor deprecated? What should be used instead?
+
         @Deprecated
         AnnotatedTypeVariable(TypeVariable type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
@@ -1228,14 +1230,24 @@ public abstract class AnnotatedTypeMirror {
             return Collections.unmodifiableSet(result);
         }
 
+        /**
+         *  Used to terminate recursion into upper bounds.
+         */
+        private boolean inUpperBounds = false;
+
         @Override
         public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, copyAnnotations);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (type.getUpperBound().isAnnotated())
+            if (getUpperBound().isAnnotated() &&
+                    !inUpperBounds) {
+                inUpperBounds = true;
+                type.inUpperBounds = true;
                 type.setUpperBound(getUpperBound());
+                inUpperBounds = false;
+            }
             return type;
         }
 
