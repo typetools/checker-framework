@@ -249,7 +249,7 @@ public class Skeleton implements ClassVisitor {
             local.append(super.getDeclaration().substring(pos));
             pos = super.getDeclaration().length();
             if (addArg)
-                local.append(" a" + (++arg));
+                local.append(" arg" + (arg++));
         }
 
         @Override
