@@ -12,6 +12,7 @@ public class AssignmentsGeneric {
     }
 
     public void testAssignment() {
+        //:: warning: (cast.unsafe)
         @Odd String s = (@Odd String)"";
 
         List<@Odd String> lst = new LinkedList<@Odd String>();
@@ -29,6 +30,7 @@ public class AssignmentsGeneric {
 
     public void testGenericInvocation() {
         List<@Odd String> lst = new LinkedList<@Odd String>();
+        //:: warning: (cast.unsafe)
         @Odd String s = (@Odd String)"";
         lst.add(s);
     }

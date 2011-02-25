@@ -158,16 +158,14 @@ abstract public class CheckerTest {
     }
 
     protected void checkTestResult(TestRun run, List<String> expectedErrors, boolean shouldSucceed, String javaFile) {
+        String msg = null;
         if (shouldSucceed)
-            assertSuccess(run);
+            msg = assertSuccess(run);
         else
-            assertFailure(run);
-
-        if (shouldSucceed && expectedErrors.isEmpty())
-            return;
+            msg = assertFailure(run);
 
         List<Diagnostic<? extends JavaFileObject>> list = run.getDiagnostics();
-        assertDiagnostics(list, expectedErrors, javaFile);
+        assertDiagnostics(msg, list, expectedErrors, javaFile);
     }
 
     /**
@@ -176,8 +174,12 @@ abstract public class CheckerTest {
      *
      * @param run the test run to check
      */
-    protected void assertSuccess(/*@ReadOnly*/ TestRun run) {
-        assertTrue("failures:\n" + run.getDiagnostics(), run.getResult());
+    protected String assertSuccess(/*@ReadOnly*/ TestRun run) {
+        if (run.getResult()) {
+            return "";
+        } else {
+            return "The test run was not expected to issue errors/warnings, but it did.";
+        }
     }
 
     /**
@@ -185,8 +187,12 @@ abstract public class CheckerTest {
      *
      * @param run the test run to check
      */
-    protected void assertFailure(/*@ReadOnly*/ TestRun run) {
-        assertFalse("The test run was expected to issue errors/warnings, but it did not.", run.getResult());
+    protected String assertFailure(/*@ReadOnly*/ TestRun run) {
+        if (run.getResult()) {
+            return "The test run was expected to issue errors/warnings, but it did not.";
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -220,7 +226,7 @@ abstract public class CheckerTest {
                     // colon?  Should it always be in the first column?
                 }
             }
-            assertDiagnostics(actualDiagnostics, lines, javaFile);
+            assertDiagnostics("", actualDiagnostics, lines, javaFile);
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -229,8 +235,8 @@ abstract public class CheckerTest {
     /**
      * Compares the result of the compiler against an array of Strings.
      */
-    protected void assertDiagnostics(/*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics, List</*@ReadOnly*/ String> expected_diagnostics, String filename) {
-        String cs = (checkerDir == "" ? "" : checkerDir + File.separator); // "interned"
+    protected void assertDiagnostics(String msg, /*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics, List</*@ReadOnly*/ String> expected_diagnostics, String filename) {
+        // String cs = (checkerDir == "" ? "" : checkerDir + File.separator); // "interned"
 
         List<String> expectedList = new LinkedList<String>();
         for (/*@ReadOnly*/ String sd : expected_diagnostics) expectedList.add(/* cs + */ sd);
@@ -240,22 +246,30 @@ abstract public class CheckerTest {
             String result = d.toString().trim();
             // suppress Xlint warnings
             if (result.contains("uses unchecked or unsafe operations.") ||
-                    result.contains("Recompile with -Xlint:unchecked for details."))
+                    result.contains("Recompile with -Xlint:unchecked for details.") ||
+                    result.endsWith(" declares unsafe vararg methods.") ||
+                    result.contains("Recompile with -Xlint:varargs for details."))
                 continue;
             if (result.contains("\n")){
                 result = result.substring(0, result.indexOf('\n'));
             }
-            result = result.substring(result.indexOf(".java:") + 5).trim();
+            if (result.contains(".java:")) {
+                result = result.substring(result.indexOf(".java:") + 5).trim();
+            }
             resultsList.add(result);
         }
-
         List<String> foundList = new LinkedList<String>();
         foundList.addAll(resultsList);
         foundList.retainAll(expectedList);
 
-        String failMessage = foundList.size() + " out of "
-            + expectedList.size() + " expected diagnostics "
-            + (foundList.size() == 1 ? "was" : "were") +" found.\n";
+        String failMessage = "";
+
+        if ( foundList.size() != expectedList.size() ) {
+            failMessage = foundList.size() + " out of "
+                + expectedList.size() + " expected diagnostics "
+                + (foundList.size() == 1 ? "was" : "were") +" found.\n";
+        }
+
         boolean failed = false;
 
         List<String> notFoundList = new LinkedList<String>();
@@ -293,7 +307,14 @@ abstract public class CheckerTest {
         }
 
         if (failed) {
-            String failPrefix = "While type-checking " + filename + ":\n";
+            String failPrefix;
+
+            if (msg!="") {
+                failPrefix = msg + "\n";
+            } else {
+                failPrefix = "";
+            }
+            failPrefix += "While type-checking " + filename + ":\n";
             fail(failPrefix + failMessage);
         }
 
