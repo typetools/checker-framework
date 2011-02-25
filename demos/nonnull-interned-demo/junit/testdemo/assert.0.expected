@@ -1,0 +1,22 @@
+src/org/junit/Assert.java:105: dereference of possibly-null reference expected
+		return expected.equals(actual);
+		       ^
+src/org/junit/Assert.java:152: dereference of possibly-null reference o1
+			if (o1.getClass().isArray() && o2.getClass().isArray()) {
+			    ^
+src/org/junit/Assert.java:152: dereference of possibly-null reference o2
+			if (o1.getClass().isArray() && o2.getClass().isArray()) {
+			                               ^
+src/org/junit/Assert.java:359: dereference of possibly-null reference expected
+				+ expected.getClass().getName()
+				  ^
+src/org/junit/Assert.java:362: dereference of possibly-null reference actual
+				+ actual.getClass().getName()
+				  ^
+5 errors
+
+BUILD FAILED
+build.xml:8: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 2 seconds

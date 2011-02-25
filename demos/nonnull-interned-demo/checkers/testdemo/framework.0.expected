@@ -1,0 +1,12 @@
+src/checkers/types/InternalAnnotationScanner.java:206: incompatible types.
+        return annotationsFromElement(method, node);
+                                      ^
+  found   : @Nullable Element
+  required: @NonNull Element
+1 error
+
+BUILD FAILED
+build.xml:21: The following error occurred while executing this line:
+ant.xml:16: Java returned: 1
+
+Total time: 2 seconds

@@ -1,0 +1,4 @@
+This directory contains Invariant objects.
+
+Invariants over different arities and types of variables are in separate
+subdirectories, to ease management of them.
