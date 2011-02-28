@@ -119,8 +119,17 @@ public final class TestUtilities {
                 line = line.trim();
                 if (line.startsWith("//::")) {
                     int errorLine = reader.getLineNumber() + 1;
-                    String msg = line.replace("//::", ":" + errorLine + ":");
-                    expected.add(msg);
+                    // drop the //::
+                    line = line.substring(4);
+                    String[] msgs = line.split("::");
+                    for (String msg : msgs) {
+                        // The trim removes spaces before and after the message.
+                        // This allows us to write "//:: A :: B
+                        // But it prevents us to check on leading spaces in messages.
+                        // I think that's OK, as we're always testing against "(codes)".
+                        msg = ":" + errorLine + ": " + msg.trim();
+                        expected.add(msg);
+                    }
                 }
             }
         } catch (IOException e) {
