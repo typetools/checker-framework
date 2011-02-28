@@ -11,8 +11,8 @@ class Assignments {
     Assignments aMutable;
     @ReadOnly Assignments aReadOnly;
 
-    String mString;
-    @ReadOnly String roString;
+    Object mObject;
+    @ReadOnly Object roObject;
 
     class JavariCell {
         JavariCell cell;
@@ -32,20 +32,20 @@ class Assignments {
     JavariCell mc;
     @ReadOnly JavariCell roc;
 
-    @Mutable public String isMutable() @ReadOnly {
-        return "isMutable";
+    public @Mutable Object isMutable() @ReadOnly {
+        return new Object();
     }
 
-    public String isThisMutable() @ReadOnly {
-        return "isThisMutable";
+    public Object isThisMutable() @ReadOnly {
+        return new Object();
     }
 
-    @ReadOnly public String isReadOnly() @ReadOnly {
+    public @ReadOnly Object isReadOnly() @ReadOnly {
         return "isReadOnly";
     }
 
-    @PolyRead public String isPolyRead(@PolyRead Object c) {
-        return "isPolyRead";
+    public @PolyRead Object isPolyRead(@PolyRead Object c) {
+        return new Object();
     }
 
     public void canDo() {
@@ -53,6 +53,7 @@ class Assignments {
         c = b;
         b = a;
         b = (@ReadOnly Point) a;
+        //:: warning: (cast.unsafe)
         a = (Point) b; // should emit a warning here
         a.x = 0;
         i = a.x;
@@ -66,30 +67,30 @@ class Assignments {
         mc = mc.getCell();
         roc = roc.getCell();
 
-        roString = isPolyRead(roString); // polyread resolved as readonly
-        mString = isPolyRead(mString);   // polyread resolved as mutable;
-        roString = isPolyRead(mString);  // polyread resolved as mutable;
+        roObject = isPolyRead(roObject); // polyread resolved as readonly
+        mObject = isPolyRead(mObject);   // polyread resolved as mutable;
+        roObject = isPolyRead(mObject);  // polyread resolved as mutable;
 
-        mString = isMutable();
-        mString = isThisMutable();
+        mObject = isMutable();
+        mObject = isThisMutable();
 
-        roString = isMutable();
-        roString = isThisMutable();
-        roString = isReadOnly();
+        roObject = isMutable();
+        roObject = isThisMutable();
+        roObject = isReadOnly();
 
 
         // mutable can be assigned to mutable
-        mString = aMutable.isMutable();
-        mString = aMutable.isThisMutable();
-        mString = aReadOnly.isMutable();
+        mObject = aMutable.isMutable();
+        mObject = aMutable.isThisMutable();
+        mObject = aReadOnly.isMutable();
 
         // anything can be passed to a readonly
-        roString = aMutable.isMutable();
-        roString = aMutable.isThisMutable();
-        roString = aMutable.isReadOnly();
-        roString = aReadOnly.isMutable();
-        roString = aReadOnly.isThisMutable();
-        roString = aReadOnly.isReadOnly();
+        roObject = aMutable.isMutable();
+        roObject = aMutable.isThisMutable();
+        roObject = aMutable.isReadOnly();
+        roObject = aReadOnly.isMutable();
+        roObject = aReadOnly.isThisMutable();
+        roObject = aReadOnly.isReadOnly();
     }
 
     public void doNothing() @ReadOnly {

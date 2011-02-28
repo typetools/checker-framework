@@ -23,8 +23,13 @@ public class KeyFors {
     public void withCollection() {
         Map<String, String> map = new HashMap<String, String>();
         List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
-
-        @NonNull String value = map.get(keys.get(0));
+        
+        @KeyFor("map") String key = keys.get(0);
+        @NonNull String value = map.get(key);
+        // TODO when using the local variable the access works
+        // when using the call directly, we get an assignment.type.incompatible.
+        // Why?
+        // TODO: value = map.get(keys.get(0));
     }
 
     public void withIndirectReference() {
