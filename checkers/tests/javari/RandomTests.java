@@ -21,7 +21,7 @@ public class RandomTests {
     }
 
     // Test static block assignment
-    static String s;
+    static @ReadOnly String s;
     static {
         s = "m";
     }
