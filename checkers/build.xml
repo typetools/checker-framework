@@ -257,7 +257,7 @@ ${build.version} of the 'javac.jar' library."/>
             dir="${basedir}"
             printsummary="true"
             haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${build}/../jdk/jdk.jar"/>
             <jvmarg line="-ea"/>
 
             <classpath>
@@ -274,7 +274,7 @@ ${build.version} of the 'javac.jar' library."/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jar,build-tests"
+    <target name="all-tests" depends="jar,jdk.jar,build-tests"
       description="Run tests for all checkers">
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
@@ -282,7 +282,7 @@ ${build.version} of the 'javac.jar' library."/>
             dir="${basedir}"
           printsummary="true"
           haltonfailure="${halt.on.test.failure}">
-          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+          <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${build}/../jdk/jdk.jar"/>
           <jvmarg line="-ea"/>
 
           <classpath>
