@@ -12,8 +12,10 @@ public class DefaultAnnotation {
     @DefaultQualifiers(@DefaultQualifier(value="checkers.nullness.quals.NonNull", locations={DefaultLocation.ALL}))
     public void testDefault() {
 
+        //:: (assignment.type.incompatible)
         String s = null;                                // error
         List<String> lst = new List<String>();    // valid
+        //:: (argument.type.incompatible)
         lst.add(null);                                  // error
     }
 
@@ -21,14 +23,17 @@ public class DefaultAnnotation {
     public class InnerDefault {
 
         public void testDefault() {
+            //:: (assignment.type.incompatible)
             String s = null;                                // error
             List<String> lst = new List<String>();    // valid
+            //:: (argument.type.incompatible)
             lst.add(null);                                  // error
             s = lst.get(0);                                 // valid
 
             List<@Nullable String> nullList
                 = new List<@Nullable String>();       // valid
             nullList.add(null);                             // valid
+            //:: (assignment.type.incompatible)
             s = nullList.get(0);                            // error
         }
     }
@@ -41,14 +46,17 @@ public class DefaultAnnotation {
         }
 
         public String getNNString2() {
+            //:: (return.type.incompatible)
             return null;                                // error
         }
 
         public <T extends @Nullable Object> T getNull(T t) {
+            //:: (return.type.incompatible)
             return null;                                // invalid
         }
 
         public <T extends @NonNull Object> T getNonNull(T t) {
+            //:: (return.type.incompatible)
             return null;                                // error
         }
     }
@@ -68,8 +76,10 @@ public class DefaultAnnotation {
 
             DefaultDefs d = new DefaultDefs();
 
+            //:: (assignment.type.incompatible)
             String s1 = d.<@Nullable String>getNull(null);      // error
             String s2 = d.<String>getNonNull("foo");            // valid
+            //:: (generic.argument.invalid) :: (assignment.type.incompatible)
             String s3 = d.<@Nullable String>getNonNull("foo");  // error
         }
 
@@ -96,8 +106,10 @@ public class DefaultAnnotation {
     @DefaultQualifier(value="NonNull")
     public void testDefaultUnqualified() {
 
+        //:: (assignment.type.incompatible)
         String s = null;                                // error
         List<String> lst = new List<String>();    // valid
+        //:: (argument.type.incompatible)
         lst.add(null);                                  // error
     }
 
