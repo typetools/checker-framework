@@ -11,8 +11,8 @@ class Assignments2 {
     Assignments2 aMutable;
     @ReadOnly Assignments2 aReadOnly;
 
-    String mString;
-    @ReadOnly String roString;
+    Object mObject;
+    @ReadOnly Object roObject;
 
     class JavariCell {
         JavariCell cell;
@@ -32,20 +32,20 @@ class Assignments2 {
     JavariCell mc;
     @ReadOnly JavariCell roc;
 
-    @Mutable public String isMutable() @ReadOnly {
-        return "isMutable";
+    public @Mutable Object isMutable() @ReadOnly {
+        return new Object();
     }
 
-    public String isStillMutable() @ReadOnly {
-        return "isStillMutable";
+    public Object isStillMutable() @ReadOnly {
+        return new Object();
     }
 
-    @ReadOnly public String isReadOnly() @ReadOnly {
+    public @ReadOnly Object isReadOnly() @ReadOnly {
         return "isReadOnly";
     }
 
-    @PolyRead public String isPolyRead(@PolyRead Object c) {
-        return "isPolyRead";
+    public @PolyRead Object isPolyRead(@PolyRead Object c) {
+        return new Object();
     }
 
     public void cannotDo() {
@@ -61,7 +61,7 @@ class Assignments2 {
         b.x = a.y;             // readonly field behave as final
 
         //:: (assignment.type.incompatible)
-        mString = isPolyRead(roString);  // polyread resolved as readonly
+        mObject = isPolyRead(roObject);  // polyread resolved as readonly
 
         //:: (ro.field)
         roc.cell = roc;            // readonly field behave as final
@@ -78,13 +78,13 @@ class Assignments2 {
 
         // cannot assign readonly to mutable
         //:: (assignment.type.incompatible)
-        mString = isReadOnly();
+        mObject = isReadOnly();
 
         //:: (assignment.type.incompatible)
-        mString = aMutable.isReadOnly();
-        mString = aReadOnly.isStillMutable();
+        mObject = aMutable.isReadOnly();
+        mObject = aReadOnly.isStillMutable();
         //:: (assignment.type.incompatible)
-        mString = aReadOnly.isReadOnly();
+        mObject = aReadOnly.isReadOnly();
 
         //:: (ro.field)
         roc.x = 2;                 // readonly primitive field is final
