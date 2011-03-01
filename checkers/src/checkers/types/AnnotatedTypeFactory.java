@@ -1210,7 +1210,7 @@ public class AnnotatedTypeFactory {
             current = current.getParentPath();
         }
 
-        // OK, we give up. do a full scan
+        // OK, we give up. Do a full scan.
         return TreePath.getPath(root, node);
     }
 
