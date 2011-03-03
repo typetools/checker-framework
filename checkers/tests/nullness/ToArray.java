@@ -24,9 +24,9 @@ public class ToArray {
         for (@NonNull String o : nullableList.toArray(new @NonNull String[0]));
 
         for (@Nullable String o : nonnullList.toArray(new String[0]));
-        //TODO: Expected error not found!
-        //TODO:: (argument.type.incompatible)
-        for (@NonNull String o : nonnullList.toArray(new @Nullable String[0])); // error
+        // No error expected here. Note that the heuristics determine that the given array
+        // is not used and that a new one will be created.
+        for (@NonNull String o : nonnullList.toArray(new @Nullable String[0]));
         for (@Nullable String o : nonnullList.toArray(new @NonNull String[0]));
         for (@NonNull String o : nonnullList.toArray(new @NonNull String[0]));
     }
@@ -53,9 +53,9 @@ public class ToArray {
         for (@NonNull String o : nullableCol.toArray(new @NonNull String[0]));  // error
 
         for (@Nullable String o : nonnullCol.toArray(new String[0]));
-        //TODO: Expected error not found!
-        //TODO:: (argument.type.incompatible)
-        for (@NonNull String o : nonnullCol.toArray(new @Nullable String[0]));  // error
+        // No error expected here. Note that the heuristics determine that the given array
+        // is not used and that a new one will be created.
+        for (@NonNull String o : nonnullCol.toArray(new @Nullable String[0]));
         for (@Nullable String o : nonnullCol.toArray(new @NonNull String[0]));
         for (@NonNull String o : nonnullCol.toArray(new @NonNull String[0]));
     }
