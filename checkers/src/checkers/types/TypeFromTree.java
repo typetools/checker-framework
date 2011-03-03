@@ -244,7 +244,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitMethodInvocation(
                 MethodInvocationTree node, AnnotatedTypeFactory f) {
 
-            AnnotatedExecutableType ex = f.methodFromUse(node);
+            AnnotatedExecutableType ex = f.methodFromUse(node).first;
             return ex.getReturnType();
         }
 
