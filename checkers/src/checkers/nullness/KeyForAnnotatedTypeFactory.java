@@ -23,6 +23,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
+import checkers.util.Pair;
 
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
 
@@ -78,11 +79,11 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
   // TODO: doc
   @Override
-  public AnnotatedExecutableType methodFromUse(MethodInvocationTree call) {
+  public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree call) {
     assert call != null;
     // System.out.println("looking at call: " + call);
-
-    AnnotatedExecutableType method = super.methodFromUse(call);
+    Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(call);
+    AnnotatedExecutableType method = mfuPair.first;
 
     Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
@@ -106,7 +107,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
     // System.out.println("adapted method: " + method);
 
-    return method;
+    return Pair.of(method, mfuPair.second);
   }
 
 
@@ -117,7 +118,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
    */
   private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
 
-  // TODO: duplicated from NullnessFlow
+  // TODO: copied from NullnessFlow, but without the "." at the end.
   private String receiver(MethodInvocationTree node) {
     ExpressionTree sel = node.getMethodSelect();
     if (sel.getKind() == Tree.Kind.IDENTIFIER)
