@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
+import java.util.Map.Entry;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -17,6 +18,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
 import checkers.nullness.quals.Nullable;
 import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -743,23 +745,40 @@ public class AnnotatedTypeFactory {
      * customization based on receiver type should be in accordance to its
      * specification.
      *
+     * The return type is a pair of the type of the invoked method and
+     * the (inferred) type arguments.
+     * Note that neither the explicitly passed nor the inferred type arguments
+     * are guaranteed to be subtypes of the corresponding upper bounds.
+     * See method
+     * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List, Object)}
+     * for the checks of type argument well-formedness.
+     *
      * @param tree  the method invocation tree
-     * @return the method type being invoked with tree
+     * @return the method type being invoked with tree and the (inferred) type arguments
      */
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror type = getReceiver(tree);
         AnnotatedExecutableType methodType =
             atypes.asMemberOf(type, methodElt);
+        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
             atypes.findTypeArguments(tree);
 
         if (!typeVarMapping.isEmpty()) {
+            for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+                typeargs.add(typeVarMapping.get(tv));
+            }
             methodType = methodType.substitute(typeVarMapping);
+        } else {
+            // Get type arguments as passed to the invocation.
+            for (Tree arg : tree.getTypeArguments()) {
+                typeargs.add(this.getAnnotatedTypeFromTypeTree(arg));
+            }
         }
 
-        return methodType;
+        return Pair.of(methodType, typeargs);
     }
 
     /**
