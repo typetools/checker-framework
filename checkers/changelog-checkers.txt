@@ -3,8 +3,24 @@ Version 1.1.3
 
 @Covariant annotation
 
+Interning:
+
+- Add @UsesObjectEquals annotation
+
 Manual:
   Signature Checker is now documented
+
+Implementation details:
+
+- Method type argument inference:
+  - Changed AnnotatedTypeFactory.methodFromUse to return a Pair consisting
+    of the method and the inferred or explicit method type arguments.
+    If you override this method, you will need to update your version.
+
+- Testing framework:
+  - support for multiple expected errors using the "//:: A :: B :: C" syntax.
+
+Many small updates and fixes.
 
 ----------------------------------------------------------------------
 Version 1.1.2, 12 Jan 2011
