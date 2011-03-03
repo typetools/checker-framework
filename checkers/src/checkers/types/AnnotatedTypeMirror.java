@@ -712,6 +712,34 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
+
+        /* TODO: why is this method not necessary?
+         * When executed on the test suite, the only mismatches come from wildcards, which is expected.
+         * I think it would help code understanding if we added a comment here where
+         * the type arguments are compared.
+         * The super method only works on the underlying TypeMirrors, so one would expect that
+         * annotations on the type arguments are ignored.
+        @Override
+        public boolean equals(Object o) {
+            boolean res = super.equals(o);
+
+            if (res) {
+               if (o instanceof AnnotatedDeclaredType) {
+                   AnnotatedDeclaredType dt = (AnnotatedDeclaredType) o;
+
+                   List<AnnotatedTypeMirror> mytas = this.getTypeArguments();
+                   List<AnnotatedTypeMirror> othertas = dt.getTypeArguments();
+                   for (int i = 0; i < mytas.size(); ++i) {
+                       if (!mytas.get(i).equals(othertas.get(i))) {
+                           System.out.println("in AnnotatedDeclaredType; this: " + this + " and " + o);
+                       }
+                   }
+
+               }
+            }
+            return res;
+        }
+        */
     }
 
     /**
