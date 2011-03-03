@@ -23,6 +23,7 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
+import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 
@@ -195,11 +196,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
-        AnnotatedExecutableType method = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         poly.annotate(method.getElement(), method);
-        return method;
+        return mfuPair;
     }
 
     // **********************************************************************
