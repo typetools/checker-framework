@@ -4,7 +4,6 @@ import checkers.nullness.quals.*;
  * This test is based on Issue 93:
  * http://code.google.com/p/checker-framework/issues/detail?id=93
  */
-// @skip-test
 public class MethodTypeVars {
     void m() {
         //:: (argument.type.incompatible)
