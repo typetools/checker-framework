@@ -297,14 +297,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         if (shouldSkip(node))
             return super.visitMethodInvocation(node, p);
 
-        AnnotatedExecutableType invokedMethod = atypeFactory.methodFromUse(node);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = atypeFactory.methodFromUse(node);
+        AnnotatedExecutableType invokedMethod = mfuPair.first;
+        List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
-        // Get type arguments as passed to the invocation.
-        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
-        for (Tree tree : node.getTypeArguments())
-            typeargs.add(atypeFactory.getAnnotatedTypeFromTypeTree(tree));
-
-        checkTypeArguments(invokedMethod.getTypeVariables(),
+        checkTypeArguments(node, invokedMethod.getTypeVariables(),
                 typeargs, node.getTypeArguments(), p);
 
         List<AnnotatedTypeMirror> params =
@@ -409,7 +406,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         for (Tree tree : node.getTypeArguments())
             typeargs.add(atypeFactory.getAnnotatedTypeFromTypeTree(tree));
 
-        checkTypeArguments(type.getTypeVariables(),
+        checkTypeArguments(node, type.getTypeVariables(),
                 typeargs, node.getTypeArguments(), p);
 
         AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
@@ -510,7 +507,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             return super.visitParameterizedType(node, p);
         AnnotatedDeclaredType generic = atypeFactory.getAnnotatedType(element);
 
-        checkTypeArguments(generic.getTypeArguments(),
+        checkTypeArguments(node, generic.getTypeArguments(),
                 declared.getTypeArguments(), node.getTypeArguments(), p);
 
         return super.visitParameterizedType(node, p);
@@ -666,18 +663,19 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * declared, and issues the "generic.argument.invalid" error if they are
      * not.
      *
+     * @param tree the tree for error reporting, only used for inferred type arguments
      * @param typevars the type variables from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      * @param p
      */
-    protected void checkTypeArguments(
+    protected void checkTypeArguments(Tree toptree,
             List<? extends AnnotatedTypeMirror> typevars,
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees, P p) {
 
-        // If there are no type arguments, do nothing.
-        if (typeargs.isEmpty()) return;
+        // If there are no type variables, do nothing.
+        if (typevars.isEmpty()) return;
 
         Iterator<? extends AnnotatedTypeMirror> varIter = typevars.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
@@ -685,10 +683,10 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         while (varIter.hasNext()) {
 
             AnnotatedTypeMirror var = varIter.next();
-            assert var.getKind() == TypeKind.TYPEVAR : var.getKind();
+            assert var.getKind() == TypeKind.TYPEVAR : "Expected type variable, found: " + var.getKind();
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) var;
 
-            assert argIter.hasNext() : typevars + " / " + typeargs;
+            assert argIter.hasNext() : "Found more type variables than type arguments: " + typevars + " / " + typeargs;
 
             AnnotatedTypeMirror typearg = argIter.next();
             // TODO skip wildcards for now to prevent a crash
@@ -698,17 +696,37 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                 // Framework does not enrich upper bounds with the root annotations
                 if (!(TypesUtils.isObject(typeVar.getUpperBound().getUnderlyingType())
                         && !typeVar.getUpperBound().isAnnotated())) {
-                    commonAssignmentCheck(typeVar.getUpperBound(), typearg,
-                            typeargTrees.get(typeargs.indexOf(typearg)),
-                            "generic.argument.invalid", p);
+                    if (typeargTrees == null || typeargTrees.isEmpty()) {
+                        // The type arguments were inferred and we mark the whole method.
+                        // The inference fails if we provide invalid argumens,
+                        // therefore issue an error for the arguments.
+                        // I hope this is less confusing for users.
+                        commonAssignmentCheck(typeVar.getUpperBound(), typearg,
+                                toptree,
+                                "argument.type.incompatible", p);
+
+                    } else {
+                        commonAssignmentCheck(typeVar.getUpperBound(), typearg,
+                                typeargTrees.get(typeargs.indexOf(typearg)),
+                                "generic.argument.invalid", p);
+
+                    }
                 }
             }
 
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
-                    checker.report(Result.failure("generic.argument.invalid",
-                            typearg, typeVar),
-                            typeargTrees.get(typeargs.indexOf(typearg)));
+                    if (typeargTrees == null || typeargTrees.isEmpty()) {
+                        // The type arguments were inferred and we mark the whole method.
+                        checker.report(Result.failure("argument.type.incompatible",
+                                typearg, typeVar),
+                                toptree);
+
+                    } else {
+                        checker.report(Result.failure("generic.argument.invalid",
+                                typearg, typeVar),
+                                typeargTrees.get(typeargs.indexOf(typearg)));
+                    }
                 }
             }
 
