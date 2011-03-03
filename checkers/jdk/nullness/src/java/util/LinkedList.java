@@ -45,6 +45,6 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public ListIterator<E> listIterator(int a1) { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public @Nullable Object [] toArray() { throw new RuntimeException("skeleton method"); }
-  public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
+  public <T extends @Nullable Object> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 }
