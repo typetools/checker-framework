@@ -11,6 +11,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import checkers.javari.quals.*;
 import checkers.util.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 
@@ -365,8 +366,9 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @return AnnotatedExecutableType with return value resolved as described.
      */
     @Override
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
-        AnnotatedExecutableType type = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType type = mfuPair.first;
 
         AnnotatedTypeMirror returnType = type.getReturnType();
 
@@ -424,7 +426,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (replacement != POLYREAD && returnType.hasAnnotation(POLYREAD))
             new AnnotatedTypeReplacer(POLYREAD, replacement).visit(type);
 
-        return type;
+        return mfuPair;
     }
 
     /**

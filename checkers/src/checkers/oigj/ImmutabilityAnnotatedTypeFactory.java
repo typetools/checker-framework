@@ -16,6 +16,7 @@ import com.sun.source.tree.*;
 
 import checkers.oigj.quals.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
@@ -389,8 +390,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
      * </ul>
      */
     @Override
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
-        AnnotatedExecutableType type = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType type = mfuPair.first;
         List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
         ImmutabilityTemplateCollector collector = new ImmutabilityTemplateCollector();
@@ -416,7 +418,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 return super.visitDeclared(type, p);
             }
         }.visit(type);
-        return type;
+        return mfuPair;
     }
 
     /**
