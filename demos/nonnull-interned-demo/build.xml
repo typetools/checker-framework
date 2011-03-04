@@ -1,0 +1,42 @@
+<!-- script to test all demos -->
+<project name="checkers-demos" basedir="." default="test-all">
+
+  <macrodef name="test-project">
+    <attribute name="project"/>
+    <attribute name="task" default="check-demo"/>
+    <sequential>
+      <ant dir="@{project}" target="@{task}"/>
+    </sequential>
+  </macrodef>
+
+  <target name="check-demo" depends="touch-files">
+    <echo message="Runing IGJ on the checkers demo"/>
+    <test-project project="IGJChecker"/>
+
+    <echo message="Running Nullness on the checkers demo"/>
+    <test-project project="checkers"/>
+
+    <echo message="Running Interning on the daikon demo"/>
+    <test-project project="daikon"/>
+
+    <echo message="Running Nullness on the daikon demo"/>
+    <test-project project="junit"/>
+
+    <echo message="Running Nullness on the lookup demo"/>
+    <test-project project="lookup"/>
+
+    <echo message="Running Tainting on the personal-blog demo"/>
+    <test-project project="personalblog-demo"/>
+
+    <echo message="All demos work properly"/>
+  </target>
+
+  <target name="touch-files">
+    <touch>
+      <fileset dir=".">
+        <include name="**/*"/>
+      </fileset>
+    </touch>
+  </target>
+
+</project>
