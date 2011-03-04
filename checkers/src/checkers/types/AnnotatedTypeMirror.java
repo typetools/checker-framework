@@ -482,12 +482,14 @@ public abstract class AnnotatedTypeMirror {
         protected List<AnnotatedTypeMirror> typeArgs;
 
         /** Supertype of this type **/
-        @Deprecated
-        protected AnnotatedDeclaredType superclass;
+        // This field seems to be unused.
+        // @Deprecated
+        // protected AnnotatedDeclaredType superclass;
 
         /** The interfaces that this type implements **/
-        @Deprecated
-        protected List<AnnotatedDeclaredType> interfaces;
+        // This field seems to be unused.
+        // @Deprecated
+        // protected List<AnnotatedDeclaredType> interfaces;
 
         boolean isGeneric = false;
 
@@ -508,7 +510,7 @@ public abstract class AnnotatedTypeMirror {
             this.actualType = type;
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
-            this.interfaces = new LinkedList<AnnotatedDeclaredType>();
+            // this.interfaces = new LinkedList<AnnotatedDeclaredType>();
             this.supertypes = null;
         }
 
@@ -566,6 +568,7 @@ public abstract class AnnotatedTypeMirror {
         /**
          * @return the super type of this
          */
+        /*
         @Deprecated
         public AnnotatedTypeMirror getSuperclass() {
 
@@ -586,6 +589,7 @@ public abstract class AnnotatedTypeMirror {
 
             return at;
         }
+        */
 
         /**
          * Returns true if the type is generic, even if the type is erased
@@ -1099,10 +1103,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final TypeVariable actualType;
 
-        // TODO: why is the constructor deprecated? What should be used instead?
-
-        @Deprecated
-        AnnotatedTypeVariable(TypeVariable type,
+        private AnnotatedTypeVariable(TypeVariable type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -1275,6 +1276,7 @@ public abstract class AnnotatedTypeMirror {
                 type.inUpperBounds = true;
                 type.setUpperBound(getUpperBound());
                 inUpperBounds = false;
+                type.inUpperBounds = false;
             }
             return type;
         }
@@ -1569,8 +1571,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final WildcardType actualType;
 
-        @Deprecated
-        AnnotatedWildcardType(WildcardType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedWildcardType(WildcardType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }
