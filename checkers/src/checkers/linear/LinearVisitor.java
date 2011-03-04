@@ -19,7 +19,7 @@ import checkers.util.TreeUtils;
  *
  * @see LinearChecker
  */
-public class LinearVisitor extends BaseTypeVisitor<Void, Void> {
+public class LinearVisitor extends BaseTypeVisitor {
 
     public LinearVisitor(LinearChecker checker, CompilationUnitTree root) {
         super(checker, root);
@@ -75,6 +75,7 @@ public class LinearVisitor extends BaseTypeVisitor<Void, Void> {
      * Linear Checker does not contain a rule for method invocation.
      */
     // Premature optimization:  Don't check method invocability
+    @Override
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         return true;

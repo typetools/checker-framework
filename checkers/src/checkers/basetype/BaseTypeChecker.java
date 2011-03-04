@@ -241,7 +241,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected BaseTypeVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected BaseTypeVisitor createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
@@ -250,7 +250,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             final String classToLoad =
                 checkerClass.getName().replace("Checker", "Visitor")
                 .replace("Subchecker", "Visitor");
-            BaseTypeVisitor<?, ?> result = invokeConstructorFor(classToLoad,
+            BaseTypeVisitor result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { this.getClass(), CompilationUnitTree.class },
                     new Object[] { this, root });
             if (result != null)
@@ -259,7 +259,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         // If a visitor couldn't be loaded reflectively, return the default.
-        return new BaseTypeVisitor<Void, Void>(this, root);
+        return new BaseTypeVisitor(this, root);
     }
 
     /**
