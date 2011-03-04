@@ -504,7 +504,7 @@ public abstract class AnnotatedTypeMirror {
          * @param env   the processing environment
          * @param typeFactory TODO
          */
-        AnnotatedDeclaredType(DeclaredType type,
+        private AnnotatedDeclaredType(DeclaredType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory typeFactory) {
             super(type, env, typeFactory);
             this.actualType = type;
@@ -753,7 +753,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final ExecutableType actualType;
 
-        AnnotatedExecutableType(ExecutableType type,
+        private AnnotatedExecutableType(ExecutableType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -990,7 +990,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final ArrayType actualType;
 
-        AnnotatedArrayType(ArrayType type,
+        private AnnotatedArrayType(ArrayType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -1423,7 +1423,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final NoType actualType;
 
-        AnnotatedNoType(NoType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedNoType(NoType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }
@@ -1466,7 +1466,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final NullType actualType;
 
-        AnnotatedNullType(NullType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedNullType(NullType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }
@@ -1514,7 +1514,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final PrimitiveType actualType;
 
-        AnnotatedPrimitiveType(PrimitiveType type,
+        private AnnotatedPrimitiveType(PrimitiveType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
