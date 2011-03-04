@@ -1,5 +1,7 @@
 package checkers.interning;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 
 import checkers.source.*;
@@ -33,6 +35,13 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
     private final DeclaredType typeToCheck;
+    
+    public static Map<Name, Boolean>  definesEquals;
+    public static Map<Name, Name> parentMap;
+    static {
+    	 definesEquals = new HashMap<Name, Boolean>();
+    	 parentMap = new HashMap<Name, Name>();
+    }
 
     /**
      * Creates a new visitor for type-checking {@link Interned}.
@@ -124,9 +133,23 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         return super.visitMethodInvocation(node, p);
     }
-    
-    
+
     /*
+    void methodCalledAtEnd() {
+    	for (class : parentsMap.keySet()) {
+    		if (definesEqualsMap.get(class)) {
+    			continue;
+    		}
+    		if (no parent (transitively) defines equals) {
+    			// output package declaration
+    			printf("@UsesObjectEquals%n class %s { }%n", classname);
+    		}
+    	}
+	}
+	*/
+
+    
+    /**
      * Method to implement the @UsesObjectEquals functionality. 
      * If a class is marked @UsesObjectEquals, it must:
      * 
@@ -142,15 +165,37 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
      */
     @Override
     public Void visitClass(ClassTree node, Void p){
+  /*  	 // node.fullyqname somehow represents both the package and the class
+           *****
+             
+    	     parentsMap.put(node.fullyqname, node.declaredsuperclass);
+             definesEqualsMap.put(node, node.hasNoEqualsMethod());
+             
+           *****
+   */ 	
+   		//need to map fullyQname instead of node, so it works when we 
+   		 
+   		Element classElt = TreeUtils.elementFromDeclaration(node);
+   		definesEquals.put(ElementUtils.getQualifiedClassName(classElt), overridesEquals(node));
+   		System.out.println("Added: "+ElementUtils.getQualifiedClassName(classElt));
+   		System.out.println("Size of map: "+definesEquals.size());
+   		System.out.println("Hashcode: "+definesEquals.hashCode());
+   		System.out.println();
+   		
+   		
     	//Looking for an @UsesObjectEquals class declaration
-    	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
     	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class); 
+    	    	
+    	Tree superClass = node.getExtendsClause();    	
     	
-    	Tree superClass = node.getExtendsClause();
 		Element elmt = null;
 		if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)){
 			elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
+			/*/packMap.put(node, (ExpressionTree)superClass);
+			System.out.println(ElementUtils.enclosingClass(elt)+": "+ ElementUtils.enclosingPackage(elt));
+			System.out.println(ElementUtils.enclosingClass(elmt)+": "+ElementUtils.enclosingPackage(elmt));
+			System.out.println();*/
 		}
 		
 	
@@ -158,16 +203,9 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
     		//check methods to ensure no .equals
-    		List<? extends Tree> members = node.getMembers();
-    		for(Tree member : members){
-    			if(member instanceof MethodTree){
-    				MethodTree mTree = (MethodTree) member;
-    				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
-    				if(overrides(enclosing, Object.class, "equals")){
-    					checker.report(Result.failure("overrides.equals"), node);
-    				}
-    			}
-    		}
+			if(overridesEquals(node)){
+				checker.report(Result.failure("overrides.equals"), node);
+			}
     		
     		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){		  
     			checker.report(Result.failure("superclass.unmarked"), node);
@@ -181,11 +219,29 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     	
     	return super.visitClass(node, p);
     }
-
+    
     // **********************************************************************
     // Helper methods
     // **********************************************************************
-
+    
+    /**
+     * Returns true if a given class overrides .equals, false otherwise.
+     * 
+     * @param node, a ClassTree node
+     */
+    private boolean overridesEquals(ClassTree node){
+    	List<? extends Tree> members = node.getMembers();
+    	for(Tree member : members){
+			if(member instanceof MethodTree){
+				MethodTree mTree = (MethodTree) member;
+				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
+				if(overrides(enclosing, Object.class, "equals")){
+					return true;
+				}
+			}
+		}
+    	return false;
+    }
     /**
      * Tests whether a method invocation is an invocation of
      * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
