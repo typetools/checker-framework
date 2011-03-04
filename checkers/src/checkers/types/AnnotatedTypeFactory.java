@@ -523,7 +523,7 @@ public class AnnotatedTypeFactory {
      * @param element The corresponding element
      * @return The adapted type variables
      */
-    public List<AnnotatedTypeVariable> typevariablesFromUse(
+    public List<AnnotatedTypeVariable> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
