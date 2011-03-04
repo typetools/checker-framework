@@ -8,17 +8,31 @@ Interning:
 - Add @UsesObjectEquals annotation
 
 Manual:
-  Signature Checker is now documented
+-  Signature Checker is now documented
 
 Implementation details:
 
+- The BaseTypeVisitor used to provide the same two type parameters as
+  class SourceVisitor. However, all subtypes of BaseTypeVisitor were
+  instantiated as <Void, Void>. We decided to directly instantiate the
+  SourceVisitor as <Void, Void> and removed this complexity.
+  Instead, the BaseTypeVisitor is now parameterized by the subtype of
+  BaseTypeChecker that should be used. This gives a more concrete type
+  to field "checker" and is similar to BasicAnnotatedTypeFactory.
+
+- Added method AnnotatedTypeFactory.typeVariablesFromUse to allow type
+  checkers to adapt the upper bounds of a type variable depending on
+  the type instantiation.
+
 - Method type argument inference:
-  - Changed AnnotatedTypeFactory.methodFromUse to return a Pair consisting
-    of the method and the inferred or explicit method type arguments.
-    If you override this method, you will need to update your version.
+  Changed AnnotatedTypeFactory.methodFromUse to return a Pair consisting
+  of the method and the inferred or explicit method type arguments.
+  If you override this method, you will need to update your version.
+  See this change set for a simple example:
+  http://code.google.com/p/checker-framework/source/detail?r=8381a213a4
 
 - Testing framework:
-  - support for multiple expected errors using the "//:: A :: B :: C" syntax.
+  Support for multiple expected errors using the "//:: A :: B :: C" syntax.
 
 Many small updates and fixes.
 
