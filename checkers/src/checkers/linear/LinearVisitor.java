@@ -19,7 +19,7 @@ import checkers.util.TreeUtils;
  *
  * @see LinearChecker
  */
-public class LinearVisitor extends BaseTypeVisitor {
+public class LinearVisitor extends BaseTypeVisitor<LinearChecker> {
 
     public LinearVisitor(LinearChecker checker, CompilationUnitTree root) {
         super(checker, root);

@@ -44,7 +44,7 @@ import com.sun.source.tree.*;
  *
  * @see NullnessSubchecker
  */
-public class NullnessVisitor extends BaseTypeVisitor {
+public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
     private final AnnotationMirror NONNULL, NULLABLE;
