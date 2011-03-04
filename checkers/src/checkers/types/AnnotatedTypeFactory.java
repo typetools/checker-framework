@@ -18,6 +18,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
 import checkers.nullness.quals.Nullable;
 import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -500,6 +501,40 @@ public class AnnotatedTypeFactory {
     protected void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
         annotateImplicit(element, type);
+    }
+
+
+    /**
+     * Adapt the upper bounds of the type variables of a class relative
+     * to the type instantiation.
+     * In some type systems, the upper bounds depend on the instantiation
+     * of the class. For example, in the Generic Universe Type system,
+     * consider a class declaration
+     *    class C<X extends @Peer Object>
+     * then the instantiation
+     *    @Rep C<@Rep Object>
+     * is legal. The upper bounds of class C have to be adapted
+     * by the main modifier.
+     *
+     * TODO: ensure that this method is consistently used instead
+     * of directly querying the type variables.
+     *
+     * @param type The use of the type
+     * @param element The corresponding element
+     * @return The adapted type variables
+     */
+    public List<AnnotatedTypeVariable> typevariablesFromUse(
+            AnnotatedDeclaredType type, TypeElement element) {
+
+        AnnotatedDeclaredType generic = getAnnotatedType(element);
+
+        List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
+
+        for (AnnotatedTypeMirror atm : tvars) {
+            res.add((AnnotatedTypeVariable)atm);
+        }
+        return res;
     }
 
     /**
@@ -1349,4 +1384,5 @@ public class AnnotatedTypeFactory {
 
         return result;
     }
+
 }
