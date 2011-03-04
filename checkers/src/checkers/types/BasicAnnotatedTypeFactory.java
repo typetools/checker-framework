@@ -40,6 +40,9 @@ import com.sun.source.tree.Tree;
  */
 public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends AnnotatedTypeFactory {
 
+    /** The type checker to use. */
+    protected Checker checker;
+
     /** should use flow by default */
     protected static boolean FLOW_BY_DEFAULT = true;
 
@@ -70,6 +73,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root, boolean useFlow) {
         super(checker, root);
+        this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
