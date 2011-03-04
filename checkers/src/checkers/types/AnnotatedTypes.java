@@ -572,8 +572,7 @@ public class AnnotatedTypes {
                 while (upperBound.getKind() == TypeKind.TYPEVAR)
                     upperBound = ((AnnotatedTypeVariable)upperBound).getUpperBound();
                 WildcardType wc = env.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                @SuppressWarnings("deprecation")
-                AnnotatedWildcardType wctype = new AnnotatedWildcardType(wc, env, factory);
+                AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, env, factory);
                 wctype.setElement(typeVar.getElement());
                 wctype.setExtendsBound(upperBound);
                 argument = wctype;
