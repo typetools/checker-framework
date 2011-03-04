@@ -28,7 +28,7 @@ import checkers.util.TreeUtils;
  * This visitor reports errors ("unguarded.access") or warnings for violations
  * for accessing a field or calling a method without holding their locks.
  */
-public class LockVisitor extends BaseTypeVisitor {
+public class LockVisitor extends BaseTypeVisitor<LockChecker> {
 
     LockAnnotatedTypeFactory atypeFactory;
 

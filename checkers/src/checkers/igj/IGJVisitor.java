@@ -22,12 +22,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
  *
  * @see BaseTypeVisitor
  */
-public class IGJVisitor extends BaseTypeVisitor {
-    IGJChecker checker;
+public class IGJVisitor extends BaseTypeVisitor<IGJChecker> {
 
     public IGJVisitor(IGJChecker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.checker = checker;
         checkForAnnotatedJdk();
     }
 

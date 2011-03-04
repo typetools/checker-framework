@@ -71,10 +71,10 @@ import checkers.util.*;
  * @see BaseTypeChecker#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
  * @see AnnotatedTypeFactory
  */
-public class BaseTypeVisitor extends SourceVisitor<Void, Void> {
+public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisitor<Void, Void> {
 
     /** The checker corresponding to this visitor. */
-    protected final BaseTypeChecker checker;
+    protected final Checker checker;
 
     /** The annotation factory to use for creating annotations. */
     protected final AnnotationUtils annoFactory;
@@ -98,7 +98,7 @@ public class BaseTypeVisitor extends SourceVisitor<Void, Void> {
      *        callbacks to {@link BaseTypeChecker#isSubtype})
      * @param root the root of the AST that this visitor operates on
      */
-    public BaseTypeVisitor(BaseTypeChecker checker, CompilationUnitTree root) {
+    public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
         this.checker = checker;
 
