@@ -3,7 +3,7 @@ import java.util.*;
 
 class FlowCompound {
 
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         return o != null && this.getClass() != o.getClass();
     }
 

@@ -13,7 +13,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
-public class FenumVisitor extends BaseTypeVisitor<Void, Void> {
+public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
     public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
         super(checker, root);
     }

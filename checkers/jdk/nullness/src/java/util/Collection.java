@@ -14,7 +14,7 @@ public interface Collection<E extends @NonNull Object> extends Iterable<E> {
   // methods, because the most useful type for toArray is not expressible
   // in the surface syntax that the nullness annotations support.
   public abstract Object [] toArray();
-  public abstract <T> @Nullable T [] toArray(T[] a1);
+  public abstract <T extends @Nullable Object> @Nullable T [] toArray(T[] a1);
   public abstract boolean add(E a1);
   public abstract boolean remove(@Nullable Object a1);
   public abstract boolean containsAll(Collection<?> a1);
