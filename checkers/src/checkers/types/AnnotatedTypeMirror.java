@@ -482,12 +482,14 @@ public abstract class AnnotatedTypeMirror {
         protected List<AnnotatedTypeMirror> typeArgs;
 
         /** Supertype of this type **/
-        @Deprecated
-        protected AnnotatedDeclaredType superclass;
+        // This field seems to be unused.
+        // @Deprecated
+        // protected AnnotatedDeclaredType superclass;
 
         /** The interfaces that this type implements **/
-        @Deprecated
-        protected List<AnnotatedDeclaredType> interfaces;
+        // This field seems to be unused.
+        // @Deprecated
+        // protected List<AnnotatedDeclaredType> interfaces;
 
         boolean isGeneric = false;
 
@@ -502,13 +504,13 @@ public abstract class AnnotatedTypeMirror {
          * @param env   the processing environment
          * @param typeFactory TODO
          */
-        AnnotatedDeclaredType(DeclaredType type,
+        private AnnotatedDeclaredType(DeclaredType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory typeFactory) {
             super(type, env, typeFactory);
             this.actualType = type;
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
-            this.interfaces = new LinkedList<AnnotatedDeclaredType>();
+            // this.interfaces = new LinkedList<AnnotatedDeclaredType>();
             this.supertypes = null;
         }
 
@@ -566,6 +568,7 @@ public abstract class AnnotatedTypeMirror {
         /**
          * @return the super type of this
          */
+        /*
         @Deprecated
         public AnnotatedTypeMirror getSuperclass() {
 
@@ -586,6 +589,7 @@ public abstract class AnnotatedTypeMirror {
 
             return at;
         }
+        */
 
         /**
          * Returns true if the type is generic, even if the type is erased
@@ -712,6 +716,34 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
+
+        /* TODO: why is this method not necessary?
+         * When executed on the test suite, the only mismatches come from wildcards, which is expected.
+         * I think it would help code understanding if we added a comment here where
+         * the type arguments are compared.
+         * The super method only works on the underlying TypeMirrors, so one would expect that
+         * annotations on the type arguments are ignored.
+        @Override
+        public boolean equals(Object o) {
+            boolean res = super.equals(o);
+
+            if (res) {
+               if (o instanceof AnnotatedDeclaredType) {
+                   AnnotatedDeclaredType dt = (AnnotatedDeclaredType) o;
+
+                   List<AnnotatedTypeMirror> mytas = this.getTypeArguments();
+                   List<AnnotatedTypeMirror> othertas = dt.getTypeArguments();
+                   for (int i = 0; i < mytas.size(); ++i) {
+                       if (!mytas.get(i).equals(othertas.get(i))) {
+                           System.out.println("in AnnotatedDeclaredType; this: " + this + " and " + o);
+                       }
+                   }
+
+               }
+            }
+            return res;
+        }
+        */
     }
 
     /**
@@ -721,7 +753,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final ExecutableType actualType;
 
-        AnnotatedExecutableType(ExecutableType type,
+        private AnnotatedExecutableType(ExecutableType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -958,7 +990,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final ArrayType actualType;
 
-        AnnotatedArrayType(ArrayType type,
+        private AnnotatedArrayType(ArrayType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -1071,8 +1103,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final TypeVariable actualType;
 
-        @Deprecated
-        AnnotatedTypeVariable(TypeVariable type,
+        private AnnotatedTypeVariable(TypeVariable type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -1228,14 +1259,25 @@ public abstract class AnnotatedTypeMirror {
             return Collections.unmodifiableSet(result);
         }
 
+        /**
+         *  Used to terminate recursion into upper bounds.
+         */
+        private boolean inUpperBounds = false;
+
         @Override
         public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, env, typeFactory);
             copyFields(type, copyAnnotations);
             type.setTypeVariableElement(getTypeVariableElement());
-            if (type.getUpperBound().isAnnotated())
+            if (getUpperBound().isAnnotated() &&
+                    !inUpperBounds) {
+                inUpperBounds = true;
+                type.inUpperBounds = true;
                 type.setUpperBound(getUpperBound());
+                inUpperBounds = false;
+                type.inUpperBounds = false;
+            }
             return type;
         }
 
@@ -1381,7 +1423,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final NoType actualType;
 
-        AnnotatedNoType(NoType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedNoType(NoType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }
@@ -1424,7 +1466,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final NullType actualType;
 
-        AnnotatedNullType(NullType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedNullType(NullType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }
@@ -1472,7 +1514,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final PrimitiveType actualType;
 
-        AnnotatedPrimitiveType(PrimitiveType type,
+        private AnnotatedPrimitiveType(PrimitiveType type,
                 ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
@@ -1529,8 +1571,7 @@ public abstract class AnnotatedTypeMirror {
 
         private final WildcardType actualType;
 
-        @Deprecated
-        AnnotatedWildcardType(WildcardType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+        private AnnotatedWildcardType(WildcardType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
             super(type, env, factory);
             this.actualType = type;
         }

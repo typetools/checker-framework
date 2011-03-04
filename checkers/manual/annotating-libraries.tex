@@ -10,70 +10,102 @@ Section~\ref{suppressing-warnings}.)  If you have source code for the
 library, you can easily add the annotations.
 This section tells you
 how to add annotations to a library for which you have no source code,
-because the library is distributed only in binary (\code{.class} or
-\code{.jar}) form.  This section is also useful if you do not wish to edit the
+because the library is distributed only in binary form
+(as \code{.class} files, possibly packaged in a \code{.jar} file).
+This section is also useful if you do not wish to edit the
 library's source code.
 
+You can make the annotations known to the checkers in two ways.
+
+\begin{itemize}
+
+\item
+  You can write annotations in a ``stub
+  file'' containing classes with no method bodies.
+  Section~\ref{stub} describes how to create and use stub files.
+
+\item
+  You can insert annotations in the compiled
+  \code{.class} files of the library.
+  You would express the annotations textually, typically as an annotation index file, and
+  then insert them in the library by using the Annotation File Utilities
+  (\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
+  See the Annotation File Utilities documentation for full details.
+
+\end{itemize}
+
 The Checker Framework distribution contains annotations for popular
-libraries, such as the JDK\@.  It does this in two different ways.  The
-Nullness, Javari, and IGJ Checkers use an annotated JDK
-(Section~\ref{skeleton}), and all other checkers use stub classes
-(Section~\ref{stub}).  These annotated libraries are automatically used, so
-usually you do not have to think about them.
+libraries, such as the JDK\@.  It uses both of the above mechanisms.  The
+Nullness, Javari, IGJ, and Interning Checkers use an annotated JDK
+(Section~\ref{skeleton}), and all other checkers use stub files
+(Section~\ref{stub}).
 
 If you annotate additional libraries, please share them with us so that we
 can distribute the annotations with the Checker Framework; see
 Section~\ref{reporting-bugs}.
-
-
 You can determine the correct annotations for a library either
 automatically by running an inference tool, or manually by reading the
 documentation.  Presently, type inference tools are available for the
 Nullness (Section~\ref{nullness-inference}) and Javari
 (Section~\ref{javari-inference}) type systems.
 
-You can make the annotations known to the JSR 308 compiler (and thus
-to the checkers) in two ways.
 
-\begin{itemize}
+\section{Choosing between stub files and annotated \<.class> files}
 
-\item You can use the stub class generation tool to create a ``stub
-  file'' containing classes with no method bodies,
-  and annotate the stub classes
-  file.  Then, you can supply the stub files to the checker when
-  compiling/checking your program.
-  Section~\ref{stub} describes how to use the stub class generation
-  tools.
+A checker can read annotations either from a stub file or from a library's
+\<.class> files.  This section helps you choose between the two alternatives.
 
-\item You can annotate the compiled
-  \code{.jar} or \code{.class} files using the Annotation File Utilities
-  (\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
-  First, express the annotations textually as an annotation index file, and
-  then the tools insert them in the compiled library class files.
-  See the Annotation File Utilities documentation for full details.
+Once created, a stub file can be used directly; this makes it an easy way
+to get started with library annotations.
+When provided by the author of the checker, a stub file is used
+automatically, with no need for the user to supply a command-line option.
 
-\end{itemize}
+Inserting annotations in a library's \<.class> files takes an extra step
+using an external tool, the Annotation File Utilities
+(\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
+However, this process does not suffer the limitations of stub files, such
+as its inability to handle declaration annotations
+(Section~\ref{stub-limitations}).
 
 
 \section{Using stub classes\label{stub}\label{stub-creating-and-using}}
 
-A stub file contains ``stub classes'' that contain annotated signatures.  A
-checker uses those annotated signatures at compile time, instead of or in
+A stub file contains ``stub classes'' that contain annotated signatures,
+but no method bodies.  A
+checker uses the annotated signatures at compile time, instead of or in
 addition to annotations that appear in the library.
 
 Section~\ref{stub-creating} describes how to create stub classes.
 Section~\ref{stub-using} describes how to use stub classes.
 These sections illustrate stub classes via the example of creating a \code{@\refclass{interning/quals}{Interned}}-annotated
-version of \code{java.lang.String}.  (You don't need to repeat these steps,
-since such a stub class is already included in the Checker Framework
-distribution and used automatically by the Interning Checker;
-see file \code{checkers/src/checkers/interning/jdk.astub}, which
-is reproduced in Section~\ref{stub-format}.)
+version of \code{java.lang.String}.  You don't need to repeat these steps
+to handle \code{java.lang.String} for the Interning Checker,
+but you might do something similar for a different class and/or checker.
 
 % First, you must install the skeleton class generator
 % (Section~\ref{skeleton-installing}).
 
 \subsection{Creating a stub file\label{stub-creating}}
+
+Every Java file is a stub file.  If you have access to the Java file, then
+it is usually best to use the Java file as the stub file, without removing
+any of the parts that the stub file format permits you to.  Just add
+annotations to the signatures, leaving the method bodies unchanged.
+This approach retains the original
+documentation and source code, making it easier for a programmer to
+double-check the annotations.  It also enables creation of diffs, easing
+the process of upgrading when a library adds new methods.  And, the
+annotations are in a format that the library maintainers can even
+incorporate.
+
+The downside of this approach is that the stub files are larger.  This can
+slow down parsing.  Furthermore, a programmer must search the stub file
+for a given method rather than just skimming one or two pages of signatures.
+
+If you do not have access to the library source code, then you can create a
+stub file from the the class file (Section~\ref{stub-creating}),
+and then annotate it.  The rest of this section describes this approach.
+
 
 \begin{enumerate}
 
@@ -114,17 +146,9 @@ add the following import statement at the beginning of the file:
 
 \subsection{Using a stub file\label{stub-using}}
 
-  When you run \code{javac} with a given checker/processor, you can specify
-  a list of the stub files or directories using
-  \code{-Astubs=\emph{file\_or\_path\_name}}.  The stub path entries
-  are delimited by
-  \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
-  When you supply a stub directory, the checker only considers the enclosed
-  stub files whose names end with \code{.astub}.
-
-  The \code{-Astubs} argument causes the Checker Framework to read annotations
-  from annotated stub classes in preference to the unannotated original
-  library classes.
+The \code{-Astubs} argument causes the Checker Framework to read
+annotations from annotated stub classes in preference to the unannotated
+original library classes.  For example:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -136,43 +160,46 @@ add the following import statement at the beginning of the file:
 \end{smaller}
 %END LATEX
 
-Checker and library writers are encouraged to distribute stub files for the
-JDK and most commonly used libraries.  Section~\ref{stub-distribution}
-explains how to bundle a stub file, such that they get imported automatically.
-Programmers should only explicitly specify the stub files they create
-themselves.
+Each stub path entry is a file or a directory; specifying a directory is
+equivalent to specifying every file in it whose name ends with
+\code{.astub}.  The stub path entries are delimited by
+\<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
+
+A checker automatically reads the stub file \code{jdk.astub}.  (The checker
+author should place it in the same directory as the Checker class, i.e.,
+the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
+\<-Astubs> argument for additional stub files they create themselves.
+
+% \textbf{The following is not implemented yet}
+% A library writers should create a file \code{library.astub} on the
+% classpath (in the resources directory or the binary jars).
+% The Checker Framework automatically imports all the stub files named
+% \code{library.astub} found in the classpath.  
+
+
+
+
 
 \subsection{Stub file format\label{stub-format}}
 
-The stub file format is designed for simplicity, readability, and
-compactness.  It reads like a Java file but contains only the
-necessary information for type checking.
+Every Java file is a valid stub file.  However, you can omit information
+that is not relevant to pluggable type-checking; this makes the stub file
+smaller and easier for people to read and write.
 
-As an illustration, the stub file for the Interning type system
-(Chapter~\ref{interning-checker}) is as follows.  This file appears as
-\code{checkers/src/checkers/interning/jdk.astub} in the Checker Framework
-distribution.
+As an illustration, a stub file for the Interning type system
+(Chapter~\ref{interning-checker}) could be:
 
 \begin{Verbatim}
   import checkers.interning.quals.Interned;
-
   package java.lang;
-
-  // All instances of Class are interned.
   @Interned class Class<T> { }
-
   class String {
-    // The only interning-related method in the JDK.
     @Interned String intern();
   }
 \end{Verbatim}
 
 
-You can use a regular Java file as a stub file.  Every valid Java file is a
-valid stub file.  However, you can omit
-information that is not relevant to pluggable type-checking; this makes the
-stub file smaller and easier for people to read and write.  You can also
-put annotated signatures for multiple classes in a single stub file.
+
 
 
 The stub file format is allowed to differ from Java source code in the
@@ -187,12 +214,12 @@ following ways:
 \item{\textbf{Method declarations:}}
   You only have to specify the methods that you need to annotate.
   Any method declaration may be omitted, in which case the checker reads
-  its annotations from the library.  (If you are using a stub class, then
-  typically the library's version is unannotated.)
+  its annotations from library's \<.class> files.  (If you are using a stub class, then
+  typically the library is unannotated.)
 
 \item{\textbf{Declaration specifiers:}}
   Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
-  may be omitted, since they have nothing to do with types.
+  may be omitted.
 
 \item{\textbf{Import statements:}}
   The only required import statements are the ones to import type
@@ -208,27 +235,9 @@ following ways:
 \end{description}
 
 
-\subsection{Distributing stub files with the Checker Framework\label{stub-distribution}}
+\subsection{Limitations\label{stub-limitations}}
 
-A stub file that is distributed with the Checker Framework doesn't need to
-be explicitly specified by the
-programmer; the checker automatically uses it.
-
-A checker writer should include the JDK stub file as \code{jdk.astub} in the
-same directory level as the Checker class (i.e., the subclass of
-\code{BaseTypeVisitor}).  The Checker Framework imports the \code{jdk.astub}
-automatically.
-
-% \textbf{The following is not implemented yet}
-% A library writers should create a file \code{library.astub} on the
-% classpath (in the resources directory or the binary jars).
-% The Checker Framework automatically imports all the stub files named
-% \code{library.astub} found in the classpath.  
-
-
-\subsection{Known problems}
-
-The Checker Framework stub file reader has several limitations:
+The stub file reader has several limitations:
 
 \begin{itemize}
 \item
@@ -236,29 +245,16 @@ The Checker Framework stub file reader has several limitations:
   It does not handle \code{enum}s.
 \item
   % Still a problem as of 9/2/2009.
-  It only handles type annotations, not declaration annotations (e.g. IGJ's \<Assignable>).
+  It only handles type annotations, not declaration annotations (e.g.,
+  IGJ's \<@Assignable> or Interning's \<@UsesObjectEquals>).
+\item
+  It does not handle nested classes.  To work around this, it permits a
+  top-level class to be written with a \<\$> in its name, and applies the
+  annotations to the appropriate nested class.
 \end{itemize}
 
-
-\subsection{Style tips for stub files}
-
-Every Java file is a stub file.  If you have access to the Java file, then
-it is usually best to use the Java file as the stub file, without removing
-any of the parts that the stub file format permits you to.  Just add
-annotations to the full source code.  This approach retains the original
-documentation and source code, making it easier for a programmer to
-double-check the annotations.  It also enables creation of diffs, easing
-the process of upgrading when a library adds new methods.  And, the
-annotations are in a format that the library maintainers can even
-incorporate.
-
-The downside of this approach is that the stub files are larger.  This can
-slow down parsing.  Furthermore, a programmer must search the stub file
-for a given method rather than just skimming one or two pages of signatures.
-
-If you do not have access to the library source code, then you can create a
-stub file from the Javadoc or the class file, and then annotate it.
-
+If these limitations are a problem, then you should insert annotations
+in the library's \<.class> files instead.
 
 
 % Label "skeleton" is for old links from the Javarifier manual, to prevent
@@ -275,7 +271,7 @@ If you use a different \<javac>, then you must add a
 \code{-Xbootclasspath/p:} argument, which causes the compiler to read
 annotations from annotated JDK classes in preference to the unannotated
 original library classes.  Supply \code{-Xbootclasspath/p:} in addition to
-whatever other arguments you usually use, including \code{-classpath}.
+whatever other arguments you usually use, including \code{-classpath}.  For example:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -292,7 +288,12 @@ print a message warning you to do so.  In the unlikely event that you want
 to suppress this warning, use \code{-Anocheckjdk}.
 
 
-The annotated JDK should \emph{not} be in your classpath at run time.
+The annotated JDK should \emph{not} be in your classpath at run time, only
+at compile time.
+
+The supplied annotated JDK is a version of JDK 6.  If you wish to have an
+annotated version of JDK 7, you will need to create it yourself.  Running
+\<ant jdk.jar> from the \<checkers/> directory will perform this process.
 
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,

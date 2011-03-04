@@ -13,6 +13,7 @@ import checkers.flow.*;
 import checkers.nullness.quals.*;
 import checkers.quals.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -216,14 +217,16 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
-        AnnotatedExecutableType method = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
 //        poly.annotate(method.getElement(), method);
 
-        mapGetHeuristics.handle(tree, method);
+        TreePath path = this.getPath(tree);
+        mapGetHeuristics.handle(path, method);
         collectionToArrayHeuristics.handle(tree, method);
-        return method;
+        return mfuPair;
     }
 
     @Override

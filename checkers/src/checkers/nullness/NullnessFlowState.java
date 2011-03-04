@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 import checkers.flow.DefaultFlowState;
 import checkers.flow.FlowState;
@@ -49,8 +50,8 @@ public class NullnessFlowState extends DefaultFlowState {
         addExtras(nnExprs, nfs.nnExprs);
     }
 
-    private static void addExtras(List<String> mod, List<String> add) {
-        for (String a : add) {
+    private static <T> void addExtras(List<T> mod, List<T> add) {
+        for (T a : add) {
             if (!mod.contains(a)) {
                 mod.add(a);
             }
@@ -61,18 +62,7 @@ public class NullnessFlowState extends DefaultFlowState {
     public void and(FlowState other, QualifierHierarchy annoRelations) {
         NullnessFlowState nfs = (NullnessFlowState) other;
         super.and(other, annoRelations);
-        keepIfInBoth(nnExprs, nfs.nnExprs);
-    }
-
-    private static void keepIfInBoth(List<String> mod, List<String> other) {
-        Iterator<String> it = mod.iterator();
-        while(it.hasNext()) {
-            String el = it.next();
-
-            if (!other.contains(el)) {
-                it.remove();
-            }
-        }
+        nnExprs.retainAll(nfs.nnExprs);
     }
 
     @Override

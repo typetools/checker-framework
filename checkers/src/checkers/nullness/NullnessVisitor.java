@@ -44,7 +44,7 @@ import com.sun.source.tree.*;
  *
  * @see NullnessSubchecker
  */
-public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
+public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
     private final AnnotationMirror NONNULL, NULLABLE;
@@ -204,7 +204,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
     }
 
     @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey, Void p) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         // allow LazyNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils.elementFromDeclaration((VariableTree)varTree);
@@ -212,7 +212,7 @@ public class NullnessVisitor extends BaseTypeVisitor<Void, Void> {
                 return;
         }
 
-        super.commonAssignmentCheck(varTree, valueExp, errorKey, p);
+        super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
     //////////////////////// Field Initializations //////////////////////////

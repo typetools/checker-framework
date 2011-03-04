@@ -23,6 +23,7 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
+import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 
@@ -38,6 +39,9 @@ import com.sun.source.tree.Tree;
  * @see Flow
  */
 public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends AnnotatedTypeFactory {
+
+    /** The type checker to use. */
+    protected Checker checker;
 
     /** should use flow by default */
     protected static boolean FLOW_BY_DEFAULT = true;
@@ -69,6 +73,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root, boolean useFlow) {
         super(checker, root);
+        this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
@@ -195,11 +200,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
-        AnnotatedExecutableType method = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         poly.annotate(method.getElement(), method);
-        return method;
+        return mfuPair;
     }
 
     // **********************************************************************

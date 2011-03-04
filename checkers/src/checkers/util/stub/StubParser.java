@@ -105,14 +105,14 @@ public class StubParser {
         return result;
     }
 
-    // One of the two main entry points
+    // One of the two main entry points.  Returns the result.
     public Map<Element, AnnotatedTypeMirror> parse() {
         Map<Element, AnnotatedTypeMirror> result = new HashMap<Element, AnnotatedTypeMirror>();
         parse(result);
         return result;
     }
 
-    // One of the two main entry points
+    // One of the two main entry points.  Side-effects the argument.
     public void parse(Map<Element, AnnotatedTypeMirror> result) {
         parse(this.index, result);
     }

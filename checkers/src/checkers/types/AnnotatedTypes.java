@@ -480,8 +480,8 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Given a method method invocation, it returns a mapping of the type variables
-     * to their parameters if any exist.
+     * Given a method invocation, return a mapping of the type variables
+     * to their parameters, if any exist.
      *
      * It uses the method invocation type parameters if specified, otherwise
      * it infers them based the passed arguments or the return type context,
@@ -520,7 +520,7 @@ public class AnnotatedTypes {
      * it infers them based the passed arguments or the return type context,
      * according to JLS 15.12.2.
      */
-    // Note that this implementation is buggy as it only infers arguments
+    // TODO: Note that this implementation is buggy as it only infers arguments
     // that make it to the return type.  So it would fail for invocations to
     // <T> void test(T arg1, T arg2)
     // in such cases, T is infered to be '? extends T.upperBound'
@@ -572,8 +572,7 @@ public class AnnotatedTypes {
                 while (upperBound.getKind() == TypeKind.TYPEVAR)
                     upperBound = ((AnnotatedTypeVariable)upperBound).getUpperBound();
                 WildcardType wc = env.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                @SuppressWarnings("deprecation")
-                AnnotatedWildcardType wctype = new AnnotatedWildcardType(wc, env, factory);
+                AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, env, factory);
                 wctype.setElement(typeVar.getElement());
                 wctype.setExtendsBound(upperBound);
                 argument = wctype;
@@ -591,7 +590,7 @@ public class AnnotatedTypes {
         TypeResolutionFinder finder = new TypeResolutionFinder(typeVar);
         List<AnnotatedTypeMirror> lubForVar = finder.visit(methodType.getReturnType(), returnType);
 
-        // This may introduce a bug, but I don't want to deal with it right now
+        // TODO: This may introduce a bug, but I don't want to deal with it right now
         if (lubForVar.isEmpty())
             return null;
 
@@ -818,7 +817,7 @@ public class AnnotatedTypes {
      */
     public void annotateAsLub(AnnotatedTypeMirror lub,
             AnnotatedTypeMirror ...types) {
-        // It it anonoymous
+        // Is it anonymous?
         if (isAnonymousType(lub)) {
             // Find the intersect types
             AnnotatedDeclaredType adt = (AnnotatedDeclaredType)lub;
