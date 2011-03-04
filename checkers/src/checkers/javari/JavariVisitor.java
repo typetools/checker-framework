@@ -20,7 +20,7 @@ import checkers.util.TreeUtils;
  *
  * @see BaseTypeVisitor
  */
-public class JavariVisitor extends BaseTypeVisitor {
+public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
 
     final private AnnotationMirror READONLY, MUTABLE, POLYREAD, QREADONLY;
 

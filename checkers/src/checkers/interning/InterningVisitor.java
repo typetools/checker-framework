@@ -28,7 +28,7 @@ import static javax.lang.model.util.ElementFilter.*;
  *
  * @see BaseTypeVisitor
  */
-public final class InterningVisitor extends BaseTypeVisitor {
+public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
