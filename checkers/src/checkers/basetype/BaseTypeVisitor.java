@@ -1113,7 +1113,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (shouldSkip(element))
                 return null;
 
-            List<AnnotatedTypeVariable> typevars = atypeFactory.typevariablesFromUse(type, element);
+            List<AnnotatedTypeVariable> typevars = atypeFactory.typeVariablesFromUse(type, element);
 
             checkTypeArguments(tree, typevars,
                     type.getTypeArguments(), tree.getTypeArguments());
