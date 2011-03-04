@@ -214,6 +214,10 @@ public class TypeHierarchy {
         if (lhs.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
             if (visited.contains(lhs.getElement())) return true;
             visited.add(lhs.getElement());
+            // TODO: the following two lines were added to make tests/nullness/MethodTypeVars2 pass.
+            // Is this correct or just a quick fix?
+            if (visited.contains(((AnnotatedTypeVariable)lhs).getUpperBound().getElement())) return true;
+            visited.add(((AnnotatedTypeVariable)lhs).getUpperBound().getElement());
             return isSubtype(rhs, ((AnnotatedTypeVariable)lhs).getUpperBound());
         }
 

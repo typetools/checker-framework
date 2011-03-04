@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
+import java.util.Map.Entry;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -17,6 +18,8 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
 import checkers.nullness.quals.Nullable;
 import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -500,6 +503,40 @@ public class AnnotatedTypeFactory {
         annotateImplicit(element, type);
     }
 
+
+    /**
+     * Adapt the upper bounds of the type variables of a class relative
+     * to the type instantiation.
+     * In some type systems, the upper bounds depend on the instantiation
+     * of the class. For example, in the Generic Universe Type system,
+     * consider a class declaration
+     *    class C<X extends @Peer Object>
+     * then the instantiation
+     *    @Rep C<@Rep Object>
+     * is legal. The upper bounds of class C have to be adapted
+     * by the main modifier.
+     *
+     * TODO: ensure that this method is consistently used instead
+     * of directly querying the type variables.
+     *
+     * @param type The use of the type
+     * @param element The corresponding element
+     * @return The adapted type variables
+     */
+    public List<AnnotatedTypeVariable> typeVariablesFromUse(
+            AnnotatedDeclaredType type, TypeElement element) {
+
+        AnnotatedDeclaredType generic = getAnnotatedType(element);
+
+        List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
+
+        for (AnnotatedTypeMirror atm : tvars) {
+            res.add((AnnotatedTypeVariable)atm);
+        }
+        return res;
+    }
+
     /**
      * Adds annotations to the type based on the annotations from its class
      * type if and only if no annotations are already present on the type.
@@ -743,23 +780,40 @@ public class AnnotatedTypeFactory {
      * customization based on receiver type should be in accordance to its
      * specification.
      *
+     * The return type is a pair of the type of the invoked method and
+     * the (inferred) type arguments.
+     * Note that neither the explicitly passed nor the inferred type arguments
+     * are guaranteed to be subtypes of the corresponding upper bounds.
+     * See method
+     * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List, Object)}
+     * for the checks of type argument well-formedness.
+     *
      * @param tree  the method invocation tree
-     * @return the method type being invoked with tree
+     * @return the method type being invoked with tree and the (inferred) type arguments
      */
-    public AnnotatedExecutableType methodFromUse(MethodInvocationTree tree) {
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror type = getReceiver(tree);
         AnnotatedExecutableType methodType =
             atypes.asMemberOf(type, methodElt);
+        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
             atypes.findTypeArguments(tree);
 
         if (!typeVarMapping.isEmpty()) {
+            for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+                typeargs.add(typeVarMapping.get(tv));
+            }
             methodType = methodType.substitute(typeVarMapping);
+        } else {
+            // Get type arguments as passed to the invocation.
+            for (Tree arg : tree.getTypeArguments()) {
+                typeargs.add(this.getAnnotatedTypeFromTypeTree(arg));
+            }
         }
 
-        return methodType;
+        return Pair.of(methodType, typeargs);
     }
 
     /**
@@ -1210,7 +1264,7 @@ public class AnnotatedTypeFactory {
             current = current.getParentPath();
         }
 
-        // OK, we give up. do a full scan
+        // OK, we give up. Do a full scan.
         return TreePath.getPath(root, node);
     }
 
@@ -1330,4 +1384,5 @@ public class AnnotatedTypeFactory {
 
         return result;
     }
+
 }

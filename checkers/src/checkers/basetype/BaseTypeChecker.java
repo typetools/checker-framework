@@ -189,10 +189,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
+
         QualifierHierarchy hierarchy = factory.build();
-        if (hierarchy.getTypeQualifiers().size() < 2) {
-            throw new IllegalStateException("Invalid qualifier hierarchy: hierarchy requires at least two annotations: " + hierarchy.getTypeQualifiers());
+        if (hierarchy.getTypeQualifiers().size() < 1) {
+            throw new IllegalStateException("Invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
         }
+
         return hierarchy;
     }
 
@@ -239,7 +241,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected BaseTypeVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
@@ -248,7 +250,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             final String classToLoad =
                 checkerClass.getName().replace("Checker", "Visitor")
                 .replace("Subchecker", "Visitor");
-            BaseTypeVisitor<?, ?> result = invokeConstructorFor(classToLoad,
+            BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { this.getClass(), CompilationUnitTree.class },
                     new Object[] { this, root });
             if (result != null)
@@ -257,7 +259,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         // If a visitor couldn't be loaded reflectively, return the default.
-        return new BaseTypeVisitor<Void, Void>(this, root);
+        return new BaseTypeVisitor<BaseTypeChecker>(this, root);
     }
 
     /**
