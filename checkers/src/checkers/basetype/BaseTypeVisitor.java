@@ -232,7 +232,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         validateTypeOf(node);
         // If there's no assignment in this variable declaration, skip it.
         if (node.getInitializer() != null) {
-            commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible", p);
+            commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
         }
         return super.visitVariable(node, p);
     }
@@ -246,7 +246,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     @Override
     public R visitAssignment(AssignmentTree node, P p) {
         commonAssignmentCheck(node.getVariable(), node.getExpression(),
-                "assignment.type.incompatible", p);
+                "assignment.type.incompatible");
         return super.visitAssignment(node, p);
     }
 
@@ -266,7 +266,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             annoTypes.getIteratedType(iterableType);
         validateTypeOf(node.getVariable());
         commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                "enhancedfor.type.incompatible", p);
+                "enhancedfor.type.incompatible");
         return super.visitEnhancedForLoop(node, p);
     }
 
@@ -302,11 +302,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
         checkTypeArguments(node, invokedMethod.getTypeVariables(),
-                typeargs, node.getTypeArguments(), p);
+                typeargs, node.getTypeArguments());
 
         List<AnnotatedTypeMirror> params =
             annoTypes.expandVarArgs(invokedMethod, node.getArguments());
-        checkArguments(params, node.getArguments(), p);
+        checkArguments(params, node.getArguments());
 
         if (isVectorCopyInto(invokedMethod)) {
             typeCheckVectorCopyIntoArgument(node, params);
@@ -372,7 +372,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                 passedAsArray.getComponentType(),
                 receiverAsVector.getTypeArguments().get(0),
                 node.getArguments().get(0),
-                "vector.copyinto.type.incompatible", null);
+                "vector.copyinto.type.incompatible");
     }
 
     /**
@@ -395,19 +395,21 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         List<AnnotatedTypeMirror> params =
             annoTypes.expandVarArgs(constructor, passedArguments);
 
-        checkArguments(params, passedArguments, p);
+        checkArguments(params, passedArguments);
 
         // Get the constructor type.
-        AnnotatedExecutableType type =
-            atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
+        // TODO: What is the difference between "type" and "constructor"?
+        // Using "constructor" seems to work equally well...
+        // AnnotatedExecutableType type =
+        //   atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
 
         // Get the type args to the constructor.
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
         for (Tree tree : node.getTypeArguments())
             typeargs.add(atypeFactory.getAnnotatedTypeFromTypeTree(tree));
 
-        checkTypeArguments(node, type.getTypeVariables(),
-                typeargs, node.getTypeArguments(), p);
+        checkTypeArguments(node, constructor.getTypeVariables(),
+                typeargs, node.getTypeArguments());
 
         AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
         checkConstructorInvocation(dt, constructor, node);
@@ -433,7 +435,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
 
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(enclosingMethod);
         commonAssignmentCheck(methodType.getReturnType(), node.getExpression(),
-                "return.type.incompatible", p);
+                "return.type.incompatible");
 
         return super.visitReturn(node, p);
     }
@@ -478,39 +480,21 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         validateTypeOf(node);
         if (node.getType() != null && node.getInitializers() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            checkArrayInitialization(arrayType.getComponentType(), node.getInitializers(), p);
+            checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
         }
 
         return super.visitNewArray(node, p);
     }
 
     /**
-     * Checks that the annotations on the type arguments supplied to a type or a
-     * method invocation are within the bounds of the type variables as
-     * declared, and issues the "generic.argument.invalid" error if they are
-     * not.
+     * Do not override this method!
+     * Previously, this method contained some logic, but the main modifier of types was missing.
+     * It has been merged with the TypeValidator below.
+     * This method doesn't need to do anything, as the type is already validated.
      */
     @Override
-    public R visitParameterizedType(ParameterizedTypeTree node, P p) {
-        if (TreeUtils.isDiamondTree(node))
-            return super.visitParameterizedType(node, p);
-
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedTypeFromTypeTree(node);
-
-        if (type.getKind() != TypeKind.DECLARED)
-            return super.visitParameterizedType(node, p);
-
-        AnnotatedDeclaredType declared = (AnnotatedDeclaredType)type;
-        final TypeElement element =
-            (TypeElement)declared.getUnderlyingType().asElement();
-        if (shouldSkip(element))
-            return super.visitParameterizedType(node, p);
-        AnnotatedDeclaredType generic = atypeFactory.getAnnotatedType(element);
-
-        checkTypeArguments(node, generic.getTypeArguments(),
-                declared.getTypeArguments(), node.getTypeArguments(), p);
-
-        return super.visitParameterizedType(node, p);
+    public final R visitParameterizedType(ParameterizedTypeTree node, P p) {
+        return null; // super.visitParameterizedType(node, p);
     }
 
     protected void checkTypecastRedundancy(TypeCastTree node, P p) {
@@ -583,11 +567,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param errorKey the error message to use if the check fails
      * @param p a checker-specified parameter
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey, P p) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null;
         checkAssignability(var, varTree);
-        commonAssignmentCheck(var, valueExp, errorKey, p);
+        commonAssignmentCheck(var, valueExp, errorKey);
     }
 
     /**
@@ -601,7 +585,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, @CompilerMessageKey String errorKey, P p) {
+            ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         if (shouldSkip(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -610,11 +594,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
             AnnotatedTypeMirror compType = ((AnnotatedArrayType)varType).getComponentType();
             NewArrayTree arrayTree = (NewArrayTree)valueExp;
             assert arrayTree.getInitializers() != null;
-            checkArrayInitialization(compType, arrayTree.getInitializers(), p);
+            checkArrayInitialization(compType, arrayTree.getInitializers());
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null;
-        commonAssignmentCheck(varType, valueType, valueExp, errorKey, p);
+        commonAssignmentCheck(varType, valueType, valueExp, errorKey);
     }
 
     /**
@@ -629,7 +613,7 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey, P p) {
+            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey) {
 
         boolean success = checker.isSubtype(valueType, varType);
 
@@ -652,9 +636,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     }
 
     protected void checkArrayInitialization(AnnotatedTypeMirror type,
-            List<? extends ExpressionTree> initializers, P p) {
+            List<? extends ExpressionTree> initializers) {
         for (ExpressionTree init : initializers)
-            commonAssignmentCheck(type, init, "type.incompatible", p);
+            commonAssignmentCheck(type, init, "type.incompatible");
     }
 
     /**
@@ -670,25 +654,24 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
      * @param p
      */
     protected void checkTypeArguments(Tree toptree,
-            List<? extends AnnotatedTypeMirror> typevars,
+            List<? extends AnnotatedTypeVariable> typevars,
             List<? extends AnnotatedTypeMirror> typeargs,
-            List<? extends Tree> typeargTrees, P p) {
+            List<? extends Tree> typeargTrees) {
 
         // If there are no type variables, do nothing.
         if (typevars.isEmpty()) return;
 
-        Iterator<? extends AnnotatedTypeMirror> varIter = typevars.iterator();
+        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
 
         while (varIter.hasNext()) {
 
-            AnnotatedTypeMirror var = varIter.next();
-            assert var.getKind() == TypeKind.TYPEVAR : "Expected type variable, found: " + var.getKind();
-            AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) var;
+            AnnotatedTypeVariable typeVar = varIter.next();
 
             assert argIter.hasNext() : "Found more type variables than type arguments: " + typevars + " / " + typeargs;
 
             AnnotatedTypeMirror typearg = argIter.next();
+
             // TODO skip wildcards for now to prevent a crash
             if (typearg.getKind() == TypeKind.WILDCARD) continue;
 
@@ -703,13 +686,11 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                         // I hope this is less confusing for users.
                         commonAssignmentCheck(typeVar.getUpperBound(), typearg,
                                 toptree,
-                                "argument.type.incompatible", p);
-
+                                "argument.type.incompatible");
                     } else {
                         commonAssignmentCheck(typeVar.getUpperBound(), typearg,
                                 typeargTrees.get(typeargs.indexOf(typearg)),
-                                "generic.argument.invalid", p);
-
+                                "generic.argument.invalid");
                     }
                 }
             }
@@ -721,7 +702,6 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                         checker.report(Result.failure("argument.type.incompatible",
                                 typearg, typeVar),
                                 toptree);
-
                     } else {
                         checker.report(Result.failure("generic.argument.invalid",
                                 typearg, typeVar),
@@ -791,12 +771,12 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
     // This really should have a private final method
     // Unfortunately Javari override it!
     protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
-            List<? extends ExpressionTree> passedArgs, P p) {
+            List<? extends ExpressionTree> passedArgs) {
         assert requiredArgs.size() == passedArgs.size();
         for (int i = 0; i < requiredArgs.size(); ++i) {
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
-                    "argument.type.incompatible", p);
+                    "argument.type.incompatible");
         }
     }
 
@@ -1024,10 +1004,9 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
-
+        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
             if (shouldSkip(type.getElement()))
-                return super.visitDeclared(type, p);
+                return super.visitDeclared(type, tree);
 
             // Ensure that type use is a subtype of the element type
             AnnotatedDeclaredType useType = type.getErased();
@@ -1036,10 +1015,110 @@ public class BaseTypeVisitor<R, P> extends SourceVisitor<R, P> {
                         useType.getUnderlyingType().asElement()).getErased();
 
             if (!checker.isValidUse(elemType, useType)) {
-                reportError(useType, p);
+                reportError(useType, tree);
             }
 
-            return super.visitDeclared(type, p);
+            // System.out.println("Tree type: " + tree.getKind());
+
+            /* Try to reconstruct the ParameterizedTypeTree from the given tree.
+             * TODO: there has to be a nicer way to do this...
+             */
+            ParameterizedTypeTree typeargtree = null;
+
+            switch (tree.getKind()) {
+                case VARIABLE:
+                    Tree lt = ((VariableTree)tree).getType();
+                    if (lt instanceof ParameterizedTypeTree) {
+                        typeargtree = (ParameterizedTypeTree) lt;
+                    } else {
+                      //   System.out.println("Found a: " + lt);
+                    }
+                    break;
+                case PARAMETERIZED_TYPE:
+                    typeargtree = (ParameterizedTypeTree) tree;
+                    break;
+                case NEW_CLASS:
+                    NewClassTree nct = (NewClassTree) tree;
+                    ExpressionTree nctid = nct.getIdentifier();
+                    if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
+                        typeargtree = (ParameterizedTypeTree) nctid;
+                        /*
+                         * This is quite tricky... for anonymous class instantiations,
+                         * the type at this point has no type arguments.
+                         * By doing the following, we get the type arguments again.
+                         */
+                        type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
+                    }
+                    break;
+                case IDENTIFIER:
+                case ANNOTATED_TYPE:
+                case ARRAY_TYPE:
+                case NEW_ARRAY:
+                case MEMBER_SELECT:
+                case UNBOUNDED_WILDCARD:
+                case EXTENDS_WILDCARD:
+                case SUPER_WILDCARD:
+                    // Nothing to do.
+                    break;
+                default:
+                    System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
+            }
+
+            if (typeargtree!=null) {
+                // We have a ParameterizedTypeTree -> visit it.
+
+                visitParameterizedType(type, typeargtree);
+
+                /* Instead of calling super with the unchanged "tree", adapt the second
+                 * argument to be the corresponding type argument tree.
+                 * This ensures that the first and second parameter to this method always correspond.
+                 * visitDeclared is the only method that had this problem.
+                 */
+                List<? extends AnnotatedTypeMirror> tatypes = type.getTypeArguments();
+
+                if (tatypes == null)
+                    return null;
+
+                assert tatypes.size() == typeargtree.getTypeArguments().size();
+
+                for (int i=0; i < tatypes.size(); ++i) {
+                    scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
+                }
+
+                return null;
+
+                // Don't call the super version, because it creates a mismatch between
+                // the first and second parameters.
+                // return super.visitDeclared(type, tree);
+            }
+
+            return super.visitDeclared(type, tree);
+        }
+
+        /**
+         * Checks that the annotations on the type arguments supplied to a type or a
+         * method invocation are within the bounds of the type variables as
+         * declared, and issues the "generic.argument.invalid" error if they are
+         * not.
+         *
+         * This method used to be visitParameterizedType, which incorrectly handles the main
+         * annotation on generic types.
+         */
+        protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
+            if (TreeUtils.isDiamondTree(tree))
+                return null;
+
+            final TypeElement element =
+                (TypeElement)type.getUnderlyingType().asElement();
+            if (shouldSkip(element))
+                return null;
+
+            List<AnnotatedTypeVariable> typevars = atypeFactory.typevariablesFromUse(type, element);
+
+            checkTypeArguments(tree, typevars,
+                    type.getTypeArguments(), tree.getTypeArguments());
+
+            return null;
         }
     }
 
