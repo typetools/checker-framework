@@ -22,7 +22,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
  *
  * @see BaseTypeVisitor
  */
-public class IGJVisitor extends BaseTypeVisitor<Void, Void> {
+public class IGJVisitor extends BaseTypeVisitor {
     IGJChecker checker;
 
     public IGJVisitor(IGJChecker checker, CompilationUnitTree root) {

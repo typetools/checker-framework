@@ -28,7 +28,7 @@ import static javax.lang.model.util.ElementFilter.*;
  *
  * @see BaseTypeVisitor
  */
-public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
+public final class InterningVisitor extends BaseTypeVisitor {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
@@ -91,7 +91,7 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
         if (suppressClassAnnotation(left, right)) {
             return super.visitBinary(node, p);
         }
-        
+
         Element leftElt = null;
         Element rightElt = null;
         if(left instanceof checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType){
@@ -124,36 +124,36 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
 
         return super.visitMethodInvocation(node, p);
     }
-    
-    
+
+
     /*
-     * Method to implement the @UsesObjectEquals functionality. 
+     * Method to implement the @UsesObjectEquals functionality.
      * If a class is marked @UsesObjectEquals, it must:
-     * 
+     *
      *    -not override .equals(Object)
      *    -be a subclass of Object or another class marked @UsesObjectEquals
-     * 
+     *
      * If a class is not marked @UsesObjectEquals, it must:
-     * 
+     *
      * 	  -not have a superclass marked @UsesObjectEquals
-     * 
-     * 
+     *
+     *
      * @see checkers.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
      */
     @Override
     public Void visitClass(ClassTree node, Void p){
     	//Looking for an @UsesObjectEquals class declaration
-    	
+
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
-    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class); 
-    	
+    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
+
     	Tree superClass = node.getExtendsClause();
 		Element elmt = null;
 		if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)){
 			elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
 		}
-		
-	
+
+
 		//if it's there, check to make sure does not override equals
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
@@ -168,17 +168,17 @@ public final class InterningVisitor extends BaseTypeVisitor<Void, Void> {
     				}
     			}
     		}
-    		
-    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){		  
+
+    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
     			checker.report(Result.failure("superclass.unmarked"), node);
     		}
-    	} else { 
+    	} else {
     		//the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
   			if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
     			checker.report(Result.failure("superclass.marked"), node);
     		}
     	}
-    	
+
     	return super.visitClass(node, p);
     }
 
