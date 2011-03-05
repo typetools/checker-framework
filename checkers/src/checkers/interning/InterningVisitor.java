@@ -33,13 +33,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
     private final DeclaredType typeToCheck;
-    
-    public static Map<Name, Boolean>  definesEquals;
-    public static Map<Name, Name> parentMap;
-    static {
-    	 definesEquals = new HashMap<Name, Boolean>();
-    	 parentMap = new HashMap<Name, Name>();
-    }
+
     /**
      * Creates a new visitor for type-checking {@link Interned}.
      *
