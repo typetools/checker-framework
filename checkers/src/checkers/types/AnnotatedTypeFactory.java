@@ -806,11 +806,6 @@ public class AnnotatedTypeFactory {
                 typeargs.add(typeVarMapping.get(tv));
             }
             methodType = methodType.substitute(typeVarMapping);
-        } else {
-            // Get type arguments as passed to the invocation.
-            for (Tree arg : tree.getTypeArguments()) {
-                typeargs.add(this.getAnnotatedTypeFromTypeTree(arg));
-            }
         }
 
         return Pair.of(methodType, typeargs);
