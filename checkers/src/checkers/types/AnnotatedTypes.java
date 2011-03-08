@@ -502,11 +502,12 @@ public class AnnotatedTypes {
 
         // Has the user supplied type arguments?
         if (!methodInvocation.getTypeArguments().isEmpty()) {
+            List<? extends TypeParameterElement> tvars = methodElt.getTypeParameters();
+            List<? extends Tree> targs = methodInvocation.getTypeArguments();
+
             for (int i = 0; i < methodElt.getTypeParameters().size(); ++i) {
-                AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable)
-                factory.getAnnotatedType(methodElt.getTypeParameters().get(i));
-                AnnotatedTypeMirror typeArg =
-                    factory.getAnnotatedTypeFromTypeTree(methodInvocation.getTypeArguments().get(i));
+                AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) factory.getAnnotatedType(tvars.get(i));
+                AnnotatedTypeMirror typeArg = factory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 typeArguments.put(typeVar, typeArg);
             }
             return typeArguments;
