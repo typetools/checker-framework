@@ -658,8 +658,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees) {
 
+        // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
+        //         toptree, typevars, typeargs, typeargTrees);
+
         // If there are no type variables, do nothing.
         if (typevars.isEmpty()) return;
+
+        assert typevars.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and type variables" + typevars;
 
         Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
@@ -667,9 +674,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         while (varIter.hasNext()) {
 
             AnnotatedTypeVariable typeVar = varIter.next();
-
-            assert argIter.hasNext() : "Found more type variables than type arguments: " + typevars + " / " + typeargs;
-
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
