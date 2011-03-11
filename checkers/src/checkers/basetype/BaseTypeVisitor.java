@@ -1112,15 +1112,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (TreeUtils.isDiamondTree(tree))
                 return null;
 
-            final TypeElement element =
-                (TypeElement)type.getUnderlyingType().asElement();
+            final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
             if (shouldSkip(element))
                 return null;
 
             List<AnnotatedTypeVariable> typevars = atypeFactory.typeVariablesFromUse(type, element);
 
-            checkTypeArguments(tree, typevars,
-                    type.getTypeArguments(), tree.getTypeArguments());
+            checkTypeArguments(tree, typevars, type.getTypeArguments(), tree.getTypeArguments());
 
             return null;
         }
