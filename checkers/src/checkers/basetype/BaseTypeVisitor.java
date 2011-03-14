@@ -155,6 +155,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (!hasExplicitConstructor(node)) {
                 checkDefaultConstructor(node);
             }
+
+            /* Visit the extends and implements clauses.
+             * The superclass also visits them, but only calls visitParameterizedType, which
+             * looses a main modifier.
+             */
+            Tree ext = node.getExtendsClause();
+            if (ext!=null) {
+                validateTypeOf(ext);
+            }
+
+            List<? extends Tree> impls = node.getImplementsClause();
+            if (impls!=null) {
+                for (Tree im : impls) {
+                    validateTypeOf(im);
+                }
+            }
+
             return super.visitClass(node, p);
         } finally {
             this.visitorState.setClassType(preACT);
@@ -1022,7 +1039,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 reportError(useType, tree);
             }
 
-            // System.out.println("Tree type: " + tree.getKind());
+            // System.out.println("Type: " + type);
+            // System.out.println("Tree: " + tree);
+            // System.out.println("Tree kind: " + tree.getKind());
 
             /* Try to reconstruct the ParameterizedTypeTree from the given tree.
              * TODO: there has to be a nicer way to do this...
@@ -1054,8 +1073,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                         type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
                     }
                     break;
-                case IDENTIFIER:
                 case ANNOTATED_TYPE:
+                    AnnotatedTypeTree ty = (AnnotatedTypeTree) tree;
+                    ExpressionTree undty = ty.getUnderlyingType();
+                    if (undty instanceof ParameterizedTypeTree) {
+                        typeargtree = (ParameterizedTypeTree) undty;
+                    } else if (undty instanceof IdentifierTree) {
+                        // @Something D -> Nothing to do
+                    } else {
+                        System.out.println("TypeValidator.visitDeclared unhandled annotated type tree: " + ty);
+                    }
+                    break;
+                case IDENTIFIER:
                 case ARRAY_TYPE:
                 case NEW_ARRAY:
                 case MEMBER_SELECT:
@@ -1063,6 +1092,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 case EXTENDS_WILDCARD:
                 case SUPER_WILDCARD:
                     // Nothing to do.
+                    // System.out.println("Found a: " + (tree instanceof ParameterizedTypeTree));
                     break;
                 default:
                     System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
@@ -1109,6 +1139,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
          * annotation on generic types.
          */
         protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
+            // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n", type, tree);
+
             if (TreeUtils.isDiamondTree(tree))
                 return null;
 
