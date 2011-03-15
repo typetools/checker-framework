@@ -106,15 +106,26 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         return null;
     }
 
+    /**
+     * Go through the string patterns and add the greatest lower bound of all matching patterns.
+     */
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
         if (!stringPatterns.isEmpty() && tree.getKind() == Tree.Kind.STRING_LITERAL) {
-            String string = (String)tree.getValue();
-            for (Pattern pattern: stringPatterns.keySet()) {
+            AnnotationMirror res = null;
+            String string = (String) tree.getValue();
+            for (Pattern pattern : stringPatterns.keySet()) {
                 if (pattern.matcher(string).matches()) {
-                    type.addAnnotation(stringPatterns.get(pattern));
-                    break;
+                    if (res==null) {
+                        res = stringPatterns.get(pattern);
+                    } else {
+                        AnnotationMirror newres = stringPatterns.get(pattern);
+                        res = qualHierarchy.greatestLowerBound(res, newres);
+                    }
                 }
+            }
+            if (res!=null) {
+                type.addAnnotation(res);
             }
         }
         return super.visitLiteral(tree, type);
