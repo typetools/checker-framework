@@ -1046,57 +1046,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             /* Try to reconstruct the ParameterizedTypeTree from the given tree.
              * TODO: there has to be a nicer way to do this...
              */
-            ParameterizedTypeTree typeargtree = null;
-
-            switch (tree.getKind()) {
-                case VARIABLE:
-                    Tree lt = ((VariableTree)tree).getType();
-                    if (lt instanceof ParameterizedTypeTree) {
-                        typeargtree = (ParameterizedTypeTree) lt;
-                    } else {
-                      //   System.out.println("Found a: " + lt);
-                    }
-                    break;
-                case PARAMETERIZED_TYPE:
-                    typeargtree = (ParameterizedTypeTree) tree;
-                    break;
-                case NEW_CLASS:
-                    NewClassTree nct = (NewClassTree) tree;
-                    ExpressionTree nctid = nct.getIdentifier();
-                    if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
-                        typeargtree = (ParameterizedTypeTree) nctid;
-                        /*
-                         * This is quite tricky... for anonymous class instantiations,
-                         * the type at this point has no type arguments.
-                         * By doing the following, we get the type arguments again.
-                         */
-                        type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
-                    }
-                    break;
-                case ANNOTATED_TYPE:
-                    AnnotatedTypeTree ty = (AnnotatedTypeTree) tree;
-                    ExpressionTree undty = ty.getUnderlyingType();
-                    if (undty instanceof ParameterizedTypeTree) {
-                        typeargtree = (ParameterizedTypeTree) undty;
-                    } else if (undty instanceof IdentifierTree) {
-                        // @Something D -> Nothing to do
-                    } else {
-                        System.out.println("TypeValidator.visitDeclared unhandled annotated type tree: " + ty);
-                    }
-                    break;
-                case IDENTIFIER:
-                case ARRAY_TYPE:
-                case NEW_ARRAY:
-                case MEMBER_SELECT:
-                case UNBOUNDED_WILDCARD:
-                case EXTENDS_WILDCARD:
-                case SUPER_WILDCARD:
-                    // Nothing to do.
-                    // System.out.println("Found a: " + (tree instanceof ParameterizedTypeTree));
-                    break;
-                default:
-                    System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
-            }
+            Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(tree, type);
+            ParameterizedTypeTree typeargtree = p.first;
+            type = p.second;
 
             if (typeargtree!=null) {
                 // We have a ParameterizedTypeTree -> visit it.
@@ -1128,6 +1080,68 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             return super.visitDeclared(type, tree);
         }
+
+        private Pair<ParameterizedTypeTree, AnnotatedDeclaredType>
+        extractParameterizedTypeTree(Tree tree, AnnotatedDeclaredType type) {
+            ParameterizedTypeTree typeargtree = null;
+
+            switch (tree.getKind()) {
+            case VARIABLE:
+                Tree lt = ((VariableTree)tree).getType();
+                if (lt instanceof ParameterizedTypeTree) {
+                    typeargtree = (ParameterizedTypeTree) lt;
+                } else {
+                  //   System.out.println("Found a: " + lt);
+                }
+                break;
+            case PARAMETERIZED_TYPE:
+                typeargtree = (ParameterizedTypeTree) tree;
+                break;
+            case NEW_CLASS:
+                NewClassTree nct = (NewClassTree) tree;
+                ExpressionTree nctid = nct.getIdentifier();
+                if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
+                    typeargtree = (ParameterizedTypeTree) nctid;
+                    /*
+                     * This is quite tricky... for anonymous class instantiations,
+                     * the type at this point has no type arguments.
+                     * By doing the following, we get the type arguments again.
+                     */
+                    type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
+                }
+                break;
+            case ANNOTATED_TYPE:
+                AnnotatedTypeTree tr = (AnnotatedTypeTree) tree;
+                ExpressionTree undtr = tr.getUnderlyingType();
+                if (undtr instanceof ParameterizedTypeTree) {
+                    typeargtree = (ParameterizedTypeTree) undtr;
+                } else if (undtr instanceof IdentifierTree) {
+                    // @Something D -> Nothing to do
+                } else {
+                    // TODO: add more test cases to ensure that nested types are handled correctly,
+                    // e.g. @Nullable() List<@Nullable Object>[][]
+                    Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(undtr, type);
+                    typeargtree = p.first;
+                    type = p.second;
+                }
+                break;
+            case IDENTIFIER:
+            case ARRAY_TYPE:
+            case NEW_ARRAY:
+            case MEMBER_SELECT:
+            case UNBOUNDED_WILDCARD:
+            case EXTENDS_WILDCARD:
+            case SUPER_WILDCARD:
+                // Nothing to do.
+                // System.out.println("Found a: " + (tree instanceof ParameterizedTypeTree));
+                break;
+            default:
+                System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
+            }
+
+            return Pair.of(typeargtree, type);
+        }
+
 
         /**
          * Checks that the annotations on the type arguments supplied to a type or a
