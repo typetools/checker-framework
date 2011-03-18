@@ -40,9 +40,10 @@ Many small updates and fixes.
 Version 1.1.2, 12 Jan 2011
 
 Fake Enum Checker (new):
-  A "fake enum" is a set of integers rather than a proper Java enum.  They
-  are used in legacy code and for efficiency (e.g., in Android).  The Fake
-  Enum Checker gives them the same safety guarantees as a proper Java enum.
+  A "fake enumeration" is a set of integers rather than a proper Java enum.
+  They are used in legacy code and for efficiency (e.g., in Android).  The
+  Fake Enum Checker gives them the same safety guarantees as a proper Java
+  enum.
 
 Property File Checker (new):
   Ensures that valid keys are used for property files and resource bundles.
