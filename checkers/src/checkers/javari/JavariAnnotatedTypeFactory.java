@@ -286,9 +286,11 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * constructed, with the resolved type on its receiver.
      */
     @Override
-    public AnnotatedExecutableType constructorFromUse(NewClassTree tree) {
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
 
-        AnnotatedExecutableType exType = super.constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
+        AnnotatedExecutableType exType = fromUse.first;
+        List<AnnotatedTypeMirror> typeargs = fromUse.second;
 
         List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(exType, tree.getArguments());
@@ -327,7 +329,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (replacement != POLYREAD)  // do not replace if replacement is also @PolyRead
             new AnnotatedTypeReplacer(POLYREAD, replacement).visit(exType);
 
-        return exType;
+        return Pair.of(exType, typeargs);
     }
 
     /**

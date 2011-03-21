@@ -490,43 +490,75 @@ public class AnnotatedTypes {
      * @param methodInvocation  the method invocation tree
      * @return  the mapping of the type variables for this method invocation
      */
+    /* TODO: Used for both MethodInvocationTree and NewClassTree.
+     * Is it nicer to have two case distinctions or to duplicate the whole method?
+     * I wish there were a nice common interface for them...
+     * Update documentation and variable names.
+     */
     public Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    findTypeArguments(MethodInvocationTree methodInvocation) {
+    findTypeArguments(ExpressionTree expr) {
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
-        ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
+        ExecutableElement elt;
+        if (expr instanceof MethodInvocationTree) {
+            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
+        } else if (expr instanceof NewClassTree) {
+            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        } else {
+            // TODO
+            elt = null;
+        }
+
         // Is the method a generic method?
-        if (methodElt.getTypeParameters().isEmpty())
+        if (elt.getTypeParameters().isEmpty())
             return typeArguments;
 
-        // Has the user supplied type arguments?
-        if (!methodInvocation.getTypeArguments().isEmpty()) {
-            List<? extends TypeParameterElement> tvars = methodElt.getTypeParameters();
-            List<? extends Tree> targs = methodInvocation.getTypeArguments();
+        List<? extends Tree> targs;
+        if (expr instanceof MethodInvocationTree) {
+            targs = ((MethodInvocationTree) expr).getTypeArguments();
+        } else if (expr instanceof NewClassTree) {
+            targs = ((NewClassTree) expr).getTypeArguments();
+        } else {
+            // TODO
+            targs = null;
+        }
 
-            for (int i = 0; i < methodElt.getTypeParameters().size(); ++i) {
+        // Has the user supplied type arguments?
+        if (!targs.isEmpty()) {
+            List<? extends TypeParameterElement> tvars = elt.getTypeParameters();
+
+            for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
                 AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) factory.getAnnotatedType(tvars.get(i));
                 AnnotatedTypeMirror typeArg = factory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 typeArguments.put(typeVar, typeArg);
             }
             return typeArguments;
+        } else {
+            return inferTypeArguments(expr);
         }
-
-        return inferTypeArguments(methodInvocation);
     }
+
 
     /**
      * It uses the method invocation type parameters if specified, otherwise
      * it infers them based the passed arguments or the return type context,
      * according to JLS 15.12.2.
+     *
+     * @param expr Either a MethodInvocationTree or NewClassTree
      */
+
     // TODO: Note that this implementation is buggy as it only infers arguments
     // that make it to the return type.  So it would fail for invocations to
     // <T> void test(T arg1, T arg2)
     // in such cases, T is infered to be '? extends T.upperBound'
+
+    /* TODO: Instead of passing in only a MethodInvocationTree, also allow
+     * NewClassTree. ExpressionTree is the smallest common type, unfortunately.
+     * Some names are still from when this was only for method invocations.
+     */
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    inferTypeArguments(MethodInvocationTree methodInvocation) {
+    inferTypeArguments(ExpressionTree expr) {
         //
         // The basic algorithm used here, for each type variable:
         // 1. Find the un-annotated  least upper bound for the type variable
@@ -538,26 +570,43 @@ public class AnnotatedTypes {
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
-        ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
+        ExecutableElement elt;
+        if (expr instanceof MethodInvocationTree) {
+            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
+        } else if (expr instanceof NewClassTree) {
+            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        } else {
+            // TODO
+            elt = null;
+        }
 
         // Find the un-annotated type
-        AnnotatedTypeMirror returnType = factory.type(methodInvocation);
-        factory.annotateImplicit(methodInvocation, returnType);
-        AnnotatedExecutableType methodType =
-            asMemberOf(factory.getReceiver(methodInvocation), methodElt);
+        AnnotatedTypeMirror returnType = factory.type(expr);
+        factory.annotateImplicit(expr, returnType);
+        AnnotatedExecutableType methodType;
 
-        for (TypeParameterElement var : methodElt.getTypeParameters()) {
+        if (expr instanceof MethodInvocationTree) {
+            methodType = asMemberOf(factory.getReceiver(expr), elt);
+        } else if (expr instanceof NewClassTree) {
+            // consider the constructor type itself as the viewpoint
+            methodType = asMemberOf(returnType, elt);
+        } else {
+            // TODO
+            methodType = null;
+        }
+
+        for (TypeParameterElement var : elt.getTypeParameters()) {
             // Find the un-annotated binding for the type variable
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) factory.getAnnotatedType(var);
 
             AnnotatedTypeMirror argument =
-                inferTypeArgUsingParams(typeVar, returnType, methodType, methodInvocation);
+                inferTypeArgUsingParams(typeVar, returnType, methodType, expr);
 
             if (argument == null) {
                 // Using assignment context
                 assert factory.root != null : "root needs to be set when used on trees";
                 AnnotatedTypeMirror assigned =
-                    assignedTo(TreePath.getPath(factory.root, methodInvocation));
+                    assignedTo(TreePath.getPath(factory.root, expr));
                 if (assigned != null) {
                     AnnotatedTypeMirror returnTypeBase = asSuper(methodType.getReturnType(), assigned);
                     List<AnnotatedTypeMirror> lst =
@@ -585,9 +634,11 @@ public class AnnotatedTypes {
         return typeArguments;
     }
 
+    /* @param expr should only be a MethodInvocationTree or NewClassTree!
+    */
     private AnnotatedTypeMirror inferTypeArgUsingParams(AnnotatedTypeVariable typeVar,
             AnnotatedTypeMirror returnType, AnnotatedExecutableType methodType,
-            MethodInvocationTree methodInvocation) {
+            ExpressionTree expr) {
         TypeResolutionFinder finder = new TypeResolutionFinder(typeVar);
         List<AnnotatedTypeMirror> lubForVar = finder.visit(methodType.getReturnType(), returnType);
 
@@ -595,14 +646,24 @@ public class AnnotatedTypes {
         if (lubForVar.isEmpty())
             return null;
 
+        List<? extends ExpressionTree> args;
+        if (expr instanceof MethodInvocationTree) {
+            args = ((MethodInvocationTree) expr).getArguments();
+        } else if (expr instanceof NewClassTree) {
+            args = ((NewClassTree) expr).getArguments();
+        } else {
+            // TODO
+            args = null;
+        }
+
         // find parameter arguments beneficial for inference
         List<AnnotatedTypeMirror> requiredParams =
-            expandVarArgs(methodType, methodInvocation.getArguments());
+            expandVarArgs(methodType, args);
         List<AnnotatedTypeMirror> passedArgs = new ArrayList<AnnotatedTypeMirror>();
 
         for (int i = 0; i < requiredParams.size(); ++i) {
             AnnotatedTypeMirror passedArg = factory.getAnnotatedType(
-                    methodInvocation.getArguments().get(i));
+                    args.get(i));
             AnnotatedTypeMirror requiredArg = requiredParams.get(i);
             if (asSuper(passedArg, requiredArg) != null)
                 passedArg = asSuper(passedArg, requiredArg);

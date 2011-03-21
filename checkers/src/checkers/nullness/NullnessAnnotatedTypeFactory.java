@@ -230,10 +230,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotatedExecutableType constructorFromUse(NewClassTree tree) {
-        AnnotatedExecutableType constructor = super.constructorFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
+        AnnotatedExecutableType constructor = fromUse.first;
         dependentTypes.handleConstructor(tree, constructor);
-        return constructor;
+        return fromUse;
     }
 
     public Set<VariableElement> initializedAfter(MethodTree node) {
