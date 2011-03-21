@@ -25,6 +25,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.source.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -407,7 +408,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (shouldSkip(InternalUtils.constructor(node)))
             return super.visitNewClass(node, p);
 
-        AnnotatedExecutableType constructor = atypeFactory.constructorFromUse(node);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.first;
+        List<AnnotatedTypeMirror> typeargs = fromUse.second;
+
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
             annoTypes.expandVarArgs(constructor, passedArguments);
@@ -419,11 +423,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Using "constructor" seems to work equally well...
         // AnnotatedExecutableType type =
         //   atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
-
-        // Get the type args to the constructor.
-        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
-        for (Tree tree : node.getTypeArguments())
-            typeargs.add(atypeFactory.getAnnotatedTypeFromTypeTree(tree));
 
         checkTypeArguments(node, constructor.getTypeVariables(),
                 typeargs, node.getTypeArguments());
