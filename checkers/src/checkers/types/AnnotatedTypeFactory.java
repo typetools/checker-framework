@@ -822,7 +822,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the invoked constructor (as an executable
      *         type)
      */
-    public AnnotatedExecutableType constructorFromUse(NewClassTree tree) {
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = InternalUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
@@ -835,7 +835,20 @@ public class AnnotatedTypeFactory {
             actualParams.addAll(con.getParameterTypes());
             con.setParameterTypes(actualParams);
         }
-        return con;
+
+        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
+
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
+            atypes.findTypeArguments(tree);
+
+        if (!typeVarMapping.isEmpty()) {
+            for ( AnnotatedTypeVariable tv : con.getTypeVariables()) {
+                typeargs.add(typeVarMapping.get(tv));
+            }
+            con = con.substitute(typeVarMapping);
+        }
+
+        return Pair.of(con, typeargs);
     }
 
     private boolean isSyntheticArgument(Tree tree) {
