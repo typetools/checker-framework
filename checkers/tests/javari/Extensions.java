@@ -16,23 +16,23 @@ class Extensions {
 
     @Mutable class MutableExtension extends BaseClass {}
 
-    //:: (polyread.type)
+    //:: error: (polyread.type)
     @PolyRead class PolyReadIllegalExtension extends BaseClass {}
 
     class SwitchReceivers extends BaseClass {
         String mutableReceiver() @ReadOnly {return null;}
-        //:: (override.receiver.invalid)
+        //:: error: (override.receiver.invalid)
         String readonlyReceiver() @Mutable {return null;} // error
     }
 
     class SwitchReturns extends BaseClass {
-        //:: (override.return.invalid)
+        //:: error: (override.return.invalid)
         @ReadOnly String mutableReturn() {return null;} // error
         @Mutable String readonlyReturn() {return null;}
     }
 
     class PolyReadReturns extends BaseClass {
-        //:: (override.return.invalid)
+        //:: error: (override.return.invalid)
         @PolyRead String mutableReturn() {return null;} // error
         @PolyRead String readonlyReturn() {return null;}
     }
@@ -42,13 +42,13 @@ class Extensions {
     }
 
     class ForcePolyReadReturnToReadOnly extends BaseClass {
-        //:: (override.return.invalid)
+        //:: error: (override.return.invalid)
         @ReadOnly String polyReadReturn() @ReadOnly {return null;}
     }
 
     class PolyReadReceivers extends BaseClass {
         String mutableReceiver() @PolyRead {return null;}
-        //:: (override.receiver.invalid)
+        //:: error: (override.receiver.invalid)
         String readonlyReceiver() @PolyRead {return null;} // error
     }
 

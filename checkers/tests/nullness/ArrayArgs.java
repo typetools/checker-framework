@@ -12,14 +12,14 @@ public class ArrayArgs {
         test(NonNull.class);
 
         String[] s1 = new String[] { null, null, null };
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         test(s1);
         String[] s2 = new String[] { "hello", null, "goodbye" };
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         test(s2);
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @NonNull String[] s3 = new String[] { "hello", null, "goodbye" };
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @NonNull String[] s4 = new String[3];
 
         // TODO:  uncomment when issue 25 is fixed

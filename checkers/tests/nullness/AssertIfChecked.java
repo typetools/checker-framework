@@ -6,20 +6,20 @@ public class AssertIfChecked {
 
   @Nullable Object value;
 
-  //:: (assertiftrue.only.on.boolean)
+  //:: error: (assertiftrue.only.on.boolean)
   @AssertNonNullIfTrue("value") public void badform1() {
   }
 
-  //:: (assertiftrue.only.on.boolean)
+  //:: error: (assertiftrue.only.on.boolean)
   @AssertNonNullIfTrue("value") public Object badform2() {
     return new Object();
   }
 
-  //:: (assertiffalse.only.on.boolean)
+  //:: error: (assertiffalse.only.on.boolean)
   @AssertNonNullIfFalse("value") public void badform3() {
   }
 
-  //:: (assertiffalse.only.on.boolean)
+  //:: error: (assertiffalse.only.on.boolean)
   @AssertNonNullIfFalse("value") public Object badform4() {
     return new Object();
   }
@@ -31,7 +31,7 @@ public class AssertIfChecked {
 
   @AssertNonNullIfTrue("value")
   public boolean badt1() {
-    //:: (assertiftrue.postcondition.not.satisfied)
+    //:: error: (assertiftrue.postcondition.not.satisfied)
     return value==null;
   }
 
@@ -42,20 +42,20 @@ public class AssertIfChecked {
 
   @AssertNonNullIfFalse("value")
   public boolean badf1() {
-    //:: (assertiffalse.postcondition.not.satisfied)
+    //:: error: (assertiffalse.postcondition.not.satisfied)
     return value!=null;
   }
 
 
   @AssertNonNullIfTrue("value")
   public boolean bad2() {
-    //:: (assertiftrue.nullness.condition.error)
+    //:: error: (assertiftrue.nullness.condition.error)
     return value==null || unknown;
   }
 
   @AssertNonNullIfFalse("value")
   public boolean bad3() {
-    //:: (assertiffalse.nullness.condition.error)
+    //:: error: (assertiffalse.nullness.condition.error)
     return value==null && unknown;
   }
 
@@ -73,7 +73,7 @@ public class AssertIfChecked {
 
   @AssertNonNullIfTrue("#0")
   boolean testLitTTbad1(@Nullable Object param) {
-    //:: (assertiftrue.postcondition.not.satisfied)
+    //:: error: (assertiftrue.postcondition.not.satisfied)
     return true;
   }
 
@@ -90,14 +90,14 @@ public class AssertIfChecked {
 
   @AssertNonNullIfFalse("#0")
   boolean testLitFFbad1(@Nullable Object param) {
-    //:: (assertiffalse.postcondition.not.satisfied)
+    //:: error: (assertiffalse.postcondition.not.satisfied)
     if (param==null) return false;
     return true;
   }
 
   @AssertNonNullIfFalse("#0")
   boolean testLitFFbad2(@Nullable Object param) {
-    //:: (assertiffalse.postcondition.not.satisfied)
+    //:: error: (assertiffalse.postcondition.not.satisfied)
     return false;
   }
 
@@ -106,7 +106,7 @@ public class AssertIfChecked {
   
   @AssertNonNullIfTrue("getValueUnpure()")
   public boolean hasValueUnpure() {
-      //:: (assertiftrue.postcondition.not.satisfied)
+      //:: error: (assertiftrue.postcondition.not.satisfied)
       return getValueUnpure() != null;
   }
   

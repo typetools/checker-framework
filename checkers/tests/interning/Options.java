@@ -9,7 +9,7 @@ class Options {
     String arg = ""; // interned here
     @Interned String arg2 = arg;
     arg += s; // no longer interned
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     arg2 = arg;
   }
 
@@ -17,7 +17,7 @@ class Options {
     String arg = ""; // interned here
     @Interned String arg2 = arg;
     arg += c; // no longer interned
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     arg2 = arg;
   }
 
@@ -37,7 +37,7 @@ class Options {
         arg += ch;
       //}
     //}
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
     if (!arg.equals(""))
@@ -75,7 +75,7 @@ class Options {
         arg += ch;
       }
     }
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
     if (!arg.equals (""))

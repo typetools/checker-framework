@@ -11,13 +11,13 @@ public class WhileTest {
     
     public void testwhile1() {
         z = null;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         nnz = z;
 
         while (z == null) {
             break;
         }
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         nnz = z;
         nnz.toString();
     }
@@ -35,7 +35,7 @@ public class WhileTest {
         do {
             break;
         } while (z == null);
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         nnz = z;
     }
 
@@ -52,7 +52,7 @@ public class WhileTest {
         for(;z==null;) {
             break;
         }
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         nnz = z;
     }
 

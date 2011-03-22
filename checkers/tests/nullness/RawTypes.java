@@ -7,12 +7,12 @@ class RawTypes {
         @NonNull String field;
 
         public Bad() {
-            //:: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid)
             this.init();                                // error
-            //:: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid)
             init();                                     // error
             this.field = "field";                       // valid
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             this.field = null;                          // error
         }
 
@@ -30,7 +30,7 @@ class RawTypes {
         }
 
         public void init() @Raw {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             output(this.field.length());             // error
         }
     }
@@ -40,17 +40,17 @@ class RawTypes {
 
         public B() {
             super();
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             this.otherField = null;                             // error
             this.otherField = "otherField";                     // valid
         }
 
         @Override
         public void init() @Raw {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
             //output(field.length());                 // error (TODO: substitution)
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
             //output(otherField.length());            // error
             super.init();                                       // valid
@@ -73,7 +73,7 @@ class RawTypes {
 
         @Override
         public void init() @Raw {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             output(this.strings.length);            // error
             System.out.println();                   // valid
         }
@@ -125,7 +125,7 @@ class RawTypes {
         // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            //:: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
             startTime = 0;
             nonRawMethod();     // no error
@@ -133,7 +133,7 @@ class RawTypes {
         }
 
         public AllFieldsSetInInitializer(boolean b) {
-            //:: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
         }
 
@@ -166,7 +166,7 @@ class RawTypes {
     void cast(@Raw Object... args) {
 
         @SuppressWarnings("rawtypes")
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         Object[] argsNonRaw1 = args;
 
         @SuppressWarnings("cast")

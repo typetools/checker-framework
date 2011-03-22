@@ -49,44 +49,44 @@ class Assignments2 {
     }
 
     public void cannotDo() {
-        //:: (primitive.ro)
+        //:: error: (primitive.ro)
         @ReadOnly int j = 0;   // primitive cannot be annotated as readonly
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         a = b;                 // cannot assign readonly to mutable
-        //:: (ro.field)
+        //:: error: (ro.field)
         b.y = i;               // readonly field behave as final
-        //:: (ro.field)
+        //:: error: (ro.field)
         b.y = 3;               // readonly field behave as final
-        //:: (ro.field)
+        //:: error: (ro.field)
         b.x = a.y;             // readonly field behave as final
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mObject = isPolyRead(roObject);  // polyread resolved as readonly
 
-        //:: (ro.field)
+        //:: error: (ro.field)
         roc.cell = roc;            // readonly field behave as final
-        //:: (method.invocation.invalid)
+        //:: error: (method.invocation.invalid)
         roc.mutateInternal(mc);    // readonly instance is readonly
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         roc.requiresMutableParameter(roc); // requires mutable parameter
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mc.cell = roc;             // cannot assign readonly to mutable
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mc.cell = roc.cell;        // cannot assign readonly to mutable
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mc.cell = roc.getCell();   // cannot assign readonly to mutable
 
         // cannot assign readonly to mutable
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mObject = isReadOnly();
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mObject = aMutable.isReadOnly();
         mObject = aReadOnly.isStillMutable();
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         mObject = aReadOnly.isReadOnly();
 
-        //:: (ro.field)
+        //:: error: (ro.field)
         roc.x = 2;                 // readonly primitive field is final
     }
 

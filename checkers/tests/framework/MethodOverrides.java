@@ -15,13 +15,13 @@ public abstract class MethodOverrides {
     public static class SubclassA extends MethodOverrides {
 
         public @Odd String method() {
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             @Odd String s = "";
             return s;
         }
 
         public @Odd String methodSub() {
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             @Odd String s = "";
             return s;
         }

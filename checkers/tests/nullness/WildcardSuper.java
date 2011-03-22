@@ -16,17 +16,17 @@ class WildcardSuper {
 
     @DefaultQualifier("Nullable")
     void testWithImplicitNullable(@NonNull Cell<? super @NonNull String> cell) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         cell.get().toString();
     }
 
     void testWithExplicitNullable(Cell<@Nullable ? super @NonNull String> cell) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         cell.get().toString();
     }
 
     void testWithDoubleNullable(Cell<@Nullable ? super @Nullable String> cell) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         cell.get().toString();
     }
 

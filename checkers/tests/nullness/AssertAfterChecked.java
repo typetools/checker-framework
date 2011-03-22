@@ -12,7 +12,7 @@ public class AssertAfterChecked {
       f = new Object();
     }
 
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     @AssertNonNullAfter("f") void initBad() {
     }
 
@@ -35,7 +35,7 @@ public class AssertAfterChecked {
       InitStaticField.f = new Object();
     }
 
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     @AssertNonNullAfter("f") void initBad() {
     }
 
@@ -54,7 +54,7 @@ public class AssertAfterChecked {
       InitStaticField.f = new Object();
     }
 
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     @AssertNonNullAfter("InitStaticField.f") void initBadE() {
     }
 
@@ -104,7 +104,7 @@ public class AssertAfterChecked {
 
     void testInit4(TestParams p) {
       p.init(this);
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       this.get(this).toString();
     }
 
@@ -130,12 +130,12 @@ public class AssertAfterChecked {
       }
     }
 
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     @AssertNonNullAfter("f") int initBad1() {
       return 0;
     }
 
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     @AssertNonNullAfter("f") int initBad2() {
       if (5==5) {
         return 0;

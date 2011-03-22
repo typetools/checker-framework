@@ -9,7 +9,7 @@ class NonNullOnEntryTest {
   void method1() {
     field1.toString(); // OK, field1 is known to be non-null
     this.field1.toString(); // OK, field1 is known to be non-null
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     field2.toString(); // error, might throw NullPointerException
   }
 
@@ -23,7 +23,7 @@ class NonNullOnEntryTest {
     field1 = new Object();
     method1(); // OK, satisfies method precondition
     field1 = null;
-    //:: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (nonnullonentry.precondition.not.satisfied)
     method1(); // error, does not satisfy method precondition
   }
 
@@ -33,7 +33,7 @@ class NonNullOnEntryTest {
   public void requiresNonNullField() {}
 
   public void clientFail(NonNullOnEntryTest arg1) {
-    //:: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (nonnullonentry.precondition.not.satisfied)
     arg1.requiresNonNullField();
   }
 
@@ -74,9 +74,9 @@ class NonNullOnEntryTest {
   }
 
   public void statClientFail(NonNullOnEntryTest arg1) {
-    //:: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (nonnullonentry.precondition.not.satisfied)
     arg1.reqStaticName();
-    //:: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (nonnullonentry.precondition.not.satisfied)
     arg1.reqStaticQualName();
   }
 
@@ -89,7 +89,7 @@ class NonNullOnEntryTest {
     }
 
     public void subClientFail(NNOESubTest arg4) {
-      //:: (nonnullonentry.precondition.not.satisfied)
+      //:: error: (nonnullonentry.precondition.not.satisfied)
       arg4.requiresNonNullField();
     }
 
@@ -118,20 +118,20 @@ class NonNullOnEntryTest {
        * detect that hiding happened.
        * TODO: correctly resolve hidden fields.
        */
-      //:: (nonnull.hiding.violated)
+      //:: error: (nonnull.hiding.violated)
       arg5.requiresNonNullField();
     }
 
     public void hidingClient2(NNOEHidingTest arg6) {
       // We also would get an (nonnullonentry.precondition.not.satisfied), but
       // this error wins.
-      //:: (nonnull.hiding.violated)
+      //:: error: (nonnull.hiding.violated)
       arg6.requiresNonNullField();
     }
 
     // @skip-test: 
 //    // the field in the super class is also visible
-//    //:: (nonnull.hiding.violated)
+//    //:: error: (nonnull.hiding.violated)
 //    @NonNullOnEntry("field") void hiddenTest() {}
 
 

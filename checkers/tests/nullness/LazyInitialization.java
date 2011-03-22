@@ -15,17 +15,17 @@ public class LazyInitialization {
 
     void testAssignment() {
         lazy = "m";
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lazy = null;    // null
     }
 
     void testLazyBeingNull() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         nullable.toString(); // error
         nonnull.toString();
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         lazy.toString();    // error
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         lazy3.toString(); // error
     }
 
@@ -38,7 +38,7 @@ public class LazyInitialization {
 
         randomMethod();
 
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         nullable.toString();    // error
         nonnull.toString();
         lazy.toString();

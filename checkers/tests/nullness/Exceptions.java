@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 
 public class Exceptions {
     void exceptionParam(@Nullable Exception m) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         m.getClass();   // should emit error
     }
 
@@ -15,7 +15,7 @@ public class Exceptions {
 
         } catch (Exception e) {
             e.getClass();
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             m.getClass();   // should emit error
         }
     }
@@ -23,11 +23,11 @@ public class Exceptions {
     void throwException() {
         int a = 0;
         if (a == 0)
-            //:: (throwing.nullable)
+            //:: error: (throwing.nullable)
             throw null;
         else if (a == 1) {
             RuntimeException e = null;
-            //:: (throwing.nullable)
+            //:: error: (throwing.nullable)
             throw e;
         } else {
             RuntimeException e = new RuntimeException();
@@ -38,7 +38,7 @@ public class Exceptions {
     void reassignException() {
         try {
         } catch (RuntimeException e) {
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             e = null;
             throw e;
         }

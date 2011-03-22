@@ -13,24 +13,24 @@ class Elements {
         lQRo = lMut;
         lQRo = lMut2;
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lRo = lQRo;
         lRo = lRo;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lRo = lMut;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lRo = lMut2;
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lMut = lQRo;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lMut = lRo;
         lMut = lMut;
         lMut = lMut2;
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lMut2 = lQRo;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         lMut2 = lRo;
         lMut2 = lMut;
         lMut2 = lMut2;

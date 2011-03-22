@@ -10,7 +10,7 @@ public class AssertIfTrueTestSimple {
 
   @AssertNonNullIfTrue("values")
   public boolean repNulledBAD() {
-    //:: (assertiftrue.postcondition.not.satisfied)
+    //:: error: (assertiftrue.postcondition.not.satisfied)
     return values == null;
   }
 
@@ -39,7 +39,7 @@ public class AssertIfTrueTestSimple {
     */
     
     if (s.repNulled()) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         s.values.hashCode();
     } else {
         @NonNull Object y = s.values;

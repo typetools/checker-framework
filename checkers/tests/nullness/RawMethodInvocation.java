@@ -8,7 +8,7 @@ class RawMethodInvocation {
   RawMethodInvocation(boolean constructor_inits_a) {
     a = 1;
     // TODO: This should be legal
-    //:: (method.invocation.invalid)
+    //:: error: (method.invocation.invalid)
     init_b();
   }
 
@@ -18,7 +18,7 @@ class RawMethodInvocation {
 
   RawMethodInvocation(int constructor_inits_none) {
     // TODO: This should be legal
-    //:: (method.invocation.invalid)
+    //:: error: (method.invocation.invalid)
     init_ab();
   }
 
