@@ -87,11 +87,11 @@ class Explosion {
             return 1;
             //v = 2;
             //throw new RuntimeException ();
-        }catch(RuntimeException e){
+        }catch(NullPointerException e){
             e.printStackTrace();
             //e = null;
             //v = 1;
-        }catch(Exception e){
+        }catch(RuntimeException e){
             //nnz = z;
             //v = 2;
         }finally{

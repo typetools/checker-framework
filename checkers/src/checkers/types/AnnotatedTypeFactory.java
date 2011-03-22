@@ -240,6 +240,9 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type;
         switch (tree.getKind()) {
             case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
                 type = fromClass((ClassTree)tree); break;
             case METHOD:
             case VARIABLE:
@@ -256,6 +259,9 @@ public class AnnotatedTypeFactory {
 
         switch (tree.getKind()) {
         case CLASS:
+        case ENUM:
+        case INTERFACE:
+        case ANNOTATION_TYPE:
         case METHOD:
         // case VARIABLE:
             if (SHOULD_CACHE)
@@ -314,6 +320,8 @@ public class AnnotatedTypeFactory {
             type = fromMember(decl);
         } else if (decl instanceof MethodTree) {
             type = fromMember(decl);
+        } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
+            type = fromTypeTree((TypeParameterTree)decl);
         } else
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);

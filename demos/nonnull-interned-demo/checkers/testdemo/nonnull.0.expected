@@ -1,4 +1,4 @@
-src/checkers/nonnull/NonnullAnnotatedTypeFactory.java:201: incompatible types.
+src/checkers/nonnull/NonnullAnnotatedTypeFactory.java:201: error: incompatible types.
         Element elt = InternalUtils.symbol(id);
                                           ^
   found   : @Nullable Element
