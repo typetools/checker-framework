@@ -782,7 +782,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
         String[] annoValues = methElem.getAnnotation(AssertNonNullAfter.class).value();
-        TreePath path = TreePath.getPath(TreeUtils.pathTillOfKind(getCurrentPath(), Tree.Kind.CLASS), meth);
+        TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
 
         for (String annoVal : annoValues) {
 
@@ -854,7 +854,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
-        TreePath path = TreePath.getPath(TreeUtils.pathTillOfKind(getCurrentPath(), Tree.Kind.CLASS), meth);
+        TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
 
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
         conds.visit(retExp, null);

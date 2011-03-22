@@ -26,6 +26,7 @@ import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -185,7 +186,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         // TODO: This is quite ugly
         if (!useFlow || finishedScanning
                 || tree.getKind() == Tree.Kind.METHOD
-                || tree.getKind() == Tree.Kind.CLASS
+                || TreeUtils.isClassTree(tree.getKind())
                 || tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
