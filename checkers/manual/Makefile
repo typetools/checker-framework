@@ -63,7 +63,10 @@ bib:
 	hg clone https://plume-bib.googlecode.com/hg/ bib
 .PHONY: bib-update
 bib-update: bib
+# To skip running the hg command, invoke make like this:  make NOHG=t ...
+ifndef NOHG
 	cd bib && hg pull -u && make
+endif
 
 clean:
 	@\rm -f doc *.aux *.blg *.haux *.htoc *.log *.pdf *.ps *.dvi *.idx *.ind *.ilg *.toc
