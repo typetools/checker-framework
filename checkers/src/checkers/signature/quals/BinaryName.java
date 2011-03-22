@@ -9,7 +9,7 @@ import checkers.quals.TypeQualifier;
  * Binary names for objects are created as the following:
  *	<package name>.<class name>$<inner class name>
  *	where
- *	<package name> is a fully qualified (dot seperated) name.
+ *	<package name> is a fully qualified (dot separated) name.
  * Example:
  *	package edu.cs.washington;
  *	public class BinaryName {
