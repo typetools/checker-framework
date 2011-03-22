@@ -26,8 +26,8 @@ public class TreeSet<E extends @NonNull Object> extends AbstractSet<E> implement
   public SortedSet<E> headSet(E a1) { throw new RuntimeException("skeleton method"); }
   public SortedSet<E> tailSet(E a1) { throw new RuntimeException("skeleton method"); }
   public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
-  public @Nullable E first() { throw new RuntimeException("skeleton method"); }
-  public @Nullable E last() { throw new RuntimeException("skeleton method"); }
+  public E first() { throw new RuntimeException("skeleton method"); }
+  public E last() { throw new RuntimeException("skeleton method"); }
   public @Nullable E lower(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E floor(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E ceiling(E a1) { throw new RuntimeException("skeleton method"); }
