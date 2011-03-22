@@ -51,6 +51,10 @@ public class InternalUtils {
             case VARIABLE:
             case METHOD:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
+
                 return TreeInfo.symbolFor((JCTree) tree);
 
             // symbol() only works on MethodSelects, so we need to get it manually
