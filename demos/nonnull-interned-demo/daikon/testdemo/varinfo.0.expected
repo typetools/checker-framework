@@ -1,14 +1,14 @@
-src/daikon/VarInfo.java:3589: incompatible types.
+src/daikon/VarInfo.java:3589: error: incompatible types.
     vi.str_name = seq.apply_subscript (String.format ("%s..%s", begin_str,
                                       ^
   found   : String
   required: @Interned String
-src/daikon/VarInfo.java:3667: incompatible types.
+src/daikon/VarInfo.java:3667: error: incompatible types.
     vi.str_name = seq.apply_subscript (index_str);
                                       ^
   found   : String
   required: @Interned String
-src/daikon/VarInfo.java:3805: incompatible types.
+src/daikon/VarInfo.java:3805: error: incompatible types.
     vi.str_name = String.format ("%s.%s()", str.name(), func_name);
                                 ^
   found   : String
