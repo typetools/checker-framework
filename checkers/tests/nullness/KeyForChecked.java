@@ -35,7 +35,7 @@ class KFIterator<E extends @Nullable Object> {
 
     void incorrect1() {
         String nonkey = "";
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @KeyFor("map") String key = nonkey;
     }
 
@@ -87,7 +87,7 @@ class KFIterator<E extends @Nullable Object> {
         for (@KeyFor("emap") String st : s) {}
         for (String st : s) {}
 
-        //:: (enhancedfor.type.incompatible)
+        //:: error: (enhancedfor.type.incompatible)
         for (@KeyFor("bubu") String st : s) {}
     }
 

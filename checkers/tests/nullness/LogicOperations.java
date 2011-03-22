@@ -16,23 +16,23 @@ class LogicOperations {
       a.toString();
       return;
     }
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     a.toString();   // error
   }
 
   void repAndComplement(@Nullable Object a, @Nullable Object b) {
     if (a == null && b == null) {
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       a.toString(); // error
       return;
     }
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     a.toString();   // error
   }
 
   void oneOrComplement(@Nullable Object a) {
     if (a == null || helper()) {
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       a.toString();  // error
       return;
     }
@@ -41,14 +41,14 @@ class LogicOperations {
 
   void simpleOr1(@Nullable Object a, @Nullable Object b) {
       if (a != null || b != null) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
           a.toString(); // error
       }
   }
 
   void simpleOr2(@Nullable Object a, @Nullable Object b) {
       if (a != null || b != null) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
           b.toString(); // error
       }
   }
@@ -56,9 +56,9 @@ class LogicOperations {
   void sideeffect() {
       Object a = "m";
       if ((a = null) != "n")
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
           a.toString();
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       a.toString();
   }
 

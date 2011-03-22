@@ -14,7 +14,7 @@ public class ThisMutability {
         ro = tm;
         m = tm;
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         tm = ro;    // error
         tm = m;
     }
@@ -25,10 +25,10 @@ public class ThisMutability {
 
 
         ro = tm;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         m = tm;     // error
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         tm = ro;    // error
         tm = m;
     }
@@ -38,10 +38,10 @@ public class ThisMutability {
         @Mutable Date m = null;
 
         ro = tm;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         m = tm;     // error
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         tm = ro;    // error
         tm = m;
     }

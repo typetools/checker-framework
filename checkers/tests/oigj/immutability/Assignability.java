@@ -14,18 +14,18 @@ public class Assignability {
 
     void readOnly() @ReadOnly {
         this.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         this.nonAssignable = null;
 
         readOnly.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         readOnly.nonAssignable = null;
 
         mutable.assignable = null;
         mutable.nonAssignable = null;
 
         immutable.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         immutable.nonAssignable = null;
     }
 
@@ -34,14 +34,14 @@ public class Assignability {
         this.nonAssignable = null;
 
         readOnly.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         readOnly.nonAssignable = null;
 
         mutable.assignable = null;
         mutable.nonAssignable = null;
 
         immutable.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         immutable.nonAssignable = null;
     }
 
@@ -50,31 +50,31 @@ public class Assignability {
         this.nonAssignable = null;
 
         readOnly.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         readOnly.nonAssignable = null;
 
         mutable.assignable = null;
         mutable.nonAssignable = null;
 
         immutable.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         immutable.nonAssignable = null;
     }
 
     void immutable() @Immutable {
         this.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         this.nonAssignable = null;
 
         readOnly.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         readOnly.nonAssignable = null;
 
         mutable.assignable = null;
         mutable.nonAssignable = null;
 
         immutable.assignable = null;
-        //:: (assignability.invalid)
+        //:: error: (assignability.invalid)
         immutable.nonAssignable = null;
     }
 

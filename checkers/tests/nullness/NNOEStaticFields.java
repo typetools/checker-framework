@@ -37,29 +37,29 @@ class NNOEStaticFields {
     }
 
 
-    //:: (field.not.found.nullness.parse.error)
+    //:: error: (field.not.found.nullness.parse.error)
     @NonNullOnEntry("NoClueWhatThisShouldBe") void testF5() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         NNOEStaticFields.nullable.toString();
     }
 
     void trueNegative() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         nullable.toString();
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         otherNullable.toString();
     }
 
     @NonNullOnEntry("nullable")
     void test1() {
         nullable.toString();
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         otherNullable.toString();
     }
 
     @NonNullOnEntry("otherNullable")
     void test2() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         nullable.toString();
         otherNullable.toString();
     }
