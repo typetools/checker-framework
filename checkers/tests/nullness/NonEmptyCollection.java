@@ -10,7 +10,7 @@ public class NonEmptyCollection {
   }
 
   public static @NonNull String returnPoll1(PriorityQueue1<@NonNull String> pq) {
-    //:: (return.type.incompatible)
+    //:: error: (return.type.incompatible)
     return pq.poll();
   }
 

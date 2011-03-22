@@ -6,11 +6,11 @@ import checkers.nullness.quals.*;
  */
 public class MethodTypeVars {
     void m() {
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         Object a = A.badMethod(null);
         Object b = A.badMethod(new Object());
                 
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         A.goodMethod(null);
         A.goodMethod(new Object());
     }

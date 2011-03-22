@@ -14,7 +14,7 @@ public class DefaultLoops {
       // nullable by default
       Object o;
       o = null;
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       o.hashCode();
       o = new Object();
       o.hashCode();

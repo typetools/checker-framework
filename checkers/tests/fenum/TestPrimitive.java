@@ -15,37 +15,37 @@ class FenumUser {
   @Fenum("A") int state1 = new TestPrimitive().ACONST1;
   @Fenum("A") int state3 = this.state1;
 
-  //:: (assignment.type.incompatible)
+  //:: error: (assignment.type.incompatible)
   @Fenum("B") int state2 = new TestPrimitive().ACONST1;
 
   void foo(TestPrimitive t) {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     state1 = 4;
 
     state1 = t.ACONST2;
     state1 = t.ACONST3;
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     state1 = t.BCONST1;
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     int x = t.ACONST1;
 
     if( t.ACONST1 < t.ACONST2  ) {
       // ok
     }
 
-    //:: (binary.type.incompatible)
+    //:: error: (binary.type.incompatible)
     if( t.ACONST1 < t.BCONST2  ) {
     }
-    //:: (binary.type.incompatible)
+    //:: error: (binary.type.incompatible)
     if( t.ACONST1 == t.BCONST2  ) {
     }
 
-    //:: (binary.type.incompatible)
+    //:: error: (binary.type.incompatible)
     if( t.ACONST1 < 5 ) {
     }
-    //:: (binary.type.incompatible)
+    //:: error: (binary.type.incompatible)
     if( t.ACONST1 == 5 ) {
     }
   }

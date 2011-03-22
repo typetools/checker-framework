@@ -1,4 +1,4 @@
-src/utilMDE/UtilMDE.java:564: dereference of possibly-null reference files
+src/utilMDE/UtilMDE.java:564: error: dereference of possibly-null reference files
     for (int i = 0; i < files.length; i++) {
                         ^
 1 error

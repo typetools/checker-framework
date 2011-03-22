@@ -12,20 +12,20 @@ class NNOEMoreTests {
       nullable.toString();
     }
 
-    //:: (field.not.found.nullness.parse.error)
+    //:: error: (field.not.found.nullness.parse.error)
     @NonNullOnEntry("xxx") void test2() {
-      //:: (dereference.of.nullable)
+      //:: error: (dereference.of.nullable)
       nullable.toString();
     }
   }
 
   class NNOESeparate {
     void call1(NNOEMain p) {
-      //:: (nonnullonentry.precondition.not.satisfied)
+      //:: error: (nonnullonentry.precondition.not.satisfied)
       p.test1();
 
       Object xxx = new Object();
-      //:: (nullness.parse.error)
+      //:: error: (nullness.parse.error)
       p.test2();
     }
 

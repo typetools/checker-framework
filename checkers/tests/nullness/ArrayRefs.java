@@ -8,7 +8,7 @@ public class ArrayRefs {
 
         String[] s = null;
 
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         if (s.length > 0)
             System.out.println("s.length > 0");
 

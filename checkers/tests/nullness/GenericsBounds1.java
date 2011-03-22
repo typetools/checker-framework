@@ -11,12 +11,12 @@ interface List<E extends @Nullable Object> {
  */
 public class GenericsBounds1<X extends @Nullable Object> {
     void m1(@NonNull List<X> g1, @NonNull List<@Nullable X> g2) {
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         g1 = null;
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         g1.add(null);
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         g2 = null;
         g2.add(null);
         
