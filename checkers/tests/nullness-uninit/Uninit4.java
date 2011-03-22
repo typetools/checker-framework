@@ -4,7 +4,7 @@ public class Uninit4 {
     Object a=new Object();
   }
 
-  //:: error: (fields.uninitialized)
+  //:: warning: (fields.uninitialized)
   class BadSon {
     Object b;
   }
@@ -16,7 +16,7 @@ public class Uninit4 {
   class WeirdSon {
     Object b;
 
-    //:: error: (fields.uninitialized)
+    //:: warning: (fields.uninitialized)
     WeirdSon() {
       super();
     }
@@ -25,7 +25,7 @@ public class Uninit4 {
   class Daughter {
     Object b;
 
-    //:: error: (fields.uninitialized)
+    //:: warning: (fields.uninitialized)
     Daughter() {
 
     }
