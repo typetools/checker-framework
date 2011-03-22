@@ -1,5 +1,8 @@
 package checkers.util;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -117,12 +120,17 @@ public final class TreeUtils {
      * @return the enclosing tree of the given type as given by the path
      */
     public static Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
+        return enclosingOfKind(path, EnumSet.of(kind));
+    }
+
+    public static Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+
         TreePath p = path;
 
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (leaf.getKind() == kind)
+            if (kinds.contains(leaf.getKind()))
                 return leaf;
             p = p.getParentPath();
         }
@@ -130,6 +138,9 @@ public final class TreeUtils {
         return null;
     }
 
+    public static TreePath pathTillClass(final TreePath path) {
+        return pathTillOfKind(path, classTreeKinds());
+    }
     /**
      * Gets path to the the first enclosing tree of the specified kind.
      *
@@ -138,12 +149,16 @@ public final class TreeUtils {
      * @return the path to the enclosing tree of the given type
      */
     public static TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
+        return pathTillOfKind(path, EnumSet.of(kind));
+    }
+
+    public static TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
         TreePath p = path;
 
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (leaf.getKind() == kind)
+            if (kinds.contains(leaf.getKind()))
                 return p;
             p = p.getParentPath();
         }
@@ -181,7 +196,7 @@ public final class TreeUtils {
      *         if one does not exist.
      */
     public static /*@Nullable*/ ClassTree enclosingClass(final /*@Nullable*/ TreePath path) {
-        return (ClassTree) enclosingOfKind(path, Tree.Kind.CLASS);
+        return (ClassTree) enclosingOfKind(path, classTreeKinds());
     }
 
     /**
@@ -535,6 +550,21 @@ public final class TreeUtils {
             receiver = ((MemberSelectTree)receiver).getExpression();
 
         return receiver;
+    }
+
+    private final static Set<Tree.Kind> classTreeKinds = EnumSet.of(
+            Tree.Kind.CLASS,
+            Tree.Kind.ENUM,
+            Tree.Kind.INTERFACE,
+            Tree.Kind.ANNOTATION_TYPE
+    );
+
+    public static Set<Tree.Kind> classTreeKinds() {
+        return classTreeKinds;
+    }
+
+    public static boolean isClassTree(Tree.Kind kind) {
+        return classTreeKinds().contains(kind);
     }
 }
 
