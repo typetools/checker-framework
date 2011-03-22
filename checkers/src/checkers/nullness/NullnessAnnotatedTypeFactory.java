@@ -502,17 +502,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         private boolean isExceptionParameter(IdentifierTree node) {
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
-            if (elt.getKind() != ElementKind.PARAMETER
-                    || !TypesUtils.isThrowable(elt.asType()))
-                return false;
-            final TreePath path = getPath(node);
-            CatchTree ct = (CatchTree)TreeUtils.enclosingOfKind(path, Tree.Kind.CATCH);
-            if (ct == null)
-                return false;
-
-            final VariableTree catchParamTree = ct.getParameter();
-            final VariableElement catchParamElt = TreeUtils.elementFromDeclaration(catchParamTree);
-            return elt.equals(catchParamElt);
+            return elt.getKind() == ElementKind.EXCEPTION_PARAMETER;
         }
     }
 
