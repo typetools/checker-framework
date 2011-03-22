@@ -5,12 +5,12 @@ import checkers.nullness.quals.*;
  */
 public class GenericsBounds2<X extends @Nullable Object> {
     void m1(X @NonNull[] a1, @Nullable X @NonNull[] a2) {
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         a1 = null;
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         a1[0] = null;
 
-        //:: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         a2 = null;
         a2[0] = null;
         

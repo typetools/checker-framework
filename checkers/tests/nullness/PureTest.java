@@ -6,11 +6,11 @@ class PureTest {
     }
 
     public void test() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         puremethod(null).toString();
 
         if (puremethod(null) == null) {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             puremethod(null).toString();
         }
 
@@ -19,12 +19,12 @@ class PureTest {
         }
 
         if (puremethod("m") != null) {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             puremethod(null).toString();
         }
 
         if (puremethod("m") != null) {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             puremethod("n").toString();
         }
 
@@ -40,10 +40,10 @@ class PureTest {
 
         x = new Object();
         
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         puremethod(x).toString();
         
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         puremethod("n").toString();
 
     }
@@ -70,7 +70,7 @@ class PureTest {
         if (pt.getSuperclass() instanceof Object) {
             return;
         }
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 
@@ -93,7 +93,7 @@ class PureTest {
         } else {
             return;
         }
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 
@@ -124,7 +124,7 @@ class PureTest {
         } else {
             pt.setSuperclass(null);
         }
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 

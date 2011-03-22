@@ -12,7 +12,7 @@ public class AssertAfter {
   }
 
   public void plain() {
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     value.toString();
   }
 
@@ -22,7 +22,7 @@ public class AssertAfter {
   }
 
   public void testBefore() {
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     value.toString();
     setRepNonNull();
   }
@@ -31,7 +31,7 @@ public class AssertAfter {
     if (toString() == null) {
       setRepNonNull();
     }
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     value.toString();
   }
 
