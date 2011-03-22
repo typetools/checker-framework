@@ -14,36 +14,36 @@ public class TestInstance {
 class FenumUser {
   @Fenum("A") Object state1 = new TestInstance().ACONST1;
 
-  //:: (assignment.type.incompatible)
+  //:: error: (assignment.type.incompatible)
   @Fenum("B") Object state2 = new TestInstance().ACONST1;
 
   void foo(TestInstance t) {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     state1 = new Object();
 
     state1 = t.ACONST2;
     state1 = t.ACONST3;
     state1 = null;
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     state1 = t.BCONST1;
 
-    //:: (method.invocation.invalid)
+    //:: error: (method.invocation.invalid)
     state1.hashCode();
-    //:: (method.invocation.invalid)
+    //:: error: (method.invocation.invalid)
     t.ACONST1.hashCode();
 
     // sanity check: unqualified instantiation and call work.
     Object o = new Object();
     o.hashCode();
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     o = t.ACONST1;
 
     if( t.ACONST1 == t.ACONST2  ) {
     }
 
-    //:: (binary.type.incompatible)
+    //:: error: (binary.type.incompatible)
     if( t.ACONST1 == t.BCONST2  ) {
     }
 

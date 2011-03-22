@@ -15,10 +15,10 @@ public class UsesObjectEqualsTest {
 	
     class D {}
 	
-    //:: (superclass.unmarked)
+    //:: error: (superclass.unmarked)
     @UsesObjectEquals class E extends D {}
 	
-    //:: (overrides.equals)
+    //:: error: (overrides.equals)
     @UsesObjectEquals class TestEquals {
 		
 		public boolean equals(Object o){

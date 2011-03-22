@@ -1,4 +1,4 @@
-src/daikon/FileIO.java:1205: incompatible types.
+src/daikon/FileIO.java:1205: error: incompatible types.
       if (is_declaration_header (line)) {
                                  ^
   found   : String
