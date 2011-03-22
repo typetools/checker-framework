@@ -1,4 +1,4 @@
-src/net/eyde/personalblog/struts/action/ReadAction.java:58: incompatible types.
+src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types.
                   	pblog.getPostsByCategory(reqCategory));
                   	                         ^
   found   : @Tainted String

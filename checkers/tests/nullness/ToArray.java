@@ -2,7 +2,7 @@ import java.util.*;
 import checkers.nullness.quals.*;
 // bound errors are errors related to collection not accepting nullable elements
 public class ToArray {
-    //:: error: (generic.argument.invalid) :: (generic.argument.invalid)
+    //:: error: (generic.argument.invalid) :: error: (generic.argument.invalid)
     private List<@Nullable String> nullableList = new ArrayList<@Nullable String>(); // bound error
     private List<@NonNull String> nonnullList = new ArrayList<@NonNull String>(); // bound error
 
