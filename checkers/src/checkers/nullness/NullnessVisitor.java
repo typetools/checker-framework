@@ -234,8 +234,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)) {
                         // warn against uninitialized fields
-                        // TODO: we really only want a warning, but the testing framework doesn't support this
-                        checker.report(Result.failure("fields.uninitialized", nonInitializedFields), node);
+                        checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
                     }
                 }
                 nonInitializedFields = oldFields;
@@ -246,17 +245,13 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         if (elt.getAnnotation(AssertNonNullIfTrue.class) != null
         	&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
-        	checker.report(
-        			Result.failure("assertiftrue.only.on.boolean"),
-        			node);
+        	checker.report(Result.failure("assertiftrue.only.on.boolean"), node);
         }
 
         if (elt.getAnnotation(AssertNonNullIfFalse.class) != null
         		&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
-        	checker.report(
-        			Result.failure("assertiffalse.only.on.boolean"),
-        			node);
+        	checker.report(Result.failure("assertiffalse.only.on.boolean"), node);
         }
 
         return super.visitMethod(node, p);
@@ -287,8 +282,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
         Set<VariableElement> fields = getUninitializedFields(node, Collections.<AnnotationMirror>emptyList());
         if (!fields.isEmpty()) {
-                // TODO: we really only want a warning, but the testing framework doesn't support this
-            checker.report(Result.failure("fields.uninitialized", fields), node);
+            checker.report(Result.warning("fields.uninitialized", fields), node);
         }
     }
 

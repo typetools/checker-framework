@@ -5,19 +5,19 @@ public class Varargs {
     public void testVarargsInvocation() {
         @Odd String s = null;
         aVarargsMethod(s);
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         aVarargsMethod(s, "");
         aVarargsMethod(s, s);
 
         moreVarargs(new @Odd String[1]);
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         moreVarargs(new String @Odd [1]);
         moreVarargs(new @Odd String(), new @Odd String());
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         moreVarargs(new String(), new @Odd String());
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         moreVarargs(new String(),
-                    //:: (argument.type.incompatible)
+                    //:: error: (argument.type.incompatible)
                 new String());
     }
 

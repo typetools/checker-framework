@@ -26,12 +26,12 @@ class Explosion {
         String s2;
         s2 = null;
         if (s2 != null || s != null)
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             s = s2;
         else
             s = new String("Levitan");
         s2 = args[0];
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         System.out.println("Possibly cause null pointer with this: " + s2.length());
         if (s2 == null){
             ;//do nothing
@@ -71,13 +71,13 @@ class Explosion {
             //y = z;
             nnz = z;
             z = null;
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             nnz = z;
 
             while (z == null){
                 break;
             }
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             nnz = z;
             while (z == null){
                 ; //do nothing
@@ -87,11 +87,11 @@ class Explosion {
             return 1;
             //v = 2;
             //throw new RuntimeException ();
-        }catch(RuntimeException e){
+        }catch(NullPointerException e){
             e.printStackTrace();
             //e = null;
             //v = 1;
-        }catch(Exception e){
+        }catch(RuntimeException e){
             //nnz = z;
             //v = 2;
         }finally{
@@ -104,7 +104,7 @@ class Explosion {
 
     private void bar(List<@NonNull String> ss, String b, String c){
         @NonNull String a;
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         for(@NonNull String s : ss){
             a = s;
         }
@@ -112,7 +112,7 @@ class Explosion {
             System.out.println("hey");
         }
         if (b != null){
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             for (; b.length() > 0 ; b = null){
                 System.out.println(b.length());
             }

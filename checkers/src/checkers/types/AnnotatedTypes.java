@@ -480,20 +480,17 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Given a method invocation, return a mapping of the type variables
-     * to their parameters, if any exist.
+     * Given a method or constructor invocation, return a mapping
+     * of the type variables to their type arguments, if any exist.
      *
-     * It uses the method invocation type parameters if specified, otherwise
-     * it infers them based the passed arguments or the return type context,
-     * according to JLS 15.12.2.
+     * It uses the method or constructor invocation type arguments if they
+     * were specified and otherwise it infers them based on the passed arguments
+     * or the return type context, according to JLS 15.12.2.
      *
-     * @param methodInvocation  the method invocation tree
-     * @return  the mapping of the type variables for this method invocation
-     */
-    /* TODO: Used for both MethodInvocationTree and NewClassTree.
-     * Is it nicer to have two case distinctions or to duplicate the whole method?
-     * I wish there were a nice common interface for them...
-     * Update documentation and variable names.
+     * @param expr the method or constructor invocation tree; the passed argument
+     *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @return the mapping of the type variables to type arguments for
+     *   this method or constructor invocation.
      */
     public Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
     findTypeArguments(ExpressionTree expr) {
@@ -506,7 +503,8 @@ public class AnnotatedTypes {
         } else if (expr instanceof NewClassTree) {
             elt = TreeUtils.elementFromUse( (NewClassTree) expr);
         } else {
-            // TODO
+            // This case should never happen.
+            System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -520,7 +518,6 @@ public class AnnotatedTypes {
         } else if (expr instanceof NewClassTree) {
             targs = ((NewClassTree) expr).getTypeArguments();
         } else {
-            // TODO
             targs = null;
         }
 
@@ -541,29 +538,27 @@ public class AnnotatedTypes {
 
 
     /**
-     * It uses the method invocation type parameters if specified, otherwise
-     * it infers them based the passed arguments or the return type context,
+     * Return the method or constructor invocation type arguments if specified, otherwise
+     * infer them based on the passed arguments or the return type context,
      * according to JLS 15.12.2.
      *
-     * @param expr Either a MethodInvocationTree or NewClassTree
+     * @param expr the method or constructor invocation tree; the passed argument
+     *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @return the mapping of the type variables to type arguments for
+     *   this method or constructor invocation.
      */
 
     // TODO: Note that this implementation is buggy as it only infers arguments
     // that make it to the return type.  So it would fail for invocations to
     // <T> void test(T arg1, T arg2)
     // in such cases, T is infered to be '? extends T.upperBound'
-
-    /* TODO: Instead of passing in only a MethodInvocationTree, also allow
-     * NewClassTree. ExpressionTree is the smallest common type, unfortunately.
-     * Some names are still from when this was only for method invocations.
-     */
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
     inferTypeArguments(ExpressionTree expr) {
         //
         // The basic algorithm used here, for each type variable:
         // 1. Find the un-annotated  least upper bound for the type variable
-        //  by finding the type bound to variable within the return type
-        // 2. Infer the type argument annotations using the passed parameters
+        //    by finding the type bound to variable within the return type
+        // 2. Infer the type argument annotations using the passed arguments
         // 3. If the type variable is not used within a parameter, find
         //    the assignment context and infer the type argument using it
         // 4. if not within an assignment context, then bind it to the extend bound.
@@ -576,7 +571,8 @@ public class AnnotatedTypes {
         } else if (expr instanceof NewClassTree) {
             elt = TreeUtils.elementFromUse( (NewClassTree) expr);
         } else {
-            // TODO
+            // This case should never happen.
+            System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -591,7 +587,6 @@ public class AnnotatedTypes {
             // consider the constructor type itself as the viewpoint
             methodType = asMemberOf(returnType, elt);
         } else {
-            // TODO
             methodType = null;
         }
 
@@ -600,7 +595,7 @@ public class AnnotatedTypes {
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) factory.getAnnotatedType(var);
 
             AnnotatedTypeMirror argument =
-                inferTypeArgUsingParams(typeVar, returnType, methodType, expr);
+                inferTypeArgsUsingArgs(typeVar, returnType, methodType, expr);
 
             if (argument == null) {
                 // Using assignment context
@@ -634,13 +629,21 @@ public class AnnotatedTypes {
         return typeArguments;
     }
 
-    /* @param expr should only be a MethodInvocationTree or NewClassTree!
-    */
-    private AnnotatedTypeMirror inferTypeArgUsingParams(AnnotatedTypeVariable typeVar,
-            AnnotatedTypeMirror returnType, AnnotatedExecutableType methodType,
+    /**
+     * Infer the type argument for a single type variable.
+     *
+     * @param typeVar the method or constructor type variable to infer
+     * @param returnType the return type
+     * @param exeType the executable type of the method or constructor
+     * @param expr the method or constructor invocation tree; the passed argument
+     *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @return the type argument
+     */
+    private AnnotatedTypeMirror inferTypeArgsUsingArgs(AnnotatedTypeVariable typeVar,
+            AnnotatedTypeMirror returnType, AnnotatedExecutableType exeType,
             ExpressionTree expr) {
         TypeResolutionFinder finder = new TypeResolutionFinder(typeVar);
-        List<AnnotatedTypeMirror> lubForVar = finder.visit(methodType.getReturnType(), returnType);
+        List<AnnotatedTypeMirror> lubForVar = finder.visit(exeType.getReturnType(), returnType);
 
         // TODO: This may introduce a bug, but I don't want to deal with it right now
         if (lubForVar.isEmpty())
@@ -657,13 +660,11 @@ public class AnnotatedTypes {
         }
 
         // find parameter arguments beneficial for inference
-        List<AnnotatedTypeMirror> requiredParams =
-            expandVarArgs(methodType, args);
+        List<AnnotatedTypeMirror> requiredParams = expandVarArgs(exeType, args);
         List<AnnotatedTypeMirror> passedArgs = new ArrayList<AnnotatedTypeMirror>();
 
         for (int i = 0; i < requiredParams.size(); ++i) {
-            AnnotatedTypeMirror passedArg = factory.getAnnotatedType(
-                    args.get(i));
+            AnnotatedTypeMirror passedArg = factory.getAnnotatedType(args.get(i));
             AnnotatedTypeMirror requiredArg = requiredParams.get(i);
             if (asSuper(passedArg, requiredArg) != null)
                 passedArg = asSuper(passedArg, requiredArg);
@@ -671,6 +672,7 @@ public class AnnotatedTypes {
         }
         if (passedArgs.isEmpty())
             return null;
+
         // Found arguments! Great!
         AnnotatedTypeMirror[] argsArray = passedArgs.toArray(new AnnotatedTypeMirror[0]);
         annotateAsLub(lubForVar.get(0), argsArray);

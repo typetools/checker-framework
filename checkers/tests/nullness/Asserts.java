@@ -9,7 +9,7 @@ public class Asserts {
 
     void incorrectAssertExpr() {
         String s = null;
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         assert s != null : s.getClass() + " suppress nullness";  // error
         s.getClass();  // OK
     }
@@ -17,7 +17,7 @@ public class Asserts {
     void correctAssertExpr() {
         String s = null;
         assert s == null : s.getClass() + " suppress nullness";
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         s.getClass();   // error
     }
 
@@ -39,7 +39,7 @@ public class Asserts {
     @AssertNonNullIfTrue({"#0", "#1"})
     boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         // don't bother with the implementation
-        //:: (assertiftrue.postcondition.not.satisfied)
+        //:: error: (assertiftrue.postcondition.not.satisfied)
         return true;
     }
 
@@ -49,7 +49,7 @@ public class Asserts {
     void testAssertBad(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         assert sameLength(seq1, seq2);
         // the AssertNonNullIfTrue is not taken from the assert, as it doesn't contain "nullness"
-        //:: (accessing.nullable)
+        //:: error: (accessing.nullable)
         if (seq1[0]);        
     }
     
@@ -64,7 +64,7 @@ public class Asserts {
     }
 
     void testAssertOr(@Nullable Object o) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         assert o!=null || o.hashCode() > 6;
     }
     

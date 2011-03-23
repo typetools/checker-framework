@@ -1,4 +1,4 @@
-src/net/eyde/personalblog/service/PersonalBlogService.java:175: incompatible types.
+src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types.
                     "where post.category like '%", category,
                                                    ^
   found   : @Tainted String

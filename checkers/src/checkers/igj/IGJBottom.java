@@ -2,6 +2,7 @@ package checkers.igj;
 
 import java.lang.annotation.Target;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 import checkers.igj.quals.*;
@@ -19,7 +20,9 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
 @Target({}) // empty target prevents programmers from writing this in a program
 @ImplicitFor(
-        trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
+        trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.ENUM,
+                Kind.INTERFACE, Kind.ANNOTATION_TYPE,
+                Kind.NEW_ARRAY },
         typeClasses = { AnnotatedPrimitiveType.class }
 )
 @interface IGJBottom { }
