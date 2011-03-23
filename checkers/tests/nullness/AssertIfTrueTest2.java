@@ -38,7 +38,7 @@ public class AssertIfTrueTest2 {
         if (hasId12()) { id.toString(); }
         if (hasId13()) { id.toString(); }
         if (hasId14()) { id.toString(); }
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         id.toString();
     }
 

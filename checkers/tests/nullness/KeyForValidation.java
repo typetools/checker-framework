@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 
 public class KeyForValidation {
 
-  //:: (keyfor.type.invalid)
+  //:: error: (keyfor.type.invalid)
   static @KeyFor("this") Object f;
 
   @KeyFor("this") Object g;

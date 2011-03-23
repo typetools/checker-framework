@@ -10,7 +10,7 @@ class NullnessBound {
         t2.add(null);
 
         Gen1<@NonNull String> t3;
-        //:: (generic.argument.invalid)
+        //:: error: (generic.argument.invalid)
         Gen2<@NonNull String> t4;
     }
 

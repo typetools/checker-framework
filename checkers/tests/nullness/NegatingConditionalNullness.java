@@ -29,26 +29,26 @@ class PptTopLevel {
 
     // False tests
     static void testFalse(PptTopLevel ppt) {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         ppt.splitters.toString();   // error
     }
 
     static void testFalseNoAssertion(PptTopLevel ppt) {
         ppt.has_splitters();
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         ppt.splitters.toString();    // error
     }
 
     static void testFalseIf(PptTopLevel ppt) {
         if (ppt.has_splitters())
             return;
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         ppt.splitters.toString();   // error
     }
 
 //    static void testFalseIfBody(PptTopLevel ppt) {
 //        if (!ppt.has_splitters()) {
-//            //:: (dereference.of.nullable)
+//            //:: error: (dereference.of.nullable)
 //            ppt.splitters.toString();   // error
 //        }
 //    }

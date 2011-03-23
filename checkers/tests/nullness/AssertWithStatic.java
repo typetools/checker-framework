@@ -13,7 +13,7 @@ public class AssertWithStatic {
     }
     
     @AssertNonNullAfter("System.out")
-    //:: (assert.postcondition.not.satisfied)
+    //:: error: (assert.postcondition.not.satisfied)
     public void sysOutAfter(){
     }
 }

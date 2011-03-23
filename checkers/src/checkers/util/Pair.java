@@ -1,7 +1,9 @@
 package checkers.util;
 
 /**
- * Simple pair class for multiple returns
+ * Simple pair class for multiple returns.
+ *
+ * TODO: as class is immutable, use @Covariant annotation.
  */
 public class Pair<V1, V2> {
     public final V1 first;

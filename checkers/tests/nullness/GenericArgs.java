@@ -16,13 +16,13 @@ public class GenericArgs {
 
     static class X<T extends @NonNull Object> {
         T value() {
-            //:: (return.type.incompatible)
+            //:: error: (return.type.incompatible)
             return null;
         }
     }
 
     public static void test2() {
-        //:: (generic.argument.invalid)
+        //:: error: (generic.argument.invalid)
         Object o = new X<Object>().value();
     }
 
@@ -31,9 +31,9 @@ public class GenericArgs {
     }
 
     void test4() {
-        //:: (generic.argument.invalid)
+        //:: error: (generic.argument.invalid)
         GenericArgs.<@Nullable Object>test3(null);
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         GenericArgs.<@NonNull Object>test3(null);
     }
 
@@ -44,7 +44,7 @@ public class GenericArgs {
     }
 
     void test5() {
-        //:: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         new <@NonNull String> GenericConstructor(null);
     }
 

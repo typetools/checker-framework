@@ -18,10 +18,10 @@ public class SwingTest {
     // ok
     m(BOTTOM);
 
-    //:: (argument.type.incompatible)
+    //:: error: (argument.type.incompatible)
     m(5);
 
-    //:: (argument.type.incompatible)
+    //:: error: (argument.type.incompatible)
     m(NORTH);
   }
 
@@ -36,7 +36,7 @@ public class SwingTest {
   static void ignoreOne() {
     m(NORTH);
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @SwingVerticalOrientation int b = 5;
   }
 
@@ -47,7 +47,7 @@ public class SwingTest {
   }
 
   @SwingVerticalOrientation int testInference0() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @SwingVerticalOrientation int boxint = 5;
     int box = boxint;
     return box;
@@ -64,7 +64,7 @@ public class SwingTest {
   }
 
   @SwingVerticalOrientation Object testInference3() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @SwingVerticalOrientation Object boxobj = new Object();
     Object obox = boxobj;
     return obox;
@@ -129,15 +129,15 @@ public class SwingTest {
   }
 
   void testInference8b() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @SwingHorizontalOrientation int s2 = 5;
-    //:: (compoundassign.type.incompatible)
+    //:: error: (compoundassign.type.incompatible)
     s2 += 1;
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     s1 = (s2 += s2);
 
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     @SwingHorizontalOrientation String str = "abc";
     // yes, somebody in the Swing API really wrote this.
     str += null;
@@ -156,7 +156,7 @@ public class SwingTest {
           break;
         }
       }
-      //:: (return.type.incompatible)
+      //:: error: (return.type.incompatible)
       return o;
   }
 
@@ -185,7 +185,7 @@ public class SwingTest {
           break;
         }
       }
-      //:: (return.type.incompatible)
+      //:: error: (return.type.incompatible)
       return o;
   }
 
@@ -200,7 +200,7 @@ public class SwingTest {
           break;
         }
       }
-      //:: (return.type.incompatible)
+      //:: error: (return.type.incompatible)
       return o;
   }
 

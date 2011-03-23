@@ -22,7 +22,7 @@ class Constructors {
         roc = new Constructors(mString);      // ok
         roc = new Constructors(null);         // ok
 
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         mc = new Constructors(roString);      // cannot assign
         mc = new Constructors(mString);       // ok
         mc = new Constructors(null);          // ok
@@ -31,19 +31,19 @@ class Constructors {
         roc = new Constructors(mString, 0);   // ok
         roc = new Constructors(null, 0);      // ok
 
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         mc = new Constructors(roString, 0);   // cannot assign
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         mc = new Constructors(mString, 0);    // cannot assign
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         mc = new Constructors(null, 0);       // cannot assign
 
         new Constructors(mString, mString);   // ok
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         new Constructors(roString, mString);  // illegal parameter
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         new Constructors(mString, roString);  // illegal parameter
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         new Constructors(roString, roString); // illegal parameters
 
     }
@@ -56,9 +56,9 @@ class Constructors {
         @Mutable Constructors m = null;
         @Mutable Constructors c1 = new @Mutable Constructors(m, "");
         @Mutable Constructors c2 = new Constructors(m, "");
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         @Mutable Constructors c3 = new @ReadOnly Constructors(m, ""); // invalid
-        //:: (type.incompatible)
+        //:: error: (type.incompatible)
         new @ReadOnly Constructors(ro, "");     // illegal parameter
     }
 }

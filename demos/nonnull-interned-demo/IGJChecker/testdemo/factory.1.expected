@@ -1,9 +1,9 @@
-src/checkers/types/AnnotatedTypeFactory.java:484: incompatible types.
+src/checkers/types/AnnotatedTypeFactory.java:484: error: incompatible types.
             return elementCache.get(elt);
                                    ^
   found   : @Immutable AnnotatedTypeMirror
   required: @Mutable AnnotatedTypeMirror
-src/checkers/types/AnnotatedTypeFactory.java:487: incompatible types.
+src/checkers/types/AnnotatedTypeFactory.java:487: error: incompatible types.
         elementCache.put(elt, type);
                               ^
   found   : @Mutable AnnotatedTypeMirror

@@ -4,9 +4,9 @@
 
      public final String getTotalTrace() {
          final StringBuilder sb = new StringBuilder();
-         //:: (dereference.of.nullable)
+         //:: error: (dereference.of.nullable)
          for(StackTraceElement st: getStackTrace()) {
-           //:: (dereference.of.nullable)
+           //:: error: (dereference.of.nullable)
             sb.append(st.toString());
             sb.append("\n");
          }

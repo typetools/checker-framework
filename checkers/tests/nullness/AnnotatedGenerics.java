@@ -7,7 +7,7 @@ class AnnotatedGenerics {
             @Nullable T get() { return f; }
         }
         Test<Iterable<String>> l = new Test<Iterable<String>>();
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         for (String s : l.get());
     }
 
@@ -29,7 +29,7 @@ class AnnotatedGenerics {
             MyClass<String> c = new MyClass<String>();
             String c1 = c.next();
             @Nullable String c2 = c.next();
-            //:: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             @NonNull String c3 = c.next();
         }
     }

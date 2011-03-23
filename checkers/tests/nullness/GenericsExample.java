@@ -15,11 +15,11 @@ class GenericsExample {
       t = null;
       t = nble;
       nble = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = null;
       t = this.get(0);
       nble = this.get(0);
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = this.get(0);
       this.add(t);
       this.add(nble);
@@ -34,18 +34,18 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = nble;
       nble = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
       this.add(t);
-      //:: (argument.type.incompatible)
+      //:: error: (argument.type.incompatible)
       this.add(nble);
       this.add(nn);
     }
@@ -58,19 +58,19 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = nble;
       nble = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = null;
       t = this.get(0);
       nble = this.get(0);
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = this.get(0);
       this.add(t);
-      //:: (argument.type.incompatible)
+      //:: error: (argument.type.incompatible)
       this.add(nble);
       this.add(nn);
     }
@@ -83,18 +83,18 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       t = nble;
       nble = null;
-      //:: (assignment.type.incompatible)
+      //:: error: (assignment.type.incompatible)
       nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
       this.add(t);
-      //:: (argument.type.incompatible)
+      //:: error: (argument.type.incompatible)
       this.add(nble);
       this.add(nn);
     }
