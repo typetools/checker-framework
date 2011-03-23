@@ -321,7 +321,7 @@ public class AnnotatedTypeFactory {
         } else if (decl instanceof MethodTree) {
             type = fromMember(decl);
         } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
-            type = fromTypeTree((TypeParameterTree)decl);
+            type = fromTypeTree(decl);
         } else
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);
@@ -795,7 +795,7 @@ public class AnnotatedTypeFactory {
      * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List, Object)}
      * for the checks of type argument well-formedness.
      *
-     * @param tree  the method invocation tree
+     * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
@@ -826,9 +826,9 @@ public class AnnotatedTypeFactory {
      * those determine the type of the <i>result</i> of invoking the
      * constructor, which is probably an {@link AnnotatedDeclaredType}.
      *
-     * @param tree a constructor invocation
+     * @param tree the constructor invocation tree
      * @return the annotated type of the invoked constructor (as an executable
-     *         type)
+     *         type) and the (inferred) type arguments
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = InternalUtils.constructor(tree);
