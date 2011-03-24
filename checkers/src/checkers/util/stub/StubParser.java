@@ -25,19 +25,18 @@ import japa.parser.ast.type.*;
 public class StubParser {
 
     /** Whether to print warnings about types/members that were not found. */
-    public static boolean warnIfNotFound = false;
+    private static final boolean warnIfNotFound = false;
 
-    public static boolean debugStubParser = false;
+    private static final boolean debugStubParser = false;
 
     /**
      * This variable records the file being parsed, to make error messages
      * more informative. */
-    final String filename;
-    final IndexUnit index;
-    final AnnotatedTypeFactory atypeFactory;
-    final AnnotationUtils annoUtils;
-    final ProcessingEnvironment env;
-    final Elements elements;
+    private final String filename;
+    private final IndexUnit index;
+    private final AnnotatedTypeFactory atypeFactory;
+    private final AnnotationUtils annoUtils;
+    private final Elements elements;
 
     final Map<String, AnnotationMirror> annotations;
 
@@ -49,14 +48,12 @@ public class StubParser {
             throw new Error(e);
         }
         this.atypeFactory = factory;
-        this.env = env;
         this.annoUtils = AnnotationUtils.getInstance(env);
         this.elements = env.getElementUtils();
         annotations = getSupportedAnnotations();
     }
 
     private Map<String, AnnotationMirror> annoWithinPackage(String packageName) {
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
         Map<String, AnnotationMirror> r = new HashMap<String, AnnotationMirror>();
 
         PackageElement pkg = this.elements.getPackageElement(packageName);
@@ -76,7 +73,6 @@ public class StubParser {
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
         assert !index.getCompilationUnits().isEmpty();
         CompilationUnit cu = index.getCompilationUnits().get(0);
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
 
         Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
 
