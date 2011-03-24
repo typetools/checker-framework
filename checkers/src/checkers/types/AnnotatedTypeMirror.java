@@ -1741,7 +1741,7 @@ public abstract class AnnotatedTypeMirror {
 
         SuperTypeFinder(AnnotatedTypeFactory typeFactory) {
             this.typeFactory = typeFactory;
-            this.types = typeFactory.env.getTypeUtils();
+            this.types = typeFactory.types;
         }
 
         @Override
