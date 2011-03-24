@@ -63,9 +63,6 @@ implements Flow {
     /** The checker to which this instance belongs. */
     protected final SourceChecker checker;
 
-    /** The processing environment to use. */
-    protected final ProcessingEnvironment env;
-
     /** The file that's being analyzed. */
     protected final CompilationUnitTree root;
 
@@ -141,7 +138,7 @@ implements Flow {
             Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
 
         this.checker = checker;
-        this.env = checker.getProcessingEnvironment();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.root = root;
 
         if (factory == null)
@@ -171,6 +168,7 @@ implements Flow {
      */
     protected abstract ST createFlowState(Set<AnnotationMirror> annotations);
 
+    @Override
     public void setDebug(PrintStream debug) {
         this.debug = debug;
     }
