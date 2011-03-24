@@ -118,9 +118,6 @@ implements Flow {
     /** The hierarchy for the type qualifiers that this class infers. */
     protected final QualifierHierarchy annoRelations;
 
-    /** Utilities for {@link Element}s. */
-    protected final Elements elements;
-
     /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
     private Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
 
@@ -155,7 +152,6 @@ implements Flow {
         this.tryBits = new LinkedList<ST>();
 
         this.annoRelations = checker.getQualifierHierarchy();
-        this.elements = env.getElementUtils();
 
         this.flowState = createFlowState(annotations);
     }

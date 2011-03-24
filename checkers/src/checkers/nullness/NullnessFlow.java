@@ -562,7 +562,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.clearOnCall(method);
 
         boolean isPure = method.getAnnotation(Pure.class) != null;
-        final String methodPackage = elements.getPackageOf(method).getQualifiedName().toString();
+        final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
 
         if (!(isPure || isJDKMethod)) {
