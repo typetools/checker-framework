@@ -25,4 +25,7 @@ public interface NavigableMap<K extends @NonNull Object, V extends @NonNull Obje
   public abstract SortedMap<K, V> subMap(K a1, K a2);
   public abstract SortedMap<K, V> headMap(K a1);
   public abstract SortedMap<K, V> tailMap(K a1);
+
+  @AssertNonNullIfFalse({"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"})
+  public abstract boolean isEmpty();
 }
