@@ -89,7 +89,8 @@ public class Arrays {
     public static float[] copyOfRange(float @ReadOnly [] original, int from, int to) { throw new RuntimeException("skeleton method"); }
     public static double[] copyOfRange(double @ReadOnly [] original, int from, int to) { throw new RuntimeException("skeleton method"); }
     public static boolean[] copyOfRange(boolean @ReadOnly [] original, int from, int to) { throw new RuntimeException("skeleton method"); }
-    @SafeVarargs
+    // In JDK7, should instead be: @SafeVarargs
+    @SuppressWarnings("varargs")
     public static <T> List<T> asList(T... a) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly long a[]) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly int a[]) { throw new RuntimeException("skeleton method"); }
