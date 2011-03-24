@@ -904,7 +904,7 @@ public class AnnotatedTypeFactory {
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
     throws IllegalArgumentException {
         PrimitiveType primitiveType =
-            env.getTypeUtils().unboxedType(type.getUnderlyingType());
+            types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
             AnnotatedTypeMirror.createType(primitiveType, env, this);
         pt.addAnnotations(type.getAnnotations());
