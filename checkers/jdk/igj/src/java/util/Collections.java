@@ -59,7 +59,7 @@ public class Collections{
   public static int frequency(@ReadOnly Collection<?> a1, @ReadOnly Object a2) { throw new RuntimeException("skeleton method"); }
   public static boolean disjoint(@ReadOnly Collection<?> a1, @ReadOnly Collection<?> a2) { throw new RuntimeException("skeleton method"); }
   // In JDK7, should instead be: @SafeVarargs
-  @SuppressWarnings("varargs")
+  @SuppressWarnings({"varargs","unchecked"})
   public static <T> boolean addAll(@Mutable Collection<? super T> a1, T @ReadOnly... a2) { throw new RuntimeException("skeleton method"); }
   public static <E> @I Set<E> newSetFromMap(@I Map<E, Boolean> a2) { throw new RuntimeException("skeleton method"); }
   public static <T> @I Queue<T> asLifoQueue(@I Deque<T> a1) { throw new RuntimeException("skeleton method"); }
