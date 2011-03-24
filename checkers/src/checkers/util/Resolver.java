@@ -21,13 +21,14 @@ import com.sun.tools.javac.util.*;
  * A Utility class to find symbols corresponding to string references
  */
 public class Resolver {
-    final Resolve resolve;
-    final Names names;
-    final Trees trees;
-    final Method FIND_IDENT;
-    final Method FIND_IDENT_IN_PACKAGE;
-    final Method FIND_MEMBER_TYPE;
-    final Method FIND_IDENT_IN_TYPE;
+    private final Resolve resolve;
+    private final Names names;
+    private final Trees trees;
+
+    private final Method FIND_IDENT;
+    private final Method FIND_IDENT_IN_PACKAGE;
+    private final Method FIND_MEMBER_TYPE;
+    private final Method FIND_IDENT_IN_TYPE;
 
     public Resolver(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment)env).getContext();
@@ -58,10 +59,10 @@ public class Resolver {
                     "findIdentInType",
                     Env.class, Type.class, Name.class, int.class);
             this.FIND_IDENT_IN_TYPE.setAccessible(true);
-
-
         } catch (Exception e) {
-            throw new AssertionError("Compiler Resolve class doesn't contain findIdent()");
+            Error err = new AssertionError("Compiler 'Resolve' class doesn't contain required 'findXXX' method");
+            err.initCause(e);
+            throw err;
         }
     }
 
@@ -82,8 +83,8 @@ public class Resolver {
      * @return  the variable reference
      */
     public Element findVariable(String reference, TreePath path) {
-        JavacScope scope = (JavacScope)trees.getScope(path);
-        Env<AttrContext> env = ((JavacScope)scope).getEnv();
+        JavacScope scope = (JavacScope) trees.getScope(path);
+        Env<AttrContext> env = scope.getEnv();
 
         if (!reference.contains(".")) {
             // Simple variable
@@ -124,12 +125,12 @@ public class Resolver {
                 env.toplevel.packge = (PackageSymbol)site;
                 return wrapInvocation(
                         FIND_IDENT_IN_PACKAGE,
-                        env, (TypeSymbol)site, name, TYP | PCK);
+                        env, site, name, TYP | PCK);
             } else {
                 env.enclClass.sym = (ClassSymbol)site;
                 return wrapInvocation(
                         FIND_MEMBER_TYPE,
-                        env, site.asType(), name, (TypeSymbol)site);
+                        env, site.asType(), name, site);
             }
         }
     }
