@@ -71,7 +71,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
     private final Map<ExecutableElement, Set<VariableElement>> initializedFields;
-    private final TreeParser treeParser;
+    // TODO: use this field?
+    // private final TreeParser treeParser;
     private final Resolver resolver;
 
 
@@ -92,7 +93,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
         initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
-        treeParser = new TreeParser(checker.getProcessingEnvironment());
+        // treeParser = new TreeParser(checker.getProcessingEnvironment());
         resolver = new Resolver(checker.getProcessingEnvironment());
 
         DO_ADVANCED_CHECKS = checker.getLintOption("advancedchecks", NullnessSubchecker.ADVANCEDCHECKS_DEFAULT);
