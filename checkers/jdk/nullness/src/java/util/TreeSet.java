@@ -13,6 +13,7 @@ public class TreeSet<E extends @NonNull Object> extends AbstractSet<E> implement
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }
+  @AssertNonNullIfFalse({"pollFirst()", "pollLast()"})
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
@@ -26,8 +27,8 @@ public class TreeSet<E extends @NonNull Object> extends AbstractSet<E> implement
   public SortedSet<E> headSet(E a1) { throw new RuntimeException("skeleton method"); }
   public SortedSet<E> tailSet(E a1) { throw new RuntimeException("skeleton method"); }
   public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
-  public @Nullable E first() { throw new RuntimeException("skeleton method"); }
-  public @Nullable E last() { throw new RuntimeException("skeleton method"); }
+  public E first() { throw new RuntimeException("skeleton method"); }
+  public E last() { throw new RuntimeException("skeleton method"); }
   public @Nullable E lower(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E floor(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E ceiling(E a1) { throw new RuntimeException("skeleton method"); }

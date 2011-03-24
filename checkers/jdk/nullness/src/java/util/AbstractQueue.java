@@ -10,4 +10,6 @@ public abstract class AbstractQueue<E extends @NonNull Object> extends AbstractC
   public E element() { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  @AssertNonNullIfFalse({"poll()", "peek()"})
+  public abstract boolean isEmpty();
 }
