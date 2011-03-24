@@ -19,4 +19,8 @@ public interface NavigableSet<E extends @NonNull Object> extends SortedSet<E> {
   public abstract SortedSet<E> subSet(E a1, E a2);
   public abstract SortedSet<E> headSet(E a1);
   public abstract SortedSet<E> tailSet(E a1);
+
+  @AssertNonNullIfFalse({"pollFirst()", "pollLast()"})
+  public abstract boolean isEmpty();
+
 }
