@@ -30,7 +30,8 @@ import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.*;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -904,7 +905,7 @@ public class AnnotatedTypeFactory {
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
     throws IllegalArgumentException {
         PrimitiveType primitiveType =
-            env.getTypeUtils().unboxedType(type.getUnderlyingType());
+            types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
             AnnotatedTypeMirror.createType(primitiveType, env, this);
         pt.addAnnotations(type.getAnnotations());

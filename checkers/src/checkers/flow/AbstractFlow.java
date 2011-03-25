@@ -63,9 +63,6 @@ implements Flow {
     /** The checker to which this instance belongs. */
     protected final SourceChecker checker;
 
-    /** The processing environment to use. */
-    protected final ProcessingEnvironment env;
-
     /** The file that's being analyzed. */
     protected final CompilationUnitTree root;
 
@@ -121,9 +118,6 @@ implements Flow {
     /** The hierarchy for the type qualifiers that this class infers. */
     protected final QualifierHierarchy annoRelations;
 
-    /** Utilities for {@link Element}s. */
-    protected final Elements elements;
-
     /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
     private Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
 
@@ -141,7 +135,7 @@ implements Flow {
             Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
 
         this.checker = checker;
-        this.env = checker.getProcessingEnvironment();
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.root = root;
 
         if (factory == null)
@@ -158,7 +152,6 @@ implements Flow {
         this.tryBits = new LinkedList<ST>();
 
         this.annoRelations = checker.getQualifierHierarchy();
-        this.elements = env.getElementUtils();
 
         this.flowState = createFlowState(annotations);
     }
@@ -171,6 +164,7 @@ implements Flow {
      */
     protected abstract ST createFlowState(Set<AnnotationMirror> annotations);
 
+    @Override
     public void setDebug(PrintStream debug) {
         this.debug = debug;
     }

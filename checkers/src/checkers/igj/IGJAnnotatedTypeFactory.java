@@ -122,12 +122,10 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
     @Override
     protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-
         Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
         for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
             if (!I.class.equals(cl))
-                flowQuals.add(annoFactory.fromClass(cl));
+                flowQuals.add(annotations.fromClass(cl));
         }
         return flowQuals;
     }

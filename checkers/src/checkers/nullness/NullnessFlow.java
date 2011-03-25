@@ -71,7 +71,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
     private final Map<ExecutableElement, Set<VariableElement>> initializedFields;
-    private final TreeParser treeParser;
+    // TODO: use this field?
+    // private final TreeParser treeParser;
     private final Resolver resolver;
 
 
@@ -92,7 +93,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
         initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
-        treeParser = new TreeParser(checker.getProcessingEnvironment());
+        // treeParser = new TreeParser(checker.getProcessingEnvironment());
         resolver = new Resolver(checker.getProcessingEnvironment());
 
         DO_ADVANCED_CHECKS = checker.getLintOption("advancedchecks", NullnessSubchecker.ADVANCEDCHECKS_DEFAULT);
@@ -562,7 +563,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.clearOnCall(method);
 
         boolean isPure = method.getAnnotation(Pure.class) != null;
-        final String methodPackage = elements.getPackageOf(method).getQualifiedName().toString();
+        final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
 
         if (!(isPure || isJDKMethod)) {
