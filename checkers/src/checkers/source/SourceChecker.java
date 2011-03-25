@@ -18,9 +18,12 @@ import checkers.types.*;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
 
-import com.sun.tools.javac.processing.*;
+import com.sun.source.util.AbstractTypeProcessor;
+import com.sun.source.util.Trees;
+import com.sun.source.util.TreePath;
+
+import com.sun.tools.javac.processing.JavacMessager;
 
 /**
  * An abstract annotation processor designed for implementing a
