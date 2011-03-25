@@ -32,4 +32,6 @@ public interface Deque<E extends /*@NonNull*/ Object> extends Queue<E> {
   public abstract int size();
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
+  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
+  public abstract boolean isEmpty();
 }

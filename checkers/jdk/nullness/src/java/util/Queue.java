@@ -10,4 +10,6 @@ public interface Queue<E extends @NonNull Object> extends Collection<E> {
   public abstract @Nullable E poll();
   public abstract E element();
   public abstract @Nullable E peek();
+  @AssertNonNullIfFalse({"poll()", "peek()"})
+  public abstract boolean isEmpty();
 }
