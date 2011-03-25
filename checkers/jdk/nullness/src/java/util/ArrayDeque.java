@@ -31,6 +31,7 @@ public class ArrayDeque<E extends @NonNull Object> extends AbstractCollection<E>
   public void push(E a1) { throw new RuntimeException("skeleton method"); }
   public E pop() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }
+  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }

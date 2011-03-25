@@ -45,4 +45,7 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
   public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
+
+  @AssertNonNullIfFalse({"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"})
+  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }
