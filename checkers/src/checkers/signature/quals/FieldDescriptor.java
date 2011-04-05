@@ -1,5 +1,6 @@
 package checkers.signature.quals;
 
+import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -16,4 +17,5 @@ import checkers.quals.TypeQualifier;
  */
 @TypeQualifier
 @SubtypeOf({UnannotatedString.class})
+@ImplicitFor(stringPatterns="^\\[*([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*(/[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?;)$")
 public @interface FieldDescriptor {}

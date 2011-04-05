@@ -14,7 +14,7 @@ public class DeepOverride {
 
     public static class C extends B {
         @Override
-            //:: (override.return.invalid)
+            //:: error: (override.return.invalid)
         public String method() {
             return "";
         }

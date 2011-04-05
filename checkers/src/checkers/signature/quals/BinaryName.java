@@ -1,5 +1,6 @@
 package checkers.signature.quals;
 
+import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -8,7 +9,7 @@ import checkers.quals.TypeQualifier;
  * Binary names for objects are created as the following:
  *	<package name>.<class name>$<inner class name>
  *	where
- *	<package name> is a fully qualified (dot seperated) name.
+ *	<package name> is a fully qualified (dot separated) name.
  * Example:
  *	package edu.cs.washington;
  *	public class BinaryName {
@@ -22,4 +23,5 @@ import checkers.quals.TypeQualifier;
  */
 @TypeQualifier
 @SubtypeOf({UnannotatedString.class})
+@ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?(\\[\\])*$")
 public @interface BinaryName {}

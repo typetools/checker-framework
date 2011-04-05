@@ -86,7 +86,7 @@ public abstract class AnnotatedTypeMirror {
             default:
                 if (type.getKind().isPrimitive())
                     return new AnnotatedPrimitiveType((PrimitiveType)type, env, typeFactory);
-            throw new AssertionError("Unidentified type " + type);
+                throw new AssertionError("Unidentified type " + type);
         }
     }
 
@@ -1741,7 +1741,7 @@ public abstract class AnnotatedTypeMirror {
 
         SuperTypeFinder(AnnotatedTypeFactory typeFactory) {
             this.typeFactory = typeFactory;
-            this.types = typeFactory.env.getTypeUtils();
+            this.types = typeFactory.types;
         }
 
         @Override

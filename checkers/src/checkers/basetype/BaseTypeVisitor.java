@@ -25,6 +25,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.source.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -155,6 +156,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (!hasExplicitConstructor(node)) {
                 checkDefaultConstructor(node);
             }
+
+            /* Visit the extends and implements clauses.
+             * The superclass also visits them, but only calls visitParameterizedType, which
+             * looses a main modifier.
+             */
+            Tree ext = node.getExtendsClause();
+            if (ext!=null) {
+                validateTypeOf(ext);
+            }
+
+            List<? extends Tree> impls = node.getImplementsClause();
+            if (impls!=null) {
+                for (Tree im : impls) {
+                    validateTypeOf(im);
+                }
+            }
+
             return super.visitClass(node, p);
         } finally {
             this.visitorState.setClassType(preACT);
@@ -390,7 +408,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (shouldSkip(InternalUtils.constructor(node)))
             return super.visitNewClass(node, p);
 
-        AnnotatedExecutableType constructor = atypeFactory.constructorFromUse(node);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory.constructorFromUse(node);
+        AnnotatedExecutableType constructor = fromUse.first;
+        List<AnnotatedTypeMirror> typeargs = fromUse.second;
+
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
             annoTypes.expandVarArgs(constructor, passedArguments);
@@ -402,11 +423,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Using "constructor" seems to work equally well...
         // AnnotatedExecutableType type =
         //   atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
-
-        // Get the type args to the constructor.
-        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
-        for (Tree tree : node.getTypeArguments())
-            typeargs.add(atypeFactory.getAnnotatedTypeFromTypeTree(tree));
 
         checkTypeArguments(node, constructor.getTypeVariables(),
                 typeargs, node.getTypeArguments());
@@ -658,8 +674,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees) {
 
+        // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
+        //         toptree, typevars, typeargs, typeargTrees);
+
         // If there are no type variables, do nothing.
         if (typevars.isEmpty()) return;
+
+        assert typevars.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and type variables" + typevars;
 
         Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
@@ -667,9 +690,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         while (varIter.hasNext()) {
 
             AnnotatedTypeVariable typeVar = varIter.next();
-
-            assert argIter.hasNext() : "Found more type variables than type arguments: " + typevars + " / " + typeargs;
-
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
@@ -1018,51 +1038,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 reportError(useType, tree);
             }
 
-            // System.out.println("Tree type: " + tree.getKind());
+            // System.out.println("Type: " + type);
+            // System.out.println("Tree: " + tree);
+            // System.out.println("Tree kind: " + tree.getKind());
 
             /* Try to reconstruct the ParameterizedTypeTree from the given tree.
              * TODO: there has to be a nicer way to do this...
              */
-            ParameterizedTypeTree typeargtree = null;
-
-            switch (tree.getKind()) {
-                case VARIABLE:
-                    Tree lt = ((VariableTree)tree).getType();
-                    if (lt instanceof ParameterizedTypeTree) {
-                        typeargtree = (ParameterizedTypeTree) lt;
-                    } else {
-                      //   System.out.println("Found a: " + lt);
-                    }
-                    break;
-                case PARAMETERIZED_TYPE:
-                    typeargtree = (ParameterizedTypeTree) tree;
-                    break;
-                case NEW_CLASS:
-                    NewClassTree nct = (NewClassTree) tree;
-                    ExpressionTree nctid = nct.getIdentifier();
-                    if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
-                        typeargtree = (ParameterizedTypeTree) nctid;
-                        /*
-                         * This is quite tricky... for anonymous class instantiations,
-                         * the type at this point has no type arguments.
-                         * By doing the following, we get the type arguments again.
-                         */
-                        type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
-                    }
-                    break;
-                case IDENTIFIER:
-                case ANNOTATED_TYPE:
-                case ARRAY_TYPE:
-                case NEW_ARRAY:
-                case MEMBER_SELECT:
-                case UNBOUNDED_WILDCARD:
-                case EXTENDS_WILDCARD:
-                case SUPER_WILDCARD:
-                    // Nothing to do.
-                    break;
-                default:
-                    System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
-            }
+            Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(tree, type);
+            ParameterizedTypeTree typeargtree = p.first;
+            type = p.second;
 
             if (typeargtree!=null) {
                 // We have a ParameterizedTypeTree -> visit it.
@@ -1095,6 +1080,68 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             return super.visitDeclared(type, tree);
         }
 
+        private Pair<ParameterizedTypeTree, AnnotatedDeclaredType>
+        extractParameterizedTypeTree(Tree tree, AnnotatedDeclaredType type) {
+            ParameterizedTypeTree typeargtree = null;
+
+            switch (tree.getKind()) {
+            case VARIABLE:
+                Tree lt = ((VariableTree)tree).getType();
+                if (lt instanceof ParameterizedTypeTree) {
+                    typeargtree = (ParameterizedTypeTree) lt;
+                } else {
+                  //   System.out.println("Found a: " + lt);
+                }
+                break;
+            case PARAMETERIZED_TYPE:
+                typeargtree = (ParameterizedTypeTree) tree;
+                break;
+            case NEW_CLASS:
+                NewClassTree nct = (NewClassTree) tree;
+                ExpressionTree nctid = nct.getIdentifier();
+                if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
+                    typeargtree = (ParameterizedTypeTree) nctid;
+                    /*
+                     * This is quite tricky... for anonymous class instantiations,
+                     * the type at this point has no type arguments.
+                     * By doing the following, we get the type arguments again.
+                     */
+                    type = (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(typeargtree);
+                }
+                break;
+            case ANNOTATED_TYPE:
+                AnnotatedTypeTree tr = (AnnotatedTypeTree) tree;
+                ExpressionTree undtr = tr.getUnderlyingType();
+                if (undtr instanceof ParameterizedTypeTree) {
+                    typeargtree = (ParameterizedTypeTree) undtr;
+                } else if (undtr instanceof IdentifierTree) {
+                    // @Something D -> Nothing to do
+                } else {
+                    // TODO: add more test cases to ensure that nested types are handled correctly,
+                    // e.g. @Nullable() List<@Nullable Object>[][]
+                    Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(undtr, type);
+                    typeargtree = p.first;
+                    type = p.second;
+                }
+                break;
+            case IDENTIFIER:
+            case ARRAY_TYPE:
+            case NEW_ARRAY:
+            case MEMBER_SELECT:
+            case UNBOUNDED_WILDCARD:
+            case EXTENDS_WILDCARD:
+            case SUPER_WILDCARD:
+                // Nothing to do.
+                // System.out.println("Found a: " + (tree instanceof ParameterizedTypeTree));
+                break;
+            default:
+                System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n", tree, tree.getKind());
+            }
+
+            return Pair.of(typeargtree, type);
+        }
+
+
         /**
          * Checks that the annotations on the type arguments supplied to a type or a
          * method invocation are within the bounds of the type variables as
@@ -1105,18 +1152,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
          * annotation on generic types.
          */
         protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
+            // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n", type, tree);
+
             if (TreeUtils.isDiamondTree(tree))
                 return null;
 
-            final TypeElement element =
-                (TypeElement)type.getUnderlyingType().asElement();
+            final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
             if (shouldSkip(element))
                 return null;
 
             List<AnnotatedTypeVariable> typevars = atypeFactory.typeVariablesFromUse(type, element);
 
-            checkTypeArguments(tree, typevars,
-                    type.getTypeArguments(), tree.getTypeArguments());
+            checkTypeArguments(tree, typevars, type.getTypeArguments(), tree.getTypeArguments());
 
             return null;
         }

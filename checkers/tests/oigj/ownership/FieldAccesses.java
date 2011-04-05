@@ -15,7 +15,7 @@ public class FieldAccesses {
         access(this.dominator);
         access(dominator);
 
-        //:: (unallowed.access)
+        //:: error: (unallowed.access)
         access(other.dominator);
     }
 }

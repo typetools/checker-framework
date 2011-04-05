@@ -7,18 +7,18 @@ public class AssertIfFalseTest {
     @AssertNonNullIfFalse("get()")
     boolean isGettable() {
         // don't bother with the implementation
-        //:: (assertiffalse.postcondition.not.satisfied)
+        //:: error: (assertiffalse.postcondition.not.satisfied)
         return false;
     }
 
     void simple() {
-        //:: (dereference.of.nullable)
+        //:: error: (dereference.of.nullable)
         get().toString();
     }
 
     void checkWrongly() {
         if (isGettable()) {
-            //:: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             get().toString();
         }
     }

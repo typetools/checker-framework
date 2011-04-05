@@ -26,7 +26,7 @@ abstract class ThrowCatch {
 
     try {
       throwsNoncritical();
-    //:: (type.incompatible)
+    //:: error: (type.incompatible)
     } catch (@Critical Exception e) {
     }
 

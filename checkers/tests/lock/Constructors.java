@@ -10,7 +10,7 @@ public class Constructors {
     Constructors() {
         unlocked = "m";
         guardedThis = "m";
-        //:: (unguarded.access)
+        //:: error: (unguarded.access)
         guardedOther = "m"; //error
     }
 }

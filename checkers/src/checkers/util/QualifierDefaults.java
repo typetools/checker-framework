@@ -121,6 +121,9 @@ public class QualifierDefaults {
             case METHOD:
                 return TreeUtils.elementFromDeclaration((MethodTree)t);
             case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
                 return TreeUtils.elementFromDeclaration((ClassTree)t);
             default: // Do nothing.
             }

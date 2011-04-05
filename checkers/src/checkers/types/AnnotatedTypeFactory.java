@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
-import java.util.Map.Entry;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -31,7 +30,8 @@ import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.*;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -241,6 +241,9 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type;
         switch (tree.getKind()) {
             case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
                 type = fromClass((ClassTree)tree); break;
             case METHOD:
             case VARIABLE:
@@ -257,6 +260,9 @@ public class AnnotatedTypeFactory {
 
         switch (tree.getKind()) {
         case CLASS:
+        case ENUM:
+        case INTERFACE:
+        case ANNOTATION_TYPE:
         case METHOD:
         // case VARIABLE:
             if (SHOULD_CACHE)
@@ -315,6 +321,8 @@ public class AnnotatedTypeFactory {
             type = fromMember(decl);
         } else if (decl instanceof MethodTree) {
             type = fromMember(decl);
+        } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
+            type = fromTypeTree(decl);
         } else
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);
@@ -788,7 +796,7 @@ public class AnnotatedTypeFactory {
      * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List, Object)}
      * for the checks of type argument well-formedness.
      *
-     * @param tree  the method invocation tree
+     * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
@@ -806,11 +814,6 @@ public class AnnotatedTypeFactory {
                 typeargs.add(typeVarMapping.get(tv));
             }
             methodType = methodType.substitute(typeVarMapping);
-        } else {
-            // Get type arguments as passed to the invocation.
-            for (Tree arg : tree.getTypeArguments()) {
-                typeargs.add(this.getAnnotatedTypeFromTypeTree(arg));
-            }
         }
 
         return Pair.of(methodType, typeargs);
@@ -824,11 +827,11 @@ public class AnnotatedTypeFactory {
      * those determine the type of the <i>result</i> of invoking the
      * constructor, which is probably an {@link AnnotatedDeclaredType}.
      *
-     * @param tree a constructor invocation
+     * @param tree the constructor invocation tree
      * @return the annotated type of the invoked constructor (as an executable
-     *         type)
+     *         type) and the (inferred) type arguments
      */
-    public AnnotatedExecutableType constructorFromUse(NewClassTree tree) {
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = InternalUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
@@ -841,7 +844,20 @@ public class AnnotatedTypeFactory {
             actualParams.addAll(con.getParameterTypes());
             con.setParameterTypes(actualParams);
         }
-        return con;
+
+        List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
+
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
+            atypes.findTypeArguments(tree);
+
+        if (!typeVarMapping.isEmpty()) {
+            for ( AnnotatedTypeVariable tv : con.getTypeVariables()) {
+                typeargs.add(typeVarMapping.get(tv));
+            }
+            con = con.substitute(typeVarMapping);
+        }
+
+        return Pair.of(con, typeargs);
     }
 
     private boolean isSyntheticArgument(Tree tree) {
@@ -889,7 +905,7 @@ public class AnnotatedTypeFactory {
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
     throws IllegalArgumentException {
         PrimitiveType primitiveType =
-            env.getTypeUtils().unboxedType(type.getUnderlyingType());
+            types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
             AnnotatedTypeMirror.createType(primitiveType, env, this);
         pt.addAnnotations(type.getAnnotations());
