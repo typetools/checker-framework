@@ -33,6 +33,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
     private final DeclaredType typeToCheck;
+    
+    //Werner, here are the maps. 
+    public static Map<Name, Boolean> definesEquals;
+    public static Map<Name, Name> parentMap;
+   
+    static {
+        definesEquals = new HashMap<Name, Boolean>();
+        parentMap = new HashMap<Name, Name>();
+    }
 
     /**
      * Creates a new visitor for type-checking {@link Interned}.
@@ -144,6 +153,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     public Void visitClass(ClassTree node, Void p){
     	//Looking for an @UsesObjectEquals class declaration
 
+    	
+    	//Add to definesEquals map and print some information
+    	Element classElt = TreeUtils.elementFromDeclaration(node);
+    	definesEquals.put(ElementUtils.getQualifiedClassName(classElt), overridesEquals(node));
+    	System.out.println("Adding: "+ElementUtils.getQualifiedClassName(classElt));
+    	System.out.println("Map size: "+definesEquals.size());
+    	System.out.println("Map hashcode: "+definesEquals.hashCode());
+    	System.out.println();
+    	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
     	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
 
@@ -158,16 +176,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
     		//check methods to ensure no .equals
-    		List<? extends Tree> members = node.getMembers();
-    		for(Tree member : members){
-    			if(member instanceof MethodTree){
-    				MethodTree mTree = (MethodTree) member;
-    				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
-    				if(overrides(enclosing, Object.class, "equals")){
-    					checker.report(Result.failure("overrides.equals"), node);
-    				}
-    			}
+    		if(overridesEquals(node)){
+    			checker.report(Result.failure("overrides.equals"), node);
     		}
+
 
     		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
     			checker.report(Result.failure("superclass.unmarked"), node);
@@ -186,6 +198,21 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     // Helper methods
     // **********************************************************************
 
+    private boolean overridesEquals(ClassTree node){
+    	List<? extends Tree> members = node.getMembers();
+    	for(Tree member : members){
+			if(member instanceof MethodTree){
+				MethodTree mTree = (MethodTree) member;
+				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
+				if(overrides(enclosing, Object.class, "equals")){
+					return true;
+				}
+			}
+		}
+    	return false;
+    }
+    
+    
     /**
      * Tests whether a method invocation is an invocation of
      * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
