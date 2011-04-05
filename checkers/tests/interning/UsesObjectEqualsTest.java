@@ -1,10 +1,14 @@
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.UsesObjectEquals;
 
+import java.util.LinkedList;
+import java.util.prefs.*;
 
 public class UsesObjectEqualsTest {
 	
-    @UsesObjectEquals class A {}
+    public @UsesObjectEquals class A {
+    		public A(){}
+    }
 	
     @UsesObjectEquals class B extends A {}
 	
@@ -46,4 +50,6 @@ public class UsesObjectEqualsTest {
     
     class ExtendsInner2 extends UsesObjectEqualsTest.A {}
 	
+    class MyList extends LinkedList {}
+
 }
