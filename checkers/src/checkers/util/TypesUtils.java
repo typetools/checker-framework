@@ -46,6 +46,18 @@ public final class TypesUtils {
     }
 
     /**
+     * Checks if the type represents a java.lang.String declared type.
+     * TODO: it would be cleaner to use String.class.getCanonicalName(), but
+     *   the two existing methods above don't do that, I guess for performance reasons.
+     *
+     * @param type  the type
+     * @return true iff type represents java.lang.String
+     */
+    public static boolean isString(TypeMirror type) {
+        return isDeclaredOfName(type, "java.lang.String");
+    }
+
+    /**
      * Check if the type represent a declared type of the given qualified name
      *
      * @param type the type
