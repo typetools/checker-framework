@@ -224,6 +224,18 @@ public final class TreeUtils {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
     }
 
+    public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
+        TreePath parpath = path.getParentPath();
+        while (parpath!=null && parpath.getLeaf().getKind() != Tree.Kind.CLASS) {
+            path = parpath;
+            parpath = parpath.getParentPath();
+        }
+        if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
+            return (BlockTree) path.getLeaf();
+        }
+        return null;
+    }
+
     /**
      * If the given tree is a parenthesized tree, it returns the enclosed
      * non-parenthesized tree. Otherwise, it returns the same tree.
@@ -467,8 +479,7 @@ public final class TreeUtils {
      */
     public static final boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS
-                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
-                        String.class.getCanonicalName()));
+                && TypesUtils.isString(InternalUtils.typeOf(tree)));
     }
 
     /**
@@ -476,8 +487,7 @@ public final class TreeUtils {
      */
     public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
-                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
-                        String.class.getCanonicalName()));
+                && TypesUtils.isString(InternalUtils.typeOf(tree)));
     }
 
     /**
