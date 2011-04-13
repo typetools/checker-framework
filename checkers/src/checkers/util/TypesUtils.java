@@ -4,7 +4,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 /**
- * A Utilities class that helps with {@link Element}s.
+ * A utility class that helps with {@link TypeMirror}s.
  *
  */
 // TODO: This class needs significant restructuring
