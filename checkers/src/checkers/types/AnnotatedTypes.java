@@ -1066,4 +1066,55 @@ public class AnnotatedTypes {
             inner = ((AnnotatedArrayType)inner).getComponentType();
         return inner;
     }
+
+
+    /**
+     * Checks whether type contains the given modifier, also recursively in type arguments and arrays.
+     * This method might be easier to implement directly as instance method in AnnotatedTypeMirror;
+     * it corresponds to a "deep" version of
+     * {@link AnnotatedTypeMirror.hasAnnotation(AnnotationMirror)}.
+     *
+     * @param type the type to search.
+     * @param modifier the modifier to search for.
+     * @return whether the type contains the modifier.
+     */
+    public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
+        return containsModifierImpl(type, modifier, new LinkedList<AnnotatedTypeMirror>());
+    }
+
+    /*
+     * For type variables we might hit the same type again. We keep a list of visited types.
+     */
+    private static boolean containsModifierImpl(AnnotatedTypeMirror type, AnnotationMirror modifier,
+            List<AnnotatedTypeMirror> visited) {
+        boolean found = type.hasAnnotation(modifier);
+        boolean vis = visited.contains(type);
+        visited.add(type);
+
+        if (!found && !vis) {
+            if (type.getKind() == TypeKind.DECLARED) {
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+                for (AnnotatedTypeMirror typeMirror : declaredType.getTypeArguments()) {
+                    found |= containsModifierImpl(typeMirror, modifier, visited);
+                    if (found) {
+                        break;
+                    }
+                }
+            } else if (type.getKind() == TypeKind.ARRAY) {
+                AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
+                found = containsModifierImpl(arrayType.getComponentType(), modifier, visited);
+            } else if (type.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) type;
+                if (atv.getUpperBound()!=null) {
+                    found = containsModifierImpl(atv.getUpperBound(), modifier, visited);
+                }
+                if (!found && atv.getLowerBound()!=null) {
+                    found = containsModifierImpl(atv.getLowerBound(), modifier, visited);
+                }
+            }
+        }
+
+        return found;
+    }
+
 }
