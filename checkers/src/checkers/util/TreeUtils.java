@@ -141,6 +141,7 @@ public final class TreeUtils {
     public static TreePath pathTillClass(final TreePath path) {
         return pathTillOfKind(path, classTreeKinds());
     }
+
     /**
      * Gets path to the the first enclosing tree of the specified kind.
      *
@@ -185,7 +186,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the enclosing method of the tree node defined by the given
+     * Gets the enclosing class of the tree node defined by the given
      * {@code {@link TreePath}}. It returns a {@link Tree}, from which
      * {@link AnnotatedTypeMirror} or {@link Element} can be
      * obtained.
@@ -562,6 +563,10 @@ public final class TreeUtils {
         return receiver;
     }
 
+    // TODO: What about anonymous classes?
+    // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a 
+    // tree gets cast to ClassTree when it is actually a NewClassTree,
+    // for example in enclosingClass above.
     private final static Set<Tree.Kind> classTreeKinds = EnumSet.of(
             Tree.Kind.CLASS,
             Tree.Kind.ENUM,
