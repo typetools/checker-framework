@@ -11,10 +11,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -99,16 +102,23 @@ public final class TreeUtils {
     public static boolean isSuperCall(MethodInvocationTree tree) {
         /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
-        if (mst.getKind() != Tree.Kind.MEMBER_SELECT)
-            return false;
+        
+        if (mst.getKind() == Tree.Kind.IDENTIFIER ) {
+            return ((IdentifierTree)mst).getName().contentEquals("super");
+        }
+        
+        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree selectTree = (MemberSelectTree)mst;
 
-        MemberSelectTree selectTree = (MemberSelectTree)mst;
-
-        if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER)
-            return false;
-
-        return ((IdentifierTree) selectTree.getExpression()).getName()
+            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
+                return false;
+            }
+            
+            return ((IdentifierTree) selectTree.getExpression()).getName()
                 .contentEquals("super");
+        }
+        
+        return false;
     }
 
 
@@ -460,6 +470,28 @@ public final class TreeUtils {
             first = tree;
         }
         return first;
+    }
+
+    /**
+     * Determine whether the given class contains an explicit constructor.
+     * 
+     * @param node A class tree.
+     * @return True, iff there is an explicit constructor.
+     */
+    public static boolean hasExplicitConstructor(ClassTree node) {
+        TypeElement elem = TreeUtils.elementFromDeclaration(node);
+
+        for ( ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+            MethodSymbol ms = (MethodSymbol) ee;
+            long mod = ms.flags();
+
+            if ((mod & Flags.SYNTHETIC) == 0) {
+                return true;
+            }
+        }
+        return false;
+        // WMD Old impl
+        // return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
     }
 
     /**
