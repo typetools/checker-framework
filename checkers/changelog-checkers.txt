@@ -1,6 +1,7 @@
 ----------------------------------------------------------------------
 Version 1.1.3
 
+[Reserve this for a future release.]
 @Covariant annotation
 
 Interning:
@@ -8,7 +9,7 @@ Interning:
 - Add @UsesObjectEquals annotation
 
 Manual:
--  Signature Checker is now documented
+- Signature Checker is now documented
 
 Implementation details:
 
