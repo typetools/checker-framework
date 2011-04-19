@@ -12,13 +12,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
