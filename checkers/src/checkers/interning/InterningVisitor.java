@@ -33,15 +33,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
     private final DeclaredType typeToCheck;
-    
-    //Werner, here are the maps. 
-    public static Map<Name, Boolean> definesEquals;
-    public static Map<Name, Name> parentMap;
-   
-    static {
-        definesEquals = new HashMap<Name, Boolean>();
-        parentMap = new HashMap<Name, Name>();
-    }
 
     /**
      * Creates a new visitor for type-checking {@link Interned}.
@@ -110,8 +101,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         	rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
         }
 
-        //Ok, so printlns confirm that leftType is always null, because it never passes the instance of DeclaredType. Obviously the
-        //second part to this test will always fail then. the getAnnotation is never even called)
+        //if neither @Interned or @UsesObjectEquals, report error
         if (!(left.hasAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!(right.hasAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
@@ -152,16 +142,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     @Override
     public Void visitClass(ClassTree node, Void p){
     	//Looking for an @UsesObjectEquals class declaration
-
-    	
-    	//Add to definesEquals map and print some information
-    	Element classElt = TreeUtils.elementFromDeclaration(node);
-    	definesEquals.put(ElementUtils.getQualifiedClassName(classElt), overridesEquals(node));
-    	System.out.println("Adding: "+ElementUtils.getQualifiedClassName(classElt));
-    	System.out.println("Map size: "+definesEquals.size());
-    	System.out.println("Map hashcode: "+definesEquals.hashCode());
-    	System.out.println();
-    	
+   	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
     	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
 
@@ -186,6 +167,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     		}
     	} else {
     		//the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
+    		//this is impossible after design change making @UsesObjectEquals inherited?
+    		//check left in case of future design change back to non-inherited. 
   			if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
     			checker.report(Result.failure("superclass.marked"), node);
     		}
@@ -198,6 +181,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     // Helper methods
     // **********************************************************************
 
+    /**
+     * Returns true if a class overrides Object.equals
+     */
     private boolean overridesEquals(ClassTree node){
     	List<? extends Tree> members = node.getMembers();
     	for(Tree member : members){
