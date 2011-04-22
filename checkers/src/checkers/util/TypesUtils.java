@@ -4,7 +4,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 /**
- * A Utilities class that helps with {@link Element}s.
+ * A utility class that helps with {@link TypeMirror}s.
  *
  */
 // TODO: This class needs significant restructuring
@@ -43,6 +43,18 @@ public final class TypesUtils {
      */
     public static boolean isClass(TypeMirror type) {
         return isDeclaredOfName(type, "java.lang.Class");
+    }
+
+    /**
+     * Checks if the type represents a java.lang.String declared type.
+     * TODO: it would be cleaner to use String.class.getCanonicalName(), but
+     *   the two existing methods above don't do that, I guess for performance reasons.
+     *
+     * @param type  the type
+     * @return true iff type represents java.lang.String
+     */
+    public static boolean isString(TypeMirror type) {
+        return isDeclaredOfName(type, "java.lang.String");
     }
 
     /**

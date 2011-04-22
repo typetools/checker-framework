@@ -11,10 +11,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -99,16 +102,23 @@ public final class TreeUtils {
     public static boolean isSuperCall(MethodInvocationTree tree) {
         /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
-        if (mst.getKind() != Tree.Kind.MEMBER_SELECT)
-            return false;
+        
+        if (mst.getKind() == Tree.Kind.IDENTIFIER ) {
+            return ((IdentifierTree)mst).getName().contentEquals("super");
+        }
+        
+        if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree selectTree = (MemberSelectTree)mst;
 
-        MemberSelectTree selectTree = (MemberSelectTree)mst;
-
-        if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER)
-            return false;
-
-        return ((IdentifierTree) selectTree.getExpression()).getName()
+            if (selectTree.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
+                return false;
+            }
+            
+            return ((IdentifierTree) selectTree.getExpression()).getName()
                 .contentEquals("super");
+        }
+        
+        return false;
     }
 
 
@@ -141,6 +151,7 @@ public final class TreeUtils {
     public static TreePath pathTillClass(final TreePath path) {
         return pathTillOfKind(path, classTreeKinds());
     }
+
     /**
      * Gets path to the the first enclosing tree of the specified kind.
      *
@@ -185,7 +196,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets the enclosing method of the tree node defined by the given
+     * Gets the enclosing class of the tree node defined by the given
      * {@code {@link TreePath}}. It returns a {@link Tree}, from which
      * {@link AnnotatedTypeMirror} or {@link Element} can be
      * obtained.
@@ -222,6 +233,18 @@ public final class TreeUtils {
      */
     public static /*@Nullable*/ MethodTree enclosingMethod(final /*@Nullable*/ TreePath path) {
         return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
+    }
+
+    public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
+        TreePath parpath = path.getParentPath();
+        while (parpath!=null && parpath.getLeaf().getKind() != Tree.Kind.CLASS) {
+            path = parpath;
+            parpath = parpath.getParentPath();
+        }
+        if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
+            return (BlockTree) path.getLeaf();
+        }
+        return null;
     }
 
     /**
@@ -450,6 +473,28 @@ public final class TreeUtils {
     }
 
     /**
+     * Determine whether the given class contains an explicit constructor.
+     * 
+     * @param node A class tree.
+     * @return True, iff there is an explicit constructor.
+     */
+    public static boolean hasExplicitConstructor(ClassTree node) {
+        TypeElement elem = TreeUtils.elementFromDeclaration(node);
+
+        for ( ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+            MethodSymbol ms = (MethodSymbol) ee;
+            long mod = ms.flags();
+
+            if ((mod & Flags.SYNTHETIC) == 0) {
+                return true;
+            }
+        }
+        return false;
+        // WMD Old impl
+        // return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
+    }
+
+    /**
      * Returns true if the tree is of a diamond type
      */
     public static final boolean isDiamondTree(Tree tree) {
@@ -467,8 +512,7 @@ public final class TreeUtils {
      */
     public static final boolean isStringConcatenation(Tree tree) {
         return (tree.getKind() == Tree.Kind.PLUS
-                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
-                        String.class.getCanonicalName()));
+                && TypesUtils.isString(InternalUtils.typeOf(tree)));
     }
 
     /**
@@ -476,8 +520,7 @@ public final class TreeUtils {
      */
     public static final boolean isStringCompoundConcatenation(CompoundAssignmentTree tree) {
         return (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT
-                && TypesUtils.isDeclaredOfName(InternalUtils.typeOf(tree),
-                        String.class.getCanonicalName()));
+                && TypesUtils.isString(InternalUtils.typeOf(tree)));
     }
 
     /**
@@ -552,6 +595,10 @@ public final class TreeUtils {
         return receiver;
     }
 
+    // TODO: What about anonymous classes?
+    // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a 
+    // tree gets cast to ClassTree when it is actually a NewClassTree,
+    // for example in enclosingClass above.
     private final static Set<Tree.Kind> classTreeKinds = EnumSet.of(
             Tree.Kind.CLASS,
             Tree.Kind.ENUM,

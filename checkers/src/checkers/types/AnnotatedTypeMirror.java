@@ -131,7 +131,6 @@ public abstract class AnnotatedTypeMirror {
      * @param env   Processing Environment
      * @param typeFactory TODO
      */
-    // TODO: Have static factory methods
     private AnnotatedTypeMirror(TypeMirror type, ProcessingEnvironment env,
             AnnotatedTypeFactory typeFactory) {
         this.actualType = type;
