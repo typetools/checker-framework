@@ -12,13 +12,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
@@ -124,22 +121,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return super.scan(tree, p);
     }
 
-    private boolean hasExplicitConstructor(ClassTree node) {
-        TypeElement elem = TreeUtils.elementFromDeclaration(node);
-
-        for ( ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-            MethodSymbol ms = (MethodSymbol) ee;
-            long mod = ms.flags();
-
-            if ((mod & Flags.SYNTHETIC) == 0) {
-                return true;
-            }
-        }
-        return false;
-        // WMD Old impl
-        // return !ElementFilter.constructorsIn(elem.getEnclosedElements()).isEmpty();
-    }
-
     @Override
     public Void visitClass(ClassTree node, Void p) {
         AnnotatedDeclaredType preACT = visitorState.getClassType();
@@ -153,7 +134,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         visitorState.setMethodTree(null);
 
         try {
-            if (!hasExplicitConstructor(node)) {
+            if (!TreeUtils.hasExplicitConstructor(node)) {
                 checkDefaultConstructor(node);
             }
 
@@ -288,11 +269,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return super.visitEnhancedForLoop(node, p);
     }
 
-    private boolean isSuperInvocation(MethodInvocationTree node) {
-      return (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER &&
-              ((IdentifierTree)node.getMethodSelect()).getName().contentEquals("super"));
-    }
-
     /**
      * Performs a method invocation check.
      *
@@ -331,7 +307,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
         if (!ElementUtils.isStatic(invokedMethod.getElement())
-            && !isSuperInvocation(node))
+            && !TreeUtils.isSuperCall(node))
             checkMethodInvocability(invokedMethod, node);
 
         return super.visitMethodInvocation(node, p);
