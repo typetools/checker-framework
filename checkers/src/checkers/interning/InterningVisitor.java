@@ -101,8 +101,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         	rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
         }
 
-        //Ok, so printlns confirm that leftType is always null, because it never passes the instance of DeclaredType. Obviously the
-        //second part to this test will always fail then. the getAnnotation is never even called)
+        //if neither @Interned or @UsesObjectEquals, report error
         if (!(left.hasAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
         if (!(right.hasAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
@@ -143,7 +142,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     @Override
     public Void visitClass(ClassTree node, Void p){
     	//Looking for an @UsesObjectEquals class declaration
-
+   	
     	TypeElement elt = TreeUtils.elementFromDeclaration(node);
     	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
 
@@ -158,22 +157,18 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     	//and supertype is Object or @UsesObjectEquals
 		if (annotation != null){
     		//check methods to ensure no .equals
-    		List<? extends Tree> members = node.getMembers();
-    		for(Tree member : members){
-    			if(member instanceof MethodTree){
-    				MethodTree mTree = (MethodTree) member;
-    				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
-    				if(overrides(enclosing, Object.class, "equals")){
-    					checker.report(Result.failure("overrides.equals"), node);
-    				}
-    			}
+    		if(overridesEquals(node)){
+    			checker.report(Result.failure("overrides.equals"), node);
     		}
+
 
     		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
     			checker.report(Result.failure("superclass.unmarked"), node);
     		}
     	} else {
     		//the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
+    		//this is impossible after design change making @UsesObjectEquals inherited?
+    		//check left in case of future design change back to non-inherited. 
   			if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
     			checker.report(Result.failure("superclass.marked"), node);
     		}
@@ -186,6 +181,24 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     // Helper methods
     // **********************************************************************
 
+    /**
+     * Returns true if a class overrides Object.equals
+     */
+    private boolean overridesEquals(ClassTree node){
+    	List<? extends Tree> members = node.getMembers();
+    	for(Tree member : members){
+			if(member instanceof MethodTree){
+				MethodTree mTree = (MethodTree) member;
+				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
+				if(overrides(enclosing, Object.class, "equals")){
+					return true;
+				}
+			}
+		}
+    	return false;
+    }
+    
+    
     /**
      * Tests whether a method invocation is an invocation of
      * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
