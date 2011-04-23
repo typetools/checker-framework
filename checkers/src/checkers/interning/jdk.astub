@@ -1905,7 +1905,10 @@ public @UsesObjectEquals class LogManager {}
 public @UsesObjectEquals class LogRecord implements java.io.Serializable {}
 public @UsesObjectEquals class Logger {}
 @UsesObjectEquals class Logging implements LoggingMXBean {}
-@UsesObjectEquals class LoggingProxyImpl implements LoggingProxy {}
+// Commented out because LoggingProxy is in package sun.util.logging, and
+// we don't want references to sun.* classes here.  (LoggingProxyImpl isn't
+// a public class anyway.)
+// @UsesObjectEquals class LoggingProxyImpl implements LoggingProxy {}
 
 package java.util.prefs;
 
