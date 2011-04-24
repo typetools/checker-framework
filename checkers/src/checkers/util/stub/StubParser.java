@@ -173,10 +173,13 @@ public class StubParser {
         {
             List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
             List<TypeParameter> typeParameters = decl.getTypeParameters();
-            /// This can fail when args=[] and params=null.  Do I care?
+            /// It can be the case that args=[] and params=null.
             // if ((typeParameters == null) != (typeArguments == null)) {
             //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
             // }
+            if ((typeParameters == null) && (typeArguments.size() != 0)) {
+                System.out.printf("parseType (%s, %s): mismatched sizes for params and args%n  typeParameters=%s%n  typeArguments (size %d)=%s%n", decl, elt, typeParameters, typeArguments.size(), typeArguments);
+            }
             if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
                 System.out.printf("parseType (%s, %s): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, typeParameters.size(), typeParameters, typeArguments.size(), typeArguments);
             }
