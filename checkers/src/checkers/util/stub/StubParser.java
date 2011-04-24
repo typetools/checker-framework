@@ -118,7 +118,10 @@ public class StubParser {
             parse(cu, result);
     }
 
+    private CompilationUnit theCompilationUnit;
+
     private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> result) {
+        theCompilationUnit = cu;
         final String packageName;
         if (cu.getPackage() == null)
             packageName = null;
@@ -178,10 +181,12 @@ public class StubParser {
             //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
             // }
             if ((typeParameters == null) && (typeArguments.size() != 0)) {
-                System.out.printf("parseType (%s, %s): mismatched sizes for params and args%n  typeParameters=%s%n  typeArguments (size %d)=%s%n", decl, elt, typeParameters, typeArguments.size(), typeArguments);
+                System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
+                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), type, type.getClass(), typeParameters, typeArguments.size(), typeArguments));
             }
             if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
-                System.out.printf("parseType (%s, %s): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, typeParameters.size(), typeParameters, typeArguments.size(), typeArguments);
+                System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
+                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), typeParameters.size(), type, type.getClass(), typeParameters, typeArguments.size(), typeArguments));
             }
         }
         annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
