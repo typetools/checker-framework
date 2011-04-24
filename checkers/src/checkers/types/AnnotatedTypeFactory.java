@@ -304,7 +304,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
         if (elt.toString().equals("java.util.EventListenerProxy")) {
-            System.out.printf("fromElement(%s): decl=%s (%s)%n", elt, decl, decl.toString());
+            System.out.printf("fromElement(%s): decl=%s (%s)%n", elt, decl, ((decl == null) ? "null" : decl.toString()));
         }
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
