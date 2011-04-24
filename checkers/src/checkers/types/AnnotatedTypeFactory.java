@@ -297,7 +297,8 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elt.toString().equals("java.util.EventListenerProxy")) {
+        // if (elt.toString().equals("java.util.EventListenerProxy"))
+        if (elt.toString().contains("EventListener")) {
             System.out.printf("fromElement(%s)%n", elt);
         }            
         if (elementCache.containsKey(elt))
@@ -306,7 +307,8 @@ public class AnnotatedTypeFactory {
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
-        if (elt.toString().equals("java.util.EventListenerProxy")) {
+        // if (elt.toString().equals("java.util.EventListenerProxy"))
+        if (elt.toString().contains("EventListener")) {
             System.out.printf("fromElement(%s): decl=%s (%s)%n", elt, decl, ((decl == null) ? "null" : decl.toString()));
         }
 
@@ -314,6 +316,9 @@ public class AnnotatedTypeFactory {
             type = indexTypes.get(elt);
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType());
+            if (elt.toString().contains("EventListener")) {
+                System.out.printf("fromElement(%s): type=%s (%s)%n", elt, type, type.getClass());
+            }
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
 
