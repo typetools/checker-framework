@@ -170,6 +170,16 @@ public class StubParser {
     private void parseType(ClassOrInterfaceDeclaration decl, TypeElement elt, Map<Element, AnnotatedTypeMirror> result) {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
+        {
+            List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
+            List<TypeParameter> typeParameters = decl.getTypeParameters();
+            if ((typeParameters == null) != (typeArguments == null)) {
+                throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
+            }
+            if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
+                System.out.printf("parseType (%s, %s): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, typeParameters.size(), typeParameters, typeArguments.size(), typeArguments);
+            }
+        }
         annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
         annotateSupertypes(decl, type);
         result.put(elt, type);
@@ -321,6 +331,9 @@ public class StubParser {
         if (typeParameters == null)
             return;
 
+        if (typeParameters.size() != typeArguments.size()) {
+            System.out.printf("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", typeParameters.size(), typeParameters, typeArguments.size(), typeArguments);
+        }
         for (int i = 0; i < typeParameters.size(); ++i) {
             TypeParameter param = typeParameters.get(i);
             AnnotatedTypeVariable paramType = (AnnotatedTypeVariable)typeArguments.get(i);
