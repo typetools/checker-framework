@@ -182,11 +182,17 @@ public class StubParser {
             // }
             if ((typeParameters == null) && (typeArguments.size() != 0)) {
                 System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), type, type.getClass(), typeParameters, typeArguments.size(), typeArguments));
+                System.out.flush();
+                throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
+                                              decl, typeParameters,
+                                              elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments));
             }
             if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
                 System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), type, type.getClass(), typeParameters.size(), typeParameters, typeArguments.size(), typeArguments));
+                System.out.flush();
+                throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
+                                              decl, typeParameters.size(), typeParameters,
+                                              elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments));
             }
         }
         annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
