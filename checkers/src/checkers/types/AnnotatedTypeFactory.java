@@ -297,6 +297,9 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
+        if (elt.toString().equals("java.util.EventListenerProxy")) {
+            System.out.printf("fromElement(%s)%n", elt);
+        }            
         if (elementCache.containsKey(elt))
             return atypes.deepCopy(elementCache.get(elt));
         if (elt.getKind() == ElementKind.PACKAGE)
