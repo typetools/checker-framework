@@ -318,6 +318,10 @@ public class AnnotatedTypeFactory {
             type = toAnnotatedType(elt.asType());
             if (elt.toString().contains("EventListener")) {
                 System.out.printf("fromElement(%s): type=%s (%s)%n", elt, type, type.getClass());
+                if (type instanceof AnnotatedDeclaredType) {
+                    AnnotatedDeclaredType adt = (AnnotatedDeclaredType) type;
+                    System.out.printf("fromElement(%s): type.typeArgs=%s%n", elt, adt.getTypeArguments());
+                }
             }
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
