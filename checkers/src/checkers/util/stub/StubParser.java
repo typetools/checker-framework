@@ -186,7 +186,7 @@ public class StubParser {
             }
             if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
                 System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), typeParameters.size(), type, type.getClass(), typeParameters, typeArguments.size(), typeArguments));
+                throw new Error(String.format("parseType (decl=%s, elt=%s (%s), type=%s (%s)): mismatched sizes for params and args%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", decl, elt, elt.getClass(), type, type.getClass(), typeParameters.size(), type, type.getClass(), typeParameters, typeArguments.size(), typeArguments));
             }
         }
         annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
