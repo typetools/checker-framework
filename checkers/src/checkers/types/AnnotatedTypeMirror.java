@@ -546,6 +546,9 @@ public abstract class AnnotatedTypeMirror {
         // WMD
         public
         void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
+            if (this.toString().contains("EventListener")) {
+                System.out.printf("setTypeArguments(%s (size %d)) for %s%n", ts, ts.size(), this);
+            }
             typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
         }
 
@@ -560,6 +563,9 @@ public abstract class AnnotatedTypeMirror {
                         typeArgs.add(createType(t, env, typeFactory));
                 }
                 typeArgs = Collections.unmodifiableList(typeArgs);
+                if (this.toString().contains("EventListener")) {
+                    System.out.printf("Set typeArgs to %s due to actualType=%s (%s)%n", typeArgs, actualType, actualType.getClass());
+                }
             }
             return typeArgs;
         }
