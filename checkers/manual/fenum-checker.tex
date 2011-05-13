@@ -45,14 +45,8 @@ Fenum type system.
 \begin{figure}
 \includeimage{fenum}{2.5cm}
 \caption{Partial type hierarchy for the Fenum type system.
-Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
-most type qualifiers, because the default annotation
-(Section~\ref{null-defaults}) is usually correct.  Also shown is the
-type hierarchy for rawness (Section~\ref{raw-partially-initialized}), which
-indicates whether
-initialization has completed.  The two type hierarchies are independent but
-inter-related.  The Nullness Checker verifies both of these, as well as
-another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
+Boldfaced Fenums are provided by the Checker Framework. Any
+number of user genereated Fenum annoations replace \<@FenumA>, \<@FenumB>, ...}
 \label{fig:fenum-hierarchy}
 \end{figure}
 
