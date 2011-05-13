@@ -39,6 +39,22 @@ The developer can introduce new types that are distinct from all values of the
 base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
 
+Figure~\ref{fig:fenum-hierarchy} shows part of the type hierarchy for the
+Fenum type system.
+
+\begin{figure}
+\includeimage{fenum}{2.5cm}
+\caption{Partial type hierarchy for the Fenum type system.
+Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
+most type qualifiers, because the default annotation
+(Section~\ref{null-defaults}) is usually correct.  Also shown is the
+type hierarchy for rawness (Section~\ref{raw-partially-initialized}), which
+indicates whether
+initialization has completed.  The two type hierarchies are independent but
+inter-related.  The Nullness Checker verifies both of these, as well as
+another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
+\label{fig:fenum-hierarchy}
+\end{figure}
 
 \section{Fake enum annotations\label{fenum-annotations}}
 
