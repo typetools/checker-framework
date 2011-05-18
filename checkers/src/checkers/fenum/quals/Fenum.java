@@ -13,5 +13,5 @@ import checkers.quals.*;
 @TypeQualifier
 @SubtypeOf( { FenumTop.class } )
 public @interface Fenum {
-    String value() default "";
+    String value();
 }
