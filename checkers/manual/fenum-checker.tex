@@ -45,8 +45,11 @@ Fenum type system.
 \begin{figure}
 \includeimage{fenum}{2.5cm}
 \caption{Partial type hierarchy for the Fenum type system.
-Boldfaced Fenums are provided by the Checker Framework. Any
-number of user genereated Fenum annoations replace \<@FenumA>, \<@FenumB>, ...}
+Fenums that take the form of \code{@Fenum("A")} and \code{@Fenum("B")} are user
+defined fenums while fenums that take the form of \code{@FenumC} and \code{@FenumD} are
+built-in fenums. See section~\ref{fenum-annotations} for descriptions of how to
+introduce both types of fenums. Fenums in gray should never be used but are
+provided for the benefit of the type system.}
 \label{fig:fenum-hierarchy}
 \end{figure}
 
