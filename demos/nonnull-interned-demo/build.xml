@@ -1,5 +1,5 @@
 <!-- script to test all demos -->
-<project name="checkers-demos" basedir="." default="test-all">
+<project name="checkers-demos" basedir="." default="check-demo">
 
   <macrodef name="test-project">
     <attribute name="project"/>
