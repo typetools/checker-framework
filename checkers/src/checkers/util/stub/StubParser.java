@@ -186,11 +186,13 @@ public class StubParser {
                 // Investigate what a cleaner solution is, e.g. having a separate Java 7 specification that overrides
                 // the Java 6 specification.
                 // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-                System.out.printf(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%n",
+                if (debugStubParser) {
+                    System.out.printf(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of Message%n",
                                               decl, typeParameters,
                                               elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments,
                                               theCompilationUnit));
-                System.out.flush();
+                    System.out.flush();
+                }
                 /*
                 throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
                                               decl, typeParameters,
@@ -200,11 +202,13 @@ public class StubParser {
             if ((typeParameters != null) && (typeParameters.size() != typeArguments.size())) {
                 // TODO: decide how severe this problem really is; see comment above.
                 // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
-                System.out.printf(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%n",
+                if (debugStubParser) {
+                    System.out.printf(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of Message%n",
                                               decl, typeParameters.size(), typeParameters,
                                               elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments,
                                               theCompilationUnit));
-                System.out.flush();
+                    System.out.flush();
+                }
                 /*
                 throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
                                               decl, typeParameters.size(), typeParameters,
