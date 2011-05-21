@@ -557,7 +557,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param varTree the AST node for the variable
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails
-     * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
@@ -574,7 +573,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param varType the annotated type of the variable
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails
-     * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
@@ -602,7 +600,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails
-     * @param p a checker-specified parameter
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey) {
@@ -643,7 +640,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param typevars the type variables from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
-     * @param p
      */
     protected void checkTypeArguments(Tree toptree,
             List<? extends AnnotatedTypeVariable> typevars,
