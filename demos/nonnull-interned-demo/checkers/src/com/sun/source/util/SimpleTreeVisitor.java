@@ -65,7 +65,7 @@ public class SimpleTreeVisitor <R,P extends @Nullable Object> implements TreeVis
         return defaultAction(node, p);
     }
 
-    public R visitDisjunctiveType(DisjunctiveTypeTree node, P p) {
+    public R visitUnionType(UnionTypeTree node, P p) {
         return defaultAction(node, p);
     }
 
