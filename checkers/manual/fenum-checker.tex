@@ -39,6 +39,19 @@ The developer can introduce new types that are distinct from all values of the
 base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
 
+Figure~\ref{fig:fenum-hierarchy} shows part of the type hierarchy for the
+Fenum type system.
+
+\begin{figure}
+\includeimage{fenum}{2.5cm}
+\caption{Partial type hierarchy for the Fenum type system.
+Fenums that take the form of \code{@Fenum("A")} and \code{@Fenum("B")} are user
+defined fenums while fenums that take the form of \code{@FenumC} and \code{@FenumD} are
+built-in fenums. See section~\ref{fenum-annotations} for descriptions of how to
+introduce both types of fenums. Fenums in gray should never be used but are
+provided for the benefit of the type system.}
+\label{fig:fenum-hierarchy}
+\end{figure}
 
 \section{Fake enum annotations\label{fenum-annotations}}
 
