@@ -5,14 +5,15 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Justifications for the title text of @see java.swing.border.TitledBorder.
- * @see java.swing.border.TitledBorder#DEFAULT_POSITION
- * @see java.swing.border.TitledBorder#ABOVE_TOP
- * @see java.swing.border.TitledBorder#TOP
- * @see java.swing.border.TitledBorder#BELOW_TOP
- * @see java.swing.border.TitledBorder#ABOVE_BOTTOM
- * @see java.swing.border.TitledBorder#BOTTOM
- * @see java.swing.border.TitledBorder#BELOW_BOTTOM
+ * Justifications for the title text of a
+ * {@link javax.swing.border.TitledBorder}.
+ * @see javax.swing.border.TitledBorder#DEFAULT_POSITION
+ * @see javax.swing.border.TitledBorder#ABOVE_TOP
+ * @see javax.swing.border.TitledBorder#TOP
+ * @see javax.swing.border.TitledBorder#BELOW_TOP
+ * @see javax.swing.border.TitledBorder#ABOVE_BOTTOM
+ * @see javax.swing.border.TitledBorder#BOTTOM
+ * @see javax.swing.border.TitledBorder#BELOW_BOTTOM
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

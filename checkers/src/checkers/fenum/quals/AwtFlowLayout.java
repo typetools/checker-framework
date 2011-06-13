@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Line alignments in a flow layout (@see java.awt.FlowLayout).
+ * Line alignments in a flow layout (see
+ * {@link java.awt.FlowLayout} for more details).
  * @see java.awt.FlowLayout#LEFT
  * @see java.awt.FlowLayout#CENTER
  * @see java.awt.FlowLayout#RIGHT

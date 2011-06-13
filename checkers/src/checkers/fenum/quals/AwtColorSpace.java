@@ -7,7 +7,8 @@ import checkers.quals.*;
 /**
  * Color space tags to identify the specific color space of a Color
  * object or, via a ColorModel object, of an Image, a BufferedImage,
- * or a GraphicsDevice (@see java.awt.color.ColorSpace).
+ * or a GraphicsDevice (see {@link java.awt.color.ColorSpace} for
+ * more details).
  * @see java.awt.color.ColorSpace#TYPE_XYZ
  * @see java.awt.color.ColorSpace#TYPE_Lab
  * @see java.awt.color.ColorSpace#TYPE_Luv
