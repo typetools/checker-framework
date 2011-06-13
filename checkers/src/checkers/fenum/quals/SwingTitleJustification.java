@@ -5,7 +5,13 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * @author espishak
+ * Vertical orientations for the title text of @see java.swing.border.TitledBorder.
+ * @see java.swing.border.TitledBorder#DEFAULT_JUSTIFICATION
+ * @see java.swing.border.TitledBorder#LEFT
+ * @see java.swing.border.TitledBorder#CENTER
+ * @see java.swing.border.TitledBorder#RIGHT
+ * @see java.swing.border.TitledBorder#LEADING
+ * @see java.swing.border.TitledBorder#TRAILING
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -5,7 +5,14 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * @author espishak
+ * Justifications for the title text of @see java.swing.border.TitledBorder.
+ * @see java.swing.border.TitledBorder#DEFAULT_POSITION
+ * @see java.swing.border.TitledBorder#ABOVE_TOP
+ * @see java.swing.border.TitledBorder#TOP
+ * @see java.swing.border.TitledBorder#BELOW_TOP
+ * @see java.swing.border.TitledBorder#ABOVE_BOTTOM
+ * @see java.swing.border.TitledBorder#BOTTOM
+ * @see java.swing.border.TitledBorder#BELOW_BOTTOM
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
