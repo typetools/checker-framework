@@ -37,7 +37,7 @@ public class ElementUtils {
 
     /**
      * Returns the innermost package element enclosing the given element.
-     * The same effect as {@link javax.lang.model.util.Elements.getPackageOf(Element)}.
+     * The same effect as {@link javax.lang.model.util.Elements#getPackageOf(Element)}.
      *
      * @param elem the enclosed element of a package
      * @return the innermost package element
