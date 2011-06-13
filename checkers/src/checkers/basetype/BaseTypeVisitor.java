@@ -238,7 +238,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     /**
      * Performs two checks: subtyping and assignability checks, using
-     * {@link #commonAssignmentCheck(Tree, ExpressionTree, String, Object)}.
+     * {@link #commonAssignmentCheck(Tree, ExpressionTree, String)}.
      *
      * If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
@@ -636,7 +636,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * declared, and issues the "generic.argument.invalid" error if they are
      * not.
      *
-     * @param tree the tree for error reporting, only used for inferred type arguments
+     * @param toptree the tree for error reporting, only used for inferred type arguments
      * @param typevars the type variables from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
@@ -758,7 +758,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * @param requiredArgs  the required types
      * @param passedArgs    the expressions passed to the corresponding types
-     * @param p
      */
     // This really should have a private final method
     // Unfortunately Javari override it!
