@@ -1,4 +1,4 @@
-annotation-tools/**
+annotation-file-utilities/**
 checker-framework/eclipse/**
 checker-framework/specification/**
 checker-framework/*.html
