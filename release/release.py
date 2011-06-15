@@ -98,13 +98,12 @@ PLUME_LIB = os.path.join(os.getenv('HOME'), 'plume-lib')
 # TODO: WMD changed this and requires explicit commits; this
 # array is only used to update the projects.
 PROJECT_ROOTS = (
-    REPO_ROOT,
+    REPO_ROOT,                  # Checker Framework
     JSR308_LANGTOOLS,
 )
 
-# TODO: Why is paths not used? Shouldn't the "for" be over it?
 def update_projects(paths=PROJECT_ROOTS):
-    for path in PROJECT_ROOTS:
+    for path in paths:
         execute('hg -R %s pull' % path)
         execute('hg -R %s update' % path)
         print("Checking changes")
@@ -116,7 +115,9 @@ def commit_and_push(version, path, tag_prefix):
     execute('hg -R %s push' % path)
 
 def ensure_group_access(path="/cse/www2/types/"):
-    execute('chmod -R g+w %s' % path)
+    # Errs for any file not owned by this user.
+    # But, the point is to set group writeability of any *new* files.
+    execute('chmod -f -R g+w %s' % path, halt_if_fail=False)
 
 def file_contains(path, text):
     f = open(path, 'r')
