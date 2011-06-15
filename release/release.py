@@ -15,10 +15,6 @@ import subprocess
 import os
 import pwd
 
-help_message = '''
-The help message goes here.
-'''
-
 DEFAULT_SITE = "http://types.cs.washington.edu/jsr308/"
 OPENJDK_RELEASE_SITE = 'http://download.java.net/openjdk/jdk7/'
 
@@ -44,7 +40,7 @@ def increment_version(version):
     passed one.
 
     >>> increment_version('1.0.3')
-    '1.0.3'
+    '1.0.4'
     >>> increment_version('1.0.9')
     '1.1.0'
     >>> increment_version('1.1.9')
@@ -93,14 +89,20 @@ def append_to_PATH(paths=DEFAULT_PATHS):
 
 REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
 JSR308_LANGTOOLS = os.path.join(REPO_ROOT, '..', 'jsr308-langtools')
+
 # Is PLUME_LIB even necessary?
 PLUME_LIB = os.path.join(os.getenv('HOME'), 'plume-lib')
+
 # Do not include PLUME_LIB in PROJECT_ROOTS, because this script
 # commits to all repositories in PROJECT_ROOTS.
+# TODO: WMD changed this and requires explicit commits; this
+# array is only used to update the projects.
 PROJECT_ROOTS = (
     REPO_ROOT,
     JSR308_LANGTOOLS,
 )
+
+# TODO: Why is paths not used? Shouldn't the "for" be over it?
 def update_projects(paths=PROJECT_ROOTS):
     for path in PROJECT_ROOTS:
         execute('hg -R %s pull' % path)
@@ -108,11 +110,10 @@ def update_projects(paths=PROJECT_ROOTS):
         print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
-def commit_and_push(version, paths=PROJECT_ROOTS, tag_prefix="checkers-"):
-    for path in PROJECT_ROOTS:
-        execute('hg -R %s commit -m "new release %s"' % (path, version))
-        execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
-        execute('hg -R %s push' % path)
+def commit_and_push(version, path, tag_prefix):
+    execute('hg -R %s commit -m "new release %s"' % (path, version))
+    execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
+    execute('hg -R %s push' % path)
 
 def ensure_group_access(path="/cse/www2/types/"):
     execute('chmod -R g+w %s' % path)
@@ -133,7 +134,7 @@ def file_prepend(path, text):
     f.write(contents)
     f.close()
 
-def retrieve_changes(root, prev_version, prefix="checkers-"):
+def retrieve_changes(root, prev_version, prefix):
     return execute(
             "hg -R %s log -r %s%s:tip --template ' * {desc}\n'" %
                 (root, prefix, prev_version),
@@ -143,6 +144,7 @@ EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     raise Exception('EDITOR environment variable is not set')
 CHECKERS_CHANGELOG = os.path.join(REPO_ROOT, 'checkers', 'changelog-checkers.txt')
+
 def edit_checkers_changelog(version, changes="", path=CHECKERS_CHANGELOG):
     edit = raw_input("Edit the Checker Framework changelog? [Y/n] ")
     if not (edit == "n"):
@@ -162,6 +164,7 @@ def changelog_header_checkers(file=CHECKERS_CHANGELOG):
     return changelog_header(file)
 
 LANGTOOLS_CHANGELOG = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
+
 def edit_langtools_changelog(version, changes="", path=LANGTOOLS_CHANGELOG):
     latest_jdk = latest_openjdk()
     print("Latest OpenJDK release is b%s" % latest_jdk)
@@ -217,12 +220,16 @@ def mvn_deploy(name, binary, version, dest_repo=MAVEN_REPO, ):
     return execute(command)
 
 CHECKERS_BINARY = os.path.join(REPO_ROOT, 'checkers', 'binary', 'jsr308-all.jar')
+
 def mvn_deploy_jsr308_all(version, binary=CHECKERS_BINARY, dest_repo=MAVEN_REPO):
     return mvn_deploy('jsr308-all', binary, version, dest_repo)
 
+
 CHECKERS_QUALS = os.path.join(REPO_ROOT, 'checkers', 'checkers-quals.jar')
+
 def mvn_deploy_quals(version, binary=CHECKERS_QUALS, dest_repo=MAVEN_REPO):
     return mvn_deploy('checkers-quals', binary, version, dest_repo)
+
 
 def execute(command_args, halt_if_fail=True, capture_output=False):
     print("Executing: %s" % (command_args))
@@ -261,7 +268,9 @@ DRY_PATH = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
 DRY_RUN_LINK_FILE = "file://%s/jsr308/" % DRY_PATH
 DRY_RUN_LINK = DRY_RUN_LINK_HTTP
 
+
 TO = 'jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
+
 def format_email(version, checkers_header=None, langtools_header=None, to=TO):
     if checkers_header == None:
         checkers_header = changelog_header_checkers()
@@ -294,6 +303,8 @@ Changes for Type Annotations Compiler
     """ % (to, version, checkers_header, langtools_header,)
     return template
 
+
+
 def main(argv):
     append_to_PATH()
     print("Making a new release of the Checker Framework!")
@@ -310,9 +321,9 @@ def main(argv):
     # Update repositories
     update_projects()
 
-    checkers_changes = retrieve_changes(REPO_ROOT, curr_version)
+    checkers_changes = retrieve_changes(REPO_ROOT, curr_version, "checkers-")
     edit_checkers_changelog(version=next_version,changes=checkers_changes)
-    langtools_changes = retrieve_changes(JSR308_LANGTOOLS, curr_version)
+    langtools_changes = retrieve_changes(JSR308_LANGTOOLS, curr_version, "jsr308-")
     edit_langtools_changelog(version=next_version,changes=langtools_changes)
 
     # Making the first release
@@ -340,7 +351,9 @@ def main(argv):
     raw_input("Please check the site.  DONE?  Press ENTER to continue.")
     print("\n\n\n\n\n")
 
-    commit_and_push(next_version)
+    commit_and_push(next_version, REPO_ROOT, "checkers-")
+    commit_and_push(next_version, JSR308_LANGTOOLS, "jsr308-")
+
     ensure_group_access()
 
     print("You have just made the release.  Please announce it to the world")
