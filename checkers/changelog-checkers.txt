@@ -1,15 +1,15 @@
-----------------------------------------------------------------------
-Version 1.1.3
-
 [Reserve this for a future release.]
 @Covariant annotation
 
-Interning:
+----------------------------------------------------------------------
+Version 1.1.3, 14 Jun 2011
 
+Interning:
 - Add @UsesObjectEquals annotation
 
 Manual:
 - Signature Checker is now documented
+- Fenum Checker documentation improved
 
 Implementation details:
 
