@@ -229,14 +229,14 @@ and then redo the above.
 
 <li><p>Run:</p>
 <pre>
+  # Only necessary if you did not run the regression tests in this directory.
   cd $anno/jsr308-langtools/make
   ant
+
+  # Depends on the JSR 308 javac.
   cd $anno/annotation-tools/annotation-file-utilities
   ant zipfile
 </pre>
-
-<p>Building jsr308-langtools should only be necessary if you did not run the regression tests in this directory. The AFU build depends on the JSR 308 javac.
-</p>
 
 <p>TODO: merge this into the main script: in python or, better, in the Ant file.</p>
 
