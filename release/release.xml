@@ -158,6 +158,9 @@
         <copy file="${checkers.manual}/manual.pdf"
             tofile="${tmp.ver.dir}/${manual.name}.pdf"/>
 
+        <copy file="${checkers.manual}/checkers-webpage.html"
+	      tofile="${tmp.ver.dir}/index.html" />
+
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
                 <include name="*.png"/>
@@ -170,6 +173,7 @@
         <copy todir="${tmp.ver.dir}" file="${doc}/changelog-jsr308.txt" />
 
         <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-checkers.txt" />
+
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
             <fileset dir="${checkers}/doc">
                 <include name="**" />
