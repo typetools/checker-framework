@@ -329,8 +329,6 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
               includesfile="release/site-copy-includes"
               excludesfile="release/site-copy-excludes"/>
         </copy>
-        <symlink overwrite="true"
-                link="${site-copy.to.dir}/index.html" resource="jsr308-webpage.html" />
     </target>
 
 
