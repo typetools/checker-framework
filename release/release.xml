@@ -165,11 +165,11 @@
             </fileset>
         </copy>
 
-        <copy todir="${tmp.ver.dir}" file="${langtools}/README-jsr308.html" />
+        <copy todir="${tmp.ver.dir}" file="${doc}/README-jsr308.html" />
         <copy todir="${tmp.ver.dir}" file="${doc}/Makefile-jsr308-install" />
-        <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-checkers.txt" />
-        <copy todir="${tmp.ver.dir}" file="${langtools}/doc/changelog-jsr308.txt" />
+        <copy todir="${tmp.ver.dir}" file="${doc}/changelog-jsr308.txt" />
 
+        <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-checkers.txt" />
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
             <fileset dir="${checkers}/doc">
                 <include name="**" />
