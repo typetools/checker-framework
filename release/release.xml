@@ -161,8 +161,8 @@
         <copy file="${checkers.manual}/${checkerswebpage}"
 	      tofile="${tmp.ver.dir}/${checkerswebpage}" />
         <symlink overwrite="true"
-            link="${tmp.ver.dir}/index.html"
-            resource="${checkerswebpage}" />
+            resource="${tmp.ver.dir}/index.html"
+            link="${checkerswebpage}" />
 
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
