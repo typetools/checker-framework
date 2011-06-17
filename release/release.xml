@@ -366,6 +366,9 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
         <symlink overwrite="true"
             link="${web.jsr308.root.dir}/index.html"
             resource="${webpage}"/>
+        <symlink overwrite="true"
+            link="${web.root.dir}/index.html"
+            resource="${web.root.dir}/current/index.html"/>
     </target>
 
     <target name="-web-dev" depends="-web-prep" if="is.dev.release">
