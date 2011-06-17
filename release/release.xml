@@ -160,9 +160,6 @@
 
         <copy file="${checkers.manual}/${checkerswebpage}"
 	      tofile="${tmp.ver.dir}/${checkerswebpage}" />
-        <symlink overwrite="true"
-            resource="${tmp.ver.dir}/index.html"
-            link="${checkerswebpage}" />
 
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
@@ -385,6 +382,9 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
         <symlink overwrite="true"
             link="${web.jsr308.root.dir}/index.html"
             resource="${jsr308webpage}"/>
+        <symlink overwrite="true"
+            resource="${web.root.dir}/current/index.html"
+            link="${web.root.dir}/current/${checkerswebpage}" />
         <symlink overwrite="true"
             link="${web.root.dir}/index.html"
             resource="${web.root.dir}/current/index.html"/>
