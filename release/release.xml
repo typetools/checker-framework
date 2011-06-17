@@ -383,8 +383,8 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
             link="${web.jsr308.root.dir}/index.html"
             resource="${jsr308webpage}"/>
         <symlink overwrite="true"
-            resource="${web.root.dir}/current/index.html"
-            link="${web.root.dir}/current/${checkerswebpage}" />
+            link="${web.root.dir}/current/index.html"
+            resource="${checkerswebpage}" />
         <symlink overwrite="true"
             link="${web.root.dir}/index.html"
             resource="${web.root.dir}/current/index.html"/>
