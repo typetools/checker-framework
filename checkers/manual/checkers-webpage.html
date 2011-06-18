@@ -10,212 +10,135 @@
 
 <h1>The Checker Framework</h1>
 
-<p>Contents:</p>
-<!-- start toc.  do not edit; run html-update-toc instead -->
-    <ul>
-      <li><a href="#what-are-type-annotations">What are type annotations?</a></li>
-      <li><a href="#Download">Download</a></li>
-      <li><a href="#Support">Support and community</a>
-        <ul>
-          <li><a href="#documentation">Documentation</a></li>
-          <li><a href="#mailing-lists">Mailing lists</a></li>
-          <li><a href="#bugs">Bug reports</a></li>
-        </ul></li>
-    </ul>
-<!-- end toc -->
-
 <p>
-For the impatient:  <a
-href="current/checkers-manual.html#installation"><b>Download and
-use</b></a> pluggable type-checkers now.
-</p>
-
-<hr />
-<h2 id="what-are-type-annotations">What are type annotations?</h2>
-
-<p>
-The Java 6 annotation syntax is useful but limited.  The Type Annotations
-syntax permits annotations to be written in more places, such as generic
-type arguments: <code>List&lt;<u>@NonNull</u> Object&gt;</code>.
-Programmers can use type annotations to write more informative types, and
-then tools such as type-checkers can detect and prevent more errors.
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field? 
 </p>
 
 <p>
-Type annotations are planned to be part of the Java language and are
-supported by Oracle's OpenJDK (for JDK 7, as of build
-<a href="http://openjdk.java.net/projects/jdk7/milestones/">M4</a>).
-However,
-you can use them <b>now</b> by downloading our free, open-source tools.
-They are completely
-<a href="../jsr308/jsr308-faq.html#backward-compatibility">backward-compatible</a>,
-so you can gain the benefits of type
-annotations while working with people who are using other versions of Java,
-such as Java 6, 5, or even 4.
-Furthermore, our tools have features and bug fixes that Oracle has not yet
-incorporated into OpenJDK.  Therefore, until Oracle incorporates those bug
-fixes, we do not recommend that you use the OpenJDK for type annotation
-processing or pluggable type-checking.
+The Checker Framework enhances Java’s type system to make it more powerful
+and useful. This lets software developers detect and prevent errors in
+their Java programs.  The Checker Framework includes compiler plug-ins
+("checkers") that find bugs or verify their absence.  It also permits you
+to write your own compiler plug-ins.
 </p>
 
 <p>
-The Type Annotations Specification (also known as "JSR 308") is available below.
-It describes the minor,
-backward-compatible changes to the Java language and classfile format.
-An implementation is publicly available, along with tools that use the
-annotations to find and prevent bugs.
-</p>
-
-
-<hr />
-<h2 id="Download">Download</h2>
-
-<p>
-Most users only need to download the Checker
-Framework.  Just follow the <a
+<b>Quick start</b>:  go directly to the
+<a
 href="current/checkers-manual.html#installation"><b>Installation
 instructions and tutorial</b></a>.
 </p>
 
-<p>
-More details and additional downloads appear below.
-</p>
-
 <ul>
-  <li>The <b>Checker Framework</b> includes compiler plug-ins ("checkers")
-      that find bugs or verify their absence.  It also permits you to write
-      your own compiler plug-ins.  Most users only need this.
+  <li>
+    Download: <a href="current/checkers.zip">checkers.zip</a>
+    version
+    <!-- checkers-version -->1.1.3, 17 Jun 2011<!-- /checkers-version -->
+    (includes source, platform-independent binary, tests, and documentation)<br/>
+    Then, see the <a
+    href="current/checkers-manual.html#installation"><b>Installation
+    instructions and tutorial</b></a>.
+  </li>
+
+  <li>
+    Documentation:
     <ul>
       <li>
-        <a href="current/checkers.zip">checkers.zip</a>
-        version
-        <!-- checkers-version -->1.1.3, 17 Jun 2011<!-- /checkers-version -->
-        (includes source, platform-independent binary, tests, and documentation)
+	<a href="current/checkers-manual.pdf">Checker Framework manual (PDF)</a>
       </li>
 
       <li>
-        Documentation:
+	<a href="current/checkers-manual.html">Checker Framework manual (HTML)</a>
+      </li>
+
+      <li>
+	<a href="current/checkers-manual.html#installation">Installation instructions</a>
+      </li>
+
+      <li>
+	<a href="current/doc">Javadoc</a> API documentation
+      </li>
+
+      <li>
+	<a href="current/changelog-checkers.txt">Changelog</a>
+      </li>
+
+      <li>
+	<a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html">Practical
+	pluggable types for Java</a> (a paper presented at the
+	ISSTA 2008 conference) describes the design of the
+	Checker Framework, and case studies that found bugs in
+	real programs and yielded new insights about type
+	systems.
+      </li>
+
+      <li>
+	<a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-icse2011-abstract.html">Building
+	and using pluggable type-checkers</a> (a paper presented
+	at the ICSE 2011 conference) evaluates the ease of
+	pluggable type-checking with the Checker Framework. The
+	type checkers were easy to write, easy for novices to use,
+	and effective in finding hundreds of errors in case
+	studies of 2 million lines of code.
+      </li>
+
+    </ul>
+  </li>
+
+  <!-- This text appears identically at openjdk-webpage.html -->
+  <li>Inference tools automatically add annotations to your code,
+      making it even easier to start using the checkers.  You must
+      download these tools separately.
+    <ul>
+      <li>
+	To infer the <tt>@Nullable</tt> type qualifier, use <a
+	href="http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable">Daikon</a>
+      </li>
+      <li>
+	To infer the <code>@NonNull</code> type qualifier, use the
+	<a href="http://julia.scienze.univr.it/">Julia
+	Analyzer</a>, <a href="http://nit.gforge.inria.fr/">Nit</a>, or <a
+	href="http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java">JastAdd</a>
+      </li>
+      <li>
+	To infer the <code>@ReadOnly</code> type qualifier, use <a
+	href="http://types.cs.washington.edu/javari/javarifier/">Javarifier</a>
+      </li>
+    </ul>
+  </li>
+
+  <li>Optional related tools:
+    <ul>
+      <li>The <a href="../annotation-file-utilities/"><b>Annotation File Utilities</b></a>
+          extract annotations from, and write annotations to,
+          <code>.java</code> and <code>.class</code> files.
+          It also provides a representation (called
+          an &ldquo;annotation file&rdquo;) for annotations that is outside the source code or
+          the <code>.class</code> file.  The tools support both Java 5
+          annotations, and the type annotations defined in JSR 308.
         <ul>
-          <li>
-            <a href="current/checkers-manual.pdf">Checker Framework manual (PDF)</a>
+          <li><a href="../annotation-file-utilities/annotation-tools.zip">annotation-tools.zip</a> (18 Aug 2009)
           </li>
-
-          <li>
-            <a href="current/checkers-manual.html">Checker Framework manual (HTML)</a>
+          <li><a href="http://code.google.com/p/annotation-tools/">source code repository</a>
           </li>
-
-          <li>
-            <a href="current/checkers-manual.html#installation">Installation instructions</a>
+          <li><a href="../annotation-file-utilities/">Documentation</a>
+              is included in the zip archive and in the repository.
           </li>
-
-          <li>
-	    <a href="current/doc">Javadoc</a> API documentation
-          </li>
-
-          <li>
-            <a href="current/changelog-checkers.txt">Changelog</a>
-          </li>
-
-          <li>
-	    <a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html">Practical
-            pluggable types for Java</a> (a paper presented at the
-            ISSTA 2008 conference) describes the design of the
-            Checker Framework, and case studies that found bugs in
-            real programs and yielded new insights about type
-            systems.
-	  </li>
-
-          <li>
-	    <a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-icse2011-abstract.html">Building
-            and using pluggable type-checkers</a> (a paper presented
-            at the ICSE 2011 conference) evaluates the ease of
-            pluggable type-checking with the Checker Framework. The
-            type checkers were easy to write, easy for novices to use,
-            and effective in finding hundreds of errors in case
-            studies of 2 million lines of code.
-	  </li>
-
         </ul>
       </li>
-
-      <!-- This text appears identically at openjdk-webpage.html -->
-      <li>Inference tools automatically add annotations to your code,
-          making it even easier to start using the checkers.  You must
-          download these tools separately.
-        <ul>
-          <li>
-	    To infer the <tt>@Nullable</tt> type qualifier, use <a
-	    href="http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable">Daikon</a>
-          </li>
-          <li>
-            To infer the <code>@NonNull</code> type qualifier, use the
-            <a href="http://julia.scienze.univr.it/">Julia
-            Analyzer</a>, <a href="http://nit.gforge.inria.fr/">Nit</a>, or <a
-            href="http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java">JastAdd</a>
-          </li>
-          <li>
-            To infer the <code>@ReadOnly</code> type qualifier, use <a
-            href="http://types.cs.washington.edu/javari/javarifier/">Javarifier</a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li>The <a href="../jsr308/"><b>Type annotations compiler</b></a>
-      is fully <em>backward-compatible</em>.  You can use it in place
-      of javac without any change in behavior, except that you will be permitted
-      to place annotations in more locations (or in comments) and to use
-      type-checking plug-ins that take advantage of those new locations.
-      Most users don't need it, since a compiled version (without source
-      code) is already included in the Checker Framework distribution.
-    <ul>
-      <li>
-        <a href="current/jsr308-langtools.zip">jsr308-langtools.zip</a>
-        version
-        <!-- compiler-version -->1.1.3, 17 Jun 2011<!-- /compiler-version -->
-        <!-- (includes source, platform-independent binary, and documentation) -->
-      </li>
-      <li><a href="current/README-jsr308.html">README file</a></li>
-      <li>To check out the source code via Mercurial, run:
-        <tt>hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools </tt>
-      </li>
-      <li><a href="current/changelog-jsr308.txt">Changelog</a></li>
-    </ul>
-  </li>
-
-  <li>The <a href="../annotation-file-utilities/"><b>Annotation File Utilities</b></a>
-      extract annotations from, and write annotations to,
-      <code>.java</code> and <code>.class</code> files.
-      It also provides a representation (called
-      an &ldquo;annotation file&rdquo;) for annotations that is outside the source code or
-      the <code>.class</code> file.  The tools support both Java 5
-      annotations, and the type annotations defined in JSR 308.
-    <ul>
-      <li><a href="../annotation-file-utilities/annotation-tools.zip">annotation-tools.zip</a> (18 Aug 2009)
-      </li>
-      <li><a href="http://code.google.com/p/annotation-tools/">source code repository</a>
-      </li>
-      <li><a href="../annotation-file-utilities/">Documentation</a>
-          is included in the zip archive and in the repository.
-      </li>
-    </ul>
-  </li>
-
-  <li><b>Type Annotations Specification (JSR 308)</b>
-      describes how to write type annotations, both in the Java language
-      and in the classfile format.
-    <ul>
-      <li><a href="../jsr308/specification/java-annotation-design.pdf">Type Annotations Specification (PDF)</a></li>
-      <li><a href="../jsr308/specification/java-annotation-design.html">Type Annotations Specification (HTML)</a></li>
-      <li><a href="../jsr308/jsr308-faq.html">FAQ</a></li>
-      <li><a href="../jsr308/specification/jsr308-changes.html">Changelog</a>
-      <!-- lists changes that have been made to the specification. -->
-      </li>
+      <li>The <a href="../jsr308/"><b>Type annotations compiler</b></a>
+          is fully <em>backward-compatible</em>.  You can use it in place
+	  of javac without any change in behavior, except that you will be permitted
+	  to place annotations in more locations (or in comments) and to use
+	  type-checking plug-ins that take advantage of those new locations.
+	  Most users don't need it, since a compiled version (without source
+	  code) is already included in the Checker Framework distribution.
+       </li>
     </ul>
   </li>
 </ul>
-
 
 
 
@@ -238,16 +161,8 @@ If none of those documents answers your question, then use one of the
 
 <ul>
   <li>Checker Framework manual (<a href="current/checkers-manual.pdf">PDF</a>, <a href="current/checkers-manual.html">HTML</a>)</li>
-  <li>Type Annotations (JSR 308) Specification (<a
-  href="../jsr308/specification/java-annotation-design.pdf">PDF</a>, <a
-  href="../jsr308/specification/java-annotation-design.html">HTML</a>)</li>
-  <li><a href="current/README-jsr308.html">Compiler manual</a></li>
-  <li>FAQ: Frequently Asked Questions (with answers)
-    <ul>
-     <li><a href="../jsr308/jsr308-faq.html">FAQ for type annotations</a></li>
-     <li><a href="current/checkers-manual.html">FAQ
-         for the Checker Framework</a></li>
-    </ul>
+  <li><a href="current/checkers-manual.html">FAQ (Frequently Asked Questions with answers)
+         for the Checker Framework</a>
   </li>
 </ul>
 
@@ -266,14 +181,6 @@ Let us know how we can make type annotations even better!
 </p>
 
 <ul>
-  <li>
-    <a href="http://groups.google.com/group/jsr308-discuss">jsr308-discuss</a>:
-    for general discussion about the type annotations syntax
-    (<a href="http://groups.google.com/group/jsr308-discuss/topics">view archives</a>,
-    <a href="http://types.cs.washington.edu/list-archives/jsr308/">view old archives</a>,
-    <a href="http://types.cs.washington.edu/list-archives/jsr308-statements/">view old
-    archives for annotations on statements</a>)
-  </li>
   <li>
     <a href="http://groups.google.com/group/checker-framework-discuss">checker-framework-discuss</a>:
     for general discussion about the Checker Framework for building
@@ -307,20 +214,12 @@ successes to the mailing lists.
 <h3 id="bugs">Bug reports</h3>
 
 <p>
-To submit a bug report, use the issue tracker for the relevant tool:
+To submit a bug report, use the issue tracker:
 </p>
 <ul>
-  <li><a href="http://code.google.com/p/jsr308-langtools/issues/list">Type
-      annotations (JSR 308) issue tracker</a> (please read these
-      <a href="http://jsr308-langtools.googlecode.com/hg/doc/README-jsr308.html#reporting-bugs">instructions</a>
-      first)
-  </li>
   <li><a href="http://code.google.com/p/checker-framework/issues/list">Checker Framework issue tracker</a> (please read these
       <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#reporting-bugs">instructions</a>
       first)
-  </li>
-  <li><a href="http://code.google.com/p/annotation-tools/issues/list">Annotation
-      File Utilities issue tracker</a>
   </li>
 </ul>
 
@@ -329,7 +228,7 @@ To submit a bug report, use the issue tracker for the relevant tool:
 <hr />
 
 <p>
-Last updated: June 16, 2011
+Last updated: June 17, 2011
 </p>
 
 </body>
