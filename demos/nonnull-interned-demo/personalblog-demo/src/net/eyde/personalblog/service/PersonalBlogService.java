@@ -167,7 +167,7 @@ public class PersonalBlogService {
         return posts;
     }
 
-    public List<?> getPostsByCategory(@Untainted String category) throws ServiceException {
+    public List<?> getPostsByCategory(String category) throws ServiceException {
         List<?> posts = null;
 
         posts = executeQuery(constructQuery(
