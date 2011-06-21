@@ -1250,10 +1250,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
-                	checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
-                			"you do not seem to be using the distributed annotated JDK." +
-                			System.getProperty("line.separator") +
-                			"Supply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
+                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                        "You do not seem to be using the distributed annotated JDK.  To fix the problem," +
+                        System.getProperty("line.separator") +
+                        "supply this argument (first, fill in the \"...\") when you run javac:" +
+                        System.getProperty("line.separator") +
+                        "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
                 }
             }
         }
