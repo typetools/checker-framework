@@ -1,4 +1,4 @@
-<project name="personalblog-demo" default="check-nullness">
+<project name="personalblog-demo" default="check-tainting">
   <property environment="env"/>
 
   <presetdef name="jsr308.javac">
