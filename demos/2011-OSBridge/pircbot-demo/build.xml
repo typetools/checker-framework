@@ -16,6 +16,13 @@
     </javac>
   </presetdef>
 
+  <target name="build"
+          description="Build pircbot without nullness checking">
+    <mkdir dir="bin"/>
+    <javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+    </javac>
+  </target>
+
   <target name="check-nullness"
           description="Check for nullness errors as they come up"
           depends="clean">
