@@ -65,7 +65,7 @@ public class DccManager {
         }
         else if (type.equals("RESUME")) {
             int port = Integer.parseInt(tokenizer.nextToken());
-            // long progress = 
+            long progress = 0;
             Long.parseLong(tokenizer.nextToken());
             
             DccFileTransfer transfer = null;
