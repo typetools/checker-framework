@@ -684,12 +684,20 @@ code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
+Don't get discouraged if you see many type-checker warnings at first.
+Often, adding just a few missing annotations will eliminate many warnings,
+and you'll be surprised how fast the process goes overall.
+
 It is best to annotate one package at a time,
 % Upcoming fix that applies different defaults to annotated and unannotated
 % code will eliminate this reason.
-and to annotate the entire package so that you don't forget any classes,
-which can lead to unexpected results.
-Start as close to the leaves of the call tree as possible, because it is
+and to annotate the entire package so that you don't forget any classes
+(failing to annotate a class can lead to unexpected results).
+Start as close to the leaves of the call tree as possible, such as with
+libraries --- that is,
+start with methods/classes/packages that have few dependences on other
+code or, equivalently, start with code that a lot of your other code
+depends on.  The reason for this is that it is
 easiest to annotate a class if the code it calls has already been
 annotated.
 
@@ -724,7 +732,8 @@ specific consequences of your change.
 
 Ordinarily, the javac compiler halts processing as soon as it encounters a
 file with compilation errors.  To convert pluggable-type-checking errors
-into warnings so that you can see them all, use \code{-Awarns -Xmaxwarns
+into warnings so that you can see them all, use the command-line arguments
+\code{-Awarns -Xmaxwarns
   10000} (see Section~\ref{running}).
 
 Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
