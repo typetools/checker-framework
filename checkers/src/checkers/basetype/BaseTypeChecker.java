@@ -175,7 +175,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                // polymorphic qualifiers don't need to declared their supertypes
+                // polymorphic qualifiers don't need to declare their supertypes
                 if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
                     continue;
                 throw new AssertionError(typeQualifier + " does not specify its super qualifiers");
