@@ -41,8 +41,14 @@ requires an additional annotation processor argument via the standard
 \item
 \code{-Aquals}: this option specifies a comma-no-space-separated list of
 the fully-qualified class
-names of the annotations used as qualifiers in the custom type system.
-%
+names of the annotations used as qualifiers in the custom type system.  For
+example,
+
+\begin{alltt}
+  javac -processor checkers.fenum.BasicChecker
+        \textit{-Aquals=myproject.quals.MyQual,myproject.quals.OtherQual} MyFile.java ...
+\end{alltt}
+
 It serves the same purpose as the \code{@\refclass{quals}{TypeQualifiers}}
 annotation used by other checkers (see section
 \ref{writing-compiler-interface}).
