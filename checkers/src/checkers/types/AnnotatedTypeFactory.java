@@ -518,12 +518,13 @@ public class AnnotatedTypeFactory {
      * In some type systems, the upper bounds depend on the instantiation
      * of the class. For example, in the Generic Universe Type system,
      * consider a class declaration
-     *    class C<X extends @Peer Object>
+     * <pre>   class C&lt;X extends @Peer Object&gt; </pre>
      * then the instantiation
-     *    @Rep C<@Rep Object>
+     * <pre>   @Rep C&lt;@Rep Object&gt; </pre>
      * is legal. The upper bounds of class C have to be adapted
      * by the main modifier.
      *
+     * <p>
      * TODO: ensure that this method is consistently used instead
      * of directly querying the type variables.
      *
@@ -793,7 +794,7 @@ public class AnnotatedTypeFactory {
      * Note that neither the explicitly passed nor the inferred type arguments
      * are guaranteed to be subtypes of the corresponding upper bounds.
      * See method
-     * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List, Object)}
+     * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List)}
      * for the checks of type argument well-formedness.
      *
      * @param tree the method invocation tree

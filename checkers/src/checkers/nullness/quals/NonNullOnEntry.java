@@ -34,7 +34,7 @@ public @interface NonNullOnEntry {
     /**
      * Java expression(s) that are non-null when the method is entered --
      * that is, when it is invoked.
-     * @see <a href="http://types.cs.washington.edu/checker-framework/#java-expressions-as-arguments">Syntax of Java expressions</a>
+     * @see <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>
      */
     String[] value();
 }

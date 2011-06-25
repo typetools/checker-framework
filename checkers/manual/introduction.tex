@@ -179,16 +179,16 @@ Section~\ref{javac-installation}.)
 \item
   Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
   \code{-jar} argument.  For
-  example:
+  example (don't forget to fill in the ``...''!):
 
 \begin{Verbatim}
   # Unix
-  java -Xbootclasspath/p:$JSR308/checker-framework/checkers/binary/jsr308-all.jar
-       -jar $JSR308/checker-framework/checkers/binary/jsr308-all.jar -version
+  java -Xbootclasspath/p:.../checker-framework/checkers/binary/jsr308-all.jar \
+       -jar .../checker-framework/checkers/binary/jsr308-all.jar -version
 
   # Windows
-  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
-       -jar C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar -version
+  java -Xbootclasspath/p:C:\...\checker-framework\checkers\binary\jsr308-all.jar
+       -jar C:\...\checker-framework\checkers\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The command should be all on one line, and followed by the javac arguments
@@ -198,13 +198,13 @@ such as \code{-processor} and file names.
 
 \end{enumerate}
 
-To ensure that it was installed properly, run \<javac -version> (using a
-variant of \<javac> if you did not add it to your path).
+To ensure that it was installed properly, run \<javac -version> (using the
+full pathname to \<javac> if you did not add it to your path).
 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.1.2
+  javac 1.7.0-jsr308-1.1.3
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
