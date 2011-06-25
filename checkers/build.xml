@@ -564,7 +564,7 @@ ${build.version} of the 'javac.jar' library."/>
       </exec>
     </target>
 
-    <target name="bindist" depends="-prep-bindist,jar"
+    <target name="bindist" depends="-prep-bindist,jar,jdk.jar"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>

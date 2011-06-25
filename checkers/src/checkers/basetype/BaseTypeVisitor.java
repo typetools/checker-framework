@@ -238,7 +238,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     /**
      * Performs two checks: subtyping and assignability checks, using
-     * {@link #commonAssignmentCheck(Tree, ExpressionTree, String, Object)}.
+     * {@link #commonAssignmentCheck(Tree, ExpressionTree, String)}.
      *
      * If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
@@ -636,7 +636,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * declared, and issues the "generic.argument.invalid" error if they are
      * not.
      *
-     * @param tree the tree for error reporting, only used for inferred type arguments
+     * @param toptree the tree for error reporting, only used for inferred type arguments
      * @param typevars the type variables from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
@@ -758,7 +758,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * @param requiredArgs  the required types
      * @param passedArgs    the expressions passed to the corresponding types
-     * @param p
      */
     // This really should have a private final method
     // Unfortunately Javari override it!
@@ -1251,10 +1250,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
-                	checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
-                			"you do not seem to be using the distributed annotated JDK." +
-                			System.getProperty("line.separator") +
-                			"Supply javac the argument:  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
+                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                        "You do not seem to be using the distributed annotated JDK.  To fix the problem," +
+                        System.getProperty("line.separator") +
+                        "supply this argument (first, fill in the \"...\") when you run javac:" +
+                        System.getProperty("line.separator") +
+                        "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
                 }
             }
         }
