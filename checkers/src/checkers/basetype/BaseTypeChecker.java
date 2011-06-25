@@ -41,7 +41,7 @@ import javax.annotation.processing.*;
  * It is a convention that, for a type system Foo, the checker, the visitor,
  * and the annotated type factory are named as  <i>FooChecker</i>,
  * <i>FooVisitor</i>, and <i>FooAnnotatedTypeFactory</i>.  Some factory
- * methods uses this convention to construct the appriopriate classes
+ * methods uses this convention to construct the appropriate classes
  * reflectively.
  *
  * <p>
@@ -79,13 +79,13 @@ import javax.annotation.processing.*;
  */
 public abstract class BaseTypeChecker extends SourceChecker {
 
-    /** To cache the supported type qualifiers */
+    /** To cache the supported type qualifiers. */
     private Set<Class<? extends Annotation>> supportedQuals;
 
-    /** To represent the supported qualifiers and their hierarchy */
+    /** To represent the supported qualifiers and their hierarchy. */
     private QualifierHierarchy qualHierarchy;
 
-    /** To compare annotated types with respect to qualHierarchy */
+    /** To compare annotated types with respect to qualHierarchy. */
     private TypeHierarchy typeHierarchy;
 
     @Override
@@ -175,7 +175,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                // polymorphic qualifiers don't need to declared their supertypes
+                // polymorphic qualifiers don't need to declare their supertypes
                 if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
                     continue;
                 throw new AssertionError(typeQualifier + " does not specify its super qualifiers");
