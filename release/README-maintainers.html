@@ -126,6 +126,7 @@ testing the release)</li>
 <pre>
   export anno=/scratch/$USER/jsr308-release
   export PATH=${PATH}:$anno/plume-lib/bin
+  export PLUME_LIB=$anno/plume-lib
   export TEXINPUTS=.:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:/uns/lib/hevea:..:
   export EDITOR=emacs
   export PERLLIB=${PERLLIB}:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0
@@ -226,11 +227,26 @@ and then redo the above.
 
 <li><p>Run:</p>
 <pre>
+  # Only necessary if you did not run the regression tests in this directory.
+  cd $anno/jsr308-langtools/make
+  ant
+
+  # Depends on the JSR 308 javac.
   cd $anno/annotation-tools/annotation-file-utilities
   ant zipfile
 </pre>
 
 <p>TODO: merge this into the main script: in python or, better, in the Ant file.</p>
+
+<p>
+Make a release of the Annotation File Utilities before doing the
+JSR308/Checker Framework release.
+This should ensure that the file date for the AFU links is correctly
+updated.
+After the JSR308/Checker Framework release, ensure that the AFU
+release dates are correct.
+</p>
+
 
 <li><p>Edit the changelogs (<tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> and
 <tt>$anno/checker-framework/checkers/changelog-checkers.txt</tt>) to indicate

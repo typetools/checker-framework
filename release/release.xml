@@ -158,6 +158,9 @@
         <copy file="${checkers.manual}/manual.pdf"
             tofile="${tmp.ver.dir}/${manual.name}.pdf"/>
 
+        <copy file="${checkers.manual}/${checkerswebpage}"
+	      tofile="${tmp.ver.dir}/${checkerswebpage}" />
+
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
                 <include name="*.png"/>
@@ -165,10 +168,11 @@
             </fileset>
         </copy>
 
-        <copy todir="${tmp.ver.dir}" file="${langtools}/README-jsr308.html" />
-        <copy todir="${tmp.ver.dir}" file="${doc}/Makefile-jsr308-install" />
+        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/README-jsr308.html" />
+        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/Makefile-jsr308-install" />
+        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/changelog-jsr308.txt" />
+
         <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-checkers.txt" />
-        <copy todir="${tmp.ver.dir}" file="${langtools}/doc/changelog-jsr308.txt" />
 
         <copy todir="${tmp.ver.dir}/doc" flatten="false">
             <fileset dir="${checkers}/doc">
@@ -196,23 +200,31 @@
       unless="is.dev.release">
         <!-- Updates version numbers in files for a stable release. -->
 
-        <replaceregexp file="${doc}/${webpage}" byline="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
           match="^\s*&lt;!-- begin dev release --&gt;$"
           replace="&lt;!-- begin dev release ->"/>
 
-        <replaceregexp file="${doc}/${webpage}" byline="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
           match="^\s*&lt;!-- end dev release --&gt;$"
           replace="&lt;!- end dev release --&gt;"/>
 
-        <replaceregexp file="${doc}/${webpage}" byline="true" flags="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true" flags="true"
           match="&lt;!-- ([^ ]+)-dev-version --&gt;"
           replace="&lt;!- \1-dev-version -&gt;"/>
 
-        <update file="${doc}/${webpage}"
+        <update file="${jsr308doc}/${jsr308webpage}"
           start="${checkers.ver.0}" end="${checkers.ver.1}"
           with="${release.ver}, ${release.date}"/>
 
-        <update file="${doc}/${webpage}"
+        <update file="${jsr308doc}/${jsr308webpage}"
+          start="${compiler.ver.0}" end="${compiler.ver.1}"
+          with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkers.manual}/${checkerswebpage}"
+          start="${checkers.ver.0}" end="${checkers.ver.1}"
+          with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkers.manual}/${checkerswebpage}"
           start="${compiler.ver.0}" end="${compiler.ver.1}"
           with="${release.ver}, ${release.date}"/>
 
@@ -234,26 +246,34 @@
       if="is.dev.release">
         <!-- Updates versions for a dev release. -->
 
-        <replaceregexp file="${doc}/${webpage}" byline="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
           match="^\s*&lt;!-- begin dev release -&gt;"
           replace="&lt;!-- begin dev release --&gt;"/>
 
-        <replaceregexp file="${doc}/${webpage}" byline="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
           match="^\s*&lt;!- end dev release --&gt;$"
           replace="&lt;!-- end dev release --&gt;"/>
 
-        <replaceregexp file="${doc}/${webpage}" byline="true" flags="g"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true" flags="g"
           match="&lt;!- ([^ ]+)-dev-version -&gt;"
           replace="&lt;!-- \1-dev-version --&gt;"/>
 
-        <replaceregexp file="${doc}/${webpage}" byline="true"
+        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
             flags="g" match="~~" replace="--"/>
 
-        <update file="${doc}/${webpage}"
+        <update file="${jsr308doc}/${jsr308webpage}"
           start="${checkers.dev.ver.0}" end="${checkers.dev.ver.1}"
           with="${release.ver}, ${release.date}"/>
 
-        <update file="${doc}/${webpage}"
+        <update file="${jsr308doc}/${jsr308webpage}"
+          start="${compiler.dev.ver.0}" end="${compiler.dev.ver.1}"
+          with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkers.manual}/${checkerswebpage}"
+          start="${checkers.dev.ver.0}" end="${checkers.dev.ver.1}"
+          with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkers.manual}/${checkerswebpage}"
           start="${compiler.dev.ver.0}" end="${compiler.dev.ver.1}"
           with="${release.ver}, ${release.date}"/>
 
@@ -292,7 +312,7 @@
 
         <!-- Update installation script -->
 
-        <update file="${doc}/Makefile-jsr308-install"
+        <update file="${jsr308doc}/Makefile-jsr308-install"
                 start="JSR308_BUILD := "
                 with="${release.ver}"/>
 
@@ -329,8 +349,6 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
               includesfile="release/site-copy-includes"
               excludesfile="release/site-copy-excludes"/>
         </copy>
-        <symlink overwrite="true"
-                link="${site-copy.to.dir}/index.html" resource="jsr308-webpage.html" />
     </target>
 
 
@@ -338,16 +356,15 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
 
     <target name="webpage" depends="update-versions,-prep-releasedir"
       description="makes the JSR 308 web page">
-        <exec executable="make" dir="${doc}" failonerror="true" taskname="make">
+        <exec executable="make" dir="${jsr308doc}" failonerror="true" taskname="make">
             <arg line="jsr308_www=${web.jsr308.root.dir}"/>
-            <arg line="webpage"/>
-            <arg line="${web.jsr308.root.dir}/Makefile-jsr308-install"/>
+            <arg line="web"/>
             <env key="PERL5LIB" value="${perl5.lib}"/>
         </exec>
     </target>
 
     <target name="checklinks" depends="-init-properties">
-        <exec executable="make" dir="${doc}" failonerror="true" taskname="make">
+        <exec executable="make" dir="${jsr308doc}" failonerror="true" taskname="make">
             <arg line="jsr308_www_online=${web.jsr308.root.dir}"/>
             <arg line="checklinks"/>
             <env key="PERL5LIB" value="${perl5.lib}"/>
@@ -364,19 +381,31 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
         </copy>
         <symlink overwrite="true"
             link="${web.jsr308.root.dir}/index.html"
-            resource="${webpage}"/>
+            resource="${jsr308webpage}"/>
     </target>
 
     <target name="-web-dev" depends="-web-prep" if="is.dev.release">
         <symlink overwrite="true"
             link="${web.root.dir}/dev"
             resource="releases/${release.ver}"/>
+        <symlink overwrite="true"
+            link="${web.root.dir}/dev/index.html"
+            resource="${checkerswebpage}" />
+        <symlink overwrite="true"
+            link="${web.root.dir}/index.html"
+            resource="dev/index.html"/>
     </target>
 
     <target name="-web-stable" depends="-web-prep" unless="is.dev.release">
         <symlink overwrite="true"
             link="${web.root.dir}/current"
             resource="releases/${release.ver}"/>
+        <symlink overwrite="true"
+            link="${web.root.dir}/current/index.html"
+            resource="${checkerswebpage}" />
+        <symlink overwrite="true"
+            link="${web.root.dir}/index.html"
+            resource="current/index.html"/>
     </target>
 
     <target name="web" depends="-init-properties,local,-prep-checkdev,-web-stable,-web-dev"
