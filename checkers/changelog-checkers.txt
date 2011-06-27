@@ -1,6 +1,8 @@
 [Reserve this for a future release.]
 @Covariant annotation
 
+Changed -AskipClasses command-line option to -AskipUses
+
 ----------------------------------------------------------------------
 Version 1.1.3, 17 Jun 2011
 

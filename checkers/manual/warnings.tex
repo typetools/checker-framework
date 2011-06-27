@@ -44,7 +44,7 @@ there are several ways to eliminate the compiler warnings.
   \code{@SuppressWarnings} annotation or by not running the checker on that
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
-  via the \code{skipClasses} processor option
+  via the \code{skipUses} processor option
   (see Section~\ref{suppressing-warnings}).
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
@@ -77,7 +77,7 @@ warnings via
 \item
   the \code{@SuppressWarnings} annotation,
 \item
-  the \code{-AskipClasses} command-line option,
+  the \code{-AskipUses} command-line option,
 \item
   the javac \code{-Alint} command-line option,
 \item
@@ -127,10 +127,10 @@ annotation on the class declaration or on the package's
 
 You can suppress all errors and warnings at all \emph{uses} of a given
 class (but the class itself is still type-checked).
-Set the \code{-AskipClasses} command-line option to a
+Set the \code{-AskipUses} command-line option to a
 regular expression that matches classes for which warnings and errors
 should be suppressed.  For example, if you use
-``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
+``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the checkers will suppress all warnings within
 classes whose fully-qualified name starts with \codesize\verb|java.|, all
@@ -139,7 +139,7 @@ use of the return value.
 
 To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
-``{\codesize\verb+-AskipClasses="java\.lang\.|java\.util\."+}'' to suppress
+``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
 all warnings related to classes belong to the \code{java.lang} or
 \code{java.util} packages.
 
@@ -374,7 +374,7 @@ your code does not use any Java 8 features other than type annotations in
 comments.
 
 
-% LocalWords:  quals skipClasses un AskipClasses Alint annotationname javac's
+% LocalWords:  quals skipUses un AskipUses Alint annotationname javac's
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile

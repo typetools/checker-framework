@@ -493,7 +493,7 @@ checkers support the following command-line options:
 
 \begin{itemize}
 \item \<-Awarns> Treat checker errors as warnings; see Section~\ref{running}
-\item \<-AskipClasses> Suppress all errors and warnings at all uses of a
+\item \<-AskipUses> Suppress all errors and warnings at all uses of a
   given class; see Section~\ref{suppressing-warnings}
 \item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
 \item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
@@ -595,7 +595,7 @@ There are some limitations to the guarantee.
     Code compiled without the \code{-processor} switch, including any
     external library supplied as a \code{.class} file.
   \item
-    Code compiled with the \code{-AskipClasses} property (see
+    Code compiled with the \code{-AskipUses} property (see
     Section~\ref{suppressing-warnings}).
   \item
     Suppression of warnings, such as via the \code{@SuppressWarnings}
@@ -942,7 +942,7 @@ could otherwise be statically dispatched.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipClasses java plugins plugin TODO cp igj
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp igj
 % LocalWords:  nonnull javari langtools sourcepath classpath OpenJDK pre jsr
 % LocalWords:  Djsr quals Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
@@ -952,7 +952,7 @@ could otherwise be statically dispatched.
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
-% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
+% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
