@@ -265,7 +265,7 @@ indicated in this example:
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
       <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
       <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
-      <!-- optional, to not check library bodies: <compilerarg value="-AskipClasses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <!-- optional, to not check library bodies: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       ...
     </jsr308.javac>
   </target>

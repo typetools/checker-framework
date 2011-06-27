@@ -157,7 +157,7 @@ public class JavariChecker extends SourceChecker {
      */
     public boolean isSubtype(AnnotatedClassType child, AnnotatedClassType parent) {
 
-        // FIXME: this needs to check checkers.skipClasses!
+        // FIXME: this needs to check checkers.skipUses!
         if (child.getElement() != null) {
             Elements elts = env.getElementUtils();
             Element childElt = child.getElement();

@@ -67,10 +67,10 @@ public abstract class SourceChecker extends AbstractProcessor {
 
     /** A regular expression for classes that should be skipped. */
     protected final Pattern skipPattern =
-        Pattern.compile(System.getProperty("checkers.skipClasses", getDefaultSkipPattern()));
+        Pattern.compile(System.getProperty("checkers.skipUses", getDefaultSkipPattern()));
 
     /**
-     * @return the default pattern for the checkers.skipClasses property
+     * @return the default pattern for the checkers.skipUses property
      */
     protected String getDefaultSkipPattern() {
         return "";
@@ -372,7 +372,7 @@ public abstract class SourceChecker extends AbstractProcessor {
      * Determines whether checking against members of the class with the given
      * name should be performed. This method will return true only when the
      * given class name matches the regular expression specified by the {@code
-     * checkers.skipClasses} property.
+     * checkers.skipUses} property.
      *
      * @param className the fully qualified name of the class to check
      * @return true if the members of the class named {@code className} should
