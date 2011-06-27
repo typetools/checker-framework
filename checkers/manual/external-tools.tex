@@ -81,7 +81,8 @@ The output of the last command should be:
   Place the following commands in your \code{.bashrc} file:
 \begin{Verbatim}
   export JSR308=$HOME/jsr308
-  export PATH=$JSR308/checker-framework/checkers/binary:${PATH}
+  export CHECKERS=$JSR308/checker-framework/checkers
+  export PATH=$CHECKERS/binary:${PATH}
 \end{Verbatim}
 % unconfuse Emacs LaTeX mode: $
 
@@ -127,15 +128,15 @@ the new \code{javac} compiler.
   Double-click the \<checkers.zip> file on your computer.  Click on
   the \<checkers> directory, then Select \<Extract all files>, and use
   \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
-  \<C:\ttbs{}Program Files\ttbs{}checkers> folder.
+  \<C:\ttbs{}Program Files\ttbs{}checker-framework> folder.
 \item
   Verify that the installation works.  From a Windows command prompt, run
-  (all on one line):
+  (all on one line, and don't forget to replace the \verb|\Path\To\...|!):
 
 % Do I need to quote the space in "Program Files"?
 \begin{Verbatim}
-  java -Xbootclasspath/p:C:\Path\To\...\checker-framework\checkers\binary\jsr308-all.jar
-       -jar C:\Program Files\checkers\binary\jsr308-all.jar -version
+  set CHECKERS = C:\Program Files\checker-framework\checkers
+  java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar C:%CHECKERS%\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The output should be:
@@ -149,7 +150,7 @@ The output should be:
 
 \item
   In order to use the updated compiler when you type \code{javac}, add the
-  directory \<C:\ttbs{}Program Files\ttbs{}checkers\ttbs{}binary> to the
+  directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
   beginning of your path variable.  Also set a CHECKERS variable.
 
 % Instructions stolen from http://www.webreference.com/js/tips/020429.html
@@ -167,8 +168,8 @@ path = \emph{newdir};%PATH%
 For example:
 
 \begin{Verbatim}
-path = C:\Program Files\checkers\binary;%PATH%
-set CHECKERS = C:\Program Files\checkers
+set CHECKERS = C:\Program Files\checker-framework\checkers
+path = %CHECKERS%\binary;%PATH%
 \end{Verbatim}
 
 This is a temporary change that endures until the window is closed, and you
@@ -185,7 +186,8 @@ just this user).  Both work; the instructions below show how to set as a
 In the \<System Variables> pane, select
 \<Path> from the list and click \<Edit>. In the \<Edit System Variable>
 dialog box, move the cursor to the beginning of the string in the
-\<Variable Value> field and type the full directory name followed by a
+\<Variable Value> field and type the full directory name (not using the
+\verb|%CHECKERS%| environment variable) followed by a
 semicolon (\<;>).
 
 % This is for the benefit of the Ant task.
@@ -231,6 +233,8 @@ Set the \code{jsr308javac} property:
 \begin{Verbatim}
   <property environment="env"/>
 
+  <dirname property="checkers" file="${env.CHECKERS}" />
+
   <presetdef name="jsr308.javac">
     <javac fork="yes">
       <!-- JSR308 related compiler arguments -->
@@ -238,14 +242,15 @@ Set the \code{jsr308javac} property:
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
       <compilerarg line="-Awarns -Xmaxwarns 10000"/>
-      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+      <compilerarg value="-J-Xbootclasspath/p:${checkers}/binary/jsr308-all.jar"/>
 
       <classpath>
-        <pathelement location="${env.CHECKERS}/checkers.jar"/>
+        <pathelement location="${checkers}/checkers.jar"/>
       </classpath>
     </javac>
   </presetdef>
 \end{Verbatim}
+% Unconfuse Emacs font lock mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
@@ -263,7 +268,7 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+      <compilerarg value="-Xbootclasspath/p:${checkers}/jdk/jdk.jar"/>
       <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
       <!-- optional, to not check library bodies: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       ...
