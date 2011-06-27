@@ -57,10 +57,6 @@ public class FenumChecker extends BaseTypeChecker {
         String qualNames = env.getOptions().get("quals");
         if (qualNames == null) {
           // maybe issue a warning?
-          qualSet.add(FenumTop.class);
-          qualSet.add(Fenum.class);
-          qualSet.add(FenumUnqualified.class);
-          qualSet.add(FenumBottom.class);
         } else {
           try {
             for (String qualName : qualNames.split(",")) {
@@ -71,11 +67,12 @@ public class FenumChecker extends BaseTypeChecker {
           } catch (ClassNotFoundException e) {
             throw new Error(e);
           }
-          qualSet.add(FenumTop.class);
-          qualSet.add(Fenum.class);
-          qualSet.add(FenumUnqualified.class);
-          qualSet.add(FenumBottom.class);
         }
+        qualSet.add(FenumTop.class);
+        qualSet.add(Fenum.class);
+        qualSet.add(FenumUnqualified.class);
+        qualSet.add(FenumBottom.class);
+
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
         return Collections.unmodifiableSet(qualSet);
