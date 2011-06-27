@@ -1,0 +1,17 @@
+Index: src/checkers/types/AnnotatedTypeFactory.java
+===================================================================
+--- src/checkers/types/AnnotatedTypeFactory.java	(revision 3580)
++++ src/checkers/types/AnnotatedTypeFactory.java	(working copy)
+@@ -481,10 +481,10 @@
+         if (elt == null)
+             throw new IllegalArgumentException("null element");
+         if (elementCache.containsKey(elt))
+-            return elementCache.get(elt);
++            return atypes.deepCopy(elementCache.get(elt));
+         AnnotatedTypeMirror type = fromElement(elt);
+         annotateImplicit(elt, type);
+-        elementCache.put(elt, type);
++        elementCache.put(elt, atypes.deepCopy(type));
+         return type;
+     }
+ 
