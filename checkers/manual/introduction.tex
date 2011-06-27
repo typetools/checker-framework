@@ -153,6 +153,17 @@ Section~\ref{javac-installation}.)
   (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}).
 \item 
   Unzip it to create a \code{checker-framework} directory.
+
+  Then, set the
+  \code{CHECKERS} environment variable to the
+  \code{checker-framework/checkers} directory.  For instance, if you use
+  the bash shell, then add this to your \code{.bashrc} file (don't forget
+  to replace the ``\code{...}''!):
+\begin{Verbatim}
+  export CHECKERS=.../checker-framework/checkers
+\end{Verbatim}
+  Also execute it on the command line, or log out and back in.
+
 \item
   Optionally, update your execution path.
 
@@ -163,10 +174,10 @@ Section~\ref{javac-installation}.)
 \item
   Use the ``Type Annotations compiler'', which is an updated version of the
   OpenJDK javac compiler.  If you add directory
-  \code{.../checker-framework/checkers/binary} to your path, then whenever
+  \code{\$CHECKERS/binary} to your path, then whenever
   you run \code{javac}, you will use the updated compiler.
   Alternately, whenever this document tells you to run \code{javac}, you
-  can instead run \code{.../checker-framework/checkers/binary/javac}.
+  can instead run \code{\$CHECKERS/binary/javac}.
   The Type Annotations compiler is
   backward-compatible, so using it should have no negative consequences.
 
@@ -179,16 +190,16 @@ Section~\ref{javac-installation}.)
 \item
   Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
   \code{-jar} argument.  For
-  example (don't forget to fill in the ``...''!):
+  example:
 
 \begin{Verbatim}
   # Unix
-  java -Xbootclasspath/p:.../checker-framework/checkers/binary/jsr308-all.jar \
-       -jar .../checker-framework/checkers/binary/jsr308-all.jar -version
+  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
+       -jar $CHECKERS/binary/jsr308-all.jar -version
 
   # Windows
-  java -Xbootclasspath/p:C:\...\checker-framework\checkers\binary\jsr308-all.jar
-       -jar C:\...\checker-framework\checkers\binary\jsr308-all.jar -version
+  java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar
+       -jar %CHECKERS%\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The command should be all on one line, and followed by the javac arguments

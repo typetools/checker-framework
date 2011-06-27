@@ -277,8 +277,9 @@ whatever other arguments you usually use, including \code{-classpath}.  For exam
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:.../checkers/jdk/jdk.jar my_source_files
+  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:${CHECKERS}/jdk/jdk.jar my_source_files
 \end{Verbatim}
+% Unconfuse Emacs font lock mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
