@@ -79,8 +79,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** issue errors as warnings */
     private boolean warns;
 
-    /** A regular expression for classes that should be skipped. */
-    private Pattern skipPattern;
+    /** A regular expression for classes whose uses should be skipped. */
+    private Pattern skipUsesPattern;
 
     /** The chosent lint options that have been enabled by programmer */
     private Set<String> activeLints;
@@ -144,15 +144,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
-    private Pattern getSkipPattern(Map<String, String> options) {
+    private Pattern getSkipUsesPattern(Map<String, String> options) {
         String pattern = "";
 
-        if (options.containsKey("skipClasses"))
-            pattern = options.get("skipClasses");
-        else if (System.getProperty("checkers.skipClasses") != null)
-            pattern = System.getProperty("checkers.skipClasses");
-        else if (System.getenv("skipClasses") != null)
-            pattern = System.getenv("skipClasses");
+        if (options.containsKey("skipUses"))
+            pattern = options.get("skipUses");
+        else if (System.getProperty("checkers.skipUses") != null)
+            pattern = System.getProperty("checkers.skipUses");
+        else if (System.getenv("skipUses") != null)
+            pattern = System.getenv("skipUses");
 
         // return a pattern of an illegal Java identifier character
         if (pattern.equals(""))
@@ -190,7 +190,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         super.init(processingEnv);
         this.env = processingEnv;
 
-        this.skipPattern = getSkipPattern(processingEnv.getOptions());
+        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
@@ -582,7 +582,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
-        options.add("skipClasses");
+        options.add("skipUses");
         options.add("lint");
         options.add("nomsgtext");
         options.add("filenames");
@@ -656,13 +656,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * annotated, and thus whose warnings and should be surpressed.
      *
      * It returns the pattern specified by the user, through the option
-     * {@code checkers.skipClasses}; otherwise it returns a pattern that can
+     * {@code checkers.skipUses}; otherwise it returns a pattern that can
      * match no class.
      *
      * @return pattern of un-annotated classes that should be skipped
      */
-    public Pattern getShouldSkip() {
-        return this.skipPattern;
+    public Pattern getShouldSkipUses() {
+        return this.skipUsesPattern;
     }
 
     /**
