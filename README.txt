@@ -5,7 +5,7 @@ This repository contains several related projects:
  checkers    the Checker Framework proper
  demos       slides and source code for demos of the Checker Framework
  javaparser  a parser for Java source code; supports type annotations
- release     buildfiles for making a relase
+ release     buildfiles for making a release
 
 
 To build the Checker Framework, run:
