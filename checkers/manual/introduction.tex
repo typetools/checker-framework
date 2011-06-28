@@ -153,6 +153,17 @@ Section~\ref{javac-installation}.)
   (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}).
 \item 
   Unzip it to create a \code{checker-framework} directory.
+
+  Then, set the
+  \code{CHECKERS} environment variable to the
+  \code{checker-framework/checkers} directory.  For instance, if you use
+  the bash shell, then add this to your \code{.bashrc} file (don't forget
+  to replace the ``\code{...}''!):
+\begin{Verbatim}
+  export CHECKERS=.../checker-framework/checkers
+\end{Verbatim}
+  Also execute it on the command line, or log out and back in.
+
 \item
   Optionally, update your execution path.
 
@@ -163,10 +174,10 @@ Section~\ref{javac-installation}.)
 \item
   Use the ``Type Annotations compiler'', which is an updated version of the
   OpenJDK javac compiler.  If you add directory
-  \code{.../checker-framework/checkers/binary} to your path, then whenever
+  \code{\$CHECKERS/binary} to your path, then whenever
   you run \code{javac}, you will use the updated compiler.
   Alternately, whenever this document tells you to run \code{javac}, you
-  can instead run \code{.../checker-framework/checkers/binary/javac}.
+  can instead run \code{\$CHECKERS/binary/javac}.
   The Type Annotations compiler is
   backward-compatible, so using it should have no negative consequences.
 
@@ -179,16 +190,16 @@ Section~\ref{javac-installation}.)
 \item
   Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
   \code{-jar} argument.  For
-  example (don't forget to fill in the ``...''!):
+  example:
 
 \begin{Verbatim}
   # Unix
-  java -Xbootclasspath/p:.../checker-framework/checkers/binary/jsr308-all.jar \
-       -jar .../checker-framework/checkers/binary/jsr308-all.jar -version
+  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
+       -jar $CHECKERS/binary/jsr308-all.jar -version
 
   # Windows
-  java -Xbootclasspath/p:C:\...\checker-framework\checkers\binary\jsr308-all.jar
-       -jar C:\...\checker-framework\checkers\binary\jsr308-all.jar -version
+  java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar
+       -jar %CHECKERS%\binary\jsr308-all.jar -version
 \end{Verbatim}
 
 The command should be all on one line, and followed by the javac arguments
@@ -493,7 +504,7 @@ checkers support the following command-line options:
 
 \begin{itemize}
 \item \<-Awarns> Treat checker errors as warnings; see Section~\ref{running}
-\item \<-AskipClasses> Suppress all errors and warnings at all uses of a
+\item \<-AskipUses> Suppress all errors and warnings at all uses of a
   given class; see Section~\ref{suppressing-warnings}
 \item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
 \item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
@@ -595,7 +606,7 @@ There are some limitations to the guarantee.
     Code compiled without the \code{-processor} switch, including any
     external library supplied as a \code{.class} file.
   \item
-    Code compiled with the \code{-AskipClasses} property (see
+    Code compiled with the \code{-AskipUses} property (see
     Section~\ref{suppressing-warnings}).
   \item
     Suppression of warnings, such as via the \code{@SuppressWarnings}
@@ -684,12 +695,20 @@ code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
+Don't get discouraged if you see many type-checker warnings at first.
+Often, adding just a few missing annotations will eliminate many warnings,
+and you'll be surprised how fast the process goes overall.
+
 It is best to annotate one package at a time,
 % Upcoming fix that applies different defaults to annotated and unannotated
 % code will eliminate this reason.
-and to annotate the entire package so that you don't forget any classes,
-which can lead to unexpected results.
-Start as close to the leaves of the call tree as possible, because it is
+and to annotate the entire package so that you don't forget any classes
+(failing to annotate a class can lead to unexpected results).
+Start as close to the leaves of the call tree as possible, such as with
+libraries --- that is,
+start with methods/classes/packages that have few dependences on other
+code or, equivalently, start with code that a lot of your other code
+depends on.  The reason for this is that it is
 easiest to annotate a class if the code it calls has already been
 annotated.
 
@@ -724,7 +743,8 @@ specific consequences of your change.
 
 Ordinarily, the javac compiler halts processing as soon as it encounters a
 file with compilation errors.  To convert pluggable-type-checking errors
-into warnings so that you can see them all, use \code{-Awarns -Xmaxwarns
+into warnings so that you can see them all, use the command-line arguments
+\code{-Awarns -Xmaxwarns
   10000} (see Section~\ref{running}).
 
 Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
@@ -933,7 +953,7 @@ could otherwise be statically dispatched.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipClasses java plugins plugin TODO cp igj
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp igj
 % LocalWords:  nonnull javari langtools sourcepath classpath OpenJDK pre jsr
 % LocalWords:  Djsr quals Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
@@ -943,7 +963,7 @@ could otherwise be statically dispatched.
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
-% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipClasses
+% LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
