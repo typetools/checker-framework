@@ -279,6 +279,17 @@ public class AnnotationUtils {
      * @param ad the annotation for which a value will be parsed
      * @param field the name of the field to parse
      * @param enumType the type of the enum
+     * @return the enum constant value of the given field
+     */
+    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(new EnumConstantValueParser<R>(enumType), ad, field);
+    }
+
+    /**
+     * @param <R> the enum type
+     * @param ad the annotation for which a value will be parsed
+     * @param field the name of the field to parse
+     * @param enumType the type of the enum
      * @return the enum constant values of the given field
      */
     public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(AnnotationMirror ad, String field, Class<R> enumType) {
@@ -303,6 +314,16 @@ public class AnnotationUtils {
         return AnnotationUtils.<List</*@NonNull*/ String>>parseAnnotationValue(new StringArrayValueParser(), ad, field);
     }
 
+    /**
+     * @param ad the annotation for which a value will be parsed
+     * @param field the name of the field to parse
+     * @return the Class<?> value of the given field
+     */
+    public static /*@Nullable*/ Class<?> parseTypeValue(AnnotationMirror ad, String field) {
+        return parseAnnotationValue(new TypeValueParser(), ad, field);
+    }
+
+    
     // **********************************************************************
     // Parsers for annotations values
     // **********************************************************************
@@ -333,6 +354,34 @@ public class AnnotationUtils {
 
     /**
      * A utility class for parsing an enum-constant-valued annotation.
+     */
+    private static class EnumConstantValueParser<R extends Enum<R>>
+        extends AbstractAnnotationValueParser<R> {
+
+        private R value = null;
+        private Class<R> enumType;
+
+        public EnumConstantValueParser(Class<R> enumType) {
+            this.enumType = enumType;
+        }
+
+        @Override
+        public /*@Nullable*/ Void visitEnumConstant(VariableElement c, Boolean p) {
+            /*@Nullable*/ R r = Enum.<R>valueOf(enumType, (/*@NonNull*/ String)c.getSimpleName().toString());
+            assert r != null; /*nninvariant*/
+            value = r;
+            return null;
+        }
+
+        @Override
+        public R getValue() {
+            assert value != null; /*nninvariant*/
+            return value;
+        }
+    }
+
+    /**
+     * A utility class for parsing an enum-constant-array-valued annotation.
      */
     private static class EnumConstantArrayValueParser<R extends Enum<R>>
         extends AbstractAnnotationValueParser<Set<R>> {
@@ -403,6 +452,32 @@ public class AnnotationUtils {
         @Override
         public List<String> getValue() {
             return Collections.</*@NonNull*/ String>unmodifiableList(values);
+        }
+    }
+
+    /**
+     * A utility class for parsing a Class-valued annotation.
+     */
+    private static class TypeValueParser
+        extends AbstractAnnotationValueParser<Class<?>> {
+
+        private /*@Nullable*/ Class<?> value = null;
+
+        @Override
+        public /*@Nullable*/ Void visitType(TypeMirror t, Boolean p) {
+            try {
+                value = Class.forName(t.toString());
+            } catch (ClassNotFoundException e) {
+                // TODO: handle the exception nicely
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        public Class<?> getValue() {
+            assert value != null; /*nninvariant*/
+            return value;
         }
     }
 
