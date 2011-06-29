@@ -16,7 +16,6 @@ import javax.lang.model.element.Name;
 import checkers.quals.PolymorphicQualifier;
 import checkers.nullness.quals.*;
 import checkers.types.QualifierHierarchy;
-import static checkers.util.AnnotationUtils.*;
 
 // It's functional, but requires optimization and better documentation
 //
@@ -56,7 +55,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         private boolean wasBuilt = false;
 
         public Factory() {
-            supertypes = createAnnotationMap();
+            supertypes = AnnotationUtils.createAnnotationMap();
         }
 
         /**
@@ -68,7 +67,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             assertNotBuilt();
             if (supertypes.containsKey(qual))
                 return;
-            supertypes.put(qual, createAnnotationSet());
+            supertypes.put(qual, AnnotationUtils.createAnnotationSet());
 
             if (isPolymorphic(qual))
                 this.polyQualifier = qual;
@@ -181,7 +180,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             return typeQualifiers;
         Set<Name> names = new HashSet<Name>();
         for (AnnotationMirror anno: supertypesMap.keySet())
-            names.add(annotationName(anno));
+            names.add(AnnotationUtils.annotationName(anno));
         typeQualifiers = names;
         return typeQualifiers;
     }
@@ -190,8 +189,8 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     Map<AnnotationPair, AnnotationMirror> lubs = null;
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (areSameIgnoringValues(a1, a2))
-            return areSame(a1, a2) ? a1 : root;
+        if (AnnotationUtils.areSameIgnoringValues(a1, a2))
+            return AnnotationUtils.areSame(a1, a2) ? a1 : root;
         if (lubs == null) {
             // WMD TODO: this does not seem to be needed
             // lubs = new HashMap<AnnotationPair, AnnotationMirror>();
@@ -206,8 +205,8 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     Map<AnnotationPair, AnnotationMirror> glbs = null;
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (areSameIgnoringValues(a1, a2))
-            return areSame(a1, a2) ? a1 : bottom;
+        if (AnnotationUtils.areSameIgnoringValues(a1, a2))
+            return AnnotationUtils.areSame(a1, a2) ? a1 : bottom;
         if (glbs == null) {
             glbs = calculateGlbs();
         }
@@ -228,10 +227,10 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
      */
     @Override
     public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-        if (areSame(root, anno2))
+        if (AnnotationUtils.areSame(root, anno2))
             return true;
-        if (areSameIgnoringValues(anno1, anno2))
-            return areSame(anno1, anno2);
+        if (AnnotationUtils.areSameIgnoringValues(anno1, anno2))
+            return AnnotationUtils.areSame(anno1, anno2);
         checkAnnoInGraph(anno1);
         checkAnnoInGraph(anno2);
         return this.supertypesMap.get(anno1).contains(anno2);
@@ -294,7 +293,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
      */
     private static Set<AnnotationMirror>
     findBottoms(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes, AnnotationMirror ignore) {
-        Set<AnnotationMirror> bottoms = createAnnotationSet();
+        Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(supertypes.keySet());
         for (Set<AnnotationMirror> supers : supertypes.values()) {
             bottoms.removeAll(supers);
@@ -306,7 +305,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
     private static Map<AnnotationMirror, Set<AnnotationMirror>>
     buildFullMap(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
-        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = createAnnotationMap();
+        Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = AnnotationUtils.createAnnotationMap();
         for (AnnotationMirror anno : supertypes.keySet()) {
             findAllSupers(anno, supertypes, fullMap);
         }
@@ -317,7 +316,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         Map<AnnotationPair, AnnotationMirror> newlubs = new HashMap<AnnotationPair, AnnotationMirror>();
         for (AnnotationMirror a1 : supertypesGraph.keySet())
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
-                if (areSameIgnoringValues(a1, a2))
+                if (AnnotationUtils.areSameIgnoringValues(a1, a2))
                     continue;
                 AnnotationPair pair = new AnnotationPair(a1, a2);
                 if (newlubs.containsKey(pair))
@@ -390,7 +389,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     findAllSupers(AnnotationMirror anno,
             Map<AnnotationMirror, Set<AnnotationMirror>> supertypes,
             Map<AnnotationMirror, Set<AnnotationMirror>> allSupersSoFar) {
-        Set<AnnotationMirror> supers = createAnnotationSet();
+        Set<AnnotationMirror> supers = AnnotationUtils.createAnnotationSet();
         if (allSupersSoFar.containsKey(anno))
             return Collections.unmodifiableSet(allSupersSoFar.get(anno));
 
@@ -407,7 +406,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<AnnotationPair, AnnotationMirror>();
         for (AnnotationMirror a1 : supertypesGraph.keySet())
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
-                if (areSameIgnoringValues(a1, a2))
+                if (AnnotationUtils.areSameIgnoringValues(a1, a2))
                     continue;
                 AnnotationPair pair = new AnnotationPair(a1, a2);
                 if (newglbs.containsKey(pair))
@@ -487,11 +486,11 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             if (!(o instanceof AnnotationPair))
                 return false;
             AnnotationPair other = (AnnotationPair)o;
-            if (areSameIgnoringValues(a1, other.a1)
-                    && areSameIgnoringValues(a2, other.a2))
+            if (AnnotationUtils.areSameIgnoringValues(a1, other.a1)
+                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2))
                 return true;
-            if (areSameIgnoringValues(a2, other.a1)
-                    && areSameIgnoringValues(a1, other.a2))
+            if (AnnotationUtils.areSameIgnoringValues(a2, other.a1)
+                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2))
                 return true;
             return false;
         }
