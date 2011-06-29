@@ -12,17 +12,17 @@ mega    M   1000^2     10^6     1000000                     Million             
 kilo    k   1000^1     10^3     1000                        Thousand                        1795
 hecto   h   1000^2/3   10^2     100                         Hundred                         1795
 deca    da  1000^1/3   10^1     10                          Ten                             1795
-            1000^0     10^0     1                           One                             –
-deci    d   1000^−1/3  10^−1    0.1                         Tenth                           1795
-centi   c   1000^−2/3  10^−2    0.01                        Hundredth                       1795
-milli   m   1000^−1    10^−3    0.001                       Thousandth                      1795
-micro   μ   1000^−2    10^−6    0.000001                    Millionth                       1960
-nano    n   1000^−3    10^−9    0.000000001                 Billionth       Milliardth      1960
-pico    p   1000^−4    10^−12   0.000000000001              Trillionth      Billionth       1960
-femto   f   1000^−5    10^−15   0.000000000000001           Quadrillionth   Billiardth      1964
-atto    a   1000^−6    10^−18   0.000000000000000001        Quintillionth   Trillionth      1964
-zepto   z   1000^−7    10^−21   0.000000000000000000001     Sextillionth    Trilliardth     1991
-yocto   y   1000^−8    10^−24   0.000000000000000000000001  Septillionth    Quadrillionth   1991
+            1000^0     10^0     1                           One
+deci    d   1000^-1/3  10^-1    0.1                         Tenth                           1795
+centi   c   1000^-2/3  10^-2    0.01                        Hundredth                       1795
+milli   m   1000^-1    10^-3    0.001                       Thousandth                      1795
+micro   my  1000^-2    10^-6    0.000001                    Millionth                       1960
+nano    n   1000^-3    10^-9    0.000000001                 Billionth       Milliardth      1960
+pico    p   1000^-4    10^-12   0.000000000001              Trillionth      Billionth       1960
+femto   f   1000^-5    10^-15   0.000000000000001           Quadrillionth   Billiardth      1964
+atto    a   1000^-6    10^-18   0.000000000000000001        Quintillionth   Trillionth      1964
+zepto   z   1000^-7    10^-21   0.000000000000000000001     Sextillionth    Trilliardth     1991
+yocto   y   1000^-8    10^-24   0.000000000000000000000001  Septillionth    Quadrillionth   1991
 */
 public enum Prefix {
     yotta,
