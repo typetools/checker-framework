@@ -216,6 +216,8 @@ public class AnnotationUtils {
 
     /**
      * Returns the values of an annotation's elements, including defaults.
+     * TODO: Also see JavacElements.getElementValuesWithDefaults: that version is javac
+     * specific, but could/should be replaced with this implementation.
      *
      * @see AnnotationMirror#getElementValues()
      * @param ad  annotation to examine
@@ -508,9 +510,19 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 are the same annotation
      */
     public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
-        if (a1 != null && a2 != null)
-            return annotationName(a1).equals(annotationName(a2)) &&
-                a1.toString().equals(a2.toString()); // AnnotationValues don't override equals
+
+        if (a1 != null && a2 != null) {
+            if (!annotationName(a1).equals(annotationName(a2))) {
+                return false;
+            }
+            
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 = getElementValuesWithDefaults(a1);
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 = getElementValuesWithDefaults(a2);
+            
+            return elval1.toString().equals(elval2.toString());
+        }
+        
+        // only true, iff both are null
         return a1 == a2;
     }
 
@@ -639,6 +651,7 @@ public class AnnotationUtils {
         private final TypeElement annotationElt;
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
+
         public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
             this(env, anno.getCanonicalName());
         }
@@ -899,12 +912,12 @@ public class AnnotationUtils {
                 }
 
                 @Override
-                public String toString() {
-                    if (value instanceof String)
+                public String toString() {                    
+                    if (value instanceof String) {
                         return "\"" + value.toString() + "\"";
-                    else if (value instanceof Character)
+                    } else if (value instanceof Character) {
                         return "\'" + value.toString() + "\'";
-                    else if (value instanceof List<?>) {
+                    } else if (value instanceof List<?>) {
                         StringBuilder sb = new StringBuilder();
                         List<?> list = (List<?>)value;
                         sb.append('{');
@@ -916,8 +929,17 @@ public class AnnotationUtils {
                         }
                         sb.append('}');
                         return sb.toString();
-                    } else
+                    } else if (value instanceof VariableElement) {
+                        // for Enums
+                        VariableElement var = (VariableElement) value;
+                        String encl = var.getEnclosingElement().toString();
+                        if (!encl.isEmpty()) {
+                            encl = encl + '.';
+                        }
+                        return  encl + var.toString();
+                    } else {
                         return value.toString();
+                    }
                 }
 
                 @SuppressWarnings("unchecked")
