@@ -216,6 +216,8 @@ public class AnnotationUtils {
 
     /**
      * Returns the values of an annotation's elements, including defaults.
+     * TODO: Also see JavacElements.getElementValuesWithDefaults: that version is javac
+     * specific, but could/should be replaced with this implementation.
      *
      * @see AnnotationMirror#getElementValues()
      * @param ad  annotation to examine
@@ -279,6 +281,17 @@ public class AnnotationUtils {
      * @param ad the annotation for which a value will be parsed
      * @param field the name of the field to parse
      * @param enumType the type of the enum
+     * @return the enum constant value of the given field
+     */
+    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(new EnumConstantValueParser<R>(enumType), ad, field);
+    }
+
+    /**
+     * @param <R> the enum type
+     * @param ad the annotation for which a value will be parsed
+     * @param field the name of the field to parse
+     * @param enumType the type of the enum
      * @return the enum constant values of the given field
      */
     public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(AnnotationMirror ad, String field, Class<R> enumType) {
@@ -303,6 +316,16 @@ public class AnnotationUtils {
         return AnnotationUtils.<List</*@NonNull*/ String>>parseAnnotationValue(new StringArrayValueParser(), ad, field);
     }
 
+    /**
+     * @param ad the annotation for which a value will be parsed
+     * @param field the name of the field to parse
+     * @return the Class<?> value of the given field
+     */
+    public static /*@Nullable*/ Class<?> parseTypeValue(AnnotationMirror ad, String field) {
+        return parseAnnotationValue(new TypeValueParser(), ad, field);
+    }
+
+    
     // **********************************************************************
     // Parsers for annotations values
     // **********************************************************************
@@ -333,6 +356,34 @@ public class AnnotationUtils {
 
     /**
      * A utility class for parsing an enum-constant-valued annotation.
+     */
+    private static class EnumConstantValueParser<R extends Enum<R>>
+        extends AbstractAnnotationValueParser<R> {
+
+        private R value = null;
+        private Class<R> enumType;
+
+        public EnumConstantValueParser(Class<R> enumType) {
+            this.enumType = enumType;
+        }
+
+        @Override
+        public /*@Nullable*/ Void visitEnumConstant(VariableElement c, Boolean p) {
+            /*@Nullable*/ R r = Enum.<R>valueOf(enumType, (/*@NonNull*/ String)c.getSimpleName().toString());
+            assert r != null; /*nninvariant*/
+            value = r;
+            return null;
+        }
+
+        @Override
+        public R getValue() {
+            assert value != null; /*nninvariant*/
+            return value;
+        }
+    }
+
+    /**
+     * A utility class for parsing an enum-constant-array-valued annotation.
      */
     private static class EnumConstantArrayValueParser<R extends Enum<R>>
         extends AbstractAnnotationValueParser<Set<R>> {
@@ -406,6 +457,32 @@ public class AnnotationUtils {
         }
     }
 
+    /**
+     * A utility class for parsing a Class-valued annotation.
+     */
+    private static class TypeValueParser
+        extends AbstractAnnotationValueParser<Class<?>> {
+
+        private /*@Nullable*/ Class<?> value = null;
+
+        @Override
+        public /*@Nullable*/ Void visitType(TypeMirror t, Boolean p) {
+            try {
+                value = Class.forName(t.toString());
+            } catch (ClassNotFoundException e) {
+                // TODO: handle the exception nicely
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        public Class<?> getValue() {
+            assert value != null; /*nninvariant*/
+            return value;
+        }
+    }
+
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
@@ -433,9 +510,19 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 are the same annotation
      */
     public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
-        if (a1 != null && a2 != null)
-            return annotationName(a1).equals(annotationName(a2)) &&
-                a1.toString().equals(a2.toString()); // AnnotationValues don't override equals
+
+        if (a1 != null && a2 != null) {
+            if (!annotationName(a1).equals(annotationName(a2))) {
+                return false;
+            }
+            
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 = getElementValuesWithDefaults(a1);
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 = getElementValuesWithDefaults(a2);
+            
+            return elval1.toString().equals(elval2.toString());
+        }
+        
+        // only true, iff both are null
         return a1 == a2;
     }
 
@@ -564,6 +651,7 @@ public class AnnotationUtils {
         private final TypeElement annotationElt;
         private final DeclaredType annotationType;
         private final Map<ExecutableElement, AnnotationValue> elementValues;
+
         public AnnotationBuilder(ProcessingEnvironment env, Class<? extends Annotation> anno) {
             this(env, anno.getCanonicalName());
         }
@@ -824,12 +912,12 @@ public class AnnotationUtils {
                 }
 
                 @Override
-                public String toString() {
-                    if (value instanceof String)
+                public String toString() {                    
+                    if (value instanceof String) {
                         return "\"" + value.toString() + "\"";
-                    else if (value instanceof Character)
+                    } else if (value instanceof Character) {
                         return "\'" + value.toString() + "\'";
-                    else if (value instanceof List<?>) {
+                    } else if (value instanceof List<?>) {
                         StringBuilder sb = new StringBuilder();
                         List<?> list = (List<?>)value;
                         sb.append('{');
@@ -841,8 +929,17 @@ public class AnnotationUtils {
                         }
                         sb.append('}');
                         return sb.toString();
-                    } else
+                    } else if (value instanceof VariableElement) {
+                        // for Enums
+                        VariableElement var = (VariableElement) value;
+                        String encl = var.getEnclosingElement().toString();
+                        if (!encl.isEmpty()) {
+                            encl = encl + '.';
+                        }
+                        return  encl + var.toString();
+                    } else {
                         return value.toString();
+                    }
                 }
 
                 @SuppressWarnings("unchecked")

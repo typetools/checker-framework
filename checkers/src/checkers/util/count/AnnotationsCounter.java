@@ -52,7 +52,9 @@ public class AnnotationsCounter extends AbstractProcessor {
         } else {
             for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
                 ClassTree tree = Trees.instance(processingEnv).getTree(elem);
-                tree.accept(scanner, null);
+                if (tree!=null) {
+                    tree.accept(scanner, null);
+                }
             }
             return false;
         }
