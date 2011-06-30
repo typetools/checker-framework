@@ -73,10 +73,13 @@ public abstract class QualifierHierarchy {
         Collection<AnnotationMirror> rhsAnnos = wrapCollection(rhs);
         Collection<AnnotationMirror> lhsAnnos = wrapCollection(lhs);
 
-        for (AnnotationMirror lhsAnno : lhsAnnos)
-            for (AnnotationMirror rhsAnno : rhsAnnos)
-                if (isSubtype(rhsAnno, lhsAnno))
+        for (AnnotationMirror lhsAnno : lhsAnnos) {
+            for (AnnotationMirror rhsAnno : rhsAnnos) {
+                if (isSubtype(rhsAnno, lhsAnno)) {
                     return true;
+                }
+            }
+        }
         return false;
     }
 
