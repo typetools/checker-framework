@@ -10,6 +10,12 @@ class GenericsExampleMin {
     @Nullable T nble;
     @NonNull T nn;
 
+    public MyList1(T t, @Nullable T nble, @NonNull T nn) {
+        this.t = t;
+        this.nble = nble;
+        this.nn = nn;
+    }
+
     T get(int i) { return t; }
 
     // This method works.

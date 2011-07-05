@@ -9,6 +9,7 @@ public class LazyInitialization {
 
     public LazyInitialization(@Nullable Object arg) {
         lazy3 = arg;
+        nonnull = new Object();
     }
 
     void randomMethod() { }

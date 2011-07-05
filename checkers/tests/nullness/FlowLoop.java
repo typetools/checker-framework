@@ -41,6 +41,10 @@ public class FlowLoop {
     class Link {
         Object val;
         @Nullable Link next;
+        public Link(Object val, @Nullable Link next) {
+            this.val = val;
+            this.next = next;
+        }
     }
 
     // Both dereferences of l should succeed
