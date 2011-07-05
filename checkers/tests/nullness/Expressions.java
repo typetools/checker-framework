@@ -8,7 +8,7 @@ import java.util.*;
 @DefaultQualifier("NonNull")
 public class Expressions {
 
-    public static double[] returnDoubleArray() {
+  public static double[] returnDoubleArray() {
     return new double[] { 3.14, 2.7 };
   }
 
@@ -56,6 +56,10 @@ public class Expressions {
   }
 
   Object obj;
+  public Expressions(Object obj) {
+    this.obj = obj;
+  }
+
   void testRawness(@Raw Object obj) {
       @SuppressWarnings("rawness")
       @NonRaw Object nonRaw = obj;

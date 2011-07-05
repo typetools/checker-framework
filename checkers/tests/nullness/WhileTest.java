@@ -3,7 +3,7 @@ import checkers.nullness.quals.NonNull;
 
 public class WhileTest {
     @Nullable Integer z;
-    @NonNull Integer nnz;
+    @NonNull Integer nnz = new Integer(22);
 
     public static void main(String[] args) {
         new WhileTest().testwhile1();

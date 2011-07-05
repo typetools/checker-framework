@@ -105,9 +105,10 @@ class NonNullOnEntryTest {
     }
   }
 
-  private Object notHidden;
+  private @Nullable Object notHidden;
 
   class NNOEHidingTest extends NonNullOnEntryTest {
+
     protected @Nullable String field;
 
     public void hidingClient1(NNOEHidingTest arg5) {
@@ -135,7 +136,7 @@ class NonNullOnEntryTest {
 //    @NonNullOnEntry("field") void hiddenTest() {}
 
 
-    protected Object notHidden;
+    protected @Nullable Object notHidden;
     @NonNullOnEntry("notHidden")
     void notHiddenTest() {
       // the field in the superclass is private -> don't complain about hiding

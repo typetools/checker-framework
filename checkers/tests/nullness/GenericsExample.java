@@ -9,6 +9,9 @@ class GenericsExample {
     T t;
     @Nullable T nble;
     @NonNull T nn;
+    MyList1(T t, @Nullable T nble, @NonNull T nn) {
+      this.t = t; this.nble = nble; this.nn = nn;
+    }
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
@@ -31,6 +34,9 @@ class GenericsExample {
     T t;
     @Nullable T nble;
     @NonNull T nn;
+    MyList2(T t, @Nullable T nble, @NonNull T nn) {
+      this.t = t; this.nble = nble; this.nn = nn;
+    }
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
@@ -55,6 +61,9 @@ class GenericsExample {
     T t;
     @Nullable T nble;
     @NonNull T nn;
+    MyList3(T t, @Nullable T nble, @NonNull T nn) {
+      this.t = t; this.nble = nble; this.nn = nn;
+    }
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
@@ -80,6 +89,9 @@ class GenericsExample {
     T t;
     @Nullable T nble;
     @NonNull T nn;
+    MyList4(T t, @Nullable T nble, @NonNull T nn) {
+      this.t = t; this.nble = nble; this.nn = nn;
+    }
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
