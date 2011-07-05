@@ -1,5 +1,6 @@
 import checkers.nullness.quals.*;
 
+@SuppressWarnings("fields.uninitialized")
 public class KeyForValidation {
 
   //:: error: (keyfor.type.invalid)
