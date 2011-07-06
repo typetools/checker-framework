@@ -12,11 +12,11 @@ import com.sun.source.tree.Tree;
  */
 public interface Flow {
 
-	/**
-	 * Scan the given (root) tree and infer the refined types.
-	 *
-	 * @param tree The tree to scan
-	 */
+    /**
+     * Scan the given (root) tree and infer the refined types.
+     *
+     * @param tree The tree to scan
+     */
     void scan(Tree tree);
 
     /**
@@ -26,12 +26,12 @@ public interface Flow {
      * @return The annotation inferred for a tree, or null if no annotation was
      *         inferred for that tree
      */
-	AnnotationMirror test(Tree tree);
+    AnnotationMirror test(Tree tree);
 
     /**
      * Sets the {@link PrintStream} for printing debug messages, such as
      * {@link System#out} or {@link System#err}, or null if no debugging output
      * should be emitted (the default).
      */
-	void setDebug(PrintStream debug);
+    void setDebug(PrintStream debug);
 }
