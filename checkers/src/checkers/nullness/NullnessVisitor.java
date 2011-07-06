@@ -282,9 +282,6 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     @Override
     protected void checkDefaultConstructor(ClassTree node) {
-        if (!checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT))
-            return;
-
         Set<VariableElement> fields = getUninitializedFields(node, Collections.<AnnotationMirror>emptyList());
         if (!fields.isEmpty()) {
             checker.report(Result.warning("fields.uninitialized", fields), node);
@@ -309,7 +306,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             // only consider fields that are uninitialized at the declaration
             // and are qualified as nonnull
             if (var.getInitializer() == null
+                // TODO: check whether there is an initializer block that sets this variable.
                     && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
+                    && (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)
+                        || ! atypeFactory.getAnnotatedType(var).getKind().isPrimitive())
                     && varElt.getAnnotation(LazyNonNull.class) == null
                     && !varElt.getModifiers().contains(Modifier.STATIC)
                     && !isUnused(varElt, annos))
