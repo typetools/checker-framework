@@ -762,6 +762,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
     }
 
+    /**
+     * Returns the set of fields that are annotated as non-null in the
+     * flowstate.
+     */
     private Set<VariableElement> calcInitializedFields() {
     	Set<VariableElement> initialized = new HashSet<VariableElement>();
 
@@ -1015,6 +1019,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             {
                 AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
 
+                // If the method is static -- that is, if
+                // (method.getModifiers().contains(Modifier.STATIC)), then
+                // recvType is null.  I'm not sure how to set the variables
+                // in that case, or what else would need to change.
                 if (!(recvType instanceof AnnotatedDeclaredType)) {
                     if (DO_ADVANCED_CHECKS) {
                         System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
