@@ -116,7 +116,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Provides a mapping of error keys to custom error messages.
-     *
+     * <p>
      * As a default, this implementation builds a {@link Properties} out of
      * file {@code messages.properties}.  It accumulates all the properties files
      * in the Java class hierarchy from the checker up to {@code SourceChecker}.
@@ -344,6 +344,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Determines if an error (whose error key is {@code err}), should
      * be suppressed according to the user explicitly written
      * {@code anno} Suppress annotation.
+     * <p>
      *
      * A suppress warnings value may be of the following pattern:
      *
@@ -354,7 +355,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * test</li>
      *
      * <li>{@code "suppress-key:error-key}, where the suppress-key
-     * is as above, and error-key being the prefix of the errors
+     * is as above, and error-key is a prefix of the errors
      * that it may suppress.  So "nullness:generic.argument", would
      * suppress any errors in nullness checker related to
      * generic.argument.
