@@ -1675,17 +1675,18 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
+            sb.append(formatAnnotationString(annotations));
             sb.append("?");
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
-                    if (getExtendsBound() != null && getExtendsBound().getKind() != TypeKind.NONE) {
-                        sb.append(" extends ");
-                        sb.append(getExtendsBound());
-                    }
                     if (getSuperBound() != null && getSuperBound().getKind() != TypeKind.NULL) {
                         sb.append(" super ");
                         sb.append(getSuperBound());
+                    }
+                    if (getExtendsBound() != null && getExtendsBound().getKind() != TypeKind.NONE) {
+                        sb.append(" extends ");
+                        sb.append(getExtendsBound());
                     }
                 } finally {
                     isPrintingBound = false;
@@ -1700,6 +1701,10 @@ public abstract class AnnotatedTypeMirror {
                     || (getExtendsBound() != null && getExtendsBound().isAnnotated()));
         }
 
+        public Set<AnnotationMirror> getAnnotationsOnWildcard() {
+            return super.getAnnotations();
+        }
+        
         @Override
         public Set<AnnotationMirror> getAnnotations() {
             if (!super.isAnnotated() && getExtendsBound() != null)
