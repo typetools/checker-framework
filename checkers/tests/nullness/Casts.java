@@ -19,4 +19,11 @@ public class Casts {
         //:: error: (unboxing.of.nullable)
         Object o = (int)b;
     }
+
+    void testUnsafeCast(@Nullable Object x) {
+        //:: warning: (cast.unsafe)
+        @NonNull Object y = (@NonNull Object) x;
+        y.toString();
+    }
+
 }
