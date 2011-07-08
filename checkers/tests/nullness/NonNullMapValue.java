@@ -38,6 +38,10 @@ public class NonNullMapValue {
 
   Map<String,@NonNull String> myMap;
 
+  NonNullMapValue(Map<String,@NonNull String> myMap) {
+    this.myMap = myMap;
+  }
+
   void testMyMap(String key) {
     @NonNull String value;
     //:: error: (assignment.type.incompatible)

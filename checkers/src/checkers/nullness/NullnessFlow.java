@@ -762,6 +762,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
     }
 
+    /**
+     * Returns the set of fields that are annotated as non-null in the
+     * flowstate.
+     */
     private Set<VariableElement> calcInitializedFields() {
     	Set<VariableElement> initialized = new HashSet<VariableElement>();
 
@@ -1012,12 +1016,21 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             List<? extends Element> recvFieldElems;
             List<VariableElement> recvImmediateFields;
 
+            boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
             {
-                AnnotatedTypeMirror recvType = this.factory.getReceiver(call);
+                AnnotatedTypeMirror recvType;
+
+                if (isStatic) {
+                    ExecutableElement meth = TreeUtils.elementFromUse((MethodInvocationTree)call);
+                    recvType = factory.getAnnotatedType(ElementUtils.enclosingClass(meth));
+                } else {
+                    recvType = this.factory.getReceiver(call);
+                }
+                // System.err.printf("checkNonNullOnEntry(%s): recvType=%s, isStatic=%s%n", call, recvType, isStatic);
 
                 if (!(recvType instanceof AnnotatedDeclaredType)) {
                     if (DO_ADVANCED_CHECKS) {
-                        System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass())));
+                        System.err.println("Bad recvType: " + recvType + ((recvType == null) ? "" : ("  " + recvType.getClass() + ")")));
                         System.err.println("  for call: " + call);
                     }
                     return;
@@ -1027,11 +1040,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 recvFieldElems = allFields(recvElem);
                 recvImmediateFields = ElementFilter.fieldsIn(recvElem.getEnclosedElements());
             }
-            String[] fields = method.getAnnotation(NonNullOnEntry.class).value();
+            String[] nnoeExprs = method.getAnnotation(NonNullOnEntry.class).value();
 
-            // fieldloop:
-            for (String field : fields) {
-                Element el = findElementInCall(recvElem, recvFieldElems, call, field);
+            for (String nnoeExpr : nnoeExprs) {
+                Element el = findElementInCall(recvElem, recvFieldElems, call, nnoeExpr);
                 if (el==null) {
                     // we've already output an error message
                     continue;
@@ -1050,7 +1062,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     if (!this.flowState.nnExprs.contains(elName)
                             && !this.flowState.nnExprs.contains(elClass + "." + elName) &&
                             DO_ADVANCED_CHECKS) {
-                        checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", field), call);
+                        checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", nnoeExpr), call);
                     }
                 } else {
                     // System.out.println("Success!");
@@ -1060,13 +1072,13 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     /**
-     * Find the Element that corresponds to the field from the point of view of the
-     * method declaration.
+     * Find the Element that corresponds to the expression (such as a field
+     * access) from the point of view of the method declaration.
      *
      * @param recvElem The receiver element.
      * @param recvFieldElems All visible fields in the receiver element.
      * @param call The method call.
-     * @param field The field to find.
+     * @param field The field or other expression to find.
      * @return The element corresponding to field within the receiver.
      */
     private Element findElementInCall(Element recvElem, List<? extends Element> recvFieldElems,
@@ -1075,6 +1087,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         String fieldName;
 
         if (field.contains(".")) {
+            // A static field access such as MyClass.myField
+
             // we only support single static field accesses, i.e. C.f
             String[] parts = field.split("\\.");
             if (parts.length!=2) {
@@ -1087,12 +1101,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             String className = parts[0];
             fieldName = parts[1];
 
+            // XXX It would be better to just resolve the name, in the
+            // context of where the annotation that contains it occurs.
+            // Try to find the class as an enclosing class.
             Element findClass = recvElem;
             while (findClass!=null &&
                     !findClass.getSimpleName().toString().equals(className)) {
                 findClass=findClass.getEnclosingElement();
             }
             if (findClass==null) {
+                // XXX The class name is not an enclosing class.
+                // So, we should resolve it according to the imports.
                 if (DO_ADVANCED_CHECKS) {
                     checker.report(Result.failure("class.not.found.nullness.parse.error", field), call);
                 }

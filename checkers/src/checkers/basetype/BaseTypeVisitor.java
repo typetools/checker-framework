@@ -1157,10 +1157,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /**
      * Tests whether the expression should not be checked because of the tree
      * referring to unannotated classes, as specified in
-     * the {@code checker.skipClasses} property.
+     * the {@code checker.skipUses} property.
      *
      * It returns true if exprTree is a method invocation or a field access
-     * to a class whose qualified name matches @{link checker.skipClasses}
+     * to a class whose qualified name matches @{link checker.skipUses}
      * expression.  It also return true for conditional expressions where
      * the true or false expressions should be skipped.
      *
@@ -1181,7 +1181,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /**
      * Tests whether the class owner of the passed element is an unannotated
      * class and matches the pattern specified in the
-     * {@code checker.skipClasses} property.
+     * {@code checker.skipUses} property.
      *
      * @param element   an element
      * @return  true iff the enclosing class of element should be skipped
@@ -1191,7 +1191,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             return false;
         TypeElement typeElement = ElementUtils.enclosingClass(element);
         String name = typeElement.getQualifiedName().toString();
-        return checker.getShouldSkip().matcher(name).find();
+        return checker.getShouldSkipUses().matcher(name).find();
 
     }
 
@@ -1251,9 +1251,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
-                        "You do not seem to be using the distributed annotated JDK.  To fix the problem," +
+                        "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
-                        "supply this argument (first, fill in the \"...\") when you run javac:" +
+                        "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
                         System.getProperty("line.separator") +
                         "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
                 }

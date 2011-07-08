@@ -5,6 +5,8 @@ class RandomTests {
     final int b = 1;
     final int c;
 
+    // TODO (@skip-test): bug (reports c as not initialized despite initializer block)
+    @SuppressWarnings("fields.uninitialized")
     RandomTests(){
         String s = null;
         a = 2;
@@ -19,7 +21,7 @@ class RandomTests {
         throw new RuntimeException("dude");
     }
 
-
+    // initializer block
     {
         c = 4;
         //throw new Exception("dude");

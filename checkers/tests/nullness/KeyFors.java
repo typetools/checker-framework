@@ -77,6 +77,10 @@ public class KeyFors {
 
     HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
+    public Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
+        this.childMap = childMap;
+    }
+
     public void addNode( T n ) {
       // body omitted, not relevant to test case
     }

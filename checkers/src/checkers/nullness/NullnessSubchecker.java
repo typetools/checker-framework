@@ -18,7 +18,10 @@ import checkers.source.*;
 @SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
-    public static final boolean UNINIT_DEFAULT = false;
+    // warn about uninitialized fields in the constructor
+    public static final boolean UNINIT_DEFAULT = true;
+    // warn about a null check performed against a value that is guaranteed
+    // to be non-null, as in:  "m" == null.
     public static final boolean NULLTEST_DEFAULT = false;
 
     // TODO: This lint option should only be temporary, until all checks are implemented correctly.

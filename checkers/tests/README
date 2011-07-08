@@ -68,8 +68,18 @@ nullness/tests/nullness/dereference/.)  Each checker should have its own
 folder under checkers/tests, such as checkers/tests/igj/,
 checkers/tests/interning/, etc.
 
+You may wish to supply different command-line arguments (flags) to the
+checker for certain test cases -- for instance, to check an optional
+command-line argument that should not be enabled for every test.  To do
+this:
+ * create a top-level test directory, such as
+   checkers/tests/nullness-uninit, for the test cases
+ * create a top-level JUnit test, such as:
+   checkers/tests/src/tests/NullnessUninitializedTest.java
+ * change checkers/build.xml to run those tests
 
-Writing Tests for New Checkers
+
+Writing tests for new checkers
 ==============================
 
 TODO: Write this section.
@@ -78,4 +88,4 @@ TODO: Write this section.
 Annotated JDK
 =============
 
-The tests run with the annotated JDK. Keep this in mind when writing tests.
+The tests run with the annotated JDK.  Keep this in mind when writing tests.

@@ -38,7 +38,8 @@ public class StubParser {
     private final AnnotationUtils annoUtils;
     private final Elements elements;
 
-    final Map<String, AnnotationMirror> annotations;
+    /** The supported annotations. */ 
+    final Map<String, AnnotationMirror> supportedAnnotations;
 
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
@@ -50,7 +51,7 @@ public class StubParser {
         this.atypeFactory = factory;
         this.annoUtils = AnnotationUtils.getInstance(env);
         this.elements = env.getElementUtils();
-        annotations = getSupportedAnnotations();
+        supportedAnnotations = getSupportedAnnotations();
     }
 
     private Map<String, AnnotationMirror> annoWithinPackage(String packageName) {
@@ -360,7 +361,7 @@ public class StubParser {
             return;
         for (AnnotationExpr annotation : annotations) {
             String annoName = StubUtil.getAnnotationName(annotation);
-            AnnotationMirror annoMirror = this.annotations.get(annoName);
+            AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
             if (annoMirror != null)
                 type.addAnnotation(annoMirror);
         }
