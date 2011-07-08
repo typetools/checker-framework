@@ -3,6 +3,7 @@ package checkers.units;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -84,36 +85,41 @@ public class UnitsAnnotatedTypeFactory extends
             AnnotatedTypeMirror rht = getAnnotatedType(node.getRightOperand());
             Kind kind = node.getKind();
             
-            switch(kind) {
-            case DIVIDE:
-            case MULTIPLY:
-                if (lht.getAnnotations().isEmpty()) {
-                    type.addAnnotations(rht.getAnnotations());
+            AnnotationMirror bestres = null;
+            for (UnitsRelations ur : checker.unitsRel.values()) {
+                AnnotationMirror res = useUnitsRelation(kind, ur, lht, rht); 
+                
+                if (bestres != null && res != null && !bestres.equals(res)) {
+                    // TODO: warning
+                    System.out.println("UnitsRelation mismatch, taking neither! Previous: "
+                                    + bestres + " and current: " + res);
                     return super.visitBinary(node, type);
                 }
-                if (rht.getAnnotations().isEmpty()) {
-                    type.addAnnotations(lht.getAnnotations());
-                    return super.visitBinary(node, type);
+                
+                if (res!=null) {
+                    bestres = res;
                 }
-                break;
-            }
-            
-            UnitsRelations lhur = findUnitsRelations(lht);
-            UnitsRelations rhur = findUnitsRelations(rht);
-            
-            AnnotationMirror lhres = useUnitsRelation(kind, lhur, lht, rht); 
-            AnnotationMirror rhres = useUnitsRelation(kind, rhur, lht, rht); 
-
-            if (lhres!=null && rhres!=null && !lhres.equals(rhres)) {
-                // TODO: warning
-                System.out.println("UnitsRelation mismatch, taking neither! LType: " + lhres + " and RType: " + rhres);
-                return super.visitBinary(node, type);
             }
 
-            if (lhres!=null) {
-                type.addAnnotation(lhres);
-            } else if (rhres!=null) {
-                type.addAnnotation(rhres);
+            if (bestres!=null) {
+                type.addAnnotation(bestres);
+            } else {
+                // Did not find a UnitsRelation, only propagate through scalars.
+                
+                switch(kind) {
+                case DIVIDE:
+                case MULTIPLY:
+                    if (lht.getAnnotations().isEmpty()) {
+                        type.addAnnotations(rht.getAnnotations());
+                        return super.visitBinary(node, type);
+                    }
+                    if (rht.getAnnotations().isEmpty()) {
+                        type.addAnnotations(lht.getAnnotations());
+                        return super.visitBinary(node, type);
+                    }
+                    break;
+                }
+
             }
 
             return super.visitBinary(node, type);
@@ -146,14 +152,6 @@ public class UnitsAnnotatedTypeFactory extends
             return res;
         }
 
-    }
-
-    private UnitsRelations findUnitsRelations(AnnotatedTypeMirror type) {
-        // TODO: look at the units annotation and see whether it
-        // has a @UnitsRelations meta-annotation.
-        // Then do the following reflectively with the given class or
-        // this as default result.
-        return new UnitsRelationsDefault().init(annotations, env);
     }
 
 }
