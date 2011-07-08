@@ -92,7 +92,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public Void visitThrow(ThrowTree node, Void p) {
         checkForNullability(node.getExpression(), "throwing.nullable");
         if (nonInitializedFields != null) {
-        	this.nonInitializedFields.clear();
+            this.nonInitializedFields.clear();
         }
         return super.visitThrow(node, p);
     }
@@ -216,7 +216,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     //////////////////////// Field Initializations //////////////////////////
-    /** Case 8: field initialization */
+
+    // Case 8: field initialization 
+    /**
+     * non-null if currently processing a method declaration AST.
+     * null if traversal is not currently within a method declaration AST.
+     */
     private Set<VariableElement> nonInitializedFields = null;
 
     @Override
@@ -226,14 +231,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             Set<VariableElement> oldFields = nonInitializedFields;
             try {
                 nonInitializedFields = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()),
-                		TreeUtils.elementFromDeclaration(node).getAnnotationMirrors());
+                                TreeUtils.elementFromDeclaration(node).getAnnotationMirrors());
                 return super.visitMethod(node, p);
             } finally {
-            	nonInitializedFields.removeAll(
-            			((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node));
+                nonInitializedFields.removeAll(
+                                ((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node));
                 if (!nonInitializedFields.isEmpty()) {
                     if (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)) {
-                        // warn against uninitialized fields
+                        // warn about uninitialized fields
                         checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
                     }
                 }
@@ -243,15 +248,15 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
         ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
         if (elt.getAnnotation(AssertNonNullIfTrue.class) != null
-        	&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
+            && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
-        	checker.report(Result.failure("assertiftrue.only.on.boolean"), node);
+            checker.report(Result.failure("assertiftrue.only.on.boolean"), node);
         }
 
         if (elt.getAnnotation(AssertNonNullIfFalse.class) != null
-        		&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
+            && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
-        	checker.report(Result.failure("assertiffalse.only.on.boolean"), node);
+            checker.report(Result.failure("assertiffalse.only.on.boolean"), node);
         }
 
         return super.visitMethod(node, p);
@@ -259,27 +264,24 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-    	if (nonInitializedFields != null
-    		&& TreeUtils.isSelfAccess(node)) {
+        if (nonInitializedFields != null
+            && TreeUtils.isSelfAccess(node)) {
 
-    		AssertNonNullAfter nnAfter =
-    			TreeUtils.elementFromUse(node).getAnnotation(AssertNonNullAfter.class);
-    		if (nnAfter != null) {
-    			Set<VariableElement> elts =
-    				ElementUtils.findFieldsInType(
-    						TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
-    						Arrays.asList(nnAfter.value()));
-    			nonInitializedFields.removeAll(elts);
-    		}
-    	}
-    	return super.visitMethodInvocation(node, p);
+            AssertNonNullAfter nnAfter =
+                TreeUtils.elementFromUse(node).getAnnotation(AssertNonNullAfter.class);
+            if (nnAfter != null) {
+                Set<VariableElement> elts =
+                    ElementUtils.findFieldsInType(
+                        TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
+                        Arrays.asList(nnAfter.value()));
+                nonInitializedFields.removeAll(elts);
+            }
+        }
+        return super.visitMethodInvocation(node, p);
     }
 
     @Override
     protected void checkDefaultConstructor(ClassTree node) {
-        if (!checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT))
-            return;
-
         Set<VariableElement> fields = getUninitializedFields(node, Collections.<AnnotationMirror>emptyList());
         if (!fields.isEmpty()) {
             checker.report(Result.warning("fields.uninitialized", fields), node);
@@ -304,7 +306,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             // only consider fields that are uninitialized at the declaration
             // and are qualified as nonnull
             if (var.getInitializer() == null
+                // TODO: check whether there is an initializer block that sets this variable.
                     && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
+                    && (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)
+                        || ! atypeFactory.getAnnotatedType(var).getKind().isPrimitive())
                     && varElt.getAnnotation(LazyNonNull.class) == null
                     && !varElt.getModifiers().contains(Modifier.STATIC)
                     && !isUnused(varElt, annos))
@@ -314,9 +319,9 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     private boolean isUnused(VariableElement field, Collection<? extends AnnotationMirror> annos) {
-    	if (annos.isEmpty()) {
-    		return false;
-    	}
+        if (annos.isEmpty()) {
+            return false;
+        }
 
         Unused unused = field.getAnnotation(Unused.class);
         if (unused == null)
@@ -327,13 +332,13 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         } catch (MirroredTypeException exp) {
             Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
             for (AnnotationMirror anno : annos) {
-            	if (((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName().equals(whenName)) {
-            		return true;
-            	}
+                if (((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName().equals(whenName)) {
+                    return true;
+                }
             }
         }
 
-    	return false;
+        return false;
     }
 
     /** Special casing NonNull and Raw method calls */

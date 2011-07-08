@@ -44,7 +44,7 @@ there are several ways to eliminate the compiler warnings.
   \code{@SuppressWarnings} annotation or by not running the checker on that
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
-  via the \code{skipClasses} processor option
+  via the \code{skipUses} processor option
   (see Section~\ref{suppressing-warnings}).
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
@@ -73,23 +73,25 @@ invariants that are beyond the capabilities of the type system, because of
 checker limitations, because you are interested in only some of the
 guarantees provided by a checker, or for other reasons.  You can suppress
 warnings via
-\begin{itemize}
+\begin{enumerate}
 \item
   the \code{@SuppressWarnings} annotation,
 \item
-  the \code{-AskipClasses} command-line option,
+  the \code{-AskipUses} command-line option,
 \item
-  the javac \code{-Alint} command-line option,
+  the \code{-Alint} command-line option,
 \item
-  not using the \code{-processor} switch to \code{javac}, or
+  not using the \code{-processor} command-line option, or
 \item
   checker-specific mechanisms.
-\end{itemize}
+\end{enumerate}
 
 \noindent
 We now explain these mechanisms in turn.
 
 % See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
+
+\subsection{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
 
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings("\emph{checkername}")} annotation, for example
@@ -98,7 +100,7 @@ The argument \emph{checkername} is in lower case and is derived from the
 way you invoke the checker; for example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...}, then you would suppress its
 error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
-the Basic Checker, for which you use the annotation name (see
+the Basic Checker, for which you use the annotation name; see
 Section~\ref{basic-using}).
 
 A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
@@ -125,12 +127,48 @@ of the methods in a class or package, put a \code{@SuppressWarnings}
 annotation on the class declaration or on the package's
 \code{package-info.java} file.
 
+Another good practice is to use the most specific possible argument to
+\code{@SuppressWarnings}.  The string can be of the form \emph{checkername} or
+or \emph{checkername:messagekey}.  The \emph{checkername} part is as
+described above.  The \emph{messagekey} part suppresses only
+errors/warnings relating to the given message key.  For example,
+\code{cast.unsafe} is the key for warnings about an unsafe cast, and
+\code{cast.redundant} to the key for warnings about a redundant cast.
+
+Thus, the above example could have been written as:
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
+  @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
+  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts 
+\end{Verbatim}
+
+\noindent
+For a list of the message keys, 
+see the \code{messages.properties} files in 
+%BEGIN LATEX
+\\
+%END LATEX
+\code{checker-framework/checkers/src/checkers/\emph{checkername}/messages.properties}.
+Each checker is built on the \code{basetype} checker and inherits its
+properties.  Thus, to find all the error keys for a checker, you usually
+need to examine its own \code{messages.properties} file and that of
+\code{basetype}.
+
+If a checker produces a warning/error and you want to determine its message
+key, you can re-run the checker, passing the the \code{-Anomsgtext}
+command-line option (Section~\ref{debugging-options}).
+
+
+
+\subsection{\code{-AskipUses} command-line option\label{askipuses}}
+
 You can suppress all errors and warnings at all \emph{uses} of a given
 class (but the class itself is still type-checked).
-Set the \code{-AskipClasses} command-line option to a
+Set the \code{-AskipUses} command-line option to a
 regular expression that matches classes for which warnings and errors
 should be suppressed.  For example, if you use
-``{\codesize\verb|-AskipClasses=^java\.|}'' on the command line
+``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the checkers will suppress all warnings within
 classes whose fully-qualified name starts with \codesize\verb|java.|, all
@@ -139,9 +177,11 @@ use of the return value.
 
 To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
-``{\codesize\verb+-AskipClasses="java\.lang\.|java\.util\."+}'' to suppress
+``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
 all warnings related to classes belong to the \code{java.lang} or
 \code{java.util} packages.
+
+\subsection{\code{-Alint} command-line option\label{alint}}
 
 \label{lint-options}
 
@@ -191,10 +231,13 @@ hyphen (\code{-}), the warning is disabled.  For example, to disable all
 lint options except redundant casts, you can pass
 \code{-Alint=-all,cast:redundant} on the command line.
 
+\subsection{No \code{-processor} command-line option\label{no-processor}}
 
 You can also compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during
 such compilations.
+
+\subsection{Checker-specific mechanisms\label{checker-specific-suppression}}
 
 Finally, some checkers have special rules.  For example, the Nullness
 checker (Chapter~\ref{nullness-checker}) uses \code{assert} statements that contain
@@ -374,7 +417,8 @@ your code does not use any Java 8 features other than type annotations in
 comments.
 
 
-% LocalWords:  quals skipClasses un AskipClasses Alint annotationname javac's
+% LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
-% LocalWords:  checkername util myref nulltest html ESC buildfile
+% LocalWords:  checkername util myref nulltest html ESC buildfile mynifty
+% LocalWords:  MyNiftyChecker messagekey basetype uncommenting

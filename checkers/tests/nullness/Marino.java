@@ -7,6 +7,11 @@ public class Marino {
     static String ms_str;
     String m_nullableStr;
 
+    public Marino(@NonNull String m_str, String m_nullableStr) {
+        this.m_str = m_str;
+        this.m_nullableStr = m_nullableStr;
+    }
+
     void testWhile() throws Exception {
         String s = "foo";
         while (true) {

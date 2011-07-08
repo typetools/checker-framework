@@ -1,3 +1,10 @@
+/// ******************************************************
+/// WARNING:
+/// This is not currently used.
+/// It is retained for historical reasons, to show how to
+/// recreate it if desired.
+/// ******************************************************
+
 package tests;
 
 import java.io.File;
@@ -6,12 +13,12 @@ import java.util.Collection;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * JUnit tests for the Nullness checker.
+ * JUnit tests for the Nullness checker -- testing initialization code.
  */
 public class NullnessUninitializedTest extends ParameterizedCheckerTest {
 
     public NullnessUninitializedTest(File testFile) {
-        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Alint=uninitialized");
+        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Alint=-uninitialized");
     }
 
     @Parameters

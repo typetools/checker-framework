@@ -13,6 +13,11 @@ public class DependentNull {
     private @NonNull @Dependent(result = Nullable.class, when=Prototype.class) String dep;
     @NonNull String indep;
 
+    DependentNull() {
+        dep = "hello";
+        indep = "hello";
+    }
+
     static void fieldAccess() {
         DependentNull t1 = new DependentNull();
         //:: error: (assignment.type.incompatible)
