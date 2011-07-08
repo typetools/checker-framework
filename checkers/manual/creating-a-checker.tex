@@ -6,7 +6,7 @@
 \newcommand{\ModelAPIBase}{http://download.oracle.com/javase/7/docs/api/javax/lang/model}
 \newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
-This section describes how to create a checker
+This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
 absence.  After a programmer annotates a program,
 the checker plugin verifies that the code is consistent
@@ -37,10 +37,10 @@ to change --- for instance, a file might transition from the \<@Open> to
 the \<@Closed> state after the \<close()> method is called.
 For more details, see Chapter~\ref{typestate-checker}.
 
-The rest of this section contains many details for people who want to write more powerful
+The rest of this chapter contains many details for people who want to write more powerful
 checkers.
 You do not need all of the details, at least at first.
-In addition to reading this section of the manual, you may find it helpful
+In addition to reading this chapter of the manual, you may find it helpful
 to examine the implementations of the checkers that are distributed with
 the Checker Framework.  You can even create your checker by modifying one
 of those.
@@ -946,7 +946,7 @@ newcomer, and its documentation is a bit sparse. The Checker Framework
 aims to abstract a lot of these complexities.
 You do not have to understand the implementation of javac to
 build powerful and useful checkers.
-Beyond this section, 
+Beyond this document, 
 other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
