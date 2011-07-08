@@ -1,7 +1,18 @@
 [Reserve this for a future release.]
 @Covariant annotation
 
+----------------------------------------------------------------------
+Version 1.1.4, 8 Jul 2011
+
+Units Checker (new):
+  Ensures operations are performed on variables of correct units of
+  measurement.
+
 Changed -AskipClasses command-line option to -AskipUses
+
+Implementation details:
+
+- Improve support for type qualifiers with enum attributes
 
 ----------------------------------------------------------------------
 Version 1.1.3, 17 Jun 2011
