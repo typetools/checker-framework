@@ -26,6 +26,7 @@ checkers/jdk/jdk.jar
 *.pyc
 checkers/binary/buildbin
 demos/nonnull-interned-demo/**/*.class
+demos/units-extension/*.class
 
 # manual files
 bib
