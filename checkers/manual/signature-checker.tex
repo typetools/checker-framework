@@ -86,9 +86,9 @@ Java defines one format for the string representation of a method signature:
 \end{description}
 
 
-\section{What the Signature Checker checks}
+\section{What the Signature Checker checks\label{signature-checks}}
 
-Certian methods in the JDK, such as \<Class.forName>, are annotated
+Certain methods in the JDK, such as \<Class.forName>, are annotated
 indicating the type they require.  The Signature Checker ensures that
 clients call them with the proper arguments.  The Signature Checker does
 not reason about string operations such as concatenation, substring,
@@ -98,4 +98,5 @@ To run the Signature Checker, supply the \code{-processor
   checkers.signature.SignatureChecker} command-line option to javac.
 
 
-% LocalWords:  Regex regex quals
+% LocalWords:  Regex regex quals FullyQualifiedName BinaryName FieldDescriptor
+% LocalWords:  Lpackage SourceName MyClass MethodDescriptor forName substring
