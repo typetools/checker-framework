@@ -292,7 +292,7 @@ is \code{@NonNull String} in the following declaration:
 
 Please note that such inferred type may leak to the public interface of the
 class.  To override such behavior, you can explicitly insert the desired
-annotation, e.g.
+annotation, e.g.,
 
 \begin{Verbatim}
     public final @Nullable String protocol = "https";
@@ -326,7 +326,7 @@ Here the call to \code{persistData()} invalidates the inferred non-null type
 of \code{updatedAt}.
 
 When methods do not modify any object state or have any identity side-effects
-(e.g. \code{log()} method here), you can annotate these methods as
+(e.g., \code{log()} method here), you can annotate these methods as
 \code{Pure}.  Annotating them as \code{Pure}, would cause the flow analyzer to
 carry the inferred types across the method invocation boundary.
 
