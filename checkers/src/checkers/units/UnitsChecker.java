@@ -2,14 +2,19 @@ package checkers.units;
 
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.units.quals.*;
+import checkers.util.AnnotationUtils;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -19,27 +24,44 @@ import checkers.basetype.BaseTypeChecker;
  */
 @SupportedOptions( { "units" } )
 public class UnitsChecker extends BaseTypeChecker {
+    
+    // Map from canonical class name to the corresponding UnitsRelations instance.
+    // We use the string to prevent instantiating the UnitsRelations multiple times.
+    protected Map<String, UnitsRelations> unitsRel = new HashMap<String, UnitsRelations>();
+
     /** Copied from BasicChecker and adapted "quals" to "units".
      */
     @Override
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
+        
         Set<Class<? extends Annotation>> qualSet =
-            new HashSet<Class<? extends Annotation>>();
+                new HashSet<Class<? extends Annotation>>();
 
         String qualNames = env.getOptions().get("units");
         if (qualNames == null) {
         } else {
-          try {
             for (String qualName : qualNames.split(",")) {
-              final Class<? extends Annotation> q =
-                (Class<? extends Annotation>) Class.forName(qualName);
-              qualSet.add(q);
+                try {
+                    final Class<? extends Annotation> q =
+                            (Class<? extends Annotation>) Class.forName(qualName);
+
+                    qualSet.add(q);
+                    addUnitsRelations(annoUtils, q);
+                } catch (ClassNotFoundException e) {
+                    messager.printWarning("Could not find class for unit: " + qualName +
+                            ". Ignoring unit.");
+                }
             }
-          } catch (ClassNotFoundException e) {
-            throw new Error(e);
-          }
         }
+        
+        // Always add the default units relations.
+        // TODO: we assume that all the standard units only use this. For absolute correctness,
+        // go through each and look for a UnitsRelations annotation.
+        unitsRel.put("checkers.units.UnitsRelationsDefault",
+                new UnitsRelationsDefault().init(annoUtils, env));
+        
         
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.
@@ -81,22 +103,54 @@ public class UnitsChecker extends BaseTypeChecker {
         qualSet.add(Temperature.class);
         qualSet.add(C.class);
         qualSet.add(K.class);
-        
+
         return Collections.unmodifiableSet(qualSet);
     }
 
+    /**
+     * Look for an @UnitsRelations annotation on the qualifier and
+     * add it to the list of UnitsRelations.
+     * 
+     * @param annoUtils The AnnotationUtils instance to use.
+     * @param qual The qualifier to investigate.
+     */
+    private void addUnitsRelations(AnnotationUtils annoUtils, Class<? extends Annotation> qual) {        
+        AnnotationMirror am = annoUtils.fromClass(qual);
+
+        for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
+            if (ama.getAnnotationType().toString().equals("checkers.units.quals.UnitsRelations")) {
+                @SuppressWarnings("unchecked")
+                Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
+                    AnnotationUtils.parseTypeValue(ama, "value");
+                String classname = theclass.getCanonicalName();
+
+                if (!unitsRel.containsKey(classname)) {
+                    try {
+                        unitsRel.put(classname, ((UnitsRelations) theclass.newInstance()).init(annoUtils, env));
+                    } catch (InstantiationException e) {
+                        // TODO
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        // TODO
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
+     * TODO: BasicChecker might also want to always call super.
      */
     @Override
     public Collection<String> getSuppressWarningsKey() {
-        Set<String> swKeys = new HashSet<String>();
+        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKey());
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
-        if (annos.isEmpty())
-            return super.getSuppressWarningsKey();
 
-        for (Class<? extends Annotation> anno : annos)
+        for (Class<? extends Annotation> anno : annos) {
             swKeys.add(anno.getSimpleName().toLowerCase());
-
+        }
+        
         return swKeys;
     }
 
