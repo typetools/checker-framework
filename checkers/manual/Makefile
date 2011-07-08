@@ -5,7 +5,6 @@ introduction.tex \
 nullness-checker.tex \
 interning-checker.tex \
 igj-checker.tex \
-oigj-checker.tex \
 javari-checker.tex \
 lock-checker.tex \
 fenum-checker.tex \
@@ -13,7 +12,11 @@ tainting-checker.tex \
 linear-checker.tex \
 regex-checker.tex \
 propkey-checker.tex \
+signature-checker.tex \
+units-checker.tex \
 basic-checker.tex \
+external-checkers.tex \
+generics.tex \
 advanced-features.tex \
 warnings.tex \
 annotating-libraries.tex \
