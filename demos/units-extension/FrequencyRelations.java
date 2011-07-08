@@ -7,6 +7,7 @@ import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 import checkers.units.*;
 
+/** Relations among units of frequency. */
 public class FrequencyRelations implements UnitsRelations {
 
     protected AnnotationMirror hz, s;
@@ -23,10 +24,13 @@ public class FrequencyRelations implements UnitsRelations {
         return this;
     }
             
+    // No multiplications yield Hertz.
     public AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
 	return null;
     }
 
+    // Division of a scalar by seconds yields Hertz.
+    // Other divisions yield an unannotated value.
     public AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
         if (p1.getAnnotations().isEmpty() && p2.getAnnotations().contains(s)) {
             return hz;
