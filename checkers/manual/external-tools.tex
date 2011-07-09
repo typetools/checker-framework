@@ -263,14 +263,14 @@ indicated in this example:
 %END LATEX
 \begin{Verbatim}
   <target name="check-nullness"
-          description="Check for nullness errors"
+          description="Check for null pointer dereferences"
           depends="clean,...">
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
       <compilerarg value="-Xbootclasspath/p:${checkers}/jdk/jdk.jar"/>
       <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
-      <!-- optional, to not check library bodies: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       ...
     </jsr308.javac>
   </target>
