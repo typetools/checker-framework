@@ -511,7 +511,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // else is needed to avoid the double marking bug
 //        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
 //                !isNonNull(TreeUtils.elementFromUse(node))) {
-//        	markTree(node, NONNULL);
+//              markTree(node, NONNULL);
         }
 
         return null;
@@ -529,7 +529,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // else is needed to avoid the double marking bug
 //        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
 //                !isNonNull(TreeUtils.elementFromUse(node))) {
-//        	markTree(node, NONNULL);
+//              markTree(node, NONNULL);
         }
 
         return null;
@@ -719,7 +719,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             if (elem.getAnnotation(NonNullOnEntry.class) != null) {
                 String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
                 Pair<List<String>, List<VariableElement>> fieldsList =
-                	validateNonNullOnEntry(path, myFieldElems, fields);
+                        validateNonNullOnEntry(path, myFieldElems, fields);
                 this.flowState.nnExprs.addAll(fieldsList.first);
 
                 for (VariableElement elt: fieldsList.second) {
@@ -758,7 +758,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         if (TreeUtils.isConstructor(meth)) {
-        	initializedFields.put(methElem, calcInitializedFields());
+            initializedFields.put(methElem, calcInitializedFields());
         }
     }
 
@@ -767,21 +767,21 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * flowstate.
      */
     private Set<VariableElement> calcInitializedFields() {
-    	Set<VariableElement> initialized = new HashSet<VariableElement>();
+        Set<VariableElement> initialized = new HashSet<VariableElement>();
 
-    	int i = 0;
-    	for (VariableElement f: flowState.vars) {
-    		if (f.getKind().isField() && flowState.annos.get(NONNULL, i)) {
-    			initialized.add(f);
-    		}
-    		i++;
-    	}
+        int i = 0;
+        for (VariableElement f: flowState.vars) {
+            if (f.getKind().isField() && flowState.annos.get(NONNULL, i)) {
+                initialized.add(f);
+            }
+            i++;
+        }
 
-    	return initialized;
+        return initialized;
     }
 
     public Set<VariableElement> initializedFieldsAfter(ExecutableElement method) {
-    	return initializedFields.get(method);
+        return initializedFields.get(method);
     }
 
     // Also see checkNonNullOnEntry for comparison
@@ -802,17 +802,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-            		checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
-            	}
-            	// TODO: Check this
-            	e = findElement(annoVal, flowState.vars);
+                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                    checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
+                }
+                // TODO: Check this
+                e = findElement(annoVal, flowState.vars);
             }
 
             int index = this.flowState.vars.indexOf(e);
             if (DO_ADVANCED_CHECKS &&
-            	!(index != -1 && this.flowState.annos.get(NONNULL, index))) {
-            	checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
+                !(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+                checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
     }
@@ -883,21 +883,21 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     // TODO: Handles static fields only as they are
                     // resolved in compile time
                     if (ElementUtils.isError(e)) {
-                    	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-                    		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-                    	}
-                    	// TODO: Check this
-                    	e = findElement(check, flowState.vars);
+                        if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                            checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+                        }
+                        // TODO: Check this
+                        e = findElement(check, flowState.vars);
                     }
 
                     int index = this.flowState.vars.indexOf(e);
-                   	if (DO_ADVANCED_CHECKS &&
-                   		!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
-                   		!this.flowState.nnExprs.contains(check)) {
-                   		checker.report(Result.failure(
-                   				(ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
-                   				check), ret);
-                   	}
+                    if (DO_ADVANCED_CHECKS &&
+                        !(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
+                        !this.flowState.nnExprs.contains(check)) {
+                        checker.report(Result.failure(
+                                                (ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
+                                                check), ret);
+                        }
 
                 }
             } else {
@@ -971,30 +971,30 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-            		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-            	}
-            	// TODO: Check this
-            	e = findElement(check, flowState.vars);
+                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                    checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+                }
+                // TODO: Check this
+                e = findElement(check, flowState.vars);
             }
-           	if (ifTrue) {
-           		if (!conds.getNonnullExpressions().contains(check) &&
-           				!conds.getNonnullElements().contains(e) &&
-           				!conds.getExplicitNonnullElements().contains(e) &&
-           				DO_ADVANCED_CHECKS) {
-           			checker.report(Result.failure(
-           				"assertiftrue.postcondition.not.satisfied",
-           				check), ret);
-           		}
-           	} else {
-           		if (!conds.getNullableExpressions().contains(check) &&
-           				!conds.getNullableElements().contains(e) &&
-           				!conds.getExplicitNullableElements().contains(e) &&
-                        DO_ADVANCED_CHECKS) {
-           			checker.report(Result.failure(
-           				"assertiffalse.postcondition.not.satisfied",
-           				check), ret);
-           		}
+            if (ifTrue) {
+                if (!conds.getNonnullExpressions().contains(check) &&
+                    !conds.getNonnullElements().contains(e) &&
+                    !conds.getExplicitNonnullElements().contains(e) &&
+                    DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure(
+                                                  "assertiftrue.postcondition.not.satisfied",
+                                                  check), ret);
+                }
+            } else {
+                if (!conds.getNullableExpressions().contains(check) &&
+                    !conds.getNullableElements().contains(e) &&
+                    !conds.getExplicitNullableElements().contains(e) &&
+                    DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure(
+                                                  "assertiffalse.postcondition.not.satisfied",
+                                                  check), ret);
+                }
             }
         }
     }
@@ -1229,7 +1229,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @return The validated list of fields.
      */
     private Pair<List<String>, List<VariableElement>> validateNonNullOnEntry(TreePath path, List<? extends Element> myFieldElems, String[] fields) {
-    	MethodTree meth = (MethodTree)path.getLeaf();
+        MethodTree meth = (MethodTree)path.getLeaf();
         List<String> nnExprs = new LinkedList<String>();
         List<VariableElement> nnElems = new LinkedList<VariableElement>();
 
@@ -1242,9 +1242,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (DO_ADVANCED_CHECKS && ElementUtils.isError(e)) {
-            	checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+                checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
             } else if (ElementUtils.isStatic(e) && e instanceof VariableElement) {
-            	nnElems.add((VariableElement)e);
+                nnElems.add((VariableElement)e);
             }
         }
 
@@ -1359,10 +1359,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     private VariableElement findElement(String elem, Collection<? extends VariableElement> vars) {
-    	for (VariableElement v: vars) {
-    		if (v.getSimpleName().toString().equals(elem))
-    			return v;
-    	}
-    	return null;
+        for (VariableElement v: vars) {
+            if (v.getSimpleName().toString().equals(elem))
+                return v;
+        }
+        return null;
     }
 }
