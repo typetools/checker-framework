@@ -98,7 +98,7 @@ package org.xml.sax.helpers;
 
 public class NamespaceSupport
 {
-  public @Interned String [] processName (String qName, String parts[],
+  public @Interned String [] processName (String qName, String[] parts,
                                           boolean isAttribute);
   // These are not necessary, it seems.
   // final class Context {
