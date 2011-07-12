@@ -325,6 +325,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="fenum-tests" depends="jar,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FenumTest"/>
+        </antcall>
+    </target>
+
     <target name="flow-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
