@@ -438,8 +438,8 @@ public class StubParser {
                     System.out.printf("StubParser: Ignoring element of type %s in getMembers", member.getClass());
             }
         }
-        // remove null keys, which can result from findElement returning null
-        result.remove(null);
+        // // remove null keys, which can result from findElement returning null
+        // result.remove(null);
         return result;
     }
 
@@ -465,9 +465,10 @@ public class StubParser {
         for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
-                    && wantedMethodName.contentEquals(method.getSimpleName())
-                    && StubUtil.toString(method).equals(wantedMethodString))
+                && wantedMethodName.contentEquals(method.getSimpleName())
+                && StubUtil.toString(method).equals(wantedMethodString)) {
                 return method;
+            }
         }
         if (warnIfNotFound || debugStubParser)
             System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
@@ -517,6 +518,8 @@ public class StubParser {
 
     /** Just like Map.put, but errs if the key is already in the map. */
     private static <K,V> void putNew(Map<K,V> m, K key, V value) {
+        if (key == null)
+            return;
         if (m.containsKey(key)) {
             Error e = new Error("Key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
