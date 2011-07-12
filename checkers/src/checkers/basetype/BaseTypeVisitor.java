@@ -1226,10 +1226,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     private static boolean checkedJDK = false;
 
-    // The Nullness JDK serves as a proxy for all annotated JDKs.  (In part
-    // because of problems with IGJAnnotatedTypeFactory.postAsMemberOf that
-    // make it hard to directly check for the IGJ annotated JDK.)
-    // Not all subclasses call this.
+    // Not all subclasses call this -- only those that have an annotated JDK.
     /** Warn if the annotated JDK is not being used. */
     protected void checkForAnnotatedJdk() {
         if (checkedJDK) {
@@ -1249,6 +1246,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 ExecutableElement m = (ExecutableElement) member;
                 AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
                 AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
+                // The Nullness JDK serves as a proxy for all annotated
+                // JDKs.  (In part because of problems with
+                // IGJAnnotatedTypeFactory.postAsMemberOf that make it hard
+                // to directly check for the IGJ annotated JDK.)
                 if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
