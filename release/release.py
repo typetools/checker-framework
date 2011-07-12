@@ -292,12 +292,15 @@ the Checker Framework, and the Eclipse plugin for the Checker Framework.
    in order to detect and prevent bugs in your code.  
  * The Eclipse plugin makes it more convenient to run the Checker Framework.
 
+You can find documentation and download links for these projects at:
+http://types.cs.washington.edu/jsr308/
+
 Notable changes include:
 [[ FILL ME HERE ]]
 
-Changes for Checker Framework
+Changes for the Checker Framework
 %s
-Changes for Type Annotations Compiler
+Changes for the Type Annotations Compiler
 %s
 
 =================== END OF EMAIL ==========================
