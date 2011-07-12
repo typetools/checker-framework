@@ -1013,6 +1013,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             }
 
             Element recvElem;
+            Element recvPath;
             List<? extends Element> recvFieldElems;
             List<VariableElement> recvImmediateFields;
 
@@ -1043,6 +1044,13 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             String[] nnoeExprs = method.getAnnotation(NonNullOnEntry.class).value();
 
             for (String nnoeExpr : nnoeExprs) {
+                // TODO: use this instead of the below.
+                // Element el = Resolver.findVariable(nnoeExpr, PathTree.for(call));
+                // if (el==null) {
+                //     // output an error message
+                //     continue;
+                // }
+
                 Element el = findElementInCall(recvElem, recvFieldElems, call, nnoeExpr);
                 if (el==null) {
                     // we've already output an error message
@@ -1089,7 +1097,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         if (field.contains(".")) {
             // A static field access such as MyClass.myField
 
-            // we only support single static field accesses, i.e. C.f
+            // we only support single static field accesses: C.f but not C.f.g
             String[] parts = field.split("\\.");
             if (parts.length!=2) {
                 // TODO: check for explicit "this"
