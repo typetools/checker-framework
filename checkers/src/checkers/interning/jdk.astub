@@ -7,14 +7,9 @@ import checkers.interning.quals.UsesObjectEquals;
 //   search -n -n 'public static final String[^;]*"'
 // and examining the search results.
 
-package java.util.regex;
-
-@UsesObjectEquals class Pattern {
-}
-
 package java.io;
 
-public class ObjectStreamField
+public @UsesObjectEquals class ObjectStreamField
     implements Comparable<Object>
 {
   public @Interned String getTypeString();
@@ -63,6 +58,11 @@ package java.util.jar;
 
 public class Attributes implements Map<Object,Object>, Cloneable {
   public @Interned String toString();
+}
+
+package java.util.regex;
+
+@UsesObjectEquals class Pattern {
 }
 
 package javax.management;
@@ -469,7 +469,7 @@ public class DataFlavor {
      public static final @Interned String javaRemoteObjectMimeType = "application/x-java-remote-object";
 }
 package java.awt;
-public class BorderLayout {
+public @UsesObjectEquals class BorderLayout {
      public static final @Interned String NORTH  = "North";
      public static final @Interned String SOUTH  = "South";
      public static final @Interned String EAST   = "East";
@@ -498,7 +498,7 @@ public class JarFile {
      public static final @Interned String MANIFEST_NAME = "META-INF/MANIFEST.MF";
 }
 package java.util.logging;
-public class Logger {
+public @UsesObjectEquals class Logger {
      public static final @Interned String GLOBAL_LOGGER_NAME = "global";
 }
 @Interned class Level { }
@@ -1364,8 +1364,9 @@ public @UsesObjectEquals class AWTEventMulticaster implements
     TextListener, InputMethodListener, HierarchyListener,
     HierarchyBoundsListener, MouseWheelListener {}
 abstract @UsesObjectEquals class AttributeValue {}
-public @UsesObjectEquals class BorderLayout implements LayoutManager2,
-                                     java.io.Serializable {}
+// BorderLayout is defined above
+// public @UsesObjectEquals class BorderLayout implements LayoutManager2,
+//                                      java.io.Serializable {}
 public @UsesObjectEquals class BufferCapabilities implements Cloneable {}
 
 public @UsesObjectEquals class CardLayout implements LayoutManager2,
@@ -1373,10 +1374,8 @@ public @UsesObjectEquals class CardLayout implements LayoutManager2,
 public @UsesObjectEquals class CheckboxGroup implements java.io.Serializable {}
 @UsesObjectEquals class ColorPaintContext implements PaintContext {}
 public abstract @UsesObjectEquals class Component implements ImageObserver, MenuContainer,
-                                           Serializable
-{}
-public final @UsesObjectEquals class ComponentOrientation implements java.io.Serializable
-{}
+                                           Serializable {}
+public final @UsesObjectEquals class ComponentOrientation implements java.io.Serializable {}
 public @UsesObjectEquals class Cursor implements java.io.Serializable {}
 public @UsesObjectEquals class Desktop {}
 public @UsesObjectEquals class Event implements java.io.Serializable {}
@@ -1397,8 +1396,7 @@ public @UsesObjectEquals class GridLayout implements LayoutManager, java.io.Seri
 public abstract @UsesObjectEquals class Image {}
 public @UsesObjectEquals class ImageCapabilities implements Cloneable {}
 public abstract @UsesObjectEquals class KeyboardFocusManager
-    implements KeyEventDispatcher, KeyEventPostProcessor
-{}
+    implements KeyEventDispatcher, KeyEventPostProcessor {}
 public @UsesObjectEquals class MediaTracker implements java.io.Serializable {}
 public abstract @UsesObjectEquals class MenuComponent implements java.io.Serializable {}
 abstract @UsesObjectEquals class ModalEventFilter implements EventFilter {}
@@ -1441,22 +1439,19 @@ public @UsesObjectEquals class DragSourceContext
 public @UsesObjectEquals class DropTarget implements DropTargetListener, Serializable {}
 public abstract @UsesObjectEquals class DropTargetAdapter implements DropTargetListener {}
 public @UsesObjectEquals class DropTargetContext implements Serializable {}
-public @UsesObjectEquals class DropTargetContext implements Serializable {}
 
 package java.awt.event;
 
 public abstract @UsesObjectEquals class ComponentAdapter implements ComponentListener {}
 public abstract @UsesObjectEquals class ContainerAdapter implements ContainerListener {}
 public abstract @UsesObjectEquals class FocusAdapter implements FocusListener {}
-public abstract @UsesObjectEquals class HierarchyBoundsAdapter implements HierarchyBoundsListener
-{}
+public abstract @UsesObjectEquals class HierarchyBoundsAdapter implements HierarchyBoundsListener {}
 public abstract @UsesObjectEquals class KeyAdapter implements KeyListener {}
 public abstract @UsesObjectEquals class MouseAdapter implements MouseListener, MouseWheelListener, MouseMotionListener {}
 public abstract @UsesObjectEquals class MouseMotionAdapter implements MouseMotionListener {}
 @UsesObjectEquals class NativeLibLoader {}
 public abstract @UsesObjectEquals class WindowAdapter
-    implements WindowListener, WindowStateListener, WindowFocusListener
-{}
+    implements WindowListener, WindowStateListener, WindowFocusListener {}
 
 package java.awt.font;
 
@@ -1520,8 +1515,7 @@ public @UsesObjectEquals class RenderableImageProducer implements ImageProducer,
 package java.awt.print;
 
 public @UsesObjectEquals class Book implements Pageable {}
-public @UsesObjectEquals class PageFormat implements Cloneable
-{}
+public @UsesObjectEquals class PageFormat implements Cloneable {}
 public @UsesObjectEquals class Paper implements Cloneable {}
 public abstract @UsesObjectEquals class PrinterJob {}
 
@@ -1560,14 +1554,14 @@ public @UsesObjectEquals class SwitchPoint {}
 package java.io;
 
 @UsesObjectEquals class Bits {}
-public final @UsesObjectEquals class Console implements Flushable
-{}
+public final @UsesObjectEquals class Console implements Flushable {}
 @UsesObjectEquals class DeleteOnExitHook {}
 @UsesObjectEquals class ExpiringCache {}
 abstract @UsesObjectEquals class FileSystem {}
-public @UsesObjectEquals class ObjectStreamField
-    implements Comparable<Object>
-{}
+// Defined above
+// public @UsesObjectEquals class ObjectStreamField
+//     implements Comparable<Object>
+// {}
 public abstract @UsesObjectEquals class OutputStream implements Closeable, Flushable {}
 public @UsesObjectEquals class RandomAccessFile implements DataOutput, DataInput, Closeable {}
 public abstract @UsesObjectEquals class Reader implements Readable, Closeable {}
@@ -1589,14 +1583,12 @@ public final @UsesObjectEquals class Math {}
 public @UsesObjectEquals class Package implements java.lang.reflect.AnnotatedElement {}
 public abstract @UsesObjectEquals class Process {}
 public @UsesObjectEquals class Runtime {}
-public
-@UsesObjectEquals class SecurityManager {}
+public @UsesObjectEquals class SecurityManager {}
 @UsesObjectEquals class Shutdown {}
 public final @UsesObjectEquals class StrictMath {}
 @UsesObjectEquals class StringCoding {}
 public final @UsesObjectEquals class System {}
-public
-@UsesObjectEquals class ThreadGroup implements Thread.UncaughtExceptionHandler {}
+public @UsesObjectEquals class ThreadGroup implements Thread.UncaughtExceptionHandler {}
 public @UsesObjectEquals class ThreadLocal<T> {}
 public @UsesObjectEquals class Throwable implements Serializable {}
 public final
@@ -1622,8 +1614,7 @@ package java.lang.reflect;
 
 public final
 @UsesObjectEquals class Array {}
-public
-@UsesObjectEquals class Modifier {}
+public @UsesObjectEquals class Modifier {}
 @UsesObjectEquals class ReflectAccess implements sun.reflect.LangReflectAccess {}
 
 package java.math;
@@ -1641,8 +1632,7 @@ abstract public @UsesObjectEquals class ContentHandler {}
 public abstract @UsesObjectEquals class CookieHandler {}
 public final
 @UsesObjectEquals class DatagramPacket {}
-public
-@UsesObjectEquals class DatagramSocket implements java.io.Closeable {}
+public @UsesObjectEquals class DatagramSocket implements java.io.Closeable {}
 public abstract @UsesObjectEquals class DatagramSocketImpl implements SocketOptions {}
 public final @UsesObjectEquals class IDN {}
 @UsesObjectEquals class InMemoryCookieStore implements CookieStore {}
@@ -1651,10 +1641,8 @@ public final @UsesObjectEquals class IDN {}
 public final @UsesObjectEquals class PasswordAuthentication {}
 public abstract @UsesObjectEquals class ProxySelector {}
 public abstract @UsesObjectEquals class ResponseCache {}
-public
-@UsesObjectEquals class ServerSocket implements java.io.Closeable {}
-public
-@UsesObjectEquals class Socket implements java.io.Closeable {}
+public @UsesObjectEquals class ServerSocket implements java.io.Closeable {}
+public @UsesObjectEquals class Socket implements java.io.Closeable {}
 public abstract @UsesObjectEquals class SocketImpl implements SocketOptions {}
 public final @UsesObjectEquals class StandardSocketOption {}
 public @UsesObjectEquals class URLDecoder {}
@@ -1670,14 +1658,11 @@ package java.nio.channels;
 
 public abstract @UsesObjectEquals class AsynchronousChannelGroup {}
 public abstract @UsesObjectEquals class AsynchronousFileChannel
-    implements AsynchronousChannel
-{}
+    implements AsynchronousChannel {}
 public abstract @UsesObjectEquals class AsynchronousServerSocketChannel
-    implements AsynchronousChannel, NetworkChannel
-{}
+    implements AsynchronousChannel, NetworkChannel {}
 public abstract @UsesObjectEquals class AsynchronousSocketChannel
-    implements AsynchronousByteChannel, NetworkChannel
-{}
+    implements AsynchronousByteChannel, NetworkChannel {}
 public final @UsesObjectEquals class Channels {}
 public abstract @UsesObjectEquals class FileLock implements AutoCloseable {}
 public abstract @UsesObjectEquals class MembershipKey {}
@@ -1688,8 +1673,7 @@ public abstract @UsesObjectEquals class Selector implements Closeable {}
 package java.nio.channels.spi;
 
 public abstract @UsesObjectEquals class AbstractInterruptibleChannel
-    implements Channel, InterruptibleChannel
-{}
+    implements Channel, InterruptibleChannel {}
 public abstract @UsesObjectEquals class AsynchronousChannelProvider {}
 public abstract @UsesObjectEquals class SelectorProvider {}
 
@@ -1707,8 +1691,7 @@ package java.nio.file;
 @UsesObjectEquals class CopyMoveHelper {}
 public abstract @UsesObjectEquals class FileStore {}
 public abstract @UsesObjectEquals class FileSystem
-    implements Closeable
-{}
+    implements Closeable {}
 public final @UsesObjectEquals class FileSystems {}
 @UsesObjectEquals class FileTreeWalker {}
 public final @UsesObjectEquals class Files {}
@@ -1744,8 +1727,7 @@ package java.rmi.server;
 public @UsesObjectEquals class RMIClassLoader {}
 public abstract @UsesObjectEquals class RMIClassLoaderSpi {}
 public abstract @UsesObjectEquals class RMISocketFactory
-        implements RMIClientSocketFactory, RMIServerSocketFactory
-{}
+        implements RMIClientSocketFactory, RMIServerSocketFactory {}
 
 package java.security;
 
@@ -1825,11 +1807,9 @@ public final @UsesObjectEquals class Bidi {}
 @UsesObjectEquals class BreakDictionary {}
 @UsesObjectEquals class CalendarBuilder {}
 @UsesObjectEquals class CharacterIteratorFieldDelegate implements Format.FieldDelegate {}
-public final @UsesObjectEquals class CollationElementIterator
-{}
+public final @UsesObjectEquals class CollationElementIterator {}
 final @UsesObjectEquals class CollationRules {}
-final @UsesObjectEquals class EntryPair
-{}
+final @UsesObjectEquals class EntryPair {}
 final @UsesObjectEquals class MergeCollation {}
 public final @UsesObjectEquals class Normalizer {}
 final @UsesObjectEquals class RBCollationTables {}
@@ -1850,16 +1830,12 @@ public @UsesObjectEquals class FormattableFlags {}
 @UsesObjectEquals class LocaleISOData {}
 public final @UsesObjectEquals class Objects {}
 public @UsesObjectEquals class Observable {}
-public
-@UsesObjectEquals class Random implements java.io.Serializable {}
+public @UsesObjectEquals class Random implements java.io.Serializable {}
 public final @UsesObjectEquals class Scanner implements Iterator<String>, Closeable {}
 public final @UsesObjectEquals class ServiceLoader<S>
-    implements Iterable<S>
-{}
-public
-@UsesObjectEquals class StringTokenizer implements Enumeration<Object> {}
-public
-@UsesObjectEquals class Thread implements Runnable {}
+    implements Iterable<S> {}
+public @UsesObjectEquals class StringTokenizer implements Enumeration<Object> {}
+public @UsesObjectEquals class Thread implements Runnable {}
 @UsesObjectEquals class TimSort<T> {}
 public @UsesObjectEquals class Timer {}
 public abstract @UsesObjectEquals class TimerTask implements Runnable {}
@@ -1906,7 +1882,8 @@ public abstract @UsesObjectEquals class Formatter {}
 public abstract @UsesObjectEquals class Handler {}
 public @UsesObjectEquals class LogManager {}
 public @UsesObjectEquals class LogRecord implements java.io.Serializable {}
-public @UsesObjectEquals class Logger {}
+// Defined above
+// public @UsesObjectEquals class Logger {}
 @UsesObjectEquals class Logging implements LoggingMXBean {}
 // Commented out because LoggingProxy is in package sun.util.logging, and
 // we don't want references to sun.* classes here.  (LoggingProxyImpl isn't
@@ -1923,9 +1900,10 @@ package java.util.regex;
 
 final @UsesObjectEquals class ASCII {}
 public final @UsesObjectEquals class Matcher implements MatchResult {}
-public final @UsesObjectEquals class Pattern
-    implements java.io.Serializable
-{}
+// Defined above
+// public final @UsesObjectEquals class Pattern
+//     implements java.io.Serializable
+// {}
 
 package java.util.spi;
 
@@ -1933,19 +1911,13 @@ public abstract @UsesObjectEquals class LocaleServiceProvider {}
 
 package java.util.zip;
 
-public
-@UsesObjectEquals class Adler32 implements Checksum {}
-public
-@UsesObjectEquals class CRC32 implements Checksum {}
-public
-@UsesObjectEquals class Deflater {}
-public
-@UsesObjectEquals class Inflater {}
+public @UsesObjectEquals class Adler32 implements Checksum {}
+public @UsesObjectEquals class CRC32 implements Checksum {}
+public @UsesObjectEquals class Deflater {}
+public @UsesObjectEquals class Inflater {}
 @UsesObjectEquals class ZStreamRef {}
 final @UsesObjectEquals class ZipCoder {}
 @UsesObjectEquals class ZipConstants64 {}
-public
-@UsesObjectEquals class ZipEntry implements ZipConstants, Cloneable {}
-public
-@UsesObjectEquals class ZipFile implements ZipConstants, Closeable {}
+public @UsesObjectEquals class ZipEntry implements ZipConstants, Cloneable {}
+public @UsesObjectEquals class ZipFile implements ZipConstants, Closeable {}
 
