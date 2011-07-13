@@ -250,7 +250,7 @@ public class StubParser {
                 // TODO: Java 7 added a few AutoCloseable superinterfaces to classes.
                 // We specify those as superinterfaces in the jdk.astub file. Let's ignore
                 // this addition to be compatible with Java 6.
-                assert foundType != null || (superType.toString().equals("AutoCloseable") || superType.toString().equals("java.io.Closeable")) :
+                assert foundType != null || (superType.toString().equals("AutoCloseable") || superType.toString().equals("java.io.Closeable") || superType.toString().equals("Closeable")) :
                     "StubParser: could not find superinterface " + superType + " from type " + type;
                 if (foundType != null) annotate(foundType, superType);
             }
