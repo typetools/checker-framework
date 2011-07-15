@@ -1,6 +1,7 @@
 package checkers.basetype;
 
 import java.util.*;
+import java.lang.annotation.Annotation;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -873,7 +874,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (varTree instanceof ExpressionTree &&
                 !checker.isAssignable(varType,
                         atypeFactory.getReceiver((ExpressionTree)varTree),
-                        varTree)) {
+                        varTree,
+                        atypeFactory)) {
             checker.report(
                     Result.failure("assignability.invalid",
                             InternalUtils.symbol(varTree),
@@ -932,28 +934,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     protected boolean isAccessAllowed(Element field, AnnotatedTypeMirror receiver, ExpressionTree accessTree) {
-        Unused unused = field.getAnnotation(Unused.class);
+        AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
         if (unused == null)
             return true;
 
-        try {
-            unused.when();
-        } catch (MirroredTypeException exp) {
-            Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            if (receiver.getAnnotation(whenName) == null)
-                return true;
+        String when = AnnotationUtils.elementValueClassName(unused, "when");
+        if (receiver.getAnnotation(when) == null)
+            return true;
 
-            Tree tree = this.enclosingStatement(accessTree);
+        Tree tree = this.enclosingStatement(accessTree);
 
-            // assigning unused to null is OK
-            return (tree != null
-                    && tree.getKind() == Tree.Kind.ASSIGNMENT
-                    && ((AssignmentTree)tree).getVariable() == accessTree
-                    && ((AssignmentTree)tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
-        }
-
-        assert false : "Cannot be here";
-        return false;
+        // assigning unused to null is OK
+        return (tree != null
+                && tree.getKind() == Tree.Kind.ASSIGNMENT
+                && ((AssignmentTree)tree).getVariable() == accessTree
+                && ((AssignmentTree)tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
     }
 
     /**
