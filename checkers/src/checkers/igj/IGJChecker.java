@@ -87,7 +87,8 @@ public class IGJChecker extends BaseTypeChecker {
      */
     @Override
     public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree varTree) {
+            AnnotatedTypeMirror receiverType, Tree varTree,
+            AnnotatedTypeFactory factory) {
         if (!(varTree instanceof ExpressionTree))
             return true;
 
@@ -96,7 +97,7 @@ public class IGJChecker extends BaseTypeChecker {
                 && (varElement == null // a variable element should never be null
                         || !varElement.getKind().isField()
                         || ElementUtils.isStatic(varElement)
-                        || varElement.getAnnotation(Assignable.class) != null))
+                        || factory.getDeclAnnotation(varElement, Assignable.class) != null))
             return true;
 
         assert receiverType != null;

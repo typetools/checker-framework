@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
 
+import java.lang.annotation.Annotation;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -1400,6 +1401,64 @@ public class AnnotatedTypeFactory {
         }
 
         return result;
+    }
+
+//     /**
+//      * Determines the declaration annotations on an element.
+//      *
+//      * @param elt the element
+//      * @return the declaration annotations on the element
+//      */
+//     private AnnotationMirror getDeclAnnotation(Element elt, String annotationName) {
+//         assert annotationName != null : annotationName + " cannot be null";
+//         Name name = env.getElementUtils().getName(annotationName);
+//         return getDeclAnnotation(elt, name);
+//     }
+// 
+//     /**
+//      * Returns the actual annotation mirror used to annotate the element,
+//      * whose name equals the passed annotationName if one exists, null otherwise.
+//      *
+//      * @param annotationName
+//      * @return the annotation mirror for annotationName
+//      */
+//     private AnnotationMirror getDeclAnnotation(Element elt, Name annotationName) {
+//         assert annotationName != null : "Null annotationName in getDeclAnnotation";
+//         Set<AnnotationMirror> annos = indexDeclAnnos.get(elt);
+//         if (annos != null) {
+//             for (AnnotationMirror anno : annos)
+//                 if (AnnotationUtils.annotationName(anno).equals(annotationName))
+//                     return anno;
+//         }
+//         return null;
+//     }
+
+    /**
+     * Returns the actual annotation mirror used to annotate this type,
+     * whose name equals the passed annotationName if one exists, null otherwise.
+     *
+     * @param anno annotation class
+     * @return the annotation mirror for anno
+     */
+    public AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
+        String aname = anno.getCanonicalName();
+        for (AnnotationMirror am : elt.getAnnotationMirrors()) {
+            if (sameAnnotation(am, aname)) {
+                return am;
+            }
+        }
+        return null;
+    }
+
+    // Checks the annotation name, but not its arguments
+    private boolean sameAnnotation(AnnotationMirror am, String aname) {
+        Name amname = AnnotationUtils.annotationName(am);
+        return amname.toString().equals(aname);
+    }
+
+    // Checks the annotation name, but not its arguments
+    private boolean sameAnnotation(AnnotationMirror am, Class<? extends Annotation> anno) {
+        return sameAnnotation(am, anno.getCanonicalName());
     }
 
 }
