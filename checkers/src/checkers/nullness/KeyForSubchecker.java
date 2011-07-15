@@ -35,7 +35,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
             }
         }
         // Otherwise Covariant would cause trouble.
-        if (rhs.getAnnotation(KeyForBottom.class)!=null) {
+        if (rhs.getAnnotation(KeyForBottom.class) != null) {
             return true;
         }
         return super.isSubtype(rhs, lhs);
@@ -64,7 +64,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
             // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
 
             int[] covarVals = null;
-            if (lhsElem.getAnnotation(Covariant.class)!=null) {
+            if (lhsElem.getAnnotation(Covariant.class) != null) {
                 covarVals = lhsElem.getAnnotation(Covariant.class).value();
             }
 
