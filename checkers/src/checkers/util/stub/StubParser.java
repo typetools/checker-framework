@@ -263,9 +263,12 @@ public class StubParser {
         annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
 
+        List<Parameter> params = decl.getParameters();
+        List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
+
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
-            AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
-            Parameter param = decl.getParameters().get(i);
+            AnnotatedTypeMirror paramType = paramTypes.get(i);
+            Parameter param = params.get(i);
             if (param.isVarArgs()) {
                 // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
