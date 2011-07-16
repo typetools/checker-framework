@@ -27,9 +27,9 @@ public class StubParser {
     /**
      * Whether to print warnings about types/members that were not found.
      * The warning is about whether a class/field in the stub file is not
-     * found on the user's real classpath.  Since the stub file may be
-     * about packages that are not on the classpath, this can OK, so
-     * default to false.
+     * found on the user's real classpath.  Since the stub file may contain
+     * packages that are not on the classpath, this can OK, so default to
+     * false.
      */
     private static final boolean warnIfNotFound = false;
 
@@ -103,11 +103,11 @@ public class StubParser {
                         putNew(result, annoElt.getSimpleName().toString(), anno);
                     } else {
                         if (warnIfNotFound || debugStubParser)
-                            System.err.println("StubParser: Could not load import: " + imported);
+                            stubWarning("Could not load import: " + imported);
                     }
                 }
             } catch (AssertionError error) {
-                System.err.println("StubParser: " + error);
+                stubWarning("" + error);
             }
         }
         return result;
@@ -155,19 +155,19 @@ public class StubParser {
         // TODO: Should throw exception?!
         if (typeElt == null) {
             if (warnIfNotFound || debugStubParser)
-                System.err.println("StubParser: Type not found: " + typeName);
+                stubWarning("Type not found: " + typeName);
             return;
         }
 
         if (typeElt.getKind() == ElementKind.ENUM) {
             if (warnIfNotFound || debugStubParser)
-                System.err.println("StubParser: Skipping enum type: " + typeName);
+                stubWarning("Skipping enum type: " + typeName);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
             if (warnIfNotFound || debugStubParser)
-                System.err.println("StubParser: Skipping annotation type: " + typeName);
+                stubWarning("Skipping annotation type: " + typeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
             parseType((ClassOrInterfaceDeclaration)typeDecl, typeElt, result);
-        } // else it's an EmptyTypeDeclaration.  TODO:  It can have annotations, right?
+        } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
 
         Map<Element, BodyDeclaration> elementsToDecl = getMembers(typeElt, typeDecl);
         for (Map.Entry<Element, BodyDeclaration> entry : elementsToDecl.entrySet()) {
@@ -450,7 +450,7 @@ public class StubParser {
                 return superType;
         }
         if (warnIfNotFound || debugStubParser)
-            System.err.println("StubParser: Type " + typeString + " not found");
+            stubWarning("Type " + typeString + " not found");
         if (debugStubParser)
             for (AnnotatedDeclaredType superType : types)
                 System.err.printf("  %s%n", superType);
@@ -471,7 +471,7 @@ public class StubParser {
             }
         }
         if (warnIfNotFound || debugStubParser)
-            System.err.println("StubParser: Method " + wantedMethodString + " not found in type " + typeElt);
+            stubWarning("Method " + wantedMethodString + " not found in type " + typeElt);
         if (debugStubParser)
             for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", method);
@@ -490,7 +490,7 @@ public class StubParser {
                 return method;
         }
         if (warnIfNotFound || debugStubParser)
-            System.err.println("StubParser: Constructor " + wantedMethodString + " not found in type " + typeElt);
+            stubWarning("Constructor " + wantedMethodString + " not found in type " + typeElt);
         if (debugStubParser)
             for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", method);
@@ -506,7 +506,7 @@ public class StubParser {
             }
         }
         if (warnIfNotFound || debugStubParser)
-            System.err.println("StubParser: Field " + fieldName + " not found in type " + typeElt);
+            stubWarning("Field " + fieldName + " not found in type " + typeElt);
         if (debugStubParser)
             for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements()))
                 System.err.printf("  %s%n", field);
@@ -535,6 +535,15 @@ public class StubParser {
     private static <K,V> void putAllNew(Map<K,V> m, Map<K,V> m2) {
         for (Map.Entry<K,V> e2 : m2.entrySet()) {
             putNew(m, e2.getKey(), e2.getValue());
+        }
+    }
+
+    private static Set<String> warnings = new HashSet<String>();
+
+    /** Issues the given warning, only if it has not been previously issued. */
+    private static void stubWarning(String warning) {
+        if (warnings.add(warning)) {
+            System.err.println("StubParser: " + warning);
         }
     }
 
