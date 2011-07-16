@@ -17,15 +17,15 @@ import com.sun.source.tree.Tree;
  * legal/expected for a value of that type to be null.
  * <p>
  *
- * For example, if a method parameter's type is annotated with {@code
- * @Nullable}, then passing {@code null} as an argument should not by
- * itself cause the method to throw an exception, including a {@code
- * NullPointerException}.  Similarly, if a field's type is {@code
- * @Nullable}, then setting it to null should not by itself cause a
+ * For example, if a method parameter's type is annotated with
+ * {@code @Nullable}, then passing {@code null} as an argument should not
+ * by itself cause the method to throw an exception, including a
+ * {@code NullPointerException}.  Similarly, if a field's type is
+ * {@code @Nullable}, then setting it to null should not by itself cause a
  * run-time exception.
  * <p>
  *
- * No more than one of {@link NonNull} and {@code NonNull} may be
+ * No more than one of {@link Nullable} and {@code NonNull} may be
  * written on a given type.
  * <p>
  *
