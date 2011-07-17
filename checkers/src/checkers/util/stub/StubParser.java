@@ -13,6 +13,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -20,7 +21,8 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.type.*;
 
-// Main entry points are parse() and parse(Map<Element, AnnotatedTypeMirror>).
+// Main entry point is:
+// parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
 
 public class StubParser {
 
@@ -113,26 +115,19 @@ public class StubParser {
         return result;
     }
 
-    // One of the two main entry points.  Returns the result.
-    public Map<Element, AnnotatedTypeMirror> parse() {
-        Map<Element, AnnotatedTypeMirror> result = new HashMap<Element, AnnotatedTypeMirror>();
-        parse(result);
-        return result;
+    // The main entry point.  Side-effects the arguments.
+    public void parse(Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        parse(this.index, atypes, declAnnos);
     }
 
-    // One of the two main entry points.  Side-effects the argument.
-    public void parse(Map<Element, AnnotatedTypeMirror> result) {
-        parse(this.index, result);
-    }
-
-    private void parse(IndexUnit index, Map<Element, AnnotatedTypeMirror> result) {
+    private void parse(IndexUnit index, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         for (CompilationUnit cu : index.getCompilationUnits())
-            parse(cu, result);
+            parse(cu, atypes, declAnnos);
     }
 
     private CompilationUnit theCompilationUnit;
 
-    private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> result) {
+    private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         theCompilationUnit = cu;
         final String packageName;
         if (cu.getPackage() == null)
@@ -141,13 +136,13 @@ public class StubParser {
             packageName = cu.getPackage().getName().toString();
         if (cu.getTypes() != null) {
             for (TypeDeclaration typeDecl : cu.getTypes())
-                parse(typeDecl, packageName, result);
+                parse(typeDecl, packageName, atypes, declAnnos);
         }
     }
 
     // typeDecl's name may be a binary name such as "A$B".
     // That is a hack because the StubParser does not handle nested classes.
-    private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> result) {
+    private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         // Fully-qualified name of the type being parsed
         String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
@@ -166,7 +161,7 @@ public class StubParser {
             if (warnIfNotFound || debugStubParser)
                 stubWarning("Skipping annotation type: " + typeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
-            parseType((ClassOrInterfaceDeclaration)typeDecl, typeElt, result);
+            parseType((ClassOrInterfaceDeclaration)typeDecl, typeElt, atypes, declAnnos);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
 
         Map<Element, BodyDeclaration> elementsToDecl = getMembers(typeElt, typeDecl);
@@ -174,18 +169,19 @@ public class StubParser {
             final Element elt = entry.getKey();
             final BodyDeclaration decl = entry.getValue();
             if (elt.getKind().isField())
-                parseField((FieldDeclaration)decl, (VariableElement)elt, result);
+                parseField((FieldDeclaration)decl, (VariableElement)elt, atypes, declAnnos);
             else if (elt.getKind() == ElementKind.CONSTRUCTOR)
-                parseConstructor((ConstructorDeclaration)decl, (ExecutableElement)elt, result);
+                parseConstructor((ConstructorDeclaration)decl, (ExecutableElement)elt, atypes, declAnnos);
             else if (elt.getKind() == ElementKind.METHOD)
-                parseMethod((MethodDeclaration)decl, (ExecutableElement)elt, result);
+                parseMethod((MethodDeclaration)decl, (ExecutableElement)elt, atypes, declAnnos);
             else { /* do nothing */
                 System.err.println("StubParser ignoring: " + elt);
             }
         }
     }
 
-    private void parseType(ClassOrInterfaceDeclaration decl, TypeElement elt, Map<Element, AnnotatedTypeMirror> result) {
+    private void parseType(ClassOrInterfaceDeclaration decl, TypeElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
         {
@@ -233,7 +229,7 @@ public class StubParser {
         }
         annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
         annotateSupertypes(decl, type);
-        putNew(result, elt, type);
+        putNew(atypes, elt, type);
     }
 
     private void annotateSupertypes(ClassOrInterfaceDeclaration typeDecl, AnnotatedDeclaredType type) {
@@ -258,17 +254,26 @@ public class StubParser {
     }
 
     private void parseMethod(MethodDeclaration decl, ExecutableElement elt,
-            Map<Element, AnnotatedTypeMirror> result) {
+            Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
+        // StubParser parses all annotations in type annotation position as type annotations
+        annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
 
         List<Parameter> params = decl.getParameters();
+        List<? extends VariableElement> paramElts = elt.getParameters();
         List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
+            VariableElement paramElt = paramElts.get(i);
             AnnotatedTypeMirror paramType = paramTypes.get(i);
             Parameter param = params.get(i);
+
+            annotateDecl(declAnnos, paramElt, param.getAnnotations());
+            annotateDecl(declAnnos, paramElt, param.getType().getAnnotations());
+
             if (param.isVarArgs()) {
                 // workaround
                 assert paramType.getKind() == TypeKind.ARRAY;
@@ -280,7 +285,7 @@ public class StubParser {
 
         annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
 
-        putNew(result, elt, methodType);
+        putNew(atypes, elt, methodType);
     }
 
     /**
@@ -357,7 +362,8 @@ public class StubParser {
     }
 
     private void parseConstructor(ConstructorDeclaration decl,
-            ExecutableElement elt, Map<Element, AnnotatedTypeMirror> result) {
+            ExecutableElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
@@ -368,14 +374,17 @@ public class StubParser {
 
         annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
 
-        putNew(result, elt, methodType);
+        putNew(atypes, elt, methodType);
     }
 
     private void parseField(FieldDeclaration decl,
-            VariableElement elt, Map<Element, AnnotatedTypeMirror> result) {
+            VariableElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        annotateDecl(declAnnos, elt, decl.getAnnotations());
+        // StubParser parses all annotations in type annotation position as type annotations
+        annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
         AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
         annotate(fieldType, decl.getType());
-        putNew(result, elt, fieldType);
+        putNew(atypes, elt, fieldType);
     }
 
     private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {
@@ -387,6 +396,20 @@ public class StubParser {
             if (annoMirror != null)
                 type.addAnnotation(annoMirror);
         }
+    }
+
+    private void annotateDecl(Map<String, Set<AnnotationMirror>> declAnnos, Element elt, List<AnnotationExpr> annotations) {
+        if (annotations == null)
+            return;
+        Set<AnnotationMirror> annos = new HashSet<AnnotationMirror>();
+        for (AnnotationExpr annotation : annotations) {
+            String annoName = StubUtil.getAnnotationName(annotation);
+            AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
+            if (annoMirror != null)
+                annos.add(annoMirror);
+        }
+        String key = ElementUtils.getVerboseName(elt);
+        declAnnos.put(key, annos);
     }
 
     private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
