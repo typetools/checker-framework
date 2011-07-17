@@ -89,7 +89,9 @@ public class AnnotatedTypeFactory {
     protected final @Nullable QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
-    // not final, because it is assigned in postInit()
+    // Initially null, then assigned in postInit().  Caching is enabled as
+    // soon as this is non-null, so it should be first set to its final
+    // value, not initialized to an empty map that is incrementally filled.
     private Map<Element, AnnotatedTypeMirror> indexTypes;
 
     private Class<? extends SourceChecker> checkerClass;
@@ -154,7 +156,7 @@ public class AnnotatedTypeFactory {
      * AnnotatedTypeFactory.
      */
     protected void postInit() {
-        this.indexTypes = buildIndexTypes();
+        buildIndexTypes();
     }
 
     @Override
@@ -328,7 +330,9 @@ public class AnnotatedTypeFactory {
             throw new AssertionError("Cannot be here " + decl.getKind() +
                     " " + elt);
 
-        // TODO: Why is caching disabled if indexTypes == null?
+        // Caching is disabled if indexTypes == null, because calls to this
+        // method before the stub files are fully read can return incorrect
+        // results.
         if (SHOULD_CACHE && indexTypes != null)
             elementCache.put(elt, atypes.deepCopy(type));
         return type;
@@ -1357,16 +1361,17 @@ public class AnnotatedTypeFactory {
         };
     }
 
-    private Map<Element, AnnotatedTypeMirror> buildIndexTypes() {
-        Map<Element, AnnotatedTypeMirror> result =
-            new HashMap<Element, AnnotatedTypeMirror>();
+    private void buildIndexTypes() {
+
+        Map<Element, AnnotatedTypeMirror> indexTypes
+            = new HashMap<Element, AnnotatedTypeMirror>();
 
         InputStream in = null;
         if (checkerClass != null)
             in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
             StubParser stubParser = new StubParser("jdk.astub", in, this, env);
-            stubParser.parse(result);
+            stubParser.parse(indexTypes);
         }
 
         String stubFiles = env.getOptions().get("stubs");
@@ -1375,8 +1380,10 @@ public class AnnotatedTypeFactory {
         if (stubFiles == null)
             stubFiles = System.getenv("stubs");
 
-        if (stubFiles == null)
-            return result;
+        if (stubFiles == null) {
+            this.indexTypes = indexTypes;
+            return;
+        }
 
         String[] stubArray = stubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
@@ -1393,14 +1400,15 @@ public class AnnotatedTypeFactory {
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
                     StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, env);
-                    stubParser.parse(result);
+                    stubParser.parse(indexTypes);
                 }
             } catch (FileNotFoundException e) {
                 System.err.println("Couldn't find stub file named: " + stubPath);
             }
         }
 
-        return result;
+        this.indexTypes = indexTypes;
+        return;
     }
 
 //     /**
