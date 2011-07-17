@@ -82,7 +82,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** A regular expression for classes whose uses should be skipped. */
     private Pattern skipUsesPattern;
 
-    /** The chosent lint options that have been enabled by programmer */
+    /** The chosen lint options that have been enabled by programmer */
     private Set<String> activeLints;
 
     /** The line separator */

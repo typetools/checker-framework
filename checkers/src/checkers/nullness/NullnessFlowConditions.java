@@ -70,11 +70,13 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
     private Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
 
     protected final NullnessAnnotatedTypeFactory typefactory;
+    protected final NullnessFlow nullnessFlow;
 
     protected final PrintStream debug;
 
-    public NullnessFlowConditions(NullnessAnnotatedTypeFactory tf, PrintStream debug) {
+    public NullnessFlowConditions(NullnessAnnotatedTypeFactory tf, NullnessFlow nf, PrintStream debug) {
         this.typefactory = tf;
+        this.nullnessFlow = nf;
         this.debug = debug;
     }
 
@@ -171,7 +173,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             this.excludes.remove(var(expr));
         }
 
-        this.nonnullExpressions.addAll(shouldInferNullness(node));
+        this.nonnullExpressions.addAll(nullnessFlow.shouldInferNullness(node));
 
         return null;
     }
@@ -373,9 +375,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
                     mark(var(left), true);
             }
 
-            if (isNull(right) && isPure(left))
+            if (isNull(right) && nullnessFlow.isPure(left))
                 this.nullableExpressions.add(left.toString());
-            else if (isNull(left) && isPure(right))
+            else if (isNull(left) && nullnessFlow.isPure(right))
                 this.nullableExpressions.add(right.toString());
 
         } else if (oper == Tree.Kind.NOT_EQUAL_TO) {
@@ -393,9 +395,9 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             // TODO: why is there no handling of Poly and NONNULL here??
 
             // Handle Pure methods
-            if (isNull(right) && isPure(left))
+            if (isNull(right) && nullnessFlow.isPure(left))
                 this.nonnullExpressions.add(left.toString());
-            else if (isNull(left) && isPure(right))
+            else if (isNull(left) && nullnessFlow.isPure(right))
                 this.nonnullExpressions.add(right.toString());
 
             if (isNull(right) && isUseOfStaticVariableElement(left))
@@ -475,7 +477,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
         super.visitMethodInvocation(node, p);
 
-        this.nonnullExpressions.addAll(shouldInferNullness(node));
+        this.nonnullExpressions.addAll(nullnessFlow.shouldInferNullness(node));
 
         return null;
     }

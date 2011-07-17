@@ -220,6 +220,9 @@ public class StubUtil {
         }
 
         public void visit(Parameter n, Void arg) {
+            if (n.getId().getArrayCount() > 0) {
+                throw new Error("Put array brackets on the type, not the variable: " + n);
+            }
             n.getType().accept(this, arg);
         }
 

@@ -3,9 +3,12 @@ package checkers.util;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
+import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
@@ -62,7 +65,8 @@ public class AnnotationUtils {
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular
-     * fully-qualified name.
+     * fully-qualified name.  getElementValues on the result returns an
+     * empty map.
      *
      * @param name the name of the annotation to create
      * @return an {@link AnnotationMirror} of type {@code} name
@@ -486,6 +490,7 @@ public class AnnotationUtils {
     // **********************************************************************
     // Helper methods to handle annotations.  mainly workaround
     // AnnotationMirror.equals undesired property
+    // (I think the undesired property is that it's reference equality.)
     // **********************************************************************
 
     /**
@@ -987,6 +992,35 @@ public class AnnotationUtils {
             }
         }
         throw new IllegalArgumentException("No element with name " + name + " in annotation " + anno);
+    }
+
+    /**
+     * Like elementValue(anno, name, String[].class) except that a String[]
+     * annotation element gets returned by elementValue() as a
+     * List&lt;Attribute&gt; and would have to be converted; this does that
+     * conversion.
+     */
+    public static List<String> elementValueStringArray(AnnotationMirror anno,
+            CharSequence name) {
+        List<Attribute> la = elementValue(anno, name, List.class);
+        List<String> result = new ArrayList<String>(la.size());
+        for (Attribute a : la) {
+            assert a instanceof Attribute.Constant;
+            result.add((String) a.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * name is an annotation field of type Class, and this gives its name.
+     * Like elementValue(anno, name, Class.class).getCanonicalName() except
+     * that elementValue() would return a Type.ClassType that would have to
+     * be converted; this does that conversion.
+     */
+    public static String elementValueClassName(AnnotationMirror anno, CharSequence name) {
+        Type.ClassType ct = elementValue(anno, name, Type.ClassType.class);
+        // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
+        return ct.toString();
     }
 
     /** Returns true if the given annotation has a @Inherited meta-annotation. */

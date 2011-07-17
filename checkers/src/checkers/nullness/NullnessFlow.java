@@ -18,6 +18,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
@@ -135,7 +136,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         FlowState before = flowState_whenFalse.copy();
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, this, debug);
         conds.visit(tree, null);
         this.flowResults.putAll(conds.getTreeResults());
 
@@ -200,7 +201,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             scan(node.getRightOperand(), p);
         }
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, this, debug);
         conds.visit(node, null);
         this.takeFromConds(conds);
         return null;
@@ -223,7 +224,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     // TODO: move shouldInferNullness somewhere more appropriate. Maybe NullnessFlowConditions.
-    public static List<String> shouldInferNullness(ExpressionTree node) {
+    public List<String> shouldInferNullness(ExpressionTree node) {
         List<String> result = new ArrayList<String>();
         result.addAll(shouldInferNullnessIfTrue(node));
         result.addAll(shouldInferNullnessIfFalse(node));
@@ -243,7 +244,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private List<String> substitutePatternsDecl(MethodTree method, String[] annoValues) {
+    private List<String> substitutePatternsDecl(MethodTree method, List<String> annoValues) {
         List<? extends VariableTree> paramTrees = method.getParameters();
         List<String> params = new ArrayList<String>(paramTrees.size());
         for(VariableTree vt : paramTrees) {
@@ -261,7 +262,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private static List<String> substitutePatternsCall(MethodInvocationTree methodInvok, String[] annoValues) {
+    private static List<String> substitutePatternsCall(MethodInvocationTree methodInvok, List<String> annoValues) {
         String receiver = receiver(methodInvok);
 
         List<? extends ExpressionTree> argExps = methodInvok.getArguments();
@@ -284,7 +285,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @return The substituted annotation values.
      */
     private static List<String> substitutePatternsGeneric(Tree node, String receiver,
-            List<String> argparams, String[] annoValues) {
+            List<String> argparams, List<String> annoValues) {
         List<String> asserts = new ArrayList<String>();
 
         fields: for (String s : annoValues) {
@@ -335,7 +336,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private static List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
+    private List<String> shouldInferNullnessIfTrue(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
 
         if (node.getKind() == Tree.Kind.CONDITIONAL_AND) {
@@ -352,9 +353,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
 
         List<String> asserts;
-        if (method.getAnnotation(AssertNonNullIfTrue.class) != null) {
-            AssertNonNullIfTrue anno = method.getAnnotation(AssertNonNullIfTrue.class);
-            asserts = substitutePatternsCall(methodInvok, anno.value());
+        AnnotationMirror anno = factory.getDeclAnnotation(method, AssertNonNullIfTrue.class);
+        if (anno != null) {
+            List<String> annitValue = AnnotationUtils.elementValueStringArray(anno, "value");
+            asserts = substitutePatternsCall(methodInvok, annitValue);
         } else {
             asserts = Collections.emptyList();
         }
@@ -379,9 +381,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
 
         List<String> asserts;
-        if (method.getAnnotation(AssertNonNullAfter.class) != null) {
-            AssertNonNullAfter anno = method.getAnnotation(AssertNonNullAfter.class);
-            asserts = substitutePatternsCall(methodInvok, anno.value());
+        AnnotationMirror anno = factory.getDeclAnnotation(method, AssertNonNullAfter.class);
+        if (anno != null) {
+            List<String> annaValue = AnnotationUtils.elementValueStringArray(anno, "value");
+            asserts = substitutePatternsCall(methodInvok, annaValue);
         } else {
             asserts = Collections.emptyList();
         }
@@ -389,7 +392,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private static List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
+    private List<String> shouldInferNullnessIfFalse(ExpressionTree node) {
         if (node.getKind() != Tree.Kind.LOGICAL_COMPLEMENT
                 || ((UnaryTree)node).getExpression().getKind() != Tree.Kind.METHOD_INVOCATION) {
             return Collections.emptyList();
@@ -399,9 +402,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
 
         List<String> asserts;
-        if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
-            AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-            asserts = substitutePatternsCall(methodInvok, anno.value());
+        AnnotationMirror anno = factory.getDeclAnnotation(method, AssertNonNullIfFalse.class);
+        if (anno != null) {
+            List<String> annifValue = AnnotationUtils.elementValueStringArray(anno, "value");
+            asserts = substitutePatternsCall(methodInvok, annifValue);
         } else {
             asserts = Collections.emptyList();
         }
@@ -419,9 +423,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         ExecutableElement method = TreeUtils.elementFromUse(methodInvok);
 
         List<String> asserts;
-        if (method.getAnnotation(AssertNonNullIfFalse.class) != null) {
-            AssertNonNullIfFalse anno = method.getAnnotation(AssertNonNullIfFalse.class);
-            asserts = substitutePatternsCall(methodInvok, anno.value());
+        AnnotationMirror anno = factory.getDeclAnnotation(method, AssertNonNullIfFalse.class);
+        if (anno != null) {
+            List<String> annifValue = AnnotationUtils.elementValueStringArray(anno, "value");
+            asserts = substitutePatternsCall(methodInvok, annifValue);
         } else {
             asserts = Collections.emptyList();
         }
@@ -429,7 +434,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return asserts;
     }
 
-    private static List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
+    private List<String> shouldInferNullnessPureNegation(ExpressionTree node) {
         if (node.getKind() == Tree.Kind.EQUAL_TO) {
             BinaryTree binary = (BinaryTree)node;
             if (!isNull(binary.getLeftOperand()) && !isNull(binary.getRightOperand()))
@@ -511,7 +516,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // else is needed to avoid the double marking bug
 //        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
 //                !isNonNull(TreeUtils.elementFromUse(node))) {
-//        	markTree(node, NONNULL);
+//              markTree(node, NONNULL);
         }
 
         return null;
@@ -529,7 +534,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // else is needed to avoid the double marking bug
 //        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
 //                !isNonNull(TreeUtils.elementFromUse(node))) {
-//        	markTree(node, NONNULL);
+//              markTree(node, NONNULL);
         }
 
         return null;
@@ -562,7 +567,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         super.clearOnCall(method);
 
-        boolean isPure = method.getAnnotation(Pure.class) != null;
+        boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java") || methodPackage.startsWith("com.sun");
 
@@ -606,7 +611,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.visitMethodInvocation(node, p);
 
         ExecutableElement method = TreeUtils.elementFromUse(node);
-        if (method.getAnnotation(AssertParametersNonNull.class) != null) {
+        if (factory.getDeclAnnotation(method, AssertParametersNonNull.class) != null) {
             for (ExpressionTree arg : node.getArguments())
                 inferNullness(arg);
         }
@@ -622,7 +627,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         for (int i = 0; i < this.flowState.vars.size(); ++i) {
             Element elem = this.flowState.vars.get(i);
             if (elem.getKind() == ElementKind.FIELD
-                    && elem.getAnnotation(LazyNonNull.class) != null
+                    && factory.getDeclAnnotation(elem, LazyNonNull.class) != null
                     && prev.annos.get(NONNULL, i))
                 this.flowState.annos.set(NONNULL, i);
         }
@@ -694,10 +699,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         Element elem = TreeUtils.elementFromDeclaration(meth);
-        if (elem.getAnnotation(NonNullOnEntry.class) != null
-                || elem.getAnnotation(AssertNonNullIfTrue.class) != null
-                || elem.getAnnotation(AssertNonNullIfFalse.class) != null
-                || elem.getAnnotation(AssertNonNullAfter.class) != null) {
+        if (factory.getDeclAnnotation(elem, NonNullOnEntry.class) != null
+            || factory.getDeclAnnotation(elem, AssertNonNullIfTrue.class) != null
+            || factory.getDeclAnnotation(elem, AssertNonNullIfFalse.class) != null
+            || factory.getDeclAnnotation(elem, AssertNonNullAfter.class) != null) {
 
             List<? extends Element> myFieldElems;
             { // block to get all fields of the current class
@@ -716,10 +721,11 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 myFieldElems = allFields(myElem);
             }
 
-            if (elem.getAnnotation(NonNullOnEntry.class) != null) {
-                String[] fields = elem.getAnnotation(NonNullOnEntry.class).value();
+            AnnotationMirror anno = factory.getDeclAnnotation(elem, NonNullOnEntry.class);
+            if (anno != null) {
+                List<String> fields = AnnotationUtils.elementValueStringArray(anno, "value");
                 Pair<List<String>, List<VariableElement>> fieldsList =
-                	validateNonNullOnEntry(path, myFieldElems, fields);
+                        validateNonNullOnEntry(path, myFieldElems, fields);
                 this.flowState.nnExprs.addAll(fieldsList.first);
 
                 for (VariableElement elt: fieldsList.second) {
@@ -753,12 +759,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         TypeMirror retType = methElem.getReturnType();
 
         if (retType.getKind() == TypeKind.VOID &&
-                methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+            factory.getDeclAnnotation(methElem, AssertNonNullAfter.class) != null) {
             checkAssertNonNullAfter(meth, methElem);
         }
 
         if (TreeUtils.isConstructor(meth)) {
-        	initializedFields.put(methElem, calcInitializedFields());
+            initializedFields.put(methElem, calcInitializedFields());
         }
     }
 
@@ -767,26 +773,27 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * flowstate.
      */
     private Set<VariableElement> calcInitializedFields() {
-    	Set<VariableElement> initialized = new HashSet<VariableElement>();
+        Set<VariableElement> initialized = new HashSet<VariableElement>();
 
-    	int i = 0;
-    	for (VariableElement f: flowState.vars) {
-    		if (f.getKind().isField() && flowState.annos.get(NONNULL, i)) {
-    			initialized.add(f);
-    		}
-    		i++;
-    	}
+        int i = 0;
+        for (VariableElement f: flowState.vars) {
+            if (f.getKind().isField() && flowState.annos.get(NONNULL, i)) {
+                initialized.add(f);
+            }
+            i++;
+        }
 
-    	return initialized;
+        return initialized;
     }
 
     public Set<VariableElement> initializedFieldsAfter(ExecutableElement method) {
-    	return initializedFields.get(method);
+        return initializedFields.get(method);
     }
 
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
-        String[] annoValues = methElem.getAnnotation(AssertNonNullAfter.class).value();
+        AnnotationMirror anno = factory.getDeclAnnotation(methElem, AssertNonNullAfter.class);
+        List<String> annoValues = AnnotationUtils.elementValueStringArray(anno, "value");
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
 
         for (String annoVal : annoValues) {
@@ -802,17 +809,17 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-            		checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
-            	}
-            	// TODO: Check this
-            	e = findElement(annoVal, flowState.vars);
+                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                    checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
+                }
+                // TODO: Check this
+                e = findElement(annoVal, flowState.vars);
             }
 
             int index = this.flowState.vars.indexOf(e);
             if (DO_ADVANCED_CHECKS &&
-            	!(index != -1 && this.flowState.annos.get(NONNULL, index))) {
-            	checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
+                !(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+                checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
     }
@@ -825,7 +832,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param ret The specific return statement within the method.
      */
     private void checkAssertNonNullIfTrue(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
-        String[] annoValues = methElem.getAnnotation(AssertNonNullIfTrue.class).value();
+        AnnotationMirror anno = factory.getDeclAnnotation(methElem, AssertNonNullIfTrue.class);
+        List<String> annoValues = AnnotationUtils.elementValueStringArray(anno, "value");
         checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, true);
     }
 
@@ -837,7 +845,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param ret The specific return statement within the method.
      */
     private void checkAssertNonNullIfFalse(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
-        String[] annoValues = methElem.getAnnotation(AssertNonNullIfFalse.class).value();
+        AnnotationMirror anno = factory.getDeclAnnotation(methElem, AssertNonNullIfFalse.class);
+        List<String> annoValues = AnnotationUtils.elementValueStringArray(anno, "value");
         checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, false);
     }
 
@@ -852,7 +861,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      *   false for annotation values from AssertNonNullIfFalse.
      */
     private void checkAssertNonNullIfXXX(MethodTree meth, ExecutableElement methElem, ReturnTree ret,
-            String[] annoValues, boolean ifTrue) {
+            List<String> annoValues, boolean ifTrue) {
         ExpressionTree retExp = ret.getExpression();
         if (factory.getAnnotatedType(retExp).getKind() != TypeKind.BOOLEAN) {
             return;
@@ -861,7 +870,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
 
-        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, debug);
+        NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, this, debug);
         conds.visit(retExp, null);
         this.takeFromConds(conds);
 
@@ -883,21 +892,21 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     // TODO: Handles static fields only as they are
                     // resolved in compile time
                     if (ElementUtils.isError(e)) {
-                    	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-                    		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-                    	}
-                    	// TODO: Check this
-                    	e = findElement(check, flowState.vars);
+                        if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                            checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+                        }
+                        // TODO: Check this
+                        e = findElement(check, flowState.vars);
                     }
 
                     int index = this.flowState.vars.indexOf(e);
-                   	if (DO_ADVANCED_CHECKS &&
-                   		!(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
-                   		!this.flowState.nnExprs.contains(check)) {
-                   		checker.report(Result.failure(
-                   				(ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
-                   				check), ret);
-                   	}
+                    if (DO_ADVANCED_CHECKS &&
+                        !(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
+                        !this.flowState.nnExprs.contains(check)) {
+                        checker.report(Result.failure(
+                                                (ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
+                                                check), ret);
+                        }
 
                 }
             } else {
@@ -971,30 +980,30 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-            	if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
-            		checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-            	}
-            	// TODO: Check this
-            	e = findElement(check, flowState.vars);
+                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                    checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
+                }
+                // TODO: Check this
+                e = findElement(check, flowState.vars);
             }
-           	if (ifTrue) {
-           		if (!conds.getNonnullExpressions().contains(check) &&
-           				!conds.getNonnullElements().contains(e) &&
-           				!conds.getExplicitNonnullElements().contains(e) &&
-           				DO_ADVANCED_CHECKS) {
-           			checker.report(Result.failure(
-           				"assertiftrue.postcondition.not.satisfied",
-           				check), ret);
-           		}
-           	} else {
-           		if (!conds.getNullableExpressions().contains(check) &&
-           				!conds.getNullableElements().contains(e) &&
-           				!conds.getExplicitNullableElements().contains(e) &&
-                        DO_ADVANCED_CHECKS) {
-           			checker.report(Result.failure(
-           				"assertiffalse.postcondition.not.satisfied",
-           				check), ret);
-           		}
+            if (ifTrue) {
+                if (!conds.getNonnullExpressions().contains(check) &&
+                    !conds.getNonnullElements().contains(e) &&
+                    !conds.getExplicitNonnullElements().contains(e) &&
+                    DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure(
+                                                  "assertiftrue.postcondition.not.satisfied",
+                                                  check), ret);
+                }
+            } else {
+                if (!conds.getNullableExpressions().contains(check) &&
+                    !conds.getNullableElements().contains(e) &&
+                    !conds.getExplicitNullableElements().contains(e) &&
+                    DO_ADVANCED_CHECKS) {
+                    checker.report(Result.failure(
+                                                  "assertiffalse.postcondition.not.satisfied",
+                                                  check), ret);
+                }
             }
         }
     }
@@ -1007,7 +1016,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     private void checkNonNullOnEntry(MethodInvocationTree call) {
         ExecutableElement method = TreeUtils.elementFromUse(call);
 
-        if (method.getAnnotation(NonNullOnEntry.class) != null) {
+        if (factory.getDeclAnnotation(method, NonNullOnEntry.class) != null) {
             if (debug != null) {
                 debug.println("NullnessFlow::checkNonNullOnEntry: Looking at call: " + call);
             }
@@ -1041,7 +1050,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 recvFieldElems = allFields(recvElem);
                 recvImmediateFields = ElementFilter.fieldsIn(recvElem.getEnclosedElements());
             }
-            String[] nnoeExprs = method.getAnnotation(NonNullOnEntry.class).value();
+            AnnotationMirror nnoe = factory.getDeclAnnotation(method, NonNullOnEntry.class);
+            List<String> nnoeExprs = AnnotationUtils.elementValueStringArray(nnoe, "value");
 
             for (String nnoeExpr : nnoeExprs) {
                 // TODO: use this instead of the below.
@@ -1228,8 +1238,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param fields The NNOE annotation values.
      * @return The validated list of fields.
      */
-    private Pair<List<String>, List<VariableElement>> validateNonNullOnEntry(TreePath path, List<? extends Element> myFieldElems, String[] fields) {
-    	MethodTree meth = (MethodTree)path.getLeaf();
+    private Pair<List<String>, List<VariableElement>> validateNonNullOnEntry(TreePath path, List<? extends Element> myFieldElems, List<String> fields) {
+        MethodTree meth = (MethodTree)path.getLeaf();
         List<String> nnExprs = new LinkedList<String>();
         List<VariableElement> nnElems = new LinkedList<VariableElement>();
 
@@ -1242,9 +1252,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (DO_ADVANCED_CHECKS && ElementUtils.isError(e)) {
-            	checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
+                checker.report(Result.failure("field.not.found.nullness.parse.error", field), meth);
             } else if (ElementUtils.isStatic(e) && e instanceof VariableElement) {
-            	nnElems.add((VariableElement)e);
+                nnElems.add((VariableElement)e);
             }
         }
 
@@ -1269,15 +1279,15 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         MethodTree meth = TreeUtils.enclosingMethod(factory.getPath(ret));
         ExecutableElement methElem = TreeUtils.elementFromDeclaration(meth);
 
-        if (methElem.getAnnotation(AssertNonNullAfter.class) != null) {
+        if (factory.getDeclAnnotation(methElem, AssertNonNullAfter.class) != null) {
             checkAssertNonNullAfter(meth, methElem);
         }
 
-        if (methElem.getAnnotation(AssertNonNullIfTrue.class) != null) {
+        if (factory.getDeclAnnotation(methElem, AssertNonNullIfTrue.class) != null) {
             checkAssertNonNullIfTrue(meth, methElem, ret);
         }
 
-        if (methElem.getAnnotation(AssertNonNullIfFalse.class) != null) {
+        if (factory.getDeclAnnotation(methElem, AssertNonNullIfFalse.class) != null) {
             checkAssertNonNullIfFalse(meth, methElem, ret);
         }
     }
@@ -1345,11 +1355,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * Returns true if it's a pure method invocation or array access.
      * TODO: what if the receiver or array index are not pure?
      */
-    static final boolean isPure(Tree tree) {
+    final boolean isPure(Tree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
-            return (method.getAnnotation(Pure.class)) != null;
+            boolean result = (factory.getDeclAnnotation(method, Pure.class)) != null;
+            return result;
         }
         if (tree.getKind() == Tree.Kind.ARRAY_ACCESS ) {
             return true;
@@ -1359,10 +1370,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     private VariableElement findElement(String elem, Collection<? extends VariableElement> vars) {
-    	for (VariableElement v: vars) {
-    		if (v.getSimpleName().toString().equals(elem))
-    			return v;
-    	}
-    	return null;
+        for (VariableElement v: vars) {
+            if (v.getSimpleName().toString().equals(elem))
+                return v;
+        }
+        return null;
     }
 }

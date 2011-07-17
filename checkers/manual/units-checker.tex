@@ -39,7 +39,7 @@ Kind annotations can be used to declare what the expected unit of
 measurement is, without fixing the particular unit used.
 For example, one could write a method taking a \code{@Length} value,
 without specifying whether it will take meters or kilometers.
-We currently provide the following kind annotations:
+The following kind annotations are defined:
 
 \begin{description}
 \item[\code{@\refclass{units/quals}{Area}}]
@@ -61,12 +61,11 @@ We currently provide the following kind annotations:
 \item[\code{@\refclass{units/quals}{Time}}]
 \end{description}
 
-\medskip
+% \medskip
 
 
-For each kind of unit, we provide the corresponding SI unit of
-measurement.
-We currently provide:
+For each kind of unit, the corresponding SI unit of
+measurement is defined:
 
 \begin{enumerate}
 \item For \code{@Area}:
@@ -117,8 +116,8 @@ The basic SI units
 (\code{@s}, \code{@m}, \code{@g}, \code{@A}, \code{@K},
  \code{@mol}, \code{@cd})
 take an optional \code{Prefix} enum as argument.
-For example, to use nanoseconds as unit, one could use
-\code{@s(Prefix.nano)} as a unit type, and \<@mm> is equivalent to
+For example, to use nanoseconds as unit, you could use
+\code{@s(Prefix.nano)} as a unit type.  Furthermore, \<@mm> is equivalent to
 \<@m(Prefix.milli)>.
 
 

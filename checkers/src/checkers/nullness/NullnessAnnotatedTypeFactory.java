@@ -4,8 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.*;
+import java.lang.annotation.Annotation;
 
+import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 import checkers.basetype.BaseTypeChecker;
@@ -242,6 +243,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     			TreeUtils.elementFromDeclaration(node));
     }
 
+    // called for side effect; return value is always ignored.
     private boolean substituteUnused(Tree tree, AnnotatedTypeMirror type) {
         if (tree.getKind() != Tree.Kind.MEMBER_SELECT
             && tree.getKind() != Tree.Kind.IDENTIFIER)
@@ -251,24 +253,19 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (field == null || field.getKind() != ElementKind.FIELD)
             return false;
 
-        Unused unused = field.getAnnotation(Unused.class);
-        if (unused == null)
+        AnnotationMirror unused = getDeclAnnotation(field, Unused.class);
+        if (unused == null) {
             return false;
-
-        try {
-            unused.when();
-            assert false : "Cannot be here";
-            return false;
-        } catch (MirroredTypeException exp) {
-            Name whenName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            AnnotatedTypeMirror receiver = plainFactory.getReceiver((ExpressionTree)tree);
-            if (receiver == null || receiver.getAnnotation(whenName) == null) {
-                return false;
-            }
-            type.clearAnnotations();
-            type.addAnnotation(NULLABLE);
-            return true;
         }
+
+        String whenName = AnnotationUtils.elementValueClassName(unused, "when");
+        AnnotatedTypeMirror receiver = plainFactory.getReceiver((ExpressionTree)tree);
+        if (receiver == null || receiver.getAnnotation(whenName) == null) {
+            return false;
+        }
+        type.clearAnnotations();
+        type.addAnnotation(NULLABLE);
+        return true;
     }
 
     /**
