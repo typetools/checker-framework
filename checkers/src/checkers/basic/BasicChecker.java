@@ -39,20 +39,22 @@ public final class BasicChecker extends BaseTypeChecker {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
 
         String qualNames = env.getOptions().get("quals");
-        if (qualNames == null)
-            throw new Error("missing required option: -Aquals");
+        if (qualNames == null) {
+            errorAbort("BasicChecker: missing required option: -Aquals");
+        }
 
         Set<Class<? extends Annotation>> qualSet =
             new HashSet<Class<? extends Annotation>>();
-        try {
-            for (String qualName : qualNames.split(",")) {
+        for (String qualName : qualNames.split(",")) {
+            try {
                 final Class<? extends Annotation> q =
                     (Class<? extends Annotation>)Class.forName(qualName);
                 qualSet.add(q);
+            } catch (ClassNotFoundException e) {
+                errorAbort("BasicChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
             }
-        } catch (ClassNotFoundException e) {
-            throw new Error(e);
         }
+
         return Collections.unmodifiableSet(qualSet);
     }
 
