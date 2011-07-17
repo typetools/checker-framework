@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
@@ -93,6 +94,13 @@ public class AnnotatedTypeFactory {
     // soon as this is non-null, so it should be first set to its final
     // value, not initialized to an empty map that is incrementally filled.
     private Map<Element, AnnotatedTypeMirror> indexTypes;
+    /**
+     * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
+     * Map keys cannot be Element, because a different Element appears
+     * in the stub files than in the real files.  So, map keys are: [TODO]
+     */
+    // Not final, because it is assigned in postInit().
+    private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
     private Class<? extends SourceChecker> checkerClass;
 
@@ -146,6 +154,7 @@ public class AnnotatedTypeFactory {
         this.qualHierarchy = qualHierarchy;
         this.supportedQuals = getSupportedQualifiers();
         this.indexTypes = null; // will be set by postInit()
+        this.indexDeclAnnos = null; // will be set by postInit()
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
 
@@ -1361,17 +1370,22 @@ public class AnnotatedTypeFactory {
         };
     }
 
+    /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
     private void buildIndexTypes() {
-
+        if (this.indexTypes != null || this.indexDeclAnnos != null) {
+            throw new Error("buildIndexTypes called more than once");
+        }
         Map<Element, AnnotatedTypeMirror> indexTypes
             = new HashMap<Element, AnnotatedTypeMirror>();
+        Map<String, Set<AnnotationMirror>> indexDeclAnnos
+            = new HashMap<String, Set<AnnotationMirror>>();
 
         InputStream in = null;
         if (checkerClass != null)
             in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
             StubParser stubParser = new StubParser("jdk.astub", in, this, env);
-            stubParser.parse(indexTypes);
+            stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
         String stubFiles = env.getOptions().get("stubs");
@@ -1382,6 +1396,7 @@ public class AnnotatedTypeFactory {
 
         if (stubFiles == null) {
             this.indexTypes = indexTypes;
+            this.indexDeclAnnos = indexDeclAnnos;
             return;
         }
 
@@ -1400,7 +1415,7 @@ public class AnnotatedTypeFactory {
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
                     StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, env);
-                    stubParser.parse(indexTypes);
+                    stubParser.parse(indexTypes, indexDeclAnnos);
                 }
             } catch (FileNotFoundException e) {
                 System.err.println("Couldn't find stub file named: " + stubPath);
@@ -1408,38 +1423,9 @@ public class AnnotatedTypeFactory {
         }
 
         this.indexTypes = indexTypes;
+        this.indexDeclAnnos = indexDeclAnnos;
         return;
     }
-
-//     /**
-//      * Determines the declaration annotations on an element.
-//      *
-//      * @param elt the element
-//      * @return the declaration annotations on the element
-//      */
-//     private AnnotationMirror getDeclAnnotation(Element elt, String annotationName) {
-//         assert annotationName != null : annotationName + " cannot be null";
-//         Name name = env.getElementUtils().getName(annotationName);
-//         return getDeclAnnotation(elt, name);
-//     }
-// 
-//     /**
-//      * Returns the actual annotation mirror used to annotate the element,
-//      * whose name equals the passed annotationName if one exists, null otherwise.
-//      *
-//      * @param annotationName
-//      * @return the annotation mirror for annotationName
-//      */
-//     private AnnotationMirror getDeclAnnotation(Element elt, Name annotationName) {
-//         assert annotationName != null : "Null annotationName in getDeclAnnotation";
-//         Set<AnnotationMirror> annos = indexDeclAnnos.get(elt);
-//         if (annos != null) {
-//             for (AnnotationMirror anno : annos)
-//                 if (AnnotationUtils.annotationName(anno).equals(annotationName))
-//                     return anno;
-//         }
-//         return null;
-//     }
 
     /**
      * Returns the actual annotation mirror used to annotate this type,
@@ -1450,11 +1436,26 @@ public class AnnotatedTypeFactory {
      */
     public AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
         String aname = anno.getCanonicalName();
+
+        // First look in the stub files.
+        String eltName = ElementUtils.getVerboseName(elt);
+        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (stubAnnos != null) {
+            for (AnnotationMirror am : stubAnnos) {
+                if (sameAnnotation(am, aname)) {
+                    return am;
+                }
+            }
+        }
+
+        // Then look at the real annotations.
         for (AnnotationMirror am : elt.getAnnotationMirrors()) {
             if (sameAnnotation(am, aname)) {
                 return am;
             }
         }
+
+        // Not found in either location
         return null;
     }
 
