@@ -15,8 +15,8 @@ public class LubGlbChecker extends BaseTypeChecker {
     private AnnotationMirror A, B, C, D, E, F;
 
     @Override
-    public synchronized void init(ProcessingEnvironment env) {
-        super.init(env);
+    public void initChecker(ProcessingEnvironment env) {
+        super.initChecker(env);
 
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         A = annoFactory.fromClass(A.class);
