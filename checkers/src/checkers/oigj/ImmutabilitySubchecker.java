@@ -12,6 +12,7 @@ import com.sun.source.tree.Tree;
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.*;
 import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
@@ -87,12 +88,13 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
     //
     @Override
     public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree varTree) {
+                                AnnotatedTypeMirror receiverType, Tree varTree,
+                                AnnotatedTypeFactory factory) {
         if (!(varTree instanceof ExpressionTree))
             return true;
 
         Element varElement = InternalUtils.symbol(varTree);
-        if (varElement != null && varElement.getAnnotation(Assignable.class) != null)
+        if (varElement != null && factory.getDeclAnnotation(varElement, Assignable.class) != null)
             return true;
 
         if (getQualifierHierarchy().isSubtype(

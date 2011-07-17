@@ -93,7 +93,8 @@ another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
 \subsection{Nullness method annotations\label{nullness-non-qualifiers}}
 
 The Nullness checker supports several annotations that specify method
-behavior.
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
 
 \begin{description}
 
@@ -973,14 +974,17 @@ either a possible null pointer exception, or a wrong/missing annotation.
 When there are no more warnings from the checker, you are done!
 
 We recommend that you start by searching the code for occurrences of
-\code{null} in the following locations:
+\code{null} in the following locations; when you find one, write the
+corresponding annotation:
 
 \begin{itemize}
 \item
   in Javadoc:  add \code{@Nullable} annotations to method signatures (parameters and return types).
+% Search for "\*.*\bnull\b"
 \item
   \code{return null}:  add a \code{@Nullable} annotation to the return type
   of the given method.
+% Search for "return null" and "return.*? null" and "return.*: null"
 \item
   \code{\emph{param} == null}:  when a formal parameter is compared to
   \code{null}, then in most cases you can add a \code{@Nullable} annotation
@@ -994,6 +998,16 @@ We recommend that you start by searching the code for occurrences of
   change the declaration to \code{\emph{Type} \emph{field};}, without an
   initializer, and write no type annotation (because the default is
   \<@NonNull>).
+\item
+  declarations of \<contains>, \<containsKey>, \<containsValue>, \<equals>,
+  \<get>, \<indexOf>, \<lastIndexOf>, and \<remove> (with \<Object> as the
+  argument type):
+  change the argument type to \<@Nullable Object>; for \<remove>, also change
+  the return type to \<@Nullable Object>.
+% Emacs code for the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+
 \end{itemize}
 
 \noindent

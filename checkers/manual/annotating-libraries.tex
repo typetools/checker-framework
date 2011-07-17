@@ -63,8 +63,7 @@ automatically, with no need for the user to supply a command-line option.
 Inserting annotations in a library's \<.class> files takes an extra step
 using an external tool, the Annotation File Utilities
 (\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
-However, this process does not suffer the limitations of stub files, such
-as its inability to handle declaration annotations
+However, this process does not suffer the limitations of stub files
 (Section~\ref{stub-limitations}).
 
 
@@ -243,10 +242,6 @@ The stub file reader has several limitations:
 \item
   % Still a problem as of 9/2/2009.
   It does not handle \code{enum}s.
-\item
-  % Still a problem as of 9/2/2009.
-  It only handles type annotations, not declaration annotations (e.g.,
-  IGJ's \<@Assignable> or Interning's \<@UsesObjectEquals>).
 \item
   It does not handle nested classes.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the

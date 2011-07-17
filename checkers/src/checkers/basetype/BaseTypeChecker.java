@@ -365,7 +365,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return  true iff variable is assignable in the current scope
      */
     public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree variable) {
+            AnnotatedTypeMirror receiverType, Tree variable,
+            AnnotatedTypeFactory factory) {
         return true;
     }
 

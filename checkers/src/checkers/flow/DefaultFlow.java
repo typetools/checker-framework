@@ -195,7 +195,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
-        boolean isPure = method.getAnnotation(Pure.class) != null;
+        boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
         for (int i = 0; i < this.flowState.vars.size(); i++) {
             Element var = this.flowState.vars.get(i);
             for (AnnotationMirror a : this.flowState.annotations)
