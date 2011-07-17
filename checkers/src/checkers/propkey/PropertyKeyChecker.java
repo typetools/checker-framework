@@ -60,8 +60,8 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     private Set<String> lookupKeys;
 
     @Override
-    public void init(ProcessingEnvironment env) {
-        super.init(env);
+    public void initChecker(ProcessingEnvironment env) {
+        super.initChecker(env);
         this.lookupKeys =
             Collections.unmodifiableSet(buildLookupKeys(env.getOptions()));
     }
