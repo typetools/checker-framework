@@ -31,7 +31,7 @@ public class JavariChecker extends BaseTypeChecker {
      * @param processingEnv the processing environment to use in the local AnnotationFactory
      */
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
+    public void initChecker(ProcessingEnvironment processingEnv) {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         this.READONLY = annoFactory.fromClass(ReadOnly.class);
         this.THISMUTABLE = annoFactory.fromClass(ThisMutable.class);
@@ -39,7 +39,7 @@ public class JavariChecker extends BaseTypeChecker {
         this.POLYREAD = annoFactory.fromClass(PolyRead.class);
         this.QREADONLY = annoFactory.fromClass(QReadOnly.class);
         this.ASSIGNABLE = annoFactory.fromClass(Assignable.class);
-        super.init(processingEnv);
+        super.initChecker(processingEnv);
     }
 
     /**

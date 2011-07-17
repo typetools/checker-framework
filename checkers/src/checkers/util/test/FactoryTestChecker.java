@@ -79,8 +79,8 @@ public class FactoryTestChecker extends SourceChecker {
     SourceChecker checker;
 
     @Override
-    public synchronized void init(ProcessingEnvironment p) {
-        super.init(p);
+    public void initChecker(ProcessingEnvironment p) {
+        super.initChecker(p);
 
         // Find factory constructor
         String checkerClassName = env.getOptions().get("checker");
@@ -93,8 +93,7 @@ public class FactoryTestChecker extends SourceChecker {
                     checker = (SourceChecker)o;
             }
         } catch (Exception e) {
-            throw new RuntimeException("Couldn't load " +
-                    checkerClassName + " class.");
+            errorAbort("Couldn't load " + checkerClassName + " class.");
         }
     }
 
