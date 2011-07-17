@@ -8,13 +8,19 @@ If you want a reference to your checker included in this chapter,
 send us a link and short description of your checker, 
 
 
-\section{Units and dimensions checker}
+\section{Units and dimensions checker\label{units-and-dimensions-checker}}
 
 A checker for units and dimensions is available at
 \url{http://www.lexspoon.org/expannots/}.
 
+Unlike the Units Checker that is distributed with the Checker Framework
+(see Section~\ref{units-checker}), this checker includes dynamic checks and
+permits annotation arguments that are Java expressions.  This added
+flexibility, however, requires that you use a special version both of the
+Checker Framework and of the Type Annotations compiler.
 
-\section{Thread locality checker}
+
+\section{Thread locality checker\label{loci-thread-locality-checker}}
 
 Loci, a checker for thread locality, is available at
 \url{http://www.it.uu.se/research/upmarc/loci/}.
@@ -33,7 +39,7 @@ Developer resources are available at the project page
 % Project's developer's page: http://java.net/projects/loci
 
 
-\section{Safety-Critical Java checker}
+\section{Safety-Critical Java checker\label{safety-critical-java-checker}}
 
 A checker for Safety-Critical Java (SCJ, JSR 302) is available at
 \url{http://sss.cs.purdue.edu/projects/oscj/checker/checker.html}.
@@ -54,3 +60,5 @@ Developer resources are available at the project page
 
 % Publications: Static checking of safety critical Java annotations:
 % http://portal.acm.org/citation.cfm?doid=1850771.1850792
+
+% LocalWords:  SCJ

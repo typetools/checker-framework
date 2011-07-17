@@ -94,6 +94,9 @@ class RawTypes {
 
     class MyTest {
         int i;
+        MyTest(int i) {
+            this.i = i;
+        }
         void myTest() @Raw {
             i++;
         }
@@ -132,6 +135,7 @@ class RawTypes {
             new AFSIICell().afsii = this;
         }
 
+        //:: warning: (fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
             //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
@@ -174,9 +178,6 @@ class RawTypes {
 
     }
 
-    // TODO: These cases already covered in nullness-uninit
-    // However, these shouldn't generate errors as this folder
-    // is compiled with lint:uninitialized off
     class RawAfterConstructorBad {
         Object o;
         RawAfterConstructorBad() {
@@ -191,6 +192,7 @@ class RawTypes {
 
     class RawAfterConstructorOK2 {
         int a;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }

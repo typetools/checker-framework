@@ -89,6 +89,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 break;
             }
         }
+        // This also gets called by subclasses.  Is that a problem?
         postInit();
     }
 

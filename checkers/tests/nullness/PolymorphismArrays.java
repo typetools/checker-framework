@@ -2,6 +2,10 @@ import checkers.nullness.quals.*;
 
 public class PolymorphismArrays {
 
+    public PolymorphismArrays(String[][] elts) {
+        this.elts = elts;
+    }
+
     public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, int start, int end) {
         if (seq == null) { return null; }
         return new boolean[] { };
@@ -18,8 +22,7 @@ public class PolymorphismArrays {
     // from OneOfStringSequence.java
     private String[][] elts;
     public PolymorphismArrays clone() {
-        PolymorphismArrays result = new PolymorphismArrays();
-        result.elts = elts.clone();
+        PolymorphismArrays result = new PolymorphismArrays(elts.clone());
         for (int i=0; i < elts.length; i++) {
             result.elts[i] = intern(elts[i].clone());
         }

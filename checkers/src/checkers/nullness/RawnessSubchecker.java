@@ -9,8 +9,10 @@ import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 /**
- * A typechecker plug-in for the Nullness type system qualifier that finds (and
- * verifies the absence of) null-pointer errors.
+ * A typechecker that is part of the Nullness type system.
+ * The Rawness Subchecker checks whether an object has been fully
+ * initialized by the constructor.  If not, then some fields (that are
+ * annotated as @NonNull may still be null.
  *
  * @see NonNull
  * @see Nullable

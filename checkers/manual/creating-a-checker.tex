@@ -6,13 +6,13 @@
 \newcommand{\ModelAPIBase}{http://download.oracle.com/javase/7/docs/api/javax/lang/model}
 \newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
-This section describes how to create a checker
+This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
 absence.  After a programmer annotates a program,
 the checker plugin verifies that the code is consistent
 with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
-section.
+chapter.
 
 Writing a simple checker is easy!  For example, here is a complete, useful
 type checker:
@@ -27,20 +27,22 @@ public @interface Encrypted {}
 This checker is so short because it builds on the Basic Checker
 (Chapter~\ref{basic-checker}).
 See Section~\ref{basic-example} for more details about this particular checker.
-When you wish to create a new checker, it is sometimes easiest to begin by
+When you wish to create a new checker, it is often easiest to begin by
 building it declaratively on top of the Basic Checker, and then return to
 this chapter when you need more expressiveness or power than the Basic
 Checker affords.
 
-You can also customize a typestate checker, which enables a variable's type
-to change --- for instance, a file might transition from the \<@Open> to
-the \<@Closed> state after the \<close()> method is called.
-For more details, see Chapter~\ref{typestate-checker}.
+You can also create your own checker by customizing a different existing
+checker.  Specific checkers that are easy to extend (besides the Basic
+Checker) include the Fake Enumeration Checker
+(\chapterpageref{fenum-checker}), the Units Checker
+(\chapterpageref{units-checker}), and the typestate checkers
+(\chapterpageref{typestate-checker}).
 
-The rest of this section contains many details for people who want to write more powerful
+The rest of this chapter contains many details for people who want to write more powerful
 checkers.
 You do not need all of the details, at least at first.
-In addition to reading this section of the manual, you may find it helpful
+In addition to reading this chapter of the manual, you may find it helpful
 to examine the implementations of the checkers that are distributed with
 the Checker Framework.  You can even create your checker by modifying one
 of those.
@@ -51,6 +53,8 @@ distribution and is also available online at
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in the Checker Framework manual, link to
 it from the webpages, or include it in the Checker Framework distribution.
+For examples, see Chapters~\ref{typestate-checker}
+and~\ref{external-checkers}.
 
 
 \section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
@@ -70,13 +74,17 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 % regardless of whether there is a \hline or \cline.  So, make paragraphs.
 \begin{center}
 \begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
-\cline{1-3} \cline{5-7}
+\cline{1-3} \cline{5-5}
 \centering Nullness \par Checker &
 \centering Mutation \par Checker &
 \centering Tainting \par Checker &
 \centering \ldots &
 \centering Your \par Checker &
+\multicolumn{2}{c}{} 
+\\ \hline
+\multicolumn{5}{|p{6\bw}|}{\centering Basic Checker \par (enforces subtyping rules)} &
 \centering Type \par inference &
+% Adding "\centering" here causes a LaTeX alignment error
 Other \par tools
 \\ \hline
 \multicolumn{5}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
@@ -87,11 +95,6 @@ Other \par tools
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
-
-\noindent
-(Strictly speaking, the specific checkers, such as the Nullness Checker, are
-built on top of the Basic Checker, which is built on top of the Checker
-Framework.  The Basic Checker can also be used directly by users.)
 
 
 \section{The parts of a checker\label{parts-of-a-checker}}
@@ -156,11 +159,6 @@ the type hierarchy that relates them.
 
 Type qualifiers are defined as Java annotations~\cite{JSR269}.  In Java, an
 annotation is defined using the Java \code{@interface} keyword.
-Write the \<@\refclass{quals}{TypeQualifier}> meta-annotation on the annotation definition
-to indicate that the annotation represents a type qualifier
-and should be processed by the checker.
-Also write a \<@\sunjavadoc{java/lang/annotation/Target.html}{Target}>
-meta-annotation to indicate where the annotation may be written.
 For example:
 
 \begin{Verbatim}
@@ -171,6 +169,11 @@ For example:
 \end{Verbatim}
 
 \noindent
+Write the \<@\refclass{quals}{TypeQualifier}> meta-annotation on the annotation definition
+to indicate that the annotation represents a type qualifier
+and should be processed by the checker.
+Also write a \<@\sunjavadoc{java/lang/annotation/Target.html}{Target}>
+meta-annotation to indicate where the annotation may be written.
 (An annotation that is written on an annotation
 definition, such as \<@\refclass{quals}{TypeQualifier}>, is called a \emph{meta-annotation}.)
 
@@ -358,7 +361,7 @@ qualifier, type-checking becomes less precise.
 Users should never write the bottom qualifier explicitly; it is merely used
 for the \code{null} value.
 
-The actual IGJ hierarchy contains a (non-user-visible) bottom qualifier,
+The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
 defined like this:
 
 \begin{Verbatim}
@@ -373,10 +376,13 @@ defined like this:
 
 
 \paragraph{Top qualifier}
-Similarly, it is a good idea to have a top qualifier in your type hierarchy
---- a qualifier that is a (direct or indirect) supertype of every other
-qualifier.  For instance, the \<@Encrypted> type system of
-Section~\ref{bottom-qualifier} lacks a top qualifier:
+Similarly, it is usually a good idea to have a top qualifier in your type
+hierarchy --- a qualifier that is a (direct or indirect) supertype of every
+other qualifier.  When a type system lacks a top qualifier (or any other
+qualifier), then users lose flexibility in expressing defaults.
+
+For instance, the \<@Encrypted> type system of
+Section~\ref{encrypted-example} lacks an explicit top qualifier:
 
 \begin{Verbatim}
   @TypeQualifier
@@ -385,37 +391,31 @@ Section~\ref{bottom-qualifier} lacks a top qualifier:
   public @interface Encrypted {}
 \end{Verbatim}
 
+% \noindent
+% The interning type system of Section~\ref{interning-checker} also lacks a
+% top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
+% \<@\refclass{interning/quals}{Interned}>.
+
 \noindent
-The interning type system of Section~\ref{interning-checker} also lacks a
-top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
-\<@\refclass{interning/quals}{Interned}>.
+The default is
+\<@Unqualified>, and there is no way for a user to change that.
+(A user could not specify \<@DefaultQualifier(Unqualified.class)>,
+because many type systems share \<@Unqualified> and it is not clear which
+type system the annotation is intended to refer to.)
 
-When a type system lacks a top qualifier (or any other qualifier), then
-users lose flexibility in expressing defaults.  In the encryption example
-there is no top qualifier, and every type is either unqualified or has the
-\<@Encrypted> qualifier.  Another way of saying this is that the default is
-\<@Unqualified>.  In such a case, it is not sensible for a user to specify
-a default for unannotated types via the
-\code{@\refclass{quals}{DefaultQualifier}} meta-annotation
-(Section~\ref{defaults}), because there is no argument to pass to it.
-\<@Unqualified> is not appropriate, because it is not clear which type
-system it is intended to refer to.
+By contrast, the Nullness type system has an explicit qualifier for every
+possible meaning:  both \<@\refclass{nullness/quals}{Nullable}> and
+\<@\refclass{nullness/quals}{NonNull}>.  Because it has no built-in meaning
+for unannotated types; a user may specify a default qualifier.  This
+greater flexibility for the user is usually preferable.
 
+There are reasons to omit the top qualifier.
 The ability to omit the top qualifier is a convenience
 when writing a type system, because it reduces the number of qualifiers
 that must be defined; this is especially convenient when using the Basic
 Checker (Section~\ref{basic-checker}).
-Omitting the top qualifier also restricts the user in ways that the type
-system designer may have intended.
-
-However, a type system designer should not frequently omit the top qualifier.
-% (It is appropriate in some cases, such as for the interning type system.)
-It is better if
-the type hierarchy has an explicit qualifier for every
-possible meaning.  For example, the Nullness type system has
-\<@\refclass{nullness/quals}{Nullable}> types and
-\<@\refclass{nullness/quals}{NonNull}> types.  It has no built-in meaning for
-unannotated types; a user may specify a default qualifier.
+More importantly, omitting the top qualifier restricts the user in ways
+that the type system designer may have intended.
 
 
 \section{Type factory: Implicit annotations\label{writing-type-introduction}}
@@ -435,7 +435,7 @@ specifies the trees (AST nodes) and types for which the framework should
 automatically add that qualifier.
 
 In short, the types and trees can be
-specified via any combination of five fields:
+specified via any combination of five fields in \refclass{quals}{ImplicitFor}:
 
   \begin{itemize}
   \item \code{trees}: an array of
@@ -493,13 +493,13 @@ type qualifiers:
 
 For more details, see the Javadoc for the \refclass{quals}{ImplicitFor}
   annotation, and the Javadoc for the javac classes that are linked from
-it.  (You only need to understand a small amount about the javac AST, such
+it.  You only need to understand a small amount about the javac AST, such
 as the
 \ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
 and
 \refModelclass{type}{TypeKind}
 enums.  All the information you need is in the Javadoc, and
-Section~\ref{javac-tips} can help you get started.)
+Section~\ref{javac-tips} can help you get started.
 
 
 \subsection{Procedurally specifying implicit annotations}
@@ -610,16 +610,16 @@ locations.  The Checker Framework hardly uses the built-in visitor --- as
 soon as the built-in visitor starts to visit a class, then the Checker
 Framework's visitor takes over and visits all of the class's source code.
 
-Because there is no standard API for the AST of Java code, the Checker
-Framework uses the javac implementation.  This is why the Checker Framework
-is not deeply integrated with Eclipse, but runs as an external tool (see
-Section~\ref{eclipse}).  Actually,
+Because there is no standard API for the AST of Java code\footnote{Actually,
 there is standard API for Java ASTs --- JSR 198 (Extension API for
 Integrated Development Environments)~\cite{JSR198}.  If tools were to
 implement it
 (which would just require writing wrappers or adapters), then the Checker
 Framework and similar tools could be portable among different compilers and
-IDEs.
+IDEs.}, the Checker
+Framework uses the javac implementation.  This is why the Checker Framework
+is not deeply integrated with Eclipse, but runs as an external tool (see
+Section~\ref{eclipse}).
 
 
 \subsection{Avoid hardcoding\label{avoid-hardcoding}}
@@ -668,7 +668,7 @@ method).
 
 \urldef{\reportURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
 
-The checker class bridges between the compiler and the checker plugin.  It
+The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
 errors using the compiler error reporting mechanism.
@@ -693,14 +693,18 @@ The \<messages.properties> file only need to mention the new messages that
 the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
+For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
+
 
 \subsection{Bundling multiple checkers}
 
-To run a checker, a 
-users supplies the 
-\<-processor>  command-line option.  When multiple related
-checkers need to be run together as a unit, users can pass
-multiple \<-processor> arguments, like:
+To run a checker, a user supplies the \<-processor> command-line option.
+There are two ways to run multiple related checkers as a unit.
+
+\begin{enumerate}
+\item
+A user can pass
+multiple \<-processor> command-line options, like:
 
 \begin{Verbatim}
   javac -processor DistanceUnitChecker -processor SpeedUnitChecker ... files ...
@@ -710,7 +714,8 @@ multiple \<-processor> arguments, like:
 This is verbose, and it is also error-prone, since a user might omit one of
 several related checkers that are designed to be run together.
 
-Alternatively, you can define an aggregate checker class that combines
+\item
+You can define an aggregate checker class that combines
 multiple checkers.  Extend \refclass{util}{AggregateChecker} and override
 the \<getSupportedTypeCheckers> method, like the following:
 
@@ -723,17 +728,20 @@ the \<getSupportedTypeCheckers> method, like the following:
 \end{Verbatim}
 
 \noindent
-Now, users can pass a single \<-processor> argument on the command line:
+Now, a user can pass a single \<-processor> argument on the command line:
 
 \begin{Verbatim}
   javac -processor UnitCheckers ... files ...
 \end{Verbatim}
 
+\end{enumerate}
+
 
 \section{Testing framework\label{testing-framework}}
 
 [TODO: This section should discuss the testing framework that is used for
-testing the distributed checkers.]
+testing the distributed checkers.  For now, see the README files in the
+implementation directories.]
 
 
 \section{Debugging options\label{debugging-options}}
@@ -784,8 +792,12 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 %END LATEX
 % unconfuse Emacs LaTeX mode: $
 
-You can use any standard debugger to observe the execution of your checker.  Set the execution main class to \code{com.sun.tools.javac.Main}, and insert the JSR308 javac.jar (resides in \code{\$jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is recommended that you add \code{\$jsr308-langtools} as a project, so you can
-step into its source code if needed.
+You can use any standard debugger to observe the execution of your checker.
+Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
+the JSR 308 javac.jar (resides in
+\code{.../jsr308-langtools/dist/lib/javac.jar}).  If using an IDE, it is
+recommended that you add \code{.../jsr308-langtools} as a project, so you
+can step into its source code if needed.
 
 %% Not relevant to most readers.  Can go in a README file in our repository.
 % \section{Putting your checker in the repository\label{writing-repository}}
@@ -817,7 +829,8 @@ step into its source code if needed.
 \section{javac implementation survival guide\label{javac-tips}}
 
 A checker built using the Checker Framework makes use of a few interfaces
-from the underlying compiler.  This section describes those interfaces.
+from the underlying compiler (Oracle's OpenJDK javac).
+This section describes those interfaces.
 
 
 
@@ -837,9 +850,13 @@ There is a \code{TypeMirror} interface to represent each type kind,
 e.g., \code{PrimitiveType} for primitive types, \code{ExecutableType}
 for method types, and \code{NullType} for the type of the \code{null} literal.
 
-\code{TypeMirror} does not represent annotated types though.  Checkers should use the Framework types API \refclass{types}{AnnotatedTypeMirror} instead.  \code{AnnotatedTypeMirror} parallels the \code{TypeMirror} API, but also present the type annotations associated with the type.
+\code{TypeMirror} does not represent annotated types though.  Checkers
+should use the Checker Framework types API,
+\refclass{types}{AnnotatedTypeMirror}, instead.  \code{AnnotatedTypeMirror}
+parallels the \code{TypeMirror} API, but also present the type annotations
+associated with the type.
 
-The Checker Framework and the Checkers use the types API extensively.
+The Checker Framework and the checkers use the types API extensively.
 
 
 \subsubsection{Elements - Java Language Model API\label{javac-elements}}
@@ -849,34 +866,37 @@ declaration that can be accessed from elsewhere:  classes, interfaces, methods, 
 fields.  \<Element> represents elements found in both source
 code and bytecode.
 
-There is an \code{Element} interface to represent each construct, e.g.
+There is an \code{Element} interface to represent each construct, e.g.,
 \code{TypeElement} for class/interfaces, \code{ExecutableElement} for
 methods/constructors, \code{VariableElement} for local variables and
 method parameters.
 
 If you need to operate on the declaration level, always use elements rather
-than trees (Section~\ref{javac-trees}).  This allows the code to work on
+than trees
+% in same subsection, which is the limit of the numbering.
+% (Section~\ref{javac-trees})
+(see below).  This allows the code to work on
 both source and bytecode elements.
 
 Example: retrieve declaration annotations, check variable
-modifiers (e.g. \code{strictfp}, \code{synchronized})
+modifiers (e.g., \code{strictfp}, \code{synchronized})
 
 
 \subsubsection{Trees - Compiler Tree API\label{javac-trees}}
 
-A \refTreeclass{tree}{Tree} represents a syntactic units in the source code,
-like method declarations, statements, blocks, \<for> loop etc. Trees only
+A \refTreeclass{tree}{Tree} represents a syntactic unit in the source code,
+like a method declaration, statement, block, \<for> loop, etc. Trees only
 represent source code to be compiled (or found in \code{-sourcepath});
 no tree is available for classes read from bytecode.
 
-There is a Tree interface for each Java source structure, e.g.
+There is a Tree interface for each Java source structure, e.g.,
 \code{ClassTree} for class declaration, \code{MethodInvocationTree}
-for method invocations, \code{ForEachTree} for enhanced-for-loop
+for a method invocation, and \code{ForEachTree} for an enhanced-for-loop
 statement.
 
 You should limit your use of trees. Checkers use Trees mainly to
-traverse the source code, retrieve the types/elements corresponding to
-them, and perform any needed checks on the types/elements instead.
+traverse the source code and retrieve the types/elements corresponding to
+them.  Then, the checker performs any needed checks on the types/elements instead.
 
 
 \subsubsection{Using the APIs}
@@ -885,7 +905,7 @@ The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
 
 \emph{Type-checking}:
-Do not use \code{instanceof} to determining the class of the object,
+Do not use \code{instanceof} to determine the class of the object,
 because you cannot necessarily predict the run-time type of the object that
 implements an interface.  Instead, use the \code{getKind()} method.  The
 method returns \refModelclass{type}{TypeKind},
@@ -905,7 +925,7 @@ Some useful methods appear in a utility class.  The Oracle convention is that
 the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 \refModelclass{util}{Types}, \refModelclass{util}{Elements}, and
 \refTreeclass{util}{Trees}).  The Checker Framework uses a common
-\code{Utils} post-fix instead (e.g. \refclass{util}{TypesUtils},
+\code{Utils} suffix instead (e.g., \refclass{util}{TypesUtils},
 \refclass{util}{TreeUtils}, \refclass{util}{ElementUtils}), with one
 notable exception: \refclass{types}{AnnotatedTypes}.
 
@@ -913,7 +933,7 @@ notable exception: \refclass{types}{AnnotatedTypes}.
 \subsection{How a checker fits in the compiler as an annotation processor}
 
 The Checker Framework builds on the Annotation Processing API
-introduced in Java 6.  A type annotation processors is one that extends
+introduced in Java 6.  A type annotation processor is one that extends
 \refTreeclass{util}{AbstractTypeProcessor}; these get run on each class
 source file after the compiler confirms that the class is valid Java code.
 
@@ -946,7 +966,7 @@ newcomer, and its documentation is a bit sparse. The Checker Framework
 aims to abstract a lot of these complexities.
 You do not have to understand the implementation of javac to
 build powerful and useful checkers.
-Beyond this section, 
+Beyond this document, 
 other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
@@ -987,4 +1007,5 @@ mailing list archives at
 % LocalWords:  AggregateChecker getSupportedTypeCheckers Uninterned sourcepath
 % LocalWords:  DefaultQualifier bytecode NullType strictfp ClassTree TypesUtils
 % LocalWords:  ForEachTree ElementKind TreeAnnotator TreeUtils ElementUtils ecj
-% LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj
+% LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj hardcoding jsr
+% LocalWords:  typeProcess getSupportedSourceVersion

@@ -3,7 +3,7 @@
 
 This chapter describes features that are automatically supported by every
 checker written with the Checker Framework.
-You may wish to skim or skip this section on first reading.  After you have
+You may wish to skim or skip this chapter on first reading.  After you have
 used a checker for a little while and want to be able to express more
 sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
@@ -292,7 +292,7 @@ is \code{@NonNull String} in the following declaration:
 
 Please note that such inferred type may leak to the public interface of the
 class.  To override such behavior, you can explicitly insert the desired
-annotation, e.g.
+annotation, e.g.,
 
 \begin{Verbatim}
     public final @Nullable String protocol = "https";
@@ -326,7 +326,7 @@ Here the call to \code{persistData()} invalidates the inferred non-null type
 of \code{updatedAt}.
 
 When methods do not modify any object state or have any identity side-effects
-(e.g. \code{log()} method here), you can annotate these methods as
+(e.g., \code{log()} method here), you can annotate these methods as
 \code{Pure}.  Annotating them as \code{Pure}, would cause the flow analyzer to
 carry the inferred types across the method invocation boundary.
 
@@ -368,7 +368,7 @@ implementation can enable it if desired.
 \section{Writing Java expressions as annotation arguments\label{java-expressions-as-arguments}}
 
 Sometimes, it is necessary to write a Java expression as the argument to an
-annotation.  As of this writing, tho annotations that take a Java
+annotation.  As of this writing, the annotations that take a Java
 expression as an argument are:
 
 \begin{itemize}
@@ -397,6 +397,10 @@ The expression is a subset of legal Java expressions:
   \<System.out>.
   % It may also work to use an instance variable and the static variable
   % name, but I'm not sure about that.
+
+  % True as of 7/6/2011.  This limitation should be fixed.
+  Within the class itself, just write the field name --- do not write the
+  class name.
 \item
   a field of any expression.  For example:  \<next>,
   \<this.next>, \<\#0.next>, \<myLocalVar.next>.
@@ -416,6 +420,9 @@ The expression is a subset of legal Java expressions:
 You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
 \<this.next> and \<next> are equivalent, assuming that there is no
 shadowing definition of \<next>.
+
+\textbf{Limitation:}  Currently, only one level of field access can be
+checked; the checker cannot handle, for example, \code{"this.field1.field2"}.
 
 (A side note:  The formal parameter syntax \<\#0> may seem less convenient
 than writing the formal parameter name.  This syntax is necessary because
@@ -562,5 +569,7 @@ should use it instead of \code{@Dependent}.
 % LocalWords:  MyClass quals PolymorphicQualifier DefaultQualifier subpackages
 % LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics nn
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
-% LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble
-% LocalWords:  subtype's
+% LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
+% LocalWords:  subtype's NonNullOnEntry AssertNonNullAfter AssertNonNullIfTrue
+% LocalWords:  AssertNonNullIfFalse myLocalVar myClass getPackage getSuperclass
+% LocalWords:  getComponentType

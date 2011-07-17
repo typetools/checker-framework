@@ -230,26 +230,26 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exist, null otherwise.
+     * whose name equals the passed annotationName if one exists, null otherwise.
      *
      * @param annotationName
      * @return the annotation mirror for annotationName
      */
     public AnnotationMirror getAnnotation(String annotationName) {
-        assert annotationName != null : annotationName + " cannot be null";
+        assert annotationName != null : "Null annotationName in getAnnotation";
         Name name = env.getElementUtils().getName(annotationName);
         return getAnnotation(name);
     }
 
     /**
      * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exist, null otherwise.
+     * whose name equals the passed annotationName if one exists, null otherwise.
      *
      * @param annotationName
      * @return the annotation mirror for annotationName
      */
     public AnnotationMirror getAnnotation(Name annotationName) {
-        assert annotationName != null : annotationName + " cannot be null";
+        assert annotationName != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations())
             if (AnnotationUtils.annotationName(anno).equals(annotationName))
                 return anno;
@@ -258,7 +258,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exist, null otherwise.
+     * whose name equals the passed annotationName if one exists, null otherwise.
      *
      * @param anno annotation class
      * @return the annotation mirror for anno
