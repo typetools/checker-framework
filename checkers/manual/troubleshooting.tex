@@ -336,6 +336,7 @@ mkdir -p $JSR308
 cd $JSR308
 hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
 hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -598,7 +599,8 @@ differs from a bug detector in several ways:
 A case study~\cite[\S6]{PapiACPE2008} compared the Checker Framework's nullness
 checker with those of FindBugs, JLint, and PMD\@.  The case study was on a
 well-tested program in daily use.  The Checker Framework tool found 8
-nullness errors.  None of the other tools found any errors.
+nullness errors (that is, null pointer dereferences).  None of the other
+tools found any errors.
 
 Also see the
 \ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{jsr308}
@@ -639,4 +641,4 @@ Checker Framework distribution and is also available on the web at
 % LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
-% LocalWords:  MyFile buildfiles
+% LocalWords:  MyFile buildfiles ClassName JRE

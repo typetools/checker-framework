@@ -325,6 +325,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="fenum-tests" depends="jar,build-tests"
+      description="Run tests for the Fenum Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FenumTest"/>
+        </antcall>
+    </target>
+
     <target name="flow-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
@@ -339,10 +346,31 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="interning-tests" depends="jar,build-tests"
+      description="Run tests for the Interning checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.InterningTest"/>
+        </antcall>
+    </target>
+
+    <target name="igj-tests" depends="jar,build-tests"
+      description="Run tests for the IGJ checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.IGJTest"/>
+        </antcall>
+    </target>
+
     <target name="javari-tests" depends="jar,build-tests"
       description="Run tests for the Javari checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.JavariTest"/>
+        </antcall>
+    </target>
+
+    <target name="lubglb-tests" depends="jar,build-tests"
+      description="Run tests for the lubglb checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LubGlbTest"/>
         </antcall>
     </target>
 
@@ -363,24 +391,10 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="interning-tests" depends="jar,build-tests"
-      description="Run tests for the Interning checker">
+    <target name="regex-tests" depends="jar,build-tests"
+      description="Run tests for the Signature checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.InterningTest"/>
-        </antcall>
-    </target>
-
-    <target name="igj-tests" depends="jar,build-tests"
-      description="Run tests for the IGJ checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.IGJTest"/>
-        </antcall>
-    </target>
-
-    <target name="lubglb-tests" depends="jar,build-tests"
-      description="Run tests for the lubglb checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.LubGlbTest"/>
+            <param name="param" value="tests.RegexTest"/>
         </antcall>
     </target>
 
@@ -388,6 +402,13 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the Signature checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.SignatureTest"/>
+        </antcall>
+    </target>
+
+    <target name="tainting-tests" depends="jar,build-tests"
+      description="Run tests for the Tainting checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingTest"/>
         </antcall>
     </target>
 

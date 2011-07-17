@@ -41,8 +41,14 @@ requires an additional annotation processor argument via the standard
 \item
 \code{-Aquals}: this option specifies a comma-no-space-separated list of
 the fully-qualified class
-names of the annotations used as qualifiers in the custom type system.
-%
+names of the annotations used as qualifiers in the custom type system.  For
+example,
+
+\begin{alltt}
+  javac -processor checkers.fenum.BasicChecker
+        \textit{-Aquals=myproject.quals.MyQual,myproject.quals.OtherQual} MyFile.java ...
+\end{alltt}
+
 It serves the same purpose as the \code{@\refclass{quals}{TypeQualifiers}}
 annotation used by other checkers (see section
 \ref{writing-compiler-interface}).
@@ -100,7 +106,7 @@ The resulting \<.class> file should either be on your classpath, or on the
 processor path (set via the \<-processorpath> command-line option to javac).
 
 \item 
-  Write \code{@Encrypted} annotations in your program (YourProgram.java):
+  Write \code{@Encrypted} annotations in your program (\code{YourProgram.java}):
 
 \begin{Verbatim}
 import myquals.Encrypted;
@@ -212,4 +218,4 @@ treated specially by the checker).
 
 % LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
 % LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
-% LocalWords:  uncapitalized processorpath Warski
+% LocalWords:  uncapitalized processorpath Warski MyFile YourProgram

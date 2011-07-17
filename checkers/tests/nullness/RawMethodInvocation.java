@@ -5,6 +5,8 @@ class RawMethodInvocation {
   int a;
   int b;
 
+  // TODO: This should be legal
+  //:: warning: (fields.uninitialized)
   RawMethodInvocation(boolean constructor_inits_a) {
     a = 1;
     // TODO: This should be legal
@@ -16,6 +18,8 @@ class RawMethodInvocation {
     b = 2;
   }
 
+  // TODO: This should be legal
+  //:: warning: (fields.uninitialized)
   RawMethodInvocation(int constructor_inits_none) {
     // TODO: This should be legal
     //:: error: (method.invocation.invalid)

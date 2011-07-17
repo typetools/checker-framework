@@ -115,6 +115,13 @@ public class ElementUtils {
     }
 
     /**
+     * Returns a verbose name that identifies the element.
+     */
+    public static String getVerboseName(Element elt) {
+        return getQualifiedClassName(elt) + " " + elt.toString();
+    }
+
+    /**
      * Check if the element is an element for 'java.lang.Object'
      *
      * @param element   the type element

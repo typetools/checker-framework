@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 
 public class AssertIfChecked {
 
-  boolean unknown;
+  boolean unknown = false;
 
   @Nullable Object value;
 

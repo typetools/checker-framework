@@ -8,6 +8,10 @@ public class AssertAfter2 {
 
     HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
+    public Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
+      this.childMap = childMap;
+    }
+
     //:: warning: (nullness.parse.error)
     @AssertNonNullAfter("childMap.get(#0)") public void addNode( T n ) {
       // body omitted, not relevant to test case
@@ -42,6 +46,14 @@ public class AssertAfter2 {
   }
 
   class MultiParam {
+
+    MultiParam(MultiParam thing, Object f1, Object f2, Object f3) {
+      this.thing = thing;
+      this.f1 = f1;
+      this.f2 = f2;
+      this.f3 = f3;
+    }
+
     MultiParam thing;
 
     // TODO: doc: spaces important

@@ -22,7 +22,7 @@ public class Asserts {
     }
 
     class ArrayCell {
-        @Nullable Object[] vals;
+        @Nullable Object[] vals = new Object[0];
     }
 
     void assertComplexExpr (ArrayCell ac, int i) {

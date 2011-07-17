@@ -93,7 +93,8 @@ another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
 \subsection{Nullness method annotations\label{nullness-non-qualifiers}}
 
 The Nullness checker supports several annotations that specify method
-behavior.
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
 
 \begin{description}
 
@@ -115,20 +116,38 @@ behavior.
 
 \item[\code{@\refclass{nullness/quals}{Pure}}]
   indicates that the method has no (visible) side effects.
-
   Furthermore, if the method is called multiple times with the same
-  arguments, then it returns the same result.  For example, suppose that
-  the return value of method \code{m} is nullable.  Then this code will
-  pass the type-checker:
+  arguments, then it returns the same result.
+
+  For example, consider the
+  following declaration and uses:
 
 \begin{Verbatim}
-        if (m(arg) != null) {
-          m(arg).toString();
+        @Nullable Object getField(Object arg) { ... }
+
+        ...
+        if (x.getField(y) != null) {
+          x.getField(y).toString();
         }
 \end{Verbatim}
 
   \noindent
-  only if method \code{m} is annotated as \code{@Pure}.
+  Ordinarily, the Nullness Checker would issue a warning regarding the
+  \code{toString()} call, because the receiver \code{x.getField(y)} might
+  be \code{null}, according to the \code{@Nullable} annotation in the
+  declaration of \code{getField}.  If you change the declaration of
+  \code{getField} to
+
+\begin{Verbatim}
+        @Pure @Nullable Object getField(Object arg) { ... }
+\end{Verbatim}
+
+  \noindent
+  then the Nullness Checker issues no warnings, because it can reason that
+  the two invocations \code{x.getField(y)} have the same value, and
+  therefore that \code{x.getField(y)} is non-null within the then branch
+  of the if statement.
+
 
   If a method is pure, then it would be legal to annotate its receiver and
   every parameter as \<@ReadOnly>, in the IGJ (Chapter~\ref{igj-checker}) or
@@ -348,8 +367,15 @@ The checker issues a warning in three cases:
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
+  As a special case, the checker also warns whenever a field of
+  \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
+  constructor.  To disable this warning for primitive types, you can supply
+  the \code{-Alint=-uninitialized} command-line option, but it is better
+  style to supply an explicit initializer, even if the default value such
+  as \code{0} or \code{false}.
+
 \item
-  \label{lint-nulltest}
+  \label{lint-nulltest}%
   When a null check is performed against a value that is guaranteed to be
   non-null, as in \code{("m" == null)}, because this might indicate a
   programmer error or misunderstanding, and is unnecessary.  This check is
@@ -934,6 +960,93 @@ Run the command \code{make check-nullness}.
 \end{itemize}
 
 
+\section{Tips for getting started\label{nullness-getting-started}}
+
+Here are some tips about getting started using the Nullness Checker on a
+legacy codebase.  For more generic advice (not specific to the Nullness
+Checker), see Section~\ref{get-started-with-legacy-code}.
+
+Your goal is to add \code{@\refclass{nullness/quals}{Nullable}} annotations
+to the types of any variables that can be null.  (The default is to assume
+that a variable is non-null unless it has a \code{@Nullable} annotation.)
+Then, you will run the Nullness Checker.  Each of its errors indicates
+either a possible null pointer exception, or a wrong/missing annotation.
+When there are no more warnings from the checker, you are done!
+
+We recommend that you start by searching the code for occurrences of
+\code{null} in the following locations; when you find one, write the
+corresponding annotation:
+
+\begin{itemize}
+\item
+  in Javadoc:  add \code{@Nullable} annotations to method signatures (parameters and return types).
+% Search for "\*.*\bnull\b"
+\item
+  \code{return null}:  add a \code{@Nullable} annotation to the return type
+  of the given method.
+% Search for "return null" and "return.*? null" and "return.*: null"
+\item
+  \code{\emph{param} == null}:  when a formal parameter is compared to
+  \code{null}, then in most cases you can add a \code{@Nullable} annotation
+  to the formal parameter's type
+\item
+  \code{\emph{TypeName} \emph{field} = null;}:  when a field is initialized to
+  \code{null} in its declaration, then it needs either a
+  \code{@\refclass{nullness/quals}{Nullable}} or a
+  \code{@\refclass{nullness/quals}{LazyNonNull}} annotation.  If the field
+  is always set to a non-null value in the constructor, then you can just
+  change the declaration to \code{\emph{Type} \emph{field};}, without an
+  initializer, and write no type annotation (because the default is
+  \<@NonNull>).
+\item
+  declarations of \<contains>, \<containsKey>, \<containsValue>, \<equals>,
+  \<get>, \<indexOf>, \<lastIndexOf>, and \<remove> (with \<Object> as the
+  argument type):
+  change the argument type to \<@Nullable Object>; for \<remove>, also change
+  the return type to \<@Nullable Object>.
+% Emacs code for the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+
+\end{itemize}
+
+\noindent
+You should ignore all other occurrences of \code{null} within a method
+body.  In particular, you (almost) never need to annotate local variables.
+
+Only after this step should you run \code{ant} to invoke
+the Nullness Checker.  The reason is that it is quicker to search for
+places to change than to repeatedly run the checker and fix the errors it
+tells you about, one at a time.
+
+Here are some other tips:
+\begin{itemize}
+\item
+    In any file where you write an annotation such as \code{@Nullable},
+    don't forget to add \code{import checkers.nullness.quals.*;}.
+\item
+    To indicate an array that can be null, write, for example: \code{int
+      @Nullable []}. \\
+    By contrast, \code{@Nullable Object []} means a non-null array that
+    contains possibly-null objects.
+\item
+    If you know that a particular variable is definitely not null, but the
+    Nullness Checker cannot figure it out, then you can tell it by writing
+    an assertion (see Section~\ref{suppressing-warnings}):
+\begin{Verbatim}
+assert var != null : "@SuppressWarnings(nullness)";
+\end{Verbatim}
+\item
+    To indicate that a routine returns the same value every time it is
+    called, use \code{@\refclass{nullness/quals}{Pure}} (see Section~\ref{nullness-non-qualifiers}).
+\item
+    To indicate a method precondition (a contract stating the conditions
+    under which a client is allowed to call it), you can use annotations
+    such as \code{@\refclass{nullness/quals}{NonNullOnEntry}} (see Section~\ref{nullness-non-qualifiers}.
+\end{itemize}
+
+
+
 \section{Other tools for nullness checking\label{nullness-related-work}}
 
 \newcommand{\linktoNonNull}{\code{\refclass{nullness/quals}{NonNull}}}
@@ -1191,5 +1304,5 @@ tool like the Checker Framework.)
 % LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
 % LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
-% LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly
-% LocalWords:  keySet
+% LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
+% LocalWords:  keySet getField keyfor param TypeName

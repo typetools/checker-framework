@@ -7,6 +7,11 @@ How to run the tests for the Checker Framework
 Other ant targets also exist to run a subset of the tests; for example,
   ant nullness-tests
 
+To run an individual test (check one source code file), do something like:
+
+cd $CHECKERS/tests/nullness
+(cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker AssertNonNullTest.java
+
 
 How to write test cases for the Checker Framework
 =================================================
@@ -68,14 +73,26 @@ nullness/tests/nullness/dereference/.)  Each checker should have its own
 folder under checkers/tests, such as checkers/tests/igj/,
 checkers/tests/interning/, etc.
 
+You may wish to supply different command-line arguments (flags) to the
+checker for certain test cases -- for instance, to check an optional
+command-line argument that should not be enabled for every test.  To do
+this:
+ * create a top-level test directory, such as
+   checkers/tests/nullness-uninit, for the test cases
+ * create a top-level JUnit test, such as:
+   checkers/tests/src/tests/NullnessUninitializedTest.java
+ * change checkers/build.xml to run those tests
 
-Writing Tests for New Checkers
+
+Writing tests for new checkers
 ==============================
 
-TODO: Write this section.
+Essentially, just copy an existing checker, analogously to creating a new
+test directory for testing different command-line arguments, as described
+above.
 
 
 Annotated JDK
 =============
 
-The tests run with the annotated JDK. Keep this in mind when writing tests.
+The tests run with the annotated JDK.  Keep this in mind when writing tests.

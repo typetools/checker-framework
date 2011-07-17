@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -17,6 +18,7 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 //Disclaimer:
@@ -172,18 +174,22 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     }
 
     protected List<String> methodHolding(ExecutableElement element) {
-        Holding holding = element.getAnnotation(Holding.class);
-        net.jcip.annotations.GuardedBy guardedBy
-            = element.getAnnotation(net.jcip.annotations.GuardedBy.class);
+        AnnotationMirror holding = atypeFactory.getDeclAnnotation(element, Holding.class);
+        AnnotationMirror guardedBy
+            = atypeFactory.getDeclAnnotation(element, net.jcip.annotations.GuardedBy.class);
         if (holding == null && guardedBy == null)
             return Collections.emptyList();
 
         List<String> locks = new ArrayList<String>();
 
-        if (holding != null)
-            locks.addAll(Arrays.asList(holding.value()));
-        if (guardedBy != null)
-            locks.add(guardedBy.value());
+        if (holding != null) {
+            List<String> holdingValue = AnnotationUtils.elementValueStringArray(holding, "value");
+            locks.addAll(holdingValue);
+        }
+        if (guardedBy != null) {
+            String guardedByValue = AnnotationUtils.elementValue(guardedBy, "value", String.class);
+            locks.add(guardedByValue);
+        }
 
         return locks;
     }
