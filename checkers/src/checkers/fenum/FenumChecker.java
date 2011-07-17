@@ -58,14 +58,14 @@ public class FenumChecker extends BaseTypeChecker {
         if (qualNames == null) {
           // maybe issue a warning?
         } else {
-          try {
-            for (String qualName : qualNames.split(",")) {
+          for (String qualName : qualNames.split(",")) {
+            try {
               final Class<? extends Annotation> q =
                 (Class<? extends Annotation>) Class.forName(qualName);
               qualSet.add(q);
+            } catch (ClassNotFoundException e) {
+              errorAbort("FenumChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
             }
-          } catch (ClassNotFoundException e) {
-            throw new Error(e);
           }
         }
         qualSet.add(FenumTop.class);

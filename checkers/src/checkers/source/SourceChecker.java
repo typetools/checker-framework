@@ -181,13 +181,60 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
+     * Exception type used only internally to abort
+     * processing.
+     */
+    private class CheckerError extends RuntimeException { }
+
+    /**
+     * Log an error message and abort processing.
+     * Call this method instead of raising an exception.
+     * 
+     * @param msg The error message to log.
+     */
+    public void errorAbort(String msg) {
+        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                msg);
+        throw new CheckerError();
+    }
+    
+
+    /**
+     * Remember whether a CheckerError occurred during
+     * the initChecker call.
+     * We do not want to throw an exception in "init" and therefore
+     * use this field to remember whether something happened and then
+     * in "typeProcess" we abort.
+     */
+    private boolean errorInInit = false;
+    
+    /**
      * {@inheritDoc}
      *
+     * Type checkers are not supposed to override this.
+     * Instead use initChecker.
+     * This allows us to handle CheckerError only here and doesn't
+     * require all overriding implementations to be aware of CheckerError.
+     * 
      * @see AbstractProcessor#init(ProcessingEnvironment)
+     * @see SourceChecker#initChecker(ProcessingEnvironment)
      */
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
+    public final synchronized void init(ProcessingEnvironment processingEnv) {
+        try {
+            super.init(processingEnv);
+            initChecker(processingEnv);
+        } catch (CheckerError ce) {
+            errorInInit = true;
+        }
+    }
+
+    /**
+     * Initialize the checker.
+     * 
+     * @see AbstractProcessor#init(ProcessingEnvironment)
+     */
+    public void initChecker(ProcessingEnvironment processingEnv) {
         this.env = processingEnv;
 
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
@@ -204,7 +251,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
-    // Only output the warning about source level at most once
+
+    // Output the warning about source level at most once.
     private boolean warnedAboutSourceLevel = false;
 
     /**
@@ -216,14 +264,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if(e==null) {
-                System.err.println("Refusing to process empty TypeElement");
-                return;
+            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                    "Refusing to process empty TypeElement");
+            return;
         }
         if(p==null) {
-                System.err.println("Refusing to process empty TreePath in TypeElement: " + e);
-                return;
+            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                    "Refusing to process empty TreePath in TypeElement: " + e);
+            return;
         }
-
+        if(errorInInit) {
+            // Nothing to do, message will be output by javac.
+            return;
+        }
+        
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
@@ -237,6 +291,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         try {
             SourceVisitor<?,?> visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
+        } catch (CheckerError ce) {
+            // Nothing to do, message will be output by javac.
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "
@@ -510,8 +566,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     public final boolean getLintOption(String name, boolean def) {
 
-        if (!this.getSupportedLintOptions().contains(name))
-            throw new IllegalArgumentException("illegal lint option: " + name);
+        if (!this.getSupportedLintOptions().contains(name)) {
+            errorAbort("Illegal lint option: " + name);
+        }
 
         if (activeLints.isEmpty())
             return def;
@@ -625,8 +682,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         SupportedAnnotationTypes supported = this.getClass().getAnnotation(
                 SupportedAnnotationTypes.class);
         if (supported != null)
-            throw new Error("@SupportedAnnotationTypes should not be written on any checker;"
-                            + " supported annotation types are inherited from SourceChecker");
+            errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
+                            + " supported annotation types are inherited from SourceChecker.");
         return Collections.singleton("*");
     }
 

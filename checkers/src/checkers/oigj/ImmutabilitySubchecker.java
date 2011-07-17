@@ -28,7 +28,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;
 
     @Override
-    public synchronized void init(ProcessingEnvironment env) {
+    public void initChecker(ProcessingEnvironment env) {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         READONLY = annoFactory.fromClass(ReadOnly.class);
         MUTABLE = annoFactory.fromClass(Mutable.class);
@@ -36,7 +36,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         I = annoFactory.fromClass(I.class);
         ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
         BOTTOM_QUAL = annoFactory.fromClass(OIGJMutabilityBottom.class);
-        super.init(env);
+        super.initChecker(env);
     }
 
     //

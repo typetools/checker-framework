@@ -89,8 +89,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
     private TypeHierarchy typeHierarchy;
 
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
+    public void initChecker(ProcessingEnvironment processingEnv) {
+        super.initChecker(processingEnv);
         this.supportedQuals = this.createSupportedTypeQualifiers();
         this.qualHierarchy = this.createQualifierHierarchy();
         this.typeHierarchy = this.createTypeHierarchy();
@@ -178,7 +178,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 // polymorphic qualifiers don't need to declare their supertypes
                 if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
                     continue;
-                throw new AssertionError(typeQualifier + " does not specify its super qualifiers");
+                errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
+                    "Add an @checkers.quals.SubtypeOf annotation to it.");
             }
             Class<? extends Annotation>[] superQualifiers =
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
@@ -192,7 +193,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
-            throw new IllegalStateException("Invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
+            errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
         }
 
         return hierarchy;
