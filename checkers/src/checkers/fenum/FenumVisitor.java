@@ -1,17 +1,19 @@
 package checkers.fenum;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.Tree;
 
 public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
     public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
@@ -49,6 +51,23 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
         }
 
         return super.visitCompoundAssignment(node, p);
+    }
+
+    @Override
+    public Void visitSwitch(SwitchTree node, Void p) {
+        ExpressionTree expr = node.getExpression();
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
+
+        for (CaseTree caseExpr : node.getCases()) {
+            ExpressionTree realCaseExpr = caseExpr.getExpression();
+            if (realCaseExpr != null) {
+                AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
+
+                this.commonAssignmentCheck(exprType, caseType, caseExpr,
+                        "switch.type.incompatible");
+            }
+        }
+        return super.visitSwitch(node, p);
     }
 
     @Override

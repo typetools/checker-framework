@@ -5,8 +5,8 @@ import checkers.units.UnitsTools;
 // to ensure they work as expected.
 public class Manual {
   void demo1() {
-    @m int meters = UnitsTools.toMeter(5);
-    @s int secs = UnitsTools.toSecond(2);
+    @m int meters = 5 * UnitsTools.m;
+    @s int secs = 2 * UnitsTools.s;
     @mPERs int speed = meters / secs;
   }
 }

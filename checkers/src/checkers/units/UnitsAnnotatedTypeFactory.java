@@ -3,23 +3,23 @@ package checkers.units;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.units.quals.MixedUnits;
+import checkers.units.quals.Prefix;
+import checkers.util.AnnotationUtils;
+import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree.Kind;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
-import checkers.units.quals.Prefix;
-import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -34,10 +34,16 @@ import checkers.util.AnnotationUtils.AnnotationBuilder;
 public class UnitsAnnotatedTypeFactory extends
         BasicAnnotatedTypeFactory<UnitsChecker> {
 
+    protected final AnnotationMirror mixedUnits;
+
     public UnitsAnnotatedTypeFactory(UnitsChecker checker,
             CompilationUnitTree root) {
         // use true for flow inference
         super(checker, root, false);
+
+        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
+
+        mixedUnits = annoUtils.fromClass(MixedUnits.class);
     }
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
@@ -95,7 +101,7 @@ public class UnitsAnnotatedTypeFactory extends
                                     + bestres + " and current: " + res);
                     return super.visitBinary(node, type);
                 }
-                
+
                 if (res!=null) {
                     bestres = res;
                 }
@@ -108,18 +114,24 @@ public class UnitsAnnotatedTypeFactory extends
                 
                 switch(kind) {
                 case DIVIDE:
+                    if (lht.getAnnotations().equals(rht.getAnnotations())) {
+                        // If the units of the division match,
+                        // do not add an annotation to the result type, keep it
+                        // unqualified.
+                        break;
+                    }
                 case MULTIPLY:
                     if (lht.getAnnotations().isEmpty()) {
                         type.addAnnotations(rht.getAnnotations());
-                        return super.visitBinary(node, type);
+                        break;
                     }
                     if (rht.getAnnotations().isEmpty()) {
                         type.addAnnotations(lht.getAnnotations());
-                        return super.visitBinary(node, type);
+                        break;
                     }
+                    type.addAnnotation(mixedUnits);
                     break;
                 }
-
             }
 
             return super.visitBinary(node, type);
