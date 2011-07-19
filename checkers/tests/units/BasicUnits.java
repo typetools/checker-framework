@@ -7,12 +7,12 @@ public class BasicUnits {
         //:: error: (assignment.type.incompatible)
         @m int merr = 5;
         
-        @m int m = UnitsTools.toMeter(5);
-        @s int s = UnitsTools.toSecond(9);
+        @m int m = 5 * UnitsTools.m;
+        @s int s = 9 * UnitsTools.s;
         
         //:: error: (assignment.type.incompatible)
         @km int kmerr = 10;
-        @km int km = UnitsTools.toKiloMeter(10);
+        @km int km = 10 * UnitsTools.km;
 
         // this is allowed, unqualified is a supertype of all units
         int bad = m / s;
@@ -34,8 +34,8 @@ public class BasicUnits {
         //:: error: (assignment.type.incompatible)
         @km2 int bae1 = m * m;
         
-        @km int kilometers = UnitsTools.toKiloMeter(10);
-        @h int hours = UnitsTools.toHour(1);
+        @km int kilometers = 10 * UnitsTools.km;
+        @h int hours = UnitsTools.h;
         @kmPERh int speed = kilometers / hours;
         
         // Addition/substraction only accepts another @kmPERh value

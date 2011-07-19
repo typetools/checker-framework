@@ -1,65 +1,79 @@
 package checkers.units;
 
-import checkers.units.quals.*;
+import checkers.units.quals.A;
+import checkers.units.quals.C;
+import checkers.units.quals.K;
+import checkers.units.quals.cd;
+import checkers.units.quals.g;
+import checkers.units.quals.h;
+import checkers.units.quals.kg;
+import checkers.units.quals.km;
+import checkers.units.quals.km2;
+import checkers.units.quals.kmPERh;
+import checkers.units.quals.m;
+import checkers.units.quals.m2;
+import checkers.units.quals.mPERs;
+import checkers.units.quals.min;
+import checkers.units.quals.mm;
+import checkers.units.quals.mm2;
+import checkers.units.quals.mol;
+import checkers.units.quals.s;
 
 /**
  * Utility methods to generate annotated types and to convert between them.
  */
 @SuppressWarnings("units")
 // TODO: add fromTo methods for all useful unit combinations.
-// TODO: instead or in addition to the int version, should we add long,
-// float, or double versions??
 public class UnitsTools {
     // Lengths
-    public static @mm int toMilliMeter(int mm) { return mm; }
-    public static @m int toMeter(int m) { return m; }
-    public static @km int toKiloMeter(int km) { return km; }
-    
+    public static final @mm int mm = 1;
+    public static final @m int m = 1;
+    public static final @km int km = 1;
+        
     public static @m int fromMilliMeterToMeter(@mm int mm) { return mm / 1000; }
     public static @mm int fromMeterToMilliMeter(@m int m) { return m * 1000; }
     public static @km int fromMeterToKiloMeter(@m int m) { return m / 1000; }
     public static @m int fromKiloMeterToMeter(@km int km) { return km * 1000; }
     
     // Area
-    public static @mm2 int toMilliMeterSquared(int mm2) { return mm2; }
-    public static @m2 int toMeterSquared(int m2) { return m2; }
-    public static @km2 int toKiloMeterSquared(int km2) { return km2; }
-        
+    public static final @mm2 int mm2 = 1;
+    public static final @m2 int m2 = 1;
+    public static final @km2 int km2 = 1;
+            
     // Time
-    public static @s int toSecond(int s) { return s; }
-    public static @min int toMinute(int min) { return min; }
-    public static @h int toHour(int h) { return h; }
-    
+    public static final @s int s = 1;
+    public static final @min int min = 1;
+    public static final @h int h = 1;
+        
     public static @min int fromSecondToMinute(@s int s) { return s / 60; }
     public static @s int fromMinuteToSecond(@min int min) { return min * 60; }
     public static @h int fromMinuteToHour(@min int min) { return min / 60; }
     public static @min int fromHourToMinute(@h int h) { return h * 60; }
-    
+
     // Speed
-    public static @mPERs int toMeterPerSecond(int ms) { return ms; }
-    public static @kmPERh int toKiloMeterPerHour(int kmh) { return kmh; }
-        
+    public static final @mPERs int mPERs = 1;
+    public static final @kmPERh int kmPERh = 1;
+
     // Current
-    public static @A int toAmpere(int a) { return a; }
-    
+    public static final @A int A = 1;
+
     // Luminance
-    public static @cd int toCandela(int cd) { return cd; }
-    
+    public static final @cd int cd = 1;
+
     // Mass
-    public static @g int toGram(int g) { return g; }
-    public static @kg int toKiloGram(int kg) { return kg; }
-    
+    public static final @g int g = 1;
+    public static final @kg int kg = 1;
+
     public static @kg int fromGramToKiloGram(@g int g) { return g / 1000; }
     public static @g int fromKiloGramToGram(@kg int kg) { return kg * 1000; }
-    
+
     // Substance
-    public static @mol int toMole(int mol) { return mol; }
-    
+    public static final @mol int mol = 1;
+
     // Temperature
-    public static @K int toKelvin(int k) { return k; }
-    public static @C int toCelsius(int c) { return c; }
-    
+    public static final @K int K = 1;
+    public static final @C int C = 1;
+
     public static @C int fromKelvinToCelsius(@K int k) { return k - (int)273.15; }
     public static @K int fromCelsiusToKelvin(@C int c) { return c + (int)273.15; }
-   
 }
