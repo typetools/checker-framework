@@ -10,22 +10,23 @@ The \emph{Units Checker} ensures consistent usage of units.
 For example, consider the following code:
 
 \begin{alltt}
-@m int meters = UnitsTools.toMeter(5);
-@s int secs = UnitsTools.toSecond(2);
+@m int meters = 5 * UnitsTools.m;
+@s int secs = 2 * UnitsTools.s;
 @mPERs int speed = meters / secs;
 \end{alltt}
 
 Due to the annotations \<@m> and \<@s>, the variables \code{meters} and \code{secs} are guaranteed to contain
 only values with meters and seconds as units of measurement.
-Utility class \code{\refclass{units}{UnitsTools}} provides methods to convert
-unqualified integer literals to values of the corresponding unit.
+Utility class \code{UnitsTools} provides constants with which
+unqualified integer are multiplied to get values of the corresponding unit.
 The assignment of an unqualified value to \code{meters}, as in
 \code{meters = 99}, will be flagged as an error by the Units Checker.
 
 The division \code{meters/secs} takes the types of the two operands
-into account and automatically determines that the result is of type
+into account and determines that the result is of type
 meters per second, signified by the \code{@mPERs} qualifier.
-
+We provide an extensible framework to define the result of operations
+on units.
 
 
 \section{Units annotations\label{units-annotations}}
@@ -120,6 +121,14 @@ For example, to use nanoseconds as unit, you could use
 \code{@s(Prefix.nano)} as a unit type.  Furthermore, \<@mm> is equivalent to
 \<@m(Prefix.milli)>.
 
+Class \code{UnitsTools} contains a constant for each SI unit.
+To create a value of the particular unit, multiply an unqualified
+value with one of these constants.
+By using static imports, this allows very natural notation; for
+example, after statically importing \code{UnitsTools.m},
+the expression \code{5 * m} represents five meters.
+As all these unit constants are public, static, and final with value
+one, the compiler will optimize away these multiplications.
 
 
 \section{Extending the Units Checker\label{extending-units}}
@@ -152,7 +161,7 @@ Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
 
 To take full advantage of the additional unit qualifier, you need to
 do two additional steps.
-(1)~Provide methods that convert from unqualified types to types that use
+(1)~Provide constants that convert from unqualified types to types that use
 the new unit.  
 See class \code{UnitsTools} for examples (you will need to suppress a
 checker warning in just those few locations).
@@ -178,6 +187,18 @@ different prefix.
 
 Subtyping between the units and the unit kinds is taken into account,
 as is the \code{@UnitsMultiple} meta-annotation.
+
+Multiplying a scalar with a unit type results in the same unit type.
+
+The division of a unit type by the same unit type
+results in the unqualified type.
+
+Multiplying or dividing different unit types, for which no unit
+relation is known to the system, will result in a \code{MixedUnits}
+type, which is separate from all other units.
+If you encounter a \code{MixedUnits} annotation in an error message,
+ensure that your operations are performed on correct units or refine
+your \code{UnitsRelations} implementation.
 
 
 
@@ -210,18 +231,23 @@ If you define your own units, provide the name of the annotations using the
 
 One example of when you need to suppress warnings is when you
 initialize a variable with a unit type by a literal value.
-To remove this warning message, it is best to introduce a static
-method that converts from unqualified to qualified types and to
+To remove this warning message, it is best to introduce a
+constant that represents the unit and to
 add a \code{@SuppressWarnings}
-annotation to that method.
+annotation to that constant.
 For examples, see class \code{UnitsTools}.
 
 
 \section{References\label{units-references}}
 
 \begin{itemize}
-\item The GNU Units tool provides a comprehensive list of units:
+\item The GNU Units tool provides a comprehensive list of units:\\
   \ahrefurl{http://www.gnu.org/software/units/}
+
+\item The F\# units of measurement system provided some ideas for
+simplifications in our checker:\\
+  \ahrefurl{http://en.wikibooks.org/wiki/F\_Sharp\_Programming/Units\_of\_Measure}
+
 \end{itemize}
 
 % LocalWords:  UnitsTools toMeter toSecond mPERs Candela cd kmPERh mol nano ns

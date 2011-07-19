@@ -3,7 +3,7 @@ import checkers.units.quals.*;
 
 public class Multiples {
     void m() {
-        @kg int kg = UnitsTools.toKiloGram(5);
+        @kg int kg = 5 * UnitsTools.kg;
         @g(Prefix.kilo) int alsokg = kg;
         
         //:: error: (assignment.type.incompatible)
@@ -14,7 +14,7 @@ public class Multiples {
         
         kg = alsokg;
         
-        @g int g1 = UnitsTools.toGram(5);
+        @g int g1 = 5 * UnitsTools.g;
         @g(Prefix.one) int g2 = g1;
         g1 = g2;
     }
