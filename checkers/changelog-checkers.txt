@@ -2,6 +2,29 @@
 @Covariant annotation
 
 ----------------------------------------------------------------------
+Version 1.1.5, 22 Jul 2011
+
+Units Checker:
+  Instead of conversion routines, provide unit constants, with which
+  to multiply unqualified values. This is easier to type and the
+  multiplication gets optimized away by the compiler.
+
+Fenum Checker:
+  Ensure that the switch statement expression is a supertype of all
+  the case expressions.
+
+Implementation details:
+
+- Parse declaration annotations in stub files
+
+- Output error messages instead of raising exceptions. This change
+  required us to introduce method "initChecker" in class
+  SourceChecker, which should be used instead of "init". This allows
+  us to handle the calls to initChecker within the framework.
+  Use method "errorAbort" to output an error message and abort
+  processing.
+
+----------------------------------------------------------------------
 Version 1.1.4, 8 Jul 2011
 
 Units Checker (new):
