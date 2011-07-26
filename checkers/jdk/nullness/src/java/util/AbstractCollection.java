@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public abstract class AbstractCollection<E extends @NonNull Object> implements Collection<E> {
+public abstract class AbstractCollection<E extends @Nullable Object> implements Collection<E> {
   protected AbstractCollection() {}
   public abstract Iterator<E> iterator();
   public abstract int size();

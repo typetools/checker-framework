@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface SortedMap<K extends @NonNull Object, V extends @NonNull Object> extends Map<K, V> {
+public interface SortedMap<K extends @Nullable Object, V extends @Nullable Object> extends Map<K, V> {
   public abstract Comparator<? super K> comparator();
   public abstract SortedMap<K, V> subMap(K a1, K a2);
   public abstract SortedMap<K, V> headMap(K a1);
