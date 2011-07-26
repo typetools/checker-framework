@@ -2,8 +2,8 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to contain nonnull references.
-public abstract class Dictionary<K extends /*@NonNull*/ Object, V extends /*@NonNull*/ Object> {
+// Subclasses of this interface/class may opt to prohibit null elements
+public abstract class Dictionary<K extends @Nullable Object, V extends @Nullable Object> {
   public Dictionary() { throw new RuntimeException("skeleton method"); }
   public abstract int size();
   public abstract boolean isEmpty();
