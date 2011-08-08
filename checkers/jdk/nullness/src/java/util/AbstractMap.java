@@ -3,9 +3,10 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 // Subclasses of this interface/class may opt to prohibit null elements.
-public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull Object> implements Map<K, V> {
+public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullable Object> implements Map<K, V> {
   protected AbstractMap() {}
-  public class SimpleEntry<K, V> implements Map.Entry<K, V>, java.io.Serializable {
+  public class SimpleEntry<K extends @Nullable Object, V extends @Nullable Object>
+      implements Map.Entry<K, V>, java.io.Serializable {
     private static final long serialVersionUID = 0;
     public SimpleEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleEntry(Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
@@ -16,7 +17,8 @@ public abstract class AbstractMap<K extends @NonNull Object, V extends @NonNull 
     public int hashCode() { throw new RuntimeException("skeleton method"); }
     public String toString() { throw new RuntimeException("skeleton method"); }
   }
-  public class SimpleImmutableEntry<K, V> implements Map.Entry<K, V>, java.io.Serializable {
+  public class SimpleImmutableEntry<K extends @Nullable Object, V extends @Nullable Object>
+      implements Map.Entry<K, V>, java.io.Serializable {
     private static final long serialVersionUID = 0;
     public SimpleImmutableEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleImmutableEntry(Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }

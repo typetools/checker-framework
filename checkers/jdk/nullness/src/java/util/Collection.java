@@ -2,8 +2,8 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to contain nonnull references.
-public interface Collection<E extends @NonNull Object> extends Iterable<E> {
+// Subclasses of this interface/class may opt to prohibit null elements
+public interface Collection<E extends @Nullable Object> extends Iterable<E> {
   public abstract int size();
   public abstract boolean isEmpty();
   // not true, because map could contain nulls:  AssertParametersNonNull("get(#0)")

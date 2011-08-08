@@ -2,9 +2,8 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to prohibit null elements.
-// We write "extends @NonNull Object" for emphasis even though it's the default.
-public interface Map<K extends @NonNull Object, V extends @NonNull Object> {
+// Subclasses of this interface/class may opt to prohibit null elements
+public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
   @Covariant(0)
   public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
     public abstract K getKey();
