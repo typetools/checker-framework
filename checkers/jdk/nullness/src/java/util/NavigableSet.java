@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface NavigableSet<E extends @NonNull Object> extends SortedSet<E> {
+public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
   public abstract @Nullable E lower(E a1);
   public abstract @Nullable E floor(E a1);
   public abstract @Nullable E ceiling(E a1);
