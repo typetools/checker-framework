@@ -2,27 +2,41 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
-import java.util.regex.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+import java.util.regex.Pattern;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 import checkers.quals.TypeQualifiers;
-import checkers.types.*;
-import checkers.util.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.util.InternalUtils;
+import checkers.util.TreeUtils;
 
-import com.sun.source.tree.*;
-
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.AbstractTypeProcessor;
-import com.sun.source.util.Trees;
 import com.sun.source.util.TreePath;
-
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacMessager;
 
 /**
@@ -224,6 +238,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         try {
             super.init(processingEnv);
             initChecker(processingEnv);
+            if (this.env == null) {
+                errorInInit = true;
+                // Set the messager first, as it wasn't initialized
+                messager = (JavacMessager) processingEnv.getMessager();
+                messager.printMessage(
+                        javax.tools.Diagnostic.Kind.WARNING,
+                        "You have forgotten to call super.initChecker in your "
+                                + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
+            }
         } catch (CheckerError ce) {
             errorInInit = true;
         }
