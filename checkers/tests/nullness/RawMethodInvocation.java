@@ -9,7 +9,7 @@ class RawMethodInvocation {
   //:: warning: (fields.uninitialized)
   RawMethodInvocation(boolean constructor_inits_a) {
     a = 1;
-    // TODO: This should be legal
+    // TODO: This should be legal.  See issue 75: http://code.google.com/p/checker-framework/issues/detail?id=75
     //:: error: (method.invocation.invalid)
     init_b();
   }
@@ -21,7 +21,7 @@ class RawMethodInvocation {
   // TODO: This should be legal
   //:: warning: (fields.uninitialized)
   RawMethodInvocation(int constructor_inits_none) {
-    // TODO: This should be legal
+    // TODO: This should be legal.  See issue 75: http://code.google.com/p/checker-framework/issues/detail?id=75
     //:: error: (method.invocation.invalid)
     init_ab();
   }
