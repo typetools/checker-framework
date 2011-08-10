@@ -773,11 +773,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     @Override
     public final SourceVersion getSupportedSourceVersion() {
-        try {
-            return SourceVersion.RELEASE_7;
-        } catch (NoSuchFieldError e) {
-            // Running in JDK 6
-            return SourceVersion.latest();
-        }
+    	return SourceVersion.RELEASE_8;
     }
 }
