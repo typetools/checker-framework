@@ -1,0 +1,308 @@
+%% This tutorial proposal was accepted, but not presented due to
+%% difficulties with travel.
+
+% -*- Mode: LaTeX -*-
+\documentclass{sig-alternate} % 10pt if not specified
+% \usepackage{pslatex}
+% \usepackage{fullpage}
+\usepackage{relsize}
+\usepackage{url}
+
+\begin{document}
+
+%
+% --- Author Metadata here ---
+% \conferenceinfo{WOODSTOCK}{'97 El Paso, Texas USA}
+%\CopyrightYear{2007} % Allows default copyright year (200X) to be over-ridden - IF NEED BE.
+%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
+% --- End of Author Metadata ---
+
+\title{Building and using pluggable type systems}
+\numberofauthors{2}
+\author{
+\alignauthor
+Michael D. Ernst\\
+       \affaddr{University of Washington}\\
+       \affaddr{CS\&E, Box 352350}\\
+       \affaddr{Seattle, WA, USA}\\
+       \affaddr{+1-206-221-0965; fax: +1-206-616-3804}\\
+       \affaddr{\url{http://www.cs.washington.edu/homes/mernst/}}\\
+       \email{mernst@cs.washington.edu}
+% 2nd. author
+\alignauthor
+Mahmood Ali\\
+       \affaddr{MIT CSAIL}\\
+       \affaddr{32 Vassar St.}\\
+       \affaddr{Cambridge, MA, USA}\\
+       \affaddr{+1-617-253-5895; fax: +1-617-258-8682}\\
+       \email{mali@csail.mit.edu}
+}
+
+\maketitle
+\begin{abstract}
+Are you a practitioner who is tired of null pointer exceptions,
+unintended side effects, SQL injections, concurrency errors, mistaken
+equality tests, and other run-time errors that appear during testing or
+in the field?  A pluggable type system can guarantee the absence of these
+errors, and many more.
+
+Are you a researcher who wants to be able to quickly and easily implement
+a type system, giving you the ability to evaluate it in practice and to
+field it?  You need a framework that supports these essential activities.
+
+This tutorial is aimed at both audiences.  It describes both the theory
+of pluggable types and also the practice of implementing them.  A simple
+pluggable type-checker can be implemented in 2 minutes, and can be
+enhanced thereafter.  The type checkers are easy to create, easy for
+programmers to use, and effective in finding real, important bugs.
+
+The specific examples and exercises use the Checker Framework, which
+enables you to create pluggable type systems for Java.  However, the
+ideas translate to other languages and toolsets.  Java 7 will contain
+syntactic support for type annotations, but in the meanwhile your code
+remains backward-compatible with all versions of Java.
+
+\end{abstract}
+
+% % A category with the (minimum) three required fields
+% \category{H.4}{Information Systems Applications}{Miscellaneous}
+% %A category including the fourth, optional field follows...
+% \category{D.2.8}{Software Engineering}{Metrics}[complexity measures, performance measures]
+% 
+% \terms{Delphi theory}
+% 
+% \keywords{ACM proceedings, \LaTeX, text tagging}
+
+\section{Presenters}
+
+Mahmood Ali is a graduate student in the MIT Computer Science and
+Artificial Intelligence Lab.  He designed and implemented the Type
+Annotations (JSR 308) compiler that has been incorporated into Sun's
+OpenJDK, and the Checker Framework that enables the creation of
+user-defined pluggable type systems.
+
+Michael D. Ernst is an Associate Professor in the Computer Science and
+Engineering department at the University of Washington.  He is the
+specification lead for the Type Annotations language extension (``JSR
+308'') that is part of Java 7 --- the first non-Sun-employee to be the
+specification lead for a Java language change.  Ernst's research aims to
+make software more reliable, more secure, and easier (and more fun!) to
+produce. His primary technical interests are in software engineering and
+related areas, including programming languages, type theory, security,
+program analysis, bug prediction, testing, and verification. Ernst's
+research combines strong theoretical foundations with realistic
+experimentation, with an eye to changing the way that software developers
+work.  Dr. Ernst was previously a tenured professor at MIT, and before that
+a researcher at Microsoft Research.  More information is available at his
+homepage:  \url{http://www.cs.washington.edu/homes/mernst/}.
+
+Ernst received a ``Java Rock Star'' award for his presentation on the
+Checker Framework at the JavaOne 2009 conference.  He and/or Ali have also
+given short (1-hour) presentations on the topic at Dagstuhl (4/2008),
+J-Spring (4/2008), ECOOP (7/2008), OOPSLA (10/2008), Devoxx (12/2008),
+Google (12/2008), and SeaJUG (4/2009).  Additionally, they have done longer
+(2.5--4 hour) tutorials at PPPJ (8/2009) and OOPSLA (10/2009).  This list
+does not include older presentations (over 18 months ago).
+
+
+\section{Duration}
+
+Either half-day or full-day.  The latter permits more depth, and more time
+for hands-on exercises.
+
+
+\section{Goal and objectives}
+
+Our aim is to bring the research and practitioner communities closer
+together, in the concrete context of type systems, by offering each
+community something that it has lacked so far.
+
+For researchers, it is too hard to evaluate a proposed type system in a
+realistic way, which requires integration with a full, real programming
+language and evaluation on real, sizable programs.  It is also too hard to
+package type systems for use by practitioners, even after they have been
+demonstrated to be useful.
+
+For practitioners, many important properties of a program must be expressed
+informally in English, and no tools exist to detect and prevent these
+problems.
+
+We will demonstrate that all of these problems are soluble and have even
+been solved.  We will show how to achieve each of these aims, and will lead
+participants through solving whichever ones are of most interest to them.
+
+
+\section{Scope}
+
+The audience is twofold:  researchers who wish to evaluate their type
+systems in a realistic manner or transition them to practical use; and
+practitioners who wish to create reliable code.
+
+Participants should be comfortable with the type system of an
+object-oriented language such as Java.
+
+
+
+\section{Teaching method}
+
+The tutorial will use a mix of teaching methods.  There will be a short
+preliminary lecture to introduce concepts, and we will return to this
+format periodically to convey more background theory.  There will be
+numerous demos to illustrate how both type systems, and tools for
+implementing them, work in practice.  There will be hands-on exercises to
+get participants started in using pluggable type-checkers and writing their
+own.
+
+
+\section{Summary of contents}
+
+The Java type system helps programmers to detect and prevent
+errors. However, Java's built-in type system does not detect and prevent
+\emph{enough} errors. It cannot express important properties such as: a reference
+is non-null, a data structure should not be modified, or a string has been
+properly sanitized.
+
+Java's type system can be extended to enforce such properties statically,
+preventing whole classes of errors. 
+A user-defined, or pluggable, type system enriches a
+language's built-in type system via type qualifiers.  Pluggable types
+permit more expressive compile-time checking, and they can guarantee
+the absence of additional errors.
+
+Despite considerable interest in user-defined type qualifiers,
+previous implementations have been too inexpressive, unscalable, or
+incompatible with existing languages or tools.  This has hindered the
+evaluation, understanding, and uptake of pluggable types.
+
+More recently, pluggable types (that operate as an optional plug-in to the
+compiler) have become practical for Java. This benefits two constituencies:
+
+\begin{itemize}
+\item Programmers can detect and prevent errors in their code.
+\item Type system designers can easily evaluate new type systems in the
+  context of an industrial programming language.
+\end{itemize}
+
+The line between these constituencies is porous: a developer may create a
+simple type system to enforce an application-specific property.
+
+This tutorial will explain how to both \emph{use} and \emph{create}
+pluggable type systems. Afterward, you will be ready to use pluggable types
+with confidence and to create simple type-checkers of your own, and you
+will know where to look for more information.
+
+The Checker Framework is expressive and flexible.  It builds in many
+features needed by type system designers and programmers, including:
+\begin{itemize}
+\item backward-compatible Java and classfile syntax for type qualifiers
+\item integration with javac and Eclipse
+\item three type inference tools to ease programmer annotation burden
+\item declarative and procedural syntax for writing type-checking rules
+\item flow-sensitive type qualifier inference
+\item polymorphism over types (Java generics)
+\item polymorphism over type qualifiers
+\item implicit and default qualifiers
+\end{itemize}
+
+The hands-on activities will use the Checker Framework, which provides
+expressive, concise declarative and procedural mechanisms for creating
+pluggable type checkers for Java. However, the ideas extend to other
+frameworks and languages. The Checker Framework is the basis of many
+practical checkers that are in daily use and have found hundreds of
+important errors in millions of lines of code. The Checker Framework is
+being used by researchers worldwide, and it has yielded new insight into
+research type systems. It is usable with any version of the Java language,
+but pluggable types are so important that Java 7 will contain special
+syntax (designed by the presenter of this tutorial) to support type
+qualifiers.
+
+The tutorial will cover both theory and practice, and is applicable both to
+researchers and also to practitioners who wish to verify domain-specific
+properties in their software. For example, you will learn how type system
+designers can build scalable, robust, and easily deployable
+type-checkers. During the tutorial, you will build your own
+type-checker. After the tutorial, you will be prepared to use, create, or
+customize pluggable type-checkers.
+
+Attendees are suggested to bring laptop computers, though it is also
+possible to look on with another attendee.
+
+The Checker Framework is freely available at
+\url{http://types.cs.washington.edu/jsr308/}.
+The distribution includes source code, binaries, extensive
+documentation, and example type-checkers.
+
+
+
+\section{Areas of special interest}
+
+Among the areas of special interest to the Southern African software
+engineering community, ours does not relate to ``cost effectiveness
+analysis''.  It does relate, in greater or lesser degree, to three:
+\begin{itemize}
+\item security:  we will demonstrate how pluggable type-checking can reveal
+  and prevent a variety of security flaws, including information flows,
+  injection/XSS, and representation exposure of mutable state.
+\item advanced software testing:
+  testing is one aspect of verification and validation; static analyses are
+  another side of the same coin.  Our approach complements dynamic
+  approaches, and we have effectively combined them.
+\item model-driven language engineering:
+  the types of a program are an abstraction --- a model --- of the program
+  and/or of its specification; and when these are machine-checkable, they
+  are of more immediate use.
+\end{itemize}
+
+The tutorial is relevant because it is a rare example of academic research
+having a direct effect on industrial practice and becoming available to
+every Java developer via support in the Java language standard.
+
+
+\section{Structure of contents and sample slides}
+
+I have attached a slide deck that has the same content that I would provide
+in a ``structure of contents'' section --- I would take slide titles and
+contents as the section titles and bullet points.
+
+
+\section{References}
+
+The two most relevant documents are the Type Annotations (JSR 308)
+Specification~\cite{JSR308} that is part of Java 7, and a research paper on
+building and using pluggable type-systems~\cite{PapiACPE2008}.  Also see
+the 82-page Checker Framework Manual, available from
+\url{http://types.cs.washington.edu/jsr308/} in PDF and HTML form.
+
+\bibliographystyle{alpha}
+\bibliography{bibstring-unabbrev,ernst}
+
+\end{document}
+
+
+
+
+
+Tutorial Proposal Submission Template
+
+Goal and Objectives
+The overall goal of the tutorial and some concrete objectives to be achieved. Please ensure that it is clear why this tutorial would be of interest and benefit to ICSE 2010 attendees
+Scope
+Summary of Contents (not exceeding two pages)
+Here you summarize your tutorial in the style of an extended abstract. The summary must not exceed 1500 words or two pages in ICSE conference proceedings format.
+
+Please note that this section should be the preliminary version of the two-page summary in the proceedings that you will be required to submit if your proposal is accepted.
+Structure of Contents
+Here you should provide a structured overview of your planned tutorial, organized into numbered sections and sub-sections. For each sub-section, you should sketch its contents in a few sentences or bullets.
+Sample Slides
+
+Please also prepare three sample slides from the presentation that you would give if your tutorial were accepted. Select slides that are typical for your presentation style. These slides must be submitted in a separate PDF file with all fonts included.
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
+
+% LocalWords:  Devoxx SeaJUG PPPJ deployable nonnull readonly classfile XSS
+% LocalWords:  checkable toolsets Dagstuhl ernst
