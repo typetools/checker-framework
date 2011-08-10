@@ -29,6 +29,8 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
+import checkers.nullness.quals.*;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
