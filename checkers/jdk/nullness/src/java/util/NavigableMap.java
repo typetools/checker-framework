@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface NavigableMap<K extends @NonNull Object, V extends @NonNull Object> extends SortedMap<K, V> {
+public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Object> extends SortedMap<K, V> {
   public abstract @Nullable Map.Entry<K, V> lowerEntry(K a1);
   public abstract @Nullable K lowerKey(K a1);
   public abstract @Nullable Map.Entry<K, V> floorEntry(K a1);
