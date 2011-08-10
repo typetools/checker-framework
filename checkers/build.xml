@@ -148,7 +148,6 @@ ${build.version} of the 'javac.jar' library."/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="-target 5"/>
             <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
         </java>

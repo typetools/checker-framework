@@ -89,7 +89,7 @@ public class TestInput {
             opts.add(processor);
         }
         opts.add("-source");
-        opts.add("1.7");
+        opts.add("1.8");
         for (String option : options)
             opts.add(option);
 
