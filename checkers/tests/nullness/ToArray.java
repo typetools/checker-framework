@@ -1,10 +1,9 @@
 import java.util.*;
 import checkers.nullness.quals.*;
-// bound errors are errors related to collection not accepting nullable elements
+
 public class ToArray {
-    //:: error: (generic.argument.invalid) :: error: (generic.argument.invalid)
-    private List<@Nullable String> nullableList = new ArrayList<@Nullable String>(); // bound error
-    private List<@NonNull String> nonnullList = new ArrayList<@NonNull String>(); // bound error
+    private List<@Nullable String> nullableList = new ArrayList<@Nullable String>();
+    private List<@NonNull String> nonnullList = new ArrayList<@NonNull String>();
 
     void listToArrayObject() {
         for (@Nullable Object o : nullableList.toArray());
@@ -31,9 +30,8 @@ public class ToArray {
         for (@NonNull String o : nonnullList.toArray(new @NonNull String[0]));
     }
 
-    //:: error: (generic.argument.invalid)
-    private Collection<@Nullable String> nullableCol = new ArrayList<@Nullable String>();   // bound error
-    private Collection<@NonNull String> nonnullCol = new ArrayList<@NonNull String>();  // bound error
+    private Collection<@Nullable String> nullableCol = new ArrayList<@Nullable String>();
+    private Collection<@NonNull String> nonnullCol = new ArrayList<@NonNull String>();
 
     void colToArrayObject() {
         for (@Nullable Object o : nullableCol.toArray());

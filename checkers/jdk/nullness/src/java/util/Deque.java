@@ -2,9 +2,9 @@ package java.util;
 import checkers.nullness.quals.*;
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-// Subclasses of this interface/class may opt to contain
-// nonnull references
-public interface Deque<E extends /*@NonNull*/ Object> extends Queue<E> {
+// Subclasses of this interface/class may opt to prohibit
+// null elements
+public interface Deque<E extends @Nullable Object> extends Queue<E> {
   public abstract void addFirst(E a1);
   public abstract void addLast(E a1);
   public abstract boolean offerFirst(E a1);
