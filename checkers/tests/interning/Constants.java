@@ -11,6 +11,7 @@ public class Constants {
   final String AC = A + "C";
   final String D = new String("D");
   final @Interned String E = new String("E").intern();
+  final Object F = "F";
 
   void foo() {
     @Interned String is;
@@ -28,6 +29,7 @@ public class Constants {
     //:: error: (assignment.type.incompatible)
     is = is + is;
     is = Constants2.E;
+    is = (String) F;
   }
 
 }
