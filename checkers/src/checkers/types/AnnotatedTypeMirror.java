@@ -424,7 +424,11 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Copy the fields on this type onto the passed type.
      * This method needs to be overridden by any subclass of
-     * {@code AnnotatedTypeMirror}
+     * {@code AnnotatedTypeMirror}.
+     * 
+     * TODO: None of the subtypes in this compilation unit override this method, however.
+     * Is this documentation inconsistent? Or should we add these implementations?
+     * The separation between copyFields and getCopy is unclear.
      *
      * @param type  an empty type where fields of this are copied to
      * @param annotation whether annotations are copied or not
@@ -905,7 +909,6 @@ public abstract class AnnotatedTypeMirror {
             type.setThrownTypes(getThrownTypes());
             type.setTypeVariables(getTypeVariables());
 
-
             return type;
         }
 
@@ -965,7 +968,21 @@ public abstract class AnnotatedTypeMirror {
                 type.setThrownTypes(throwns);
             }
 
-            // Worry about type variable
+            // Method type variables
+            {
+            	List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
+            	for (AnnotatedTypeVariable t : getTypeVariables()) {
+            		// TODO: I would like to do the substitution, but it results in
+            		// a ClassCastException, because substitute on the type variable
+            		// seems to do more than necessary.
+            		// To fix the immediate problem, a deep clone is enough, but we
+            		// should investigate when the substitution is necessary.
+            		// mtvs.add((AnnotatedTypeVariable) t.substitute(mappings));
+            		mtvs.add((AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t));
+            	}
+            	type.setTypeVariables(mtvs);
+            }
+            
             return type;
         }
 
