@@ -249,7 +249,7 @@ public class AnnotatedTypeFactory {
         if (tree == null)
             throw new IllegalArgumentException("null tree");
         if (treeCache.containsKey(tree))
-            return atypes.deepCopy(treeCache.get(tree));
+            return AnnotatedTypes.deepCopy(treeCache.get(tree));
         AnnotatedTypeMirror type;
         switch (tree.getKind()) {
             case CLASS:
@@ -278,7 +278,7 @@ public class AnnotatedTypeFactory {
         case METHOD:
         // case VARIABLE:
             if (SHOULD_CACHE)
-                treeCache.put(tree, atypes.deepCopy(type));
+                treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
         return type;
     }
@@ -343,7 +343,7 @@ public class AnnotatedTypeFactory {
         // method before the stub files are fully read can return incorrect
         // results.
         if (SHOULD_CACHE && indexTypes != null)
-            elementCache.put(elt, atypes.deepCopy(type));
+            elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
 
@@ -373,12 +373,12 @@ public class AnnotatedTypeFactory {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree))
             throw new IllegalArgumentException("not a method or variable declaration");
         if (fromTreeCache.containsKey(tree))
-            return atypes.deepCopy(fromTreeCache.get(tree));
+            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromMember.INSTANCE, tree);
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
-            fromTreeCache.put(tree, atypes.deepCopy(result));
+            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
 
@@ -390,12 +390,12 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
         if (fromTreeCache.containsKey(tree))
-            return atypes.deepCopy(fromTreeCache.get(tree));
+            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromExpression.INSTANCE, tree);
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
-            fromTreeCache.put(tree, atypes.deepCopy(result));
+            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
 
@@ -408,7 +408,7 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
         if (fromTreeCache.containsKey(tree))
-            return atypes.deepCopy(fromTreeCache.get(tree));
+            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTypeTree.INSTANCE, tree);
@@ -434,7 +434,7 @@ public class AnnotatedTypeFactory {
         }
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
-            fromTreeCache.put(tree, atypes.deepCopy(result));
+            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
     /**
@@ -826,6 +826,13 @@ public class AnnotatedTypeFactory {
 
         if (!typeVarMapping.isEmpty()) {
             for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+            	if (typeVarMapping.get(tv)==null) {
+					System.err.println("Detected a mismatch between the declared method" +
+							" type variables and the inferred method type arguments. Something is going wrong!");
+					System.err.println("Method type variables: " + methodType.getTypeVariables());
+					System.err.println("Inferred method type arguments: " + typeVarMapping);
+					throw new AssertionError("Mismatch between declared method type variables and the inferred method type arguments!");
+            	}
                 typeargs.add(typeVarMapping.get(tv));
             }
             methodType = methodType.substitute(typeVarMapping);
