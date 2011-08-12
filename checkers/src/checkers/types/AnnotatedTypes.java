@@ -335,13 +335,14 @@ public class AnnotatedTypes {
 
 
     /**
-     * Returns a deep copy of the passed type
+     * Returns a deep copy of the passed type.
      *
      * @param type  the annotated type to be copied
      * @return a deep copy of the passed type
      */
-    public AnnotatedTypeMirror deepCopy(AnnotatedTypeMirror type) {
-        // TODO: Test this, specify behaviour
+    public static AnnotatedTypeMirror deepCopy(AnnotatedTypeMirror type) {
+        // TODO: Test this, specify behavior
+    	// TODO: can we introduce method type variables to refine the signature?
         return type.substitute(Collections.<AnnotatedTypeMirror,
                 AnnotatedTypeMirror>emptyMap());
     }
