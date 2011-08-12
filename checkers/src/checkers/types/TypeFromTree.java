@@ -27,8 +27,8 @@ abstract class TypeFromTree extends
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
         if (node == null)
             throw new IllegalArgumentException("null tree");
-        throw new UnsupportedOperationException(
-                "conversion undefined for tree type " + node.getKind());
+        throw new UnsupportedOperationException(this.getClass() +
+                ": conversion undefined for tree type " + node.getKind());
     }
 
     static void addAnnotationsToElt(AnnotatedTypeMirror type,
@@ -371,6 +371,11 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node,
                 AnnotatedTypeFactory f) {
             // for e.g. "int[].class"
+            return f.fromTypeTree(node);
+        }
+        
+        @Override
+        public AnnotatedTypeMirror visitParameterizedType(ParameterizedTypeTree node, AnnotatedTypeFactory f) {
             return f.fromTypeTree(node);
         }
     }
