@@ -336,6 +336,24 @@ annotated version of JDK 7, you will need to create it yourself.  Running
 % \end{enumerate}
 
 
+\section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}\label{skeleton}}
+
+Sometimes, it may seem that a checker is treating a library as unannotated
+even though the library has annotations.  The compiler has two flags that
+may help you in determining whether library files are read, and if they are
+read whether the library's annotations are parsed.
+
+\begin{description}
+\item \<-verbose>
+  Outputs info about compile phases --- when the compiler
+  reads/parses/attributes/writes any file.  Also outputs the classpath and
+  sourcepath paths.
+\item \<-XDTA:parser> (which is equivalent to \<-XDTA:reader> plus \<-XDTA:writer>)
+  Sets the internal \<debugJSR308> flag, which output information about
+  reading and writing.
+\end{description}
+
+
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
 % LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ
