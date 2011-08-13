@@ -22,8 +22,8 @@ import com.sun.source.tree.Tree;
  * the appropriate nullness type of the returned value.
  *
  * <p>
- * {@link Collection#toArray()} and {@link Collection#toArray(Object[])
- * Collection.toArray(T[])} method semantics cannot be captured by the
+ * The semantics of {@link Collection#toArray()} and
+ * {@link Collection#toArray(Object[]) Collection.toArray(T[])} cannot be captured by the
  * regular type system.  Namely, the nullness of the returned array
  * component depends on the receiver type argument.  So
  *
