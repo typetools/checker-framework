@@ -78,6 +78,15 @@ cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.j
 # If the above passes, commit changes to jsr308-langtools.
 </pre>
 
+<p>
+In addition, run
+</p>
+<pre>diff -u jsr308-langtools/dist/bin/javac checker-framework/checkers/binary/javac</pre>
+<p>
+and incorporate any recent Oracle javac changes into the Checker
+Framework's copy.
+</p>
+
 
 <h2 id="release">Releasing the JSR 308 langtools and the Checker Framework</h2>
 
