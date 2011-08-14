@@ -1,10 +1,3 @@
-/// ******************************************************
-/// WARNING:
-/// This is not currently used.
-/// It is retained for historical reasons, to show how to
-/// recreate it if desired.
-/// ******************************************************
-
 package tests;
 
 import java.io.File;
