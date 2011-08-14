@@ -171,6 +171,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             pattern = System.getenv("skipUses");
 
         // return a pattern of an illegal Java identifier character
+        // so that it won't match anything
         if (pattern.equals(""))
             pattern = "\\(";
 
@@ -735,14 +736,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
-     * Returns a regular expression pattern to specify java classes that are not
+     * Returns a regular expression pattern to specify Java classes that are not
      * annotated, and thus whose warnings and should be surpressed.
      *
      * It returns the pattern specified by the user, through the option
      * {@code checkers.skipUses}; otherwise it returns a pattern that can
      * match no class.
      *
-     * @return pattern of un-annotated classes that should be skipped
+     * @return Pattern of un-annotated classes that should be skipped
      */
     public Pattern getShouldSkipUses() {
         return this.skipUsesPattern;
