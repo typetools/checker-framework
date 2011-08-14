@@ -1,11 +1,12 @@
 How to run the tests for the Checker Framework
 ==============================================
 
-  cd checkers
-  ant all-tests
+  # Warning: this may rebuild the JDK
+  ant -e -find build.xml all-tests
 
-Other ant targets also exist to run a subset of the tests; for example,
-  ant nullness-tests
+Other ant targets also exist to run a subset of the tests, without
+rebuilding the JDK; for example,
+  ant -e nullness-tests
 
 To run an individual test (check one source code file), do something like:
 
