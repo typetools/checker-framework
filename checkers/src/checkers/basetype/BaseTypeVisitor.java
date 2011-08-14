@@ -1156,19 +1156,27 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * It returns true if exprTree is a method invocation or a field access
      * to a class whose qualified name matches @{link checker.skipUses}
-     * expression.  It also return true for conditional expressions where
-     * the true or false expressions should be skipped.
+     * expression.
      *
      * @param exprTree  any expression tree
      * @return true if checker should not test exprTree
      */
     protected final boolean shouldSkip(ExpressionTree exprTree) {
-        if (exprTree instanceof ConditionalExpressionTree) {
-            ConditionalExpressionTree condTree =
-                (ConditionalExpressionTree)exprTree;
-            return (shouldSkip(condTree.getTrueExpression()) ||
-                    shouldSkip(condTree.getFalseExpression()));
-        }
+        // System.out.printf("shouldSkip: %s: %s%n", exprTree.getClass(), exprTree);
+
+        // This special case for ConditionalExpressionTree seems wrong, so
+        // I commented it out.  It will skip expressions that should be
+        // checked, just because they are lexically near expressions that
+        // should be skipped.  Presumably it's because conditionals do some
+        // type inference, but if so, this is the wrong way to fix the
+        // problem. -MDE
+        // if (exprTree instanceof ConditionalExpressionTree) {
+        //     ConditionalExpressionTree condTree =
+        //         (ConditionalExpressionTree)exprTree;
+        //     return (shouldSkip(condTree.getTrueExpression()) ||
+        //             shouldSkip(condTree.getFalseExpression()));
+        // }
+
         Element elm = InternalUtils.symbol(exprTree);
         return shouldSkip(elm);
     }
