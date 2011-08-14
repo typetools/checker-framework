@@ -953,6 +953,39 @@ or a separate class, nor introduction of dynamic dispatch for methods that
 could otherwise be statically dispatched.
 
 
+\subsection{What to do if a checker issues a warning about your code\label{handling-warnings}}
+
+When you first run a type-checker on your code, it is likely to issue
+warnings or errors.  For each warning, try to understand why the checker
+issues it.  (For example, if you are using the
+\ahrefloc{nullness-checker}{Nullness checker}
+(\chapterpageref{nullness-checker}), try to understand why it cannot prove
+that no null pointer exception ever occurs.)  The reason will sometimes be
+an actually possible null dereference, sometimes be a weakness of the
+annotations, and sometimes be a weakness of the checker.  You will need to
+examine your code, and possibly write test cases, to understand the reason.
+
+If there is an actual possible null dereference, then fix your code to
+prevent that crash.
+
+If there is a weakness in the annotations, then improve the annotations.
+For example, continuing the Nullness Checker example, if a particular
+variable is annotated as \code{@\refclass{nullness/quals}{Nullable}} but it
+actually never contains \<null> at run time, then change the annotation to 
+\code{@\refclass{nullness/quals}{NonNull}}.  The weakness might be in the
+annotations in your code, or in the annotations in a library that your code
+calls.  Another possible problem is that a library is unannotated (see
+\chapterpageref{annotating-libraries}).
+
+If there is a weakness in the checker, then your code is safe --- it never
+suffers the specific run-time error --- but the checker cannot prove this
+fact.  This is most often because the checker is not omniscient, and some
+tricky coding paradigms are beyond its analysis capabilities; in this
+case, you should suppress the warning (see
+\chapterpageref{suppressing-warnings}).  In other cases, the problem is a
+bug in the checker; in this case, please report the bug (see
+\chapterpageref{reporting-bugs}).
+
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
 % LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp igj
