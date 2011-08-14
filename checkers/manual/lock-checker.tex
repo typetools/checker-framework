@@ -5,7 +5,7 @@ The Lock checker prevents certain kinds of concurrency errors.  If the Lock
 checker issues no warnings for a given program, then the program holds the
 appropriate lock every time that it accesses a variable.
 
-Note:  This does \emph{not} mean that your program has no concurrency
+Note:  This does \emph{not} mean that your program has \emph{no} concurrency
 errors.  (You might have forgotten to annotate that a particular variable
 should only be accessed when a lock is held.  You might release and
 re-acquire the lock, when correctness requires you to hold it throughout a
