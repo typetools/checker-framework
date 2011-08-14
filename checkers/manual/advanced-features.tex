@@ -52,9 +52,12 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   If there is no implicit or explicit qualifier on a type, then a default
   qualifier may be applied; see Section~\ref{defaults}.
 
+%BEGIN LATEX
+  % This looks bad in HTML.
   \smallskip
+%END LATEX
 
-  At this point, every type has a qualifier.
+  At this point (after step 3), every type has a qualifier.
 
 \item
   The type system may refine a qualified type on a local variable --- that
@@ -261,18 +264,26 @@ Java code that reproduces the problem.
 % future release.
 
 
-% TODO:  Is NonNull inferred for any parameters or fields, or just for locals?
-
-Type inference is never performed for method parameters of non-private
-methods and for non-private fields, because unknown client code could use
-them in arbitrary ways.  The inferred information is never written to the
-\code{.class} file as user-written annotations are.
-
 The inference indicates when a variable can be treated as having a subtype
 of its declared type --- for instance, when an otherwise nullable type can be
 treated as a \code{@\refclass{nullness/quals}{NonNull}} one.  The inference never treats a variable as
 a supertype of its declared type (e.g., an expression of \code{@\refclass{nullness/quals}{NonNull}}
 type is never inferred to be treated as possibly-null).
+
+% TODO:  Is NonNull inferred for any parameters or fields, or just for locals?
+
+Type inference is never performed for method parameters of non-private
+methods, nor for non-private fields.  
+More generally, the inferred information is never written to the
+\code{.class} file as user-written annotations are.
+If the checker did inference in externally-visible locations and wrote it
+to the \<.class> file, then the resulting \<.class> file would be different
+depending on whether an annotation processor had been run or not.  It is a
+design goal that the same annotations appear in the \<.class> file
+regardless of whether the class is compiled with or without the checker,
+and this requires that any public signature be fully annotated by the user
+rather than inferred.
+
 
 \subsection{Fields and flow sensitivity analysis}
 
