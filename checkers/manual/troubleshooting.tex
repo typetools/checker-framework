@@ -216,58 +216,63 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{itemize}
 
 
-\subsection{Known problems in the framework\label{known-problems}}
-
-\begin{itemize}
-
-\item
-  The framework may not parse annotations from skeleton files if the
-  skeleton files are older than the classfiles.  Running \code{ant
-    touch-jdk} solves this problem, by applying the 
-  \code{touch} program to each distributed skeleton file.
-
-% Mahmood will address.  -MDE 3/19/2009
-\item The framework is missing a check for type argument subtyping in
-  method invocations if the type arguments are inferred.
-
-% Mahmood will address.  -MDE 3/19/2009
-\item The checks for enclosed types are not yet fully tested.
-
-\end{itemize}
-
-\subsection{Known problems in the Nullness checker}
-
-\begin{itemize}
-\item
-  The Nullness checker is often able to determine that a call to
-  \code{Map.get()} will not return null.  This enables the checker to avoid
-  issuing false positive warnings, in circumstances like the following.
-
-\begin{Verbatim}
-    @NonNull String value;
-    if (myMap.containsKey(key)) {
-      value = myMap.get(key);
-    }
-    for (String keyInMap : myMap.keySet()) {
-        value = myMap.get(keyInMap);
-    }
-\end{Verbatim}
-
-  The Nullness checker can sometimes fail to issue a warning if the map is
-  modified or re-assigned between the check of \code{containsKey} and the
-  call to \code{get}.
-
-% This description really needs an example of a case where the checker
-% fails.  Right now, it is impossible for a reader to tell what the problem
-% is or whether a particular piece of code triggers it.
-% Do we have a test case?
-
-
-% The solution is to merge flow with the Map.get heuristics.
-% And to do forward instead of backward analysis.
-
-
-\end{itemize}
+%% Commented out because these are not very helpful in terms of helping
+%% a reader understand whether he/she is encountering the specific problem,
+%% and because the issue tracker is a better way to find out about current
+%% known problems.
+%
+% \subsection{Known problems in the framework\label{known-problems}}
+% 
+% \begin{itemize}
+% 
+% \item
+%   The framework may not parse annotations from skeleton files if the
+%   skeleton files are older than the classfiles.  Running \code{ant
+%     touch-jdk} solves this problem, by applying the 
+%   \code{touch} program to each distributed skeleton file.
+% 
+% % Mahmood will address.  -MDE 3/19/2009
+% \item The framework is missing a check for type argument subtyping in
+%   method invocations if the type arguments are inferred.
+% 
+% % Mahmood will address.  -MDE 3/19/2009
+% \item The checks for enclosed types are not yet fully tested.
+% 
+% \end{itemize}
+% 
+% \subsection{Known problems in the Nullness checker}
+% 
+% \begin{itemize}
+% \item
+%   The Nullness checker is often able to determine that a call to
+%   \code{Map.get()} will not return null.  This enables the checker to avoid
+%   issuing false positive warnings, in circumstances like the following.
+% 
+% \begin{Verbatim}
+%     @NonNull String value;
+%     if (myMap.containsKey(key)) {
+%       value = myMap.get(key);
+%     }
+%     for (String keyInMap : myMap.keySet()) {
+%         value = myMap.get(keyInMap);
+%     }
+% \end{Verbatim}
+% 
+%   The Nullness checker can sometimes fail to issue a warning if the map is
+%   modified or re-assigned between the check of \code{containsKey} and the
+%   call to \code{get}.
+% 
+% % This description really needs an example of a case where the checker
+% % fails.  Right now, it is impossible for a reader to tell what the problem
+% % is or whether a particular piece of code triggers it.
+% % Do we have a test case?
+% 
+% 
+% % The solution is to merge flow with the Map.get heuristics.
+% % And to do forward instead of backward analysis.
+% 
+% 
+% \end{itemize}
 
 
 
