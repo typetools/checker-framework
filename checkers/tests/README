@@ -19,7 +19,7 @@ How to write test cases for the Checker Framework
 This document describes how to write tests for the Checker Framework.  The
 document is useful for Checker Framework maintainers, checker writers, and
 bug submitters.  Users of the framework and checkers should read the manual
-instead.
+instead; see file ../manual/manual.html .
 
 The testing framework for the Checker Framework is built on top of JUnit.
 However, its tests are more like end-to-end integration tests than unit
