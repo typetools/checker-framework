@@ -73,8 +73,9 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 % Unfortunately, Hevea inserts a horizontal line between every pair of rows
 % regardless of whether there is a \hline or \cline.  So, make paragraphs.
 \begin{center}
-\begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
-\cline{1-3} \cline{5-5}
+\begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
+\cline{1-4} \cline{6-6}
+\centering Basic \par Checker &
 \centering Nullness \par Checker &
 \centering Mutation \par Checker &
 \centering Tainting \par Checker &
@@ -82,19 +83,25 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \centering Your \par Checker &
 \multicolumn{2}{c}{} 
 \\ \hline
-\multicolumn{5}{|p{6\bw}|}{\centering Basic Checker \par (enforces subtyping rules)} &
+\multicolumn{6}{|p{6\bw}|}{\centering Base Checker \par (enforces subtyping rules)} &
 \centering Type \par inference &
 % Adding "\centering" here causes a LaTeX alignment error
 Other \par tools
 \\ \hline
-\multicolumn{5}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
+\multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
 \multicolumn{2}{p{3\bw}|}{\centering \ahref{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
 \\ \hline
-\multicolumn{7}{|p{8.5\bw}|}{\centering
+\multicolumn{8}{|p{8.5\bw}|}{\centering
   \ahref{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
+
+
+The Base Checker enforces the standard subtyping rules on extended types.
+The Basic Checker is a simple use of the Base Checker that supports
+providing type qualifiers on the command line.
+You usually want to build your checker on the Base Checker.
 
 
 \section{The parts of a checker\label{parts-of-a-checker}}
@@ -130,7 +137,7 @@ the components of a type system as written using the Checker Framework:
 \item
   Subtyping rules related to the type hierarchy, such as that every
   assignment and pseudo-assignment satisfies a subtyping relationship.
-  Your checker automatically inherits these subtyping rules from the Basic
+  Your checker automatically inherits these subtyping rules from the Base
   Checker (Chapter~\ref{basic-checker}).
 \item
   Additional rules that are specific to your particular checker.  For
@@ -528,6 +535,22 @@ written one.  The type system designer may subclass
 such constructs.
 
 
+\subsection{Flow-sensitive type qualifier inference}
+
+The Checker Framework provides automatic type refinement as described
+in Section~\ref{type-refinement}.
+
+Class
+\refclass{types}{BasicAnnotatedTypeFactory}
+provides a 3 parameter constructor that allows subclasses to disable
+flow inference.
+By default the 2 parameter constructor performs flow inference.
+To disable flow inference, call
+\code{super(checker, root, false);}
+in your subtype of
+\refclass{types}{BasicAnnotatedTypeFactory}.
+
+
 \section{Visitor: Type rules\label{extending-visitor}}
 
 A type system's rules define which operations on values of a
@@ -737,11 +760,116 @@ Now, a user can pass a single \<-processor> argument on the command line:
 \end{enumerate}
 
 
+
+\subsection{Providing command-line options}
+
+A checker can provide two kinds of command-line options:
+boolean flags and
+named string values (the standard annotation processor
+options).
+
+\subsubsection{Boolean flags}
+
+To specify a simple boolean flag, add:
+
+\begin{Verbatim}
+@SupportedLintOptions({"flag"})
+\end{Verbatim}
+
+to your checker subclass.
+The value of the flag can be queried using
+
+\begin{Verbatim}
+checker.getLintOption("flag", false)
+\end{Verbatim}
+
+The second argument sets the default value that should be returned.
+
+To pass a flag on the command line, call javac as follows:
+
+\begin{Verbatim}
+javac -processor Mine -Alint=flag
+\end{Verbatim}
+
+
+\subsubsection{Named string values}
+
+For more complicated options, one can use the standard annotation
+processing \code{SupportedOptions} annotation on the checker, as in:
+
+\begin{Verbatim}
+@SupportedOptions({"info"})
+\end{Verbatim}
+
+The value of the option can be queried using
+
+\begin{Verbatim}
+env.getOptions().get("info")
+\end{Verbatim}
+
+where \code{env} is the current \code{ProcessingEnvironment}.
+
+To pass an option on the command line, call javac as follows:
+
+\begin{Verbatim}
+javac -processor Mine -Ainfo=p1,p2
+\end{Verbatim}
+
+The value is returned as a single string and you have to perform the
+required parsing of the option.
+
+
+
+
 \section{Testing framework\label{testing-framework}}
 
-[TODO: This section should discuss the testing framework that is used for
-testing the distributed checkers.  For now, see the README files in the
-implementation directories.]
+The Checker Framework comes with a testing framework that is used for
+testing the distributed checkers.
+It is easy to use this testing framework to ensure correctness of your
+checker!
+
+You first need to provide a subclass of
+\code{ParameterizedCheckerTest}
+that determines the checker to use and all command-line options that
+should be provided.
+This class can be run as a JUnit test runner.
+Note that you always need to use the
+\code{-Anomsgtext} option to suppress the substitution of message keys
+by human-readable values.
+See the test setup classes in directory \code{tests/src/tests/} for examples.
+
+Locate all your test cases in a subdirectory of the \code{tests}
+directory.
+The individual test cases are normal Java files that use stylized
+comments to indicate expected error messages.
+For example, consider this test case from the Nullness checker:
+
+\begin{Verbatim}
+  //:: error: (dereference.of.nullable)
+  s.toString();
+\end{Verbatim}
+
+An expected error message is introduced by the \code{//::} comment.
+The next token is either \code{error:} or \code{warning:},
+distinguishing what kind of message is expected.
+Finally, the message key for the expected message is given.
+
+Multiple expected messages can be given using the "//:: A :: B :: C"
+syntax.
+
+As an alternative, expected errors can be specified in a separate file
+using the \code{.out} file extension.
+These files are of the following format:
+
+\begin{Verbatim}
+:19: error: (dereference.of.nullable)
+\end{Verbatim}
+
+The number between the colons is the line number of the expected error
+message.
+This format is a lot harder to maintain and we suggest using the
+in-line comment format.
+
 
 
 \section{Debugging options\label{debugging-options}}
@@ -941,7 +1069,7 @@ The most important methods of \refTreeclass{util}{AbstractTypeProcessor}
 are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
 class is where you would insert any sort of method call to walk the AST\@,
 and the latter just returns a constant indicating that we are targeting
-version 7 of the compiler. Implementing these two methods should be enough
+version 8 of the compiler. Implementing these two methods should be enough
 for a basic plugin; see the Javadoc for the class for other methods that
 you may find useful later on.
 
