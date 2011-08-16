@@ -115,7 +115,7 @@ For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
 import checkers.quals.*;        // for DefaultQualifier[s]
 import checkers.nullness.quals.NonNull;
 
-@DefaultQualifier("NonNull"),
+@DefaultQualifier("NonNull")
 class MyClass {
 
   public boolean compile(File myFile) { // myFile has type "@NonNull File"
