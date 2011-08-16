@@ -11,7 +11,7 @@ rebuilding the JDK; for example,
 To run an individual test (check one source code file), do something like:
 
 cd $CHECKERS/tests/nullness
-(cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker AssertNonNullTest.java
+(cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar AssertNonNullTest.java
 
 
 How to write test cases for the Checker Framework
