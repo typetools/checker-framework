@@ -63,8 +63,10 @@ anticipate changing it or using it in new contexts), then the
 effort of writing type annotations for it may not be justified.
 
 
-% This FAQ also appears in the JSR 308 FAQ.
 \section{Will my code become cluttered with type annotations?\label{faq-code-clutter}}
+
+% This FAQ also appears in the JSR 308 FAQ.
+% When I update one, also update the other.
 
 As with any language feature, it is possible to write ugly code that
 over-uses annotations.  However, in normal use, very few annotations need
@@ -85,12 +87,19 @@ to be written.  Figure 1 of the paper
     % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
 \end{itemize}
 
-Furthermore, these numbers are for annotating existing code.  New code that
+These numbers are for annotating existing code.  New code that
 is written with the type annotation system in mind is cleaner and more
 correct, so it requires even fewer annotations.
 
-In other words, annotations do not clutter code, and they are used much
-less frequently than generic types, which Java programmers find acceptable.
+Each annotation that a programmer writes replaces a sentence or phrase of
+English descriptive text that would otherwise have been written in the
+Javadoc.  So, use of annotations actually reduces the overall size of the
+documentation, at the same time as making it less ambiguous and
+machine-processable.
+
+In summary:  annotations do not clutter code; they are used much
+less frequently than generic types, which Java programmers find acceptable;
+and they reduce the overall volume of documentation that a codebase needs.
 
 
 \section{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
