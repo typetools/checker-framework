@@ -55,4 +55,25 @@ public class LazyInitialization {
         }
     }
 
+    class PptRelation1 {
+        // TODO: This @SuppressWarnings should not be necessary.
+        // See bug 107: http://code.google.com/p/checker-framework/issues/detail?id=107
+        @SuppressWarnings("nullness")
+        public void init_hierarchy_new (PptTopLevel ppt, Object eq) {
+            ppt.equality_view = eq;
+            ppt.equality_view.toString();
+        }
+    }
+    class PptTopLevel {
+        public @LazyNonNull Object equality_view;
+    }
+
+    class PptRelation2 {
+        public @LazyNonNull Object equality_view2;
+        public void init_hierarchy_new (PptRelation2 pr, Object eq) {
+            pr.equality_view2 = eq;
+            pr.equality_view2.toString();
+        }
+    }
+
 }
