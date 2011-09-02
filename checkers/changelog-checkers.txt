@@ -1,5 +1,11 @@
-[Reserve this for a future release.]
-@Covariant annotation
+Version 1.2.0, 1 Sep 2011
+
+Updated to JDK 8. Use -source 8 (the new default) for type annotations.
+Documentation improvements
+Bug fixes all over
+
+Nullness Checker:
+- Correct the upper bounds of all Collection subtypes
 
 ----------------------------------------------------------------------
 Version 1.1.5, 22 Jul 2011
