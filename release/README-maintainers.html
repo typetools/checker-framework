@@ -265,6 +265,20 @@ The changelogs should focus on user-visible changes, or very significant
 implementation changes that may affect users.
 </p>
 
+<p>
+The file <tt>$anno/jsr308-langtools/doc/changelog-jsr308.txt</tt> is
+the changelog for the JSR 308 (Type Annotations) reference
+implementation.  For the changelog for the specification, see file
+<tt>jsr308-changes.html</tt>.
+The former file should be updated for each release; the latter only
+when there were changes to the specification.
+The Makefile in
+directory <tt>$anno/jsr308-langtools/doc/</tt>
+contains targets "web" and "web-specs". The former is executed by the
+release scripts; the later needs to be executed for a specification
+release.
+</p>
+
 <p><b>Note:</b> The release script below auto-populate the changelog files
 with changeset description since last release, and prompts to clean up the
 info.</p>
