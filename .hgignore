@@ -59,6 +59,8 @@ checkers/manual/figures/*.png
 checkers/manual/figures/signature-types-with-canonicalname.dia
 checkers/manual/*.png
 
+checkers/tests/nullness-extra/*.class
+
 # release tmps
 tmp
 
