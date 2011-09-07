@@ -624,6 +624,13 @@ public class AnnotatedTypeFactory {
     // Utilities method for getting specific types from trees or elements
     // **********************************************************************
 
+    /* TODO: this method assumes that the tree is within the current
+     * Compilation Unit. This assumption fails in testcase Bug109_A/B, where
+     * a chain of dependencies leads into a different compilation unit.
+     * I didn't find a way how to handle this better and conservatively
+     * return null. See TODO comment below. 
+     * 
+     */
     protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
         assert (tree.getKind() == Tree.Kind.IDENTIFIER
                 || tree.getKind() == Tree.Kind.MEMBER_SELECT
@@ -639,6 +646,13 @@ public class AnnotatedTypeFactory {
         if (isMostEnclosingThisDeref(tree))
             return getSelfType(tree);
 
+        if (getPath(tree)==null) {
+        	// TODO: getPath returns null if the given tree could not be found
+        	// in the current compilation unit. See method documentation for when
+        	// this might happen.
+            return null;
+        }
+        
         TypeElement typeElt = ElementUtils.enclosingClass(element);
         if (typeElt == null) {
             throw new AssertionError("enclosingClass()==null for element: " + element);
@@ -1251,6 +1265,9 @@ public class AnnotatedTypeFactory {
      * checking from the visitor's current path, and only using
      * {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
      * only if {@code node} is not found on the current path.
+     * 
+     * Note that the given Tree has to be within the current compilation unit,
+     * otherwise null will be returned.
      *
      * @param node the {@link Tree} to get the path for
      * @return the path for {@code node} under the current root
