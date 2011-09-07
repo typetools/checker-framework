@@ -543,7 +543,7 @@ public final class TreeUtils {
             Element elt = TreeUtils.elementFromUse(tree);
             return ElementUtils.isCompileTimeConstant(elt);
         } else if (TreeUtils.isStringConcatenation(tree)) {
-            BinaryTree binOp = (BinaryTree)node;
+            BinaryTree binOp = (BinaryTree) tree;
             return isCompileTimeString(binOp.getLeftOperand())
                 && isCompileTimeString(binOp.getRightOperand());
 
