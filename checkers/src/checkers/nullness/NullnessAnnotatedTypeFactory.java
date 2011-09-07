@@ -225,7 +225,16 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 //        poly.annotate(method.getElement(), method);
 
         TreePath path = this.getPath(tree);
-        mapGetHeuristics.handle(path, method);
+        if (path!=null) {
+        	/* The above check for null ensures that Issue 109 does not arise.
+        	 * TODO: I'm a bit concerned about one aspect: it looks like the field
+        	 * initializer is used to determine the type of a read field. Why is this
+        	 * not just using the declared type of the field?
+        	 * Could this lead to confusion for programmers?
+        	 * I think skipping the mapGetHeuristics is always a safe option.
+        	 */
+            mapGetHeuristics.handle(path, method);
+        }
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
     }
@@ -299,8 +308,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (decl != null
                 && decl instanceof VariableTree
                 && ((VariableTree) decl).getInitializer() != null
-                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasAnnotation(NONNULL))
-            return false;
+                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasAnnotation(NONNULL)) {
+                return false;
+            }
         }
 
         // case 13
