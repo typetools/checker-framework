@@ -11,7 +11,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class OIGJTest extends ParameterizedCheckerTest {
 
     public OIGJTest(File testFile) {
-        super(testFile, "checkers.oigj.OIGJChecker", "oigj", "-Anomsgtext");
+        super(testFile, checkers.oigj.OIGJChecker.class.getName(), "oigj",
+                "-Anomsgtext");
     }
 
     @Parameters

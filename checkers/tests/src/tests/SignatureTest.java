@@ -8,7 +8,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class SignatureTest extends ParameterizedCheckerTest {
 
     public SignatureTest(File testFile) {
-        super(testFile, "checkers.signature.SignatureChecker", "signature", "-Anomsgtext");
+        super(testFile, checkers.signature.SignatureChecker.class.getName(),
+                "signature", "-Anomsgtext");
     }
 
     @Parameters

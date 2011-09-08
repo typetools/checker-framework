@@ -8,7 +8,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class RegexTest extends ParameterizedCheckerTest {
 
     public RegexTest(File testFile) {
-        super(testFile, "checkers.regex.RegexChecker", "regex", "-Anomsgtext");
+        super(testFile, checkers.regex.RegexChecker.class.getName(), "regex",
+                "-Anomsgtext");
     }
 
     @Parameters
