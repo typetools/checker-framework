@@ -10,7 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class LockTest extends ParameterizedCheckerTest {
 
     public LockTest(File testFile) {
-        super(testFile, "checkers.lock.LockChecker", "lock", "-Anomsgtext");
+        super(testFile, checkers.lock.LockChecker.class.getName(), "lock",
+                "-Anomsgtext");
     }
 
     @Parameters
