@@ -1,9 +1,9 @@
 package tests;
 
-import org.junit.runners.Parameterized.Parameters;
-
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Javari annotation checker.
@@ -11,7 +11,8 @@ import java.util.*;
 public class JavariTest extends ParameterizedCheckerTest {
 
     public JavariTest(File testFile) {
-        super(testFile, "checkers.javari.JavariChecker", "javari", "-Anomsgtext", "-Anocheckjdk");
+        super(testFile, checkers.javari.JavariChecker.class.getCanonicalName(),
+                "javari", "-Anomsgtext");
     }
 
     @Parameters

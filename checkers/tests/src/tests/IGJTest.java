@@ -1,12 +1,13 @@
 package tests;
 
-import org.junit.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Scanner;
+
+import org.junit.Test;
 
 // Also see file FailedTests, that contains currently-failing tests.
 /**
@@ -15,7 +16,7 @@ import java.util.*;
 public class IGJTest extends CheckerTest {
 
     public IGJTest() {
-        super("checkers.igj.IGJChecker", "igj", "-Anomsgtext", "-Anocheckjdk");
+        super(checkers.igj.IGJChecker.class.getName(), "igj", "-Anomsgtext");
     }
 
     void runTestWithDefault(String expectedFileName, boolean shouldSucceed, String javaFile) {
