@@ -8,7 +8,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class UnitsTest extends ParameterizedCheckerTest {
 
     public UnitsTest(File testFile) {
-        super(testFile, "checkers.units.UnitsChecker", "units", "-Anomsgtext");
+        super(testFile, checkers.units.UnitsChecker.class.getName(), "units",
+                "-Anomsgtext");
     }
 
     @Parameters

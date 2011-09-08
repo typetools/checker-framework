@@ -10,7 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class LubGlbTest extends ParameterizedCheckerTest {
 
     public LubGlbTest(File testFile) {
-        super(testFile, "lubglb.LubGlbChecker", "lubglb", "-Anomsgtext");
+        super(testFile, lubglb.LubGlbChecker.class.getName(), "lubglb",
+                "-Anomsgtext");
     }
 
     @Parameters

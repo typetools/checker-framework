@@ -8,7 +8,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class TaintingTest extends ParameterizedCheckerTest {
 
     public TaintingTest(File testFile) {
-        super(testFile, "checkers.tainting.TaintingChecker", "tainting", "-Anomsgtext");
+        super(testFile, checkers.tainting.TaintingChecker.class.getName(),
+                "tainting", "-Anomsgtext");
     }
 
     @Parameters
