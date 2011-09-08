@@ -12,7 +12,9 @@ public class NullnessTest extends ParameterizedCheckerTest {
 
     public NullnessTest(File testFile) {
         // TODO: remove advancedchecks option once its no longer needed
-        super(testFile, "checkers.nullness.NullnessChecker", "nullness", "-Anomsgtext", "-Alint=uninitialized", "-Alint=advancedchecks");
+        super(testFile, checkers.nullness.NullnessChecker.class.getName(),
+                "nullness", "-Anomsgtext", "-Alint=uninitialized",
+                "-Alint=advancedchecks");
     }
 
     @Parameters
