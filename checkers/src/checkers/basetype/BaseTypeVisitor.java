@@ -1,32 +1,32 @@
 package checkers.basetype;
 
-import java.util.*;
-import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
-
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
-import checkers.source.*;
+import checkers.source.Result;
+import checkers.source.SourceVisitor;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -1240,20 +1240,26 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
-        TypeMirror objectTM = objectTE.asType();
-        AnnotatedTypeMirror objectATM = plainFactory.toAnnotatedType(objectTM);
         List<? extends Element> members = elements.getAllMembers(objectTE);
 
         for (Element member : members) {
             if (member.toString().equals("equals(java.lang.Object)")) {
                 ExecutableElement m = (ExecutableElement) member;
-                AnnotatedTypeMirror.AnnotatedExecutableType objectEqualsAET = annoTypes.asMemberOf(objectATM, m);
-                AnnotatedTypeMirror.AnnotatedDeclaredType objectEqualsParamADT = (AnnotatedTypeMirror.AnnotatedDeclaredType) objectEqualsAET.getParameterTypes().get(0);
                 // The Nullness JDK serves as a proxy for all annotated
                 // JDKs.  (In part because of problems with
                 // IGJAnnotatedTypeFactory.postAsMemberOf that make it hard
                 // to directly check for the IGJ annotated JDK.)
-                if (! objectEqualsParamADT.hasAnnotation(checkers.nullness.quals.Nullable.class)) {
+
+                // Note that we cannot use the AnnotatedTypeMirrors from the
+                // Checker Framework, because those only return the annotations
+                // that are used by the current checker.
+                // That is, if this code is executed by something other than the
+                // Nullness Checker, we would not find the annotations.
+                // Therefore, we go to the Element and get all annotations on
+                // the parameter.
+
+                if (m.getParameters().get(0).getAnnotation(
+                        checkers.nullness.quals.Nullable.class) == null) {
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
