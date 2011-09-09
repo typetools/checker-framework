@@ -2,20 +2,26 @@ package checkers.javari;
 
 import java.util.*;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+
+import checkers.javari.quals.*;
+import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.types.visitors.SimpleAnnotatedTypeScanner;
+import checkers.util.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
-
-import checkers.javari.quals.*;
-import checkers.util.*;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.types.visitors.SimpleAnnotatedTypeScanner;
-
-import static checkers.types.AnnotatedTypeMirror.*;
 
 /**
  * Adds implicit and default Javari annotations, only if the user does not
@@ -594,6 +600,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
             AnnotatedTypeMirror returnType = type.getReturnType();
             if (!hasImmutabilityAnnotation(returnType)
+                // WMD doesn't understand why primitives are excluded
                 && !returnType.getKind().isPrimitive()
                 && returnType.getKind() != TypeKind.VOID
                 && returnType.getKind() != TypeKind.TYPEVAR)
@@ -619,6 +626,14 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             return super.visitDeclared(type, p);
         }
 
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, ElementKind p) {
+            if (!hasImmutabilityAnnotation(type)) {
+                type.addAnnotation(MUTABLE);
+            }
+            return super.visitPrimitive(type, p);
+        }
+
         /**
          * Ensures that AnnotatedArrayTypes are annotated with {@code
          * @Mutable}, if they have no annotation yet.
@@ -639,7 +654,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
                     && !hasImmutabilityAnnotation(type.getUpperBound())) {
                 if (p.isClass() || p.isInterface()
                         || p == ElementKind.CONSTRUCTOR
-                        || p == ElementKind.METHOD)
+                        || p == ElementKind.METHOD
+                        || p == ElementKind.PARAMETER)
                     // case 5: upper bound within a class/method declaration
                     type.getUpperBound().addAnnotation(READONLY);
                 else if (TypesUtils.isObject(type.getUnderlyingType()))
