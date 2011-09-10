@@ -65,17 +65,13 @@ public class TestInput {
 
         JavaCompiler.CompilationTask task = compiler.getTask(output, fileManager,
               diagnostics, this.options, this.processors, this.files);
-
-        // Method
-        //   com.sun.tools.javac.main.Main.apMessage(AnnotationProcessingError ex)
-        // may print the stack trace of an exception to standard output,
-        // even though the exception is later handled.  (Why is that
-        // printed to standard out whereas diagnostic messages are not?
-        // And why does it happen here but not when javac is run from the
-        // command line?)  We need to figure out how to redirect that stack
-        // trace elsewhere, to avoid looking like it was thrown during
-        // execution of the test.  (There's a javac option -Xstdout, but it
-        // isn't recognized by JavacTool.)
+        
+        /* 
+         * In Eclipse, std out and std err for multiple tests appear as one
+         * long stream. When selecting a specific failed test, one sees the
+         * expected/unexpected messages, but not the std out/err messages from
+         * that particular test. Can we improve this somehow?
+         */
         Boolean result = task.call();
 
         return new TestRun(result, output.toString(), diagnostics.getDiagnostics());
