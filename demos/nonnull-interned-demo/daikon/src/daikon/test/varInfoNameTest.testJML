@@ -1,0 +1,50 @@
+;# Tests for JML formatting
+
+;# Setup variables
+
+;# Variable "scalar" -> scalar under JML
+parse scalar scalar
+jml_name scalar
+
+;# Variable "return" -> \result under JML
+parse return return
+jml_name return
+
+;# Setup variable a
+parse a a
+elements a a
+
+;# Test SizeOf formatting
+size size_of_a a
+jml_name size_of_a
+
+;# Test FunctionOf formatting
+parse var1 var1
+function f_of_one_var f var1
+jml_name f_of_one_var
+
+;# Test FunctionOfN formatting
+parse var2 var2
+function_of_N f_of_two_vars f var1 var2
+jml_name f_of_two_vars
+
+;# Test Field formatting
+field field_of_var1 var1 var1_field
+jml_name field_of_var1
+
+;# Test TypeOf formatting
+typeof type_of_var1 var1
+jml_name type_of_var1
+
+;# Test Prestate formatting
+prestate old_var1 var1
+jml_name old_var1
+
+;# Test Add formatting
+add more_than_var1 var1 5
+jml_name more_than_var1
+
+;# Test Subscript formatting
+parse i i
+subscript a_sub_i a i
+jml_name a_sub_i

@@ -1,0 +1,34 @@
+\htmlhr
+\chapter{Regex checker for regular expression syntax\label{regex-checker}}
+
+The Regex Checker prevents, at compile-time, use of syntactically invalid
+regular expressions.
+
+A regular expression, or regex, is a pattern for matching certain strings
+of text.  In Java, a programmer writes a regular expression as a string.
+At run time, the string is ``compiled'' into an efficient internal form
+(\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
+text-matching.
+
+The syntax of regular expressions is complex, so it is easy to make a
+mistake.  It is also easy to accidentally use a regex feature from another
+language that is not supported by Java (see section ``Comparison to Perl
+5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
+Ordinarily, the programmer does not learn of these errors until run time.
+The Regex checker warns about these problems at compile time.
+
+To run the Regex Checker, supply the \code{-processor
+  checkers.regex.RegexChecker} command-line option to javac.
+
+
+\section{Regex annotations\label{regex-annotations}}
+
+The Regex Checker uses one annotation only:
+\code{@\refclass{regex/quals}{Regex}}, to indicate valid regular
+expression \code{String}s.
+
+The checker implicitly adds the \code{Regex} qualifier to any
+\code{String} literal that is a valid regex.
+
+
+% LocalWords:  Regex regex quals
