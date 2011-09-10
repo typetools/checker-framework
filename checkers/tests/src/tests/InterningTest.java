@@ -11,7 +11,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class InterningTest extends ParameterizedCheckerTest {
 
     public InterningTest(File testFile) {
-        super(testFile, "checkers.interning.InterningChecker", "interning", "-Anomsgtext");
+        super(testFile, checkers.interning.InterningChecker.class.getName(),
+                "interning", "-Anomsgtext");
     }
 
     @Parameters

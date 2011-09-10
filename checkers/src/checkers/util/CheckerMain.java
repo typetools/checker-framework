@@ -1,20 +1,22 @@
 package checkers.util;
 
-import com.sun.jna.*;
-
-import java.io.File;
 import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import com.sun.jna.Library;
+import com.sun.jna.Native;
 
 /**
  * The main class for the Checkers when using the binary distribution, that
@@ -209,7 +211,7 @@ public class CheckerMain {
         return sb.toString();
     }
 
-    /** Execute the cmmands, with IO redirection */
+    /** Execute the commands, with IO redirection */
     static void execute(Iterable<String> cmdArray) {
         String command = constructCommand(cmdArray);
         CLibrary.INSTANCE.system(command);
