@@ -114,7 +114,15 @@ public class CheckerMain {
         int BUFFER = 2048;
 
         File jarFile = new File(jar);
-        ZipFile zip = new ZipFile(jarFile);
+        if (! jarFile.exists()) {
+            throw new Exception("File does not exist: " + jarFile);
+        }
+        ZipFile zip;
+        try {
+            zip = new ZipFile(jarFile);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem opening zip file " + jarFile);
+        }
 
         ZipEntry entry = zip.getEntry(fileName);
         assert !entry.isDirectory();
