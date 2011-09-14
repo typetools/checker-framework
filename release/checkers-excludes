@@ -8,3 +8,6 @@ tests/**/*.class
 binary/README
 binary/javac
 **/*.orig
+jdk/annotated/**
+jdk/*/build/**
+jdk/jdk.jar
