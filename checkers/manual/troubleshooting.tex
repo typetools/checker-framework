@@ -369,6 +369,9 @@ hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
 (Alternately, you could use the version of the source code that is packaged
 in the Checker Framework release.)
 
+% TODO: the AFU and JSR 308 source code is not included in the
+% checkers.zip file!
+
 
 \subsection{Build the Type Annotations compiler}
 
@@ -415,6 +418,20 @@ Compile the Type Annotations javac compiler and the javap tool:
 % such annotations, but this syntax permits you to use a compiler other than
 % the JSR 308 compiler.  For example, you can compile your code with a Java 5
 % compiler, and you can use a checker as an external tool in an IDE.
+
+
+
+\subsection{Build the Annotation File Utilities\label{afu-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/annotation-tools
+  ant
+\end{Verbatim}
+
+You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
 
 
 \subsection{Build the Checker Framework\label{building}}
