@@ -157,6 +157,23 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
   ant jdk.jar bindist
 \end{Verbatim}
 
+\item
+If you get an error that contains lines like these:
+
+\begin{Verbatim}
+Caused by: java.util.zip.ZipException: error in opening zip file
+	at java.util.zip.ZipFile.open(Native Method)
+	at java.util.zip.ZipFile.<init>(ZipFile.java:131)
+\end{Verbatim}
+
+\noindent
+then one possibility is that you have installed the Checker Framework in a
+directory that contains special characters that Java's ZipFile
+implementation cannot handle.  For instance, if the directory name contains
+``\<+>'', then Java 1.6 throws a ZipException, and Java 1.7 throws a
+FileNotFoundException and prints out the directory name with ``\<+>''
+replaced by blanks.
+
 \end{itemize}
 
 
