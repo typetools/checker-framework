@@ -1,3 +1,9 @@
+Version 1.2.0.1, 4 Sep 2011
+
+New version number to stay in sync with JSR 308 compiler bugfix.
+No significant changes.
+
+----------------------------------------------------------------------
 Version 1.2.0, 2 Sep 2011
 
 Updated to JDK 8. Use -source 8 (the new default) for type annotations.
@@ -35,7 +41,7 @@ Version 1.1.4, 8 Jul 2011
 
 Units Checker (new):
   Ensures operations are performed on variables of correct units of
-  measurement.
+  measurement (e.g., miles vs. kilometers vs. kilograms).
 
 Changed -AskipClasses command-line option to -AskipUses
 
