@@ -1,21 +1,26 @@
 package checkers.flow;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.source.SourceChecker;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.util.*;
-
 import java.io.PrintStream;
 import java.util.*;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
-
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.Elements;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.source.SourceChecker;
+import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.ElementUtils;
+import checkers.util.TreeUtils;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 
 /**
  * Provides a generalized flow-sensitive qualifier inference for the checkers
@@ -119,7 +124,7 @@ implements Flow {
     protected final QualifierHierarchy annoRelations;
 
     /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
-    private Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
+    private final Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
 
     /**
      * Creates a new analysis. The analysis will use the given {@link

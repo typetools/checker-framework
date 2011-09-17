@@ -11,19 +11,16 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import checkers.flow.*;
+import checkers.flow.DefaultFlow;
+import checkers.flow.Flow;
+import checkers.flow.FlowState;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
-import checkers.util.trees.TreeParser;
-import checkers.util.Resolver;
+import checkers.util.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -1022,7 +1019,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             }
 
             Element recvElem;
-            Element recvPath;
             List<? extends Element> recvFieldElems;
             List<VariableElement> recvImmediateFields;
 

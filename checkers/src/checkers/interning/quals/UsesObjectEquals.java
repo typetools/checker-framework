@@ -3,7 +3,6 @@ package checkers.interning.quals;
 import java.lang.annotation.*;
 
 import checkers.interning.InterningChecker;
-import checkers.quals.*;
 
 /**
  * Class declaration to indicate the class does not override
@@ -25,7 +24,7 @@ import checkers.quals.*;
 @Documented
 @Inherited 
 @Target(ElementType.TYPE)
-//@Retention(...) ??
+@Retention(RetentionPolicy.RUNTIME)
 public @interface UsesObjectEquals {
 	
 }
