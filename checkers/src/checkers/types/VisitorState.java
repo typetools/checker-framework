@@ -1,7 +1,5 @@
 package checkers.types;
 
-import java.util.HashMap;
-
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 
@@ -43,6 +41,7 @@ public class VisitorState {
      * Updates the method receiver type currently visited
      */
     public void setMethodReceiver(AnnotatedDeclaredType mrt) {
+    	System.out.println("Visitor state setMethodReceiver to: " + mrt);
         this.mrt = mrt;
     }
 
@@ -67,8 +66,7 @@ public class VisitorState {
      */
     public AnnotatedDeclaredType getClassType() {
         if (act == null) return null;
-        return (AnnotatedDeclaredType)
-        act.substitute(new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>());
+        return AnnotatedTypes.deepCopy(act);
     }
 
     /**
@@ -83,8 +81,7 @@ public class VisitorState {
      */
     public AnnotatedDeclaredType getMethodReceiver() {
         if (mrt == null) return null;
-        return (AnnotatedDeclaredType)
-        mrt.substitute(new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>());
+        return AnnotatedTypes.deepCopy(mrt);
     }
 
     /**
