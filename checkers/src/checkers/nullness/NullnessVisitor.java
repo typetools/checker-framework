@@ -2,27 +2,21 @@ package checkers.nullness;
 
 import java.util.*;
 
-import java.lang.annotation.Annotation;
-
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import checkers.basetype.*;
+import checkers.basetype.BaseTypeVisitor;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.AssertNonNullAfter;
-import checkers.nullness.quals.AssertNonNullIfFalse;
-import checkers.nullness.quals.AssertNonNullIfTrue;
-import checkers.nullness.quals.LazyNonNull;
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.*;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.util.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 

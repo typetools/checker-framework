@@ -2,12 +2,15 @@ package checkers.igj;
 
 import java.lang.annotation.Target;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
-import checkers.igj.quals.*;
-import checkers.quals.*;
+import checkers.igj.quals.I;
+import checkers.igj.quals.Immutable;
+import checkers.igj.quals.Mutable;
+import checkers.quals.ImplicitFor;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * An annotation used to represent a place holder immutability type, that is a

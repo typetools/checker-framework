@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import java.lang.annotation.Annotation;
-
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 

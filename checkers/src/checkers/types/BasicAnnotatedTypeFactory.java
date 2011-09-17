@@ -13,20 +13,15 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.Flow;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
+import checkers.flow.Flow;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.ImplicitFor;
 import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.ImplicitFor;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.QualifierDefaults;
-import checkers.util.QualifierPolymorphism;
-import checkers.util.TreeUtils;
+import checkers.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
