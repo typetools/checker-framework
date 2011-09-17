@@ -41,12 +41,11 @@ public class VisitorState {
      * Updates the method receiver type currently visited
      */
     public void setMethodReceiver(AnnotatedDeclaredType mrt) {
-    	System.out.println("Visitor state setMethodReceiver to: " + mrt);
         this.mrt = mrt;
     }
 
     /**
-     * Updates the mehtod currently visited
+     * Updates the method currently visited
      */
     public void setMethodTree(MethodTree mt) {
         this.mt = mt;
