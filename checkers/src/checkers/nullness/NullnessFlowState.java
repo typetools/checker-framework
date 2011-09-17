@@ -1,12 +1,10 @@
 package checkers.nullness;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 
 import checkers.flow.DefaultFlowState;
 import checkers.flow.FlowState;
