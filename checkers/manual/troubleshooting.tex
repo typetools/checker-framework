@@ -135,6 +135,7 @@ previous version of the JDK but has subsequently been removed, such as:
 \begin{Verbatim}
   class file for java.io.File$LazyInitialization not found
   class file for java.util.Hashtable$EmptyIterator not found
+  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
 \end{Verbatim}
 
 Or, you might be using JDK 6, but you get an error that refers to a class
@@ -156,6 +157,23 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
   cd checkers
   ant jdk.jar bindist
 \end{Verbatim}
+
+\item
+If you get an error that contains lines like these:
+
+\begin{Verbatim}
+Caused by: java.util.zip.ZipException: error in opening zip file
+	at java.util.zip.ZipFile.open(Native Method)
+	at java.util.zip.ZipFile.<init>(ZipFile.java:131)
+\end{Verbatim}
+
+\noindent
+then one possibility is that you have installed the Checker Framework in a
+directory that contains special characters that Java's ZipFile
+implementation cannot handle.  For instance, if the directory name contains
+``\<+>'', then Java 1.6 throws a ZipException, and Java 1.7 throws a
+FileNotFoundException and prints out the directory name with ``\<+>''
+replaced by blanks.
 
 \end{itemize}
 
@@ -351,6 +369,9 @@ hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
 (Alternately, you could use the version of the source code that is packaged
 in the Checker Framework release.)
 
+% TODO: the AFU and JSR 308 source code is not included in the
+% checkers.zip file!
+
 
 \subsection{Build the Type Annotations compiler}
 
@@ -397,6 +418,20 @@ Compile the Type Annotations javac compiler and the javap tool:
 % such annotations, but this syntax permits you to use a compiler other than
 % the JSR 308 compiler.  For example, you can compile your code with a Java 5
 % compiler, and you can use a checker as an external tool in an IDE.
+
+
+
+\subsection{Build the Annotation File Utilities\label{afu-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/annotation-tools
+  ant
+\end{Verbatim}
+
+You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
 
 
 \subsection{Build the Checker Framework\label{building}}

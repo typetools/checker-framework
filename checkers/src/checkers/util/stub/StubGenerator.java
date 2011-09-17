@@ -8,8 +8,8 @@ import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.*;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 
 import checkers.util.TypesUtils;
 
@@ -22,7 +22,7 @@ import com.sun.tools.javac.util.Context;
  * A stub file can be used to add annotations to methods of classes, that
  * are only available in binary or the source of which cannot be edited.
  * For details, see the <a
- * href="http://types.cs.washington.edu/checker-framework/#stub-creating-and-using">Checker
+ * href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#stub-creating-and-using">Checker
  * Framework Manual</a>.
  */
 public class StubGenerator {
