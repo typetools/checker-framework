@@ -340,10 +340,10 @@ public class AnnotatedTypes {
      * @param type  the annotated type to be copied
      * @return a deep copy of the passed type
      */
-    public static AnnotatedTypeMirror deepCopy(AnnotatedTypeMirror type) {
-        // TODO: Test this, specify behavior
-    	// TODO: can we introduce method type variables to refine the signature?
-        return type.substitute(Collections.<AnnotatedTypeMirror,
+    @SuppressWarnings("unchecked")
+    public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
+        // TODO: Test this, specify behavior, merge/compare to ATM.copy
+        return (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
                 AnnotatedTypeMirror>emptyMap());
     }
 
