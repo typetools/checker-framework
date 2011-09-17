@@ -9,7 +9,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.*;
 
-import java.lang.annotation.Annotation;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -310,7 +309,7 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
         if (elementCache.containsKey(elt))
-            return atypes.deepCopy(elementCache.get(elt));
+            return AnnotatedTypes.deepCopy(elementCache.get(elt));
         if (elt.getKind() == ElementKind.PACKAGE)
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
