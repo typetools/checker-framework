@@ -1,7 +1,6 @@
 package checkers.lock;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,8 +8,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-
-import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.lock.quals.Holding;
@@ -20,6 +17,8 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
+
+import com.sun.source.tree.*;
 
 //Disclaimer:
 //This class is currently in its alpha form.  For sample code on how to write

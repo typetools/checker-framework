@@ -115,7 +115,7 @@ public class ManualTaglet implements Taglet {
         return formatHeader(sb.toString());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void register(Map tagletMap) {
         ManualTaglet tag = new ManualTaglet();
         Taglet t = (Taglet) tagletMap.get(tag.getName());
