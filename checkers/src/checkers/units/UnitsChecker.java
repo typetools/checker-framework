@@ -50,8 +50,8 @@ public class UnitsChecker extends BaseTypeChecker {
                     qualSet.add(q);
                     addUnitsRelations(annoUtils, q);
                 } catch (ClassNotFoundException e) {
-                    messager.printWarning("Could not find class for unit: " + qualName +
-                            ". Ignoring unit.");
+                    messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
+                    		"Could not find class for unit: " + qualName + ". Ignoring unit.");
                 }
             }
         }
