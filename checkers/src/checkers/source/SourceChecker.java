@@ -67,7 +67,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     protected Properties messages;
 
     /** Used to report error messages and warnings via the compiler. */
-    protected JavacMessager messager;
+    protected Messager messager;
 
     /** Used as a helper for the {@link SourceVisitor}. */
     protected Trees trees;
@@ -245,7 +245,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
-        this.messager = (JavacMessager) processingEnv.getMessager();
+        this.messager = processingEnv.getMessager();
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
