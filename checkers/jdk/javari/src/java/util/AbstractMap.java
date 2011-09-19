@@ -6,11 +6,11 @@ import com.sun.jndi.url.rmi.*;
 
 public abstract class AbstractMap<K,V> implements Map<K,V> {
     protected AbstractMap() { throw new RuntimeException("skeleton method"); }
-    public int size() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public boolean isEmpty() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public boolean containsValue(@ReadOnly Object value) @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public boolean containsKey(@ReadOnly Object key) @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public V get(@ReadOnly Object key) @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public int size(@ReadOnly AbstractMap this) { throw new RuntimeException("skeleton method"); }
+    public boolean isEmpty(@ReadOnly AbstractMap this) { throw new RuntimeException("skeleton method"); }
+    public boolean containsValue(@ReadOnly AbstractMap this, @ReadOnly Object value) { throw new RuntimeException("skeleton method"); }
+    public boolean containsKey(@ReadOnly AbstractMap this, @ReadOnly Object key) { throw new RuntimeException("skeleton method"); }
+    public V get(@ReadOnly AbstractMap this, @ReadOnly Object key) { throw new RuntimeException("skeleton method"); }
     public V put(K key, V value) { throw new RuntimeException("skeleton method"); }
     public V remove(@ReadOnly Object key) { throw new RuntimeException("skeleton method"); }
     public void putAll(@ReadOnly Map<? extends K, ? extends V> m) { throw new RuntimeException("skeleton method"); }
@@ -19,25 +19,25 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     transient volatile Set<K>        keySet = null;
     transient volatile Collection<V> values = null;
 
-    public @PolyRead Set<K> keySet() @PolyRead { throw new RuntimeException("skeleton method");}
-    public @PolyRead Collection<V> values() @PolyRead { throw new RuntimeException("skeleton method"); }
-    public abstract @PolyRead Set<@PolyRead Entry<K,V>> entrySet() @PolyRead;
-    public boolean equals(@ReadOnly Object o) @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    protected Object clone() @ReadOnly throws CloneNotSupportedException  { throw new RuntimeException("skeleton method"); }
+    public @PolyRead Set<K> keySet(@PolyRead AbstractMap this) { throw new RuntimeException("skeleton method");}
+    public @PolyRead Collection<V> values(@PolyRead AbstractMap this) { throw new RuntimeException("skeleton method"); }
+    public abstract @PolyRead Set<@PolyRead Entry<K,V>> entrySet(@PolyRead AbstractMap this);
+    public boolean equals(@ReadOnly AbstractMap this, @ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
+    public int hashCode(@ReadOnly AbstractMap this) { throw new RuntimeException("skeleton method"); }
+    public String toString(@ReadOnly AbstractMap this) { throw new RuntimeException("skeleton method"); }
+    protected Object clone(@ReadOnly AbstractMap this) throws CloneNotSupportedException  { throw new RuntimeException("skeleton method"); }
 
     public static class SimpleEntry<K,V>
     implements Entry<K,V>, java.io.Serializable {
         private static final long serialVersionUID = 0L;
         public SimpleEntry(K key, V value) { throw new RuntimeException("skeleton method"); }
         public SimpleEntry(@ReadOnly Entry<? extends K, ? extends V> entry) { throw new RuntimeException("skeleton method"); }
-        public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }
-        public V getValue() @ReadOnly { throw new RuntimeException("skeleton method"); }
+        public K getKey(@ReadOnly SimpleEntry this) { throw new RuntimeException("skeleton method"); }
+        public V getValue(@ReadOnly SimpleEntry this) { throw new RuntimeException("skeleton method"); }
         public V setValue(V value) { throw new RuntimeException("skeleton method"); }
-        public boolean equals(@ReadOnly Object o) @ReadOnly { throw new RuntimeException("skeleton method"); }
-        public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
-        public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
+        public boolean equals(@ReadOnly SimpleEntry this, @ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
+        public int hashCode(@ReadOnly SimpleEntry this) { throw new RuntimeException("skeleton method"); }
+        public String toString(@ReadOnly SimpleEntry this) { throw new RuntimeException("skeleton method"); }
     }
 
     public static @ReadOnly class SimpleImmutableEntry<K,V>
@@ -49,7 +49,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         public V getValue() { throw new RuntimeException("skeleton method"); }
         public V setValue(V value) { throw new RuntimeException("skeleton method"); }
         public boolean equals(@ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
-        public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
+        public int hashCode(@ReadOnly SimpleImmutableEntry this) { throw new RuntimeException("skeleton method"); }
         public String toString() { throw new RuntimeException("skeleton method"); }
 
     }

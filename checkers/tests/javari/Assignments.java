@@ -22,9 +22,9 @@ class Assignments {
             this.cell = cell;
         }
 
-        public void requiresMutableParameter(JavariCell cell) @ReadOnly {}
+        public void requiresMutableParameter(@ReadOnly JavariCell this, JavariCell cell) {}
 
-        @PolyRead JavariCell getCell() @PolyRead {
+        @PolyRead JavariCell getCell(@PolyRead JavariCell this) {
             return cell;
         }
     }
@@ -32,15 +32,15 @@ class Assignments {
     JavariCell mc;
     @ReadOnly JavariCell roc;
 
-    public @Mutable Object isMutable() @ReadOnly {
+    public @Mutable Object isMutable(@ReadOnly JavariCell this) {
         return new Object();
     }
 
-    public Object isThisMutable() @ReadOnly {
+    public Object isThisMutable(@ReadOnly JavariCell this) {
         return new Object();
     }
 
-    public @ReadOnly Object isReadOnly() @ReadOnly {
+    public @ReadOnly Object isReadOnly(@ReadOnly JavariCell this) {
         return "isReadOnly";
     }
 
@@ -93,14 +93,14 @@ class Assignments {
         roObject = aReadOnly.isReadOnly();
     }
 
-    public void doNothing() @ReadOnly {
+    public void doNothing(@ReadOnly JavariCell this) {
         JavariCell localCell = null;      // mutable
         localCell.x = 3;
         localCell.cell = localCell;            // is mutable, no error
     }
 
-    public int getInt() @ReadOnly { return 0; }
-    public void assignmentWithCast() @ReadOnly {
+    public int getInt(@ReadOnly JavariCell this) { return 0; }
+    public void assignmentWithCast(@ReadOnly JavariCell this) {
         char c = (char) getInt();
     }
 }
