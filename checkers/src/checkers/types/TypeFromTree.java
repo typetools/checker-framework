@@ -443,26 +443,19 @@ abstract class TypeFromTree extends
             addAnnotationsToElt(result.getReturnType(), elt.getAnnotationMirrors());
 
             // Annotate the receiver.
-            List<AnnotationMirror> receiverAnnos =
-                InternalUtils.annotationsFromTypeAnnotationTrees(node.getReceiverAnnotations());
-
-            if (ElementUtils.isStatic(elt))
-                // TODO maybe it should be TypeKind.NONE
+            if (node.getReceiverVariable() == null || ElementUtils.isStatic(elt)) {
+            	// TODO: something better? TypeKind.NONE?
                 result.setReceiverType(null);
-            else {
-                AnnotatedDeclaredType enclosing;
-                {
-                    Element enclElt = ElementUtils.enclosingClass(elt);
-                    AnnotatedTypeMirror t = f.fromElement(enclElt);
-                    assert t instanceof AnnotatedDeclaredType : t;
-                    enclosing = (AnnotatedDeclaredType)t;
-                }
-                enclosing.clearAnnotations();
-                enclosing.addAnnotations(receiverAnnos);
+            } else {
+            	AnnotatedDeclaredType rt = (AnnotatedDeclaredType) f.fromTypeTree(node.getReceiverVariable().getType()); 
+                
                 if (TreeUtils.isConstructor(node))
-                    enclosing.addAnnotations(elt.getAnnotationMirrors());
-                result.setReceiverType(enclosing);
+                	rt.addAnnotations(elt.getAnnotationMirrors());
+                
+                result.setReceiverType(rt);
             }
+            // What is this for?
+            addAnnotationsToElt(result.getReceiverType(), elt.getAnnotationMirrors());
 
             // Annotate the type parameters.
             List<AnnotatedTypeVariable> typeParams
