@@ -7,7 +7,7 @@ public class Constructors {
         field = 0;
     }
 
-    Constructors(int a) @Immutable {
+    Constructors(@Immutable Constructors this, int a) {
         field = 0;
     }
 
