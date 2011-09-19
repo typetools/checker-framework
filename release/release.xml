@@ -406,6 +406,9 @@ The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"
         <symlink overwrite="true"
             link="${web.root.dir}/index.html"
             resource="current/index.html"/>
+        <symlink overwrite="true"
+            link="${web.root.dir}/current/favicon-jsr308.png"
+            resource="../../favicon-jsr308.png"/>
     </target>
 
     <target name="web" depends="-init-properties,local,-prep-checkdev,-web-stable,-web-dev"
