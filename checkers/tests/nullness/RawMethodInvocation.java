@@ -14,7 +14,7 @@ class RawMethodInvocation {
     init_b();
   }
 
-  void init_b() @Raw {
+  void init_b(@Raw RawMethodInvocation this) {
     b = 2;
   }
 
@@ -26,7 +26,7 @@ class RawMethodInvocation {
     init_ab();
   }
 
-  void init_ab() @Raw {
+  void init_ab(@Raw RawMethodInvocation this) {
     a = 1;
     b = 2;
   }

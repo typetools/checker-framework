@@ -7,7 +7,7 @@ public abstract class MethodOverrideBadReceiver {
 
     public static class SubclassA extends MethodOverrideBadReceiver {
         //:: error: (override.receiver.invalid)
-        public String method() @Odd {
+        public String method(@Odd SubclassA this) {
             return "";
         }
     }

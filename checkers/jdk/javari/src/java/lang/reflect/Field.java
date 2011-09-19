@@ -4,27 +4,27 @@ import checkers.javari.quals.*;
 import java.lang.annotation.Annotation;
 
 public final class Field extends AccessibleObject implements Member {
-    public Class<?> getDeclaringClass() @ReadOnly {
+    public Class<?> getDeclaringClass(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName() @ReadOnly {
+    public String getName(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getModifiers() @ReadOnly {
+    public int getModifiers(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isEnumConstant() @ReadOnly {
+    public boolean isEnumConstant(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isSynthetic() @ReadOnly {
+    public boolean isSynthetic(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Class<?> getType() @ReadOnly {
+    public Class<?> getType(@ReadOnly Field this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -32,7 +32,7 @@ public final class Field extends AccessibleObject implements Member {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadOnly Object obj) @ReadOnly {
+    public boolean equals(@ReadOnly Field this, @ReadOnly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

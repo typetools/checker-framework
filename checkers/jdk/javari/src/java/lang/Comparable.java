@@ -3,5 +3,5 @@ import checkers.javari.quals.*;
 import java.util.*;
 
 public interface Comparable<T> {
-    public int compareTo(T o) @ReadOnly;
+    public int compareTo(@ReadOnly Comparable this, T o);
 }
