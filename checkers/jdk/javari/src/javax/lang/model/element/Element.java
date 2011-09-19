@@ -13,15 +13,15 @@ import javax.lang.model.util.*;
 import checkers.javari.quals.*;
 
 public interface Element {
-    TypeMirror asType() @ReadOnly;
-    ElementKind getKind() @ReadOnly;
-    List<? extends AnnotationMirror> getAnnotationMirrors() @ReadOnly;
-    <A extends Annotation> @PolyRead A getAnnotation(Class<A> annotationType) @PolyRead;
-    @PolyRead Set<Modifier> getModifiers() @PolyRead;
-    @PolyRead Name getSimpleName() @PolyRead;
-    @PolyRead Element getEnclosingElement() @PolyRead;
-    @PolyRead List<? extends Element> getEnclosedElements() @PolyRead;
-    boolean equals(@ReadOnly Object obj) @ReadOnly;
-    int hashCode() @ReadOnly;
-    <R, P> R accept(ElementVisitor<R, P> v, P p) @ReadOnly;
+    TypeMirror asType(@ReadOnly Element this);
+    ElementKind getKind(@ReadOnly Element this);
+    List<? extends AnnotationMirror> getAnnotationMirrors(@ReadOnly Element this);
+    <A extends Annotation> @PolyRead A getAnnotation(@PolyRead Element this, Class<A> annotationType);
+    @PolyRead Set<Modifier> getModifiers(@PolyRead Element this);
+    @PolyRead Name getSimpleName(@PolyRead Element this);
+    @PolyRead Element getEnclosingElement(@PolyRead Element this);
+    @PolyRead List<? extends Element> getEnclosedElements(@PolyRead Element this);
+    boolean equals(@ReadOnly Element this, @ReadOnly Object obj);
+    int hashCode(@ReadOnly Element this);
+    <R, P> R accept(@ReadOnly Element this, ElementVisitor<R, P> v, P p);
 }

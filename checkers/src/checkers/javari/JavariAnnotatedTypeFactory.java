@@ -448,7 +448,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * {@code @Mutable} access to {@code tmObject} from a {@code @ReadOnly}
      * reference to it, without typechecker errors.
      *
-     * <pre>@PolyRead Object breakJavari(@PolyRead Object s) @ReadOnly {
+     * <pre>@PolyRead Object breakJavari(@ReadOnly JavariAnnotatedTypeFactory this, @PolyRead Object s) {
      *   tmObject = s;
      *   return null;
      *  }

@@ -15,7 +15,7 @@ class Random implements java.io.Serializable {
       throw new RuntimeException("skeleton method");
     }
 
-  protected int next(int bits) @ReadOnly {
+  protected int next(@ReadOnly Random this, int bits) {
       throw new RuntimeException("skeleton method");
     }
 
@@ -23,31 +23,31 @@ class Random implements java.io.Serializable {
       throw new RuntimeException("skeleton method");
     }
 
-    public int nextInt() @ReadOnly {
+    public int nextInt(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 
-    public int nextInt(int n) @ReadOnly {
+    public int nextInt(@ReadOnly Random this, int n) {
       throw new RuntimeException("skeleton method");
     }
 
-    public long nextLong() @ReadOnly {
+    public long nextLong(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 
-    public boolean nextBoolean() @ReadOnly {
+    public boolean nextBoolean(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 
-    public float nextFloat() @ReadOnly {
+    public float nextFloat(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 
-    public double nextDouble() @ReadOnly {
+    public double nextDouble(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 
-    synchronized public double nextGaussian() @ReadOnly {
+    synchronized public double nextGaussian(@ReadOnly Random this) {
       throw new RuntimeException("skeleton method");
     }
 }

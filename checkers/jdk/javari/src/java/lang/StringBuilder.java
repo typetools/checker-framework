@@ -144,19 +144,19 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(String str) @ReadOnly {
+    public int indexOf(@ReadOnly StringBuilder this, String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(String str, int fromIndex) @ReadOnly {
+    public int indexOf(@ReadOnly StringBuilder this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(String str) @ReadOnly {
+    public int lastIndexOf(@ReadOnly StringBuilder this, String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(String str, int fromIndex) @ReadOnly {
+    public int lastIndexOf(@ReadOnly StringBuilder this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -164,7 +164,7 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly StringBuilder this) {
         throw new RuntimeException("skeleton method");
     }
 

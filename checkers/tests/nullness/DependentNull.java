@@ -45,7 +45,7 @@ public class DependentNull {
         indep = "m";
     }
 
-    void receiverProto() @Prototype {
+    void receiverProto(@Prototype Prototype this) {
         // dep = null;   FIXME
         dep = "m";
 

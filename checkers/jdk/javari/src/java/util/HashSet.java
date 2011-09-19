@@ -10,12 +10,12 @@ public class HashSet<E>
     public HashSet(@ReadOnly Collection<? extends E> c) { throw new RuntimeException("skeleton method"); }
     public HashSet(int initialCapacity, float loadFactor) { throw new RuntimeException("skeleton method"); }
     public HashSet(int initialCapacity) { throw new RuntimeException("skeleton method"); }
-    public @PolyRead Iterator<E> iterator() @PolyRead { throw new RuntimeException("skeleton method"); }
+    public @PolyRead Iterator<E> iterator(@PolyRead HashSet this) { throw new RuntimeException("skeleton method"); }
     public int size() { throw new RuntimeException("skeleton method"); }
     public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-    public boolean contains(@ReadOnly Object o) @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public boolean contains(@ReadOnly HashSet this, @ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
     public boolean add(E e) { throw new RuntimeException("skeleton method"); }
     public boolean remove(@ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
     public void clear() { throw new RuntimeException("skeleton method"); }
-    public Object clone() @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public Object clone(@ReadOnly HashSet this) { throw new RuntimeException("skeleton method"); }
 }
