@@ -6,7 +6,7 @@ public class Stack<E> extends Vector<E> {
     public Stack() { throw new RuntimeException("skeleton method"); }
     public E push(E item) { throw new RuntimeException("skeleton method"); }
     public synchronized E pop() { throw new RuntimeException("skeleton method"); }
-    public synchronized E peek() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public boolean empty() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public synchronized int search(@ReadOnly Object o) @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public synchronized E peek(@ReadOnly Stack this) { throw new RuntimeException("skeleton method"); }
+    public boolean empty(@ReadOnly Stack this) { throw new RuntimeException("skeleton method"); }
+    public synchronized int search(@ReadOnly Stack this, @ReadOnly Object o) { throw new RuntimeException("skeleton method"); }
 }

@@ -3,13 +3,13 @@ import checkers.igj.quals.*;
 
 @I
 public interface ListIterator<E> extends @I Iterator<E> {
-  public abstract boolean hasNext() @ReadOnly;
-  public abstract E next() @ReadOnly;
-  public abstract boolean hasPrevious() @ReadOnly;
-  public abstract E previous() @ReadOnly;
-  public abstract int nextIndex() @ReadOnly;
-  public abstract int previousIndex() @ReadOnly;
-  public abstract void remove() @Mutable;
-  public abstract void set(E a1) @Mutable;
-  public abstract void add(E a1) @Mutable;
+  public abstract boolean hasNext(@ReadOnly ListIterator this);
+  public abstract E next(@ReadOnly ListIterator this);
+  public abstract boolean hasPrevious(@ReadOnly ListIterator this);
+  public abstract E previous(@ReadOnly ListIterator this);
+  public abstract int nextIndex(@ReadOnly ListIterator this);
+  public abstract int previousIndex(@ReadOnly ListIterator this);
+  public abstract void remove(@Mutable ListIterator this);
+  public abstract void set(@Mutable ListIterator this, E a1);
+  public abstract void add(@Mutable ListIterator this, E a1);
 }

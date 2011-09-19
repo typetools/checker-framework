@@ -3,10 +3,10 @@ import checkers.igj.quals.*;
 
 @I
 public interface Queue<E> extends @I Collection<E> {
-  public abstract boolean add(E a1) @Mutable;
-  public abstract boolean offer(E a1) @Mutable;
-  public abstract E remove() @Mutable;
-  public abstract E poll() @Mutable;
-  public abstract E element() @ReadOnly;
-  public abstract E peek() @ReadOnly;
+  public abstract boolean add(@Mutable Queue this, E a1);
+  public abstract boolean offer(@Mutable Queue this, E a1);
+  public abstract E remove(@Mutable Queue this);
+  public abstract E poll(@Mutable Queue this);
+  public abstract E element(@ReadOnly Queue this);
+  public abstract E peek(@ReadOnly Queue this);
 }
