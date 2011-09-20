@@ -321,6 +321,11 @@ already contains comments of the form \</*@...*/> that look like type
 annotations, and you want the Type Annotations compiler not to try to
 interpret them, then you can add spaces to the comments.
 
+This mechanism permits annotations to be written in comments, but it does
+not permit Java 8's new receiver (``\<this>'') syntax to be written in
+comments.  That means that it is not generally possible to write
+annotations on receivers in a forward-compatible way.
+
 
 \subsection{Implicit import statements\label{implicit-import-statements}}
 
