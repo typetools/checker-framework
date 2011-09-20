@@ -1,3 +1,10 @@
+Version 1.2.1, 20 Sep 2011
+
+Fix issues 109, 110, 111 and various other cleanups.
+Improvements to the release process.
+Documentation improvements.
+
+----------------------------------------------------------------------
 Version 1.2.0.1, 4 Sep 2011
 
 New version number to stay in sync with JSR 308 compiler bugfix.
