@@ -1,0 +1,13 @@
+tests/flow/**
+tests/src/tests/FlowTest.java
+tests/**/*.class
+.hg/**
+.hgignore
+.hgtags
+.jcheck/**
+binary/README
+binary/javac
+**/*.orig
+jdk/annotated/**
+jdk/*/build/**
+jdk/jdk.jar
