@@ -443,11 +443,11 @@ abstract class TypeFromTree extends
             addAnnotationsToElt(result.getReturnType(), elt.getAnnotationMirrors());
 
             // Annotate the receiver.
-            if (node.getReceiverVariable() == null || ElementUtils.isStatic(elt)) {
+            if (node.getReceiverParameter() == null || ElementUtils.isStatic(elt)) {
             	// TODO: something better? TypeKind.NONE?
                 result.setReceiverType(null);
             } else {
-            	AnnotatedDeclaredType rt = (AnnotatedDeclaredType) f.fromTypeTree(node.getReceiverVariable().getType()); 
+            	AnnotatedDeclaredType rt = (AnnotatedDeclaredType) f.fromTypeTree(node.getReceiverParameter().getType()); 
                 
                 if (TreeUtils.isConstructor(node))
                 	rt.addAnnotations(elt.getAnnotationMirrors());
