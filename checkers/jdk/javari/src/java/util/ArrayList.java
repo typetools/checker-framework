@@ -128,7 +128,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param c the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public ArrayList( /*@ReadOnly*/ Collection<? extends E> c) {
+    public ArrayList(@ReadOnly Collection<? extends E> c) {
     elementData = c.toArray();
     size = elementData.length;
     // c.toArray might (incorrectly) not return Object[] (see 6260652)
@@ -196,7 +196,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      */
-    public boolean contains(/*@ReadOnly*/ Object o) /*@ReadOnly*/ {
+    public boolean contains(@ReadOnly ArrayList<E> this, @ReadOnly Object o) {
     return indexOf(o) >= 0;
     }
 
@@ -207,7 +207,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int indexOf(/*@ReadOnly*/ Object o) /*@ReadOnly*/ {
+    public int indexOf(@ReadOnly ArrayList<E> this, @ReadOnly Object o) {
     if (o == null) {
         for (int i = 0; i < size; i++)
         if (elementData[i]==null)
@@ -227,7 +227,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int lastIndexOf(/*@ReadOnly*/ Object o) /*@ReadOnly*/ {
+    public int lastIndexOf(@ReadOnly ArrayList<E> this, @ReadOnly Object o) {
     if (o == null) {
         for (int i = size-1; i >= 0; i--)
         if (elementData[i]==null)
@@ -246,7 +246,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return a clone of this <tt>ArrayList</tt> instance
      */
-    public  Object clone() /*@ReadOnly*/ {
+    public  Object clone(@ReadOnly ArrayList<E> this) {
     try {
         @SuppressWarnings("unchecked")
         ArrayList<E> v = (ArrayList<E>) super.clone();
@@ -273,7 +273,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public /*@ReadOnly*/ Object[] toArray() /*@ReadOnly*/ {
+    public @ReadOnly Object[] toArray(@ReadOnly ArrayList this) {
         return Arrays.copyOf(elementData, size);
     }
 
@@ -302,7 +302,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
      @SuppressWarnings("unchecked")
-    public <T> T[] toArray(T[] a) /*@ReadOnly*/ {
+    public <T> T[] toArray(@ReadOnly ArrayList<E> this, T[] a) {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
@@ -322,7 +322,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public E get(int index) /*@ReadOnly*/ {
+    public E get(@ReadOnly ArrayList<E> this, int index) {
     RangeCheck(index);
 
     return (E) elementData[index];
@@ -417,7 +417,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element to be removed from this list, if present
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(/*@ReadOnly*/ Object o) {
+    public boolean remove(@ReadOnly Object o) {
     if (o == null) {
             for (int index = 0; index < size; index++)
         if (elementData[index] == null) {
@@ -474,7 +474,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll( /*@ReadOnly*/ Collection<? extends E> c) {
+    public boolean addAll(@ReadOnly Collection<? extends E> c) {
     Object[] a = c.toArray();
         int numNew = a.length;
     ensureCapacity(size + numNew);  // Increments modCount
@@ -498,7 +498,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(int index,  /*@ReadOnly*/ Collection<? extends E> c) {
+    public boolean addAll(int index, @ReadOnly Collection<? extends E> c) {
     if (index > size || index < 0)
         throw new IndexOutOfBoundsException(
         "Index: " + index + ", Size: " + size);

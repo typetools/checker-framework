@@ -15,11 +15,11 @@ class Random implements java.io.Serializable {
       throw new RuntimeException("skeleton method");
     }
 
-  protected int next(@ReadOnly Random this, int bits) {
+    protected int next(@ReadOnly Random this, int bits) {
       throw new RuntimeException("skeleton method");
     }
 
-    public void nextBytes(byte @ReadOnly [] bytes) /*@ReadOnly*/ {
+    public void nextBytes(@ReadOnly Random this, byte @ReadOnly [] bytes) {
       throw new RuntimeException("skeleton method");
     }
 
