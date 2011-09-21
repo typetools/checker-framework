@@ -164,7 +164,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
         GraphQualifierHierarchy.Factory factory=
-            new GraphQualifierHierarchy.Factory();
+            new GraphQualifierHierarchy.Factory(this);
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
             if (typeQualifier.equals(Unqualified.class)) {

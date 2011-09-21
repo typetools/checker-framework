@@ -108,13 +108,15 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         }
     }
 
-    private static String receiver(ExpressionTree methodSel) {
-        if (methodSel.getKind() == Tree.Kind.IDENTIFIER)
+    private String receiver(ExpressionTree methodSel) {
+        if (methodSel.getKind() == Tree.Kind.IDENTIFIER) {
             return "this";
-        else if (methodSel.getKind() == Tree.Kind.MEMBER_SELECT)
+        } else if (methodSel.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)methodSel).getExpression().toString();
-        else
-            throw new IllegalArgumentException("Unknown tree type: " + methodSel);
+        } else {
+            checker.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
+            return null;
+        }
     }
 
     @Override

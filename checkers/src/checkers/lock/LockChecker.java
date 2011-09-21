@@ -24,8 +24,8 @@ public class LockChecker extends BaseTypeChecker {
         AnnotationMirror guardedBy = annoFactory.fromClass(GuardedBy.class);
         AnnotationMirror unqualified = null;
 
-        GraphQualifierHierarchy.Factory factory=
-            new GraphQualifierHierarchy.Factory();
+        GraphQualifierHierarchy.Factory factory =
+            new GraphQualifierHierarchy.Factory(this);
 
         factory.addQualifier(guardedBy);
         factory.addQualifier(unqualified);

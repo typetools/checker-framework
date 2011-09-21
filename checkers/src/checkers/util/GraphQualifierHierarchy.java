@@ -15,6 +15,7 @@ import javax.lang.model.element.Name;
 
 import checkers.quals.PolymorphicQualifier;
 import checkers.nullness.quals.*;
+import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 
 // It's functional, but requires optimization and better documentation
@@ -48,14 +49,17 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     public static class Factory {
         /** map: qualifier --> supertypesMap of the qualifier */
         // supertypesMap is immutable once GraphQualifierHierarchy is built
-        private Map<AnnotationMirror, Set<AnnotationMirror>> supertypes;
+        private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypes;
 
         private AnnotationMirror polyQualifier;
 
         private boolean wasBuilt = false;
 
-        public Factory() {
+        private final SourceChecker checker;
+        
+        public Factory(SourceChecker checker) {
             supertypes = AnnotationUtils.createAnnotationMap();
+            this.checker = checker;
         }
 
         /**
@@ -105,8 +109,9 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         private void assertNotBuilt() {
-            if (wasBuilt)
-                throw new IllegalStateException("qualifier hierarchy already built");
+            if (wasBuilt) {
+                checker.errorAbort("GraphQualifierHierarchy.Factory was already built. Method build can only be called once.");
+            }
         }
 
         /**
@@ -141,12 +146,15 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     private final AnnotationMirror root;
     private final AnnotationMirror bottom;
 
+    private final SourceChecker checker;
+    
     private GraphQualifierHierarchy(Factory f) {
         // // no need for copying as f.supertypes has no mutable references to it
         this.supertypesGraph = f.supertypes;
         this.supertypesMap = buildFullMap(f.supertypes);
         this.root = findRoot(this.supertypesMap, null);
         this.bottom = findBottom(this.supertypesMap, null);
+        this.checker = f.checker;
     }
 
     protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
@@ -155,6 +163,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         this.root = h.root;
         this.lubs = h.lubs;
         this.bottom = h.bottom;
+        this.checker = h.checker;
     }
 
     /**
@@ -240,13 +249,14 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         if (supertypesMap.containsKey(a))
             return;
 
-        if (a == null)
-            throw new IllegalArgumentException(
-                    "Found an unqualified type.  Please ensure that " +
+        if (a == null) {
+            checker.errorAbort("GraphQualifierHierarchy found an unqualified type.  Please ensure that " +
                     "your implicit rules cover all cases and/or " +
-                    "use a @DefaulQualifierInHierarchy annotation");
-        else
-            throw new IllegalArgumentException("Unrecognized qualifier: " + a);
+                    "use a @DefaulQualifierInHierarchy annotation.");
+        } else {
+            checker.errorAbort("GraphQualifierHierarchy found the unrecognized qualifier: " + a +
+            		". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
+        }
     }
 
     /**
@@ -358,8 +368,9 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             // if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
             return outset.iterator().next();
         }
-        throw new AssertionError("Could not determine LUB for " + a1 + " and " + a2 + "\n" +
-                                 "Does the checker know about all type qualifiers?");
+        checker.errorAbort("GraphQualifierHierarchy could not determine LUB for " + a1 + " and " + a2 +
+                                 ". Please ensure that the checker knows about all type qualifiers.");
+        return null;
     }
 
     // remove all supertypes of elements contained in the set
@@ -440,8 +451,9 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             // if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
             return outset.iterator().next();
         }
-        throw new AssertionError("Could not determine GLB for " + a1 + " and " + a2 + "\n" +
-                "Does the checker know about all type qualifiers?");
+        checker.errorAbort("GraphQualifierHierarchy could not determine GLB for " + a1 + " and " + a2 +
+                ". Please ensure that the checker knows about all type qualifiers.");
+        return null;
     }
 
     // remove all subtypes of elements contained in the set
