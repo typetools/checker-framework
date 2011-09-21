@@ -212,6 +212,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public void errorAbort(String msg) {
         this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                 msg);
+        // TODO: add a command-line option to enable stack traces with error messages.
+        // Then here add a stack trace (minus the current frame?) to msg.
+        // This will make the first message that users see clean and if we need
+        // more information, we can ask them to add that option.
         throw new CheckerError();
     }
     
