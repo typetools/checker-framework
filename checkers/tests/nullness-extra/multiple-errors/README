@@ -1,0 +1,13 @@
+The classes in this directory contain errors.
+We want to process as many of the files as possible and not
+stop at the first error.
+See the message thread at
+
+http://groups.google.com/group/checker-framework-discuss/browse_thread/thread/e00d19df3f2f7170
+
+Performing
+
+javac -processor checkers.nullness.NullnessChecker *.java
+
+should result in 2 errors and 1 warning, not only 1 each.
+TODO: automate testing and integrate in suite.
