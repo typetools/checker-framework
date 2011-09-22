@@ -24,7 +24,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
 \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
 \ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
-\ref{faq-run-on-all-files}: How do I run a checker on all my source files? \\
+\ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
 \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker? \\
 \ref{faq-create-a-checker}: How do I create a new checker? \\
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
@@ -229,13 +229,11 @@ For more details, see section~\ref{when-to-use-type-qualifiers}.
 See Section~\ref{get-started-with-legacy-code}.
 
 
-\section{How do I run a checker on all my source files?\label{faq-run-on-all-files}}
+\section{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}
 
-The \code{javac} compiler halts compilation as soon as it processes a
-source file with an error, including an error issued by a pluggable
-type-checker.  Section~\ref{running} describes the \<-Awarns> command-line
-option that turns checker errors into warnings, permitting \<javac> to
-continue past the first erroneous source file.
+Section~\ref{running} describes the \<-Awarns> command-line
+option that turns checker errors into warnings, so type-checking errors
+will not cause \<javac> to exit with a failure status.
 
 
 \section{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}

@@ -484,14 +484,6 @@ Even when the checker does not analyze a class (say, the class was
 already compiled, or source code is not available), it does check
 the \emph{uses} of those classes in the source code being compiled.
 
-The javac compiler halts compilation as soon as an error is found in a
-source file.  You can pass \code{-Awarns} in the command-line to
-treat checker errors as warnings.  This option allows you to see all
-the type-checking errors at once, rather than just the errors in the first
-file that contains errors.  You may wish to also supply
-\code{-Xmaxwarns 10000}, because by default \<javac> prints at most 100
-warnings.
-
 You can always compile the code without the \code{-processor}
 command-line option, but in that case no checking of the type
 annotations is performed.  The annotations are still written to the
@@ -506,7 +498,9 @@ option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options:
 
 \begin{itemize}
-\item \<-Awarns> Treat checker errors as warnings; see Section~\ref{running}
+\item \<-Awarns> Treat checker errors as warnings.  If you use this, you
+  may wish to also supply \code{-Xmaxwarns 10000}, because by default
+  \<javac> prints at most 100 warnings.
 \item \<-AskipUses> Suppress all errors and warnings at all uses of a
   given class; see Section~\ref{suppressing-warnings}
 \item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
@@ -743,12 +737,6 @@ manually examine all callees.  A better way can be to save the checker
 output before adding the annotation, and to compare it to the checker
 output after adding the annotation.  This helps you to focus on the
 specific consequences of your change.
-
-Ordinarily, the javac compiler halts processing as soon as it encounters a
-file with compilation errors.  To convert pluggable-type-checking errors
-into warnings so that you can see them all, use the command-line arguments
-\code{-Awarns -Xmaxwarns
-  10000} (see Section~\ref{running}).
 
 Also see Chapter~\ref{warnings-and-legacy}, which tells you what to do when
 you are unable to eliminate checker warnings.
