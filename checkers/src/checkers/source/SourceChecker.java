@@ -307,7 +307,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // Nothing to do, message will be output by javac.
             return;
         }
-        
+
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
@@ -323,6 +323,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor.scan(p, null);
         } catch (CheckerError ce) {
             // Nothing to do, message will be output by javac.
+        	// TODO: there seems to be a difference between continuing here
+        	// and raising an exception again. Investigate.
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "
