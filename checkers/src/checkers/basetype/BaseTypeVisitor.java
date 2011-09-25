@@ -1109,13 +1109,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
 
         /**
-         * Checks that the annotations on the type arguments supplied to a type or a
-         * method invocation are within the bounds of the type variables as
-         * declared, and issues the "generic.argument.invalid" error if they are
-         * not.
+         * Checks that the annotations on the type arguments supplied to a
+         * type or a method invocation are within the bounds of the type
+         * variables as declared, and issues the "generic.argument.invalid"
+         * error if they are not.
          *
-         * This method used to be visitParameterizedType, which incorrectly handles the main
-         * annotation on generic types.
+         * This method used to be visitParameterizedType, which incorrectly
+         * handles the main annotation on generic types.
          */
         protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
             // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n", type, tree);
