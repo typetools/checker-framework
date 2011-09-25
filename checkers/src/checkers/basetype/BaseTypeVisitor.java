@@ -289,7 +289,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (isEnumSuper(node))
             return super.visitMethodInvocation(node, p);
 
-        if (shouldSkip(node))
+        if (shouldSkipUses(node))
             return super.visitMethodInvocation(node, p);
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = atypeFactory.methodFromUse(node);
@@ -382,7 +382,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitNewClass(NewClassTree node, Void p) {
-        if (shouldSkip(InternalUtils.constructor(node)))
+        if (shouldSkipUses(InternalUtils.constructor(node)))
             return super.visitNewClass(node, p);
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory.constructorFromUse(node);
@@ -577,7 +577,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
-        if (shouldSkip(valueExp))
+        if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
                 && valueExp instanceof NewArrayTree
@@ -795,7 +795,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedDeclaredType overriddenType,
             Void p) {
 
-        if (shouldSkip(overriddenType.getElement())) {
+        if (shouldSkipUses(overriddenType.getElement())) {
             return true;
         }
 
@@ -991,7 +991,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-            if (shouldSkip(type.getElement()))
+            if (shouldSkipUses(type.getElement()))
                 return super.visitDeclared(type, tree);
 
             // Ensure that type use is a subtype of the element type
@@ -1124,7 +1124,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 return null;
 
             final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
-            if (shouldSkip(element))
+            if (shouldSkipUses(element))
                 return null;
 
             List<AnnotatedTypeVariable> typevars = atypeFactory.typeVariablesFromUse(type, element);
@@ -1161,8 +1161,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param exprTree  any expression tree
      * @return true if checker should not test exprTree
      */
-    protected final boolean shouldSkip(ExpressionTree exprTree) {
-        // System.out.printf("shouldSkip: %s: %s%n", exprTree.getClass(), exprTree);
+    protected final boolean shouldSkipUses(ExpressionTree exprTree) {
+        // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
 
         // This special case for ConditionalExpressionTree seems wrong, so
         // I commented it out.  It will skip expressions that should be
@@ -1173,12 +1173,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // if (exprTree instanceof ConditionalExpressionTree) {
         //     ConditionalExpressionTree condTree =
         //         (ConditionalExpressionTree)exprTree;
-        //     return (shouldSkip(condTree.getTrueExpression()) ||
-        //             shouldSkip(condTree.getFalseExpression()));
+        //     return (shouldSkipUses(condTree.getTrueExpression()) ||
+        //             shouldSkipUses(condTree.getFalseExpression()));
         // }
 
         Element elm = InternalUtils.symbol(exprTree);
-        return shouldSkip(elm);
+        return shouldSkipUses(elm);
     }
 
     /**
@@ -1189,7 +1189,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param element   an element
      * @return  true iff the enclosing class of element should be skipped
      */
-    protected final boolean shouldSkip(Element element) {
+    protected final boolean shouldSkipUses(Element element) {
         if (element == null)
             return false;
         TypeElement typeElement = ElementUtils.enclosingClass(element);
