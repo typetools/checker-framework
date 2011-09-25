@@ -124,6 +124,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        if (shouldSkipDefs(node)) {
+            // Not "return super.visitClass(node, p);" because that would
+            // recursively call visitors on subtrees; we want to skip the
+            // class entirely.
+            return null;
+        }
+
         AnnotatedDeclaredType preACT = visitorState.getClassType();
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
@@ -1197,6 +1204,20 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return checker.getShouldSkipUses().matcher(name).find();
 
     }
+
+    /**
+     * Tests whether the class definition should not be checked because it
+     * matches the {@code checker.skipDefs} property.
+     *
+     * @param node class to potentially skip
+     * @return true if checker should not test node
+     */
+    protected final boolean shouldSkipDefs(ClassTree node) {
+        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
+        String qualifiedName = atm.getUnderlyingType().toString();
+        return checker.getShouldSkipDefs().matcher(qualifiedName).find();
+    }
+
 
     // **********************************************************************
     // Overriding to avoid visit part of the tree
