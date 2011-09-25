@@ -79,6 +79,8 @@ warnings via
 \item
   the \code{-AskipUses} command-line option,
 \item
+  the \code{-AskipDefs} command-line option,
+\item
   the \code{-Alint} command-line option,
 \item
   not using the \code{-processor} command-line option, or
@@ -166,22 +168,48 @@ command-line option (Section~\ref{debugging-options}).
 \subsection{\code{-AskipUses} command-line option\label{askipuses}}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class (but the class itself is still type-checked).
+class (but the class itself is still type-checked, unless you also use
+the \code{-AskipDefs} command-line option, see~\ref{askipdefs}).
 Set the \code{-AskipUses} command-line option to a
 regular expression that matches classes for which warnings and errors
-should be suppressed.  For example, if you use
+should be suppressed.  For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
-\code{javac}, then the checkers will suppress all warnings within
-classes whose fully-qualified name starts with \codesize\verb|java.|, all
-warnings relating to invalid arguments, and all warnings relating to incorrect
-use of the return value.
+\code{javac}.  Then the checkers will suppress all warnings related to
+classes whose fully-qualified name starts with \codesize\verb|java.|, such
+as all warnings relating to invalid arguments and all warnings relating to
+incorrect use of the return value.
 
 To suppress all errors and warnings related to multiple classes, you can use
 the regular expression alternative operator ``\code{|}'', as in
 ``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
-all warnings related to classes belong to the \code{java.lang} or
+all warnings related to uses of classes belong to the \code{java.lang} or
 \code{java.util} packages.
+
+
+\subsection{\code{-AskipDefs} command-line option\label{askipdefs}}
+
+You can suppress all errors and warnings in the \emph{definition} of a given
+class (but uses of the class are still type-checked, unless you also use
+the \code{-AskipUses} command-line option, see~\ref{askipuses}).
+Set the \code{-AskipDefs} command-line option to a
+regular expression that matches classes in whose definition warnings and errors
+should be suppressed.  For example, if you use
+``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}, then the definitions of 
+classes whose fully-qualified name starts with \codesize\verb|mypackage.|
+will not be checked.
+
+Another way not to type-check a file is not to pass it on the compiler
+command-line:  the Checker Framework type-checks only files that are passed
+to the compiler on the command line, and does not type-check any file that
+is not passed to the compiler.  The \code{-AskipDefs} command-line option
+is intended for situations in which the build system is hard to understand
+or change.  In such a situation, a programmer may find it easier to supply
+an extra command-line argument, than to change the set of files that is
+compiled.
+
 
 \subsection{\code{-Alint} command-line option\label{alint}}
 
@@ -430,5 +458,6 @@ comments.
 % LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
-% LocalWords:  checkername util myref nulltest html ESC buildfile mynifty
+% LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
+% LocalWords:  AskipDefs mypackage
