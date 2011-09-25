@@ -373,7 +373,7 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-uninit-tests"
+    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests"
       description="Run tests for the Nullness checker">
     </target>
 
@@ -395,6 +395,13 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run skipuses tests for the Nullness checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipUsesTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-skipdefs-tests" depends="jar,build-tests"
+      description="Run skipdefs tests for the Nullness checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessSkipDefsTest"/>
         </antcall>
     </target>
 

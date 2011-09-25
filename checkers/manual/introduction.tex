@@ -498,13 +498,15 @@ option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options:
 
 \begin{itemize}
+\item \<-AskipUses> Suppress all errors and warnings at all uses of a
+  given class; see Section~\ref{suppressing-warnings}
+\item \<-AskipDefs> Suppress all errors and warnings within the definition of a
+  given class; see Section~\ref{suppressing-warnings}
+\item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
+\item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-AskipUses> Suppress all errors and warnings at all uses of a
-  given class; see Section~\ref{suppressing-warnings}
-\item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
-\item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
 \item \<-Afilenames>, \<-Anomsgtext>, \<-Ashowchecks> Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \end{itemize}
 
@@ -603,8 +605,8 @@ There are some limitations to the guarantee.
     Code compiled without the \code{-processor} switch, including any
     external library supplied as a \code{.class} file.
   \item
-    Code compiled with the \code{-AskipUses} property (see
-    Section~\ref{suppressing-warnings}).
+    Code compiled with the \code{-AskipUses} or \code{-AskipDefs}
+    properties (see Section~\ref{suppressing-warnings}).
   \item
     Suppression of warnings, such as via the \code{@SuppressWarnings}
     annotation (see Section~\ref{suppressing-warnings}).
