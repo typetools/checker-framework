@@ -228,7 +228,7 @@ appearances of \code{@\refclass{igj/quals}{I}} with the same value as the class 
        private @Immutable Date creationData;
        private @I Date lastModData;
 
-       public @I Date getLastModDate() @ReadOnly { }
+       public @I Date getLastModDate(@ReadOnly FileDescriptor this) { }
     }
 
     ...

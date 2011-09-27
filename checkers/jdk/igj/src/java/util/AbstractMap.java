@@ -7,43 +7,43 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   @I
   public static class SimpleEntry<K, V> implements @I Map.Entry<K, V>, @I java.io.Serializable {
       private static final long serialVersionUID = 0L;
-    public SimpleEntry(K a1, V a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public SimpleEntry(@I Map.Entry<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public V getValue() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public V setValue(V a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public boolean equals(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
+    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, @I Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+    public K getKey(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public V getValue(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public V setValue(@AssignsFields SimpleEntry<K, V> this, V a1) { throw new RuntimeException("skeleton method"); }
+    public boolean equals(@ReadOnly SimpleEntry<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
+    public int hashCode(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public String toString(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
   }
 
   @Immutable
   public static class SimpleImmutableEntry<K, V> implements @Immutable Map.Entry<K, V>, @Immutable java.io.Serializable {
       private static final long serialVersionUID = 0L;
-    public SimpleImmutableEntry(K a1, V a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public SimpleImmutableEntry(Map.Entry<? extends K, ? extends V> a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public K getKey() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public V getValue() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public V setValue(V a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-    public boolean equals(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
-    public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
+    public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
+    public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+    public K getKey(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public V getValue(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public V setValue(@AssignsFields SimpleImmutableEntry<K, V> this, V a1) { throw new RuntimeException("skeleton method"); }
+    public boolean equals(@ReadOnly SimpleImmutableEntry<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
+    public int hashCode(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+    public String toString(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
   }
 
-  protected AbstractMap() @ReadOnly {}
-  public int size() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public boolean isEmpty() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public boolean containsValue(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public boolean containsKey(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public V get(Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public V put(K a1, V a2) @Mutable { throw new RuntimeException("skeleton method"); }
-  public V remove(Object a1) @Mutable { throw new RuntimeException("skeleton method"); }
-  public void putAll(@ReadOnly Map<? extends K, ? extends V> a1) @Mutable { throw new RuntimeException("skeleton method"); }
-  public void clear() @Mutable { throw new RuntimeException("skeleton method"); }
-  public @I Set<K> keySet() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public @I Collection<V> values() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public abstract @I Set<@I Map.Entry<K, V>> entrySet() @ReadOnly;
-  public boolean equals(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public int hashCode() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public String toString() @ReadOnly { throw new RuntimeException("skeleton method"); }
+  protected AbstractMap(@ReadOnly SimpleImmutableEntry<K, V> this) {}
+  public int size(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public boolean isEmpty(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public boolean containsValue(@ReadOnly SimpleImmutableEntry<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean containsKey(@ReadOnly SimpleImmutableEntry<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
+  public V get(@ReadOnly SimpleImmutableEntry<K, V> this, Object a1) { throw new RuntimeException("skeleton method"); }
+  public V put(@Mutable SimpleImmutableEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
+  public V remove(@Mutable SimpleImmutableEntry<K, V> this, Object a1) { throw new RuntimeException("skeleton method"); }
+  public void putAll(@Mutable SimpleImmutableEntry<K, V> this, @ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public void clear(@Mutable SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Set<K> keySet(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Collection<V> values(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public abstract @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly SimpleImmutableEntry<K, V> this);
+  public boolean equals(@ReadOnly SimpleImmutableEntry<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
+  public int hashCode(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public String toString(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
 }

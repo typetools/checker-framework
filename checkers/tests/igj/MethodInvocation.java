@@ -7,12 +7,12 @@ public class MethodInvocation {
     @Immutable MethodInvocation immutable;
     @ReadOnly MethodInvocation readOnly;
 
-    void mutableReciever() @Mutable { }
-    void immutableReceiver() @Immutable { }
-    void readOnlyReceiver() @ReadOnly { }
-    void assignsFieldsMethod() @AssignsFields { }
+    void mutableReciever(@Mutable MethodInvocation this) { }
+    void immutableReceiver(@Immutable MethodInvocation this) { }
+    void readOnlyReceiver(@ReadOnly MethodInvocation this) { }
+    void assignsFieldsMethod(@AssignsFields MethodInvocation this) { }
 
-    void testMutable() @Mutable {
+    void testMutable(@Mutable MethodInvocation this) {
         mutableReciever();
         immutableReceiver();  // should emit error
         readOnlyReceiver();
@@ -39,7 +39,7 @@ public class MethodInvocation {
         readOnly.assignsFieldsMethod();  // should emit error
     }
 
-    void testImmutable() @Immutable {
+    void testImmutable(@Immutable MethodInvocation this) {
         mutableReciever();  // should emit error
         immutableReceiver();
         readOnlyReceiver();
@@ -66,7 +66,7 @@ public class MethodInvocation {
         readOnly.assignsFieldsMethod();  // should emit error
     }
 
-    void testReadOnly() @ReadOnly {
+    void testReadOnly(@ReadOnly MethodInvocation this) {
         mutableReciever();  // should emit error
         immutableReceiver();  // should emit error
         readOnlyReceiver();
@@ -93,7 +93,7 @@ public class MethodInvocation {
         readOnly.assignsFieldsMethod();  // should emit error
     }
 
-    void testAssignsFields() @AssignsFields {
+    void testAssignsFields(@AssignsFields MethodInvocation this) {
         mutableReciever();  // should emit error
         immutableReceiver();  // should emit error
         readOnlyReceiver();
@@ -172,7 +172,7 @@ public class MethodInvocation {
         return forMap(map, null);
     }
 
-    void testAnonClasses() @ReadOnly {
+    void testAnonClasses(@ReadOnly MethodInvocation this) {
         @I MethodInvocation m = new @I MethodInvocation();
         @I MethodInvocation n = new @I MethodInvocation() {};
     }
