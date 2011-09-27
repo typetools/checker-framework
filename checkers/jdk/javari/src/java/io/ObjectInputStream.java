@@ -55,7 +55,7 @@ public class ObjectInputStream
     public void registerValidation(ObjectInputValidation obj, int prio) throws NotActiveException, InvalidObjectException { throw new RuntimeException("skeleton method"); }
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
     protected Class<?> resolveProxyClass(String @ReadOnly [] interfaces) throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-    protected Object resolveObject(@ReadOnly Caches this, Object obj) throws IOException { throw new RuntimeException("skeleton method"); }
+    protected Object resolveObject(@ReadOnly ObjectInputStream this, Object obj) throws IOException { throw new RuntimeException("skeleton method"); }
     protected boolean enableResolveObject(boolean enable) throws SecurityException { throw new RuntimeException("skeleton method"); }
     protected void readStreamHeader() throws IOException, StreamCorruptedException { throw new RuntimeException("skeleton method"); }
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
@@ -92,11 +92,11 @@ public class ObjectInputStream
         public abstract double get(@ReadOnly GetField this, String name, double val) throws IOException;
         public abstract @PolyRead Object get(@ReadOnly GetField this, String name, @PolyRead Object val) throws IOException;
     }
-    private void verifySubclass(@ReadOnly GetField this) { throw new RuntimeException("skeleton method"); }
+    private void verifySubclass(@ReadOnly ObjectInputStream this) { throw new RuntimeException("skeleton method"); }
     private static boolean auditSubclass(final @ReadOnly Class<?> subcl) { throw new RuntimeException("skeleton method"); }
     private void clear() { throw new RuntimeException("skeleton method"); }
     private Object readObject0(boolean unshared) throws IOException { throw new RuntimeException("skeleton method"); }
-    private Object checkResolve(@ReadOnly GetField this, Object obj) throws IOException { throw new RuntimeException("skeleton method"); }
+    private Object checkResolve(@ReadOnly ObjectInputStream this, Object obj) throws IOException { throw new RuntimeException("skeleton method"); }
     String readTypeString() throws IOException { throw new RuntimeException("skeleton method"); }
     private Object readNull() throws IOException { throw new RuntimeException("skeleton method"); }
     private Object readHandle(boolean unshared) throws IOException { throw new RuntimeException("skeleton method"); }
