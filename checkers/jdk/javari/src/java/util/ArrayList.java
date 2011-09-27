@@ -273,7 +273,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public @ReadOnly Object[] toArray(@ReadOnly ArrayList this) {
+    public @ReadOnly Object[] toArray(@ReadOnly ArrayList<E> this) {
         return Arrays.copyOf(elementData, size);
     }
 

@@ -22,6 +22,6 @@ public interface Map<K,V> {
         int hashCode(@ReadOnly Entry<K,V> this);
     }
 
-    boolean equals(@ReadOnly Entry<K,V> this, @ReadOnly Object o);
-    int hashCode(@ReadOnly Entry<K,V> this);
+    boolean equals(@ReadOnly Map<K,V> this, @ReadOnly Object o);
+    int hashCode(@ReadOnly Map<K,V> this);
 }
