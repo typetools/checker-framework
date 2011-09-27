@@ -74,7 +74,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.0.1
+  javac 1.7.0-jsr308-1.2.1
 \end{Verbatim}
 
 
@@ -101,7 +101,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.0.1
+  javac 1.7.0-jsr308-1.2.1
 \end{Verbatim}
 
 \end{enumerate}
@@ -143,7 +143,7 @@ the new \code{javac} compiler.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.0.1
+  javac 1.7.0-jsr308-1.2.1
 \end{Verbatim}
 
 \end{enumerate}
@@ -211,7 +211,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.0.1
+  javac 1.7.0-jsr308-1.2.1
 \end{Verbatim}
 
 \end{enumerate}
@@ -242,7 +242,7 @@ Set the \code{jsr308javac} property:
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
-      <compilerarg line="-Awarns -Xmaxwarns 10000"/>
+      <!-- optional, to issue warnings instead of errors: <compilerarg line="-Awarns -Xmaxwarns 10000"/> -->
       <compilerarg value="-J-Xbootclasspath/p:${checkers}/binary/jsr308-all.jar"/>
 
       <classpath>
@@ -316,8 +316,8 @@ code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
 
 The \code{-Awarns ...} compiler argument is optional, and causes the checker to
-treat errors as warnings so that you can see all errors in all files rather
-than only the errors in the first file; see Section~\ref{running}.
+treat errors as warnings so that compilation does not fail even if
+pluggable type-checking fails; see Section~\ref{checker-options}.
 
 \item The \code{check-nullness} target:
 
@@ -453,7 +453,6 @@ allprojects {
     compile.options.compilerArgs = [
       '-version',
       '-implicit:class',
-      '-Awarns', '-Xmaxwarns', '10000',
       '-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar',
       '-processor', 'checkers.nullness.NullnessChecker',
       '-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar']

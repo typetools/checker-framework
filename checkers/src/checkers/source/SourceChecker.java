@@ -98,6 +98,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** A regular expression for classes whose uses should be skipped. */
     private Pattern skipUsesPattern;
 
+    /** A regular expression for classes whose definitions should be skipped. */
+    private Pattern skipDefsPattern;
+
     /** The chosen lint options that have been enabled by programmer */
     private Set<String> activeLints;
 
@@ -178,6 +181,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return Pattern.compile(pattern);
     }
 
+    private Pattern getSkipDefsPattern(Map<String, String> options) {
+        String pattern = "";
+
+        if (options.containsKey("skipDefs"))
+            pattern = options.get("skipDefs");
+        else if (System.getProperty("checkers.skipDefs") != null)
+            pattern = System.getProperty("checkers.skipDefs");
+        else if (System.getenv("skipDefs") != null)
+            pattern = System.getenv("skipDefs");
+
+        // return a pattern of an illegal Java identifier character
+        // so that it won't match anything
+        if (pattern.equals(""))
+            pattern = "\\(";
+
+        return Pattern.compile(pattern);
+    }
+
     private Set<String> createActiveLints(Map<String, String> options) {
         if (!options.containsKey("lint"))
             return Collections.emptySet();
@@ -212,6 +233,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public void errorAbort(String msg) {
         this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                 msg);
+        // TODO: add a command-line option to enable stack traces with error messages.
+        // Then here add a stack trace (minus the current frame?) to msg.
+        // This will make the first message that users see clean and if we need
+        // more information, we can ask them to add that option.
         throw new CheckerError();
     }
     
@@ -264,6 +289,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.env = processingEnv;
 
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
+        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
@@ -303,7 +329,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // Nothing to do, message will be output by javac.
             return;
         }
-        
+
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
@@ -319,6 +345,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor.scan(p, null);
         } catch (CheckerError ce) {
             // Nothing to do, message will be output by javac.
+        	// TODO: there seems to be a difference between continuing here
+        	// and raising an exception again. Investigate.
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "
@@ -667,6 +695,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
         options.add("skipUses");
+        options.add("skipDefs");
         options.add("lint");
         options.add("nomsgtext");
         options.add("filenames");
@@ -737,7 +766,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Returns a regular expression pattern to specify Java classes that are not
-     * annotated, and thus whose warnings and should be surpressed.
+     * annotated, so warnings about uses of them should be supressed.
      *
      * It returns the pattern specified by the user, through the option
      * {@code checkers.skipUses}; otherwise it returns a pattern that can
@@ -747,6 +776,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     public Pattern getShouldSkipUses() {
         return this.skipUsesPattern;
+    }
+
+    /**
+     * Returns a regular expression pattern to specify Java classes whose
+     * definiton should not be checked.
+     *
+     * It returns the pattern specified by the user, through the option
+     * {@code checkers.skipDefs}; otherwise it returns a pattern that can
+     * match no class.
+     *
+     * @return Pattern of classes whose definition should not be checked
+     */
+    public Pattern getShouldSkipDefs() {
+        return this.skipDefsPattern;
     }
 
     /**
