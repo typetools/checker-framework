@@ -80,7 +80,7 @@ class RawTypes {
 
     }
 
-    void output(@Raw C this, Object o) {
+    void output(@Raw RawTypes this, Object o) {
 
     }
 
