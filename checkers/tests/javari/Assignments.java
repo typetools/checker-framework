@@ -32,15 +32,15 @@ class Assignments {
     JavariCell mc;
     @ReadOnly JavariCell roc;
 
-    public @Mutable Object isMutable(@ReadOnly JavariCell this) {
+    public @Mutable Object isMutable(@ReadOnly Assignments this) {
         return new Object();
     }
 
-    public Object isThisMutable(@ReadOnly JavariCell this) {
+    public Object isThisMutable(@ReadOnly Assignments this) {
         return new Object();
     }
 
-    public @ReadOnly Object isReadOnly(@ReadOnly JavariCell this) {
+    public @ReadOnly Object isReadOnly(@ReadOnly Assignments this) {
         return "isReadOnly";
     }
 
@@ -93,14 +93,14 @@ class Assignments {
         roObject = aReadOnly.isReadOnly();
     }
 
-    public void doNothing(@ReadOnly JavariCell this) {
+    public void doNothing(@ReadOnly Assignments this) {
         JavariCell localCell = null;      // mutable
         localCell.x = 3;
         localCell.cell = localCell;            // is mutable, no error
     }
 
-    public int getInt(@ReadOnly JavariCell this) { return 0; }
-    public void assignmentWithCast(@ReadOnly JavariCell this) {
+    public int getInt(@ReadOnly Assignments this) { return 0; }
+    public void assignmentWithCast(@ReadOnly Assignments this) {
         char c = (char) getInt();
     }
 }

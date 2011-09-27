@@ -32,15 +32,15 @@ class Assignments2 {
     JavariCell mc;
     @ReadOnly JavariCell roc;
 
-    public @Mutable Object isMutable(@ReadOnly JavariCell this) {
+    public @Mutable Object isMutable(@ReadOnly Assignments2 this) {
         return new Object();
     }
 
-    public Object isStillMutable(@ReadOnly JavariCell this) {
+    public Object isStillMutable(@ReadOnly Assignments2 this) {
         return new Object();
     }
 
-    public @ReadOnly Object isReadOnly(@ReadOnly JavariCell this) {
+    public @ReadOnly Object isReadOnly(@ReadOnly Assignments2 this) {
         return "isReadOnly";
     }
 
