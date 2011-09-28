@@ -373,7 +373,7 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests"
+    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests"
       description="Run tests for the Nullness checker">
     </target>
 
@@ -389,6 +389,14 @@ ${build.version} of the 'javac.jar' library."/>
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessUninitializedTest"/>
         </antcall>
+    </target>
+
+    <target name="nullness-extra-tests" depends="jar,build-tests"
+      description="Run extra tests for the Nullness checker">
+      <exec executable="make">
+	<env key="JAVAC" value="${basedir}/binary/javac"/>
+	<arg line="-C tests/nullness-extra/"/>
+      </exec>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
