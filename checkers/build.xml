@@ -391,6 +391,14 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="nullness-extra-tests" depends="jar,build-tests"
+      description="Run extra tests for the Nullness checker">
+      <exec executable="make">
+	<env key="JAVAC" value="${basedir}/binary/javac"/>
+	<arg line="-C tests/nullness-extra/"/>
+      </exec>
+    </target>
+
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
       description="Run skipuses tests for the Nullness checker">
         <antcall target="-run-tests">
