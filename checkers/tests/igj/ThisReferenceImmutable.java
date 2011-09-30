@@ -10,19 +10,19 @@ class ThisReferenceImmutableSuper {
 
 }
 
-
-@Immutable
 class ImmutableThisTest extends ThisReferenceImmutableSuper {
     public void testRO(@ReadOnly ImmutableThisTest this) {
         isRO(this);
         isMutable(this);   // should emit error
-        isImmutable(this);
+        // This is readonly, not immutable
+        // isImmutable(this);
     }
 
     public void testAssignsFields (@AssignsFields ImmutableThisTest this) {
         isRO(this);
         isMutable(this);   // should emit error
-        isImmutable(this);
+        // This is AssignsFields, not immutable
+        // isImmutable(this);
     }
 
     public void testImmutable(@Immutable ImmutableThisTest this) {
