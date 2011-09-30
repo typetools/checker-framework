@@ -10,7 +10,6 @@ class ThisReferenceMutableSuper {
 
 }
 
-@Mutable
 class MutableThisTest extends ThisReferenceMutableSuper {
     public void testRO(@ReadOnly MutableThisTest this) {
         isRO(this);
