@@ -1,0 +1,42 @@
+<project name="checkers" basedir="." default="framework">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+
+    <target name="nonnull">
+        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src" 
+            files="${basedir}/src/checkers/nonnull/NonnullAnnotatedTypeFactory.java"/>
+    </target>
+
+    <target name="check-nonnull">
+      <check-demo-common target="nonnull" step="0"/>
+      <check-demo-common target="nonnull" step="1"/>
+      <check-demo-common target="nonnull" step="2"/>
+      <echo message="nonnull demo works as expected" />
+      <revert-demo target="nonnull" step="2"/>
+      <revert-demo target="nonnull" step="1"/>
+      <revert-demo target="nonnull" step="0"/>
+    </target>
+
+    <target name="framework">
+	 <!-- This makes the filename in the error messages really long.  It would
+	   perhaps be better to cd to the directory and then run javac on a
+	   short filename. -->
+        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src" 
+             files="${basedir}/src/checkers/types/InternalAnnotationScanner.java"/>
+    </target>
+
+    <target name="check-framework">
+      <check-demo-common target="framework" step="0"/>
+      <check-demo-common target="framework" step="1"/>
+      <echo message="framework demo works as expected" />
+      <revert-demo target="framework" step="1"/>
+      <revert-demo target="framework" step="0"/>
+    </target>
+
+    <target name="check-demo" depends="check-nonnull,check-framework">
+      <echo message="checkers nullness demo works as expected"/>
+    </target>
+
+</project>
