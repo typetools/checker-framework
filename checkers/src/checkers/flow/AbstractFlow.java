@@ -495,8 +495,6 @@ implements Flow {
     // This is an exact copy of visitAssignment()
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        // System.err.println("in vCA: " + node);
-
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         // if (!(var instanceof IdentifierTree))
