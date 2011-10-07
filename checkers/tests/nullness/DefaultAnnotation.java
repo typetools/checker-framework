@@ -25,13 +25,13 @@ public class DefaultAnnotation {
         public void testDefault() {
             //:: error: (assignment.type.incompatible)
             String s = null;                                // error
-            List<String> lst = new List<String>();    // valid
+            List<String> lst = new List<String>();          // valid
             //:: error: (argument.type.incompatible)
             lst.add(null);                                  // error
             s = lst.get(0);                                 // valid
 
             List<@Nullable String> nullList
-                = new List<@Nullable String>();       // valid
+                = new List<@Nullable String>();             // valid
             nullList.add(null);                             // valid
             //:: error: (assignment.type.incompatible)
             s = nullList.get(0);                            // error
