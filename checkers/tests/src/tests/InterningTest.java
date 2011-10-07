@@ -16,5 +16,5 @@ public class InterningTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("interning"); }
+    public static Collection<Object[]> data() { return testFiles("interning", "all-systems"); }
 }

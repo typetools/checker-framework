@@ -13,5 +13,5 @@ public class SignatureTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("signature"); }
+    public static Collection<Object[]> data() { return testFiles("signature", "all-systems"); }
 }
