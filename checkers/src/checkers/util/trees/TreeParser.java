@@ -22,17 +22,17 @@ import com.sun.tools.javac.util.Names;
  *
  * Currently, it handles four tree types only:
  * <ul>
- *  <li>Identifier tree (e.g. {@code id}</li>
+ *  <li>Identifier tree (e.g. {@code id})</li>
  *  <li>Literal tree (e.g. 2, 3)</li>
- *  <li>Method invocation (e.g. {@code method(2, 3)}</li>
- *  <li>Member Select Tree (e.g. {@code Class.field}, {@code instance.method()}
- *  <li>Array access (e.g. {@code array[id]})</li>
+ *  <li>Method invocation tree (e.g. {@code method(2, 3)})</li>
+ *  <li>Member select tree (e.g. {@code Class.field}, {@code instance.method()})
+ *  <li>Array access tree (e.g. {@code array[id]})</li>
  * </ul>
  *
  * Notable limitation: Doesn't handle spaces, or non-method-argument
  * parenthesis.
  *
- *  It's implemented via a Recursive-Descend parser.
+ * It's implemented via a Recursive-Descend parser.
  */
 public class TreeParser {
     private static final String DELIMS = ".[](),";
