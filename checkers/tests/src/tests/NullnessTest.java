@@ -18,6 +18,6 @@ public class NullnessTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nullness"); }
+    public static Collection<Object[]> data() { return testFiles("nullness", "all-systems"); }
 
 }

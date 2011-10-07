@@ -13,5 +13,5 @@ public class FenumTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("fenum"); }
+    public static Collection<Object[]> data() { return testFiles("fenum", "all-systems"); }
 }

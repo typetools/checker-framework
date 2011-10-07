@@ -13,5 +13,5 @@ public class I18nTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("i18n"); }
+    public static Collection<Object[]> data() { return testFiles("i18n", "all-systems"); }
 }

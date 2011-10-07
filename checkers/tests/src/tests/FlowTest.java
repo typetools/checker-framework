@@ -15,5 +15,5 @@ public class FlowTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("flow"); }
+    public static Collection<Object[]> data() { return testFiles("flow", "all-systems"); }
 }

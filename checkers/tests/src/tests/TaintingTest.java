@@ -13,5 +13,5 @@ public class TaintingTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("tainting"); }
+    public static Collection<Object[]> data() { return testFiles("tainting", "all-systems"); }
 }

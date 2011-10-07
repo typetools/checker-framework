@@ -18,5 +18,5 @@ public class FrameworkTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("framework"); }
+    public static Collection<Object[]> data() { return testFiles("framework", "all-systems"); }
 }
