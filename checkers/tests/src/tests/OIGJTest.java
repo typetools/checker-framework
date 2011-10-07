@@ -16,5 +16,5 @@ public class OIGJTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("oigj"); }
+    public static Collection<Object[]> data() { return testFiles("oigj", "all-systems"); }
 }
