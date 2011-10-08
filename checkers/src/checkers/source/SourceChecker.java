@@ -98,6 +98,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** A regular expression for classes whose uses should be skipped. */
     private Pattern skipUsesPattern;
 
+    /** A regular expression for classes whose definitions should be skipped. */
+    private Pattern skipDefsPattern;
+
     /** The chosen lint options that have been enabled by programmer */
     private Set<String> activeLints;
 
@@ -169,6 +172,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             pattern = System.getProperty("checkers.skipUses");
         else if (System.getenv("skipUses") != null)
             pattern = System.getenv("skipUses");
+
+        // return a pattern of an illegal Java identifier character
+        // so that it won't match anything
+        if (pattern.equals(""))
+            pattern = "\\(";
+
+        return Pattern.compile(pattern);
+    }
+
+    private Pattern getSkipDefsPattern(Map<String, String> options) {
+        String pattern = "";
+
+        if (options.containsKey("skipDefs"))
+            pattern = options.get("skipDefs");
+        else if (System.getProperty("checkers.skipDefs") != null)
+            pattern = System.getProperty("checkers.skipDefs");
+        else if (System.getenv("skipDefs") != null)
+            pattern = System.getenv("skipDefs");
 
         // return a pattern of an illegal Java identifier character
         // so that it won't match anything
@@ -282,6 +303,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.env = processingEnv;
 
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
+        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
@@ -689,6 +711,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
         options.add("skipUses");
+        options.add("skipDefs");
         options.add("lint");
         options.add("nomsgtext");
         options.add("filenames");
@@ -760,7 +783,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Returns a regular expression pattern to specify Java classes that are not
-     * annotated, and thus whose warnings and should be surpressed.
+     * annotated, so warnings about uses of them should be supressed.
      *
      * It returns the pattern specified by the user, through the option
      * {@code checkers.skipUses}; otherwise it returns a pattern that can
@@ -770,6 +793,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     public Pattern getShouldSkipUses() {
         return this.skipUsesPattern;
+    }
+
+    /**
+     * Returns a regular expression pattern to specify Java classes whose
+     * definiton should not be checked.
+     *
+     * It returns the pattern specified by the user, through the option
+     * {@code checkers.skipDefs}; otherwise it returns a pattern that can
+     * match no class.
+     *
+     * @return Pattern of classes whose definition should not be checked
+     */
+    public Pattern getShouldSkipDefs() {
+        return this.skipDefsPattern;
     }
 
     /**

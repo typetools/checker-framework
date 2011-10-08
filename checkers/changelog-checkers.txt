@@ -1,3 +1,12 @@
+Version 1.2.2, 1 Oct 2011
+
+Be less restrictive about when to start type processing when errors
+already exist.
+Add -AskipDefs command-line option to not type-check some class
+definitions.
+Documentation improvements.
+
+----------------------------------------------------------------------
 Version 1.2.1, 20 Sep 2011
 
 Fix issues 109, 110, 111 and various other cleanups.
