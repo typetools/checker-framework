@@ -23,7 +23,7 @@ public class KeyFors {
     public void withCollection() {
         Map<String, String> map = new HashMap<String, String>();
         List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
-        
+
         @KeyFor("map") String key = keys.get(0);
         @NonNull String value = map.get(key);
         // TODO when using the local variable the access works
