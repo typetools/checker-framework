@@ -76,8 +76,8 @@ public class TypeHierarchy {
      */
     protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
         // System.out.printf("isSubtypeImpl(%s (%s, %s), %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
-        // If already checked this type (in case of recusive type bound)
-        // return true.  If not subtype, we wouldn't have gotten here again.
+        // If we already checked this type (in case of a recursive type bound)
+        // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
             return true;
         AnnotatedTypeMirror lhsBase = lhs;
