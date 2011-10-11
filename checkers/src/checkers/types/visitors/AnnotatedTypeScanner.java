@@ -56,7 +56,7 @@ import checkers.types.AnnotatedTypeMirror.*;
  */
 public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
-    // To Prevent infinite loop
+    // To prevent infinite loops
     protected Map<AnnotatedTypeMirror, R> visitedNodes =
         new IdentityHashMap<AnnotatedTypeMirror, R>();
 
