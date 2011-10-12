@@ -372,19 +372,22 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
 
-            if (type == null)
+            if (type == null) {
                 return super.scan(type, p);
+            }
 
-            if (type.getKind() == TypeKind.TYPEVAR
-                    && !type.isAnnotated())
+            if ( (type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD)
+                    && !type.isAnnotated()) {
                 return super.scan(type, p);
+            }
 
-            if (!type.isAnnotated())
+            if (!type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
-            else if (type.hasAnnotation(RAW))
+            } else if (type.hasAnnotation(RAW)) {
                 type.removeAnnotation(NONNULL);
-            else if (type.hasAnnotation(NONNULL))
+            } else if (type.hasAnnotation(NONNULL)) {
                 type.removeAnnotation(NULLABLE);
+            }
 
             assert type.isAnnotated() : type;
 
