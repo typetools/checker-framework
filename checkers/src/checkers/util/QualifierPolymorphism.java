@@ -135,8 +135,11 @@ public class QualifierPolymorphism {
         protected Void scan(AnnotatedTypeMirror type, Void p) {
             if (type != null && type.hasAnnotation(polyQual))
                 type.removeAnnotation(polyQual);
-            if (rootQual != null && type != null && !type.isAnnotated())
+            if (rootQual != null && type != null &&
+                    !type.isAnnotated() && !(type.getKind()==TypeKind.TYPEVAR || type.getKind()==TypeKind.WILDCARD)) {
+                // Do not add the root qualifier to type variables and wildcards
                 type.addAnnotation(rootQual);
+            }
             return super.scan(type, p);
         }
     }
