@@ -18,8 +18,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
 import checkers.nullness.quals.Nullable;
 import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
