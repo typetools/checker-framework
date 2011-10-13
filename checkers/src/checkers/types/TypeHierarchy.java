@@ -75,7 +75,7 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        // System.out.printf("isSubtypeImpl(%s (%s, %s), %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
+        // System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
         // If we already checked this type (in case of a recursive type bound)
         // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
@@ -111,15 +111,21 @@ public class TypeHierarchy {
         }
 
         AnnotatedTypeMirror rhsBase = rhs.typeFactory.atypes.asSuper(rhs, lhsBase);
+
         // FIXME: the following line should be removed, but erasure code is buggy
         // related to bug tests/framework/OverrideCrash
         if (rhsBase == null) rhsBase = rhs;
 
         // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n", lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
-        // Is this test correct in the case of type variables?
-        if (!qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations()))
-            return false;
+        {
+            Set<AnnotationMirror> lhsAnnos = AnnotatedTypes.getEffectiveAnnotations(lhsBase);
+            Set<AnnotationMirror> rhsAnnos = AnnotatedTypes.getEffectiveAnnotations(rhsBase);
+
+            if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
+                return false;
+            }
+        }
 
         if (lhs.getKind() == TypeKind.ARRAY && rhsBase.getKind() == TypeKind.ARRAY) {
             AnnotatedTypeMirror rhsComponent = ((AnnotatedArrayType)rhsBase).getComponentType();
