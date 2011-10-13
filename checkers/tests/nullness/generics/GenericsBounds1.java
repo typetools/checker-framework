@@ -19,9 +19,8 @@ public class GenericsBounds1<X extends @Nullable Object> {
         //:: error: (assignment.type.incompatible)
         g2 = null;
         g2.add(null);
-        
-        // The following assignment is unsound, but is currently allowed.
-        //TODO:: (assignment.type.incompatible)
+
+        //:: error: (assignment.type.incompatible)
         g2 = g1;
         g2.add(null);
     }
