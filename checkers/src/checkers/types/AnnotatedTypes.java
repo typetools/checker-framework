@@ -1118,4 +1118,19 @@ public class AnnotatedTypes {
         return found;
     }
 
+    /**
+     * Return the "effective annotations on a type, i.e. the annotations on
+     * the type itself, or on the upper/extends bound of a type variable/wildcard.
+     *
+     * @param type the type to use
+     * @return the effective annotations on the type
+     */
+    public static Set<AnnotationMirror> getEffectiveAnnotations(AnnotatedTypeMirror type) {
+        if (type.getKind() == TypeKind.TYPEVAR) {
+            return ((AnnotatedTypeVariable) type).getEffectiveUpperBoundAnnotations();
+        } else {
+            return type.getAnnotations();
+        }
+        // wildcards!
+    }
 }
