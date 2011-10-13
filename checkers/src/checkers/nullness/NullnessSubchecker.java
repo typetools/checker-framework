@@ -4,6 +4,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
 import checkers.source.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -27,4 +28,13 @@ public class NullnessSubchecker extends BaseTypeChecker {
     // TODO: This lint option should only be temporary, until all checks are implemented correctly.
     public static final boolean ADVANCEDCHECKS_DEFAULT = false;
 
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        if (useType.getAnnotations().size() > 1) {
+            return false;
+        }
+
+        return super.isValidUse(declarationType, useType);
+    }
 }
