@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -227,6 +228,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
+    }
+
+    @Override
+    public Void visitTypeParameter(TypeParameterTree node, Void p) {
+        validateTypeOf(node);
+        return super.visitTypeParameter(node, p);
     }
 
     // **********************************************************************
@@ -529,8 +536,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (!isSubtype)
-            isSubtype = checker.getQualifierHierarchy().isSubtype(exprType.getAnnotations(), castType.getAnnotations());
+        if (!isSubtype) {
+            isSubtype = checker.isSubtype(exprType, castType);
+        }
 
         // TODO: Test type arguments and array components types
 
@@ -675,26 +683,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             // TODO skip wildcards for now to prevent a crash
             if (typearg.getKind() == TypeKind.WILDCARD) continue;
 
-            if (typeVar.getUpperBound() != null)  {
-                // Framework does not enrich upper bounds with the root annotations
-                if (!(TypesUtils.isObject(typeVar.getUpperBound().getUnderlyingType())
-                        && !typeVar.getUpperBound().isAnnotated())) {
-                    if (typeargTrees == null || typeargTrees.isEmpty()) {
-                        // The type arguments were inferred and we mark the whole method.
-                        // The inference fails if we provide invalid argumens,
-                        // therefore issue an error for the arguments.
-                        // I hope this is less confusing for users.
-                        commonAssignmentCheck(typeVar.getUpperBound(), typearg,
-                                toptree,
-                                "argument.type.incompatible");
-                    } else {
-                        commonAssignmentCheck(typeVar.getUpperBound(), typearg,
-                                typeargTrees.get(typeargs.indexOf(typearg)),
-                                "generic.argument.invalid");
-                    }
+            if (typeVar.getEffectiveUpperBound() != null)  {
+                if (typeargTrees == null || typeargTrees.isEmpty()) {
+                    // The type arguments were inferred and we mark the whole method.
+                    // The inference fails if we provide invalid arguments,
+                    // therefore issue an error for the arguments.
+                    // I hope this is less confusing for users.
+                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
+                            toptree,
+                            "argument.type.incompatible");
+                } else {
+                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
+                            typeargTrees.get(typeargs.indexOf(typearg)),
+                            "generic.argument.invalid");
                 }
             }
 
+            // Should we compare lower bounds instead of the following?
             if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
@@ -729,7 +734,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             MethodInvocationTree node) {
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
-        treeReceiver.addAnnotations(atypeFactory.getReceiver(node).getAnnotations());
+        AnnotatedTypeMirror rcv = atypeFactory.getReceiver(node);
+        treeReceiver.addAnnotations(AnnotatedTypes.getEffectiveAnnotations(rcv));
 
         if (!checker.isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
@@ -975,6 +981,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         case UNBOUNDED_WILDCARD:
         case EXTENDS_WILDCARD:
         case SUPER_WILDCARD:
+        case ANNOTATED_TYPE:
             type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
             break;
         default:
@@ -984,7 +991,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     // This is a test to ensure that all types are valid
-    private AnnotatedTypeScanner<Void, Tree> typeValidator = createTypeValidator();
+    private TypeValidator typeValidator = createTypeValidator();
 
     protected TypeValidator createTypeValidator() {
         return new TypeValidator();
@@ -1104,6 +1111,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             case UNBOUNDED_WILDCARD:
             case EXTENDS_WILDCARD:
             case SUPER_WILDCARD:
+            case TYPE_PARAMETER:
                 // Nothing to do.
                 // System.out.println("Found a: " + (tree instanceof ParameterizedTypeTree));
                 break;
@@ -1139,6 +1147,28 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             checkTypeArguments(tree, typevars, type.getTypeArguments(), tree.getTypeArguments());
 
             return null;
+        }
+
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
+            Set<AnnotationMirror> onVar = type.getAnnotationsOnTypeVar();
+            Set<AnnotationMirror> onLower = type.getLowerBound().getAnnotations();
+            Set<AnnotationMirror> onUpper = type.getUpperBound().getAnnotations();
+            // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s):%n" +
+            //         "   onLower: %s; onVar: %s; onUpper: %s%n",
+            //         type, tree, onLower, onVar, onUpper);
+
+            if (!onVar.isEmpty()) {
+                if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                    this.reportError(type, tree);
+                }
+                if (!onLower.isEmpty() &&
+                        !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
+                    this.reportError(type, tree);
+                }
+            }
+
+            return super.visitTypeVariable(type, tree);
         }
     }
 
