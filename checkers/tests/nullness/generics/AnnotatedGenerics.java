@@ -36,23 +36,23 @@ class AnnotatedGenerics {
 
     public static final class MyComprator<T extends MyComparable<T>> {
         public void compare(T a1, T a2) {
-          a1.compareTo(a2);
+            a1.compareTo(a2);
         }
-      }
+    }
 
-      class MyComparable<T> {
+    class MyComparable<T> {
         public int compareTo(@NonNull T a1) { return 0; }
-      }
+    }
 
-      <T> T test(java.util.List<? super Iterable<?>> l) {
-          test(new java.util.ArrayList<Object>());
-          throw new Error();
-      }
+    <T> T test(java.util.List<? super Iterable<?>> l) {
+        test(new java.util.ArrayList<Object>());
+        throw new Error();
+    }
 
-      public interface MyIterator<E extends @Nullable Object> {
-          boolean hasNext();
-          E next();
-          void remove();
-      }
+    public interface MyIterator<E extends @Nullable Object> {
+        boolean hasNext();
+        E next();
+        void remove();
+    }
 
 }
