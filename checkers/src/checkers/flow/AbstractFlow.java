@@ -227,7 +227,7 @@ implements Flow {
      *         type variable or wildcard, the type has the annotation on its extends bound
      */
     protected boolean hasAnnotation(AnnotatedTypeMirror type, AnnotationMirror annotation) {
-        return AnnotatedTypes.getEffectiveAnnotations(type).contains(annotation);
+        return type.getEffectiveAnnotations().contains(annotation);
     }
 
     /**
