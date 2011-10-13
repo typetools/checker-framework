@@ -102,8 +102,8 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = this.flowState.vars.indexOf(rElt);
 
-        Set<AnnotationMirror> typeAnnos = AnnotatedTypes.getEffectiveAnnotations(type);
-        Set<AnnotationMirror> eltTypeAnnos = AnnotatedTypes.getEffectiveAnnotations(eltType);
+        Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
+        Set<AnnotationMirror> eltTypeAnnos = eltType.getEffectiveAnnotations();
 
         if (eltType.isAnnotated()
                 && type.isAnnotated()

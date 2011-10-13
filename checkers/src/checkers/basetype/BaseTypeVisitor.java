@@ -735,7 +735,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
         AnnotatedTypeMirror rcv = atypeFactory.getReceiver(node);
-        treeReceiver.addAnnotations(AnnotatedTypes.getEffectiveAnnotations(rcv));
+        treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
         if (!checker.isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
