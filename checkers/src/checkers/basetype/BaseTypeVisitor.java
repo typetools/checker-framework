@@ -699,9 +699,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 }
             }
 
-            // Should we compare lower bounds instead of the following?
-            if (!typeVar.getAnnotationsOnTypeVar().isEmpty()) {
-                if (!typearg.getAnnotations().equals(typeVar.getAnnotationsOnTypeVar())) {
+            // Should we compare lower bounds instead of the annotations on the type variables?
+            if (!typeVar.getAnnotations().isEmpty()) {
+                if (!typearg.getAnnotations().equals(typeVar.getAnnotations())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
                         // The type arguments were inferred and we mark the whole method.
                         checker.report(Result.failure("argument.type.incompatible",
@@ -1151,7 +1151,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
-            Set<AnnotationMirror> onVar = type.getAnnotationsOnTypeVar();
+            Set<AnnotationMirror> onVar = type.getAnnotations();
             Set<AnnotationMirror> onLower = type.getLowerBound().getAnnotations();
             Set<AnnotationMirror> onUpper = type.getUpperBound().getAnnotations();
             // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s):%n" +
