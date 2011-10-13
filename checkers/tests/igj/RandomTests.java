@@ -54,6 +54,8 @@ public class RandomTests {
     public static <T> Iterator<T> filter(Iterator<?> unfiltered, Class<T> type)
     {
       List<Object> predicate = null;
+      // The cast ignores the @I annotation on the filter return type
+      //:: warning: (cast.unsafe)
       return (Iterator<T>) filter(unfiltered, predicate);
     }
 
