@@ -5,7 +5,11 @@ class Wellformed {
     @NonNull @Nullable Object f = null;
 
     //:: error: (type.invalid)
-    class Gen1<T extends @NonNull @Nullable Object> {}
+    class Gen1a<T extends @NonNull @Nullable Object> {}
+    class Gen1b {
+        //:: error: (type.invalid)
+        <T extends @NonNull @Nullable Object> void m(T p){}
+    }
 
     class Gen2a<@Nullable T> {}
     //:: error: (type.invalid)
