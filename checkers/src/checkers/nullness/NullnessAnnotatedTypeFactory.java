@@ -385,8 +385,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 type.addAnnotation(NULLABLE);
             } else if (type.hasAnnotation(RAW)) {
                 type.removeAnnotation(NONNULL);
-            } else if (type.hasAnnotation(NONNULL)) {
-                type.removeAnnotation(NULLABLE);
             }
 
             assert type.isAnnotated() : type;
@@ -436,7 +434,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             // case 13: type of Void is nullable
             if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
                     // Hack: Special case Void.class
-                    && (type.getElement() == null || !type.getElement().getKind().isClass())) {
+                    && (type.getElement() == null || !type.getElement().getKind().isClass())
+                    && !type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
             }
 
