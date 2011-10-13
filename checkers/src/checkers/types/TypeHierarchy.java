@@ -119,8 +119,8 @@ public class TypeHierarchy {
         // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n", lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
         {
-            Set<AnnotationMirror> lhsAnnos = AnnotatedTypes.getEffectiveAnnotations(lhsBase);
-            Set<AnnotationMirror> rhsAnnos = AnnotatedTypes.getEffectiveAnnotations(rhsBase);
+            Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
+            Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
