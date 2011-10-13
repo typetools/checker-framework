@@ -96,7 +96,7 @@ public class TypeHierarchy {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
-                Set<AnnotationMirror> lAnnos = lhsb_atv.getLowerBoundAnnotations();
+                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBoundAnnotations();
                 if (!lAnnos.isEmpty())
                     return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
                 return qualifierHierarchy.getBottomQualifier() == null ?
@@ -145,8 +145,8 @@ public class TypeHierarchy {
                 rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
             }
             // compare lower bound of lhs to upper bound of rhs
-            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getLowerBoundAnnotations();
-            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getUpperBoundAnnotations();
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBoundAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBoundAnnotations();
             if (!las.isEmpty()) {
                 return qualifierHierarchy.isSubtype(ras, las);
             }
