@@ -143,7 +143,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean equals(Object o) {
         if (!(o instanceof AnnotatedTypeMirror))
             return false;
-        AnnotatedTypeMirror t = (AnnotatedTypeMirror)o;
+        AnnotatedTypeMirror t = (AnnotatedTypeMirror) o;
         if (this.env.getTypeUtils().isSameType(this.actualType, t.actualType)
                 && AnnotationUtils.areSame(getAnnotations(), t.getAnnotations()))
             return true;
@@ -727,30 +727,24 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-
-        /* TODO: why is this method not necessary?
-         * When executed on the test suite, the only mismatches come from wildcards, which is expected.
-         * I think it would help code understanding if we added a comment here where
-         * the type arguments are compared.
-         * The super method only works on the underlying TypeMirrors, so one would expect that
-         * annotations on the type arguments are ignored.
+        /* Using this equals method resulted in an infinite recursion
+         * with type variables. TODO: Keep track of visited type variables. 
         @Override
         public boolean equals(Object o) {
             boolean res = super.equals(o);
 
-            if (res) {
-               if (o instanceof AnnotatedDeclaredType) {
-                   AnnotatedDeclaredType dt = (AnnotatedDeclaredType) o;
+            if (res && (o instanceof AnnotatedDeclaredType)) {
+                AnnotatedDeclaredType dt = (AnnotatedDeclaredType) o;
 
-                   List<AnnotatedTypeMirror> mytas = this.getTypeArguments();
-                   List<AnnotatedTypeMirror> othertas = dt.getTypeArguments();
-                   for (int i = 0; i < mytas.size(); ++i) {
-                       if (!mytas.get(i).equals(othertas.get(i))) {
-                           System.out.println("in AnnotatedDeclaredType; this: " + this + " and " + o);
-                       }
-                   }
-
-               }
+                List<AnnotatedTypeMirror> mytas = this.getTypeArguments();
+                List<AnnotatedTypeMirror> othertas = dt.getTypeArguments();
+                for (int i = 0; i < mytas.size(); ++i) {
+                    if (!mytas.get(i).equals(othertas.get(i))) {
+                        System.out.println("in AnnotatedDeclaredType; this: " + this + " and " + o);
+                        res = false;
+                        break;
+                    }
+                }
             }
             return res;
         }
@@ -1344,6 +1338,20 @@ public abstract class AnnotatedTypeMirror {
             return this.getUpperBound().getErased();
         }
 
+        /* TODO: If we use the stronger equals method below, we also
+         * need this "canonical" version of the type variable.
+         * This type variable will be used for hashmaps that keep track
+         * of type arguments.
+        private AnnotatedTypeVariable canonical;
+        
+        public AnnotatedTypeVariable getCanonical() {
+            if (canonical==null) {
+                canonical = new AnnotatedTypeVariable(this.actualType, env, typeFactory);
+            }
+            return canonical;
+        }
+         */
+
         private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
         V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key) {
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
@@ -1420,18 +1428,18 @@ public abstract class AnnotatedTypeMirror {
             return this.getUnderlyingType().hashCode();
         }
 
+        /* TODO: provide strict equality comparison.
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof AnnotatedTypeVariable))
+            boolean isSame = super.equals(o);
+            if (!isSame || !(o instanceof AnnotatedTypeVariable))
                 return false;
             AnnotatedTypeVariable other = (AnnotatedTypeVariable) o;
-            boolean isSame =
-                // isSameType sometimes returns false for identical types.
-                // Callee must deal with this.
-                env.getTypeUtils().isSameType(getUnderlyingType(), other.getUnderlyingType())
-                && AnnotationUtils.areSame(this.annotations, other.annotations);
+            isSame = this.getUpperBound().equals(other.getUpperBound()) &&
+                    this.getLowerBound().equals(other.getLowerBound());
             return isSame;
         }
+        */
     }
 
     /**
