@@ -4,13 +4,15 @@ import checkers.quals.*;
 class WildcardSuper {
 
     void testWithSuper(Cell<? super @NonNull String> cell) {
-        // this is value because the default upper bound is NonNull
+        // This is valid because the default upper bound is NonNull
         cell.get().toString();
     }
 
     void testWithContradiction(Cell<? super @Nullable String> cell) {
-        // this actually valid, because it's a contradition!
-        // we are free to do anything
+        // This is actually valid, because it's a contradiction, b/c
+        // the implicit upper bound is NonNull.
+        // We are free to do anything, as the method is not callable.
+        // TODO: test whether all calls of method fail.
         cell.get().toString();
     }
 
