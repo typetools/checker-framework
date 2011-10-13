@@ -227,6 +227,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns the "effective" annotations on this type, i.e. the annotations on
+     * the type itself, or on the upper/extends bound of a type variable/wildcard.
+     *
+     * @return  a set of the annotations on this
+     */
+    public Set<AnnotationMirror> getEffectiveAnnotations() {
+        return getAnnotations();
+    }
+
+    /**
      * Returns the actual annotation mirror used to annotate this type,
      * whose name equals the passed annotationName if one exists, null otherwise.
      *
@@ -1295,14 +1305,15 @@ public abstract class AnnotatedTypeMirror {
             if (result.isEmpty()) {
                 AnnotatedTypeMirror ub = getUpperBound();
                 if (ub != null) {
-                    if (ub.getKind() == TypeKind.TYPEVAR) {
-                        result = ((AnnotatedTypeVariable)ub).getEffectiveUpperBoundAnnotations();
-                    } else {
-                        result = ub.getAnnotations();
-                    }
+                    result = ub.getEffectiveAnnotations();
                 }
             }
             return Collections.unmodifiableSet(result);
+        }
+
+        @Override
+        public Set<AnnotationMirror> getEffectiveAnnotations() {
+            return getEffectiveUpperBoundAnnotations();
         }
 
         /**
@@ -1636,6 +1647,26 @@ public abstract class AnnotatedTypeMirror {
             return this.extendsBound;
         }
 
+        /**
+         * @return the effective upper bound annotations:  the annotations
+         * on this, or if none, those on the upper bound.
+        */
+        public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
+            Set<AnnotationMirror> result = annotations;
+            if (result.isEmpty()) {
+                AnnotatedTypeMirror ub = getExtendsBound();
+                if (ub != null) {
+                    result = ub.getEffectiveAnnotations();
+                }
+            }
+            return Collections.unmodifiableSet(result);
+        }
+
+        @Override
+        public Set<AnnotationMirror> getEffectiveAnnotations() {
+            return getEffectiveExtendsBoundAnnotations();
+        }
+
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitWildcard(this, p);
@@ -1710,23 +1741,6 @@ public abstract class AnnotatedTypeMirror {
                 }
             }
             return sb.toString();
-        }
-
-        @Override
-        public boolean isAnnotated() {
-            return (super.isAnnotated()
-                    || (getExtendsBound() != null && getExtendsBound().isAnnotated()));
-        }
-
-        public Set<AnnotationMirror> getAnnotationsOnWildcard() {
-            return super.getAnnotations();
-        }
-        
-        @Override
-        public Set<AnnotationMirror> getAnnotations() {
-            if (!super.isAnnotated() && getExtendsBound() != null)
-                return getExtendsBound().getAnnotations();
-            return super.getAnnotations();
         }
     }
 
