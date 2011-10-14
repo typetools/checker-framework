@@ -9,7 +9,7 @@ public class Units {
     // also double, float, etc. are easily handled and we don't need
     // to end a huge number of methods to UnitsTools.
     @m double dm = 9.34d * UnitsTools.m;
-  
+
     // With a static import:
     @s float time = 5.32f * s;
 }
