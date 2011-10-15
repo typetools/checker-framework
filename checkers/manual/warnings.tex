@@ -398,6 +398,16 @@ If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
 you do not need the extra quoting.
 
 
+There is no mechanism for the compiler to read import statements written in
+comments, as it does for annotations in comments (see
+Section~/ref{annotations-in-comments}).
+% The annotations in comments feature is fragile and its implementation is
+% complex.  It can already pick up unintended comments, and it cannot be
+% turned off.  Using implicit import statements seems less risky and
+% equally effective.  If you want to implement import statements in
+% comments, we would consider accepting such a patch.
+
+
 \subsection{Migrating away from annotations in comments\label{uncommenting-annotations}}
 
 Suppose that your codebase currently uses annotations in comments, but you
