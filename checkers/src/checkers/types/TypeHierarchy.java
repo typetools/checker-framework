@@ -97,11 +97,7 @@ public class TypeHierarchy {
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
                 Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBoundAnnotations();
-                if (!lAnnos.isEmpty())
-                    return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
-                return qualifierHierarchy.getBottomQualifier() == null ?
-                    rhs.getAnnotations().isEmpty() :
-                    rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+                return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
             }
         }
 
@@ -227,6 +223,9 @@ public class TypeHierarchy {
             return isSubtype(rhs, ((AnnotatedTypeVariable)lhs).getUpperBound());
         }
 
+        // Do not ask for the effective annotations here, as that would confuse
+        // annotations on the type variable with upper bound annotations.
+        // See nullness testcase GenericsBounds1.
         Set<AnnotationMirror> las = lhs.getAnnotations();
         Set<AnnotationMirror> ras = rhs.getAnnotations();
 
