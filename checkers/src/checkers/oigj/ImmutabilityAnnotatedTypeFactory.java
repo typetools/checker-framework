@@ -222,7 +222,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
             // In a declaration the upperbound is ReadOnly, while
             // the upper bound in a use is Mutable
-            if (type.getUpperBound() != null
+            if (type.getUpperBoundField() != null
                     && !hasImmutabilityAnnotation(type.getUpperBound())) {
                 if (p.isClass() || p.isInterface()
                         || p == ElementKind.CONSTRUCTOR
