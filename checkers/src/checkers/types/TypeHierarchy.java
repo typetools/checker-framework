@@ -8,7 +8,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -182,7 +185,19 @@ public class TypeHierarchy {
         if (rhsTypeArgs.isEmpty() || lhsTypeArgs.isEmpty())
             return true;
 
-        assert lhsTypeArgs.size() == rhsTypeArgs.size();
+        if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
+            // System.out.println("Mismatch between " + lhsTypeArgs + " and " + rhsTypeArgs
+            //         + " in types " + lhs + " and " + rhs);
+            // This happened in javari/RandomTests, where we have:
+            //         List<String> l = (List<String>) new HashMap<String, String>();
+            // Shouldn't rhs and lhs be first brought to the same base type, before comparing the
+            // type arguments?
+            // When compiling that line with javac, one gets an unchecked
+            // warning.
+            // TODO
+            return true;
+        }
+
         for (int i = 0; i < lhsTypeArgs.size(); ++i) {
             if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
                 return false;
