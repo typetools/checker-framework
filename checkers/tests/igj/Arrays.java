@@ -4,7 +4,11 @@ public class Arrays {
 
     public void testMutableArrays() {
         String[] s = new String[3];
-        String @Immutable [] m = s;
+        // mutable is not a subtype of immutable
+        //:: error: (assignment.type.incompatible)
+        String @Immutable [] im = s;
+        // mutable is a subtype of readonly
+        String @ReadOnly [] ro = s;
     }
 
     public void testMutate() {
@@ -12,9 +16,11 @@ public class Arrays {
         m[3] = "m";
 
         String @ReadOnly [] ro = (String @ReadOnly [])null;
-        ro[0] = "m";    // error
+        //:: error: (assignability.invalid)
+        ro[0] = "m";
 
         String @Immutable [] im = (String @Immutable [] )null;
-        im[3] = "n";    // error
+        //:: error: (assignability.invalid)
+        im[3] = "n";
     }
 }
