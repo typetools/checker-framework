@@ -15,5 +15,5 @@ public class LubGlbTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("lubglb", "all-systems"); }
+    public static Collection<Object[]> data() { return testFiles("lubglb"); }
 }
