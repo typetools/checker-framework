@@ -634,7 +634,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
             AnnotatedTypeMirror classType = atypeFactory.fromElement(classElt);
             assert classType != null;
             for (AnnotationMirror anno : classType.getAnnotations()) {
-                if (anno.equals(INTERNED)) {
+                if (INTERNED.equals(anno)) {
                     return true;
                 }
             }
