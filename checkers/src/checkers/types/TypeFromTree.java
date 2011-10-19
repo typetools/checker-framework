@@ -85,6 +85,7 @@ abstract class TypeFromTree extends
         if (target == null)
             return true;
         for (ElementType et : target.value()) {
+            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
             if (et == ElementType.TYPE_USE)
                 return true;
         }
@@ -437,10 +438,10 @@ abstract class TypeFromTree extends
             result.setElement(elt);
 
             // Annotate the parameter types.
-            List<AnnotatedTypeMirror> paramTypes
-                = new LinkedList<AnnotatedTypeMirror>();
-            for (Tree t : node.getParameters())
+            List<AnnotatedTypeMirror> paramTypes = new LinkedList<AnnotatedTypeMirror>();
+            for (Tree t : node.getParameters()) {
                 paramTypes.add(visit(t, f));
+            }
             result.setParameterTypes(paramTypes);
 
             // Annotate the return type.
@@ -461,10 +462,10 @@ abstract class TypeFromTree extends
             List<AnnotationMirror> receiverAnnos =
                 InternalUtils.annotationsFromTypeAnnotationTrees(node.getReceiverAnnotations());
 
-            if (ElementUtils.isStatic(elt))
+            if (ElementUtils.isStatic(elt)) {
                 // TODO maybe it should be TypeKind.NONE
                 result.setReceiverType(null);
-            else {
+            } else {
                 AnnotatedDeclaredType enclosing;
                 {
                     Element enclElt = ElementUtils.enclosingClass(elt);
@@ -492,8 +493,9 @@ abstract class TypeFromTree extends
             // Annotate throws types.
             List<AnnotatedTypeMirror> throwsTypes
                 = new LinkedList<AnnotatedTypeMirror>();
-            for (Tree t : node.getThrows())
+            for (Tree t : node.getThrows()) {
                 throwsTypes.add(f.fromTypeTree(t));
+            }
             result.setThrownTypes(throwsTypes);
 
             return result;
@@ -628,7 +630,7 @@ abstract class TypeFromTree extends
                 } else {
                     visitedBounds.put(t, f.type(t));
                     bound = visit(t, f);
-                    visitedBounds.put(t, bound);
+                    visitedBounds.remove(t);
                 }
                 bounds.add(bound);
             }
