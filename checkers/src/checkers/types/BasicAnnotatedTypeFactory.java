@@ -20,6 +20,7 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
@@ -76,14 +77,23 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.poly = new QualifierPolymorphism(checker, this);
         Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
         this.flow = useFlow ? createFlow(checker, root, flowQuals) : null;
+
         this.defaults = new QualifierDefaults(this, this.annotations);
+        boolean foundDefault = false;
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.setAbsoluteDefaults(this.annotations.fromClass(qual),
                         Collections.singleton(DefaultLocation.ALL));
+                foundDefault = true;
                 break;
             }
         }
+
+        if (!foundDefault) {
+            defaults.setAbsoluteDefaults(this.annotations.fromClass(Unqualified.class),
+                    Collections.singleton(DefaultLocation.ALL));
+        }
+
         // This also gets called by subclasses.  Is that a problem?
         postInit();
     }
@@ -149,10 +159,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
         if (type.getKind() == TypeKind.DECLARED)
-            for (AnnotatedTypeMirror supertype : supertypes)
+            for (AnnotatedTypeMirror supertype : supertypes) {
                 // FIXME: Recursive initialization for defaults fields
-                if (defaults != null)
+                if (defaults != null) {
                     defaults.annotate(((DeclaredType)supertype.getUnderlyingType()).asElement(), supertype);
+                }
+            }
     }
 
     // Indicate whether flow has performed the analysis or not
