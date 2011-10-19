@@ -70,9 +70,12 @@ public abstract class QualifierHierarchy {
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
     // this case, requires subtyping with respect to one qualifier only.
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        Collection<AnnotationMirror> rhsAnnos = wrapCollection(rhs);
-        Collection<AnnotationMirror> lhsAnnos = wrapCollection(lhs);
+        Collection<AnnotationMirror> rhsAnnos = rhs;
+        Collection<AnnotationMirror> lhsAnnos = lhs;
 
+        if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
+            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+        }
         for (AnnotationMirror lhsAnno : lhsAnnos) {
             for (AnnotationMirror rhsAnno : rhsAnnos) {
                 if (isSubtype(rhsAnno, lhsAnno)) {
@@ -121,8 +124,8 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     leastUpperBound(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        Collection<AnnotationMirror> as1 = wrapCollection(annos1);
-        Collection<AnnotationMirror> as2 = wrapCollection(annos2);
+        Collection<AnnotationMirror> as1 = annos1;
+        Collection<AnnotationMirror> as2 = annos2;
 
         if (as1.size() == 1 && as2.size() == 1) {
             AnnotationMirror a1 = as1.iterator().next();
@@ -130,7 +133,6 @@ public abstract class QualifierHierarchy {
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
-        //
         // Let's hope that the difference is simply two elements
         Set<AnnotationMirror> difference = difference(as1, as2);
         Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
@@ -145,72 +147,6 @@ public abstract class QualifierHierarchy {
         return lub;
     }
 
-    // **********************************************************************
-    // Helper methods to extract annotations
-    // **********************************************************************
-
-    /**
-     * Returns a subset of the input that contains any qualifiers in this
-     * hierarchy
-     *
-     * <p>
-     *
-     * Annotated types only contain the supported qualifiers by the hierarchy
-     * currently.  There is no need to call this method.
-     *
-     * @return  the qualifiers in annos within this hierarchy
-     */
-    @Deprecated
-    public List<AnnotationMirror> validQualifiers(Collection<AnnotationMirror> annos) {
-        List<AnnotationMirror> results = new ArrayList<AnnotationMirror>();
-        Set<Name> typeQualifiers = getTypeQualifiers();
-        for (AnnotationMirror anno : annos) {
-            if (typeQualifiers.contains(AnnotationUtils.annotationName(anno)))
-                results.add(anno);
-        }
-        return results;
-    }
-
-    /**
-     * Finds the first type qualifiers in this hierarchy in the given list of
-     * qualifiers.
-     *
-     * <p>
-     *
-     * Annotated types only contain the supported qualifiers by the hierarchy
-     * currently.  There is no need to call this method.
-     *
-     * @return  the qualifiers in annos in this hierarchy
-     */
-    @Deprecated
-    public AnnotationMirror validQualifier(Collection<AnnotationMirror> annos) {
-        List<AnnotationMirror> validQualifiers = validQualifiers(annos);
-        return validQualifiers.isEmpty() ? null : validQualifiers.get(0);
-    }
-
-    // **********************************************************************
-    // Helper methods to extract annotations
-    // **********************************************************************
-
-    /**
-     * Returns a non-null, non-empty collection of annotations.
-     * If the argument is non-empty, returns the argument.
-     * Otherwise, returns a collection containing only {@code null}, because
-     * a null value of type AnnotationMirror is treated as an unqualified type.
-     *
-     * @return annos if not empty, otherwise a singleton whose element is {@code null}
-     */
-    protected Collection<AnnotationMirror> wrapCollection(Collection<AnnotationMirror> annos) {
-        if (annos.size() == 0) {
-            // The compiler message checker determines Collection<@Bottom AnnotationMirror> here.
-            // This is incompatible to the return type.
-            // Ignore the error. TODO: is there a general way around this?
-            @SuppressWarnings("compilermessages")
-            Collection<AnnotationMirror> ret = Collections.singleton(null);
-            return ret;
-        }
-        return annos;
-    }
 
     /**
      * @return the intersection set of as1 and as2

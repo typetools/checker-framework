@@ -7,6 +7,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;
 
@@ -36,20 +37,27 @@ abstract class TypeFromTree extends
         // Annotate the inner most array
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         for (AnnotationMirror anno : annotations) {
-            if (isTypeAnnotation(anno))
+            if (isTypeAnnotation(anno)) {
                 innerType.addAnnotation(anno);
-            else
+                if (innerType.getKind() == TypeKind.TYPEVAR) {
+                    AnnotatedTypeVariable atv = (AnnotatedTypeVariable) innerType;
+                    atv.getUpperBound().addAnnotation(anno);
+                    // TODO: Wildcards?
+                }
+            } else {
                 type.addAnnotation(anno);
+            }
         }
     }
 
-    static void clearAnnotationsFromElt(AnnotatedTypeMirror type) {
+    private static void clearAnnotationsFromElt(AnnotatedTypeMirror type) {
         // Annotate the inner most array
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         // for non-type annotations
         type.clearAnnotations();
         // for type annotations
         innerType.clearAnnotations();
+
         if (innerType.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeMirror.AnnotatedTypeVariable typevar = (AnnotatedTypeMirror.AnnotatedTypeVariable) innerType;
             typevar.getUpperBound().clearAnnotations();
@@ -70,7 +78,6 @@ abstract class TypeFromTree extends
         boolean result = isTypeAnnotationImpl(elem);
         isTypeCache.put(elem, result);
         return result;
-
     }
 
     private static boolean isTypeAnnotationImpl(TypeElement type) {
@@ -78,6 +85,7 @@ abstract class TypeFromTree extends
         if (target == null)
             return true;
         for (ElementType et : target.value()) {
+            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
             if (et == ElementType.TYPE_USE)
                 return true;
         }
@@ -272,6 +280,7 @@ abstract class TypeFromTree extends
             }
             return result;
         }
+
         private void annotateArrayAsArray(AnnotatedArrayType result, NewArrayTree node, AnnotatedTypeFactory f) {
             // Copy annotations from the type.
             AnnotatedTypeMirror treeElem = f.fromTypeTree(node.getType());
@@ -373,7 +382,7 @@ abstract class TypeFromTree extends
             // for e.g. "int[].class"
             return f.fromTypeTree(node);
         }
-        
+
         @Override
         public AnnotatedTypeMirror visitParameterizedType(ParameterizedTypeTree node, AnnotatedTypeFactory f) {
             return f.fromTypeTree(node);
@@ -429,27 +438,34 @@ abstract class TypeFromTree extends
             result.setElement(elt);
 
             // Annotate the parameter types.
-            List<AnnotatedTypeMirror> paramTypes
-                = new LinkedList<AnnotatedTypeMirror>();
-            for (Tree t : node.getParameters())
+            List<AnnotatedTypeMirror> paramTypes = new LinkedList<AnnotatedTypeMirror>();
+            for (Tree t : node.getParameters()) {
                 paramTypes.add(visit(t, f));
+            }
             result.setParameterTypes(paramTypes);
 
             // Annotate the return type.
-            if (node.getReturnType() == null)
+            if (node.getReturnType() == null) {
                 result.setReturnType(f.toAnnotatedType(f.types.getNoType(TypeKind.VOID)));
-            else
+            } else {
                 result.setReturnType(f.fromTypeTree(node.getReturnType()));
+            }
+            com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getReturnType();
+            if (ntype!=null &&
+                    (ntype.type.getKind() == TypeKind.TYPEVAR)
+                    && (! elt.getAnnotationMirrors().isEmpty())) {
+                clearAnnotationsFromElt(result.getReturnType());
+            }
             addAnnotationsToElt(result.getReturnType(), elt.getAnnotationMirrors());
 
             // Annotate the receiver.
             List<AnnotationMirror> receiverAnnos =
                 InternalUtils.annotationsFromTypeAnnotationTrees(node.getReceiverAnnotations());
 
-            if (ElementUtils.isStatic(elt))
+            if (ElementUtils.isStatic(elt)) {
                 // TODO maybe it should be TypeKind.NONE
                 result.setReceiverType(null);
-            else {
+            } else {
                 AnnotatedDeclaredType enclosing;
                 {
                     Element enclElt = ElementUtils.enclosingClass(elt);
@@ -477,8 +493,9 @@ abstract class TypeFromTree extends
             // Annotate throws types.
             List<AnnotatedTypeMirror> throwsTypes
                 = new LinkedList<AnnotatedTypeMirror>();
-            for (Tree t : node.getThrows())
+            for (Tree t : node.getThrows()) {
                 throwsTypes.add(f.fromTypeTree(t));
+            }
             result.setThrownTypes(throwsTypes);
 
             return result;
@@ -552,7 +569,14 @@ abstract class TypeFromTree extends
             if (type == null) // e.g., for receiver type
                 type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE));
             assert AnnotatedTypeFactory.validAnnotatedType(type);
-            type.addAnnotations(InternalUtils.annotationsFromTree(node));
+            List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
+            type.addAnnotations(annos);
+
+            if (type.getKind() == TypeKind.TYPEVAR &&
+                    !((AnnotatedTypeVariable)type).getUpperBound().isAnnotated()) {
+                ((AnnotatedTypeVariable)type).getUpperBound().addAnnotations(annos);
+            }
+            // TODO: wildcards
             return type;
         }
 
@@ -572,8 +596,9 @@ abstract class TypeFromTree extends
                 ParameterizedTypeTree node, AnnotatedTypeFactory f) {
 
             List<AnnotatedTypeMirror> args = new LinkedList<AnnotatedTypeMirror>();
-            for (Tree t : node.getTypeArguments())
+            for (Tree t : node.getTypeArguments()) {
                 args.add(visit(t, f));
+            }
 
             AnnotatedTypeMirror result = f.type(node); // use creator?
             AnnotatedTypeMirror atype = visit(node.getType(), f);
@@ -600,18 +625,19 @@ abstract class TypeFromTree extends
             List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
             for (Tree t : node.getBounds()) {
                 AnnotatedTypeMirror bound;
-                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory)
+                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory) {
                     bound = visitedBounds.get(t);
-                else {
+                } else {
                     visitedBounds.put(t, f.type(t));
                     bound = visit(t, f);
-                    visitedBounds.put(t, bound);
+                    visitedBounds.remove(t);
                 }
                 bounds.add(bound);
             }
 
-            AnnotatedTypeVariable result = (AnnotatedTypeVariable)f.type(node);
+            AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
+
             if (f.canHaveAnnotatedTypeParameters())
                 result.addAnnotations(annotations);
             result.getUpperBound().addAnnotations(annotations);

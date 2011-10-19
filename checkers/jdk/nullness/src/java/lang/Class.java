@@ -3,14 +3,13 @@ package java.lang;
 import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
-
-public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
+public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
   public String toString() { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1, boolean a2, @Nullable ClassLoader a3) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-  public T newInstance() throws InstantiationException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
+  public @NonNull T newInstance() throws InstantiationException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public boolean isAnnotation() { throw new RuntimeException("skeleton method"); }
   public native boolean isInstance(@Nullable Object a1);
   public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
@@ -63,9 +62,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public native boolean isPrimitive();
   @AssertNonNullIfTrue("getComponentType()")
   public native @Pure boolean isArray();
-
   public native boolean isAssignableFrom(Class<?> cls);
   public native boolean isInterface();
   public native int getModifiers();
-
 }

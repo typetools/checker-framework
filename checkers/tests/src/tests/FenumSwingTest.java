@@ -19,5 +19,5 @@ public class FenumSwingTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("fenumswing"); }
+    public static Collection<Object[]> data() { return testFiles("fenumswing", "all-systems"); }
 }

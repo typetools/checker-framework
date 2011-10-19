@@ -23,6 +23,6 @@ public class BasicEncryptedTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("basic"); }
+    public static Collection<Object[]> data() { return testFiles("basic", "all-systems"); }
 
 }

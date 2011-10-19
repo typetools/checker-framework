@@ -24,6 +24,7 @@ import checkers.source.SupportedLintOptions;
  *
  * @checker.framework.manual #interning-checker Interning checker
  */
+// Why is Unqualified not listed here??
 @TypeQualifiers({ Interned.class, PolyInterned.class })
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})

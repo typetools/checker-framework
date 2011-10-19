@@ -231,15 +231,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @param msg The error message to log.
      */
     public void errorAbort(String msg) {
-        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                msg);
-        // TODO: add a command-line option to enable stack traces with error messages.
-        // Then here add a stack trace (minus the current frame?) to msg.
-        // This will make the first message that users see clean and if we need
-        // more information, we can ask them to add that option.
+        String expmsg;
+
+        if (processingEnv.getOptions().containsKey("printErrorStack")) {
+            StringBuilder bf = new StringBuilder(msg + "\n");
+            StackTraceElement[] stks = new Throwable().getStackTrace();
+            boolean first = true;
+            for (StackTraceElement s : stks) {
+                if (first) {
+                    // The errorAbort method is first on the stack trace.
+                    // Hide it.
+                    first = false;
+                } else {
+                    bf.append(s + "\n");
+                }
+            }
+            expmsg = bf.toString();
+        } else {
+            expmsg = msg;
+        }
+
+        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, expmsg);
         throw new CheckerError();
     }
-    
 
     /**
      * Remember whether a CheckerError occurred during
@@ -249,7 +263,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * in "typeProcess" we abort.
      */
     private boolean errorInInit = false;
-    
+
     /**
      * {@inheritDoc}
      *
@@ -687,6 +701,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /*
      * Force "-Alint" as a recognized processor option for all subtypes of
      * SourceChecker.
+     * TODO: Options other than "lint" are also added here. Many of them could
+     * be lint options.
      *
      * [This method is provided here, rather than via the @SupportedOptions
      * annotation, so that it may be inherited by subclasses.]
@@ -704,6 +720,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("nocheckjdk");
         options.add("warns");
         options.add("annotatedTypeParams");
+        options.add("printErrorStack");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }
@@ -819,6 +836,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     @Override
     public final SourceVersion getSupportedSourceVersion() {
-    	return SourceVersion.RELEASE_8;
+        return SourceVersion.RELEASE_8;
     }
 }

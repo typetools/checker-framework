@@ -35,7 +35,7 @@ public class UnitsChecker extends BaseTypeChecker {
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
-        
+
         Set<Class<? extends Annotation>> qualSet =
                 new HashSet<Class<? extends Annotation>>();
 
@@ -55,51 +55,52 @@ public class UnitsChecker extends BaseTypeChecker {
                 }
             }
         }
-        
+
         // Always add the default units relations.
         // TODO: we assume that all the standard units only use this. For absolute correctness,
         // go through each and look for a UnitsRelations annotation.
         unitsRel.put("checkers.units.UnitsRelationsDefault",
                 new UnitsRelationsDefault().init(annoUtils, env));
-        
-        
+
+        // TODO: add Unqualified??
+
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.
-        
+
         qualSet.add(Length.class);
         // qualSet.add(mm.class);
         // qualSet.add(Meter.class);
         qualSet.add(m.class);
         // qualSet.add(km.class);
-        
+
         qualSet.add(Time.class);
         // qualSet.add(Second.class);
         qualSet.add(s.class);
         qualSet.add(min.class);
         qualSet.add(h.class);
-        
+
         qualSet.add(Speed.class);
         qualSet.add(mPERs.class);
         qualSet.add(kmPERh.class);
-        
+
         qualSet.add(Area.class);
         qualSet.add(mm2.class);
         qualSet.add(m2.class);
         qualSet.add(km2.class);
-        
+
         qualSet.add(Current.class);
         qualSet.add(A.class);
-        
+
         qualSet.add(Mass.class);
         qualSet.add(g.class);
         // qualSet.add(kg.class);
-        
+
         qualSet.add(Substance.class);
         qualSet.add(mol.class);
-        
+
         qualSet.add(Luminance.class);
         qualSet.add(cd.class);
-        
+
         qualSet.add(Temperature.class);
         qualSet.add(C.class);
         qualSet.add(K.class);
@@ -150,7 +151,7 @@ public class UnitsChecker extends BaseTypeChecker {
         for (Class<? extends Annotation> anno : annos) {
             swKeys.add(anno.getSimpleName().toLowerCase());
         }
-        
+
         return swKeys;
     }
 

@@ -23,7 +23,7 @@ public class KeyFors {
     public void withCollection() {
         Map<String, String> map = new HashMap<String, String>();
         List<@KeyFor("map") String> keys = new ArrayList<@KeyFor("map") String>();
-        
+
         @KeyFor("map") String key = keys.get(0);
         @NonNull String value = map.get(key);
         // TODO when using the local variable the access works
@@ -51,9 +51,10 @@ public class KeyFors {
         throw new RuntimeException();
     }
 
-    public void testForLoop(HashMap<String,String> lastMap) {
+    public void testForLoop(HashMap<String, String> lastMap) {
         // TODO: support Flow for KeyFor
-        for (@KeyFor("lastMap") String key : sortedKeySet(lastMap)) {
+        Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
+        for (@KeyFor("lastMap") String key : sorted) {
             @NonNull String al = lastMap.get(key);
         }
     }

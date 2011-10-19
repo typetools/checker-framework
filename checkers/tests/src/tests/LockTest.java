@@ -15,5 +15,5 @@ public class LockTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("lock"); }
+    public static Collection<Object[]> data() { return testFiles("lock", "all-systems"); }
 }
