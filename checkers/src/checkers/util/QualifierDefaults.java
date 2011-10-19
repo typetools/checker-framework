@@ -324,12 +324,12 @@ public class QualifierDefaults {
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
-            Void r = scan(type.getLowerBound(), p);
+            Void r = scan(type.getLowerBoundField(), p);
             visitedNodes.put(type, r);
             boolean prevIsTypeVarExtends = isTypeVarExtends;
             isTypeVarExtends = true;
             try {
-                r = scanAndReduce(type.getUpperBound(), p, r);
+                r = scanAndReduce(type.getUpperBoundField(), p, r);
             } finally {
                 isTypeVarExtends = prevIsTypeVarExtends;
             }
