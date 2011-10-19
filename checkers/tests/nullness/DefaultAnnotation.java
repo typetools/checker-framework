@@ -14,7 +14,7 @@ public class DefaultAnnotation {
 
         //:: error: (assignment.type.incompatible)
         String s = null;                                // error
-        List<String> lst = new List<String>();    // valid
+        List<String> lst = new List<String>();          // valid
         //:: error: (argument.type.incompatible)
         lst.add(null);                                  // error
     }
@@ -108,7 +108,7 @@ public class DefaultAnnotation {
 
         //:: error: (assignment.type.incompatible)
         String s = null;                                // error
-        List<String> lst = new List<String>();    // valid
+        List<String> lst = new List<String>();          // valid
         //:: error: (argument.type.incompatible)
         lst.add(null);                                  // error
     }

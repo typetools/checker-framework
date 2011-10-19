@@ -51,9 +51,10 @@ public class KeyFors {
         throw new RuntimeException();
     }
 
-    public void testForLoop(HashMap<String,String> lastMap) {
+    public void testForLoop(HashMap<String, String> lastMap) {
         // TODO: support Flow for KeyFor
-        for (@KeyFor("lastMap") String key : sortedKeySet(lastMap)) {
+        Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
+        for (@KeyFor("lastMap") String key : sorted) {
             @NonNull String al = lastMap.get(key);
         }
     }
