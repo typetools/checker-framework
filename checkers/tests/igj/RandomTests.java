@@ -30,7 +30,7 @@ public class RandomTests {
 
     // Random tests with wildcards
     public static <T> List<T> compound(Comparator<T> first) {
-        return compound(Arrays.asList(first));
+        return compound(java.util.Arrays.asList(first));
     }
 
     static <T> List<T> compound(Iterable<? extends Comparator<? super T>> comparators) { return null; }
@@ -54,8 +54,6 @@ public class RandomTests {
     public static <T> Iterator<T> filter(Iterator<?> unfiltered, Class<T> type)
     {
       List<Object> predicate = null;
-      // The cast ignores the @I annotation on the filter return type
-      //:: warning: (cast.unsafe)
       return (Iterator<T>) filter(unfiltered, predicate);
     }
 

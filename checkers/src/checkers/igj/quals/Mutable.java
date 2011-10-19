@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.Tree;
 
+import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
@@ -24,8 +25,5 @@ import checkers.quals.TypeQualifier;
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( { AssignsFields.class } )
-@ImplicitFor(
-        trees = { Tree.Kind.NEW_CLASS },
-        types = { TypeKind.ARRAY }
-)
+@DefaultQualifierInHierarchy
 public @interface Mutable { }
