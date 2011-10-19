@@ -92,8 +92,9 @@ public class TypeFromElement {
                     }
                 }
             }
-        } else
+        } else {
             throw new IllegalArgumentException("illegal argument: " + element.getKind());
+        }
     }
 
     /**
@@ -361,6 +362,7 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
+            // TODO: This logic seems odd.
             if (wt.getExtendsBound() == null)
                 bound = wt.getExtendsBound();
             else
