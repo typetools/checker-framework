@@ -105,8 +105,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
         Set<AnnotationMirror> eltTypeAnnos = eltType.getEffectiveAnnotations();
 
-        if (eltType.isAnnotated()
-                && type.isAnnotated()
+        if (!eltTypeAnnos.isEmpty() && !typeAnnos.isEmpty()
                 && !annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
             return;
         }
