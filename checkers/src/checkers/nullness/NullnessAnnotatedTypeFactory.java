@@ -87,10 +87,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
-        mapGetHeuristics = new MapGetHeuristics(env, this,
-                new AnnotatedTypeFactory(
-                        checker.getProcessingEnvironment(),
-                        null, root, null));
+
+        // TODO: why is this not a KeyForAnnotatedTypeFactory?
+        // What qualifiers does it insert? The qualifier hierarchy is null.
+        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
+        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
