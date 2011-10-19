@@ -62,6 +62,8 @@ public class UnitsChecker extends BaseTypeChecker {
         unitsRel.put("checkers.units.UnitsRelationsDefault",
                 new UnitsRelationsDefault().init(annoUtils, env));
 
+        // TODO: add Unqualified??
+
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.
 
