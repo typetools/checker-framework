@@ -50,6 +50,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
         /** map: qualifier --> supertypesMap of the qualifier */
         // supertypesMap is immutable once GraphQualifierHierarchy is built
         private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypes;
+        private AnnotationMirror bottom;
 
         private AnnotationMirror polyQualifier;
 
@@ -75,6 +76,14 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
             if (isPolymorphic(qual))
                 this.polyQualifier = qual;
+        }
+
+        /**
+         * Set the bottom qualifier that should be used if no other
+         * qualifier could be determined.
+         */
+        public void setBottomQualifier(AnnotationMirror qual) {
+            this.bottom = qual;
         }
 
         private boolean isPolymorphic(AnnotationMirror qual) {
@@ -150,11 +159,16 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     
     private GraphQualifierHierarchy(Factory f) {
         // // no need for copying as f.supertypes has no mutable references to it
+        this.checker = f.checker;
         this.supertypesGraph = f.supertypes;
         this.supertypesMap = buildFullMap(f.supertypes);
         this.root = findRoot(this.supertypesMap, null);
-        this.bottom = findBottom(this.supertypesMap, null);
-        this.checker = f.checker;
+        AnnotationMirror foundBottom = findBottom(this.supertypesMap, null);
+        if (foundBottom==null) {
+            this.bottom = f.bottom;
+        } else {
+            this.bottom = foundBottom;
+        }
     }
 
     protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
@@ -287,10 +301,11 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     private static AnnotationMirror
     findBottom(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes, AnnotationMirror ignore) {
         Set<AnnotationMirror> bottoms = findBottoms(supertypes, ignore);
-        if (bottoms.size() == 1)
+        if (bottoms.size() == 1) {
             return bottoms.iterator().next();
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -356,6 +371,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
                 // subtypes of unqualifed, this might happen.
                 // I ran into this when KeyFor <: Unqualified and Covariant <: Unqualified.
                 // I think it would be much nicer if Unqualified would not be optimized away...
+                // TODO This never seems to happen...
                 outset.add(null);
             }
         }
