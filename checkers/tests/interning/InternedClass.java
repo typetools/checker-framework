@@ -121,10 +121,10 @@ public @Interned class InternedClass {
         Class<?> c = String.class;
         Class[] parameterTypes = new Class[1];
         parameterTypes[0] = String.class;
-        java.lang.reflect.Constructor ctor = c.getConstructor(parameterTypes);
+        java.lang.reflect.Constructor<?> ctor = c.getConstructor(parameterTypes);
     }
 
-    Class[] getSuperClasses(Class c) {
+    Class[] getSuperClasses(Class<?> c) {
         Vector v = new Vector();
         while (true) {
             if (c.getSuperclass().equals((new Object()).getClass())) // unnecessary equals
