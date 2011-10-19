@@ -1,6 +1,5 @@
 package checkers.basetype;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -201,13 +200,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         try {
         Element elt = InternalUtils.symbol(node);
         assert elt != null : "no symbol for method";
-        if (InternalUtils.isAnonymousConstructor(node))
+        if (InternalUtils.isAnonymousConstructor(node)) {
             // We shouldn't dig deeper
             return null;
+        }
 
         // constructor return types are null
-        if (node.getReturnType() != null)
+        if (node.getReturnType() != null) {
             typeValidator.visit(methodType.getReturnType(), node.getReturnType());
+        }
 
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
         AnnotatedDeclaredType enclosingType =
@@ -531,8 +532,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType)castType;
             AnnotatedDeclaredType elementType =
                 atypeFactory.fromElement((TypeElement)castDeclared.getUnderlyingType().asElement());
-            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), elementType.getAnnotations()))
+            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), elementType.getAnnotations())) {
                 isSubtype = true;
+            }
         }
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
@@ -541,6 +543,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
         // TODO: Test type arguments and array components types
+        // TODO: What is the above TODO supposed to mean? isSubtype is checking those.
 
         if (!isSubtype) {
             checker.report(Result.warning("cast.unsafe", exprType, castType), node);
@@ -748,12 +751,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
-
-        Collection<AnnotationMirror> dtAnno = dt.getAnnotations();
-        Collection<AnnotationMirror> receiverAnno = constructor.getReceiverType().getAnnotations();
-
-        final QualifierHierarchy hierarchy = checker.getQualifierHierarchy();
-        boolean b = hierarchy.isSubtype(dtAnno, receiverAnno) || hierarchy.isSubtype(receiverAnno, dtAnno);
+        AnnotatedDeclaredType receiver = constructor.getReceiverType();
+        boolean b = checker.isSubtype(dt, receiver) || checker.isSubtype(receiver, dt);
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
@@ -1152,22 +1151,25 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
             Set<AnnotationMirror> onVar = type.getAnnotations();
-            Set<AnnotationMirror> onLower = type.getLowerBound().getAnnotations();
-            Set<AnnotationMirror> onUpper = type.getUpperBound().getAnnotations();
-            // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s):%n" +
-            //         "   onLower: %s; onVar: %s; onUpper: %s%n",
-            //         type, tree, onLower, onVar, onUpper);
-
             if (!onVar.isEmpty()) {
-                if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
-                    this.reportError(type, tree);
+                // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)",
+                //         type, tree);
+
+                if (type.getUpperBoundField()!=null) {
+                    Set<AnnotationMirror> onUpper = type.getUpperBound().getAnnotations();
+                    if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                        this.reportError(type, tree);
+                    }
                 }
-                if (!onLower.isEmpty() &&
+
+                if (type.getLowerBoundField()!=null) {
+                    Set<AnnotationMirror> onLower = type.getLowerBound().getAnnotations();
+                    if (!onLower.isEmpty() &&
                         !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
-                    this.reportError(type, tree);
+                        this.reportError(type, tree);
+                    }
                 }
             }
-
             return super.visitTypeVariable(type, tree);
         }
     }
