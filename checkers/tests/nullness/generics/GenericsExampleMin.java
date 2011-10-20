@@ -14,12 +14,15 @@ class GenericsExampleMin {
         this.t = t;
         this.nble = nble;
         this.nn = nn;
+        this.t = this.nble;
     }
 
     T get(int i) { return t; }
 
     // This method works.
     // Note that it fails to work if it is moved after m2() in the syntax tree.
+    // TODO: the above comment seems out-of-date, as method
+    // m3 below works.
     void m1() {
         t = this.get(0);
         nble = this.get(0);
@@ -33,5 +36,38 @@ class GenericsExampleMin {
         nble = this.get(0);
     }
 
+    void m3() {
+        t = this.get(0);
+        nble = this.get(0);
+    }
+  }
+  
+  class MyList2<@NonNull T> {
+      T t;
+      @Nullable T nble;
+
+      public MyList2(T t, @Nullable T nble) {
+          //:: error: (assignment.type.incompatible)
+          this.t = this.nble; // error
+          //:: error: (assignment.type.incompatible)
+          this.t = nble; // error
+      }
+  }
+
+  class MyList3<T extends @Nullable Object> {
+      T t;
+      @Nullable T nble;
+      @NonNull T nn;
+      
+      public MyList3(T t, @Nullable T nble, @NonNull T nn) {
+          //:: error: (assignment.type.incompatible)
+          this.t = nble;
+          this.t = nn;
+          //:: error: (assignment.type.incompatible)
+          this.nn = t;
+          //:: error: (assignment.type.incompatible)
+          this.nn = nble;
+          this.nn = nn;
+      }
   }
 }

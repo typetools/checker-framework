@@ -56,7 +56,7 @@ import checkers.types.AnnotatedTypeMirror.*;
  */
 public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
-    // To Prevent infinite loop
+    // To prevent infinite loops
     protected Map<AnnotatedTypeMirror, R> visitedNodes =
         new IdentityHashMap<AnnotatedTypeMirror, R>();
 
@@ -147,9 +147,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        R r = scan(type.getLowerBound(), p);
+        R r = scan(type.getLowerBoundField(), p);
         visitedNodes.put(type, r);
-        r = scanAndReduce(type.getUpperBound(), p, r);
+        r = scanAndReduce(type.getUpperBoundField(), p, r);
         visitedNodes.put(type, r);
         return r;
     }

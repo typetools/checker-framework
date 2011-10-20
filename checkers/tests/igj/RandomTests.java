@@ -30,7 +30,7 @@ public class RandomTests {
 
     // Random tests with wildcards
     public static <T> List<T> compound(Comparator<T> first) {
-        return compound(Arrays.asList(first));
+        return compound(java.util.Arrays.asList(first));
     }
 
     static <T> List<T> compound(Iterable<? extends Comparator<? super T>> comparators) { return null; }

@@ -166,27 +166,36 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                     // TODO: These cases are more of hacks and they should
                     // really be immutable or readonly
                     type.addAnnotation(BOTTOM_QUAL);
-                } else if (elementType.hasAnnotation(IMMUTABLE))
+                } else if (elementType.hasAnnotation(IMMUTABLE)) {
                     // case 2: known immutable types
                     type.addAnnotation(IMMUTABLE);
-                else if (p == ElementKind.LOCAL_VARIABLE)
+                } else if (p == ElementKind.LOCAL_VARIABLE) {
                     type.addAnnotation(READONLY);
-                else if (elementType.hasAnnotation(MUTABLE)) // not immutable
+                } else if (elementType.hasAnnotation(MUTABLE)) { // not immutable
                     // case 7: mutable by default
                     type.addAnnotation(MUTABLE);
-                else if (p.isClass() || p.isInterface())
+                } else if (p.isClass() || p.isInterface()) {
                     // case 9: class or interface declaration
                     type.addAnnotation(BOTTOM_QUAL);
-                else if (p.isField()
-                        && getAnnotatedType(ElementUtils.enclosingClass(type.getElement())).hasAnnotation(IMMUTABLE)) {
-                    type.addAnnotation(IMMUTABLE);
-                }
-                else if (element.getKind().isClass() || element.getKind().isInterface())
+                } else if (p.isField()) {
+                    Element elem = type.getElement();
+                    // TODO: The element is null in the GenericsCasts test
+                    // case. Why?
+                    if (elem != null
+                            && getAnnotatedType(
+                                    ElementUtils.enclosingClass(elem)).hasAnnotation(
+                                    IMMUTABLE)) {
+                        type.addAnnotation(IMMUTABLE);
+                    } else {
+                        type.addAnnotation(MUTABLE);
+                    }
+                } else if (element.getKind().isClass()
+                        || element.getKind().isInterface()) {
                     // case 10
                     type.addAnnotation(MUTABLE);
-                else
+                } else {
                     assert false : "shouldn't be here!";
-
+                }
             }
             return super.visitDeclared(type,
                     p == ElementKind.LOCAL_VARIABLE || p == ElementKind.FIELD ? ElementKind.OTHER : p);
@@ -222,7 +231,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
             // In a declaration the upperbound is ReadOnly, while
             // the upper bound in a use is Mutable
-            if (type.getUpperBound() != null
+            if (type.getUpperBoundField() != null
                     && !hasImmutabilityAnnotation(type.getUpperBound())) {
                 if (p.isClass() || p.isInterface()
                         || p == ElementKind.CONSTRUCTOR

@@ -22,13 +22,15 @@ public abstract class ParameterizedCheckerTest extends CheckerTest {
         test(testFile);
     }
 
-    protected static Collection<Object[]> testFiles(String folder) {
-        File dir = new File("tests" + File.separator + folder);
-        List<File> javaFiles = TestUtilities.deeplyEnclosedJavaTestFiles(dir);
-        Collection<Object[]> arguments = new ArrayList<Object[]>(javaFiles.size());
+    protected static Collection<Object[]> testFiles(String... folders) {
+        Collection<Object[]> arguments = new ArrayList<Object[]>();
+        for (String folder : folders) {
+            File dir = new File("tests" + File.separator + folder);
+            List<File> javaFiles = TestUtilities.deeplyEnclosedJavaTestFiles(dir);
 
-        for (File javaFile : javaFiles) {
-            arguments.add(new Object[] { javaFile });
+            for (File javaFile : javaFiles) {
+                arguments.add(new Object[] { javaFile });
+            }
         }
         return arguments;
     }

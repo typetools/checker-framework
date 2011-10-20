@@ -11,25 +11,34 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.*;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.javari.quals.*;
+import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
+import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.TypeFromTree.TypeFromClass;
+import checkers.types.TypeFromTree.TypeFromExpression;
+import checkers.types.TypeFromTree.TypeFromMember;
+import checkers.types.TypeFromTree.TypeFromTypeTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
-import static checkers.types.TypeFromTree.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
-
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -154,6 +163,7 @@ public class AnnotatedTypeFactory {
         this.supportedQuals = getSupportedQualifiers();
         this.indexTypes = null; // will be set by postInit()
         this.indexDeclAnnos = null; // will be set by postInit()
+        // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
 
@@ -208,7 +218,6 @@ public class AnnotatedTypeFactory {
      * @see #fromElement(Element)
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
-
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
@@ -487,7 +496,7 @@ public class AnnotatedTypeFactory {
     /**
      * A callback method for the AnnotatedTypeFactory subtypes to customize
      * directSuperTypes().  Overriding methods should merely change the
-     * annotations on the supertypes, without adding or removing new types
+     * annotations on the supertypes, without adding or removing new types.
      *
      * The default provided implementation adds {@code type} annotations to
      * {@code supertypes}.  This allows the {@code type} and its supertypes
@@ -706,7 +715,9 @@ public class AnnotatedTypeFactory {
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         AnnotatedDeclaredType type = getCurrentClassType(tree);
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (methodReceiver != null) {
+        if (methodReceiver != null &&
+                !(methodReceiver.getAnnotations().size()==1 && methodReceiver.getAnnotation(Unqualified.class)!=null)) {
+            // TODO: this only takes the main annotations. What about other annotations?
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
         }
@@ -830,8 +841,7 @@ public class AnnotatedTypeFactory {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror type = getReceiver(tree);
-        AnnotatedExecutableType methodType =
-            atypes.asMemberOf(type, methodElt);
+        AnnotatedExecutableType methodType = atypes.asMemberOf(type, methodElt);
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -1052,7 +1062,7 @@ public class AnnotatedTypeFactory {
      *         this type factory operates, false otherwise
      */
     /*package-scope*/ boolean isSupportedQualifier(AnnotationMirror a) {
-        if (supportedQuals.isEmpty()) {
+        if (a!=null && supportedQuals.isEmpty()) {
             // Only include with retention
             TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
             Retention retention = elt.getAnnotation(Retention.class);
@@ -1075,6 +1085,7 @@ public class AnnotatedTypeFactory {
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        if (a==null) return null;
         TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);

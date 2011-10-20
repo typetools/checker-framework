@@ -41,7 +41,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (type.isAnnotated()) {
+        if (hasGuardedBy(type)) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitIdentifier(node, p);
@@ -50,10 +50,18 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (type.isAnnotated()) {
+        if (hasGuardedBy(type)) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitMemberSelect(node, p);
+    }
+
+    // TODO: Aliasing is not handled nicely by getAnnotation.
+    // It would be nicer if we only needed to write one class here and
+    // aliases were resolved internally.
+    private static boolean hasGuardedBy(AnnotatedTypeMirror t) {
+        return t.getAnnotation(checkers.lock.quals.GuardedBy.class)!=null ||
+               t.getAnnotation(net.jcip.annotations.GuardedBy.class)!=null;
     }
 
     private <T> List<T> append(List<T> lst, T o) {

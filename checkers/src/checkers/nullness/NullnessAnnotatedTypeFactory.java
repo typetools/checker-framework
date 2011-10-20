@@ -87,10 +87,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         typeAnnotator = new NonNullTypeAnnotator(checker);
         treeAnnotator = new NonNullTreeAnnotator(checker);
-        mapGetHeuristics = new MapGetHeuristics(env, this,
-                new AnnotatedTypeFactory(
-                        checker.getProcessingEnvironment(),
-                        null, root, null));
+
+        // TODO: why is this not a KeyForAnnotatedTypeFactory?
+        // What qualifiers does it insert? The qualifier hierarchy is null.
+        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
+        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
@@ -372,19 +373,20 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
 
-            if (type == null)
+            if (type == null) {
                 return super.scan(type, p);
+            }
 
-            if (type.getKind() == TypeKind.TYPEVAR
-                    && !type.isAnnotated())
+            if ( (type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD)
+                    && !type.isAnnotated()) {
                 return super.scan(type, p);
+            }
 
-            if (!type.isAnnotated())
+            if (!type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
-            else if (type.hasAnnotation(RAW))
+            } else if (type.hasAnnotation(RAW)) {
                 type.removeAnnotation(NONNULL);
-            else if (type.hasAnnotation(NONNULL))
-                type.removeAnnotation(NULLABLE);
+            }
 
             assert type.isAnnotated() : type;
 
@@ -433,7 +435,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             // case 13: type of Void is nullable
             if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
                     // Hack: Special case Void.class
-                    && (type.getElement() == null || !type.getElement().getKind().isClass())) {
+                    && (type.getElement() == null || !type.getElement().getKind().isClass())
+                    && !type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
             }
 

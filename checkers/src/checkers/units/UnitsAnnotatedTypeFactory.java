@@ -3,6 +3,7 @@ package checkers.units;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -121,11 +122,11 @@ public class UnitsAnnotatedTypeFactory extends
                         break;
                     }
                 case MULTIPLY:
-                    if (lht.getAnnotations().isEmpty()) {
+                    if (noUnits(lht)) {
                         type.addAnnotations(rht.getAnnotations());
                         break;
                     }
-                    if (rht.getAnnotations().isEmpty()) {
+                    if (noUnits(rht)) {
                         type.addAnnotations(lht.getAnnotations());
                         break;
                     }
@@ -135,6 +136,12 @@ public class UnitsAnnotatedTypeFactory extends
             }
 
             return super.visitBinary(node, type);
+        }
+
+        private boolean noUnits(AnnotatedTypeMirror t) {
+            Set<AnnotationMirror> annos = t.getAnnotations();
+            return annos.isEmpty() ||
+                    (annos.size()==1 && AnnotatedTypeMirror.isUnqualified(annos.iterator().next()));
         }
 
         @Override

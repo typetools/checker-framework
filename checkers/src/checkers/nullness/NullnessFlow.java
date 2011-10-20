@@ -79,7 +79,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      *
      * @param checker the current checker
      * @param root the compilation unit to scan
-     * @param annotations the annotations to use
      * @param factory the type factory to use
      */
     public NullnessFlow(NullnessSubchecker checker, CompilationUnitTree root,

@@ -364,7 +364,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     private void checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.hasAnnotation(NONNULL))
+        if (!type.getEffectiveAnnotations().contains(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
     }
 

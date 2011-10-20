@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.*;
 
 import checkers.lock.quals.GuardedBy;
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
@@ -47,13 +48,16 @@ public class LockAnnotatedTypeFactory
     }
 
     private void removeHeldLocks(AnnotatedTypeMirror type) {
-        Set<AnnotationMirror> annos = type.getAnnotations();
-        if (annos.isEmpty())
+        AnnotationMirror guarded = type.getAnnotation(GuardedBy.class);
+        if (guarded == null) {
             return;
-        AnnotationMirror guarded = annos.iterator().next();
+        }
+
         String lock = elementValue(guarded, "value", String.class);
-        if (heldLocks.contains(lock))
+        if (heldLocks.contains(lock)) {
             type.clearAnnotations();
+            type.addAnnotation(Unqualified.class);
+        }
     }
 
     private AnnotationMirror createGuarded(String lock) {

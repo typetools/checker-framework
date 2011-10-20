@@ -549,7 +549,7 @@ public class AnnotationUtils {
     public static boolean areSame(Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
         if (c1.size() != c2.size())
             return false;
-        if (c1.size() == 1 && c2.size() == 1)
+        if (c1.size() == 1)
             return areSame(c1.iterator().next(), c2.iterator().next());
 
         Set<AnnotationMirror> s1 = createAnnotationSet();

@@ -23,9 +23,7 @@ import com.sun.source.tree.Tree.Kind;
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
 @Target({}) // empty target prevents programmers from writing this in a program
 @ImplicitFor(
-        trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.ENUM,
-                Kind.INTERFACE, Kind.ANNOTATION_TYPE,
-                Kind.NEW_ARRAY },
+        trees = { Kind.NULL_LITERAL },
         typeClasses = { AnnotatedPrimitiveType.class }
 )
 @interface IGJBottom { }
