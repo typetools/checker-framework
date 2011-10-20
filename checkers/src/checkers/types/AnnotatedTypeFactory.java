@@ -11,24 +11,34 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.*;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.javari.quals.*;
+import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.TypeFromTree.TypeFromClass;
+import checkers.types.TypeFromTree.TypeFromExpression;
+import checkers.types.TypeFromTree.TypeFromMember;
+import checkers.types.TypeFromTree.TypeFromTypeTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
-import static checkers.types.TypeFromTree.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
-
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -208,7 +218,6 @@ public class AnnotatedTypeFactory {
      * @see #fromElement(Element)
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
-
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
