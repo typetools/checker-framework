@@ -91,8 +91,8 @@ public class AnnotatedTypes {
         public AnnotatedTypeMirror visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
             if (p.getKind() == TypeKind.TYPEVAR)
                 return type;
-            // Operate on the upper bound
-            AnnotatedTypeMirror res = asSuper(type.getUpperBound(), p);
+            // Operate on the effective upper bound
+            AnnotatedTypeMirror res = asSuper(type.getEffectiveUpperBound(), p);
             if (!res.isAnnotated()) {
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
@@ -106,8 +106,8 @@ public class AnnotatedTypes {
         public AnnotatedTypeMirror visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
             if (p.getKind() == TypeKind.WILDCARD)
                 return type;
-            // Operate on the upper bound
-            return asSuper(type.getExtendsBound(), p);
+            // Operate on the effective extends bound
+            return asSuper(type.getEffectiveExtendsBound(), p);
         }
 
 
@@ -119,8 +119,9 @@ public class AnnotatedTypes {
                 return type;
             for (AnnotatedTypeMirror st : type.directSuperTypes()) {
                 AnnotatedTypeMirror x = asSuper(st, p);
-                if (x != null)
+                if (x != null) {
                     return isErased(x, p) ? x.getErased() : x;
+                }
             }
             return null;
         }
