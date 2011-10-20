@@ -1,6 +1,11 @@
 import checkers.interning.quals.Interned;
 import java.util.List;
 
+/*
+ * This test case excercises the interaction between class annotations
+ * and method type argument inference.
+ * A previously existing Unqualified annotation wasn't correctly removed.
+ */
 class ClassDefaults {
   @Interned
   class Test {}
