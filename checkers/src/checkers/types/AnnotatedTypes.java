@@ -10,16 +10,21 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 import checkers.nullness.quals.*;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This
@@ -634,6 +639,7 @@ public class AnnotatedTypes {
             if (argument != null)
                 typeArguments.put(typeVar, argument);
         }
+
         return typeArguments;
     }
 
@@ -943,9 +949,11 @@ public class AnnotatedTypes {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
 
         for (int i = 0; i < types.length; ++i) {
-            if (types[i] == null) {
-                continue;     // TODO: fix this
-            }
+            // TODO: this doesn't happen in our test suite.
+            // if (types[i] == null) {
+            //     System.out.println("Types i is null!");
+            //     continue;     // TODO: fix this
+            // }
             if (types[i].getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
@@ -965,9 +973,11 @@ public class AnnotatedTypes {
         Collection<AnnotationMirror> unification = Collections.emptySet();
 
         for (AnnotatedTypeMirror type : types) {
-            if (type == null) {
-                continue;    // TODO: fix this
-            }
+            // TODO: this doesn't happen in our test suite.
+            // if (type == null) { 
+            //    System.out.println("type in types is null!");
+            //     continue;    // TODO: fix this
+            // }
             if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
             if (isFirst) {
                 unification = type.getAnnotations();
@@ -977,7 +987,10 @@ public class AnnotatedTypes {
             isFirst = false;
         }
 
+        // Remove a previously existing unqualified annotation on the type.
+        alub.removeUnqualified();
         alub.addAnnotations(unification);
+
         if (alub.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType adt = (AnnotatedDeclaredType) alub;
 
