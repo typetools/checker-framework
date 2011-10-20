@@ -539,11 +539,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
         if (!isSubtype) {
-            isSubtype = checker.isSubtype(exprType, castType);
+            // TODO: Test type arguments and array components types
+            // The following
+            // isSubtype = checker.isSubtype(exprType, castType);
+            // would be too restrictive, as we only want to ensure the relation
+            // between annotations, not the whole type.
+            isSubtype = checker.getQualifierHierarchy().isSubtype(exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
-
-        // TODO: Test type arguments and array components types
-        // TODO: What is the above TODO supposed to mean? isSubtype is checking those.
 
         if (!isSubtype) {
             checker.report(Result.warning("cast.unsafe", exprType, castType), node);
