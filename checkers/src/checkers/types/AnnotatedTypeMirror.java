@@ -1383,7 +1383,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror getErased() {
             // |T extends A&B| = |A|
-            return this.getUpperBound().getErased();
+            return this.getEffectiveUpperBound().getErased();
         }
 
         /* TODO: If we use the stronger equals method below, we also
@@ -1707,9 +1707,22 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the effective upper bound annotations:  the annotations
-         * on this, or if none, those on the upper bound.
-        */
+         * @return the effective extends bound: the extends bound, with
+         *         annotations on the type variable considered.
+         */
+        public AnnotatedTypeMirror getEffectiveExtendsBound() {
+            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getExtendsBound());
+            if (!annotations.isEmpty()) {
+                effbnd.clearAnnotations();
+                effbnd.addAnnotations(annotations);
+            }
+            return effbnd;
+        }
+
+        /**
+         * @return the effective upper bound annotations: the annotations on
+         *         this, or if none, those on the upper bound.
+         */
         public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
             Set<AnnotationMirror> result = annotations;
             if (result.isEmpty()) {
@@ -1772,10 +1785,8 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedTypeMirror getErased() {
-            // |T extends A&B| = |A|
-            if (getExtendsBound() != null)
-                return getExtendsBound().getErased();
-            return createTypeOfObject(typeFactory);
+            // |? extends A&B| = |A|
+            return getEffectiveExtendsBound().getErased();
         }
 
         boolean isPrintingBound = false;
@@ -2038,16 +2049,16 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public List<AnnotatedTypeMirror> visitTypeVariable(AnnotatedTypeVariable type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
-            if (type.getUpperBound() != null)
-                superTypes.add(AnnotatedTypes.deepCopy(type.getUpperBound()));
+            if (type.getEffectiveUpperBound() != null)
+                superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveUpperBound()));
             return superTypes;
         }
 
         @Override
         public List<AnnotatedTypeMirror> visitWildcard(AnnotatedWildcardType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
-            if (type.getExtendsBound() != null)
-                superTypes.add(AnnotatedTypes.deepCopy(type.getExtendsBound()));
+            if (type.getEffectiveExtendsBound() != null)
+                superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveExtendsBound()));
             return superTypes;
         }
     };
