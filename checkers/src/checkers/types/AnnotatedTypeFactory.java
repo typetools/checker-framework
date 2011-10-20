@@ -510,10 +510,13 @@ public class AnnotatedTypeFactory {
      */
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        Set<AnnotationMirror> annotations = type.getAnnotations();
+        // Use the effective annotations here to get the correct annotations
+        // for type variables and wildcards.
+        Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
-            if (!annotations.equals(supertype.getAnnotations())) {
+            if (!annotations.equals(supertype.getEffectiveAnnotations())) {
                 supertype.clearAnnotations();
+                // TODO: is this correct for type variables and wildcards?
                 supertype.addAnnotations(annotations);
             }
         }
