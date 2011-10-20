@@ -1,0 +1,4 @@
+DefaultConstructor.java:9: warning: constructor does not initialize fields [nullObject]
+class DefaultConstructor {
+^
+1 warning
