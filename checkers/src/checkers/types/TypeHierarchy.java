@@ -8,7 +8,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -75,9 +78,9 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        // System.out.printf("isSubtypeImpl(%s (%s, %s), %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
-        // If already checked this type (in case of recusive type bound)
-        // return true.  If not subtype, we wouldn't have gotten here again.
+        // System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
+        // If we already checked this type (in case of a recursive type bound)
+        // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
             return true;
         AnnotatedTypeMirror lhsBase = lhs;
@@ -96,12 +99,8 @@ public class TypeHierarchy {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
-                Set<AnnotationMirror> lAnnos = lhsb_atv.getLowerBoundAnnotations();
-                if (!lAnnos.isEmpty())
-                    return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
-                return qualifierHierarchy.getBottomQualifier() == null ?
-                    rhs.getAnnotations().isEmpty() :
-                    rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBoundAnnotations();
+                return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
             }
         }
 
@@ -111,15 +110,21 @@ public class TypeHierarchy {
         }
 
         AnnotatedTypeMirror rhsBase = rhs.typeFactory.atypes.asSuper(rhs, lhsBase);
+
         // FIXME: the following line should be removed, but erasure code is buggy
         // related to bug tests/framework/OverrideCrash
         if (rhsBase == null) rhsBase = rhs;
 
         // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n", lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
-        // Is this test correct in the case of type variables?
-        if (!qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations()))
-            return false;
+        {
+            Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
+            Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
+
+            if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
+                return false;
+            }
+        }
 
         if (lhs.getKind() == TypeKind.ARRAY && rhsBase.getKind() == TypeKind.ARRAY) {
             AnnotatedTypeMirror rhsComponent = ((AnnotatedArrayType)rhsBase).getComponentType();
@@ -139,15 +144,15 @@ public class TypeHierarchy {
                 rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
             }
             // compare lower bound of lhs to upper bound of rhs
-            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getLowerBoundAnnotations();
-            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getUpperBoundAnnotations();
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBoundAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBoundAnnotations();
             if (!las.isEmpty()) {
                 return qualifierHierarchy.isSubtype(ras, las);
             }
             // No annotations on lhs lower bound
             return qualifierHierarchy.getBottomQualifier() == null ?
-                rhs.getAnnotations().isEmpty() :
-                rhs.getAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+                rhs.getEffectiveAnnotations().isEmpty() :
+                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomQualifier());
         }
 
         // It's probably OK to reach this case, because of the isSubtype test above.
@@ -180,7 +185,19 @@ public class TypeHierarchy {
         if (rhsTypeArgs.isEmpty() || lhsTypeArgs.isEmpty())
             return true;
 
-        assert lhsTypeArgs.size() == rhsTypeArgs.size();
+        if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
+            // System.out.println("Mismatch between " + lhsTypeArgs + " and " + rhsTypeArgs
+            //         + " in types " + lhs + " and " + rhs);
+            // This happened in javari/RandomTests, where we have:
+            //         List<String> l = (List<String>) new HashMap<String, String>();
+            // Shouldn't rhs and lhs be first brought to the same base type, before comparing the
+            // type arguments?
+            // When compiling that line with javac, one gets an unchecked
+            // warning.
+            // TODO
+            return true;
+        }
+
         for (int i = 0; i < lhsTypeArgs.size(); ++i) {
             if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
                 return false;
@@ -221,6 +238,9 @@ public class TypeHierarchy {
             return isSubtype(rhs, ((AnnotatedTypeVariable)lhs).getUpperBound());
         }
 
+        // Do not ask for the effective annotations here, as that would confuse
+        // annotations on the type variable with upper bound annotations.
+        // See nullness testcase GenericsBounds1.
         Set<AnnotationMirror> las = lhs.getAnnotations();
         Set<AnnotationMirror> ras = rhs.getAnnotations();
 

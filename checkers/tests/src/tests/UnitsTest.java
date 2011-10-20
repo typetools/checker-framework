@@ -13,5 +13,5 @@ public class UnitsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("units"); }
+    public static Collection<Object[]> data() { return testFiles("units", "all-systems"); }
 }

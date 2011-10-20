@@ -229,16 +229,16 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
             // In a declaration the upperbound is ReadOnly, while
             // the upper bound in a use is Mutable
-            if (type.getUpperBound() != null
-                    && !hasImmutabilityAnnotation(type.getUpperBound())) {
+            if (type.getUpperBoundField() != null
+                    && !hasImmutabilityAnnotation(type.getUpperBoundField())) {
                 if (p.isClass() || p.isInterface()
                         || p == ElementKind.CONSTRUCTOR
                         || p == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
-                    type.getUpperBound().addAnnotation(READONLY);
+                    type.getUpperBoundField().addAnnotation(READONLY);
                 else if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
-                    type.getUpperBound().addAnnotation(MUTABLE);
+                    type.getUpperBoundField().addAnnotation(MUTABLE);
             }
 
             return super.visitTypeVariable(type, p);
@@ -267,8 +267,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     /**
      * Helper class to annotate trees.
      *
-     *
-     * It only adds an BOTTOM_QUAL for new classes and new arrays,
+     * It only adds a BOTTOM_QUAL for new classes and new arrays,
      * when an annotation is not specified
      */
     private class IGJTreePreAnnotator extends TreeAnnotator {
@@ -570,9 +569,9 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
-                // Assertion failes some times
+                // TODO: Assertion fails some times
                 assert immutability != null;
-                if (!immutability.equals(ASSIGNS_FIELDS))
+                if (immutability!=null && !immutability.equals(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
             }
 
@@ -695,7 +694,11 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         //
         if (type.hasAnnotation(I))
             return type.getAnnotation(I.class.getCanonicalName());
-        return type.getAnnotations().iterator().next();
+        if (hasImmutabilityAnnotation(type)) {
+            return type.getAnnotations().iterator().next();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -703,6 +706,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      *          false otherwise
      */
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
+        // return type.hasAnnotation(READONLY) || type.hasAnnotation(MUTABLE) || 
+        //        type.hasAnnotation(IMMUTABLE) || type.hasAnnotation(I);
         return type.isAnnotated();
     }
 }

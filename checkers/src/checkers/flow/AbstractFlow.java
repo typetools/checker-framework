@@ -14,7 +14,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
@@ -218,23 +217,17 @@ implements Flow {
 
     /**
      * Determines whether a type has an annotation. If the type is not a
-     * wildcard, it checks the type directly; if it is a wildcard, it checks the
+     * type variable or wildcard, it checks the type directly;
+     * if it is a type variable or wildcard, it checks the type variable's or
      * wildcard's "extends" bound (if it has one).
      *
      * @param type the type to check
      * @param annotation the annotation to check for
-     * @return true if the (non-wildcard) type has the annotation or, if a
-     *         wildcard, the type has the annotation on its extends bound
+     * @return true if the (non-type-variable, non-wildcard) type has the annotation or, if a
+     *         type variable or wildcard, the type has the annotation on its extends bound
      */
-    protected boolean hasAnnotation(AnnotatedTypeMirror type,
-            AnnotationMirror annotation) {
-        if (!(type instanceof AnnotatedWildcardType))
-            return type.hasAnnotation(annotation);
-        AnnotatedWildcardType wc = (AnnotatedWildcardType) type;
-        AnnotatedTypeMirror bound = wc.getExtendsBound();
-        if (bound != null && bound.hasAnnotation(annotation))
-            return true;
-        return false;
+    protected boolean hasAnnotation(AnnotatedTypeMirror type, AnnotationMirror annotation) {
+        return type.getEffectiveAnnotations().contains(annotation);
     }
 
     /**
@@ -495,8 +488,6 @@ implements Flow {
     // This is an exact copy of visitAssignment()
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        // System.err.println("in vCA: " + node);
-
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         // if (!(var instanceof IdentifierTree))

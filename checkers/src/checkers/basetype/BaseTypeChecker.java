@@ -9,6 +9,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
 import checkers.igj.quals.*;
+import checkers.quals.Bottom;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -167,10 +168,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
             new GraphQualifierHierarchy.Factory(this);
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
-            if (typeQualifier.equals(Unqualified.class)) {
-                factory.addQualifier(null);
-                continue;
-            }
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
@@ -185,11 +182,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 AnnotationMirror superAnno = null;
-                if (superQualifier != Unqualified.class)
-                    superAnno = annoFactory.fromClass(superQualifier);
+                superAnno = annoFactory.fromClass(superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
+        factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {

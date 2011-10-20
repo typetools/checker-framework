@@ -7,13 +7,17 @@ import java.util.List;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.TypesUtils;
 
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.TargetType;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
-import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.code.*;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 
 /**
  * A utility class used to extract the annotations from an element and inserts
@@ -92,8 +96,9 @@ public class TypeFromElement {
                     }
                 }
             }
-        } else
+        } else {
             throw new IllegalArgumentException("illegal argument: " + element.getKind());
+        }
     }
 
     /**
@@ -276,8 +281,9 @@ public class TypeFromElement {
         TypeAnnotationPosition pos = anno.position;
         if (!pos.type.hasLocation()) {
             type.addAnnotation(anno);
-        } else
+        } else {
             annotate(type, pos.location, Collections.singletonList(anno));
+        }
     }
 
     private static void annotatePossibleBound(AnnotatedTypeMirror type, Attribute.TypeCompound anno) {
@@ -361,6 +367,7 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
+            // TODO: This logic seems odd.
             if (wt.getExtendsBound() == null)
                 bound = wt.getExtendsBound();
             else

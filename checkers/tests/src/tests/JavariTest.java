@@ -16,5 +16,5 @@ public class JavariTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("javari"); }
+    public static Collection<Object[]> data() { return testFiles("javari", "all-systems"); }
 }

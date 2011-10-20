@@ -10,16 +10,21 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 import checkers.nullness.quals.*;
+
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This
@@ -87,7 +92,14 @@ public class AnnotatedTypes {
             if (p.getKind() == TypeKind.TYPEVAR)
                 return type;
             // Operate on the upper bound
-            return asSuper(type.getUpperBound(), p);
+            AnnotatedTypeMirror res = asSuper(type.getUpperBound(), p);
+            if (!res.isAnnotated()) {
+                // TODO: or should it be the default?
+                // Test MultiBoundTypeVar fails otherwise.
+                // Is there a better place for this?
+                res.addAnnotation(factory.getQualifierHierarchy().getRootAnnotation());
+            }
+            return res;
         }
 
         @Override
@@ -627,6 +639,7 @@ public class AnnotatedTypes {
             if (argument != null)
                 typeArguments.put(typeVar, argument);
         }
+
         return typeArguments;
     }
 
@@ -647,7 +660,7 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> lubForVar = finder.visit(exeType.getReturnType(), returnType);
 
         // TODO: This may introduce a bug, but I don't want to deal with it right now
-        if (lubForVar.isEmpty())
+        if (lubForVar.isEmpty() || (lubForVar.get(0).getEffectiveAnnotations().isEmpty()))
             return null;
 
         List<? extends ExpressionTree> args;
@@ -906,9 +919,9 @@ public class AnnotatedTypes {
                 if (type == null)
                     return;
                 if (type.getKind() == TypeKind.WILDCARD)
-                    subtypes[i] = lub.getCopy(true);
+                    subtypes[i] = deepCopy(lub);
                 else if (asSuper(type, lub) == null)
-                    subtypes[i] = lub.getCopy(true);
+                    subtypes[i] = deepCopy(lub);
                 else
                     subtypes[i] = asSuper(type, lub);
             }
@@ -928,33 +941,54 @@ public class AnnotatedTypes {
         // types may contain a null in the context of unchecked cast
         // TODO: fix this
         boolean isFirst = true;
-        // get rid of wildcards
+        // get rid of wildcards and type variables
+        // TODO: what about annotations on type variables?
         if (alub.getKind() == TypeKind.WILDCARD)
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
+        if (alub.getKind() == TypeKind.TYPEVAR)
+            alub = ((AnnotatedTypeVariable)alub).getUpperBound();
+
         for (int i = 0; i < types.length; ++i) {
-            if (types[i] == null)
-                continue;     // TODO: fix this
+            // TODO: this doesn't happen in our test suite.
+            // if (types[i] == null) {
+            //     System.out.println("Types i is null!");
+            //     continue;     // TODO: fix this
+            // }
             if (types[i].getKind() == TypeKind.WILDCARD) {
-                AnnotatedWildcardType wildcard = (AnnotatedWildcardType)types[i];
+                AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
                     types[i] = wildcard.getExtendsBound();
                 else if (wildcard.getSuperBound() != null)
                     types[i] = wildcard.getSuperBound();
             }
+            if (types[i].getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types[i];
+                if (typevar.getUpperBound() != null)
+                    types[i] = typevar.getUpperBound();
+                else if (typevar.getLowerBound() != null)
+                    types[i] = typevar.getLowerBound();
+            }
         }
 
         Collection<AnnotationMirror> unification = Collections.emptySet();
+
         for (AnnotatedTypeMirror type : types) {
-            if (type == null)
-                continue;    // TODO: fix this
+            // TODO: this doesn't happen in our test suite.
+            // if (type == null) { 
+            //    System.out.println("type in types is null!");
+            //     continue;    // TODO: fix this
+            // }
             if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
-            if (isFirst)
+            if (isFirst) {
                 unification = type.getAnnotations();
-            else
+            } else {
                 unification = factory.unify(unification, type.getAnnotations());
+            }
             isFirst = false;
         }
 
+        // Remove a previously existing unqualified annotation on the type.
+        alub.removeUnqualified();
         alub.addAnnotations(unification);
 
         if (alub.getKind() == TypeKind.DECLARED) {

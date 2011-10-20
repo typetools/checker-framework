@@ -4,6 +4,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
+import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
@@ -22,7 +23,7 @@ public class LockChecker extends BaseTypeChecker {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
         AnnotationMirror guardedBy = annoFactory.fromClass(GuardedBy.class);
-        AnnotationMirror unqualified = null;
+        AnnotationMirror unqualified = annoFactory.fromClass(Unqualified.class);
 
         GraphQualifierHierarchy.Factory factory =
             new GraphQualifierHierarchy.Factory(this);
