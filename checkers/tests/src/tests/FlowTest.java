@@ -11,7 +11,7 @@ public class FlowTest extends ParameterizedCheckerTest {
 
     public FlowTest(File testFile) {
         super(testFile, checkers.util.test.FlowTestChecker.class.getName(),
-                "flow");
+                "flow", "-Anomsgtext");
     }
 
     @Parameters
