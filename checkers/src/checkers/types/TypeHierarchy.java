@@ -78,7 +78,9 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        // System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n", rhs, rhs.getKind(), rhs.getClass(), lhs, lhs.getKind(), lhs.getClass());
+        // System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n",
+        //        rhs, rhs.getKind(), rhs.getClass(),
+        //        lhs, lhs.getKind(), lhs.getClass());
         // If we already checked this type (in case of a recursive type bound)
         // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
@@ -115,7 +117,8 @@ public class TypeHierarchy {
         // related to bug tests/framework/OverrideCrash
         if (rhsBase == null) rhsBase = rhs;
 
-        // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n", lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
+        // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n",
+        //        lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
         {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
