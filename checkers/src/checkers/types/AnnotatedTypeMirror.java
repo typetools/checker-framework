@@ -9,9 +9,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-
+import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
@@ -20,9 +18,10 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
-
 import checkers.nullness.quals.NonNull;
-import checkers.quals.TypeQualifier;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Represents an annotated type in the Java programming language.
@@ -356,6 +355,10 @@ public abstract class AnnotatedTypeMirror {
      * annotations were unchanged
      */
     public boolean removeAnnotation(AnnotationMirror a) {
+        // Going from the AnnotationMirror to its name and then calling
+        // getAnnotation
+        // ensures that we get the canonical AnnotationMirror that can be
+        // removed.
         return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
     }
 
@@ -364,11 +367,21 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Remove an Unqualified annotation if it exists. This might be a good thing
+     * to do before adding a new annotation to a type.
+     */
+    public void removeUnqualified() {
+        // TODO: optimize this?
+        removeAnnotation(Unqualified.class);
+    }
+
+    /**
      * Removes multiple annotations from the type.
-     *
-     * @param annotations the annotations to remove
+     * 
+     * @param annotations
+     *            the annotations to remove
      * @return true if at least one annotation was removed, false if the type's
-     * annotations were unchanged
+     *         annotations were unchanged
      */
     public boolean removeAnnotations(Iterable<? extends AnnotationMirror> annotations) {
         boolean changed = false;
