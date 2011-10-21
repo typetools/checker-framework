@@ -111,6 +111,6 @@ public interface Tree {
         private final Class<? extends Tree> associatedInterface;
     }
 
-    @PolyRead Kind getKind() @PolyRead;
-    <R,D> R accept(TreeVisitor<R,D> visitor, D data) @ReadOnly;
+    @PolyRead Kind getKind(@PolyRead Tree this);
+    <R,D> R accept(@ReadOnly Tree this, TreeVisitor<R,D> visitor, D data);
 }
