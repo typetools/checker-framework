@@ -42,7 +42,7 @@ class PolyReads {
         return null;
     }
 
-    @PolyRead Object testAsReadOnlyReceiver(@PolyRead Object s) @ReadOnly {
+    @PolyRead Object testAsReadOnlyReceiver(@ReadOnly PolyReads this, @PolyRead Object s) {
         mObject = s;           // error, s might be readonly
         tmObject = s;          // error, local field, and unassignable (s readonly, mutable class, for example)
         roObject = s;          // error, local field
@@ -61,7 +61,7 @@ class PolyReads {
         return null;
     }
 
-    @PolyRead Object testAsPolyReadReceiver(@PolyRead Object s) @PolyRead {
+    @PolyRead Object testAsPolyReadReceiver(@PolyRead PolyReads this, @PolyRead Object s) {
         mObject = s;           // error, s might be readonly
         tmObject = s;          // error, local field
         roObject = s;          // error, local field

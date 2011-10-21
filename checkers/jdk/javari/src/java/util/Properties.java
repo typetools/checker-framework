@@ -35,15 +35,15 @@ public class Properties extends Hashtable<Object,Object> {
     }
 
     @Deprecated
-    public synchronized void save(OutputStream out, String comments) @ReadOnly {
+    public synchronized void save(@ReadOnly Properties this, OutputStream out, String comments) {
         throw new RuntimeException("skeleton method");
     }
 
-    public void store(Writer writer, String comments) @ReadOnly throws IOException {
+    public void store(@ReadOnly Properties this, Writer writer, String comments) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public void store(OutputStream out, String comments) @ReadOnly throws IOException {
+    public void store(@ReadOnly Properties this, OutputStream out, String comments) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -53,37 +53,37 @@ public class Properties extends Hashtable<Object,Object> {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void storeToXML(OutputStream os, String comment) @ReadOnly throws IOException {
+    public synchronized void storeToXML(@ReadOnly Properties this, OutputStream os, String comment) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void storeToXML(OutputStream os, String comment, String encoding) @ReadOnly
+    public synchronized void storeToXML(@ReadOnly Properties this, OutputStream os, String comment, String encoding)
         throws IOException
     {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProperty(String key) @ReadOnly {
+    public String getProperty(@ReadOnly Properties this, String key) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProperty(String key, String defaultValue) @ReadOnly {
+    public String getProperty(@ReadOnly Properties this, String key, String defaultValue) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Enumeration<?> propertyNames() @ReadOnly {
+    public Enumeration<?> propertyNames(@ReadOnly Properties this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Set<String> stringPropertyNames() @ReadOnly {
+    public Set<String> stringPropertyNames(@ReadOnly Properties this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public void list(PrintStream out) @ReadOnly {
+    public void list(@ReadOnly Properties this, PrintStream out) {
         throw new RuntimeException("skeleton method");
     }
 
-    public void list(PrintWriter out) @ReadOnly {
+    public void list(@ReadOnly Properties this, PrintWriter out) {
         throw new RuntimeException("skeleton method");
     }
 }
