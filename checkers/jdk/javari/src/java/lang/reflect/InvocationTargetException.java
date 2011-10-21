@@ -17,11 +17,11 @@ public class InvocationTargetException extends Exception {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getTargetException() @ReadOnly {
+    public Throwable getTargetException(@ReadOnly InvocationTargetException this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getCause() @ReadOnly {
+    public Throwable getCause(@ReadOnly InvocationTargetException this) {
         throw new RuntimeException("skeleton method");
     }
 }
