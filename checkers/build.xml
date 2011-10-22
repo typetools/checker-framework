@@ -256,7 +256,7 @@ ${build.version} of the 'javac.jar' library."/>
             dir="${basedir}"
             printsummary="true"
             haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${build}/../jdk/jdk.jar"/>
+            <jvmarg line="-Xbootclasspath/p:${build}/../jdk/jdk.jar:${compiler.lib}"/>
             <jvmarg line="-ea"/>
 
             <classpath>
@@ -281,7 +281,7 @@ ${build.version} of the 'javac.jar' library."/>
             dir="${basedir}"
           printsummary="true"
           haltonfailure="${halt.on.test.failure}">
-          <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${build}/../jdk/jdk.jar"/>
+          <jvmarg line="-Xbootclasspath/p:${build}/../jdk/jdk.jar:${compiler.lib}"/>
           <jvmarg line="-ea"/>
 
           <classpath>
