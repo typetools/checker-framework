@@ -1,14 +1,11 @@
 package checkers.nullness;
 
+import static checkers.nullness.NullnessFlow.hasVar;
+import static checkers.nullness.NullnessFlow.isNull;
+import static checkers.nullness.NullnessFlow.var;
+
 import java.io.PrintStream;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -20,22 +17,10 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.InstanceOfTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreeScanner;
-
-import static checkers.nullness.NullnessFlow.*;
 
 /**
  * A utility class used by a NonNull-specific flow-sensitive qualifier inference
@@ -58,16 +43,16 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
 
     private boolean isNullPolyNull = false;
 
-    private List<String> nonnullExpressions = new LinkedList<String>();
-    private List<String> nullableExpressions = new LinkedList<String>();
+    private final List<String> nonnullExpressions = new LinkedList<String>();
+    private final List<String> nullableExpressions = new LinkedList<String>();
 
-    private List<VariableElement> nonnullElements = new LinkedList<VariableElement>();
-    private List<VariableElement> nullableElements = new LinkedList<VariableElement>();
+    private final List<VariableElement> nonnullElements = new LinkedList<VariableElement>();
+    private final List<VariableElement> nullableElements = new LinkedList<VariableElement>();
 
     /** Variables that should be ignored when setting annoWhenFalse. */
     private final Set<Element> excludes = new HashSet<Element>();
 
-    private Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
+    private final Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
 
     protected final NullnessAnnotatedTypeFactory typefactory;
     protected final NullnessFlow nullnessFlow;
@@ -367,11 +352,11 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             } else {
                 AnnotatedTypeMirror leftType = typefactory.getAnnotatedType(left);
                 AnnotatedTypeMirror rightType = typefactory.getAnnotatedType(right);
-                if (leftType.hasAnnotation(typefactory.NONNULL)
-                        && !rightType.hasAnnotation(typefactory.NONNULL))
+                if (leftType.hasEffectiveAnnotation(typefactory.NONNULL)
+                        && !rightType.hasEffectiveAnnotation(typefactory.NONNULL))
                     mark(var(right), true);
-                if (rightType.hasAnnotation(typefactory.NONNULL)
-                        && !leftType.hasAnnotation(typefactory.NONNULL))
+                if (rightType.hasEffectiveAnnotation(typefactory.NONNULL)
+                        && !leftType.hasEffectiveAnnotation(typefactory.NONNULL))
                     mark(var(left), true);
             }
 

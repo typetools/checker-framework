@@ -100,7 +100,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // checkForNullability(node.getExpression(), "locking.nullable");
         // raw is sufficient
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-        if (type.hasAnnotation(NULLABLE))
+        if (type.hasEffectiveAnnotation(NULLABLE))
             checker.report(Result.failure("locking.nullable", node), node);
 
         return super.visitSynchronized(node, p);
@@ -146,10 +146,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && right.hasAnnotation(NONNULL))
+                    && right.hasEffectiveAnnotation(NONNULL))
                 checker.report(Result.warning("known.nonnull", rightOp.toString()), node);
             else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasAnnotation(NONNULL))
+                    && left.hasEffectiveAnnotation(NONNULL))
                 checker.report(Result.warning("known.nonnull", leftOp.toString()), node);
         }
     }
@@ -306,7 +306,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             // and are qualified as nonnull
             if (var.getInitializer() == null
                 // TODO: check whether there is an initializer block that sets this variable.
-                    && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
+                    && atypeFactory.getAnnotatedType(var).hasEffectiveAnnotation(NONNULL)
                     && (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)
                         || ! atypeFactory.getAnnotatedType(var).getKind().isPrimitive())
                     && atypeFactory.getDeclAnnotation(varElt, LazyNonNull.class) == null
@@ -349,7 +349,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         } else {
             // Claim that methods with a @NonNull receiver are invokable so that
             // visitMemberSelect issues dereference errors instead.
-            if (method.getReceiverType().hasAnnotation(NONNULL))
+            if (method.getReceiverType().hasEffectiveAnnotation(NONNULL))
                 return true;
         }
         return super.checkMethodInvocability(method, node);

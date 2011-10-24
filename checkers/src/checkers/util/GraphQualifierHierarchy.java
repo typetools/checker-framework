@@ -499,17 +499,19 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
             this.a2 = a2;
         }
 
+        @Override
         public int hashCode() {
             if (hashCode == -1) {
                 hashCode = 31;
                 if (a1 != null)
-                    hashCode += 17 * a1.toString().hashCode();
+                    hashCode += 17 * AnnotationUtils.annotationName(a1).toString().hashCode();
                 if (a2 != null)
-                    hashCode += 17 * a2.toString().hashCode();
+                    hashCode += 17 * AnnotationUtils.annotationName(a2).toString().hashCode();
             }
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof AnnotationPair))
                 return false;

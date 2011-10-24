@@ -1,11 +1,12 @@
 package checkers.interning;
 
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 
-import checkers.basetype.*;
-import checkers.interning.quals.*;
+import checkers.basetype.BaseTypeChecker;
+import checkers.interning.quals.Interned;
+import checkers.interning.quals.PolyInterned;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
@@ -24,8 +25,9 @@ import checkers.source.SupportedLintOptions;
  *
  * @checker.framework.manual #interning-checker Interning checker
  */
-// Why is Unqualified not listed here??
-@TypeQualifiers({ Interned.class, PolyInterned.class })
+// TODO: Strange! When I add the missing Unqualified.class qualifier,
+// test case Arrays fails. Why?
+@TypeQualifiers({ Interned.class, PolyInterned.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {
