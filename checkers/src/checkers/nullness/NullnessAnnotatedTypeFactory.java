@@ -5,20 +5,22 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.*;
+import checkers.flow.Flow;
 import checkers.nullness.quals.*;
-import checkers.quals.*;
+import checkers.quals.DefaultLocation;
+import checkers.quals.DefaultQualifier;
+import checkers.quals.Unused;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
+import com.sun.source.util.TreePath;
 
 /**
  * Adds the {@link NonNull} annotation to a type that is:
@@ -156,6 +158,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             annotateIfStatic(elt, type);
 
         typeAnnotator.visit(type);
+
         // case 6: apply default
         defaults.annotate(elt, type);
         if (elt instanceof TypeElement)
@@ -197,7 +200,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     public final AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         AnnotatedDeclaredType dt = super.getEnclosingType(element, tree);
-        if (dt != null && dt.hasAnnotation(NULLABLE)) {
+        if (dt != null && dt.hasEffectiveAnnotation(NULLABLE)) {
             dt.removeAnnotation(NULLABLE);
             dt.addAnnotation(NONNULL);
         }
@@ -307,16 +310,16 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (decl != null
                 && decl instanceof VariableTree
                 && ((VariableTree) decl).getInitializer() != null
-                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasAnnotation(NONNULL)) {
+                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasEffectiveAnnotation(NONNULL)) {
                 return false;
             }
         }
 
         // case 13
         final AnnotatedTypeMirror select = rawnessFactory.getReceiver((ExpressionTree) tree);
-        if (select != null && select.hasAnnotation(RAW)
-                && !type.hasAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
-            boolean wasNN = type.hasAnnotation(NONNULL);
+        if (select != null && select.hasEffectiveAnnotation(RAW)
+                && !type.hasEffectiveAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
+            boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
             type.clearAnnotations();
             type.addAnnotation(LAZYNONNULL);
             return wasNN;
@@ -384,7 +387,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
             if (!type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
-            } else if (type.hasAnnotation(RAW)) {
+            } else if (type.hasEffectiveAnnotation(RAW)) {
                 type.removeAnnotation(NONNULL);
             }
 

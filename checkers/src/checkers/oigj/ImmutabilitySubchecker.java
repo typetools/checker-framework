@@ -6,19 +6,16 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.*;
 import checkers.quals.TypeQualifiers;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.QualifierHierarchy;
-import checkers.types.TypeHierarchy;
+import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
@@ -64,7 +61,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         // TODO: Handle CoVariant(X_i, C)
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-            if (lhs.hasAnnotation(MUTABLE))
+            if (lhs.hasEffectiveAnnotation(MUTABLE))
                 return super.isSubtypeTypeArguments(rhs, lhs);
 
             if (!lhs.getTypeArguments().isEmpty()
