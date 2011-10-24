@@ -1,3 +1,4 @@
+import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 
 package java.util.regex;
@@ -11,6 +12,7 @@ class Pattern {
 package java.lang;
 
 class String {
+    public @PolyRegex String intern() @PolyRegex;
     public boolean matches(@Regex String regex);
     public String replaceFirst(@Regex String regex, String replacement);
     public String replaceAll(@Regex String regex, String replacement);
