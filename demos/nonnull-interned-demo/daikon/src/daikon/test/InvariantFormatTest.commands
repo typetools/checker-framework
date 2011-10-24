@@ -1,0 +1,613 @@
+; Test the unary scalar invariants
+
+; All greater than or equal to -6
+daikon.inv.unary.scalar.LowerBound
+int
+Goal (daikon): a >= -6
+Goal (java): a >= -6
+Goal (esc): a >= -6
+Goal (ioa): a >= -6
+Goal (jml): a >= -6
+Goal (dbc): a >= -6
+Goal (simplify): (>= |a| -6)
+5
+7
+-6
+1
+2
+-3
+
+; All equal to 1 mod 3
+daikon.inv.unary.scalar.Modulus
+int
+Goal (daikon): a == 1  (mod 3)
+Goal (java): a % 3 == 1
+Goal (esc): warning: method daikon.inv.unary.scalar.Modulus.format(OutputFormat:ESC/Java) needs to be implemented: a == 1  (mod 3)
+Goal (ioa): mod(a, 3) = 1
+Goal (jml): a % 3 == 1
+Goal (dbc): a % 3 == 1
+Goal (simplify): (EQ (MOD |a| 3) 1)
+1
+4
+7
+10
+
+; All not equal to 2 mod 5
+daikon.inv.unary.scalar.NonModulus
+int
+Goal (daikon): a != 2  (mod 5)
+Goal (java): a % 5 != 2
+Goal (esc): warning: method daikon.inv.unary.scalar.NonModulus.format(OutputFormat:ESC/Java) needs to be implemented: a != 2  (mod 5)
+Goal (ioa): mod(a, 5) ~= 2
+Goal (jml): a % 5 != 2
+Goal (dbc): a % 5 != 2
+Goal (simplify): (NEQ (MOD |a| 5) 2)
+0
+1
+3
+4
+5
+6
+8
+9
+10
+11
+13
+14
+
+; NonZero requires no samples
+daikon.inv.unary.scalar.NonZero
+int
+Goal (daikon): a != 0
+Goal (java): a != 0
+Goal (esc): a != 0
+Goal (ioa): a ~= 0
+Goal (jml): a != 0
+Goal (dbc): a != 0
+Goal (simplify): (NEQ |a| 0)
+
+; All the time it is 1, 5, or 9
+daikon.inv.unary.scalar.OneOfScalar
+int
+Goal (daikon): a one of { 1, 5, 9 }
+Goal (java): a == 1 || a == 5 || a == 9
+Goal (esc): a == 1 || a == 5 || a == 9
+Goal (ioa): (a = 1) \/ (a = 5) \/ (a = 9)
+Goal (jml): a == 1 || a == 5 || a == 9
+Goal (dbc): a == 1 || a == 5 || a == 9
+Goal (simplify): (OR (EQ |a| 1) (EQ |a| 5) (EQ |a| 9))
+1
+5
+9
+9
+9
+5
+9
+1
+1
+1
+5
+5
+9
+
+; Positive requires no samples
+daikon.inv.unary.scalar.Positive
+int
+Goal (daikon): a > 0
+Goal (java): a > 0
+Goal (esc): a > 0
+Goal (ioa): a > 0
+Goal (jml): a > 0
+Goal (dbc): a > 0
+Goal (simplify): a > 0
+
+; All less than or equal to 10
+daikon.inv.unary.scalar.UpperBound
+int
+Goal (daikon): a <= 10
+Goal (java): a <= 10
+Goal (esc): a <= 10
+Goal (ioa): a <= 10
+Goal (jml): a <= 10
+Goal (dbc): a <= 10
+Goal (simplify): (<= |a| 10)
+1
+2
+5
+7
+-3
+-99
+10
+
+; Test the unary sequence invariants
+; All greater than or equal to -57
+daikon.inv.unary.sequence.EltLowerBound
+int_array
+Goal (daikon): a[] elements >= -57
+Goal (java): daikon.Quant.eltsGTE(a, -57)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] >= -57))
+Goal (ioa): \A i : Int (i \in a => a[i] >= -57)
+Goal (jml): daikon.Quant.eltsGTE(a, -57)
+Goal (dbc): daikon.Quant.eltsGTE(a, -57)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (>= (select (select elems |a|) |i|) -57)))
+[102 5 92 33 -54 -2 -57 -3 -24 29 93]
+
+; EltNonZero needs no samples
+daikon.inv.unary.sequence.EltNonZero
+int_array
+Goal (daikon): a[] elements != 0
+Goal (java): daikon.Quant.eltsNotEqual(a, 0)
+Goal (esc): \nonnullelements(a)
+Goal (ioa): \A i : Int (i \in a => a[i]~=0)
+Goal (jml): daikon.Quant.eltsNotEqual(a, 0)
+Goal (dbc): daikon.Quant.eltsNotEqual(a, 0)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (NEQ (select (select elems |a|) |i|) 0)))
+
+; All are 4, 5, or 6
+daikon.inv.unary.sequence.EltOneOf
+int_array
+Goal (daikon): a[] elements one of { 4, 5, 6 }
+Goal (java): daikon.Quant.subsetOf(a, new long[] { 4, 5, 6 })
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] == 4 || a[i] == 5 || a[i] == 6))
+Goal (ioa): \A i : Int (i \in a => (i = 4) \/ (i = 5) \/ (i = 6))
+Goal (jml): daikon.Quant.subsetOf(a, new long[] { 4, 5, 6 })
+Goal (dbc): daikon.Quant.subsetOf(a, new long[] { 4, 5, 6 })
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (OR (EQ (select (select elems |a|) |i|) 4) (EQ (select (select elems |a|) |i|) 5) (EQ (select (select elems |a|) |i|) 6))))
+[4 5 6 5 4 5 6 5 4 4 4 5 5 5 6 6 6]
+
+; All less than 895
+daikon.inv.unary.sequence.EltUpperBound
+int_array
+Goal (daikon): a[] elements <= 895
+Goal (java): daikon.Quant.eltsLTE(a, 895)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] <= 895))
+Goal (ioa): \A i : Int (i \in a => a[i] <= 895)
+Goal (jml): daikon.Quant.eltsLTE(a, 895)
+Goal (dbc): daikon.Quant.eltsLTE(a, 895)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (<= (select (select elems |a|) |i|) 895)))
+[1 -99 2 456 895 673 2 -23 -123 -9824 23]
+
+; Sorted ascending
+; Prints incorrectly
+daikon.inv.unary.sequence.EltwiseIntLessThan
+int_array
+Goal (daikon): a[] sorted by <
+Goal (java): daikon.Quant.eltwiseLT(a)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= a.length-1) ==> ((i+1 == j) ==> (a[i] < a[j])))
+Goal (ioa): \A i : Int \A j : Int ((i \in a /\ j \in a /\ i+1 = j) => a[i] = a[j])
+Goal (jml): daikon.Quant.eltwiseLT(a)
+Goal (dbc): daikon.Quant.eltwiseLT(a)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |a|) 1)) (EQ (+ |i| 1) |j|)) (< (select (select elems |a|) |i|) (select (select elems |a|) |j|))))
+[1 2 3 5 7 8 9 100]
+
+; No duplicates in array
+daikon.inv.unary.sequence.NoDuplicates
+int_array
+Goal (daikon): a[] contains no duplicates
+Goal (java): daikon.Quant.noDups(a)
+Goal (esc): warning: method daikon.inv.unary.sequence.NoDuplicates.format(OutputFormat:ESC/Java) needs to be implemented: a[] contains no duplicates
+Goal (ioa): \A i : Int \A j : Int ((i \in a /\ j \in a /\ a[i] = a[j]) => i = j)
+Goal (jml): daikon.Quant.noDups(a)
+Goal (dbc): daikon.Quant.noDups(a)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |a|) 1)) (NEQ |i| |j|)) (NEQ (select (select elems |a|) |i|) (select (select elems |a|) |j|))))
+[1 55 2 -123 873 24 99 239]
+
+; OneOfSequence not currently implemented
+
+; array[index] > index
+; Causes an error now - not exactly sure what the statements inside mean
+daikon.inv.unary.sequence.SeqIndexIntGreaterThan
+int_array
+Goal (daikon): a[i] > i
+Goal (java): daikon.Quant.eltsGtIndex(a)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] > i))
+Goal (ioa): \A i : Int (i \in a => i > a[i])
+Goal (jml): daikon.Quant.eltsGtIndex(a)
+Goal (dbc): daikon.Quant.eltsGtIndex(a)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (> (select (select elems |a|) |i|) (- |i| 0))))
+[5 10 15 20 25 30 35 40]
+
+; array[index] != index
+daikon.inv.unary.sequence.SeqIndexIntNonEqual
+int_array
+Goal (daikon): a[i] != i
+Goal (java): daikon.Quant.eltsNotEqualIndex(a)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] != i))
+Goal (ioa): \A i : Int (i \in a => i ~= a[i])
+Goal (jml): daikon.Quant.eltsNotEqualIndex(a)
+Goal (dbc): daikon.Quant.eltsNotEqualIndex(a)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (NEQ (select (select elems |a|) |i|) (- |i| 0))))
+[5 10 15 20 25 30 35 40]
+
+; Testing unary string invariants
+; Always equal to "testString"
+daikon.inv.unary.string.OneOfString
+string
+Goal (daikon): a == "testString"
+Goal (java): a.equals("testString")
+Goal (esc): warning: method daikon.inv.unary.string.OneOfString.format(OutputFormat:ESC/Java) needs to be implemented: a == "testString"
+Goal (ioa): a = "testString"))
+Goal (jml): a.equals("testString")
+Goal (dbc): a.equals("testString")
+Goal (simplify): (EQ |a| |_string_testString|)
+"testString"
+
+; Testing unary stringsequence invariants
+
+; CommonStringSequence not yet implemented in JML... not sure what it does...
+
+; Each element is one of the following: "testString" or "gnirtStset"
+; Prints incorrectly
+daikon.inv.unary.stringsequence.EltOneOfString
+string_array
+Goal (daikon): a[] elements one of { "gnirtStset", "testString" }
+Goal (java): daikon.Quant.subsetOf(a, new String[] { "gnirtStset", "testString" })
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (warning: method daikon.inv.unary.stringsequence.EltOneOfString.format(OutputFormat:ESC/Java) needs to be implemented: a[] elements one of { "gnirtStset", "testString" }))
+Goal (ioa): \A i : Int (i \in a => i = "gnirtStset") \/ (i = "testString")))
+Goal (jml): daikon.Quant.subsetOf(a, new String[] { "gnirtStset", "testString" })
+Goal (dbc): daikon.Quant.subsetOf(a, new String[] { "gnirtStset", "testString" })
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (OR (EQ (select (select elems |a|) |i|) |_string_gnirtStset|) (EQ (select (select elems |a|) |i|) |_string_testString|))))
+["testString" "testString" "gnirtStset" "gnirtStset" "testString" "gnirtStset"]
+
+; OneOfStringSequence not yet implemented in JML
+
+; Test the binary twoScalar invariants
+
+; Unable to test FunctionUnary with this testing framework: it needs extra data than can be easily supplied
+
+; IntEqual does not need any samples
+daikon.inv.binary.twoScalar.IntEqual
+int int
+Goal (daikon): a == b
+Goal (java): a == b
+Goal (esc): a == b
+Goal (ioa): a = b
+Goal (jml): a == b
+Goal (dbc): a == b
+Goal (simplify): (EQ |a| |b|)
+
+; IntGreaterEqual does not need any samples
+daikon.inv.binary.twoScalar.IntGreaterEqual
+int int
+Goal (daikon): a >= b
+Goal (java): a >= b
+Goal (esc): a >= b
+Goal (ioa): a >= b
+Goal (jml): a >= b
+Goal (dbc): a >= b
+Goal (simplify): (>= |a| |b|)
+
+; IntGreaterThan does not need any samples
+daikon.inv.binary.twoScalar.IntGreaterThan
+int int
+Goal (daikon): a > b
+Goal (java): a > b
+Goal (esc): a > b
+Goal (ioa): a > b
+Goal (jml): a > b
+Goal (dbc): a > b
+Goal (simplify): (> |a| |b|)
+
+; IntLessEqual does not need any samples
+daikon.inv.binary.twoScalar.IntLessEqual
+int int
+Goal (daikon): a <= b
+Goal (java): a <= b
+Goal (esc): a <= b
+Goal (ioa): a <= b
+Goal (jml): a <= b
+Goal (dbc): a <= b
+Goal (simplify): (<= |a| |b|)
+
+; IntNonEqual does not need any samples
+daikon.inv.binary.twoScalar.IntNonEqual
+int int
+Goal (daikon): a != b
+Goal (java): a != b
+Goal (esc): a != b
+Goal (ioa): a ~= b
+Goal (jml): a != b
+Goal (dbc): a != b
+Goal (simplify): (NEQ |a| |b|)
+
+; b = -3*a + 1
+daikon.inv.binary.twoScalar.LinearBinary
+int int
+Goal (daikon): 3 * a + b - 1 == 0
+Goal (java): 3 * a + b - 1 == 0
+Goal (esc): 3 * a + b - 1 == 0
+Goal (ioa): 3 * a + b - 1 = 0
+Goal (jml): 3 * a + b - 1 == 0
+Goal (dbc): 3 * a + b - 1 == 0
+Goal (simplify): (EQ 0 (+ (+ (* 3 |a|) |b|) -1))
+1
+-2
+10
+-29
+-20
+61
+7
+-20
+
+daikon.inv.binary.twoScalar.NumericInt$Divides boolean false
+int int
+Goal (daikon): a % b == 0
+Goal (java): a % b == 0
+Goal (esc): a % b == 0
+Goal (ioa): a % b = 0
+Goal (jml): a % b == 0
+Goal (dbc): a % b == 0
+Goal (simplify): (EQ 0 (MOD |a| |b|))
+
+daikon.inv.binary.twoScalar.NumericInt$Divides boolean true
+int int
+Goal (daikon): b % a == 0
+Goal (java): b % a == 0
+Goal (esc): b % a == 0
+Goal (ioa): b % a = 0
+Goal (jml): b % a == 0
+Goal (dbc): b % a == 0
+Goal (simplify): (EQ 0 (MOD |b| |a|))
+
+; Testing binary twoSequence invariants
+
+; Unable to test PairwiseFunctionUnary with this testing framework: it needs extra data than can be easily supplied
+
+; a[i] == b[i]
+daikon.inv.binary.twoSequence.PairwiseIntEqual
+int_array int_array
+Goal (daikon): a[] == b[] (elementwise)
+Goal (java): daikon.Quant.pairwiseEqual(a, b)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= b.length-1 && i == j) ==> (a[i] == b[j]))
+Goal (ioa): \A i : Int (a[i] = b[i])
+Goal (jml): daikon.Quant.pairwiseEqual(a, b)
+Goal (dbc): daikon.Quant.pairwiseEqual(a, b)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |b|) 1)) (EQ |i| |j|)) (EQ (select (select elems |a|) |i|) (select (select elems |b|) |j|))))
+[5 5 5 5 5 5 5 5]
+[5 5 5 5 5 5 5 5]
+
+; a[i] < b[i]
+daikon.inv.binary.twoSequence.PairwiseIntLessThan
+int_array int_array
+Goal (daikon): a[] < b[] (elementwise)
+Goal (java): daikon.Quant.pairwiseLT(a, b)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= b.length-1 && i == j) ==> (a[i] < b[j]))
+Goal (ioa): \A i : Int (a[i] < b[i])
+Goal (jml): daikon.Quant.pairwiseLT(a, b)
+Goal (dbc): daikon.Quant.pairwiseLT(a, b)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |b|) 1)) (EQ |i| |j|)) (< (select (select elems |a|) |i|) (select (select elems |b|) |j|))))
+[-5 0 5 10 15 20 25 30]
+[5 10 15 20 25 30 35 40]
+
+; a[i] > b[i]
+daikon.inv.binary.twoSequence.PairwiseIntGreaterThan
+int_array int_array
+Goal (daikon): a[] > b[] (elementwise)
+Goal (java): daikon.Quant.pairwiseGT(a, b)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= b.length-1 && i == j) ==> (a[i] > b[j]))
+Goal (ioa): \A i : Int (a[i] > b[i])
+Goal (jml): daikon.Quant.pairwiseGT(a, b)
+Goal (dbc): daikon.Quant.pairwiseGT(a, b)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |b|) 1)) (EQ |i| |j|)) (> (select (select elems |a|) |i|) (select (select elems |b|) |j|))))
+[5 10 15 20 25 30 35 40]
+[-5 0 5 10 15 20 25 30]
+
+; a[i] <= b[i]
+daikon.inv.binary.twoSequence.PairwiseIntLessEqual
+int_array int_array
+Goal (daikon): a[] <= b[] (elementwise)
+Goal (java): daikon.Quant.pairwiseLTE(a, b)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= b.length-1 && i == j) ==> (a[i] <= b[j]))
+Goal (ioa): \A i : Int (a[i] <= b[i])
+Goal (jml): daikon.Quant.pairwiseLTE(a, b)
+Goal (dbc): daikon.Quant.pairwiseLTE(a, b)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |b|) 1)) (EQ |i| |j|)) (<= (select (select elems |a|) |i|) (select (select elems |b|) |j|))))
+[-5 0 5 10 15 20 25 30]
+[5 0 15 20 25 30 35 40]
+
+; a[i] >= b[i]
+daikon.inv.binary.twoSequence.PairwiseIntGreaterEqual
+int_array int_array
+Goal (daikon): a[] >= b[] (elementwise)
+Goal (java): daikon.Quant.pairwiseGTE(a, b)
+Goal (esc): (\forall int i, j; (0 <= i && i <= a.length-1 && 0 <= j && j <= b.length-1 && i == j) ==> (a[i] >= b[j]))
+Goal (ioa): \A i : Int (a[i] >= b[i])
+Goal (jml): daikon.Quant.pairwiseGTE(a, b)
+Goal (dbc): daikon.Quant.pairwiseGTE(a, b)
+Goal (simplify): (FORALL (|i| |j|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1)) (<= 0 |j|) (<= |j| (- (arrayLength |b|) 1)) (EQ |i| |j|)) (>= (select (select elems |a|) |i|) (select (select elems |b|) |j|))))
+[5 0 15 20 25 30 35 40]
+[-5 0 5 10 15 20 25 30]
+
+; a[i] = b[b.length-i]
+daikon.inv.binary.twoSequence.Reverse
+int_array int_array
+Goal (daikon): a[] is the reverse of b[]
+Goal (java): daikon.Quant.isReverse(a, b)
+Goal (esc): warning: method daikon.inv.binary.twoSequence.Reverse.format(OutputFormat:ESC/Java) needs to be implemented: a[] is the reverse of b[]
+Goal (ioa): Not valid for Sets or Arrays: a[] is the reverse of b[]
+Goal (jml): daikon.Quant.isReverse(a, b)
+Goal (dbc): daikon.Quant.isReverse(a, b)
+Goal (simplify): (AND (EQ (- (- (arrayLength |a|) 1) 0) (- (- (arrayLength |b|) 1) 0)) (<= 0 0) (< (- (arrayLength |a|) 1) (arrayLength |a|)) (<= 0 0) (< (- (arrayLength |b|) 1) (arrayLength |b|)) (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (< |i| (- (- (arrayLength |a|) 1) 0))) (EQ (select (select elems |a|) (+ 0 |i|)) (select (select elems |b|) (- (- (arrayLength |b|) 1) |i|))))))
+
+; a is subsequence of b
+daikon.inv.binary.twoSequence.SubSequence
+int_array int_array
+Goal (daikon): a[] is a subsequence of b[]
+Goal (java): warning: method daikon.inv.binary.twoSequence.SubSequence.format(OutputFormat:Java) needs to be implemented: a[] is a subsequence of b[]
+Goal (esc): warning: method daikon.inv.binary.twoSequence.SubSequence.format(OutputFormat:ESC/Java) needs to be implemented: a[] is a subsequence of b[]
+Goal (ioa): a \subseteq b
+Goal (jml): warning: method daikon.inv.binary.twoSequence.SubSequence.format(OutputFormat:JML) needs to be implemented: a[] is a subsequence of b[]
+Goal (dbc): warning: method daikon.inv.binary.twoSequence.SubSequence.format(OutputFormat:DBC) needs to be implemented: a[] is a subsequence of b[]
+Goal (simplify): format_simplify disabled
+; Goal (simplify): (IMPLIES (AND (>= (+ (- (- (arrayLength |a|) 1) 0) 1) 0) (>= (+ (- (- (arrayLength |b|) 1) 0) 1) 0)) (AND (AND (NEQ (+ (- (- (arrayLength |a|) 1) 0) 1) 0) (>= (+ (- (- (arrayLength |b|) 1) 0) 1) (+ (- (- (arrayLength |a|) 1) 0) 1))) (EXISTS (|__shift|) (AND (<= 0 |__shift|) (<= (+ |__shift| (+ (- (- (arrayLength |a|) 1) 0) 1)) (+ (- (- (arrayLength |b|) 1) 0) 1)) (FORALL (|__index|) (IMPLIES (AND (<= 0 |__index|) (< |__index| (+ (- (- (arrayLength |a|) 1) 0) 1))) (EQ (select (select elems |a|) (+ 0 |__index|)) (select (select elems |b|) (+ (+ 0 |__index|) |__shift|)))))))))
+[1 2 3 4 5 6]
+[7 8 1 2 3 4 5 6 7 8]
+
+; SubSet currently unimplemented in JML
+
+; a == b (string format)
+daikon.inv.binary.twoString.StringEqual
+string string
+Goal (daikon): a == b
+Goal (java): a.equals(b)
+Goal (esc): a == b
+Goal (ioa): a = b
+Goal (jml): a.equals(b)
+Goal (dbc): a.equals(b)
+Goal (simplify): (EQ |a| |b|)
+"aString"
+"aString"
+
+; Testing binary sequenceScalar invariants
+
+; a is in b
+daikon.inv.binary.sequenceScalar.Member
+int_array int
+Goal (daikon): b in a[]
+Goal (java): daikon.Quant.memberOf(b , a )
+Goal (esc): !(\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] != b))
+Goal (ioa): b \in a
+Goal (jml): daikon.Quant.memberOf(b , a )
+Goal (dbc): daikon.Quant.memberOf(b , a )
+Goal (simplify): (NOT (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (NEQ (select (select elems |a|) |i|) |b|))))
+[5 -6 7 -8 9 1 -2 3 -4 5]
+7
+
+; a[i] > b
+daikon.inv.binary.sequenceScalar.SeqIntGreaterThan
+int_array int
+Goal (daikon): a[] elements > b
+Goal (java): daikon.Quant.eltsGT(a, b)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] > b))
+Goal (ioa): \A i : Int (i \in a => a[i]>b)
+Goal (jml): daikon.Quant.eltsGT(a, b)
+Goal (dbc): daikon.Quant.eltsGT(a, b)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (> (select (select elems |a|) |i|) |b|)))
+[-9 8 -7 6 -5 4 -3 2 -1 0]
+-20
+
+; a[i] >= b
+daikon.inv.binary.sequenceScalar.SeqIntGreaterEqual
+int_array int
+Goal (daikon): a[] elements >= b
+Goal (java): daikon.Quant.eltsGTE(a, b)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] >= b))
+Goal (ioa): \A i : Int (i \in a => a[i]>=b)
+Goal (jml): daikon.Quant.eltsGTE(a, b)
+Goal (dbc): daikon.Quant.eltsGTE(a, b)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (>= (select (select elems |a|) |i|) |b|)))
+[-9 8 -7 6 -5 4 -3 -20 -1 0]
+-20
+
+; a[i] == b
+daikon.inv.binary.sequenceScalar.SeqIntEqual
+int_array int
+Goal (daikon): a[] elements == b
+Goal (java): daikon.Quant.eltsEqual(a, b)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] == b))
+Goal (ioa): \A i : Int (i \in a => a[i]=b)
+Goal (jml): daikon.Quant.eltsEqual(a, b)
+Goal (dbc): daikon.Quant.eltsEqual(a, b)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (EQ (select (select elems |a|) |i|) |b|)))
+[2 2 2 2 2 2 2 2 2 2]
+2
+
+; a[i] < b
+daikon.inv.binary.sequenceScalar.SeqIntLessThan
+int_array int
+Goal (daikon): a[] elements < b
+Goal (java): daikon.Quant.eltsLT(a, b)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] < b))
+Goal (ioa): \A i : Int (i \in a => a[i]<b)
+Goal (jml): daikon.Quant.eltsLT(a, b)
+Goal (dbc): daikon.Quant.eltsLT(a, b)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (< (select (select elems |a|) |i|) |b|)))
+[-9 8 -7 6 -5 4 -3 2 -1 0]
+20
+
+; a[i] <= b
+daikon.inv.binary.sequenceScalar.SeqIntLessEqual
+int_array int
+Goal (daikon): a[] elements <= b
+Goal (java): daikon.Quant.eltsLTE(a, b)
+Goal (esc): (\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] <= b))
+Goal (ioa): \A i : Int (i \in a => a[i]<=b)
+Goal (jml): daikon.Quant.eltsLTE(a, b)
+Goal (dbc): daikon.Quant.eltsLTE(a, b)
+Goal (simplify): (FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |a|) 1))) (<= (select (select elems |a|) |i|) |b|)))
+[20 8 -7 6 -5 4 -3 2 -1 0]
+20
+
+; Testing binary sequenceString invariants
+
+; a is in b
+daikon.inv.binary.sequenceString.MemberString
+string_array string
+Goal (daikon): b in a[]
+Goal (java): daikon.Quant.memberOf(b , a )
+Goal (esc): !(\forall int i; (0 <= i && i <= a.length-1) ==> (a[i] != b))
+Goal (ioa): b \in a
+Goal (jml): daikon.Quant.memberOf(b , a )
+Goal (dbc): daikon.Quant.memberOf(b , a )
+Goal (simplify): warning: method daikon.inv.binary.sequenceString.MemberString.format(OutputFormat:Simplify) needs to be implemented: b in a[]
+["A" "b" "C" "longerString" "under_score" "findMe" "various" "other strings" "involved" "in" "the array"]
+"findMe"
+
+; Testing ternary threeScalar invariants
+
+; Cannot test FunctionBinary within this framework
+
+; 2a + 3b - c - 6 = 0
+daikon.inv.ternary.threeScalar.LinearTernary
+int int int
+Goal (daikon): 2 * a + 3 * b - c - 6 == 0
+Goal (java): 2 * a + 3 * b - c - 6 == 0
+Goal (esc): 2 * a + 3 * b - c - 6 == 0
+Goal (ioa): 2 * a + 3 * b - c - 6 = 0
+Goal (jml): 2 * a + 3 * b - c - 6 == 0
+Goal (dbc): 2 * a + 3 * b - c - 6 == 0
+Goal (simplify): (EQ 0 (+ (+ (* 2 |a|) (* 3 |b|) (* -1 |c|)) -6))
+1
+1
+-1
+2
+3
+7
+-5
+-10
+-46
+4
+9
+29
+0
+0
+-6
+10
+10
+44
+
+; a - b - c = 0
+daikon.inv.ternary.threeScalar.LinearTernary
+int int int
+Goal (daikon): a - b - c == 0
+Goal (java): a - b - c == 0
+Goal (esc): a - b - c == 0
+Goal (ioa): a - b - c = 0
+Goal (jml): a - b - c == 0
+Goal (dbc): a - b - c == 0
+Goal (simplify): (EQ 0 (+ |a| (* -1 |b|) (* -1 |c|)))
+0
+0
+0
+1
+1
+0
+2
+2
+0
+2
+1
+1
+2
+0
+2
