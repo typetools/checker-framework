@@ -32,8 +32,8 @@ import com.sun.source.util.TreePath;
  */
 public class AnnotatedTypes {
 
-    private ProcessingEnvironment env;
-    private AnnotatedTypeFactory factory;
+    private final ProcessingEnvironment env;
+    private final AnnotatedTypeFactory factory;
 
     static int uidCounter = 0;
     int uid;
@@ -68,7 +68,7 @@ public class AnnotatedTypes {
         return asSuper.visit(t, superType);
     }
 
-    private SimpleAnnotatedTypeVisitor<AnnotatedTypeMirror, AnnotatedTypeMirror> asSuper =
+    private final SimpleAnnotatedTypeVisitor<AnnotatedTypeMirror, AnnotatedTypeMirror> asSuper =
         new SimpleAnnotatedTypeVisitor<AnnotatedTypeMirror, AnnotatedTypeMirror>() {
 
         @Override
@@ -696,7 +696,7 @@ public class AnnotatedTypes {
 
     private class TypeResolutionFinder
     extends SimpleAnnotatedTypeVisitor<List<AnnotatedTypeMirror>, AnnotatedTypeMirror> {
-        private AnnotatedTypeVariable typeToFind;
+        private final AnnotatedTypeVariable typeToFind;
 
         public TypeResolutionFinder(AnnotatedTypeVariable typeToFind) {
             this.typeToFind = typeToFind;
@@ -1146,6 +1146,14 @@ public class AnnotatedTypes {
                 }
                 if (!found && atv.getLowerBound()!=null) {
                     found = containsModifierImpl(atv.getLowerBound(), modifier, visited);
+                }
+            } else if (type.getKind() == TypeKind.WILDCARD) {
+                AnnotatedWildcardType awc = (AnnotatedWildcardType) type;
+                if (awc.getExtendsBound()!=null) {
+                    found = containsModifierImpl(awc.getExtendsBound(), modifier, visited);
+                }
+                if (!found && awc.getSuperBound()!=null) {
+                    found = containsModifierImpl(awc.getSuperBound(), modifier, visited);
                 }
             }
         }
