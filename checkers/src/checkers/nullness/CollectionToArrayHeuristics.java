@@ -9,7 +9,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MemberSelectTree;
@@ -177,7 +179,7 @@ public class CollectionToArrayHeuristics {
         assert collection != null;
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasAnnotation(factory.NONNULL))
+            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(factory.NONNULL))
             return false;
         return true;
     }

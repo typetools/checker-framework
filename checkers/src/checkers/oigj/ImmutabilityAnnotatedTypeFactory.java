@@ -1,26 +1,30 @@
 package checkers.oigj;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 
-import com.sun.source.tree.*;
-
-import checkers.oigj.quals.*;
+import checkers.oigj.quals.I;
+import checkers.oigj.quals.Immutable;
+import checkers.oigj.quals.Mutable;
+import checkers.oigj.quals.ReadOnly;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.*;
+
+import com.sun.source.tree.*;
 
 /**
  * Adds implicit and default OIGJ annotations, only if the user does not
@@ -166,12 +170,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                     // TODO: These cases are more of hacks and they should
                     // really be immutable or readonly
                     type.addAnnotation(BOTTOM_QUAL);
-                } else if (elementType.hasAnnotation(IMMUTABLE)) {
+                } else if (elementType.hasEffectiveAnnotation(IMMUTABLE)) {
                     // case 2: known immutable types
                     type.addAnnotation(IMMUTABLE);
                 } else if (p == ElementKind.LOCAL_VARIABLE) {
                     type.addAnnotation(READONLY);
-                } else if (elementType.hasAnnotation(MUTABLE)) { // not immutable
+                } else if (elementType.hasEffectiveAnnotation(MUTABLE)) { // not immutable
                     // case 7: mutable by default
                     type.addAnnotation(MUTABLE);
                 } else if (p.isClass() || p.isInterface()) {
@@ -183,7 +187,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                     // case. Why?
                     if (elem != null
                             && getAnnotatedType(
-                                    ElementUtils.enclosingClass(elem)).hasAnnotation(
+                                    ElementUtils.enclosingClass(elem)).hasEffectiveAnnotation(
                                     IMMUTABLE)) {
                         type.addAnnotation(IMMUTABLE);
                     } else {
@@ -212,11 +216,11 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
             if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
                 // TODO: hack
-                if (ownerType.hasAnnotation(MUTABLE) || ownerType.hasAnnotation(BOTTOM_QUAL))
+                if (ownerType.hasEffectiveAnnotation(MUTABLE) || ownerType.hasEffectiveAnnotation(BOTTOM_QUAL))
                     receiver.addAnnotation(MUTABLE);
                 else
                     receiver.addAnnotation(ASSIGNS_FIELDS);
-            } else if (ElementUtils.isObject(ownerElement) || ownerType.hasAnnotation(IMMUTABLE)) {
+            } else if (ElementUtils.isObject(ownerElement) || ownerType.hasEffectiveAnnotation(IMMUTABLE)) {
                 // case 3
                 receiver.addAnnotation(BOTTOM_QUAL);
             } else {
@@ -285,9 +289,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 
-                if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotation(I)) {
+                if (!hasImmutabilityAnnotation(ct) || ct.hasEffectiveAnnotation(I)) {
                     AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
-                    if (con.getReceiverType().hasAnnotation(IMMUTABLE))
+                    if (con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
                         p.addAnnotation(IMMUTABLE);
                     else
                         p.addAnnotation(MUTABLE);
@@ -332,16 +336,16 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         if (methodReceiver == null)
             return act;
         // Are we in a mutable or Immutable scope
-        if (isWithinConstructor(tree) && !methodReceiver.hasAnnotation(MUTABLE)) {
+        if (isWithinConstructor(tree) && !methodReceiver.hasEffectiveAnnotation(MUTABLE)) {
             methodReceiver.clearAnnotations();
             methodReceiver.addAnnotation(ASSIGNS_FIELDS);
         }
 
-        if (methodReceiver.hasAnnotation(MUTABLE) ||
-                methodReceiver.hasAnnotation(IMMUTABLE)) {
+        if (methodReceiver.hasEffectiveAnnotation(MUTABLE) ||
+                methodReceiver.hasEffectiveAnnotation(IMMUTABLE)) {
             return methodReceiver;
-        } else if (act.hasAnnotation(I) || act.hasAnnotation(IMMUTABLE)) {
-            if (methodReceiver.hasAnnotation(ASSIGNS_FIELDS))
+        } else if (act.hasEffectiveAnnotation(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
+            if (methodReceiver.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                 act.addAnnotation(ASSIGNS_FIELDS);
             return act;
         } else
@@ -414,7 +418,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         new AnnotatedTypeScanner<Void, Void>() {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-                if (type.hasAnnotation(I)) {
+                if (type.hasEffectiveAnnotation(I)) {
                     AnnotationMirror anno =
                         type.getAnnotation(I.class.getCanonicalName());
                     if (!mapping.containsValue(anno)) {
@@ -478,7 +482,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type,
                 Map<String, AnnotationMirror> p) {
-            if (type.hasAnnotation(I)) {
+            if (type.hasEffectiveAnnotation(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY);
@@ -566,7 +570,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (dcType.hasAnnotation(I)) {
+            if (dcType.hasEffectiveAnnotation(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
@@ -609,14 +613,14 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (arType.hasAnnotation(I)) {
+            if (arType.hasEffectiveAnnotation(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // Assertion failes some times
                 assert immutability != null;
-                if (!type.hasAnnotation(ASSIGNS_FIELDS))
+                if (!type.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
             }
 
@@ -624,7 +628,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             return result;
         }
 
-        private Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
+        private final Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
 
         @Override
         public Map<String, AnnotationMirror> visitTypeVariable(
@@ -694,7 +698,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         // @I and @AssignsFields annotate the type of 'this' together
         // this one ensures that it returns @I
         //
-        if (type.hasAnnotation(I))
+        if (type.hasEffectiveAnnotation(I))
             return type.getAnnotation(I.class.getCanonicalName());
         return type.getAnnotations().iterator().next();
     }
