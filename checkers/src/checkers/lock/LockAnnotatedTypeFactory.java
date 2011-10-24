@@ -1,20 +1,23 @@
 package checkers.lock;
 
-import java.util.*;
+import static checkers.util.AnnotationUtils.elementValue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.*;
 
 import checkers.lock.quals.GuardedBy;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
+import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
-import static checkers.util.AnnotationUtils.elementValue;;
+
+import com.sun.source.tree.*;
 
 // Disclaimer:
 // This class is currently in its alpha form.  For sample code on how to write
@@ -84,7 +87,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasAnnotation(GUARDED_BY) || TreeUtils.isSelfAccess(expr))
+        if (!type.hasEffectiveAnnotation(GUARDED_BY) || TreeUtils.isSelfAccess(expr))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
@@ -106,7 +109,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasAnnotation(GUARDED_BY))
+        if (!type.hasEffectiveAnnotation(GUARDED_BY))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());

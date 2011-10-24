@@ -161,13 +161,13 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         typePost.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
 
         // 6 - resolve ThisMutable from fields
-        if (type.hasAnnotation(THISMUTABLE)) {
+        if (type.hasEffectiveAnnotation(THISMUTABLE)) {
             AnnotatedDeclaredType selfType = getSelfType(tree);
             if (selfType != null) {
-                if (selfType.hasAnnotation(POLYREAD))
+                if (selfType.hasEffectiveAnnotation(POLYREAD))
                     new AnnotatedTypeReplacer(THISMUTABLE, POLYREAD).visit(type);
 
-                else if (selfType.hasAnnotation(MUTABLE))
+                else if (selfType.hasEffectiveAnnotation(MUTABLE))
                     new AnnotatedTypeReplacer(THISMUTABLE, MUTABLE).visit(type);
             }
         }
@@ -307,20 +307,20 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         for (int i = 0; i < parameterTypes.size(); i++) {
             AnnotatedTypeMirror pType = parameterTypes.get(i);
 
-            if (pType.hasAnnotation(POLYREAD)) {
+            if (pType.hasEffectiveAnnotation(POLYREAD)) {
                 AnnotatedTypeMirror aType = argumentTypes.get(i);
 
-                if (aType.hasAnnotation(THISMUTABLE) || aType.hasAnnotation(POLYREAD))
+                if (aType.hasEffectiveAnnotation(THISMUTABLE) || aType.hasEffectiveAnnotation(POLYREAD))
                     allMutable = false;
 
-                if (aType.hasAnnotation(READONLY) || aType.hasAnnotation(QREADONLY)) {
+                if (aType.hasEffectiveAnnotation(READONLY) || aType.hasEffectiveAnnotation(QREADONLY)) {
                     allMutable = false; allThisMutable = false;
                 }
 
-                if (!(aType.hasAnnotation(POLYREAD)
-                      && !aType.hasAnnotation(READONLY)
-                      && !aType.hasAnnotation(THISMUTABLE)
-                      && !aType.hasAnnotation(QREADONLY)))
+                if (!(aType.hasEffectiveAnnotation(POLYREAD)
+                      && !aType.hasEffectiveAnnotation(READONLY)
+                      && !aType.hasEffectiveAnnotation(THISMUTABLE)
+                      && !aType.hasEffectiveAnnotation(QREADONLY)))
                     allPolyRead = false;
             }
         }
@@ -392,34 +392,34 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             AnnotatedTypeMirror pType = parameterTypes.get(i);
 
             // look at it if parameter is PolyRead
-            if (pType.hasAnnotation(POLYREAD)) {
+            if (pType.hasEffectiveAnnotation(POLYREAD)) {
                 AnnotatedTypeMirror aType = argumentTypes.get(i);
 
-                if (aType.hasAnnotation(THISMUTABLE) || aType.hasAnnotation(POLYREAD))
+                if (aType.hasEffectiveAnnotation(THISMUTABLE) || aType.hasEffectiveAnnotation(POLYREAD))
                     allMutable = false;
 
-                if (aType.hasAnnotation(READONLY) || aType.hasAnnotation(QREADONLY)) {
+                if (aType.hasEffectiveAnnotation(READONLY) || aType.hasEffectiveAnnotation(QREADONLY)) {
                     allMutable = false; allThisMutable = false;
                 }
 
-                if (!(aType.hasAnnotation(POLYREAD)
-                      && !aType.hasAnnotation(READONLY)
-                      && !aType.hasAnnotation(THISMUTABLE)
-                      && !aType.hasAnnotation(QREADONLY)))
+                if (!(aType.hasEffectiveAnnotation(POLYREAD)
+                      && !aType.hasEffectiveAnnotation(READONLY)
+                      && !aType.hasEffectiveAnnotation(THISMUTABLE)
+                      && !aType.hasEffectiveAnnotation(QREADONLY)))
                     allPolyRead = false;
             }
         }
 
         // look at receiver type and reference
-        if (receiverType.hasAnnotation(POLYREAD)) {
+        if (receiverType.hasEffectiveAnnotation(POLYREAD)) {
             // if MemberSelectTree, we can just look at the expression tree
             ExpressionTree exprTree = tree.getMethodSelect();
             AnnotatedTypeMirror exprReceiver = this.getReceiver(exprTree);
-            if (exprReceiver.hasAnnotation(READONLY)) {
+            if (exprReceiver.hasEffectiveAnnotation(READONLY)) {
                 allMutable = false;
                 allThisMutable = false;
                 allPolyRead = false;
-            } else if (exprReceiver.hasAnnotation(POLYREAD)) {
+            } else if (exprReceiver.hasEffectiveAnnotation(POLYREAD)) {
                 allMutable = false;
             }
         }
@@ -431,7 +431,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         else if (allPolyRead) replacement = POLYREAD;        // case 3
         else replacement = READONLY;                         // case 4
 
-        if (replacement != POLYREAD && returnType.hasAnnotation(POLYREAD))
+        if (replacement != POLYREAD && returnType.hasEffectiveAnnotation(POLYREAD))
             new AnnotatedTypeReplacer(POLYREAD, replacement).visit(type);
 
         return mfuPair;
@@ -461,7 +461,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     public void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
-        if (!owner.hasAnnotation(READONLY)) {
+        if (!owner.hasEffectiveAnnotation(READONLY)) {
             final AnnotationMirror ownerAnno = getImmutabilityAnnotation(owner);
             if (ownerAnno != THISMUTABLE)
                 new AnnotatedTypeReplacer(THISMUTABLE, ownerAnno).visit(type);
@@ -504,9 +504,9 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
             AnnotatedTypeMirror idType = fromElement(TreeUtils.elementFromUse(node));
 
             p.removeAnnotations(p.getAnnotations());
-            if (idType.hasAnnotation(READONLY))                     // case 1
+            if (idType.hasEffectiveAnnotation(READONLY))                     // case 1
                 p.addAnnotation(READONLY);
-            else if (idType.hasAnnotation(MUTABLE))                 // case 1
+            else if (idType.hasEffectiveAnnotation(MUTABLE))                 // case 1
                 p.addAnnotation(MUTABLE);
             else if (hasImmutabilityAnnotation(exType))             // case 2
                 p.addAnnotation(getImmutabilityAnnotation(exType));
@@ -691,7 +691,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * Type scanner to replace annotations on annotated types.
      */
     private class AnnotatedTypeReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
-        private AnnotationMirror oldAnnotation, newAnnotation;
+        private final AnnotationMirror oldAnnotation, newAnnotation;
 
         /** Initializes the class to replace oldAnnotation with newAnnotation. */
         AnnotatedTypeReplacer(AnnotationMirror oldAnnotation, AnnotationMirror newAnnotation) {
@@ -701,7 +701,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         @Override
         protected Void defaultAction(AnnotatedTypeMirror type, Void p) {
-            if (type.hasAnnotation(oldAnnotation)) {
+            if (type.hasEffectiveAnnotation(oldAnnotation)) {
                 type.removeAnnotation(oldAnnotation);
                 type.addAnnotation(newAnnotation);
             }
