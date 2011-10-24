@@ -110,7 +110,7 @@ public class AnnotatedTypeFactory {
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
-    private Class<? extends SourceChecker> checkerClass;
+    private final Class<? extends SourceChecker> checkerClass;
 
     /** @see #canHaveAnnotatedTypeParameters() */
     private final boolean annotatedTypeParams;
@@ -119,7 +119,7 @@ public class AnnotatedTypeFactory {
      * Map from class name (canonical name) of an annotation, to the
      * annotation in the Checker Framework that will be used in its place.
      */
-    private Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+    private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
     private static int uidCounter = 0;
     public final int uid;
@@ -203,9 +203,9 @@ public class AnnotatedTypeFactory {
     /** Various Caches **/
     /** Size of LRU cache **/
     private final static int CACHE_SIZE = 50;
-    private Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+    private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /**
      * Determines the annotated type of an element using
@@ -253,7 +253,6 @@ public class AnnotatedTypeFactory {
      */
     // I wish I could make this method protected
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-
         if (tree == null)
             throw new IllegalArgumentException("null tree");
         if (treeCache.containsKey(tree))
