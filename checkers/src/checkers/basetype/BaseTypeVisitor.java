@@ -433,7 +433,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
-
         // Don't try to check return expressions for void methods.
         if (node.getExpression() == null)
             return super.visitReturn(node, p);
@@ -992,7 +991,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     // This is a test to ensure that all types are valid
-    private TypeValidator typeValidator = createTypeValidator();
+    private final TypeValidator typeValidator = createTypeValidator();
 
     protected TypeValidator createTypeValidator() {
         return new TypeValidator();
