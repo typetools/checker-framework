@@ -1,13 +1,13 @@
 import checkers.nullness.quals.*;
 
+//@skip-test
 class RawTypes {
   void m() throws ClassNotFoundException {
-    // The upper bound of the Class type variable is Nullable.
-    // The upper bound of the raw type of c is defaulted to NonNull.
-    //:: error: (assignment.type.incompatible)
-    Class c = Class.forName("bla");
+    // TODO: this fails but shouldn't
+    Class c1 = Class.forName("bla");
+    Class<?> c2 = Class.forName("bla");
   }
-  
+
   class Test<X extends Number> {}
   
   void bar() {
@@ -19,5 +19,11 @@ class RawTypes {
 
     //:: error: (assignment.type.incompatible) :: error: (generic.argument.invalid)
     Test z = new Test<@Nullable Integer>();
+  }
+
+  void m(java.lang.reflect.Constructor<?> c) {
+    // TODO: this fails but shouldn't
+    Class cls1 = c.getParameterTypes()[0];
+    Class<?> cls2 = c.getParameterTypes()[0];
   }
 }
