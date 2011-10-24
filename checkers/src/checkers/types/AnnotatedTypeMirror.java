@@ -292,6 +292,10 @@ public abstract class AnnotatedTypeMirror {
         return getAnnotations().contains(a);
     }
 
+    public boolean hasEffectiveAnnotation(AnnotationMirror a) {
+        return getEffectiveAnnotations().contains(a);
+    }
+
     /**
      * Determines whether this type contains an annotation with the same
      * annotation type as a particular annotation. This method does not
@@ -304,6 +308,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean hasAnnotation(Class<? extends Annotation> a) {
         return getAnnotation(a) != null;
     }
+    // TODO: do we need an "effective" version of the above hasAnnotation?
 
     /**
      * Adds an annotation to this type. If the annotation does not have the
@@ -1841,7 +1846,7 @@ public abstract class AnnotatedTypeMirror {
 
     private static class SuperTypeFinder extends
     SimpleAnnotatedTypeVisitor<List<? extends AnnotatedTypeMirror>, Void> {
-        private Types types;
+        private final Types types;
         private final AnnotatedTypeFactory typeFactory;
 
         SuperTypeFinder(AnnotatedTypeFactory typeFactory) {
