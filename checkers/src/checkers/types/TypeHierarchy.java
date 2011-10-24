@@ -94,8 +94,6 @@ public class TypeHierarchy {
                     && isSubtypeImpl(rhs, wildcard.getSuperBound()))
                     return true;
                 lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
-                if (lhsBase == null || !lhsBase.isAnnotated())
-                    return true;
                 visited.add(lhsBase.getElement());
             } else if (rhs.getKind() == TypeKind.WILDCARD) {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
