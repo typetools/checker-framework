@@ -1,14 +1,16 @@
 package checkers.javari;
 
-import javax.annotation.processing.*;
-import javax.lang.model.element.*;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 
-import checkers.basetype.*;
-import checkers.quals.TypeQualifiers;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.*;
+import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.TypeHierarchy;
+import checkers.util.AnnotationUtils;
 
 /**
  * An annotation processor that checks a program's use of the Javari
@@ -54,7 +56,7 @@ public class JavariChecker extends BaseTypeChecker {
         return new TypeHierarchy(getQualifierHierarchy()) {
             @Override
             protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-                return lhs.hasAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);
+                return lhs.hasEffectiveAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);
             }
          };
     }
