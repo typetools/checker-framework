@@ -23,12 +23,22 @@ To run the Regex Checker, supply the \code{-processor
 
 \section{Regex annotations\label{regex-annotations}}
 
-The Regex Checker uses one annotation only:
-\code{@\refclass{regex/quals}{Regex}}, to indicate valid regular
-expression \code{String}s.
+These qualifiers make up the Regex type system:
 
-The checker implicitly adds the \code{Regex} qualifier to any
-\code{String} literal that is a valid regex.
+\begin{description}
 
+\item[\<@\refclass{regex/quals}{Regex}>]
+  indicates valid regular expression \code{String}s.
+
+\item[\<@\refclass{regex/quals}{PolyRegex}>]
+  indicates qualifier polymorphism. For a description of \<@\refclass{regex/quals}{PolyRegex}>, see Section~\ref{qualifier-polymorphism}.
+
+\end{description}
+
+\section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
+
+\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Regex checker adds implicit qualifiers, reducing the number of annotations that must appear in your code. The checker implicitly adds the \code{Regex} qualifier to any \code{String} literal that is a valid regex and to the \code{null} literal.
 
 % LocalWords:  Regex regex quals
