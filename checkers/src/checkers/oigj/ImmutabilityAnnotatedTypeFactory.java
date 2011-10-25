@@ -575,9 +575,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
-                // Assertion failes some times
-                assert immutability != null;
-                if (!immutability.equals(ASSIGNS_FIELDS))
+                // TODO: Assertion fails some times
+                // assert immutability != null;
+                if (immutability!=null && !immutability.equals(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
             }
 

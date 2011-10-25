@@ -222,6 +222,7 @@ public class AnnotatedTypeFactory {
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
         annotateImplicit(elt, type);
+        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
     }
 
@@ -275,6 +276,7 @@ public class AnnotatedTypeFactory {
                         "query of annotated type for tree " + tree.getKind());
                 }
         }
+
         annotateImplicit(TreeUtils.skipParens(tree), type);
 
         switch (tree.getKind()) {
@@ -287,6 +289,7 @@ public class AnnotatedTypeFactory {
             if (SHOULD_CACHE)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
+        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
     }
 

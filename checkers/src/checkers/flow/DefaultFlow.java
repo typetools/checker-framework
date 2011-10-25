@@ -64,7 +64,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         // Determine the initial status of the variable by checking its
         // annotated type.
         for (AnnotationMirror annotation : this.flowState.annotations) {
-            if (hasAnnotation(type, annotation))
+            if (type.hasEffectiveAnnotation(annotation))
                 flowState.annos.set(annotation, idx);
             else
                 flowState.annos.clear(annotation, idx);
@@ -102,7 +102,8 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = this.flowState.vars.indexOf(rElt);
 
-        Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
+        // Get the effective annotations from the RHS, but not the LHS.
+        Set<AnnotationMirror> typeAnnos = type.getAnnotations();
         Set<AnnotationMirror> eltTypeAnnos = eltType.getEffectiveAnnotations();
 
         if (!eltTypeAnnos.isEmpty() && !typeAnnos.isEmpty()
@@ -113,7 +114,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         for (AnnotationMirror annotation : this.flowState.annotations) {
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
-            if (hasAnnotation(type, annotation)
+            if (typeAnnos.contains(annotation)
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
                 flowState.annos.set(annotation, idx);
                 // to ensure that there is always just one annotation set, we
@@ -151,7 +152,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
         // WMD: if we're setting something, can the GenKillBits invariant be violated?
         for (AnnotationMirror annotation : this.flowState.annotations) {
-            if (hasAnnotation(rhs, annotation))
+            if (rhs.hasEffectiveAnnotation(annotation))
                 flowState.annos.set(annotation, idx);
             else
                 flowState.annos.clear(annotation, idx);
