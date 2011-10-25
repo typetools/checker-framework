@@ -216,21 +216,6 @@ implements Flow {
     protected abstract void newVar(VariableTree tree);
 
     /**
-     * Determines whether a type has an annotation. If the type is not a
-     * type variable or wildcard, it checks the type directly;
-     * if it is a type variable or wildcard, it checks the type variable's or
-     * wildcard's "extends" bound (if it has one).
-     *
-     * @param type the type to check
-     * @param annotation the annotation to check for
-     * @return true if the (non-type-variable, non-wildcard) type has the annotation or, if a
-     *         type variable or wildcard, the type has the annotation on its extends bound
-     */
-    protected boolean hasAnnotation(AnnotatedTypeMirror type, AnnotationMirror annotation) {
-        return type.getEffectiveAnnotations().contains(annotation);
-    }
-
-    /**
      * Moves bits as assignments are made.
      *
      * <p>
@@ -432,7 +417,7 @@ implements Flow {
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
         for (AnnotationMirror a : this.flowState.getAnnotations())
-            if (hasAnnotation(t, a))
+            if (t.hasAnnotation(a))
                 flowResults.put(node, a);
         return null;
     }
@@ -502,7 +487,7 @@ implements Flow {
         // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
         AnnotatedTypeMirror t = factory.getAnnotatedType(var);
         for (AnnotationMirror a : this.flowState.getAnnotations()) {
-            if (hasAnnotation(t, a)) {
+            if (t.hasAnnotation(a)) {
                 flowResults.put(node, a);
             }
         }
@@ -932,7 +917,7 @@ implements Flow {
         if (annotatedVarDefs.containsKey(var))
             return annotatedVarDefs.get(var);
 
-        boolean result = hasAnnotation(factory.getAnnotatedType(var), annotation);
+        boolean result = factory.getAnnotatedType(var).hasEffectiveAnnotation(annotation);
         annotatedVarDefs.put(var, result);
         return result;
     }
