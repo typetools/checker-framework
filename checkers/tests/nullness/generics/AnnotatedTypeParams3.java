@@ -16,8 +16,7 @@ class AnnotatedTypeParams3 {
             // has a different default lower bound.
             // As alternative, see safeGetAnnotation2 below, which instead changes
             // the parameter type.
-            // TODO: Why is the @NonRaw needed?
-            annotation = f.getAnnotation( (Class<@NonNull @NonRaw T>) annotationClass);
+            annotation = f.getAnnotation( (Class<@NonNull T>) annotationClass);
         } catch (Exception e) {
             annotation = null;
         }
@@ -25,7 +24,7 @@ class AnnotatedTypeParams3 {
     }
 
     private <T extends Annotation> @Nullable T
-    safeGetAnnotation2(Field f, Class<@NonNull @NonRaw T> annotationClass) {
+    safeGetAnnotation2(Field f, Class<@NonNull T> annotationClass) {
         @Nullable T annotation;
         try {
             annotation = f.getAnnotation(annotationClass);
