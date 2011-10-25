@@ -7,16 +7,6 @@ class AnnotatedTypeParams3 {
             safeGetAnnotation(Field f, Class<T> annotationClass) {
         T annotation;
         try {
-            // Note how the assignment context influences the inferred type argument.
-            // If the type parameter for getAnnotation has @NonNull as upper bound
-            // this assignment wouldn't work, as @Nullable would be inferred from the
-            // assignment.
-            // We still need the cast, because the declared parameter type specifies
-            // an upper AND lower bound of @NonNull, and the parameter annotationClass
-            // has a different default lower bound.
-            // As alternative, see safeGetAnnotation2 below, which instead changes
-            // the parameter type.
-            // TODO: Why is the @NonRaw needed?
             annotation = f.getAnnotation( (Class<T>) annotationClass);
         } catch (Exception e) {
             annotation = null;
