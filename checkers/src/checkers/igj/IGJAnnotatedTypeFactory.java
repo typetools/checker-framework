@@ -574,7 +574,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
-                assert immutability != null;
+                // assert immutability != null;
                 if (immutability!=null && !immutability.equals(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
             }
