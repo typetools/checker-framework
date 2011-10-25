@@ -11,7 +11,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Pure;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypes;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -103,8 +102,8 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         int rIdx = this.flowState.vars.indexOf(rElt);
 
         // Get the effective annotations from the RHS, but not the LHS.
-        Set<AnnotationMirror> typeAnnos = type.getAnnotations();
-        Set<AnnotationMirror> eltTypeAnnos = eltType.getEffectiveAnnotations();
+        Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
+        Set<AnnotationMirror> eltTypeAnnos = eltType.getAnnotations();
 
         if (!eltTypeAnnos.isEmpty() && !typeAnnos.isEmpty()
                 && !annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
@@ -114,7 +113,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         for (AnnotationMirror annotation : this.flowState.annotations) {
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
-            if (typeAnnos.contains(annotation)
+            if (typeAnnos.contains(annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
                 flowState.annos.set(annotation, idx);
                 // to ensure that there is always just one annotation set, we
