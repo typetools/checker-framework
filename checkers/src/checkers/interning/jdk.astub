@@ -1921,3 +1921,8 @@ final @UsesObjectEquals class ZipCoder {}
 public @UsesObjectEquals class ZipEntry implements ZipConstants, Cloneable {}
 public @UsesObjectEquals class ZipFile implements ZipConstants, Closeable {}
 
+package org.apache.bcel.generic;
+public @UsesObjectEquals class InstructionHandle implements java.io.Serializable {}
+
+package org.apache.bcel.verifier.structurals;
+public @UsesObjectEquals interface InstructionContext {}
