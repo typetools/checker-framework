@@ -108,13 +108,17 @@ public class QualifierPolymorphism {
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
                 collector.visit(factory.getReceiver(tree), type.getReceiverType()));
-        if (matchingMapping != null && !matchingMapping.isEmpty())
-            replacer.visit(type, matchingMapping.values().iterator().next());
+        if (matchingMapping != null && !matchingMapping.isEmpty()) {
+            AnnotationMirror qual = matchingMapping.values().iterator().next();
+            if (qual!=null) {
+                replacer.visit(type, qual);
+            }
+        }
 //        else
 //            completer.visit(type);
     }
 
-    private AnnotatedTypeScanner<Void, AnnotationMirror> replacer
+    private final AnnotatedTypeScanner<Void, AnnotationMirror> replacer
     = new AnnotatedTypeScanner<Void, AnnotationMirror>() {
         @Override
         public Void scan(AnnotatedTypeMirror type, AnnotationMirror qual) {
@@ -334,7 +338,7 @@ public class QualifierPolymorphism {
             // TODO: type is null if type is an intersection type
             // assert type != null;
             if (type == null)
-                return new HashMap<String, AnnotationMirror>();
+                return Collections.emptyMap();
 
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
@@ -395,7 +399,7 @@ public class QualifierPolymorphism {
             return result;
         }
 
-        private Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
+        private final Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
 
         @Override
         public Map<String, AnnotationMirror> visitTypeVariable(
