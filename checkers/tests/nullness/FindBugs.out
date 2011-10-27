@@ -1,0 +1,3 @@
+:10: error: (return.type.incompatible)
+:15: error: (dereference.of.nullable)
+:19: error: (dereference.of.nullable)
