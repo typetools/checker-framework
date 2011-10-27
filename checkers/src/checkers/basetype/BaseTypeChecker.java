@@ -430,7 +430,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
+            throw new RuntimeException("Unexpected InvocationTargetException for " +
+                            "class name " + name +
+                            ", parameter types: " + Arrays.toString(paramTypes) +
+                            " and args: " + Arrays.toString(args),
+                    e.getCause());
         }
 
         // On failure, return null.
