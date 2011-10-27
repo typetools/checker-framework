@@ -425,6 +425,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
             return ctor.newInstance(args);
         } catch (Exception e) {
             e.printStackTrace();
+            if (e.getCause()!=null) {
+                e.getCause().printStackTrace();
+            }
             throw new RuntimeException("Unexpected " + e.getClass().getSimpleName() + " for " +
                             "class name " + name +
                             " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
