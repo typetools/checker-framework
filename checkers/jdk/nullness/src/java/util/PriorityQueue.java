@@ -17,7 +17,7 @@ public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> i
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
-  public <T> @Nullable T [] toArray(T[] a1) { throw new RuntimeException("skeleton method"); }
+  public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
