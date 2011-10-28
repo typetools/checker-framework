@@ -10,7 +10,7 @@ public abstract class AbstractCollection<E extends @Nullable Object> implements 
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
-  public <T> @Nullable T [] toArray(@Nullable T [] a1) { throw new RuntimeException("skeleton method"); }
+  public <T> @Nullable T @PolyNull [] toArray(@Nullable T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
