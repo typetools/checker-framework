@@ -14,7 +14,7 @@ public interface List<E extends @Nullable Object> extends Collection<E> {
   public abstract Object [] toArray();
   // @Nullable because, if there is room in the argument a1, the method
   // puts null after the elements of this.
-  public abstract <T extends @Nullable Object> @Nullable T [] toArray(T[] a1);
+  public abstract <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1);
   public abstract boolean add(E a1);
   public abstract boolean remove(@Nullable Object a1);
   public abstract boolean containsAll(Collection<?> a1);
