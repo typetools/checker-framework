@@ -6,10 +6,10 @@ import checkers.oigj.quals.*;
  *
  */
 class MethodInvocation {
-    void mutable() @Mutable {}
-    void immutable() @Immutable {}
-    void readOnly() @ReadOnly {}
-    void assignsFields() @AssignsFields {}
+    void mutable(@Mutable MethodInvocation this) {}
+    void immutable(@Immutable MethodInvocation this) {}
+    void readOnly(@ReadOnly MethodInvocation this) {}
+    void assignsFields(@AssignsFields MethodInvocation this) {}
 
     @ReadOnly MethodInvocation readonly;
     @Mutable MethodInvocation mutable;
@@ -45,7 +45,7 @@ class MethodInvocation {
         immutable.assignsFields();
     }
 
-    void selfReadOnly() @ReadOnly {
+    void selfReadOnly(@ReadOnly MethodInvocation this) {
         this.readOnly();
         //:: error: (method.invocation.invalid)
         this.mutable();
@@ -55,7 +55,7 @@ class MethodInvocation {
         this.assignsFields();
     }
 
-    void selfMutable() @Mutable {
+    void selfMutable(@Mutable MethodInvocation this) {
         this.readOnly();
         this.mutable();
         //:: error: (method.invocation.invalid)
@@ -63,7 +63,7 @@ class MethodInvocation {
         this.assignsFields();
     }
 
-    void selfImmutable() @Immutable {
+    void selfImmutable(@Immutable MethodInvocation this) {
         this.readOnly();
         //:: error: (method.invocation.invalid)
         this.mutable();
@@ -72,7 +72,7 @@ class MethodInvocation {
         this.assignsFields();
     }
 
-    void selfAssignsFields() @AssignsFields {
+    void selfAssignsFields(@AssignsFields MethodInvocation this) {
         this.readOnly();
         //:: error: (method.invocation.invalid)
         this.mutable();
