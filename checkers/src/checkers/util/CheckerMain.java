@@ -183,7 +183,8 @@ public class CheckerMain {
     static boolean isUsingJSR308Compiler() {
         try {
             Class<?> clazz = com.sun.source.tree.MethodTree.class;
-            clazz.getMethod("getReceiverAnnotations");
+            // Keep this method name synchronized!
+            clazz.getMethod("getReceiverParameter");
             return true;
         } catch (Throwable e) {
             // Error either due to MethodTree not loadable, or that the JSR308
