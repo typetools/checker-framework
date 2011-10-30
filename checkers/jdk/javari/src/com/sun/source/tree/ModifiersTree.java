@@ -48,6 +48,6 @@ import checkers.javari.quals.*;
  * @since 1.6
  */
 public interface ModifiersTree extends Tree {
-    @PolyRead Set<Modifier> getFlags() @PolyRead;
-    @PolyRead List<? extends AnnotationTree> getAnnotations() @PolyRead;
+    @PolyRead Set<Modifier> getFlags(@PolyRead ModifiersTree this);
+    @PolyRead List<? extends AnnotationTree> getAnnotations(@PolyRead ModifiersTree this);
 }

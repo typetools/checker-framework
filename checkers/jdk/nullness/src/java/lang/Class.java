@@ -65,4 +65,9 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public native boolean isAssignableFrom(Class<?> cls);
   public native boolean isInterface();
   public native int getModifiers();
+  
+  public boolean isTypeAnnotationPresent(Class<? extends java.lang.annotation.Annotation> annotationClass) { throw new RuntimeException("skeleton method"); }
+  public <T extends java.lang.annotation.Annotation> T getTypeAnnotation(Class<T> annotationClass) { throw new RuntimeException("skeleton method"); }
+  public java.lang.annotation.Annotation[] getTypeAnnotations() { throw new RuntimeException("skeleton method"); }
+  public java.lang.annotation.Annotation[] getDeclaredTypeAnnotations() { throw new RuntimeException("skeleton method"); }
 }
