@@ -16,7 +16,7 @@ import checkers.util.AnnotationUtils;
  * within this hierarchy.
  *
  * This assumes that any particular annotated type in a program is annotated
- * with at most one qualifier from the hierarchy.
+ * with at least one qualifier from the hierarchy.
  */
 public abstract class QualifierHierarchy {
 
@@ -47,10 +47,9 @@ public abstract class QualifierHierarchy {
     // **********************************************************************
 
     /**
-     * Tests whether anno1 is a super qualifier of anno2, according to the
+     * Tests whether anno1 is a sub-qualifier of anno2, according to the
      * type qualifier hierarchy.  This checks only the qualifiers, not the
-     * Java type.  Either argument may be "null", if no type qualifier from
-     * the given hierarchy is present.
+     * Java type.
      *
      * @return true iff anno1 is a sub qualifier of anno2
      */
