@@ -43,6 +43,6 @@ import checkers.javari.quals.*;
  * @since 1.6
  */
 public interface CompoundAssignmentTree extends ExpressionTree {
-    @PolyRead ExpressionTree getVariable() @PolyRead;
-    @PolyRead ExpressionTree getExpression() @PolyRead;
+    @PolyRead ExpressionTree getVariable(@PolyRead CompoundAssignmentTree this);
+    @PolyRead ExpressionTree getExpression(@PolyRead CompoundAssignmentTree this);
 }

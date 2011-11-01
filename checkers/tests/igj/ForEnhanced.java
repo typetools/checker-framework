@@ -65,7 +65,7 @@ class ForEnhanced {
 
     @Mutable class ForEnhancedList extends @Mutable LinkedList<@ReadOnly ForEnhanced> { };
     @Mutable class ForEnhancedIterable implements @Mutable Iterable<@ReadOnly ForEnhanced> {
-        public Iterator<@ReadOnly ForEnhanced> iterator() @ReadOnly { return null; }
+        public Iterator<@ReadOnly ForEnhanced> iterator(@ReadOnly ForEnhancedIterable this) { return null; }
     }
 
     // Test more iterables
