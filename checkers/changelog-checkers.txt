@@ -1,3 +1,23 @@
+Version 1.2.3, 1 Nov 2011
+
+Regex Checker:
+- Add @PolyRegex polymorphic annotation
+- Add more stubs
+
+Implementation details:
+- Do not use "null" for unqualified types. Explicitly use @Unqualified
+  and be strict about correct usage. If this causes trouble for you,
+  check your ImplicitFor and DefaultQualifierInHierarchy
+  meta-annotations and ensure correct defaulting in your
+  AnnotatedTypeFactory.
+- Correctly handly f-bounded polymorphism. AnnotatedTypeMirror now has
+  methods to query the "effective" annotations on a type, which
+  handles type variable and wildcard bounds correctly. Also, terminate
+  recursions by not doing lazy-initialization of bounds during defaulting.
+
+Small bug fixes and documentation updates.
+
+----------------------------------------------------------------------
 Version 1.2.2, 1 Oct 2011
 
 Be less restrictive about when to start type processing when errors
