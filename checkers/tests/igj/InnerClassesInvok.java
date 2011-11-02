@@ -2,18 +2,18 @@ import checkers.igj.quals.*;
 
 @I
 class A {
-    void isAMutable() @Mutable { }
-    void isAImmutable() @Immutable { }
-    void isAReadOnly() @ReadOnly { }
+    void isAMutable(@Mutable A this) { }
+    void isAImmutable(@Immutable A this) { }
+    void isAReadOnly(@ReadOnly A this) { }
 
-    void mutableMethodForA() @Mutable {
+    void mutableMethodForA(@Mutable A this) {
         @I
         class B {
-            void isBMutable() @Mutable { }
-            void isBImmutable() @Immutable { }
-            void isBReadOnly() @ReadOnly { }
+            void isBMutable(@Mutable B this) { }
+            void isBImmutable(@Immutable B this) { }
+            void isBReadOnly(@ReadOnly B this) { }
 
-            void testImmutableForB() @Immutable {
+            void testImmutableForB(@Immutable B this) {
                 isAMutable();
                 isAImmutable(); // error
                 isAReadOnly();
@@ -30,7 +30,7 @@ class A {
                 B.this.isBReadOnly();
             }
 
-            void testMutableForB() @Mutable {
+            void testMutableForB(@Mutable B this) {
                 isAMutable();
                 isAImmutable(); // error
                 isAReadOnly();
