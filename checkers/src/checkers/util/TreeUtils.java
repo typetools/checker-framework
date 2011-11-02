@@ -13,6 +13,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 
+import javax.annotation.processing.ProcessingEnvironment;
+
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -613,5 +615,40 @@ public final class TreeUtils {
     public static boolean isClassTree(Tree.Kind kind) {
         return classTreeKinds().contains(kind);
     }
+
+
+    /**
+     * Returns true if the given element is an invocation of the method, or
+     * of any method that overrides that one.
+     */
+    public static boolean isMethodInvocation(Tree tree, ExecutableElement method, ProcessingEnvironment env) {
+        if (!(tree instanceof MethodInvocationTree))
+            return false;
+        MethodInvocationTree methInvok = (MethodInvocationTree)tree;
+        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
+        return isMethod(invoked, method, env);
+    }
+
+    /** Returns true if the given element is, or overrides, method. */
+    private static boolean isMethod(ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
+        return (questioned.equals(method)
+                || env.getElementUtils().overrides(questioned, method,
+                        (TypeElement)questioned.getEnclosingElement()));
+    }
+    
+    /**
+     * Returns the ExecutableElement for a method declaration of
+     * methodName, in class typeName, with params parameters.
+     */
+    public static ExecutableElement getMethod(String typeName, String methodName, int params, ProcessingEnvironment env) {
+        TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
+        for (ExecutableElement exec : ElementFilter.methodsIn(mapElt.getEnclosedElements())) {
+            if (exec.getSimpleName().contentEquals(methodName)
+                    && exec.getParameters().size() == params)
+                return exec;
+        }
+        throw new RuntimeException("Shouldn't be here!");
+    }
+
 }
 
