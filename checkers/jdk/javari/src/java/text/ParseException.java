@@ -9,7 +9,7 @@ public class ParseException extends Exception {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getErrorOffset () @ReadOnly {
+    public int getErrorOffset (@ReadOnly ParseException this) {
         throw new RuntimeException("skeleton method");
     }
 }
