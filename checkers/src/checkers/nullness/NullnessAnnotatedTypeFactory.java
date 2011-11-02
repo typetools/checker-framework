@@ -79,6 +79,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     protected final AnnotationMirror UNUSED;
 
     private final MapGetHeuristics mapGetHeuristics;
+    private final SystemGetPropertyHandler systemGetPropertyHandler;
     private final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
@@ -94,6 +95,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // What qualifiers does it insert? The qualifier hierarchy is null.
         AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this, mapGetFactory);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
@@ -237,6 +239,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         	 */
             mapGetHeuristics.handle(path, method);
         }
+        systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
     }
