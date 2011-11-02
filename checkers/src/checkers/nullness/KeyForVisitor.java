@@ -50,7 +50,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker> {
                     if (map.equals("this")) {
                         // this is not valid in static context
                         if (inStatic) {
-                            checker.report(
+                            KeyForVisitor.this.checker.report(
                                     Result.failure("keyfor.type.invalid",
                                             type.getAnnotations(),
                                             type.toString()), p);
