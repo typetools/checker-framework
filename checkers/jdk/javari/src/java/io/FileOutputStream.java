@@ -38,7 +38,7 @@ public class FileOutputStream extends OutputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public final FileDescriptor getFD() @ReadOnly throws IOException {
+    public final FileDescriptor getFD(@ReadOnly FileOutputStream this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
