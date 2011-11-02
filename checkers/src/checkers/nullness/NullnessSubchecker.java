@@ -19,8 +19,8 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 @SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
-    // warn about uninitialized fields in the constructor
-    public static final boolean UNINIT_DEFAULT = true;
+    // warn about uninitialized primitive and nullable fields in the constructor
+    public static final boolean UNINIT_DEFAULT = false;
     // warn about a null check performed against a value that is guaranteed
     // to be non-null, as in:  "m" == null.
     public static final boolean NULLTEST_DEFAULT = false;
