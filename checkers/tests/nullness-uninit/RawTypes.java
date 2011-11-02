@@ -65,8 +65,9 @@ class RawTypes {
             init();                                             // valid
             this.init();                                        // valid
         }
-}
+    }
 
+    //:: warning: (fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
@@ -116,6 +117,7 @@ class RawTypes {
         }
     }
 
+    //:: warning: (fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
@@ -128,14 +130,17 @@ class RawTypes {
         // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            nonRawMethod();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();     // error
             startTime = 0;
             nonRawMethod();     // no error
             new AFSIICell().afsii = this;
         }
 
+        //:: warning: (fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            nonRawMethod();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();     // error
         }
 
         public void nonRawMethod() {
@@ -175,21 +180,23 @@ class RawTypes {
 
     }
 
-    // default qualifier is @Nullable, so this is OK.
     class RawAfterConstructorBad {
         Object o;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorBad() {
         }
     }
 
     class RawAfterConstructorOK1 {
         @Nullable Object o;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK1() {
         }
     }
 
     class RawAfterConstructorOK2 {
         int a;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }
