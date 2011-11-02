@@ -954,6 +954,33 @@ You can suppress warnings related to map keys with
 \<@SuppressWarnings("keyfor")>.
 
 
+\section{Additional details\label{nullness-additional-details}}
+
+The Nullness Checker does some special checks in certain circumstances, in
+order to soundly reduce the number of warnings that it produces.
+
+For example, a call to 
+\sunjavadoc{java/lang/System.html#getProperty(java.lang.String)}{System.getProperty(String)}
+can return null in general, but it will not return null if the argument is
+one of the built-in-keys listed in the documentation of 
+\sunjavadoc{java/lang/System.html#getProperties()}{System.getProperties()}.
+The Nullness Checker is aware of this fact, so you do not have to suppress
+a warning for a call like \<System.getProperty("line.separator")>.  The
+warning is still issued for code like this:
+
+\begin{Verbatim}
+  final String s = "line.separator";
+  nonNullvar = System.getProperty(s);
+\end{Verbatim}
+
+\noindent
+though that case could be handled as well, if desired.
+(Suppression of the warning is, strictly speaking, not sound, because a
+library that your code calls, or your code itself, could perversely change
+the system properties; the Nullness Checker assumes this bizarre coding
+pattern does not happen.)
+
+
 \section{Examples\label{nullness-example}}
 
 \subsection{Tiny examples\label{nullness-tiny-examples}}
@@ -1378,4 +1405,4 @@ tool like the Checker Framework.)
 % LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
 % LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf
-% LocalWords:  lastIndexOf
+% LocalWords:  lastIndexOf deref getProperty getProperties
