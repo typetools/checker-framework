@@ -1,5 +1,5 @@
 This directory contains tests for the Nullness Checker, with the
--Alint=-uninitialized flag.
+-Alint=uninitialized flag.
 
 To add a new file to the test suite, just add it to this directory.
 For more details, see
