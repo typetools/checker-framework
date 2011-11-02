@@ -95,7 +95,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // What qualifiers does it insert? The qualifier hierarchy is null.
         AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this, mapGetFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = this.annotations.fromClass(NonNull.class);
