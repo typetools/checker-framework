@@ -81,15 +81,15 @@ import com.sun.source.util.TreePath;
         this.keyForFactory = keyForFactory;
         this.resolver = new Resolver(env);
 
-        mapGet = getMethod("java.util.Map", "get", 1);
-        mapPut = getMethod("java.util.Map", "put", 2);
-        mapKeySet = getMethod("java.util.Map", "keySet", 0);
-        mapContains = getMethod("java.util.Map", "containsKey", 1);
+        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, env);
+        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, env);
+        mapKeySet = TreeUtils.getMethod("java.util.Map", "keySet", 0, env);
+        mapContains = TreeUtils.getMethod("java.util.Map", "containsKey", 1, env);
     }
 
     public void handle(TreePath path, AnnotatedExecutableType method) {
         MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
-        if (isMethod(tree, mapGet)) {
+        if (TreeUtils.isMethodInvocation(tree, mapGet, env)) {
             AnnotatedTypeMirror type = method.getReturnType();
             type.clearAnnotations();
             if (!isSuppressable(path)) {
@@ -203,7 +203,7 @@ import com.sun.source.util.TreePath;
             }
 
             @Override public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                return (isMethod(tree, mapKeySet) && map.equals(getSite(tree)));
+                return (TreeUtils.isMethodInvocation(tree, mapKeySet, env) && map.equals(getSite(tree)));
             }
         }));
     }
@@ -299,42 +299,10 @@ import com.sun.source.util.TreePath;
         return type.getElement();
     }
 
-    /**
-     * Returns true if the given element is an invocation of the method, or
-     * of any method that overrides that one.
-     */
-    private boolean isMethod(Tree tree, ExecutableElement method) {
-        if (!(tree instanceof MethodInvocationTree))
-            return false;
-        MethodInvocationTree methInvok = (MethodInvocationTree)tree;
-        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        return isMethod(invoked, method);
-    }
-
-    /**
-     * Returns true if the given element is an invocation of the method, or
-     * of any method that overrides that one.
-     */
-    private boolean isMethod(ExecutableElement questioned, ExecutableElement method) {
-        return (questioned.equals(method)
-                || env.getElementUtils().overrides(questioned, method,
-                        (TypeElement)questioned.getEnclosingElement()));
-    }
-
-    private ExecutableElement getMethod(String typeName, String methodName, int params) {
-        TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
-        for (ExecutableElement exec : ElementFilter.methodsIn(mapElt.getEnclosedElements())) {
-            if (exec.getSimpleName().contentEquals(methodName)
-                    && exec.getParameters().size() == params)
-                return exec;
-        }
-        throw new RuntimeException("Shouldn't be here!");
-    }
-
     private boolean isInvocationOfContains(Element key, VariableElement map, Tree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
-            if (isMethod(invok, mapContains)) {
+            if (TreeUtils.isMethodInvocation(invok, mapContains, env)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;
@@ -346,7 +314,7 @@ import com.sun.source.util.TreePath;
     private boolean isInvocationOfPut(Element key, VariableElement map, Tree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
-            if (isMethod(invok, mapPut)) {
+            if (TreeUtils.isMethodInvocation(invok, mapPut, env)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;
@@ -382,7 +350,7 @@ import com.sun.source.util.TreePath;
         Tree right = TreeUtils.skipParens(((BinaryTree)tree).getLeftOperand());
         if (right instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)right;
-            if (isMethod(invok, mapGet)) {
+            if (TreeUtils.isMethodInvocation(invok, mapGet, env)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;
