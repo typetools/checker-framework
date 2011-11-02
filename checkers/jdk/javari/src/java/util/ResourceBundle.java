@@ -24,7 +24,7 @@ public abstract class ResourceBundle {
         throw new RuntimeException("skeleton method");
     }
 
-    public Locale getLocale() @ReadOnly {
+    public Locale getLocale(@ReadOnly ResourceBundle this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -101,15 +101,15 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public List<String> getFormats(String baseName) @ReadOnly {
+        public List<String> getFormats(@ReadOnly Control this, String baseName) {
             throw new RuntimeException("skeleton method");
         }
 
-        public List<Locale> getCandidateLocales(String baseName, Locale locale) @ReadOnly {
+        public List<Locale> getCandidateLocales(@ReadOnly Control this, String baseName, Locale locale) {
             throw new RuntimeException("skeleton method");
         }
 
-        public Locale getFallbackLocale(String baseName, Locale locale) @ReadOnly {
+        public Locale getFallbackLocale(@ReadOnly Control this, String baseName, Locale locale) {
             throw new RuntimeException("skeleton method");
         }
 
@@ -118,7 +118,7 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public long getTimeToLive(String baseName, Locale locale) @ReadOnly {
+        public long getTimeToLive(@ReadOnly Control this, String baseName, Locale locale) {
             throw new RuntimeException("skeleton method");
         }
 
@@ -128,11 +128,11 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public String toBundleName(String baseName, Locale locale) @ReadOnly {
+        public String toBundleName(@ReadOnly Control this, String baseName, Locale locale) {
             throw new RuntimeException("skeleton method");
         }
 
-        public final String toResourceName(String bundleName, String suffix) @ReadOnly {
+        public final String toResourceName(@ReadOnly Control this, String bundleName, String suffix) {
             throw new RuntimeException("skeleton method");
         }
     }

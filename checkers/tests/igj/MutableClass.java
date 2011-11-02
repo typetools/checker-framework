@@ -24,7 +24,7 @@ public class MutableClass {
     @Mutable MutableClass mutableRef = new @Mutable MutableClass();
     @ReadOnly MutableClass readOnlyRef = new @ReadOnly MutableClass();
 
-    public void mutableReassign() @Mutable {
+    public void mutableReassign(@Mutable MutableClass this) {
         // try to mutate
         field = 3;
         field += 2;
@@ -49,7 +49,7 @@ public class MutableClass {
         readOnlyRef = null;
     }
 
-    public void roReassign() @ReadOnly {
+    public void roReassign(@ReadOnly MutableClass this) {
         // try to mutate
         field = 3;  // should emit error
         field += 2; // should emit error
@@ -76,7 +76,7 @@ public class MutableClass {
 
     // Method Calling
 
-    public void roMethodInvoke() @ReadOnly {
+    public void roMethodInvoke(@ReadOnly MutableClass this) {
         mutableReassign();  // should emit error
         this.mutableReassign(); // should emit error
 
@@ -84,7 +84,7 @@ public class MutableClass {
         roReassign();
     }
 
-    public void mutableRecieverInvoke() @Mutable {
+    public void mutableRecieverInvoke(@Mutable MutableClass this) {
         mutableReassign();
         this.mutableReassign();
 
@@ -92,7 +92,7 @@ public class MutableClass {
         roReassign();
     }
 
-    public void mutateOther() @ReadOnly {
+    public void mutateOther(@ReadOnly MutableClass this) {
         @Mutable MutableClass instance = new @Mutable MutableClass();
         instance.mutableRecieverInvoke();
         instance.mutableReassign();
@@ -102,7 +102,7 @@ public class MutableClass {
         instance.readOnlyRef.assignable = 2;
     }
 
-    public void mutateOetherRO() @Mutable {
+    public void mutateOetherRO(@Mutable MutableClass this) {
         @ReadOnly MutableClass instance = new @ReadOnly MutableClass();
         instance.mutableRecieverInvoke(); //should emit error
         instance.mutableReassign(); //should emit error

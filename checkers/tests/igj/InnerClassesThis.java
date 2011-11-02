@@ -3,14 +3,14 @@ import checkers.igj.quals.*; import java.util.ArrayList;
 @I
 class MutableClass {
 
-    void mutableMethod() @Mutable {
+    void mutableMethod(@Mutable MutableClass this) {
         class ReadOnlyClass {
-            void readOnlyMethod() @ReadOnly {
+            void readOnlyMethod(@ReadOnly ReadOnlyClass this) {
                 class ImmutableClass {
-                    void immutableMethod() @Immutable {
+                    void immutableMethod(@Immutable ImmutableClass this) {
 
                         class ThisClass {
-                            void mostInnerReadOnly() @ReadOnly {
+                            void mostInnerReadOnly(@ReadOnly ThisClass this) {
                                 assertReadOnly(this);
                                 assertImmutable(ImmutableClass.this);
                                 assertReadOnly(ReadOnlyClass.this);
@@ -45,7 +45,7 @@ class MutableClass {
 
     int i;
     Object o;
-    void setField() @AssignsFields {
+    void setField(@AssignsFields ThisClass this) {
         i = 0;   // OK
         this.i = 0; // OK
         o = new Object() {
