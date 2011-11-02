@@ -1,29 +1,16 @@
 package checkers.nullness;
 
-import static checkers.util.Heuristics.Matchers.*;
-
 import java.util.List;
 import java.util.Arrays;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.util.ElementFilter;
-
-import checkers.nullness.quals.KeyFor;
 
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.Heuristics.Matcher;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
-import checkers.util.Resolver;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
 
 /**
  * Utility class for handling {@code System.getProperty(String)} invocations.
@@ -34,13 +21,10 @@ import com.sun.source.util.TreePath;
  * <pre>System.getProperties("line.separator")</pre>
  * , then the result of the method call is assumed to be non-null.
  */
-
 /*package-scope*/ class SystemGetPropertyHandler {
 
     private final ProcessingEnvironment env;
     private final NullnessAnnotatedTypeFactory factory;
-    private final AnnotatedTypeFactory keyForFactory;
-    private final Resolver resolver;
 
     private final ExecutableElement systemGetProperty;
 
@@ -80,12 +64,9 @@ import com.sun.source.util.TreePath;
                         );
 
     public SystemGetPropertyHandler(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory,
-            AnnotatedTypeFactory keyForFactory) {
+            NullnessAnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
-        this.keyForFactory = keyForFactory;
-        this.resolver = new Resolver(env);
 
         systemGetProperty = TreeUtils.getMethod("java.lang.System", "getProperty", 1, env);
     }
