@@ -37,7 +37,8 @@ import com.sun.source.tree.Tree;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf( LazyNonNull.class )
+// See note on subtyping in Primitive.java.
+@SubtypeOf( Primitive.class )
 @ImplicitFor(
     types = { TypeKind.PACKAGE },
     trees = { Tree.Kind.NEW_CLASS,
