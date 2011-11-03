@@ -65,7 +65,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      */
     private final boolean DO_ADVANCED_CHECKS;
 
-    private final AnnotationMirror POLYNULL, RAW, NONNULL;
+    private final AnnotationMirror POLYNULL, RAW, NONNULL, PRIMITIVE;
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
     private final Map<ExecutableElement, Set<VariableElement>> initializedFields;
@@ -87,6 +87,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         POLYNULL = factory.POLYNULL;
         RAW = factory.RAW;
         NONNULL = factory.NONNULL;
+        PRIMITIVE = factory.PRIMITIVE;
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
         initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
@@ -814,7 +815,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             int index = this.flowState.vars.indexOf(e);
             if (DO_ADVANCED_CHECKS &&
-                !(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+                !(index != -1 && (this.flowState.annos.get(NONNULL, index) ||
+                // TODO: a boxed primitive is sometimes still @Primitive.
+                // Is this needed elsewhere? Fix it?
+                        this.flowState.annos.get(PRIMITIVE, index)))) {
                 checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
