@@ -6,6 +6,7 @@ import checkers.quals.TypeQualifiers;
 import checkers.source.*;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -32,18 +33,31 @@ public class NullnessSubchecker extends BaseTypeChecker {
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
+        // At most a single qualifier on a type
         if (useType.getAnnotations().size() > 1) {
             return false;
         }
-
         return super.isValidUse(declarationType, useType);
     }
 
     @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        // No explicit qualifiers on primitive types
+        if (type.getAnnotations().size()>1 ||
+             (type.getAnnotation(Primitive.class)==null &&
+             // Flow inference might implicitly add a NonNull
+             !type.getElement().getAnnotationMirrors().isEmpty())) {
+            return false;
+        }
+        return super.isValidUse(type);
+    }
+
+    @Override
     public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+        // System.out.println("sub: " + sub + " sup: " + sup + " result: " + super.isSubtype(sub,sup));
         // @Primitive and @NonNull are interchangeable
-        if (sup.getAnnotation(Primitive.class)!=null &&
-                sub.getAnnotation(NonNull.class)!=null) {
+        if (sub.getAnnotation(Primitive.class)!=null &&
+                sup.getAnnotation(NonNull.class)!=null) {
             return true;
         }
         return super.isSubtype(sub, sup);
