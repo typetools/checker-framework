@@ -291,11 +291,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         return super.visitAssignment(node, p);
     }
 
+    // Returns the uninitialized instance fields
     private Set<VariableElement> getUninitializedFields(ClassTree classTree, List<? extends AnnotationMirror> annos) {
         Set<VariableElement> fields = new HashSet<VariableElement>();
 
         boolean check_all_fields
             = checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT);
+        Set<Name> blockInitialized = getBlockInitializedFields(classTree);
+        // System.out.printf("blockInitialized (length=%d) = %s%n", blockInitialized.size(), blockInitialized);
 
         for (Tree member : classTree.getMembers()) {
             if (!(member instanceof VariableTree))
@@ -303,10 +306,9 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             VariableTree var = (VariableTree)member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
             if (
-                // var has no initializer
+                // var has no initializer, nor does any initializer block set it
                 (var.getInitializer() == null
-                 // TODO: replace by a check that there is no initializer block that sets this variable.
-                 && true)
+                 && (! blockInitialized.contains(var.getName())))
                 &&
                 // var's type is @NonNull, or we are checking all vars
                 (check_all_fields
@@ -322,7 +324,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 // var is not static -- need a check of initializer blocks,
                 // not of constructor which is where this is used
                 && !varElt.getModifiers().contains(Modifier.STATIC)
-                // val is not unused
+                // val is not @Unused
                 && !isUnused(varElt, annos)) {
                 // System.out.printf("var %s, hasEffectiveAnnotation = %s, check_all_fields=%s, %s%n", var, atypeFactory.getAnnotatedType(var).hasEffectiveAnnotation(NONNULL), check_all_fields, atypeFactory.getAnnotatedType(var));
                 fields.add(varElt);
@@ -330,6 +332,43 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         }
         return fields;
     }
+
+    // List of all fields that are initialized in a block initializer.
+    // This really ought to return a set of fields rather than of Names.
+    // Also, perhaps handle assignments like "a = b = c = 1;".
+    private Set<Name> getBlockInitializedFields(ClassTree classTree) {
+        Set<Name> fields = new HashSet<Name>();
+
+        for (Tree member : classTree.getMembers()) {
+            if (member.getKind() == Tree.Kind.BLOCK) {
+                BlockTree block = (BlockTree) member;
+                for (StatementTree stmt : block.getStatements()) {
+                    if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                        ExpressionTree expr = ((ExpressionStatementTree)stmt).getExpression();
+                        if (expr.getKind() == Tree.Kind.ASSIGNMENT) {
+                            ExpressionTree lhs = ((AssignmentTree)expr).getVariable();
+                            Name field_name = null;
+                            if (lhs.getKind() == Tree.Kind.IDENTIFIER) {
+                                field_name = ((IdentifierTree) lhs).getName();
+                            } else if (lhs.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                MemberSelectTree mst = (MemberSelectTree) lhs;
+                                if ((mst.getExpression() instanceof IdentifierTree)
+                                    && ((IdentifierTree)mst.getExpression()).getName().contentEquals("this")) {
+                                    field_name = mst.getIdentifier();
+                                }
+                            }
+                            if (field_name != null) {
+                                fields.add(field_name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return fields;
+    }
+
 
     private boolean isUnused(VariableElement field, Collection<? extends AnnotationMirror> annos) {
         if (annos.isEmpty()) {
