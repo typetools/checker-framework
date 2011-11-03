@@ -19,7 +19,9 @@ import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 
@@ -1123,6 +1125,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
 
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
+            if (shouldSkipUses(type.getElement()))
+                return super.visitPrimitive(type, tree);
+
+            if (!checker.isValidUse(type)) {
+                reportError(type, tree);
+            }
+
+            return super.visitPrimitive(type, tree);
+        }
+
         /**
          * Checks that the annotations on the type arguments supplied to a
          * type or a method invocation are within the bounds of the type
@@ -1151,6 +1165,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
+            // Keep in sync with visitWildcard
             Set<AnnotationMirror> onVar = type.getAnnotations();
             if (!onVar.isEmpty()) {
                 // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)",
@@ -1172,6 +1187,32 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 }
             }
             return super.visitTypeVariable(type, tree);
+        }
+
+        @Override
+        public Void visitWildcard(AnnotatedWildcardType type, Tree tree) {
+            // Keep in sync with visitTypeVariable
+            Set<AnnotationMirror> onVar = type.getAnnotations();
+            if (!onVar.isEmpty()) {
+                // System.out.printf("BaseTypeVisitor.TypeValidator.visitWildcard(type: %s, tree: %s)",
+                //         type, tree);
+
+                if (type.getExtendsBound()!=null) {
+                    Set<AnnotationMirror> onUpper = type.getExtendsBound().getAnnotations();
+                    if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                        this.reportError(type, tree);
+                    }
+                }
+
+                if (type.getSuperBound()!=null) {
+                    Set<AnnotationMirror> onLower = type.getSuperBound().getAnnotations();
+                    if (!onLower.isEmpty() &&
+                        !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
+                        this.reportError(type, tree);
+                    }
+                }
+            }
+            return super.visitWildcard(type, tree);
         }
     }
 
