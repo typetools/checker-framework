@@ -43,7 +43,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, NULLABLE;
+    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
     private final TypeMirror stringType;
 
     /**
@@ -56,6 +56,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         super(checker, root);
         NONNULL = this.annoFactory.fromClass(NonNull.class);
         NULLABLE = this.annoFactory.fromClass(Nullable.class);
+        PRIMITIVE = this.annoFactory.fromClass(Primitive.class);
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -364,8 +365,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     private void checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.getEffectiveAnnotations().contains(NONNULL))
+        Set<AnnotationMirror> annos = type.getEffectiveAnnotations();
+        if (!(annos.contains(NONNULL) || annos.contains(PRIMITIVE))) {
             checker.report(Result.failure(errMsg, tree), tree);
+        }
     }
 
 
