@@ -1,13 +1,17 @@
 Version 1.2.4, x Nov 2011
 
-Add a new @InvisibleQualifier meta-annotation for type qualifiers.
-Instead of special-casing @Unqualified in the AnnotatedTypeMirror look
-for this meta-annotation. This also allows type systems to hide type
-qualifiers it doesn't wan't visible, which we now use in the Nullness
-Checker to hide the @Primitive annotation.
+Nullness Checker:
+- Do not allow nullness annotations on primitive types. Introduce a new
+  internal qualifier @Primitive that is used for primitive types.
+- Improvements to rawness and field initialization checks.
+- Special-case known keys for System.getProperty.
 
-Do not allow nullness annotations on primitive types. Introduce a new
-internal qualifier @Primitive that is used for primitive types.
+Implementation details:
+- Add a new @InvisibleQualifier meta-annotation for type qualifiers.
+  Instead of special-casing @Unqualified in the AnnotatedTypeMirror it
+  now looks for this meta-annotation. This also allows type systems to
+  hide type qualifiers it doesn't wan't visible, which we now use in the
+  Nullness Checker to hide the @Primitive annotation.
 
 ----------------------------------------------------------------------
 Version 1.2.3, 1 Nov 2011
