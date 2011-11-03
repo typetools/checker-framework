@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
  * Programmers cannot write this in source code.
  */
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf({})
 @Target({}) // empty target prevents programmers from writing this in a program
 public @interface Unqualified { }
