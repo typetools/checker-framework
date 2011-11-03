@@ -6,6 +6,8 @@ public class Boxing {
         Integer i2 = null;
         //:: error: (unboxing.of.nullable)
         int i2u = i2 + 2;         // invalid
+        Integer i3 = i1;
+        i3.toString();
     }
 
     void withinAssignment() {
