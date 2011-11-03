@@ -302,6 +302,14 @@ can then de-reference \code{File.isDirectory} safely without any nullness check.
   }
 \end{Verbatim}
 
+The argument to \code{@AssertNonNullIfTrue} and
+\code{@AssertNonNullIfFalse} is a Java expression, including method calls
+(as shown above), method formal parameters, fields, etc.; for details, see
+Section~\ref{java-expressions-as-arguments}.
+More examples of the use of these annotations appear in the Javadoc for
+\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and
+\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
+
 
 \subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
 
@@ -348,7 +356,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 \section{What the Nullness checker checks\label{nullness-checks}}
 
-The checker issues a warning in three cases:
+The checker issues a warning in these cases:
 
 \begin{enumerate}
 
@@ -367,23 +375,11 @@ The checker issues a warning in three cases:
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
-  As a special case, the checker also warns whenever a field of
+  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
+  type becoming null, the checker also warns whenever a field of
   \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
-  constructor.  To disable this warning for primitive types, you can supply
-  the \code{-Alint=-uninitialized} command-line option, but it is better
-  style to supply an explicit initializer, even if the default value such
-  as \code{0} or \code{false}.
-
-\item
-  \label{lint-nulltest}%
-  When a null check is performed against a value that is guaranteed to be
-  non-null, as in \code{("m" == null)}, because this might indicate a
-  programmer error or misunderstanding, and is unnecessary.  This check is
-  performed only if the \code{nulltest} lint option is enabled via the
-  \code{-Alint=nulltest} command-line option.  The lint option is disabled
-  by default because sometimes such checks are part of ordinary defensive
-  programming.  See Section~\ref{suppressing-warnings} for more details
-  about the \code{-Alint} command-line option.
+  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
+  command-line option below.
 
 \end{enumerate}
 
@@ -401,8 +397,37 @@ This example illustrates the programming errors that the checker detects:
 Parameter passing and return values are checked analogously to assignments.
 
 The Nullness Checker also checks the correctness, and correct use, of
-rawness annotations for checking initialization.  See
-Section~\ref{raw-partially-initialized}.
+rawness annotations for checking initialization (see
+Section~\ref{raw-partially-initialized}) and of map key annotations (see
+Section:~\ref{map-keys}).
+
+
+The checker can perform additional checks if desired.  See
+Section~\ref{suppressing-warnings} for more details about the \code{-Alint}
+command-line option.
+
+\begin{enumerate}
+\item
+  \label{lint-nulltest}%
+  If you supply the \code{-Alint=nulltest} command-line option, then the
+  checker warns when a null check is performed against a value that is
+  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
+  unnecessary and might indicate a programmer error or misunderstanding.
+  The lint option is disabled by default because sometimes such checks are
+  part of ordinary defensive programming.  
+
+\item
+  \label{lint-uninitialized}%
+  If you supply the \code{-Alint=uninitialized} command-line option, then
+  the checker warns if a constructor fails to initialize any field,
+  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
+  types.  Such a warning is unrelated to whether your code might throw a
+  null pointer exception.  However, you might want to enable this warning
+  because it is better code style to supply an explicit initializer, even
+  if there is a default value such as \code{0} or \code{false}.
+
+\end{enumerate}
+
 
 
 \section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
@@ -701,7 +726,8 @@ partially-initialized object.
 The Nullness Checker uses the \<@Raw> annotation to indicate that an object
 is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
 assigned.  Rawness is mostly relevant within the constructor, or for
-references to \code{this} that escape the constructor.  Thus, use of
+references to \code{this} that escape the constructor (say, by being stored
+in a field or passed to a method before initialization is complete).  Thus, use of
 rawness annotations in quite rare in most code.
 
 % Most readers can
@@ -721,7 +747,7 @@ The rawness hierarchy contains these qualifiers:
   \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
   has not yet been assigned.  Within the constructor,
   \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
-  the fields have been assigned.
+  the \code{@NonNull} fields have been assigned.
   A partially-initialized object (\code{this} in a constructor) may be
   passed to a helper method or stored in a variable; if so, the method
   receiver, or the field, would have to be annotated as \<@Raw>.
@@ -815,7 +841,7 @@ As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
 have been initialized, then \code{this} is treated as non-raw.
 
 The Nullness checker issues an error if the constructor fails to initialize
-any non-null field.  This ensures that the object is in a legal (non-raw)
+any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
 \urldef{\jlsdefiniteassignmenturl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/defAssign.html}
 \urldef{\jlsfinalvariablesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.12.4}
@@ -833,10 +859,24 @@ have a default value of null.
 % annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
 % restrictions apply to assigning \code{this} to a field.
 
-Currently, the type-checker requires that all fields either have a
-default in the field declaration, or be initialized in the constructor.  If
+All \code{@NonNull} fields must either have a
+default in the field declaration, or be assigned in the constructor or in a
+helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
-suppress some warnings.
+annotate the helper method with an annotation such as
+\code{@\refclass{nullness/quals}{AssertNonNullAfter}(\{"field1", "field2"\})}
+for all the fields that the helper method assigns.
+It's a bit odd, but you use that same annotation, \code{@AssertNonNullAfter},
+to indicate that a primitive field has its value set in a helper method,
+which is relevant when you supply the \code{-Alint=uninitialized}
+command-line option (see Section~\ref{lint-uninitialized}).
+
+% TODO:
+% We need an
+%   @AssertInitializedAfter("b")
+% that is analogous to
+%   @AssertNonNullAfter("b")
+% when we are dealing with a field of primitive type.
 
 
 \paragraph{Invoking the superclass constructor; rawness of the superclass reference}
@@ -884,6 +924,13 @@ superclass to also be raw.  For example:
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
 
+
+
+\paragraph{Checking assignment of all fields, not just \code{@NonNull} ones}
+
+When the \code{-Alint=uninitialized} command-line option is provided, then
+an object is considered raw until \emph{all} its fields are assigned, not
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 
 
 % Should we change the terminology?

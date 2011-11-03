@@ -19,6 +19,22 @@ import checkers.nullness.NullnessChecker;
  * </code></pre>
  * <p>
  *
+ * Another example is this method:
+ * <pre><code>   // Returns whether the line is blank (or null).
+ *   &#064;AssertNonNullIfFalse("#0")
+ *   private static boolean isBlank(@Nullable String line) {
+ *     return (line == null) || line.trim().equals("");
+ *   }</code></pre>
+ * <p>
+ *
+ * As a final example, consider this method:
+ * <pre><code>   // Indicates whether the representation has been erased
+ *   &#064;AssertNonNullIfFalse("values")
+ *   public boolean repNulled() {
+ *     return values == null;
+ *   }</code></pre>
+ * <p>
+ *
  * @see NonNull
  * @see AssertNonNullIfTrue
  * @see NullnessChecker

@@ -1228,7 +1228,7 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @return the lower bound type of this type variable
-         * @see #getLowerBoundAnnotations
+         * @see #getEffectiveLowerBoundAnnotations
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null && actualType.getLowerBound() != null) { // lazy init
@@ -1323,7 +1323,7 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @return the upper bound type of this type variable
-         * @see #getUpperBoundAnnotations
+         * @see #getEffectiveUpperBoundAnnotations
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null
