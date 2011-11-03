@@ -65,8 +65,9 @@ class RawTypes {
             init();                                             // valid
             this.init();                                        // valid
         }
-}
+    }
 
+    //:: warning: (fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
@@ -116,6 +117,7 @@ class RawTypes {
         }
     }
 
+    //:: warning: (fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
@@ -128,14 +130,17 @@ class RawTypes {
         // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            nonRawMethod();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();     // error
             startTime = 0;
             nonRawMethod();     // no error
             new AFSIICell().afsii = this;
         }
 
+        //:: warning: (fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            nonRawMethod();
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();     // error
         }
 
         public void nonRawMethod() {
@@ -175,63 +180,73 @@ class RawTypes {
 
     }
 
-    // default qualifier is @Nullable, so this is OK.
     class RawAfterConstructorBad {
         Object o;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorBad() {
         }
     }
 
     class RawAfterConstructorOK1 {
         @Nullable Object o;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK1() {
         }
     }
 
     class RawAfterConstructorOK2 {
         int a;
+        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }
 
 
 
-// skip-test
-//     // TODO: reinstate.  This shows desired features, for initialization in
-//     // a helper method rather than in the constructor.
-//     class InitInHelperMethod {
-//         int a;
-//         int b;
-//
-//         InitInHelperMethod(short constructor_inits_ab) {
-//             a = 1;
-//             b = 1;
-//             nonRawMethod();
-//         }
-//
-//         InitInHelperMethod(boolean constructor_inits_a) {
-//             a = 1;
-//             init_b();
-//             nonRawMethod();
-//         }
-//
-//         void init_b() @Raw {
-//             b = 2;
-//             nonRawMethod();
-//         }
-//
-//         InitInHelperMethod(int constructor_inits_none) {
-//             init_ab();
-//             nonRawMethod();
-//         }
-//
-//         void init_ab() @Raw {
-//             a = 1;
-//             b = 2;
-//             nonRawMethod();
-//         }
-//
-//         void nonRawMethod() { }
-//     }
+     // TODO: reinstate.  This shows desired features, for initialization in
+     // a helper method rather than in the constructor.
+    class InitInHelperMethod {
+        int a;
+        int b;
+
+        InitInHelperMethod(short constructor_inits_ab) {
+            a = 1;
+            b = 1;
+            nonRawMethod();
+        }
+
+        InitInHelperMethod(boolean constructor_inits_a) {
+            a = 1;
+            init_b();
+            nonRawMethod();
+        }
+
+        // @SuppressWarnings because initialization is computed only for the
+        // constructor.  It should arguably be computed for every raw reference.
+        @SuppressWarnings("rawness")
+        @NonNullOnEntry("a")
+        @AssertNonNullAfter("b")
+        void init_b() @Raw {
+            b = 2;
+            nonRawMethod();
+        }
+
+        InitInHelperMethod(int constructor_inits_none) {
+            init_ab();
+            nonRawMethod();
+        }
+
+        // @SuppressWarnings because initialization is computed only for the
+        // constructor.  It should arguably be computed for every raw reference.
+        @SuppressWarnings("rawness")
+        @AssertNonNullAfter({"a", "b"})
+        void init_ab() @Raw {
+            a = 1;
+            b = 2;
+            nonRawMethod();
+        }
+
+        void nonRawMethod() { }
+    }
 
 }
