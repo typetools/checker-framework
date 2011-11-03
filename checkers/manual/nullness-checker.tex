@@ -302,6 +302,10 @@ can then de-reference \code{File.isDirectory} safely without any nullness check.
   }
 \end{Verbatim}
 
+The argument to \code{@AssertNonNullIfTrue} and
+\code{@AssertNonNullIfFalse} is a Java expression, including method calls
+(as shown above), method formal parameters, fields, etc.; for details, see
+Section~\ref{java-expressions-as-arguments}.
 More examples of the use of these annotations appear in the Javadoc for
 \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and
 \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
