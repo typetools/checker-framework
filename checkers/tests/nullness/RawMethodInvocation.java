@@ -2,8 +2,8 @@ import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier("Nullable")
 class RawMethodInvocation {
-  int a;
-  int b;
+  Object a;
+  Object b;
 
   RawMethodInvocation(boolean constructor_inits_a) {
     a = 1;
