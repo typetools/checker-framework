@@ -22,12 +22,12 @@ class WildcardSuper {
         cell.get().toString();
     }
 
-    void testWithExplicitNullable(Cell<@Nullable ? super @NonNull String> cell) {
+    void testWithExplicitNullable(Cell<@Nullable ? extends @Nullable String> cell) {
         //:: error: (dereference.of.nullable)
         cell.get().toString();
     }
 
-    void testWithDoubleNullable(Cell<@Nullable ? super @Nullable String> cell) {
+    void testWithDoubleNullable(Cell<@Nullable ? extends @Nullable String> cell) {
         //:: error: (dereference.of.nullable)
         cell.get().toString();
     }
