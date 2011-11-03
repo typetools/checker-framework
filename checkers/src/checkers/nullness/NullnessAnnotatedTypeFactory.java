@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,7 +76,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
     /** Represents the Nullness Checker qualifiers */
-    protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
+    protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL, PRIMITIVE;
     protected final AnnotationMirror UNUSED;
 
     private final MapGetHeuristics mapGetHeuristics;
@@ -103,6 +104,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         NULLABLE = this.annotations.fromClass(Nullable.class);
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
         UNUSED = this.annotations.fromClass(Unused.class);
+        PRIMITIVE = this.annotations.fromClass(Primitive.class);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -143,7 +145,10 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawness.init(checker.getProcessingEnvironment());
         rawnessFactory = rawness.createFactory(root);
 
-        flow = new NullnessFlow(checker, root, this);
+        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        flowQuals.add(NONNULL);
+        flowQuals.add(PRIMITIVE);
+        flow = new NullnessFlow(checker, root, flowQuals, this);
 
         postInit();
     }
