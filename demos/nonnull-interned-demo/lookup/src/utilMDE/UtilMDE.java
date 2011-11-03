@@ -939,6 +939,7 @@ public final class UtilMDE {
   */
 
   @SuppressWarnings("nonnull")
+  /** An iterator that only returns elements that match the given Filter. */
   public static final class FilteredIterator<T> implements Iterator<T> {
     Iterator<T> itor;
     Filter<T> filter;
@@ -947,7 +948,10 @@ public final class UtilMDE {
       this.itor = itor; this.filter = filter;
     }
 
-    T current;
+    @SuppressWarnings("unchecked")
+    T invalid_t = (T) new Object();
+
+    T current = invalid_t;
     boolean current_valid = false;
 
     public boolean hasNext() {
@@ -961,7 +965,9 @@ public final class UtilMDE {
     public T next() {
       if (hasNext()) {
         current_valid = false;
-        return current;
+        @SuppressWarnings("interning")
+        boolean ok = (current != invalid_t);
+        assert ok;return current;
       } else {
         throw new NoSuchElementException();
       }
