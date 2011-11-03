@@ -5,8 +5,6 @@ class RandomTests {
     final int b = 1;
     final int c;
 
-    // TODO (@skip-test): bug (reports c as not initialized despite initializer block)
-    @SuppressWarnings("fields.uninitialized")
     RandomTests(){
         String s = null;
         a = 2;
