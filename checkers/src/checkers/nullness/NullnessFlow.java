@@ -82,8 +82,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param factory the type factory to use
      */
     public NullnessFlow(NullnessSubchecker checker, CompilationUnitTree root,
-            NullnessAnnotatedTypeFactory factory) {
-        super(checker, root, Collections.singleton(factory.NONNULL), factory);
+            Set<AnnotationMirror> annotations, NullnessAnnotatedTypeFactory factory) {
+        super(checker, root, annotations, factory);
         POLYNULL = factory.POLYNULL;
         RAW = factory.RAW;
         NONNULL = factory.NONNULL;
