@@ -5,7 +5,6 @@ public class Uninit6 {
   // guarantee of no null pointer errors.
   @LazyNonNull Object f;
   @Nullable Object g;
-  // int i;  // TODO: Discuss the implication of primitive field initialization
   //:: warning: (fields.uninitialized)
   Uninit6() { }
 }
