@@ -17,6 +17,7 @@ import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -352,6 +353,17 @@ public abstract class BaseTypeChecker extends SourceChecker {
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
         return isSubtype(useType.getErased(), declarationType.getErased());
+    }
+
+    /**
+     * Tests that the qualifiers present on the primitive type are valid.
+     *
+     * The default implementation always returns true.
+     * Subclasses should override this method to limit what annotations are
+     * allowed on primitive types.
+     */
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        return true;
     }
 
     /**
