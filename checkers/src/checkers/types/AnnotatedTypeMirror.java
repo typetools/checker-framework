@@ -9,6 +9,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -43,10 +44,6 @@ import com.sun.source.tree.Tree;
  * @since 1.6
  */
 public abstract class AnnotatedTypeMirror {
-
-    // TODO: is it worth to add an option for this? It's handy to 
-    // debug type factories.
-    private static final boolean showUnqualifiedAnnotation = false;
 
     /**
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the
@@ -408,6 +405,10 @@ public abstract class AnnotatedTypeMirror {
         return ((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName().contentEquals(aname);
     }
 
+    private static boolean isInvisibleQualified(AnnotationMirror anno) {
+        return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(InvisibleQualifier.class) != null;
+    }
+
     // A Helper method to print annotations separated with a space
     protected final static String formatAnnotationString(Collection<? extends AnnotationMirror> lst) {
         StringBuilder sb = new StringBuilder();
@@ -415,14 +416,14 @@ public abstract class AnnotatedTypeMirror {
             if (obj==null) {
                 throw new Error("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
-            if (isUnqualified(obj)) {
-                if (showUnqualifiedAnnotation) {
-                    sb.append("@Unqualified ");
-                }
+            if (isInvisibleQualified(obj)) {
                 continue;
             }
 
             if (!obj.getElementValues().isEmpty()) {
+                // This prints the fully-qualified name whereas for annotations without values
+                // we only print the simple name.
+                // TODO: fix this inconsistency?
                 sb.append(obj.toString());
                 sb.append(" ");
                 continue;
