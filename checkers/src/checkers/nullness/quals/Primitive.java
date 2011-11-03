@@ -28,7 +28,17 @@ import com.sun.source.tree.Tree;
 @Target({})
 @TypeQualifier
 @InvisibleQualifier
-@SubtypeOf( NonNull.class )
+/*
+ * Subtyping for this qualifier is a bit tricky. Basically we want primitives to
+ * be interchangeable with NonNull, to account for auto-boxing. If we mate Primitive
+ * a subtype of NonNull, some generic test cases would fail, as the Bottom of the
+ * hierarchy would no longer be NonNull. Same problem if both are below LazyNonNull
+ * on the same level.
+ * Now I made NonNull <: Primitive <: LazyNonNull and special case that also
+ * Primitive <: NoNull.
+ * This seems to work correctly so far.
+ */
+@SubtypeOf( LazyNonNull.class )
 @ImplicitFor(
     typeClasses = { AnnotatedPrimitiveType.class },
     trees = {
