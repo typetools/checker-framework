@@ -46,7 +46,7 @@ abstract class TypeFromTree extends
         // Annotate the inner most array
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         for (AnnotationMirror anno : annotations) {
-            if (isTypeAnnotation(anno)) {
+            if (AnnotatedTypes.isTypeAnnotation(anno)) {
                 innerType.addAnnotation(anno);
                 if (innerType.getKind() == TypeKind.TYPEVAR) {
                     AnnotatedTypeVariable atv = (AnnotatedTypeVariable) innerType;
@@ -76,36 +76,6 @@ abstract class TypeFromTree extends
             typevar.getExtendsBound().clearAnnotations();
             typevar.getSuperBound().clearAnnotations();
         }
-    }
-
-    private static Map<TypeElement, Boolean> isTypeCache = new IdentityHashMap<TypeElement, Boolean>();
-    private static boolean isTypeAnnotation(AnnotationMirror anno) {
-        TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
-        if (isTypeCache.containsKey(elem))
-            return isTypeCache.get(elem);
-
-        boolean result = isTypeAnnotationImpl(elem);
-        isTypeCache.put(elem, result);
-        return result;
-    }
-
-    private static boolean isTypeAnnotationImpl(TypeElement type) {
-        Target target = type.getAnnotation(Target.class);
-        if (target == null)
-            return true;
-        for (ElementType et : target.value()) {
-            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
-            if (et == ElementType.TYPE_USE)
-                return true;
-        }
-        return false;
-    }
-
-    private static boolean hasTypeAnnotation(List<? extends AnnotationMirror> annos) {
-        for(AnnotationMirror am : annos) {
-            if(isTypeAnnotation(am)) return true;
-        }
-        return false;
     }
 
     /**
@@ -436,7 +406,7 @@ abstract class TypeFromTree extends
             // nullable), but not remove annotations?
             com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getType();
             if (ntype.type.getKind() == TypeKind.TYPEVAR &&
-                    hasTypeAnnotation(elt.getAnnotationMirrors())) {
+                    AnnotatedTypes.containsTypeAnnotation(elt.getAnnotationMirrors())) {
                 clearAnnotationsFromElt(result);
             }
             addAnnotationsToElt(result, elt.getAnnotationMirrors());
@@ -469,7 +439,7 @@ abstract class TypeFromTree extends
             com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getReturnType();
             if (ntype!=null &&
                     ntype.type.getKind() == TypeKind.TYPEVAR &&
-                    hasTypeAnnotation(elt.getAnnotationMirrors())) {
+                    AnnotatedTypes.containsTypeAnnotation(elt.getAnnotationMirrors())) {
                 clearAnnotationsFromElt(result.getReturnType());
             }
             addAnnotationsToElt(result.getReturnType(), elt.getAnnotationMirrors());
