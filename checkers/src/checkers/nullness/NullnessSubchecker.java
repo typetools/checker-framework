@@ -7,6 +7,7 @@ import checkers.source.*;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypes;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -45,8 +46,11 @@ public class NullnessSubchecker extends BaseTypeChecker {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
              (type.getAnnotation(Primitive.class)==null &&
-             // Flow inference might implicitly add a NonNull
-             !type.getElement().getAnnotationMirrors().isEmpty())) {
+             // Flow inference might implicitly add a NonNull, therefore
+             // check whether the element contained a type annotation.
+             // Note that non-type annotations, e.g. SuppressWarnings, might
+             // be present on the element.
+             AnnotatedTypes.containsTypeAnnotation(type.getElement().getAnnotationMirrors()))) {
             return false;
         }
         return super.isValidUse(type);
