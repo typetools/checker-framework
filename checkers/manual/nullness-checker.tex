@@ -901,16 +901,16 @@ superclass to also be raw.  For example:
     // receiver is "@NonRaw A"
     void nonRawAReceiver() { }
     // annotation forces receiver to be "@Raw A"; also is "@NonRaw Object"
-    void rawAReciever() @Raw { }
+    void rawAReciever(@Raw A this) { }
   }
 
   class B extends A {
     // annotation forces receiver to be "@Raw B", method overriding forces "@Raw A"
-    void rawAReceiver() @Raw {
+    void rawAReceiver(@Raw B this) {
       super.nonRawAReceiver();  // illegal!  rawness of A does not match
     }
     // annotation forces receiver to be "@Raw B"; also is "@NonRaw A"
-    void rawBReceiver() @Raw {
+    void rawBReceiver(@Raw B this) {
       super.nonRawAReceiver();  // OK
     }
   }

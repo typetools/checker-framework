@@ -3,10 +3,10 @@ import checkers.javari.quals.*;
 
 public interface CharSequence {
 
-    int length() @ReadOnly;
+    int length(@ReadOnly CharSequence this);
 
-    char charAt(int index) @ReadOnly;
-    @PolyRead CharSequence subSequence(int start, int end) @PolyRead;
-    public String toString() @ReadOnly;
+    char charAt(@ReadOnly CharSequence this, int index);
+    @PolyRead CharSequence subSequence(@PolyRead CharSequence this, int start, int end);
+    public String toString(@ReadOnly CharSequence this);
 
 }

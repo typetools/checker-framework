@@ -9,9 +9,9 @@ import checkers.igj.quals.*;
 class Test {
     @I Test field;
     @Assignable @I Test assignable;
-    @I Test getField() @ReadOnly { return field; }
+    @I Test getField(@ReadOnly Test this) { return field; }
 
-    @I("O") Test getField(@I("O") Test o) @ReadOnly {
+    @I("O") Test getField(@ReadOnly Test this, @I("O") Test o) {
         this.assignable = assignable;
         assignable = this.assignable;
         this.assignable = o.assignable;  // emit error
