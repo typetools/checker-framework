@@ -12,11 +12,11 @@ public class MissingResourceException extends RuntimeException {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getClassName() @ReadOnly {
+    public String getClassName(@ReadOnly MissingResourceException this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getKey() @ReadOnly {
+    public String getKey(@ReadOnly MissingResourceException this) {
         throw new RuntimeException("skeleton method");
     }
 }
