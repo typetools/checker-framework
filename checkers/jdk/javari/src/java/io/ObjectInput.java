@@ -3,7 +3,7 @@ package java.io;
 import checkers.javari.quals.*;
 
 public interface ObjectInput extends DataInput {
-    public int available() @ReadOnly throws IOException;
+    public int available(@ReadOnly ObjectInput this) throws IOException;
     public void close() throws IOException;
     public int read() throws IOException;
     public int read(byte[] b) throws IOException;
