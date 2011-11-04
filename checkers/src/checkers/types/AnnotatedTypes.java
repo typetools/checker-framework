@@ -2,6 +2,8 @@ package checkers.types;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -1159,6 +1161,38 @@ public class AnnotatedTypes {
         }
 
         return found;
+    }
+
+
+    private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<TypeElement, Boolean>();
+
+    public static boolean isTypeAnnotation(AnnotationMirror anno) {
+        TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
+        if (isTypeAnnotationCache.containsKey(elem))
+            return isTypeAnnotationCache.get(elem);
+
+        boolean result = isTypeAnnotationImpl(elem);
+        isTypeAnnotationCache.put(elem, result);
+        return result;
+    }
+
+    private static boolean isTypeAnnotationImpl(TypeElement type) {
+        Target target = type.getAnnotation(Target.class);
+        if (target == null)
+            return true;
+        for (ElementType et : target.value()) {
+            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
+            if (et == ElementType.TYPE_USE)
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean containsTypeAnnotation(List<? extends AnnotationMirror> annos) {
+        for(AnnotationMirror am : annos) {
+            if(isTypeAnnotation(am)) return true;
+        }
+        return false;
     }
 
 }
