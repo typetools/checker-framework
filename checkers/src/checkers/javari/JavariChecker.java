@@ -53,7 +53,7 @@ public class JavariChecker extends BaseTypeChecker {
      */
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(getQualifierHierarchy()) {
+        return new TypeHierarchy(this, getQualifierHierarchy()) {
             @Override
             protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
                 return lhs.hasEffectiveAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);

@@ -129,7 +129,7 @@ public class IGJChecker extends BaseTypeChecker {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new IGJTypeHierarchy(getQualifierHierarchy());
+        return new IGJTypeHierarchy(this, getQualifierHierarchy());
     }
 
     //
@@ -180,8 +180,8 @@ public class IGJChecker extends BaseTypeChecker {
      *    may change co-variantly in a safe manner
      */
     private final class IGJTypeHierarchy extends TypeHierarchy {
-        public IGJTypeHierarchy(QualifierHierarchy qualifierHierarchy) {
-            super(qualifierHierarchy);
+        public IGJTypeHierarchy(IGJChecker checker, QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
         }
 
         /**

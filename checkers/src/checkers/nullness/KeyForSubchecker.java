@@ -23,7 +23,7 @@ import checkers.types.TypeHierarchy;
 public class KeyForSubchecker extends BaseTypeChecker {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new KeyForTypeHierarchy(getQualifierHierarchy());
+        return new KeyForTypeHierarchy(this, getQualifierHierarchy());
     }
 
     @Override
@@ -45,8 +45,8 @@ public class KeyForSubchecker extends BaseTypeChecker {
 
     private class KeyForTypeHierarchy extends TypeHierarchy {
 
-        public KeyForTypeHierarchy(QualifierHierarchy qualifierHierarchy) {
-            super(qualifierHierarchy);
+        public KeyForTypeHierarchy(KeyForSubchecker checker, QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
         }
 
         @Override

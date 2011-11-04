@@ -45,14 +45,14 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
     //
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new OIGJImmutabilityQualifierHierarchy(getQualifierHierarchy());
+        return new OIGJImmutabilityQualifierHierarchy(this, getQualifierHierarchy());
     }
 
     private final class OIGJImmutabilityQualifierHierarchy extends TypeHierarchy {
 
-        public OIGJImmutabilityQualifierHierarchy(
+        public OIGJImmutabilityQualifierHierarchy(ImmutabilitySubchecker checker,
                 QualifierHierarchy qualifierHierarchy) {
-            super(qualifierHierarchy);
+            super(checker, qualifierHierarchy);
         }
 
         /**

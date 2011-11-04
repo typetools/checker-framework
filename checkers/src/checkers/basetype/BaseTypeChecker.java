@@ -220,7 +220,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return  the type relations class to check type subtyping
      */
     protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(getQualifierHierarchy());
+        return new TypeHierarchy(this, getQualifierHierarchy());
     }
 
     /**

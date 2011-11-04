@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -46,17 +47,24 @@ import checkers.util.AnnotationUtils;
 public class TypeHierarchy {
     /** The hierarchy of qualifiers */
     private final QualifierHierarchy qualifierHierarchy;
+
     /** Prevent infinite loops in cases of recursive type bound */
     protected final Set<Element> visited;
+
+    /** The type checker to use. */
+    protected final BaseTypeChecker checker;
 
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
      * whose qualifiers represented in qualifierHierarchy.
-     * @param qualifierHierarchy
+     * 
+     * @param checker The type checker to use
+     * @param qualifierHierarchy The qualifier hierarchy to use
      */
-    public TypeHierarchy(QualifierHierarchy qualifierHierarchy) {
+    public TypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
         this.qualifierHierarchy = qualifierHierarchy;
         this.visited = new HashSet<Element>();
+        this.checker = checker;
     }
 
     /**
@@ -78,9 +86,11 @@ public class TypeHierarchy {
      * It populates the visited field.
      */
     protected final boolean isSubtypeImpl(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        // System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n",
-        //        rhs, rhs.getKind(), rhs.getClass(),
-        //        lhs, lhs.getKind(), lhs.getClass());
+        /*
+        System.out.printf("isSubtypeImpl(rhs: %s (%s, %s), lhs: %s (%s, %s))%n",
+                rhs, rhs.getKind(), rhs.getClass(),
+                lhs, lhs.getKind(), lhs.getClass());
+        */
         // If we already checked this type (in case of a recursive type bound)
         // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs.getElement()))
@@ -274,6 +284,10 @@ public class TypeHierarchy {
      * @return true iff rhs is a subtype of lhs
      */
     protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        return isSubtypeImpl(rhs, lhs);
+        // TODO: go back to the type checker and invoke isSubtype from there.
+        // Should we do this more consistently, e.g. also for type arguments?
+        // The problem is that I was overriding isSubtype in the checker, but then
+        // the behavior for arrays didn't adapt.
+        return checker.isSubtype(rhs, lhs);
     }
 }
