@@ -6,4 +6,9 @@ class UnannoPrimitives {
 
   //:: error: (type.invalid)
   @NonNull int g;
+
+  void local() {
+    @SuppressWarnings("tata")
+    int h = new Integer(5);
+  }
 }
