@@ -67,7 +67,7 @@ public abstract class AnnotatedTypeMirror {
             case DECLARED:
                 return new AnnotatedDeclaredType((DeclaredType)type, env, typeFactory);
             case ERROR:
-                throw new AssertionError("Input should type-checked already...");
+                throw new AssertionError("Input should type-check already...");
             case EXECUTABLE:
                 return new AnnotatedExecutableType((ExecutableType)type, env, typeFactory);
             case VOID:
@@ -537,17 +537,7 @@ public abstract class AnnotatedTypeMirror {
         /** Parametrized Type Arguments **/
         protected List<AnnotatedTypeMirror> typeArgs;
 
-        /** Supertype of this type **/
-        // This field seems to be unused.
-        // @Deprecated
-        // protected AnnotatedDeclaredType superclass;
-
-        /** The interfaces that this type implements **/
-        // This field seems to be unused.
-        // @Deprecated
-        // protected List<AnnotatedDeclaredType> interfaces;
-
-        boolean isGeneric = false;
+        protected boolean isGeneric = false;
 
         protected final DeclaredType actualType;
 
@@ -566,10 +556,8 @@ public abstract class AnnotatedTypeMirror {
             this.actualType = type;
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
-            // this.interfaces = new LinkedList<AnnotatedDeclaredType>();
             this.supertypes = null;
         }
-
 
         @Override
         public String toString() {
@@ -642,32 +630,6 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the super type of this
-         */
-        /*
-        @Deprecated
-        public AnnotatedTypeMirror getSuperclass() {
-
-            TypeElement elt = (TypeElement)this.actualType.asElement();
-            assert elt.getSuperclass() != null;
-
-            AnnotatedTypeMirror type = createType(elt.asType(), env, typeFactory);
-
-            // Some types don't have a supertype (e.g., java.lang.Cloneable),
-            // so we return a copy of their NoType.
-            if (type instanceof AnnotatedNoType) return type.getCopy(true);
-
-            assert type instanceof AnnotatedDeclaredType : "not a declared type: "
-                    + type;
-
-            AnnotatedDeclaredType at = (AnnotatedDeclaredType)type;
-            at.addAnnotations(this.getAnnotations());
-
-            return at;
-        }
-        */
-
-        /**
          * Returns true if the type is generic, even if the type is erased
          * or used as a RAW type.
          *
@@ -688,22 +650,6 @@ public abstract class AnnotatedTypeMirror {
         public boolean isParameterized() {
             return !getTypeArguments().isEmpty()
                 && !getUnderlyingType().getTypeArguments().isEmpty();
-        }
-
-        /**
-         * @return the interfaces of this type
-         */
-        @Deprecated
-        public List<AnnotatedDeclaredType> getInterfaces() {
-            TypeElement elt = (TypeElement)this.actualType.asElement();
-            List<AnnotatedDeclaredType> myInterfaces = new LinkedList<AnnotatedDeclaredType>();
-            for (TypeMirror dt : elt.getInterfaces()) {
-                AnnotatedDeclaredType at =
-                    (AnnotatedDeclaredType)createType(dt, env, typeFactory);
-                at.addAnnotations(this.getAnnotations());
-                myInterfaces.add(at);
-            }
-            return Collections.unmodifiableList(myInterfaces);
         }
 
         @Override
@@ -743,11 +689,6 @@ public abstract class AnnotatedTypeMirror {
 
             AnnotatedDeclaredType type = getCopy(true);
 
-            // No need to substitute type params for now!
-            //
-            // Why is this the case? The following was necessary to get the
-            // Interning checker's Generics test case to work. -MP
-
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror t : getTypeArguments())
                 typeArgs.add(t.substitute(mapping));
@@ -763,7 +704,6 @@ public abstract class AnnotatedTypeMirror {
             }
             return type;
         }
-
 
         @Override
         public AnnotatedDeclaredType getErased() {
@@ -1633,14 +1573,10 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
-            // cannot substitute
-            // return getCopy(true);
-            // WMD wants to substitute primitive types!
             if (mappings.containsKey(this))
                 return mappings.get(this);
             return getCopy(true);
         }
-
     }
 
     /**
