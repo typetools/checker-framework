@@ -223,7 +223,6 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-
         // Check field initialization in constructors
         if (TreeUtils.isConstructor(node)
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
