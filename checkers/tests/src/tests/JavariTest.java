@@ -22,6 +22,7 @@ public class JavariTest extends ParameterizedCheckerTest {
 
     // TODO: I want this method somewhere in ParameterizedChecker, but as
     // all these methods are static, I didn't find a fast way :-(
+    // Duplicated in OIGJTest!
     protected static Collection<Object[]> filter(Collection<Object[]> in) {
         Collection<Object[]> out = new ArrayList<Object[]>();
         for (Object[] oa : in) {
