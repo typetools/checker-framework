@@ -563,12 +563,23 @@ public class AnnotatedTypeFactory {
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
-
+        List<AnnotatedTypeMirror> targs = type.getTypeArguments();
         List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
+                new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
+
         List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
 
+        assert targs.size() == tvars.size();
+        for(int i=0; i<targs.size(); ++i) {
+            mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
+        }
+
         for (AnnotatedTypeMirror atm : tvars) {
-            res.add((AnnotatedTypeVariable)atm);
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
+            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
+            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
+            res.add(atv);
         }
         return res;
     }
