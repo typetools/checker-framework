@@ -1077,7 +1077,7 @@ public class AnnotatedTypeFactory {
      * @return true if that annotation is part of the type system under which
      *         this type factory operates, false otherwise
      */
-    /*package-scope*/ boolean isSupportedQualifier(AnnotationMirror a) {
+    public boolean isSupportedQualifier(AnnotationMirror a) {
         if (a!=null && supportedQuals.isEmpty()) {
             // Only include with retention
             TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
