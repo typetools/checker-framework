@@ -1,4 +1,3 @@
-// Rename to: ??
 import java.util.*;
 
 interface A<ID> {}
