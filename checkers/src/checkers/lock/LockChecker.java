@@ -8,7 +8,7 @@ import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * A typechecker plug-in for the JCIP type system qualifier that finds (and
@@ -25,8 +25,7 @@ public class LockChecker extends BaseTypeChecker {
         AnnotationMirror guardedBy = annoFactory.fromClass(GuardedBy.class);
         AnnotationMirror unqualified = annoFactory.fromClass(Unqualified.class);
 
-        GraphQualifierHierarchy.Factory factory =
-            new GraphQualifierHierarchy.Factory(this);
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
 
         factory.addQualifier(guardedBy);
         factory.addQualifier(unqualified);
