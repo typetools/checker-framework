@@ -99,7 +99,7 @@ public class AnnotatedTypes {
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
                 // Is there a better place for this?
-                res.addAnnotation(factory.getQualifierHierarchy().getRootAnnotation());
+                res.addAnnotations(factory.getQualifierHierarchy().getRootAnnotations());
             }
             return res;
         }
