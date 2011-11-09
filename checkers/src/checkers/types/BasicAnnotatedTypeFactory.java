@@ -82,16 +82,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         boolean foundDefault = false;
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.setAbsoluteDefaults(this.annotations.fromClass(qual),
+                defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
                         Collections.singleton(DefaultLocation.ALL));
                 foundDefault = true;
-                break;
             }
         }
 
-        if (!foundDefault) {
-            defaults.setAbsoluteDefaults(this.annotations.fromClass(Unqualified.class),
-                    Collections.singleton(DefaultLocation.ALL));
+        AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
+        if (!foundDefault && this.isSupportedQualifier(unqualified)) {
+        	defaults.addAbsoluteDefault(unqualified,
+        			Collections.singleton(DefaultLocation.ALL));
         }
 
         // This also gets called by subclasses.  Is that a problem?
