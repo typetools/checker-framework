@@ -161,9 +161,10 @@ public class TypeHierarchy {
                 return qualifierHierarchy.isSubtype(ras, las);
             }
             // No annotations on lhs lower bound
-            return qualifierHierarchy.getBottomQualifier() == null ?
+            // XXX: should bottomquals always be non-null?
+            return qualifierHierarchy.getBottomAnnotations() == null ?
                 rhs.getEffectiveAnnotations().isEmpty() :
-                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomAnnotations());
         }
 
         // It's probably OK to reach this case, because of the isSubtype test above.
