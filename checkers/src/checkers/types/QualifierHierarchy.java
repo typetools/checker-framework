@@ -27,12 +27,24 @@ public abstract class QualifierHierarchy {
     /**
      * @return  the root (ultimate super) type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getRootAnnotation();
+	public abstract Set<AnnotationMirror> getRootAnnotations();
+	
+	/**
+	 * Return the root for the given qualifier, that is, the qualifier that is a
+	 * supertype of start but no further supertypes exist. 
+	 */
+	public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+
+	/**
+	 * Return the bottom for the given qualifier, that is, the qualifier that is a
+	 * subtype of start but no further subtypes exist. 
+	 */	
+	public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
      * @return the bottom type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getBottomQualifier();
+    public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
      * Returns the names of all type qualifiers in this type qualifier
@@ -66,22 +78,7 @@ public abstract class QualifierHierarchy {
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
     // this case, requires subtyping with respect to one qualifier only.
-    public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        Collection<AnnotationMirror> rhsAnnos = rhs;
-        Collection<AnnotationMirror> lhsAnnos = lhs;
-
-        if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
-            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
-        }
-        for (AnnotationMirror lhsAnno : lhsAnnos) {
-            for (AnnotationMirror rhsAnno : rhsAnnos) {
-                if (isSubtype(rhsAnno, lhsAnno)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
      * Returns the  least upper bound for the qualifiers a1 and a2.
