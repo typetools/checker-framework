@@ -44,8 +44,6 @@ public class QualifierDefaults {
 
         qualifiedNameMap = new HashMap<String, String>();
         for (Name name : factory.getQualifierHierarchy().getTypeQualifiers()) {
-            if (name == null)
-                continue;
             String qualified = name.toString();
             String unqualified = qualified.substring(qualified.lastIndexOf('.') + 1);
             qualifiedNameMap.put(qualified, qualified);
