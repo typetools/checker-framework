@@ -216,6 +216,31 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns true if an annotation from the given sub-hierarchy targets this type location.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return True iff an annotation from the same hierarchy as p is present. 
+     */
+    public boolean isAnnotatedInHierarchy(AnnotationMirror p) {
+    	AnnotationMirror aliased = p;
+    	if (!typeFactory.isSupportedQualifier(aliased)) {
+    		aliased = typeFactory.aliasedAnnotation(p);
+    	}
+    	if (typeFactory.isSupportedQualifier(aliased)) {
+    		AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
+    		for(AnnotationMirror anno : annotations) {
+    			if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * It does not include annotations in deep types (type arguments, array
@@ -1232,7 +1257,7 @@ public abstract class AnnotatedTypeMirror {
                         lowerBound.addAnnotations(annotations);
                     } else {
                         if (typeFactory.qualHierarchy!=null) {
-                            lowerBound.addAnnotation(typeFactory.qualHierarchy.getBottomQualifier());
+                            lowerBound.addAnnotations(typeFactory.qualHierarchy.getBottomAnnotations());
                         }
                         // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                         // How should this be handled? What is that factory doing?
@@ -1531,6 +1556,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             // This output is not helpful if there is a (non-default) annotation.
+            // return formatAnnotationString(getAnnotations()) + "null";
             return "null";
         }
     }
