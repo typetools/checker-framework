@@ -7,15 +7,18 @@ public class FindBugs {
     }
 
     @NonNull MyList<@Nullable Object> getListOfNulls() {
+        //:: error: (return.type.incompatible)
         return null;    // error
     }
 
     void test() {
         Object o = getNull();
+        //:: error: (dereference.of.nullable)
         o.toString();   // error
 
         MyList<@Nullable Object> l = getListOfNulls();
         l.toString();
+        //:: error: (dereference.of.nullable)
         l.get().toString();    // error
     }
 }
