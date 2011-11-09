@@ -1314,7 +1314,6 @@ public class AnnotatedTypeFactory {
             return currentPath;
         }
 
-        //
         // When running on Daikon, we noticed that a lot of calls happened
         // within a small subtree containing the node we are currently visiting
 

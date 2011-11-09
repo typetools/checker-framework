@@ -151,6 +151,7 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     /** immutable map: qualifier --> supertypesMap of the qualifier**/
     // Contains all supertypes, not just the direct supertypes of the qualifier
     private final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesMap;
+
     /** the root of all the qualifiers **/
     private final AnnotationMirror root;
     private final AnnotationMirror bottom;
@@ -209,14 +210,13 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     // For caching results of lubs
-    Map<AnnotationPair, AnnotationMirror> lubs = null;
+    private Map<AnnotationPair, AnnotationMirror> lubs = null;
+
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         if (AnnotationUtils.areSameIgnoringValues(a1, a2))
             return AnnotationUtils.areSame(a1, a2) ? a1 : root;
         if (lubs == null) {
-            // WMD TODO: this does not seem to be needed
-            // lubs = new HashMap<AnnotationPair, AnnotationMirror>();
             lubs = calculateLubs();
         }
         AnnotationPair pair = new AnnotationPair(a1, a2);
@@ -225,7 +225,8 @@ public class GraphQualifierHierarchy extends QualifierHierarchy {
 
 
     // For caching results of glbs
-    Map<AnnotationPair, AnnotationMirror> glbs = null;
+    private Map<AnnotationPair, AnnotationMirror> glbs = null;
+
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
         if (AnnotationUtils.areSameIgnoringValues(a1, a2))
