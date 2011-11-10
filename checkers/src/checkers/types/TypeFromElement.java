@@ -367,19 +367,20 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
-            // TODO: This logic seems odd.
-            if (wt.getExtendsBound() == null)
+            if (wt.getExtendsBound() != null) {
                 bound = wt.getExtendsBound();
-            else
+            } else {
                 bound = wt.getSuperBound();
-        } else
+            }
+        } else {
             throw new IllegalArgumentException("type has no bounds: " + type.getKind());
-
-        if (bound == null)
+        }
+        if (bound == null) {
             return Collections.emptyList();
-        else if (!TypesUtils.isAnonymousType(bound.getUnderlyingType()))
+        } else if (!TypesUtils.isAnonymousType(bound.getUnderlyingType())) {
             return Collections.singletonList(bound);
-        else
+        } else {
             return Collections.unmodifiableList(bound.directSuperTypes());
+        }
     }
 }

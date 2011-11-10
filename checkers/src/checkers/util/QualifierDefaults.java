@@ -32,7 +32,7 @@ public class QualifierDefaults {
 	private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
 			new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
 
-    private Map<String, String> qualifiedNameMap;
+    private final Map<String, String> qualifiedNameMap;
 
     /**
      * @param factory the factory for this checker
@@ -188,7 +188,7 @@ public class QualifierDefaults {
             applyDefaults(elt, type);
     }
 
-    private Map<Element, List<DefaultQualifier>> qualifierCache =
+    private final Map<Element, List<DefaultQualifier>> qualifierCache =
         new IdentityHashMap<Element, List<DefaultQualifier>>();
 
     /** The default annotation for local variables.
