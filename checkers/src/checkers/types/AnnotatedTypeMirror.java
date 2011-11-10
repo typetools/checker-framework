@@ -1651,6 +1651,19 @@ public abstract class AnnotatedTypeMirror {
             return this.superBound;
         }
 
+        public AnnotatedTypeMirror getEffectiveSuperBound() {
+            AnnotatedTypeMirror spb = getSuperBound();
+            if (spb==null) {
+                return null;
+            }
+            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(spb);
+            if (!annotations.isEmpty()) {
+                effbnd.clearAnnotations();
+                effbnd.addAnnotations(annotations);
+            }
+            return effbnd;
+        }
+
         /**
          * Sets the upper bound of this wild card
          *
