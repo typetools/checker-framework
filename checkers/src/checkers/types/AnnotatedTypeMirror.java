@@ -691,6 +691,8 @@ public abstract class AnnotatedTypeMirror {
             if (supertypes == null) {
                 supertypes = directSuperTypes(this);
             }
+            // TODO: the overridden version directly returns the
+            // result of directSuperTypes.
             return Collections.unmodifiableList(supertypes);
         }
 
@@ -1795,8 +1797,9 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-    protected final List<AnnotatedDeclaredType>
-    directSuperTypes(AnnotatedDeclaredType type) {
+    // Version of method below for declared types
+    protected final List<AnnotatedDeclaredType> directSuperTypes(
+            AnnotatedDeclaredType type) {
         setSuperTypeFinder(type.typeFactory);
         List<AnnotatedDeclaredType> supertypes =
             superTypeFinder.visitDeclared(type, null);
@@ -1804,6 +1807,7 @@ public abstract class AnnotatedTypeMirror {
         return supertypes;
     }
 
+    // Version of method above for all types
     private final List<? extends AnnotatedTypeMirror> directSuperTypes(
             AnnotatedTypeMirror type) {
         setSuperTypeFinder(type.typeFactory);
@@ -1917,9 +1921,9 @@ public abstract class AnnotatedTypeMirror {
             ClassTree classTree = typeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!
             if (classTree != null) {
-                supertypes.addAll(supertypesFromTree(classTree));
+                supertypes.addAll(supertypesFromTree(type, classTree));
             } else {
-                supertypes.addAll(supertypesFromElement(typeElement));
+                supertypes.addAll(supertypesFromElement(type, typeElement));
                 // final Element elem = type.getElement() == null ? typeElement : type.getElement();
             }
 
@@ -1934,10 +1938,24 @@ public abstract class AnnotatedTypeMirror {
             return supertypes;
         }
 
-        private List<AnnotatedDeclaredType> supertypesFromElement(TypeElement typeElement) {
+        private List<AnnotatedDeclaredType> supertypesFromElement(AnnotatedDeclaredType type, TypeElement typeElement) {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
-            // Find the super types: Start with superclass
-            if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
+            // Find the super types: Start with enums and superclass
+            if (typeElement.getKind() == ElementKind.ENUM) {
+                DeclaredType dt = (DeclaredType) typeElement.getSuperclass();
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeFactory.toAnnotatedType(dt);
+                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                for (AnnotatedTypeMirror t : tas) {
+                    // If the type argument of super is the same as the input type
+                    if (typeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
+                        t.addAnnotations(type.getAnnotations());
+                        newtas.add(t);
+                    }
+                }
+                adt.setTypeArguments(newtas);
+                supertypes.add(adt);
+            } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
                 DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
                 AnnotatedDeclaredType dt =
                     (AnnotatedDeclaredType)typeFactory.toAnnotatedType(superClass);
@@ -1951,10 +1969,11 @@ public abstract class AnnotatedTypeMirror {
                 supertypes.add(ast);
             }
             TypeFromElement.annotateSupers(supertypes, typeElement);
+
             return supertypes;
         }
 
-        private List<AnnotatedDeclaredType> supertypesFromTree(ClassTree classTree) {
+        private List<AnnotatedDeclaredType> supertypesFromTree(AnnotatedDeclaredType type, ClassTree classTree) {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
             if (classTree.getExtendsClause() != null) {
                 AnnotatedDeclaredType adt = (AnnotatedDeclaredType)
@@ -1973,7 +1992,17 @@ public abstract class AnnotatedTypeMirror {
             TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
             if (elem.getKind() == ElementKind.ENUM) {
                 DeclaredType dt = (DeclaredType) elem.getSuperclass();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType)typeFactory.toAnnotatedType(dt);
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeFactory.toAnnotatedType(dt);
+                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                for (AnnotatedTypeMirror t : tas) {
+                    // If the type argument of super is the same as the input type
+                    if (typeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
+                        t.addAnnotations(type.getAnnotations());
+                        newtas.add(t);
+                    }
+                }
+                adt.setTypeArguments(newtas);
                 supertypes.add(adt);
             } else if (elem.getKind() == ElementKind.ANNOTATION_TYPE) {
                 DeclaredType dt = (DeclaredType) typeFactory.elements.getTypeElement("java.lang.annotation.Annotation").asType();
