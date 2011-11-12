@@ -43,6 +43,7 @@ public class JavariTest extends ParameterizedCheckerTest {
         // One part of this test case doesn't work with Javari, because
         // a the upper bound of a type variable get's defaulted to @Readonly.
         // TODO: split up the test case in smaller parts.
-        return o.toString().equals("tests/all-systems/GenericsCasts.java");
+        return o.toString().equals("tests/all-systems/GenericsCasts.java") ||
+                o.toString().equals("tests/all-systems/MethodTypeVars.java");
     }
 }
