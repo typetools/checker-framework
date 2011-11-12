@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import com.sun.source.tree.Tree;
+import checkers.flow.controlflowgraph.node.Node;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
@@ -105,7 +105,7 @@ public class ControlFlowGraphDOTVisualizer {
 		}
 		StringBuilder sb = new StringBuilder();
 		boolean b = false;
-		for (Tree t : v.getContents()) {
+		for (Node t : v.getContents()) {
 			if (b) {
 				sb.append("\\n");
 			}

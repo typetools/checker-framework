@@ -1,8 +1,5 @@
 package checkers.flow.controlflowgraph;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -55,7 +52,6 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.TreeScanner;
 
 /**
  * Builds the control flow graph of a Java method (represented by its abstract
@@ -71,44 +67,6 @@ public class CFGBuilder {
 	 */
 	public BasicBlock build(MethodTree method) {
 		return new CFGHelper().build(method.getBody());
-	}
-
-	/**
-	 * Determines the set of exceptions that can possibly be thrown by a
-	 * {@link Tree} t.
-	 * 
-	 * @return A set of exceptions that might be thrown by a tree t.
-	 */
-	protected Set<Class<? extends Throwable>> possibleExceptions(Tree t) {
-		// TODO are these all sources of exceptions?
-		final Set<Class<? extends Throwable>> exceptions = new HashSet<Class<? extends Throwable>>();
-		t.accept(new TreeScanner<Void, Void>() {
-			@Override
-			public Void visitBinary(BinaryTree node, Void p) {
-				if (node.getKind().equals(Tree.Kind.DIVIDE)
-						|| node.getKind().equals(Tree.Kind.REMAINDER)) {
-					exceptions.add(ArithmeticException.class); // division by 0
-				}
-				return super.visitBinary(node, p);
-			}
-
-			@Override
-			public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-				// a method can throw arbitrary unchecked exceptions ..
-				exceptions.add(RuntimeException.class);
-				exceptions.add(Error.class);
-				// .. and checked exceptions as declared
-				// TODO checked exceptions
-				return super.visitMethodInvocation(node, p);
-			}
-
-			@Override
-			public Void visitMemberSelect(MemberSelectTree node, Void p) {
-				exceptions.add(NullPointerException.class);
-				return super.visitMemberSelect(node, p);
-			}
-		}, null);
-		return exceptions;
 	}
 
 	/**
@@ -166,15 +124,13 @@ public class CFGBuilder {
 
 		@Override
 		public Void visitAssignment(AssignmentTree node, Void p) {
-			// TODO exceptions
-			currentBlock.addStatement(node);
+			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-			// TODO exceptions
-			currentBlock.addStatement(node);
+			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -244,9 +200,7 @@ public class CFGBuilder {
 		@Override
 		public Void visitExpressionStatement(ExpressionStatementTree node,
 				Void p) {
-			// TODO exceptions
-			currentBlock.addStatement(node);
-			return null;
+			return node.accept(this, p);
 		}
 
 		@Override
@@ -257,7 +211,7 @@ public class CFGBuilder {
 
 		@Override
 		public Void visitForLoop(ForLoopTree node, Void p) {
-			BasicBlockImplementation initBlock = new BasicBlockImplementation();
+			/*BasicBlockImplementation initBlock = new BasicBlockImplementation();
 			ConditionalBasicBlockImplementation conditionBlock = new ConditionalBasicBlockImplementation();
 			BasicBlockImplementation afterBlock = new BasicBlockImplementation();
 			BasicBlockImplementation loopBodyBlock = new BasicBlockImplementation();
@@ -282,7 +236,8 @@ public class CFGBuilder {
 			}
 			currentBlock.addSuccessor(conditionBlock);
 
-			currentBlock = afterBlock;
+			currentBlock = afterBlock;*/
+			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -294,7 +249,7 @@ public class CFGBuilder {
 
 		@Override
 		public Void visitIf(IfTree node, Void p) {
-
+			/*
 			// TODO exceptions
 			BasicBlockImplementation afterIfBlock = new BasicBlockImplementation();
 
@@ -322,7 +277,8 @@ public class CFGBuilder {
 			}
 
 			currentBlock = afterIfBlock;
-
+			*/
+			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -478,8 +434,7 @@ public class CFGBuilder {
 
 		@Override
 		public Void visitVariable(VariableTree node, Void p) {
-			// TODO exceptions
-			currentBlock.addStatement(node);
+			// TODO Auto-generated method stub
 			return null;
 		}
 

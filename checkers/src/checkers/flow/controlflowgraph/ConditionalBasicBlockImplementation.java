@@ -3,8 +3,9 @@ package checkers.flow.controlflowgraph;
 import java.util.HashSet;
 import java.util.Set;
 
+import checkers.flow.controlflowgraph.node.Node;
+
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
@@ -18,7 +19,7 @@ public class ConditionalBasicBlockImplementation extends
 		BasicBlockImplementation implements ConditionalBasicBlock {
 
 	/** Condition of the if statement. */
-	private ExpressionTree condition;
+	private Node condition;
 
 	/** Successor of the then branch. */
 	private BasicBlock thenSuccessor;
@@ -40,7 +41,7 @@ public class ConditionalBasicBlockImplementation extends
 	/**
 	 * Set the condition.
 	 */
-	void setCondition(ExpressionTree c) {
+	void setCondition(Node c) {
 		condition = c;
 	}
 
@@ -79,7 +80,7 @@ public class ConditionalBasicBlockImplementation extends
 	 * For {@link ConditionalBasicBlock}, use setCondition instead.
 	 */
 	@Override
-	void addStatement(Tree t) {
+	void addStatement(Node t) {
 		assert false : "setCondition should be used instead of addStatement.";
 	}
 	
@@ -108,7 +109,7 @@ public class ConditionalBasicBlockImplementation extends
 	}
 
 	@Override
-	public ExpressionTree getCondition() {
+	public Node getCondition() {
 		return condition;
 	}
 
