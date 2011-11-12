@@ -1740,6 +1740,8 @@ public abstract class AnnotatedTypeMirror {
             type.setExtendsBound(getExtendsBound());
             type.setSuperBound(getSuperBound());
 
+            type.methodTypeArgHack = methodTypeArgHack;
+            
             return type;
         }
 
@@ -1794,6 +1796,17 @@ public abstract class AnnotatedTypeMirror {
                 }
             }
             return sb.toString();
+        }
+
+        // Remove the methodTypeArgHack once method type
+        // argument inference (in AnnotatedTypes) is done
+        // correctly.
+        private boolean methodTypeArgHack = false;
+        public void setMethodTypeArgHack() {
+            methodTypeArgHack = true;
+        }
+        public boolean isMethodTypeArgHack() {
+            return methodTypeArgHack;
         }
     }
 
