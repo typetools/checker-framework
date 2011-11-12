@@ -5,9 +5,9 @@ public class GenericsConstructor {
   }
 
   void call() {
-      new <Object>Test("Ha!");
+      new Test("Ha!");
       new <String>Test("Ha!");
-      new <Object>Test(new Object());
+      new Test(new Object());
       
       // new <String, String>Test("Hi", "Ho");
   }
