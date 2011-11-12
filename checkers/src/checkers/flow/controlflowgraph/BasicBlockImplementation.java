@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.source.tree.Tree;
+import checkers.flow.controlflowgraph.node.Node;
 
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
@@ -18,7 +18,7 @@ import com.sun.source.tree.Tree;
 public class BasicBlockImplementation implements BasicBlock {
 
 	/** Internal representation of the contents. */
-	private List<Tree> contents;
+	private List<Node> contents;
 
 	/** Internal representation of the successors. */
 	private Set<BasicBlock> successors;
@@ -28,13 +28,13 @@ public class BasicBlockImplementation implements BasicBlock {
 	 * other basic blocks later.
 	 */
 	public BasicBlockImplementation() {
-		contents = new LinkedList<Tree>();
+		contents = new LinkedList<Node>();
 		successors = new HashSet<BasicBlock>();
 	}
 
 	@Override
-	public List<Tree> getContents() {
-		return new LinkedList<Tree>(contents);
+	public List<Node> getContents() {
+		return new LinkedList<Node>(contents);
 	}
 
 	@Override
@@ -52,14 +52,14 @@ public class BasicBlockImplementation implements BasicBlock {
 	/**
 	 * Add a statement to the contents of this basic block.
 	 */
-	void addStatement(Tree t) {
+	void addStatement(Node t) {
 		contents.add(t);
 	}
 	
 	/**
 	 * Add multiple statements to the contents of this basic block.
 	 */
-	public void addStatements(Collection<? extends Tree> ts) {
+	public void addStatements(Collection<? extends Node> ts) {
 		contents.addAll(ts);
 	}
 

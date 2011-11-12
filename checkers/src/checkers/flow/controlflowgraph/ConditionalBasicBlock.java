@@ -2,7 +2,7 @@ package checkers.flow.controlflowgraph;
 
 import java.util.Set;
 
-import com.sun.source.tree.ExpressionTree;
+import checkers.flow.controlflowgraph.node.Node;
 
 /**
  * Represents a conditional basic block in a control graph, that is a basic
@@ -12,7 +12,7 @@ import com.sun.source.tree.ExpressionTree;
  * exception, then there can also be further successors.
  * 
  * <p>
- * The successors returned by getSuccessors are the same set as the union of
+ * The successors returned by getSuccessors are the the union of
  * getThenSuccessor, getElseSuccessor and getExceptionalSuccessors.
  * 
  * @author Stefan Heule
@@ -38,5 +38,5 @@ public interface ConditionalBasicBlock extends BasicBlock {
 	/**
 	 * @return The condition of the if statement.
 	 */
-	public ExpressionTree getCondition();
+	public Node getCondition();
 }
