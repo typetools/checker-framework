@@ -3,15 +3,11 @@ package checkers.flow.controlflowgraph;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
+import checkers.flow.controlflowgraph.node.Node;
 
 /**
  * Represents a basic block in a control graph. Internally maintains a list of
- * {@link Tree}s that represent the contents of the basic block. This list can
- * contain of a list of statements (represented as {@link StatementTree}) or an
- * {@link ExpressionTree} in case of an if statement.
+ * {@link Node}s that represent the contents of the basic block.
  * 
  * @author Stefan Heule
  * 
@@ -21,11 +17,10 @@ import com.sun.source.tree.Tree;
 public interface BasicBlock {
 
 	/**
-	 * Returns list of {@link Tree}s that represent the contents of the basic
-	 * block. These can either be statements, or a single {@link ExpressionTree}
-	 * in case of a {@link ConditionalBasicBlock}.
+	 * Returns list of {@link Node}s that represent the contents of the basic
+	 * block.
 	 */
-	public List<Tree> getContents();
+	public List<Node> getContents();
 
 	/**
 	 * Returns a list of successors. An empty list indicates this basic block is
