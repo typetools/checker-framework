@@ -12,7 +12,7 @@ public class MethodTypeVars {
                 
         //:: error: (argument.type.incompatible)
         A.goodMethod(null);
-        A.<Object>goodMethod(new Object());
+        A.goodMethod(new Object());
     }
 }
 
