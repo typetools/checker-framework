@@ -102,16 +102,18 @@ public class TypeHierarchy {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
                 if (wildcard.getSuperBound() != null
-                        && isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound()))
+                        && isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound())) {
                     return true;
+                }
                 if (wildcard.isAnnotated()
                         && qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
                     return true;
                 } else {
                     Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
                     Set<AnnotationMirror> bot = Collections.singleton(qualifierHierarchy.getBottomAnnotation(bnd.iterator().next()));
-                    if (!qualifierHierarchy.isSubtype(bnd, bot) ||
-                            !qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), bot)) {
+                    if (!wildcard.isMethodTypeArgHack() &&
+                            (!qualifierHierarchy.isSubtype(bnd, bot) ||
+                            !qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), bot))) {
                         return false;
                     }
                 }
