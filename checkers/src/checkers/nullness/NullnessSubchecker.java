@@ -1,13 +1,17 @@
 package checkers.nullness;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
 import checkers.source.*;
-import checkers.types.AnnotatedTypeMirror;
+import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.AnnotatedTypes;
+import checkers.util.AnnotationUtils;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -31,6 +35,17 @@ public class NullnessSubchecker extends BaseTypeChecker {
     // TODO: This lint option should only be temporary, until all checks are implemented correctly.
     public static final boolean ADVANCEDCHECKS_DEFAULT = false;
 
+    protected AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
+
+    @Override
+    public void initChecker(ProcessingEnvironment processingEnv) {
+        super.initChecker(processingEnv);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        NONNULL = annoFactory.fromClass(NonNull.class);
+        NULLABLE = annoFactory.fromClass(Nullable.class);
+        PRIMITIVE = annoFactory.fromClass(Primitive.class);
+    }
+    
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
@@ -57,13 +72,28 @@ public class NullnessSubchecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        // System.out.println("sub: " + sub + " sup: " + sup + " result: " + super.isSubtype(sub,sup));
-        // @Primitive and @NonNull are interchangeable
-        if (sub.getAnnotation(Primitive.class)!=null &&
-                sup.getAnnotation(NonNull.class)!=null) {
-            return true;
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+        // TODO: actually use the MultiGraphQH.
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    }
+
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new NullnessQualifierHierarchy((MultiGraphQualifierHierarchy)super.createQualifierHierarchy());
+    }
+    
+    private final class NullnessQualifierHierarchy extends MultiGraphQualifierHierarchy {
+        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
         }
-        return super.isSubtype(sub, sup);
+
+        @Override
+        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
+            if ( AnnotationUtils.areSame(sub, PRIMITIVE) &&
+                    AnnotationUtils.areSame(sup, NONNULL) ) {
+                return true;
+            }
+            return super.isSubtype(sub, sup);
+        }
     }
 }
