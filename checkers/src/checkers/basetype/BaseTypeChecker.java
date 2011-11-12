@@ -17,6 +17,7 @@ import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -124,11 +125,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (typeQualifiersAnnotation == null)
             return Collections.emptySet();
 
-        Set<Class<? extends Annotation>> typeQualifiers
-            = new HashSet<Class<? extends Annotation>>();
-        for (Class<? extends Annotation> qualifier :
-                typeQualifiersAnnotation.value())
+        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
+        for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
             typeQualifiers.add(qualifier);
+        }
         return Collections.unmodifiableSet(typeQualifiers);
     }
 
@@ -145,6 +145,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (supportedQuals == null)
             supportedQuals = createSupportedTypeQualifiers();
         return supportedQuals;
+    }
+
+    /** Factory method to easily change what Factory is used to
+     * create a QualifierHierarchy.
+     */
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+    	return new GraphQualifierHierarchy.GraphFactory(this);
     }
 
     /**
@@ -164,8 +171,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected QualifierHierarchy createQualifierHierarchy() {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
-        GraphQualifierHierarchy.Factory factory=
-            new GraphQualifierHierarchy.Factory(this);
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
@@ -186,7 +192,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
-        factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
+        // This no longer seems necessary.
+        // factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
@@ -219,7 +226,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return  the type relations class to check type subtyping
      */
     protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(getQualifierHierarchy());
+        return new TypeHierarchy(this, getQualifierHierarchy());
     }
 
     /**
@@ -355,6 +362,17 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     /**
+     * Tests that the qualifiers present on the primitive type are valid.
+     *
+     * The default implementation always returns true.
+     * Subclasses should override this method to limit what annotations are
+     * allowed on primitive types.
+     */
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        return true;
+    }
+
+    /**
      * Tests whether the variable accessed is an assignable variable or not,
      * given the current scope
      *
@@ -423,18 +441,17 @@ public abstract class BaseTypeChecker extends SourceChecker {
         try {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
-        } catch (NoSuchMethodException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
+            if (e.getCause()!=null) {
+                e.getCause().printStackTrace();
+            }
+            throw new RuntimeException("Unexpected " + e.getClass().getSimpleName() + " for " +
+                            "class name " + name +
+                            " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
+                            " and args: " + Arrays.toString(args),
+                    e.getCause());
         }
-
-        // On failure, return null.
-        return null;
     }
 
 }

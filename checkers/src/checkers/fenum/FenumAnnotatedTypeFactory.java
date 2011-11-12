@@ -33,15 +33,16 @@ public class FenumAnnotatedTypeFactory extends
     super(checker, root, checker.getLintOption("flowinference", false));
 
     if(checker.getLintOption("flowinference", false)) {
-      defaults.setAbsoluteDefaults(
-                                   this.annotations.fromClass(FenumUnqualified.class),
+      defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
                                    Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-      defaults.setLocalDefault(annotations.fromClass(FenumTop.class));
+      defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
 
       // flow.setDebug(System.err);
       flow.scan(root);
+    } else {
+      defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
+    		  Collections.singleton(DefaultLocation.ALL));
     }
-    // if "flowinference" is false, the checker uses the DefaultQualifierInHierarchy.
   }
 
   @Override

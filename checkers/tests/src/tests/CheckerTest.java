@@ -250,11 +250,19 @@ abstract public class CheckerTest {
                     result.endsWith(" declares unsafe vararg methods.") ||
                     result.contains("Recompile with -Xlint:varargs for details."))
                 continue;
-            if (result.contains("\n")){
-                result = result.substring(0, result.indexOf('\n'));
+            boolean nomsgtext = false;
+            for (String opt : this.checkerOptions) {
+            	if (opt.equals("-Anomsgtext")) {
+            		nomsgtext = true;
+            	}
             }
-            if (result.contains(".java:")) {
-                result = result.substring(result.indexOf(".java:") + 5).trim();
+            if (nomsgtext) {
+            	if (result.contains("\n")){
+            		result = result.substring(0, result.indexOf('\n'));
+            	}
+            	if (result.contains(".java:")) {
+            		result = result.substring(result.indexOf(".java:") + 5).trim();
+            	}
             }
             resultsList.add(result);
         }

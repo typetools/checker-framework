@@ -6,7 +6,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Covariant;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.KeyForBottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
@@ -21,7 +23,7 @@ import checkers.types.TypeHierarchy;
 public class KeyForSubchecker extends BaseTypeChecker {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new KeyForTypeHierarchy(getQualifierHierarchy());
+        return new KeyForTypeHierarchy(this, getQualifierHierarchy());
     }
 
     @Override
@@ -43,8 +45,8 @@ public class KeyForSubchecker extends BaseTypeChecker {
 
     private class KeyForTypeHierarchy extends TypeHierarchy {
 
-        public KeyForTypeHierarchy(QualifierHierarchy qualifierHierarchy) {
-            super(qualifierHierarchy);
+        public KeyForTypeHierarchy(KeyForSubchecker checker, QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
         }
 
         @Override
@@ -68,7 +70,16 @@ public class KeyForSubchecker extends BaseTypeChecker {
                 covarVals = lhsElem.getAnnotation(Covariant.class).value();
             }
 
-            assert lhsTypeArgs.size() == rhsTypeArgs.size();
+
+            if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
+                // This test fails e.g. for casts from a type with one type
+                // argument to a type with two type arguments.
+                // See test case nullness/generics/GenericsCasts
+                // TODO: shouldn't the type be brought to a common type before
+                // this?
+                return true;
+            }
+
             for (int i = 0; i < lhsTypeArgs.size(); ++i) {
                 boolean covar = false;
                 if (covarVals != null) {

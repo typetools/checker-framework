@@ -37,23 +37,14 @@ import com.sun.source.tree.Tree;
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf( LazyNonNull.class )
+// See note on subtyping in Primitive.java.
+@SubtypeOf( Primitive.class )
 @ImplicitFor(
-    types={TypeKind.PACKAGE},
-    typeClasses={AnnotatedPrimitiveType.class},
-    trees={
-        Tree.Kind.NEW_CLASS,
+    types = { TypeKind.PACKAGE },
+    trees = { Tree.Kind.NEW_CLASS,
         Tree.Kind.NEW_ARRAY,
         Tree.Kind.PLUS,         // for String concatenation
-        // All literals except NULL_LITERAL:
-        Tree.Kind.BOOLEAN_LITERAL,
-        Tree.Kind.CHAR_LITERAL,
-        Tree.Kind.DOUBLE_LITERAL,
-        Tree.Kind.FLOAT_LITERAL,
-        Tree.Kind.INT_LITERAL,
-        Tree.Kind.LONG_LITERAL,
+        // The NULL_LITERAL is @Nullable and all primitive type literals are @Primitive
         Tree.Kind.STRING_LITERAL
     })
-public @interface NonNull {
-
-}
+public @interface NonNull { }

@@ -12,7 +12,7 @@ public class NullnessUninitializedTest extends ParameterizedCheckerTest {
 
     public NullnessUninitializedTest(File testFile) {
         super(testFile, checkers.nullness.NullnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-Alint=-uninitialized");
+                "nullness", "-Anomsgtext", "-Alint=uninitialized");
     }
 
     @Parameters

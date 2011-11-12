@@ -1,24 +1,27 @@
 package checkers.nullness;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.*;
+import checkers.flow.Flow;
 import checkers.nullness.quals.*;
-import checkers.quals.*;
+import checkers.quals.DefaultLocation;
+import checkers.quals.DefaultQualifier;
+import checkers.quals.Unused;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
+import com.sun.source.util.TreePath;
 
 /**
  * Adds the {@link NonNull} annotation to a type that is:
@@ -73,10 +76,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
     /** Represents the Nullness Checker qualifiers */
-    protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL;
+    protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL, PRIMITIVE;
     protected final AnnotationMirror UNUSED;
 
     private final MapGetHeuristics mapGetHeuristics;
+    private final SystemGetPropertyHandler systemGetPropertyHandler;
     private final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
@@ -92,13 +96,15 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // What qualifiers does it insert? The qualifier hierarchy is null.
         AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
         mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
-        NONNULL = this.annotations.fromClass(NonNull.class);
+        NONNULL = checker.NONNULL;
         RAW = this.annotations.fromClass(Raw.class);
-        NULLABLE = this.annotations.fromClass(Nullable.class);
+        NULLABLE = checker.NULLABLE;
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
         UNUSED = this.annotations.fromClass(Unused.class);
+        PRIMITIVE = checker.PRIMITIVE;
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -129,7 +135,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
         defaults = new QualifierDefaults(this, this.annotations);
-        defaults.setAbsoluteDefaults(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+        defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
 
         this.poly = new QualifierPolymorphism(checker, this);
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
@@ -139,7 +145,10 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawness.init(checker.getProcessingEnvironment());
         rawnessFactory = rawness.createFactory(root);
 
-        flow = new NullnessFlow(checker, root, this);
+        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        flowQuals.add(NONNULL);
+        flowQuals.add(PRIMITIVE);
+        flow = new NullnessFlow(checker, root, flowQuals, this);
 
         postInit();
     }
@@ -156,6 +165,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             annotateIfStatic(elt, type);
 
         typeAnnotator.visit(type);
+
         // case 6: apply default
         defaults.annotate(elt, type);
         if (elt instanceof TypeElement)
@@ -197,7 +207,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     public final AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         AnnotatedDeclaredType dt = super.getEnclosingType(element, tree);
-        if (dt != null && dt.hasAnnotation(NULLABLE)) {
+        if (dt != null && dt.hasEffectiveAnnotation(NULLABLE)) {
             dt.removeAnnotation(NULLABLE);
             dt.addAnnotation(NONNULL);
         }
@@ -234,6 +244,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         	 */
             mapGetHeuristics.handle(path, method);
         }
+        systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
     }
@@ -307,16 +318,16 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (decl != null
                 && decl instanceof VariableTree
                 && ((VariableTree) decl).getInitializer() != null
-                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasAnnotation(NONNULL)) {
+                && getAnnotatedType(((VariableTree) decl).getInitializer()).hasEffectiveAnnotation(NONNULL)) {
                 return false;
             }
         }
 
         // case 13
         final AnnotatedTypeMirror select = rawnessFactory.getReceiver((ExpressionTree) tree);
-        if (select != null && select.hasAnnotation(RAW)
-                && !type.hasAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
-            boolean wasNN = type.hasAnnotation(NONNULL);
+        if (select != null && select.hasEffectiveAnnotation(RAW)
+                && !type.hasEffectiveAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
+            boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
             type.clearAnnotations();
             type.addAnnotation(LAZYNONNULL);
             return wasNN;
@@ -384,7 +395,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
             if (!type.isAnnotated()) {
                 type.addAnnotation(NULLABLE);
-            } else if (type.hasAnnotation(RAW)) {
+            } else if (type.hasEffectiveAnnotation(RAW)) {
                 type.removeAnnotation(NONNULL);
             }
 

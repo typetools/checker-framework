@@ -43,7 +43,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, NULLABLE;
+    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
     private final TypeMirror stringType;
 
     /**
@@ -54,8 +54,9 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
-        NONNULL = this.annoFactory.fromClass(NonNull.class);
-        NULLABLE = this.annoFactory.fromClass(Nullable.class);
+        NONNULL = checker.NONNULL;
+        NULLABLE = checker.NULLABLE;
+        PRIMITIVE = checker.PRIMITIVE;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -100,7 +101,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // checkForNullability(node.getExpression(), "locking.nullable");
         // raw is sufficient
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-        if (type.hasAnnotation(NULLABLE))
+        if (type.hasEffectiveAnnotation(NULLABLE))
             checker.report(Result.failure("locking.nullable", node), node);
 
         return super.visitSynchronized(node, p);
@@ -146,10 +147,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && right.hasAnnotation(NONNULL))
+                    && right.hasEffectiveAnnotation(NONNULL))
                 checker.report(Result.warning("known.nonnull", rightOp.toString()), node);
             else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasAnnotation(NONNULL))
+                    && left.hasEffectiveAnnotation(NONNULL))
                 checker.report(Result.warning("known.nonnull", leftOp.toString()), node);
         }
     }
@@ -222,7 +223,6 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-
         // Check field initialization in constructors
         if (TreeUtils.isConstructor(node)
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
@@ -235,10 +235,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 nonInitializedFields.removeAll(
                                 ((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node));
                 if (!nonInitializedFields.isEmpty()) {
-                    if (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)) {
-                        // warn about uninitialized fields
-                        checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
-                    }
+                    checker.report(Result.warning("fields.uninitialized", nonInitializedFields), node);
                 }
                 nonInitializedFields = oldFields;
             }
@@ -294,28 +291,84 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         return super.visitAssignment(node, p);
     }
 
+    // Returns the uninitialized instance fields
     private Set<VariableElement> getUninitializedFields(ClassTree classTree, List<? extends AnnotationMirror> annos) {
         Set<VariableElement> fields = new HashSet<VariableElement>();
+
+        boolean check_all_fields
+            = checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT);
+        Set<Name> blockInitialized = getBlockInitializedFields(classTree);
+        // System.out.printf("blockInitialized (length=%d) = %s%n", blockInitialized.size(), blockInitialized);
 
         for (Tree member : classTree.getMembers()) {
             if (!(member instanceof VariableTree))
                 continue;
             VariableTree var = (VariableTree)member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
-            // only consider fields that are uninitialized at the declaration
-            // and are qualified as nonnull
-            if (var.getInitializer() == null
-                // TODO: check whether there is an initializer block that sets this variable.
-                    && atypeFactory.getAnnotatedType(var).hasAnnotation(NONNULL)
-                    && (checker.getLintOption("uninitialized", NullnessSubchecker.UNINIT_DEFAULT)
-                        || ! atypeFactory.getAnnotatedType(var).getKind().isPrimitive())
-                    && atypeFactory.getDeclAnnotation(varElt, LazyNonNull.class) == null
-                    && !varElt.getModifiers().contains(Modifier.STATIC)
-                    && !isUnused(varElt, annos))
+            if (
+                // var has no initializer, nor does any initializer block set it
+                (var.getInitializer() == null
+                 && (! blockInitialized.contains(var.getName())))
+                &&
+                // var's type is @NonNull, or we are checking all vars
+                (check_all_fields
+                 || (atypeFactory.getAnnotatedType(var).hasEffectiveAnnotation(NONNULL)
+                     // For now, primitives have an effecive @NonNull
+                     // annotation.  (This is soon to change, at which
+                     // point this clause is no longer necessary.)
+                     && ! atypeFactory.getAnnotatedType(var).getKind().isPrimitive())
+                 )
+                // var is not @LazyNonNull -- don't check @LazyNonNull fields
+                // even if checking all fields
+                && atypeFactory.getDeclAnnotation(varElt, LazyNonNull.class) == null
+                // var is not static -- need a check of initializer blocks,
+                // not of constructor which is where this is used
+                && !varElt.getModifiers().contains(Modifier.STATIC)
+                // val is not @Unused
+                && !isUnused(varElt, annos)) {
+                // System.out.printf("var %s, hasEffectiveAnnotation = %s, check_all_fields=%s, %s%n", var, atypeFactory.getAnnotatedType(var).hasEffectiveAnnotation(NONNULL), check_all_fields, atypeFactory.getAnnotatedType(var));
                 fields.add(varElt);
+            }
         }
         return fields;
     }
+
+    // List of all fields that are initialized in a block initializer.
+    // This really ought to return a set of fields rather than of Names.
+    // Also, perhaps handle assignments like "a = b = c = 1;".
+    private Set<Name> getBlockInitializedFields(ClassTree classTree) {
+        Set<Name> fields = new HashSet<Name>();
+
+        for (Tree member : classTree.getMembers()) {
+            if (member.getKind() == Tree.Kind.BLOCK) {
+                BlockTree block = (BlockTree) member;
+                for (StatementTree stmt : block.getStatements()) {
+                    if (stmt.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                        ExpressionTree expr = ((ExpressionStatementTree)stmt).getExpression();
+                        if (expr.getKind() == Tree.Kind.ASSIGNMENT) {
+                            ExpressionTree lhs = ((AssignmentTree)expr).getVariable();
+                            Name field_name = null;
+                            if (lhs.getKind() == Tree.Kind.IDENTIFIER) {
+                                field_name = ((IdentifierTree) lhs).getName();
+                            } else if (lhs.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                MemberSelectTree mst = (MemberSelectTree) lhs;
+                                if ((mst.getExpression() instanceof IdentifierTree)
+                                    && ((IdentifierTree)mst.getExpression()).getName().contentEquals("this")) {
+                                    field_name = mst.getIdentifier();
+                                }
+                            }
+                            if (field_name != null) {
+                                fields.add(field_name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return fields;
+    }
+
 
     private boolean isUnused(VariableElement field, Collection<? extends AnnotationMirror> annos) {
         if (annos.isEmpty()) {
@@ -349,7 +402,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         } else {
             // Claim that methods with a @NonNull receiver are invokable so that
             // visitMemberSelect issues dereference errors instead.
-            if (method.getReceiverType().hasAnnotation(NONNULL))
+            if (method.getReceiverType().hasEffectiveAnnotation(NONNULL))
                 return true;
         }
         return super.checkMethodInvocability(method, node);
@@ -364,8 +417,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     private void checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.getEffectiveAnnotations().contains(NONNULL))
+        Set<AnnotationMirror> annos = type.getEffectiveAnnotations();
+        if (!(annos.contains(NONNULL) || annos.contains(PRIMITIVE))) {
             checker.report(Result.failure(errMsg, tree), tree);
+        }
     }
 
 

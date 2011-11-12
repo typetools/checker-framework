@@ -116,6 +116,7 @@ public class FenumChecker extends BaseTypeChecker {
      * Therefore, we fix the bottom of the type hierarchy here and add a special
      * case when the subtype has the FenumBottom annotation.
      */
+    // TODO: reuse existing Bottom annotation?
     private final class FenumQualifierHierarchy extends GraphQualifierHierarchy {
         public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
             super(hierarchy);
@@ -130,8 +131,8 @@ public class FenumChecker extends BaseTypeChecker {
         }
 
         @Override
-        public AnnotationMirror getBottomQualifier() {
-          return AnnotationUtils.getInstance(env).fromClass(FenumBottom.class);
+        public Set<AnnotationMirror> getBottomAnnotations() {
+          return Collections.singleton(AnnotationUtils.getInstance(env).fromClass(FenumBottom.class));
         }
     }
 }

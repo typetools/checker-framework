@@ -11,24 +11,34 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.*;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.javari.quals.*;
+import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.TypeFromTree.TypeFromClass;
+import checkers.types.TypeFromTree.TypeFromExpression;
+import checkers.types.TypeFromTree.TypeFromMember;
+import checkers.types.TypeFromTree.TypeFromTypeTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
-import static checkers.types.TypeFromTree.*;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.*;
-
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
@@ -100,7 +110,7 @@ public class AnnotatedTypeFactory {
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
-    private Class<? extends SourceChecker> checkerClass;
+    private final Class<? extends SourceChecker> checkerClass;
 
     /** @see #canHaveAnnotatedTypeParameters() */
     private final boolean annotatedTypeParams;
@@ -109,7 +119,7 @@ public class AnnotatedTypeFactory {
      * Map from class name (canonical name) of an annotation, to the
      * annotation in the Checker Framework that will be used in its place.
      */
-    private Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+    private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
     private static int uidCounter = 0;
     public final int uid;
@@ -193,9 +203,9 @@ public class AnnotatedTypeFactory {
     /** Various Caches **/
     /** Size of LRU cache **/
     private final static int CACHE_SIZE = 50;
-    private Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+    private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /**
      * Determines the annotated type of an element using
@@ -208,11 +218,11 @@ public class AnnotatedTypeFactory {
      * @see #fromElement(Element)
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
-
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
         annotateImplicit(elt, type);
+        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
     }
 
@@ -244,7 +254,6 @@ public class AnnotatedTypeFactory {
      */
     // I wish I could make this method protected
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-
         if (tree == null)
             throw new IllegalArgumentException("null tree");
         if (treeCache.containsKey(tree))
@@ -267,6 +276,7 @@ public class AnnotatedTypeFactory {
                         "query of annotated type for tree " + tree.getKind());
                 }
         }
+
         annotateImplicit(TreeUtils.skipParens(tree), type);
 
         switch (tree.getKind()) {
@@ -279,6 +289,7 @@ public class AnnotatedTypeFactory {
             if (SHOULD_CACHE)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
+        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
     }
 
@@ -501,10 +512,13 @@ public class AnnotatedTypeFactory {
      */
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        Set<AnnotationMirror> annotations = type.getAnnotations();
+        // Use the effective annotations here to get the correct annotations
+        // for type variables and wildcards.
+        Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
-            if (!annotations.equals(supertype.getAnnotations())) {
+            if (!annotations.equals(supertype.getEffectiveAnnotations())) {
                 supertype.clearAnnotations();
+                // TODO: is this correct for type variables and wildcards?
                 supertype.addAnnotations(annotations);
             }
         }
@@ -549,12 +563,23 @@ public class AnnotatedTypeFactory {
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
-
+        List<AnnotatedTypeMirror> targs = type.getTypeArguments();
         List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
+                new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
+
         List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
 
+        assert targs.size() == tvars.size();
+        for(int i=0; i<targs.size(); ++i) {
+            mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
+        }
+
         for (AnnotatedTypeMirror atm : tvars) {
-            res.add((AnnotatedTypeVariable)atm);
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
+            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
+            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
+            res.add(atv);
         }
         return res;
     }
@@ -1052,7 +1077,7 @@ public class AnnotatedTypeFactory {
      * @return true if that annotation is part of the type system under which
      *         this type factory operates, false otherwise
      */
-    /*package-scope*/ boolean isSupportedQualifier(AnnotationMirror a) {
+    public boolean isSupportedQualifier(AnnotationMirror a) {
         if (a!=null && supportedQuals.isEmpty()) {
             // Only include with retention
             TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
@@ -1289,7 +1314,6 @@ public class AnnotatedTypeFactory {
             return currentPath;
         }
 
-        //
         // When running on Daikon, we noticed that a lot of calls happened
         // within a small subtree containing the node we are currently visiting
 

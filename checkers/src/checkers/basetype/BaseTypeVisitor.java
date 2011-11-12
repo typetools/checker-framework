@@ -19,7 +19,9 @@ import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 
@@ -433,7 +435,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
-
         // Don't try to check return expressions for void methods.
         if (node.getExpression() == null)
             return super.visitReturn(node, p);
@@ -539,11 +540,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
         if (!isSubtype) {
-            isSubtype = checker.isSubtype(exprType, castType);
+            // TODO: Test type arguments and array components types
+            // The following
+            // isSubtype = checker.isSubtype(exprType, castType);
+            // would be too restrictive, as we only want to ensure the relation
+            // between annotations, not the whole type.
+            isSubtype = checker.getQualifierHierarchy().isSubtype(exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
         }
-
-        // TODO: Test type arguments and array components types
-        // TODO: What is the above TODO supposed to mean? isSubtype is checking those.
 
         if (!isSubtype) {
             checker.report(Result.warning("cast.unsafe", exprType, castType), node);
@@ -756,7 +759,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
-                    constructor.toString(), dt, constructor.getReceiverType()), src);
+                    constructor.toString(), dt, receiver), src);
         }
         return b;
     }
@@ -990,7 +993,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     // This is a test to ensure that all types are valid
-    private TypeValidator typeValidator = createTypeValidator();
+    private final TypeValidator typeValidator = createTypeValidator();
 
     protected TypeValidator createTypeValidator() {
         return new TypeValidator();
@@ -1122,6 +1125,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
 
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
+            if (shouldSkipUses(type.getElement()))
+                return super.visitPrimitive(type, tree);
+
+            if (!checker.isValidUse(type)) {
+                reportError(type, tree);
+            }
+
+            return super.visitPrimitive(type, tree);
+        }
+
         /**
          * Checks that the annotations on the type arguments supplied to a
          * type or a method invocation are within the bounds of the type
@@ -1150,6 +1165,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
+            // Keep in sync with visitWildcard
             Set<AnnotationMirror> onVar = type.getAnnotations();
             if (!onVar.isEmpty()) {
                 // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)",
@@ -1171,6 +1187,32 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 }
             }
             return super.visitTypeVariable(type, tree);
+        }
+
+        @Override
+        public Void visitWildcard(AnnotatedWildcardType type, Tree tree) {
+            // Keep in sync with visitTypeVariable
+            Set<AnnotationMirror> onVar = type.getAnnotations();
+            if (!onVar.isEmpty()) {
+                // System.out.printf("BaseTypeVisitor.TypeValidator.visitWildcard(type: %s, tree: %s)",
+                //         type, tree);
+
+                if (type.getExtendsBound()!=null) {
+                    Set<AnnotationMirror> onUpper = type.getExtendsBound().getAnnotations();
+                    if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                        this.reportError(type, tree);
+                    }
+                }
+
+                if (type.getSuperBound()!=null) {
+                    Set<AnnotationMirror> onLower = type.getSuperBound().getAnnotations();
+                    if (!onLower.isEmpty() &&
+                        !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
+                        this.reportError(type, tree);
+                    }
+                }
+            }
+            return super.visitWildcard(type, tree);
         }
     }
 

@@ -9,7 +9,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MemberSelectTree;
@@ -79,9 +81,9 @@ public class CollectionToArrayHeuristics {
         this.factory = factory;
         this.atypes = new AnnotatedTypes(env, factory);
 
-        this.collectionToArrayObject = getMethod("java.util.Collection", "toArray", 0);
-        this.collectionToArrayE = getMethod("java.util.Collection", "toArray", 1);
-        this.size = getMethod("java.util.Collection", "size", 0);
+        this.collectionToArrayObject = TreeUtils.getMethod("java.util.Collection", "toArray", 0, env);
+        this.collectionToArrayE = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
+        this.size = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
         this.collectionType = factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
     }
 
@@ -97,11 +99,11 @@ public class CollectionToArrayHeuristics {
      * @param method    invoked method type
      */
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
-        if (isMethod(tree, collectionToArrayObject)) {
+        if (TreeUtils.isMethodInvocation(tree, collectionToArrayObject, env)) {
             // simple case of collection.toArray()
             boolean receiver = isNonNullReceiver(tree);
             setComponentNullness(receiver, method.getReturnType());
-        } else if (isMethod(tree, collectionToArrayE)) {
+        } else if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, env)) {
             assert !tree.getArguments().isEmpty() : tree;
             Tree argument = tree.getArguments().get(0);
             boolean isArrayCreation = isHandledArrayCreation(argument,
@@ -156,7 +158,7 @@ public class CollectionToArrayHeuristics {
             return true;
 
         // case 3: size()-length array creation
-        if (isMethod(dimension, size)) {
+        if (TreeUtils.isMethodInvocation(dimension, size, env)) {
             MethodInvocationTree invok = (MethodInvocationTree)dimension;
             String invokReceiver = receiver(invok.getMethodSelect());
             return invokReceiver.equals(receiver);
@@ -177,7 +179,7 @@ public class CollectionToArrayHeuristics {
         assert collection != null;
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasAnnotation(factory.NONNULL))
+            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(factory.NONNULL))
             return false;
         return true;
     }
@@ -193,31 +195,6 @@ public class CollectionToArrayHeuristics {
             return ((MemberSelectTree)tree).getExpression().toString();
         else
             return "this";
-    }
-
-    // TODO: duplicated code from MapGetHeuristics
-    private boolean isMethod(Tree tree, ExecutableElement method) {
-        if (!(tree instanceof MethodInvocationTree))
-            return false;
-        MethodInvocationTree methInvok = (MethodInvocationTree)tree;
-        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
-        return isMethod(invoked, method);
-    }
-
-    private boolean isMethod(ExecutableElement questioned, ExecutableElement method) {
-        return (questioned.equals(method)
-                || env.getElementUtils().overrides(questioned, method,
-                        (TypeElement)questioned.getEnclosingElement()));
-    }
-
-    private ExecutableElement getMethod(String typeName, String methodName, int params) {
-        TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
-        for (ExecutableElement exec : ElementFilter.methodsIn(mapElt.getEnclosedElements())) {
-            if (exec.getSimpleName().contentEquals(methodName)
-                    && exec.getParameters().size() == params)
-                return exec;
-        }
-        throw new RuntimeException("Shouldn't be here!");
     }
 
 }

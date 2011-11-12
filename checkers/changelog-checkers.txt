@@ -1,3 +1,41 @@
+Version 1.2.4, x Nov 2011
+
+Nullness Checker:
+- Do not allow nullness annotations on primitive types.
+- Improvements to rawness and field initialization checks.
+- Special-case known keys for System.getProperty.
+
+Implementation details:
+- Add a new @InvisibleQualifier meta-annotation for type qualifiers.
+  Instead of special-casing @Unqualified in the AnnotatedTypeMirror it
+  now looks for this meta-annotation. This also allows type systems to
+  hide type qualifiers it doesn't wan't visible, which we now use in the
+  Nullness Checker to hide the @Primitive annotation.
+- Nullness Checker:  Introduce a new internal qualifier @Primitive that is
+  used for primitive types.
+
+----------------------------------------------------------------------
+Version 1.2.3, 1 Nov 2011
+
+Regex Checker:
+- Add @PolyRegex polymorphic annotation
+- Add more stub library annotations
+
+Implementation details:
+- Do not use "null" for unqualified types. Explicitly use @Unqualified
+  and be strict about correct usage. If this causes trouble for you,
+  check your ImplicitFor and DefaultQualifierInHierarchy
+  meta-annotations and ensure correct defaulting in your
+  AnnotatedTypeFactory.
+
+Bug fixes:
+- Correctly handle f-bounded polymorphism. AnnotatedTypeMirror now has
+  methods to query the "effective" annotations on a type, which
+  handles type variable and wildcard bounds correctly. Also, terminate
+  recursions by not doing lazy-initialization of bounds during defaulting.
+- Many other small bug fixes and documentation updates.
+
+----------------------------------------------------------------------
 Version 1.2.2, 1 Oct 2011
 
 Be less restrictive about when to start type processing when errors

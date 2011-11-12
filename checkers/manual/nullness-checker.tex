@@ -17,8 +17,9 @@ examples, see Section~\ref{nullness-example}.
 The Nullness checker uses three separate type hierarchies:  one for nullness,
 one for rawness (Section~\ref{raw-partially-initialized}),
 and one for map keys (Section~\ref{map-keys})
-The Nullness checker has three varieties of annotations:  nullness
-qualifiers, nullness method annotations, rawness qualifiers, and map key
+The Nullness checker has four varieties of annotations:  nullness
+type qualifiers, nullness method annotations, rawness type qualifiers, and
+map key type
 qualifiers.
 
 \subsection{Nullness qualifiers\label{nullness-qualifiers}}
@@ -164,7 +165,7 @@ apply to the method itself rather than to some particular type.
 \end{description}
 
 
-\subsection{Rawness qualifiers\label{rawness-qualifiers}}
+\subsection{Rawness qualifiers\label{rawness-qualifiers-overview}}
 
 The Nullness Checker supports rawness annotations that indicate whether
 an object is fully initialized --- that is, whether its fields have all
@@ -302,6 +303,14 @@ can then de-reference \code{File.isDirectory} safely without any nullness check.
   }
 \end{Verbatim}
 
+The argument to \code{@AssertNonNullIfTrue} and
+\code{@AssertNonNullIfFalse} is a Java expression, including method calls
+(as shown above), method formal parameters, fields, etc.; for details, see
+Section~\ref{java-expressions-as-arguments}.
+More examples of the use of these annotations appear in the Javadoc for
+\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and
+\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
+
 
 \subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
 
@@ -348,7 +357,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 \section{What the Nullness checker checks\label{nullness-checks}}
 
-The checker issues a warning in three cases:
+The checker issues a warning in these cases:
 
 \begin{enumerate}
 
@@ -367,31 +376,19 @@ The checker issues a warning in three cases:
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
-  As a special case, the checker also warns whenever a field of
+  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
+  type becoming null, the checker also warns whenever a field of
   \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
-  constructor.  To disable this warning for primitive types, you can supply
-  the \code{-Alint=-uninitialized} command-line option, but it is better
-  style to supply an explicit initializer, even if the default value such
-  as \code{0} or \code{false}.
-
-\item
-  \label{lint-nulltest}%
-  When a null check is performed against a value that is guaranteed to be
-  non-null, as in \code{("m" == null)}, because this might indicate a
-  programmer error or misunderstanding, and is unnecessary.  This check is
-  performed only if the \code{nulltest} lint option is enabled via the
-  \code{-Alint=nulltest} command-line option.  The lint option is disabled
-  by default because sometimes such checks are part of ordinary defensive
-  programming.  See Section~\ref{suppressing-warnings} for more details
-  about the \code{-Alint} command-line option.
+  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
+  command-line option below.
 
 \end{enumerate}
 
 This example illustrates the programming errors that the checker detects:
 
 \begin{Verbatim}
-           Object   obj;  // might be null
-  @NonNull Object nnobj;  // never null
+  @Nullable Object   obj;  // might be null
+  @NonNull  Object nnobj;  // never null
   ...
   obj.toString()         // checker warning:  dereference might cause null pointer exception
   nnobj = obj;           // checker warning:  nnobj may become null
@@ -401,8 +398,37 @@ This example illustrates the programming errors that the checker detects:
 Parameter passing and return values are checked analogously to assignments.
 
 The Nullness Checker also checks the correctness, and correct use, of
-rawness annotations for checking initialization.  See
-Section~\ref{raw-partially-initialized}.
+rawness annotations for checking initialization (see
+Section~\ref{raw-partially-initialized}) and of map key annotations (see
+Section:~\ref{map-keys}).
+
+
+The checker can perform additional checks if desired.  See
+Section~\ref{suppressing-warnings} for more details about the \code{-Alint}
+command-line option.
+
+\begin{enumerate}
+\item
+  \label{lint-nulltest}%
+  If you supply the \code{-Alint=nulltest} command-line option, then the
+  checker warns when a null check is performed against a value that is
+  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
+  unnecessary and might indicate a programmer error or misunderstanding.
+  The lint option is disabled by default because sometimes such checks are
+  part of ordinary defensive programming.  
+
+\item
+  \label{lint-uninitialized}%
+  If you supply the \code{-Alint=uninitialized} command-line option, then
+  the checker warns if a constructor fails to initialize any field,
+  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
+  types.  Such a warning is unrelated to whether your code might throw a
+  null pointer exception.  However, you might want to enable this warning
+  because it is better code style to supply an explicit initializer, even
+  if there is a default value such as \code{0} or \code{false}.
+
+\end{enumerate}
+
 
 
 \section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
@@ -423,7 +449,7 @@ Section~\ref{suppressing-warnings}).  An example use is
 
 
 The Nullness Checker supports an additional warning suppression key,
-\<nullness:collection-typeargs>.
+\<nullness:generic.argument>.
 Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress warnings related to misuse of generic type
 arguments.  One use for this key is when a class is declared to take only
@@ -661,15 +687,57 @@ default).  This will prevent the checker from issuing a warning about the
 
 \section{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
 
-The rawness hierarchy indicates whether an object is fully initialized ---
-that is, whether its fields have all been assigned.  This is mostly
-relevant within the constructor, or for references to \code{this} that
-escape the constructor.  Most readers can skip this section on first
-reading; you can return to it once you have mastered the rest of the
-nullness checker.
+An object is
+\emph{raw} from the time that its constructor starts until its constructor
+finishes.  This is relevant to the Nullness Checker because while the
+constructor is executing --- that is, before initialization completes ---
+a \<@NonNull>
+field may be observed to be null, until that field is set.  In
+particular, the Nullness Checker issues a warning for code like this:
 
-The rawness hierarchy is independent of the
-nullness hierarchy, and is shown in Figure~\ref{fig:nonnull-hierarchy}.
+\begin{Verbatim}
+  public class MyClass {
+    private @NonNull Object f;
+    public MyClass(int x) {
+      // Error because this.f is accessed before f is initialized.
+      // At the beginning of the constructor's execution, accessing this.f
+      // yields null, even though field f has a non-null type.
+      this.f.toString();
+    }
+    public MyClass(int x, int y) {
+      // Error because constructor contains no assignment to this.f.
+      // By the time the constructor exits, f must be initialized to a non-null value.
+    }
+    public MyClass(int x, int y, int z) {
+      m();
+    }
+    public void m() {
+      // Error because this.f is accessed before f is initialized,
+      // even though the access is not in a constructor.
+      // When m is called from the constructor, accessing f yields null,
+      // even though field f has a non-null type.
+      this.f.toString();
+    }
+\end{Verbatim}
+
+\noindent
+In general, code can depend on field \<f> not being null, but not in a
+partially-initialized object.
+
+The Nullness Checker uses the \<@Raw> annotation to indicate that an object
+is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
+assigned.  Rawness is mostly relevant within the constructor, or for
+references to \code{this} that escape the constructor (say, by being stored
+in a field or passed to a method before initialization is complete).  Thus, use of
+rawness annotations in quite rare in most code.
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the nullness checker.
+
+\subsection{Rawness qualifiers\label{rawness-qualifiers}}
+
+The rawness hierarchy is shown in Figure~\ref{fig:nonnull-hierarchy}.
 The rawness hierarchy contains these qualifiers:
 
 \begin{description}
@@ -680,7 +748,10 @@ The rawness hierarchy contains these qualifiers:
   \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
   has not yet been assigned.  Within the constructor,
   \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
-  the fields have been assigned.
+  the \code{@NonNull} fields have been assigned.
+  A partially-initialized object (\code{this} in a constructor) may be
+  passed to a helper method or stored in a variable; if so, the method
+  receiver, or the field, would have to be annotated as \<@Raw>.
 
 % Cut this?
 \item[\code{@\refclass{nullness/quals}{NonRaw}}]
@@ -694,23 +765,11 @@ The rawness hierarchy contains these qualifiers:
 
 \end{description}
 
-Suppose a class contains a field ``\code{@\refclass{nullness/quals}{NonNull}
-  Date d;}''.  Java executes the class's constructor by first setting \<d> to
-\code{null}.  The constructor sets field \<d> to its final value, either
-directly or by calling helper methods.  Before the constructor sets field
-\<d>, its initial value \code{null} violates its type \code{@NonNull Date}.
-In general, code can depend on field \<d> not being null, but not in a
-partially-initialized object.  A partially-initialized object (\code{this}
-in a constructor) may be passed to a helper method or stored in a variable;
-if so, the method receiver, or the field, would have to be annotated as
-\<@Raw>.
-
 % However, if the constructor makes
 % a method call (passing \code{this} as a parameter or the receiver), then
 % the called method could observe the object in an illegal state.
 
-The \code{@\refclass{nullness/quals}{Raw}} type annotation represents a
-partially-initialized object.  If a reference has
+If a reference has
 \code{@Raw} type, then all of its \code{@NonNull} fields are treated as
 \code{@\refclass{nullness/quals}{LazyNonNull}}:  when read, they are
 treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
@@ -724,11 +783,52 @@ is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
 you about the reference itself:  might the reference be null?  The rawness
 hierarchy tells you about the \<@NonNull> fields in the referred-to object:
 might those fields be temporarily null in contravention of their
-declaration?
+type annotation?
+% It's a figure rather than appearing inline so as not to span page breaks
+% in the printed manual.
+Figure~\ref{fig:rawness-examples} contains some examples.
+
+\begin{figure}
+\begin{tabular}{l|l|l}
+Declarations & Expression & Expression's nullness type, or checker error \\ \hline
+\begin{minipage}{1.5in}
+\begin{Verbatim}
+class C {
+  @NonNull Object f;
+  @Nullable Object g;
+  ...
+}
+\end{Verbatim}
+\end{minipage} & & \\ \cline{2-3}
+\<@NonNull @NonRaw C a;>
+& \<a> & \<@NonNull> \\
+& \<a.f> & \<@NonNull> \\
+& \<a.g> & \<@Nullable> \\ \cline{2-3}
+\<@NonNull @Raw C b;>
+& \<b> & \<@NonNull> \\
+& \<b.f> & \<@LazyNonNull> \\
+& \<b.g> & \<@Nullable> \\ \cline{2-3}
+\<@Nullable @NonRaw C c;>
+& \<c> & \<@Nullable> \\
+& \<c.f> & error: deref of nullable \\
+& \<c.g> & error: deref of nullable \\ \cline{2-3}
+\<@Nullable @Raw C d;>
+& \<d> & \<@Nullable> \\
+& \<d.f> & error: deref of nullable \\
+& \<d.g> & error: deref of nullable \\
+\end{tabular}
+\caption{Examples of the interaction between nullness and rawness.
+  Declarations are shown at the left for reference, but the focus of the
+  table is the expressions and their nullness type or error.}
+\label{fig:rawness-examples}
+\end{figure}
 
 
-% Does our implementation handle static fields soundly?
+% Does our implementation handle static fields soundly?  NO!  See issue
+% #105.  Maybe document this?
 
+
+\subsection{More details about rawness checking\label{rawness-checking}}
 
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
@@ -743,7 +843,7 @@ As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
 have been initialized, then \code{this} is treated as non-raw.
 
 The Nullness checker issues an error if the constructor fails to initialize
-any non-null field.  This ensures that the object is in a legal (non-raw)
+any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
 \urldef{\jlsdefiniteassignmenturl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/defAssign.html}
 \urldef{\jlsfinalvariablesurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/typesValues.html#4.12.4}
@@ -761,10 +861,24 @@ have a default value of null.
 % annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
 % restrictions apply to assigning \code{this} to a field.
 
-Currently, the type-checker requires that all fields either have a a
-default in the field declaration, or be initialized in the constructor.  If
+All \code{@NonNull} fields must either have a
+default in the field declaration, or be assigned in the constructor or in a
+helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
-suppress some warnings.
+annotate the helper method with an annotation such as
+\code{@\refclass{nullness/quals}{AssertNonNullAfter}(\{"field1", "field2"\})}
+for all the fields that the helper method assigns.
+It's a bit odd, but you use that same annotation, \code{@AssertNonNullAfter},
+to indicate that a primitive field has its value set in a helper method,
+which is relevant when you supply the \code{-Alint=uninitialized}
+command-line option (see Section~\ref{lint-uninitialized}).
+
+% TODO:
+% We need an
+%   @AssertInitializedAfter("b")
+% that is analogous to
+%   @AssertNonNullAfter("b")
+% when we are dealing with a field of primitive type.
 
 
 \paragraph{Invoking the superclass constructor; rawness of the superclass reference}
@@ -812,6 +926,13 @@ superclass to also be raw.  For example:
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
 
+
+
+\paragraph{Checking assignment of all fields, not just \code{@NonNull} ones}
+
+When the \code{-Alint=uninitialized} command-line option is provided, then
+an object is considered raw until \emph{all} its fields are assigned, not
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 
 
 % Should we change the terminology?
@@ -880,6 +1001,33 @@ Because the \<@KeyFor> type hierarchy is independent from the nullness and
 rawness hierarchies, it uses a different warning suppression key.
 You can suppress warnings related to map keys with
 \<@SuppressWarnings("keyfor")>.
+
+
+\section{Additional details\label{nullness-additional-details}}
+
+The Nullness Checker does some special checks in certain circumstances, in
+order to soundly reduce the number of warnings that it produces.
+
+For example, a call to 
+\sunjavadoc{java/lang/System.html#getProperty(java.lang.String)}{System.getProperty(String)}
+can return null in general, but it will not return null if the argument is
+one of the built-in-keys listed in the documentation of 
+\sunjavadoc{java/lang/System.html#getProperties()}{System.getProperties()}.
+The Nullness Checker is aware of this fact, so you do not have to suppress
+a warning for a call like \<System.getProperty("line.separator")>.  The
+warning is still issued for code like this:
+
+\begin{Verbatim}
+  final String s = "line.separator";
+  nonNullvar = System.getProperty(s);
+\end{Verbatim}
+
+\noindent
+though that case could be handled as well, if desired.
+(Suppression of the warning is, strictly speaking, not sound, because a
+library that your code calls, or your code itself, could perversely change
+the system properties; the Nullness Checker assumes this bizarre coding
+pattern does not happen.)
 
 
 \section{Examples\label{nullness-example}}
@@ -1305,4 +1453,5 @@ tool like the Checker Framework.)
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
 % LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
 % LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
-% LocalWords:  keySet getField keyfor param TypeName
+% LocalWords:  keySet getField keyfor param TypeName containsValue indexOf
+% LocalWords:  lastIndexOf deref getProperty getProperties

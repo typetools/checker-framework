@@ -128,17 +128,14 @@ class RawTypes {
         // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            //:: error: (method.invocation.invalid)
-            nonRawMethod();     // error
+            nonRawMethod();
             startTime = 0;
             nonRawMethod();     // no error
             new AFSIICell().afsii = this;
         }
 
-        //:: warning: (fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            //:: error: (method.invocation.invalid)
-            nonRawMethod();     // error
+            nonRawMethod();
         }
 
         public void nonRawMethod() {
@@ -178,6 +175,7 @@ class RawTypes {
 
     }
 
+    // default qualifier is @Nullable, so this is OK.
     class RawAfterConstructorBad {
         Object o;
         RawAfterConstructorBad() {
@@ -192,7 +190,6 @@ class RawTypes {
 
     class RawAfterConstructorOK2 {
         int a;
-        //:: warning: (fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }
