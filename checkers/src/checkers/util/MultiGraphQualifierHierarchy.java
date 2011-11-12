@@ -216,7 +216,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             checker.errorAbort("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }
         if (lhs.size() != rhs.size()) {
-            checker.errorAbort("QualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
+            // checker.errorAbort("QualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
+            return false;
         }
         int valid = 0;
         for (AnnotationMirror lhsAnno : lhs) {
