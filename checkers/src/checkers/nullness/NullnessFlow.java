@@ -65,7 +65,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      */
     private final boolean DO_ADVANCED_CHECKS;
 
-    private final AnnotationMirror POLYNULL, RAW, NONNULL;
+    private final AnnotationMirror POLYNULL, RAW, NONNULL, PRIMITIVE;
     private boolean isNullPolyNull;
     private final AnnotatedTypeFactory rawFactory;
     private final Map<ExecutableElement, Set<VariableElement>> initializedFields;
@@ -82,11 +82,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param factory the type factory to use
      */
     public NullnessFlow(NullnessSubchecker checker, CompilationUnitTree root,
-            NullnessAnnotatedTypeFactory factory) {
-        super(checker, root, Collections.singleton(factory.NONNULL), factory);
+            Set<AnnotationMirror> annotations, NullnessAnnotatedTypeFactory factory) {
+        super(checker, root, annotations, factory);
         POLYNULL = factory.POLYNULL;
         RAW = factory.RAW;
         NONNULL = factory.NONNULL;
+        PRIMITIVE = factory.PRIMITIVE;
         isNullPolyNull = false;
         rawFactory = factory.rawnessFactory;
         initializedFields = new HashMap<ExecutableElement, Set<VariableElement>>();
@@ -616,7 +617,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = node.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-            if (methodParams.get(i).hasAnnotation(NONNULL))
+            if (methodParams.get(i).hasEffectiveAnnotation(NONNULL))
                 inferNullness(methodArgs.get(i));
         }
 
@@ -814,7 +815,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             int index = this.flowState.vars.indexOf(e);
             if (DO_ADVANCED_CHECKS &&
-                !(index != -1 && this.flowState.annos.get(NONNULL, index))) {
+                !(index != -1 && (this.flowState.annos.get(NONNULL, index) ||
+                // TODO: a boxed primitive is sometimes still @Primitive.
+                // Is this needed elsewhere? Fix it?
+                        this.flowState.annos.get(PRIMITIVE, index)))) {
                 checker.report(Result.failure("assert.postcondition.not.satisfied", annoVal), meth);
             }
         }
@@ -1296,7 +1300,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @return true if the method has a {@link Raw} receiver, false otherwise
      */
     private final boolean hasRawReceiver(MethodTree node) {
-        return rawFactory.getAnnotatedType(node).getReceiverType().hasAnnotation(RAW);
+        return rawFactory.getAnnotatedType(node).getReceiverType().hasEffectiveAnnotation(RAW);
     }
 
     /**

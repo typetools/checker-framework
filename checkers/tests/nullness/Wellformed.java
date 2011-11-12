@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 
 class Wellformed {
-    //:: error: (type.invalid)
+    //:: error: (type.invalid) :: error: (assignment.type.incompatible)
     @NonNull @Nullable Object f = null;
 
     //:: error: (type.invalid)

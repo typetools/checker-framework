@@ -445,7 +445,7 @@ indices.)
 
 \section{Inexpressible types\label{inexpressible-types}}
 
-The Type Annotations syntax~\cite{jsr308} is designed to be easy to read.  As a result,
+The Type Annotations syntax~\cite{JSR308-2008-09-12} is designed to be easy to read.  As a result,
 there are types that it cannot express.  An example is the type of
 \<Collection.toArray()>, which returns an array of objects, where the
 objects have the same annotation as the elements of the receiver.
@@ -453,7 +453,7 @@ objects have the same annotation as the elements of the receiver.
 A possible annotation would be
 
 \begin{Verbatim}
-public @Polynull Object [] toArray() ArrayList<@PolyNull E> { ... }
+public @PolyNull Object [] toArray() ArrayList<@PolyNull E> { ... }
 \end{Verbatim}
 
 \noindent

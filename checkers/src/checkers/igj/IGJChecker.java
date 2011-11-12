@@ -1,11 +1,8 @@
 package checkers.igj;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.*;
@@ -13,6 +10,9 @@ import checkers.quals.TypeQualifiers;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.*;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A type-checker plug-in for the IGJ immutability type system that finds (and
@@ -103,9 +103,9 @@ public class IGJChecker extends BaseTypeChecker {
         assert receiverType != null;
 
         final boolean isAssignable =
-            (receiverType.hasAnnotation(MUTABLE)
-             || receiverType.hasAnnotation(BOTTOM_QUAL)
-             || (receiverType.hasAnnotation(ASSIGNS_FIELDS)
+            (receiverType.hasEffectiveAnnotation(MUTABLE)
+             || receiverType.hasEffectiveAnnotation(BOTTOM_QUAL)
+             || (receiverType.hasEffectiveAnnotation(ASSIGNS_FIELDS)
                      && TreeUtils.isSelfAccess((ExpressionTree)varTree)));
 
         return isAssignable;
@@ -113,7 +113,7 @@ public class IGJChecker extends BaseTypeChecker {
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
-        if (elemType.hasAnnotation(I) || use.hasAnnotation(READONLY))
+        if (elemType.hasEffectiveAnnotation(I) || use.hasEffectiveAnnotation(READONLY))
             return true;
         return super.isValidUse(elemType, use);
     }
@@ -129,7 +129,7 @@ public class IGJChecker extends BaseTypeChecker {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new IGJTypeHierarchy(getQualifierHierarchy());
+        return new IGJTypeHierarchy(this, getQualifierHierarchy());
     }
 
     //
@@ -160,6 +160,8 @@ public class IGJChecker extends BaseTypeChecker {
         public IGJQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
             super(hierarchy);
         }
+
+        @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             return (AnnotationUtils.areSame(rhs, BOTTOM_QUAL)
                     || AnnotationUtils.areSame(lhs, BOTTOM_QUAL)
@@ -178,8 +180,8 @@ public class IGJChecker extends BaseTypeChecker {
      *    may change co-variantly in a safe manner
      */
     private final class IGJTypeHierarchy extends TypeHierarchy {
-        public IGJTypeHierarchy(QualifierHierarchy qualifierHierarchy) {
-            super(qualifierHierarchy);
+        public IGJTypeHierarchy(IGJChecker checker, QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
         }
 
         /**
@@ -192,8 +194,8 @@ public class IGJChecker extends BaseTypeChecker {
         // as TypeHierarchy requires type arguments to be equivalent
         @Override
         protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-            return (lhs.hasAnnotation(BOTTOM_QUAL)
-                    || rhs.hasAnnotation(BOTTOM_QUAL)
+            return (lhs.hasEffectiveAnnotation(BOTTOM_QUAL)
+                    || rhs.hasEffectiveAnnotation(BOTTOM_QUAL)
                     || super.isSubtypeAsTypeArgument(rhs, lhs));
         }
 
@@ -208,7 +210,7 @@ public class IGJChecker extends BaseTypeChecker {
          */
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-            if (lhs.hasAnnotation(MUTABLE))
+            if (lhs.hasEffectiveAnnotation(MUTABLE))
                 return super.isSubtypeTypeArguments(rhs, lhs);
 
             if (!lhs.getTypeArguments().isEmpty()

@@ -1,16 +1,21 @@
 package checkers.javari;
 
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
-import com.sun.source.tree.*;
-
-import checkers.source.*;
-import checkers.basetype.*;
-import checkers.javari.quals.*;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.javari.quals.Assignable;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypes;
 import checkers.util.TreeUtils;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 
 /**
@@ -46,8 +51,8 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        if (atypeFactory.fromClass(node).hasAnnotation(POLYREAD)
-            && !atypeFactory.getSelfType(node).hasAnnotation(POLYREAD))
+        if (atypeFactory.fromClass(node).hasEffectiveAnnotation(POLYREAD)
+            && !atypeFactory.getSelfType(node).hasEffectiveAnnotation(POLYREAD))
             checker.report(Result.failure("polyread.type"), node);
 
         return super.visitClass(node, p);
@@ -73,13 +78,13 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
             || TreeUtils.isConstructor(visitorState.getMethodTree());
         AnnotatedDeclaredType mReceiver = atypeFactory.getSelfType(varTree);
 
-        if (variableLocalField && !inConstructor && !mReceiver.hasAnnotation(MUTABLE))
+        if (variableLocalField && !inConstructor && !mReceiver.hasEffectiveAnnotation(MUTABLE))
             checker.report(Result.failure("ro.field"), varTree);
 
         if (varTree.getKind() == Tree.Kind.MEMBER_SELECT
             && !TreeUtils.isSelfAccess((ExpressionTree)varTree)) {
             AnnotatedTypeMirror receiver = atypeFactory.getReceiver((ExpressionTree)varTree);
-            if (receiver != null && !receiver.hasAnnotation(MUTABLE))
+            if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
                 checker.report(Result.failure("ro.field"), varTree);
         }
     }
@@ -114,9 +119,9 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
         // they can only occur at raw or array most inner component type
         type = AnnotatedTypes.innerMostType(type);
         if (type.getKind().isPrimitive()) {
-            if (type.hasAnnotation(QREADONLY)
-                    || type.hasAnnotation(READONLY)
-                    || type.hasAnnotation(POLYREAD)) {
+            if (type.hasEffectiveAnnotation(QREADONLY)
+                    || type.hasEffectiveAnnotation(READONLY)
+                    || type.hasEffectiveAnnotation(POLYREAD)) {
                     checker.report(Result.failure("primitive.ro"), tree);
             }
         }

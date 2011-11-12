@@ -11,6 +11,7 @@ public class Flow {
         }
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -22,6 +23,7 @@ public class Flow {
             a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -36,6 +38,7 @@ public class Flow {
         }
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -49,6 +52,7 @@ public class Flow {
             a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -63,6 +67,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -77,6 +82,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -91,6 +97,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -105,6 +112,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -116,6 +124,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -128,6 +137,7 @@ public class Flow {
         }
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -140,6 +150,7 @@ public class Flow {
         }
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
     }
 
@@ -149,6 +160,7 @@ public class Flow {
         @NonNull String a = str;
 
         str = null;
+        //:: error: (assignment.type.incompatible)
         @NonNull String b = str;
 
         String s2 = new String();
@@ -179,9 +191,11 @@ public class Flow {
         m.equals(m = null);
 
         MyClass n = new MyClass();
+        //:: error: (dereference.of.nullable)
         n.test(n = null, n.toString()); // error
 
         MyClass o = null;
+        //:: error: (dereference.of.nullable)
         o.equals(o == new MyClass());   // error
     }
 
@@ -191,6 +205,7 @@ public class Flow {
             o.toString();
             return;
         }
+        //:: error: (dereference.of.nullable)
         o.toString(); // error
     }
 
@@ -264,6 +279,7 @@ public class Flow {
     }
     void testNullableCall() {
         if (returnNullable() != null)
+            //:: error: (dereference.of.nullable)
             returnNullable().toString(); // error
     }
 
@@ -271,12 +287,14 @@ public class Flow {
         // empty body
     }
     void testNonNullArg(@Nullable Object arg) {
+        //:: error: (argument.type.incompatible)
         nonNullArg(arg);        // error
         nonNullArg(arg);        // no error
     }
 
     void test() {
         String[] s = null;
+        //:: error: (dereference.of.nullable)
         for (int i = 0; i < s.length; ++i) {    // error
             String m = s[i];    // fine.. s cannot be null
         }

@@ -1,9 +1,7 @@
 package checkers.types;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -18,7 +16,7 @@ import checkers.util.AnnotationUtils;
  * within this hierarchy.
  *
  * This assumes that any particular annotated type in a program is annotated
- * with at most one qualifier from the hierarchy.
+ * with at least one qualifier from the hierarchy.
  */
 public abstract class QualifierHierarchy {
 
@@ -29,12 +27,24 @@ public abstract class QualifierHierarchy {
     /**
      * @return  the root (ultimate super) type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getRootAnnotation();
+	public abstract Set<AnnotationMirror> getRootAnnotations();
+	
+	/**
+	 * Return the root for the given qualifier, that is, the qualifier that is a
+	 * supertype of start but no further supertypes exist. 
+	 */
+	public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+
+	/**
+	 * Return the bottom for the given qualifier, that is, the qualifier that is a
+	 * subtype of start but no further subtypes exist. 
+	 */	
+	public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
      * @return the bottom type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getBottomQualifier();
+    public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
      * Returns the names of all type qualifiers in this type qualifier
@@ -49,10 +59,9 @@ public abstract class QualifierHierarchy {
     // **********************************************************************
 
     /**
-     * Tests whether anno1 is a super qualifier of anno2, according to the
+     * Tests whether anno1 is a sub-qualifier of anno2, according to the
      * type qualifier hierarchy.  This checks only the qualifiers, not the
-     * Java type.  Either argument may be "null", if no type qualifier from
-     * the given hierarchy is present.
+     * Java type.
      *
      * @return true iff anno1 is a sub qualifier of anno2
      */
@@ -69,22 +78,7 @@ public abstract class QualifierHierarchy {
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
     // this case, requires subtyping with respect to one qualifier only.
-    public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        Collection<AnnotationMirror> rhsAnnos = rhs;
-        Collection<AnnotationMirror> lhsAnnos = lhs;
-
-        if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
-            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
-        }
-        for (AnnotationMirror lhsAnno : lhsAnnos) {
-            for (AnnotationMirror rhsAnno : rhsAnnos) {
-                if (isSubtype(rhsAnno, lhsAnno)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
      * Returns the  least upper bound for the qualifiers a1 and a2.

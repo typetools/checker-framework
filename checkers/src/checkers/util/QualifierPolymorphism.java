@@ -47,7 +47,7 @@ public class QualifierPolymorphism {
     protected final AnnotationMirror polyQual;
 
     /** The qualifier at the root of the hierarchy. */
-    protected final AnnotationMirror rootQual;
+    protected final Set<AnnotationMirror> rootQuals;
 
     /**
      * Creates a {@link QualifierPolymorphism} instance that uses the given
@@ -65,7 +65,6 @@ public class QualifierPolymorphism {
         this.annoFactory = AnnotationUtils.getInstance(env);
 
         AnnotationMirror poly = null;
-        AnnotationMirror root = null;
         for (Class<? extends Annotation> a : checker.getSupportedTypeQualifiers()) {
             if (a.getAnnotation(PolymorphicQualifier.class) != null) {
                 if (poly != null)
@@ -74,10 +73,9 @@ public class QualifierPolymorphism {
                 poly = annoFactory.fromClass(a);
             }
         }
-        root = checker.getQualifierHierarchy().getRootAnnotation();
 
         this.polyQual = poly;
-        this.rootQual = root;
+        this.rootQuals = checker.getQualifierHierarchy().getRootAnnotations();
 
         this.collector = new PolyCollector();
         this.completer = new Completer();
@@ -108,13 +106,17 @@ public class QualifierPolymorphism {
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
                 collector.visit(factory.getReceiver(tree), type.getReceiverType()));
-        if (matchingMapping != null && !matchingMapping.isEmpty())
-            replacer.visit(type, matchingMapping.values().iterator().next());
+        if (matchingMapping != null && !matchingMapping.isEmpty()) {
+            AnnotationMirror qual = matchingMapping.values().iterator().next();
+            if (qual!=null) {
+                replacer.visit(type, qual);
+            }
+        }
 //        else
 //            completer.visit(type);
     }
 
-    private AnnotatedTypeScanner<Void, AnnotationMirror> replacer
+    private final AnnotatedTypeScanner<Void, AnnotationMirror> replacer
     = new AnnotatedTypeScanner<Void, AnnotationMirror>() {
         @Override
         public Void scan(AnnotatedTypeMirror type, AnnotationMirror qual) {
@@ -128,17 +130,17 @@ public class QualifierPolymorphism {
 
     /**
      * Completes a type by removing any unresolved polymorphic qualifiers,
-     * replacing them with the root qualifier if one is defined.
+     * replacing them with the root qualifiers.
      */
     class Completer extends AnnotatedTypeScanner<Void, Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
             if (type != null && type.hasAnnotation(polyQual))
                 type.removeAnnotation(polyQual);
-            if (rootQual != null && type != null &&
+            if (type != null &&
                     !type.isAnnotated() && !(type.getKind()==TypeKind.TYPEVAR || type.getKind()==TypeKind.WILDCARD)) {
                 // Do not add the root qualifier to type variables and wildcards
-                type.addAnnotation(rootQual);
+                type.addAnnotations(rootQuals);
             }
             return super.scan(type, p);
         }
@@ -334,7 +336,7 @@ public class QualifierPolymorphism {
             // TODO: type is null if type is an intersection type
             // assert type != null;
             if (type == null)
-                return new HashMap<String, AnnotationMirror>();
+                return Collections.emptyMap();
 
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
@@ -395,7 +397,7 @@ public class QualifierPolymorphism {
             return result;
         }
 
-        private Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
+        private final Set<TypeVariable> typeVar = new HashSet<TypeVariable>();
 
         @Override
         public Map<String, AnnotationMirror> visitTypeVariable(

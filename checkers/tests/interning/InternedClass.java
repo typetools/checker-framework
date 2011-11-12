@@ -127,7 +127,8 @@ public @Interned class InternedClass {
     Class[] getSuperClasses(Class<?> c) {
         Vector v = new Vector();
         while (true) {
-            if (c.getSuperclass().equals((new Object()).getClass())) // unnecessary equals
+            //:: warning: (unnecessary.equals)
+            if (c.getSuperclass().equals((new Object()).getClass()))
                 break;
             c = c.getSuperclass();
             v.addElement(c);

@@ -2,20 +2,10 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -31,11 +21,7 @@ import checkers.util.TreeUtils;
 
 import checkers.nullness.quals.*;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -354,8 +340,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
+        SourceVisitor<?, ?> visitor = null;
         try {
-            SourceVisitor<?,?> visitor = createSourceVisitor(currentRoot);
+            visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
         } catch (CheckerError ce) {
             // Nothing to do, message will be output by javac.
@@ -368,6 +355,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
             Error err = new Error(message, exception);
             err.printStackTrace();
+            // TODO: how can we output where in the source file the error
+            // occurred?
+            // Calling visitor.getCurrentPath() gives null.
             throw err;
         }
     }

@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.units.quals.*;
 import checkers.util.AnnotationUtils;
@@ -62,7 +63,8 @@ public class UnitsChecker extends BaseTypeChecker {
         unitsRel.put("checkers.units.UnitsRelationsDefault",
                 new UnitsRelationsDefault().init(annoUtils, env));
 
-        // TODO: add Unqualified??
+        // Explicitly add the Unqualified type.
+        qualSet.add(Unqualified.class);
 
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.

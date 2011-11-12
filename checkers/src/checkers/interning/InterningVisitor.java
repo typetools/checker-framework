@@ -1,18 +1,26 @@
 package checkers.interning;
 
-import java.util.*;
+import static javax.lang.model.util.ElementFilter.methodsIn;
 
-import checkers.source.*;
-import checkers.basetype.*;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.*;
+
+import checkers.basetype.BaseTypeVisitor;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.UsesObjectEquals;
-import checkers.types.*;
-import checkers.util.*;
-import com.sun.source.tree.*;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.util.Heuristics;
+import checkers.util.InternalUtils;
+import checkers.util.TreeUtils;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import static javax.lang.model.util.ElementFilter.*;
+import com.sun.source.tree.*;
 
 /**
  * A type-checking visitor for the {@link Interned} type
@@ -102,9 +110,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         }
 
         //if neither @Interned or @UsesObjectEquals, report error
-        if (!(left.hasAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
+        if (!(left.hasEffectiveAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", left), leftOp);
-        if (!(right.hasAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
+        if (!(right.hasEffectiveAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
             checker.report(Result.failure("not.interned", right), rightOp);
         return super.visitBinary(node, p);
     }
@@ -116,8 +124,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
-                && recv.hasAnnotation(INTERNED)
-                && comp.hasAnnotation(INTERNED))
+                && recv.hasEffectiveAnnotation(INTERNED)
+                && comp.hasEffectiveAnnotation(INTERNED))
                 checker.report(Result.warning("unnecessary.equals"), node);
         }
 
