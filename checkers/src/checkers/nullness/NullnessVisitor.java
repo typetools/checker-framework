@@ -54,9 +54,9 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
-        NONNULL = this.annoFactory.fromClass(NonNull.class);
-        NULLABLE = this.annoFactory.fromClass(Nullable.class);
-        PRIMITIVE = this.annoFactory.fromClass(Primitive.class);
+        NONNULL = checker.NONNULL;
+        NULLABLE = checker.NULLABLE;
+        PRIMITIVE = checker.PRIMITIVE;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
