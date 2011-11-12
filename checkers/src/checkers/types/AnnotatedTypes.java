@@ -628,7 +628,6 @@ public class AnnotatedTypes {
             }
 
             if (argument == null) {
-                // should really be '? extends typeVar.getUpperBound()'
                 AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
                 while (upperBound.getKind() == TypeKind.TYPEVAR)
                     upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
@@ -637,6 +636,7 @@ public class AnnotatedTypes {
                 wctype.setElement(typeVar.getElement());
                 wctype.setExtendsBound(upperBound);
                 wctype.addAnnotations(typeVar.getAnnotations());
+                wctype.setMethodTypeArgHack();
 
                 argument = wctype;
             }
