@@ -11,6 +11,7 @@ import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
@@ -71,19 +72,20 @@ public class NullnessSubchecker extends BaseTypeChecker {
         return super.isValidUse(type);
     }
 
+    /*
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         // TODO: actually use the MultiGraphQH.
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
+    }*/
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new NullnessQualifierHierarchy((MultiGraphQualifierHierarchy)super.createQualifierHierarchy());
+        return new NullnessQualifierHierarchy((/*Multi*/GraphQualifierHierarchy)super.createQualifierHierarchy());
     }
     
     private final class NullnessQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy hierarchy) {
+        public NullnessQualifierHierarchy(/*Multi*/GraphQualifierHierarchy hierarchy) {
             super(hierarchy);
         }
 
