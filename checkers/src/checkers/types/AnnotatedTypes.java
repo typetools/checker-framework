@@ -918,20 +918,26 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror[] subtypes = new AnnotatedTypeMirror[types.length];
             for (int i = 0; i < types.length; ++i) {
                 AnnotatedTypeMirror type = types[i];
+
                 if (type.getKind() == TypeKind.WILDCARD &&
-                        ((AnnotatedWildcardType)type).getSuperBound() != null)
+                        ((AnnotatedWildcardType)type).getSuperBound() != null) {
                     type = ((AnnotatedWildcardType)type).getSuperBound();
-                if (type == null)
+                }
+                if (type == null) {
                     return;
-                if (type.getKind() == TypeKind.WILDCARD)
+                }
+                if (type.getKind() == TypeKind.WILDCARD) {
                     subtypes[i] = deepCopy(lub);
-                else if (asSuper(type, lub) == null)
+                } else if (asSuper(type, lub) == null) {
                     subtypes[i] = deepCopy(lub);
-                else
+                } else {
                     subtypes[i] = asSuper(type, lub);
+                }
             }
-            if (subtypes.length > 0)
+            if (subtypes.length > 0) {
                 lub.clearAnnotations();
+            }
+
             addAnnotations(lub, subtypes);
         }
     }
@@ -954,11 +960,6 @@ public class AnnotatedTypes {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
 
         for (int i = 0; i < types.length; ++i) {
-            // TODO: this doesn't happen in our test suite.
-            // if (types[i] == null) {
-            //     System.out.println("Types i is null!");
-            //     continue;     // TODO: fix this
-            // }
             if (types[i].getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
@@ -978,11 +979,6 @@ public class AnnotatedTypes {
         Collection<AnnotationMirror> unification = Collections.emptySet();
 
         for (AnnotatedTypeMirror type : types) {
-            // TODO: this doesn't happen in our test suite.
-            // if (type == null) { 
-            //    System.out.println("type in types is null!");
-            //     continue;    // TODO: fix this
-            // }
             if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
             if (type.getAnnotations().isEmpty()) continue;
             // TODO: unification fails with an empty set of annotations.
@@ -1005,25 +1001,23 @@ public class AnnotatedTypes {
 
             for (int i = 0; i < adt.getTypeArguments().size(); ++i) {
                 AnnotatedTypeMirror adtArg = adt.getTypeArguments().get(i);
-                AnnotatedTypeMirror[] dTypesArg = new AnnotatedTypeMirror[types.length];
+                List<AnnotatedTypeMirror> dTypesArg = new ArrayList<AnnotatedTypeMirror>();
                 for (int j = 0; j < types.length; ++j) {
-                    if (types[j].getKind() == TypeKind.NULL)
-                        dTypesArg[j] = types[j];
-                    else
-                        dTypesArg[j] = ((AnnotatedDeclaredType)types[j]).getTypeArguments().get(i);
+                    if (types[j].getKind() != TypeKind.NULL) {
+                        dTypesArg.add(((AnnotatedDeclaredType)types[j]).getTypeArguments().get(i));
+                    }
                 }
-                addAnnotations(adtArg, dTypesArg);
+                addAnnotations(adtArg, dTypesArg.toArray(new AnnotatedTypeMirror[0]));
             }
         } else if (alub.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) alub;
-            AnnotatedTypeMirror[] compTypes = new AnnotatedTypeMirror[types.length];
+            List<AnnotatedTypeMirror> compTypes = new ArrayList<AnnotatedTypeMirror>();
             for (int i = 0; i < types.length; ++i)  {
-                if (types[i].getKind() == TypeKind.NULL)
-                    compTypes[i] = types[i];
-                else
-                    compTypes[i] = ((AnnotatedArrayType)types[i]).getComponentType();
+                if (types[i].getKind() != TypeKind.NULL) {
+                    compTypes.add(((AnnotatedArrayType)types[i]).getComponentType());
+                }
             }
-            addAnnotations(aat.getComponentType(), compTypes);
+            addAnnotations(aat.getComponentType(), compTypes.toArray(new AnnotatedTypeMirror[0]));
         }
     }
 
