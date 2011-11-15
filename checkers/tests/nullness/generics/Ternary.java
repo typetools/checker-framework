@@ -26,11 +26,21 @@ class Ternary {
         }
     }
 
-    void m4(boolean b) {
-        // TODO: flow inference for array components doesn't seem to work!
-        // Without the explicit @Nullable we get an assignment incompatible error.
-        @Nullable String[] s = b ? new String[5] : null;
+    void array(boolean b) {
+        String[] s = b ? new String[5] : null;
         //:: error: (dereference.of.nullable)
         s.toString();
+    }
+
+    void generic(boolean b, Generic1<String> p) {
+        Generic1<String> s = b ? p : null;
+        //:: error: (dereference.of.nullable)
+        s.toString();
+    }
+
+    void primarray(boolean b) {
+        long[] result = b ? null : new long[10];
+        //:: error: (dereference.of.nullable)
+        result.toString();
     }
 }
