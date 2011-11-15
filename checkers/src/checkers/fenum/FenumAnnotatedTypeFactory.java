@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -58,7 +60,8 @@ public class FenumAnnotatedTypeFactory extends
       defaults.annotate(tree, type);
 
       final AnnotationMirror inferred = flow.test(tree);
-      if (inferred != null) {
+      if (inferred != null && type.getKind()!=TypeKind.TYPEVAR) {
+        // TODO: Flow incorrectly infers an annotation for type variables
         type.clearAnnotations();
         type.addAnnotation(inferred);
         // System.out.println("Inferred: " + type);
