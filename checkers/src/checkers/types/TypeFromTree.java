@@ -146,24 +146,6 @@ abstract class TypeFromTree extends
             if (trueType.equals(falseType))
                 return trueType;
 
-            // If one of them is null, return the other, with the LUB of both.
-            // However, if one is a type variable, just return it.
-            if (trueType.getKind() == TypeKind.NULL) {
-                if (falseType.getKind() != TypeKind.TYPEVAR) {
-                    Collection<AnnotationMirror> alub = f.qualHierarchy.leastUpperBound(trueType.getAnnotations(), falseType.getAnnotations());
-                    falseType.clearAnnotations();
-                    falseType.addAnnotations(alub);
-                    return falseType;
-                }
-            } else if (falseType.getKind() == TypeKind.NULL) {
-                if (trueType.getKind() != TypeKind.TYPEVAR) {
-                    Collection<AnnotationMirror> alub = f.qualHierarchy.leastUpperBound(trueType.getAnnotations(), falseType.getAnnotations());
-                    trueType.clearAnnotations();
-                    trueType.addAnnotations(alub);
-                    return trueType;
-                }
-            }
-
             AnnotatedTypeMirror alub = f.type(node);
             TypeMirror lub = alub.getUnderlyingType();
 
