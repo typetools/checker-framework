@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
+import checkers.source.SourceChecker;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -19,6 +20,15 @@ import checkers.util.AnnotationUtils;
  * with at least one qualifier from the hierarchy.
  */
 public abstract class QualifierHierarchy {
+
+    /* The checker to use for error reporting.
+     * The field should be final, 
+     */
+    protected final SourceChecker checker;
+
+    protected QualifierHierarchy(SourceChecker c) {
+        this.checker = c;
+    }
 
     // **********************************************************************
     // Getter methods about this hierarchy
@@ -118,19 +128,21 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     leastUpperBound(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        Collection<AnnotationMirror> as1 = annos1;
-        Collection<AnnotationMirror> as2 = annos2;
-
-        if (as1.size() == 1 && as2.size() == 1) {
-            AnnotationMirror a1 = as1.iterator().next();
-            AnnotationMirror a2 = as2.iterator().next();
+        if (annos1.size() == 1 && annos2.size() == 1) {
+            AnnotationMirror a1 = annos1.iterator().next();
+            AnnotationMirror a2 = annos2.iterator().next();
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
+        if (annos1.size() == 0 || annos2.size() == 0) {
+            checker.errorAbort("QualifierHierarchy: tried to determine LUB with an empty set!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2);
+        }
+
         // Let's hope that the difference is simply two elements
-        Set<AnnotationMirror> difference = difference(as1, as2);
+        Set<AnnotationMirror> difference = difference(annos1, annos2);
         Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
-        lub.addAll(intersect(as1, as2));
+        lub.addAll(intersect(annos1, annos2));
 
         if (difference.isEmpty())
             return lub;
