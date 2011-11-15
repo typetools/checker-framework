@@ -187,8 +187,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         if (useFlow) {
             final AnnotationMirror inferred = flow.test(tree);
             if (inferred != null) {
-                type.clearAnnotations();
-                type.addAnnotation(inferred);
+                if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations().iterator().next())) {
+                    /* TODO:
+                     * The above check should NOT be necessary. However, for the InterningChecker test case Arrays fails
+                     * without it. It only fails if Unqualified is one of the supported type qualifiers, which it should.
+                     * Flow inference should always just return subtypes of the declared type, so something is going wrong!
+                     * TODO!
+                     */
+                    type.clearAnnotations();
+                    type.addAnnotation(inferred);
+                }
             }
         }
         // TODO: This is quite ugly
