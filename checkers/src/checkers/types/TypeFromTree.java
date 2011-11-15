@@ -142,10 +142,8 @@ abstract class TypeFromTree extends
 
             AnnotatedTypes annoTypes = f.atypes;
 
-            AnnotatedTypeMirror trueType
-                = f.getAnnotatedType(node.getTrueExpression());
-            AnnotatedTypeMirror falseType
-                = f.getAnnotatedType(node.getFalseExpression());
+            AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
+            AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
             if (trueType.equals(falseType))
                 return trueType;
