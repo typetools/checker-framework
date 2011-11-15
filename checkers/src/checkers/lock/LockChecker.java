@@ -4,6 +4,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
+import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -16,6 +17,7 @@ import checkers.util.MultiGraphQualifierHierarchy;
  *
  * @see GuardedBy
  */
+@TypeQualifiers( { GuardedBy.class, Unqualified.class } )
 public class LockChecker extends BaseTypeChecker {
 
     @Override
