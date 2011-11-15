@@ -208,7 +208,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Exception type used only internally to abort
      * processing.
      */
-    private class CheckerError extends RuntimeException { }
+    protected class CheckerError extends RuntimeException { }
 
     /**
      * Log an error message and abort processing.
