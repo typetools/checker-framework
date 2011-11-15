@@ -984,6 +984,10 @@ public class AnnotatedTypes {
             //     continue;    // TODO: fix this
             // }
             if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
+            if (type.getAnnotations().isEmpty()) continue;
+            // TODO: unification fails with an empty set of annotations.
+            // Why are they sometimes empty, e.g. in the FlowNegation test case.
+
             if (isFirst) {
                 unification = type.getAnnotations();
             } else {
