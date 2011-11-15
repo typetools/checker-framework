@@ -2017,12 +2017,7 @@ public abstract class AnnotatedTypeMirror {
                 }
                 adt.setTypeArguments(newtas);
                 supertypes.add(adt);
-            } else if (elem.getKind() == ElementKind.ANNOTATION_TYPE) {
-                DeclaredType dt = (DeclaredType) typeFactory.elements.getTypeElement("java.lang.annotation.Annotation").asType();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType)typeFactory.toAnnotatedType(dt);
-                supertypes.add(adt);
             }
-
             return supertypes;
         }
 
