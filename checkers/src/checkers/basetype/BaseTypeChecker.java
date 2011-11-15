@@ -441,16 +441,33 @@ public abstract class BaseTypeChecker extends SourceChecker {
         try {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
+        } catch (InvocationTargetException ite) {
+            Throwable t = ite.getCause();
+            if (t instanceof CheckerError) {
+                // CheckerErrors are coming from our error reporting mechanism
+                // and will be handled in SourceChecker.
+                throw (CheckerError) t;
+            } else {
+                ite.printStackTrace();
+                if (ite.getCause()!=null) {
+                    ite.getCause().printStackTrace();
+                }
+                throw new RuntimeException("Unexpected " + ite.getClass().getSimpleName() + " for " +
+                        "class name " + name +
+                        " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
+                        " and args: " + Arrays.toString(args),
+                ite.getCause());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             if (e.getCause()!=null) {
                 e.getCause().printStackTrace();
             }
             throw new RuntimeException("Unexpected " + e.getClass().getSimpleName() + " for " +
-                            "class name " + name +
-                            " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
-                            " and args: " + Arrays.toString(args),
-                    e.getCause());
+                    "class name " + name +
+                    " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
+                    " and args: " + Arrays.toString(args),
+            e.getCause());
         }
     }
 
