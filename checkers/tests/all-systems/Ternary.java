@@ -26,4 +26,19 @@ class Ternary {
         String p = "x*(((";
         String s = b ? p : null;
     }
+
+    class Generic<T extends @Nullable Object> {
+        void cond(boolean b, T p) {
+            T r1 = b ? p : null;
+            T r2 = b ? null : p;
+        }
+
+        void cond2(boolean b, T p) {
+            T r1 = b ? null : p;
+        }
+
+        void cond(boolean b, T p1, T p2) {
+            p1 = b ? p1 : p2;
+        }
+    }
 }
