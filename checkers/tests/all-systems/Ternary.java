@@ -1,3 +1,5 @@
+import checkers.nullness.quals.Nullable;
+
 class Ternary {
     void m1(boolean b) {
         String s = b ? new String("foo") : null;
@@ -7,7 +9,7 @@ class Ternary {
         String s = b ? null : new String("foo");
     }
 
-    String m3(boolean b) {
+    @Nullable String m3(boolean b) {
         return b ? new String("foo") : null;
     }
 
