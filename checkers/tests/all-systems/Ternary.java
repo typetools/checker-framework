@@ -14,8 +14,7 @@ class Ternary {
     }
 
     void m4(boolean b) {
-        // TODO: flow inference of array component not working correctly.
-        @Nullable String[] s = b ? new String[5] : null;
+        String[] s = b ? new String[5] : null;
     }
 
     void m5(boolean b) {
@@ -41,5 +40,17 @@ class Ternary {
         void cond(boolean b, T p1, T p2) {
             p1 = b ? p1 : p2;
         }
+    }
+
+    void array(boolean b) {
+        String[] s = b ? new String[5] : null;
+    }
+
+    void generic(boolean b, Generic<String> p) {
+        Generic<String> s = b ? p : null;
+    }
+
+    void primarray(boolean b) {
+        long[] result = b ? null : new long[10];
     }
 }
