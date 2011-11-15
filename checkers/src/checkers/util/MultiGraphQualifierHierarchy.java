@@ -155,11 +155,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected final Set<AnnotationMirror> roots;
     protected final Set<AnnotationMirror> bottoms;
 
-    protected final SourceChecker checker;
-
-    
     protected MultiGraphQualifierHierarchy(MultiGraphFactory f) {
-        this.checker = f.checker;
+        super(f.checker);
         // no need for copying as f.supertypes has no mutable references to it
         this.supertypesGraph = f.supertypes;
         this.supertypesMap = buildFullMap(f.supertypes);
@@ -169,11 +166,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
 	protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
+        super(h.checker);
         this.supertypesGraph = h.supertypesGraph;
         this.supertypesMap = h.supertypesMap;
         this.lubs = h.lubs;
         this.glbs = h.glbs;
-        this.checker = h.checker;
 		this.roots = h.roots;
 		this.bottoms = h.bottoms;
 	}
