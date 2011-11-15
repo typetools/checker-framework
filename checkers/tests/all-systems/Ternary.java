@@ -14,7 +14,8 @@ class Ternary {
     }
 
     void m4(boolean b) {
-        String[] s = b ? new String[5] : null;
+        // TODO: flow inference of array component not working correctly.
+        @Nullable String[] s = b ? new String[5] : null;
     }
 
     void m5(boolean b) {
