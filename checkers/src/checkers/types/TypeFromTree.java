@@ -140,8 +140,6 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitConditionalExpression(
                 ConditionalExpressionTree node, AnnotatedTypeFactory f) {
 
-            AnnotatedTypes annoTypes = f.atypes;
-
             AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
             AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
@@ -173,8 +171,8 @@ abstract class TypeFromTree extends
                 // Find the intersect types
                 f.atypes.annotateAsLub(alub, trueType, falseType);
             } else {
-                trueType = annoTypes.asSuper(trueType, alub);
-                falseType = annoTypes.asSuper(falseType, alub);
+                trueType = f.atypes.asSuper(trueType, alub);
+                falseType = f.atypes.asSuper(falseType, alub);
 
                 if (trueType.equals(falseType))
                     return trueType;
