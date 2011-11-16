@@ -201,19 +201,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         }
         // TODO: This is quite ugly
         if (!useFlow || finishedScanning
-                || tree.getKind() == Tree.Kind.METHOD
-                || TreeUtils.isClassTree(tree.getKind())
-                || tree.getKind() == Tree.Kind.NEW_CLASS
-                || tree.getKind() == Tree.Kind.NEW_ARRAY
-                || tree.getKind() == Tree.Kind.STRING_LITERAL
-                || tree.getKind() == Tree.Kind.BOOLEAN_LITERAL
-                || tree.getKind() == Tree.Kind.CHAR_LITERAL
-                || tree.getKind() == Tree.Kind.DOUBLE_LITERAL
-                || tree.getKind() == Tree.Kind.FLOAT_LITERAL
-                || tree.getKind() == Tree.Kind.INT_LITERAL
-                || tree.getKind() == Tree.Kind.LONG_LITERAL
-                || tree.getKind() == Tree.Kind.NULL_LITERAL
-                || tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                || type.getKind() != TypeKind.TYPEVAR) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
             defaults.annotate(tree, type);
