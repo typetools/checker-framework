@@ -205,6 +205,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 || TreeUtils.isClassTree(tree.getKind())
                 || tree.getKind() == Tree.Kind.NEW_CLASS
                 || tree.getKind() == Tree.Kind.NEW_ARRAY
+                || tree.getKind() == Tree.Kind.STRING_LITERAL
                 || tree.getKind() == Tree.Kind.BOOLEAN_LITERAL
                 || tree.getKind() == Tree.Kind.CHAR_LITERAL
                 || tree.getKind() == Tree.Kind.DOUBLE_LITERAL
