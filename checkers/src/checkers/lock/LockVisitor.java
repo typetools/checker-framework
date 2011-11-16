@@ -59,7 +59,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     // TODO: Aliasing is not handled nicely by getAnnotation.
     // It would be nicer if we only needed to write one class here and
     // aliases were resolved internally.
-    private static boolean hasGuardedBy(AnnotatedTypeMirror t) {
+    protected static boolean hasGuardedBy(AnnotatedTypeMirror t) {
         return t.getAnnotation(checkers.lock.quals.GuardedBy.class)!=null ||
                t.getAnnotation(net.jcip.annotations.GuardedBy.class)!=null;
     }

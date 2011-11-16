@@ -123,7 +123,15 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        super.annotateImplicit(tree, type);
+        if (!LockVisitor.hasGuardedBy(type)) {
+            /* TODO: I added STRING_LITERAL to the list of types that should get defaulted.
+             * This resulted in Flow inference to infer Unqualified for strings, which is a
+             * subtype of guardedby. This broke the Constructors test case.
+             * This check ensures that an existing annotation doesn't get removed by flow.
+             * However, I'm not sure this is the nicest way to do things.
+             */
+            super.annotateImplicit(tree, type);
+        }
         replaceThis(type, tree);
         replaceItself(type, tree);
         removeHeldLocks(type);
