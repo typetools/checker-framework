@@ -12,7 +12,7 @@ public class Assignability {
     static @Mutable Assignability  mutable;
     static @Immutable Assignability immutable;
 
-    void readOnly() @ReadOnly {
+    void readOnly(@ReadOnly Assignability this) {
         this.assignable = null;
         //:: error: (assignability.invalid)
         this.nonAssignable = null;
@@ -29,7 +29,7 @@ public class Assignability {
         immutable.nonAssignable = null;
     }
 
-    void mutable() @Mutable {
+    void mutable(@Mutable Assignability this) {
         this.assignable = null;
         this.nonAssignable = null;
 
@@ -45,7 +45,7 @@ public class Assignability {
         immutable.nonAssignable = null;
     }
 
-    void assignsFields() @AssignsFields {
+    void assignsFields(@AssignsFields Assignability this) {
         this.assignable = null;
         this.nonAssignable = null;
 
@@ -61,7 +61,7 @@ public class Assignability {
         immutable.nonAssignable = null;
     }
 
-    void immutable() @Immutable {
+    void immutable(@Immutable Assignability this) {
         this.assignable = null;
         //:: error: (assignability.invalid)
         this.nonAssignable = null;
