@@ -45,7 +45,7 @@ class MutableClass {
 
     int i;
     Object o;
-    void setField(@AssignsFields ThisClass this) {
+    void setField(@AssignsFields MutableClass this) {
         i = 0;   // OK
         this.i = 0; // OK
         o = new Object() {
