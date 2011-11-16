@@ -9,6 +9,7 @@ import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 
@@ -948,16 +949,29 @@ public class AnnotatedTypes {
      */
     private void addAnnotations(AnnotatedTypeMirror alub,
             AnnotatedTypeMirror ...types) {
+        Set<TypeMirror> visited = new HashSet<TypeMirror>();
+        addAnnotationsImpl(alub, visited, types);
+    }
 
+    private void addAnnotationsImpl(AnnotatedTypeMirror alub,
+            Set<TypeMirror> visited,
+            AnnotatedTypeMirror ...types) {
         // types may contain a null in the context of unchecked cast
         // TODO: fix this
         boolean isFirst = true;
         // get rid of wildcards and type variables
         // TODO: what about annotations on type variables?
-        if (alub.getKind() == TypeKind.WILDCARD)
+        if (alub.getKind() == TypeKind.WILDCARD) {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
-        if (alub.getKind() == TypeKind.TYPEVAR)
+        }
+        if (alub.getKind() == TypeKind.TYPEVAR) {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
+        }
+
+        if (visited.contains(alub.actualType)) {
+            return;
+        }
+        visited.add(alub.actualType);
 
         for (int i = 0; i < types.length; ++i) {
             if (types[i].getKind() == TypeKind.WILDCARD) {
@@ -1007,7 +1021,7 @@ public class AnnotatedTypes {
                         dTypesArg.add(((AnnotatedDeclaredType)types[j]).getTypeArguments().get(i));
                     }
                 }
-                addAnnotations(adtArg, dTypesArg.toArray(new AnnotatedTypeMirror[0]));
+                addAnnotationsImpl(adtArg, visited, dTypesArg.toArray(new AnnotatedTypeMirror[0]));
             }
         } else if (alub.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) alub;
@@ -1017,7 +1031,7 @@ public class AnnotatedTypes {
                     compTypes.add(((AnnotatedArrayType)types[i]).getComponentType());
                 }
             }
-            addAnnotations(aat.getComponentType(), compTypes.toArray(new AnnotatedTypeMirror[0]));
+            addAnnotationsImpl(aat.getComponentType(), visited, compTypes.toArray(new AnnotatedTypeMirror[0]));
         }
     }
 
