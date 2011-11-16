@@ -759,7 +759,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
-                    constructor.toString(), dt, constructor.getReceiverType()), src);
+                    constructor.toString(), dt, receiver), src);
         }
         return b;
     }

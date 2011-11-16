@@ -82,16 +82,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         boolean foundDefault = false;
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.setAbsoluteDefaults(this.annotations.fromClass(qual),
+                defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
                         Collections.singleton(DefaultLocation.ALL));
                 foundDefault = true;
-                break;
             }
         }
 
-        if (!foundDefault) {
-            defaults.setAbsoluteDefaults(this.annotations.fromClass(Unqualified.class),
-                    Collections.singleton(DefaultLocation.ALL));
+        AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
+        if (!foundDefault && this.isSupportedQualifier(unqualified)) {
+        	defaults.addAbsoluteDefault(unqualified,
+        			Collections.singleton(DefaultLocation.ALL));
         }
 
         // This also gets called by subclasses.  Is that a problem?
@@ -187,15 +187,21 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         if (useFlow) {
             final AnnotationMirror inferred = flow.test(tree);
             if (inferred != null) {
-                type.clearAnnotations();
-                type.addAnnotation(inferred);
+                if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations().iterator().next())) {
+                    /* TODO:
+                     * The above check should NOT be necessary. However, for the InterningChecker test case Arrays fails
+                     * without it. It only fails if Unqualified is one of the supported type qualifiers, which it should.
+                     * Flow inference should always just return subtypes of the declared type, so something is going wrong!
+                     * TODO!
+                     */
+                    type.clearAnnotations();
+                    type.addAnnotation(inferred);
+                }
             }
         }
         // TODO: This is quite ugly
         if (!useFlow || finishedScanning
-                || tree.getKind() == Tree.Kind.METHOD
-                || TreeUtils.isClassTree(tree.getKind())
-                || tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                || type.getKind() != TypeKind.TYPEVAR) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
             defaults.annotate(tree, type);

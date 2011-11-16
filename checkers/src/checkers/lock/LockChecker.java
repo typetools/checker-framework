@@ -4,11 +4,12 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
+import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * A typechecker plug-in for the JCIP type system qualifier that finds (and
@@ -16,6 +17,7 @@ import checkers.util.GraphQualifierHierarchy;
  *
  * @see GuardedBy
  */
+@TypeQualifiers( { GuardedBy.class, Unqualified.class } )
 public class LockChecker extends BaseTypeChecker {
 
     @Override
@@ -25,8 +27,7 @@ public class LockChecker extends BaseTypeChecker {
         AnnotationMirror guardedBy = annoFactory.fromClass(GuardedBy.class);
         AnnotationMirror unqualified = annoFactory.fromClass(Unqualified.class);
 
-        GraphQualifierHierarchy.Factory factory =
-            new GraphQualifierHierarchy.Factory(this);
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
 
         factory.addQualifier(guardedBy);
         factory.addQualifier(unqualified);

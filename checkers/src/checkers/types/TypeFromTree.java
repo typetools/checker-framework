@@ -46,7 +46,7 @@ abstract class TypeFromTree extends
         // Annotate the inner most array
         AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
         for (AnnotationMirror anno : annotations) {
-            if (isTypeAnnotation(anno)) {
+            if (AnnotatedTypes.isTypeAnnotation(anno)) {
                 innerType.addAnnotation(anno);
                 if (innerType.getKind() == TypeKind.TYPEVAR) {
                     AnnotatedTypeVariable atv = (AnnotatedTypeVariable) innerType;
@@ -76,36 +76,6 @@ abstract class TypeFromTree extends
             typevar.getExtendsBound().clearAnnotations();
             typevar.getSuperBound().clearAnnotations();
         }
-    }
-
-    private static Map<TypeElement, Boolean> isTypeCache = new IdentityHashMap<TypeElement, Boolean>();
-    private static boolean isTypeAnnotation(AnnotationMirror anno) {
-        TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
-        if (isTypeCache.containsKey(elem))
-            return isTypeCache.get(elem);
-
-        boolean result = isTypeAnnotationImpl(elem);
-        isTypeCache.put(elem, result);
-        return result;
-    }
-
-    private static boolean isTypeAnnotationImpl(TypeElement type) {
-        Target target = type.getAnnotation(Target.class);
-        if (target == null)
-            return true;
-        for (ElementType et : target.value()) {
-            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
-            if (et == ElementType.TYPE_USE)
-                return true;
-        }
-        return false;
-    }
-
-    private static boolean hasTypeAnnotation(List<? extends AnnotationMirror> annos) {
-        for(AnnotationMirror am : annos) {
-            if(isTypeAnnotation(am)) return true;
-        }
-        return false;
     }
 
     /**
@@ -170,49 +140,21 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitConditionalExpression(
                 ConditionalExpressionTree node, AnnotatedTypeFactory f) {
 
-            AnnotatedTypes annoTypes = f.atypes;
-
-            AnnotatedTypeMirror trueType
-                = f.getAnnotatedType(node.getTrueExpression());
-            AnnotatedTypeMirror falseType
-                = f.getAnnotatedType(node.getFalseExpression());
+            AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
+            AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
             if (trueType.equals(falseType))
                 return trueType;
 
-            // If one of them is null, return the other
-            if (trueType.getKind() == TypeKind.NULL) {
-                Collection<AnnotationMirror> alub = f.qualHierarchy.leastUpperBound(trueType.getAnnotations(), falseType.getAnnotations());
-                falseType.clearAnnotations();
-                falseType.addAnnotations(alub);
-                return falseType;
-            } else if (falseType.getKind() == TypeKind.NULL) {
-                Collection<AnnotationMirror> alub = f.qualHierarchy.leastUpperBound(trueType.getAnnotations(), falseType.getAnnotations());
-                trueType.clearAnnotations();
-                trueType.addAnnotations(alub);
-                return trueType;
-            }
-
             AnnotatedTypeMirror alub = f.type(node);
-            TypeMirror lub = alub.getUnderlyingType();
+            trueType = f.atypes.asSuper(trueType, alub);
+            falseType = f.atypes.asSuper(falseType, alub);
 
-            // WMD: method annotateAsLub has a very similar test for anonymous types and also the asSuper calls,
-            // but seems much more general. Is the code below out of date?
-            // Also, what is the difference in using annoTypes vs. f.atypes? Are they aliases?
+            if (trueType.equals(falseType))
+                return trueType;
 
-            // It is anonymous
-            if (TypesUtils.isAnonymousType(lub)) {
-                // Find the intersect types
-                f.atypes.annotateAsLub(alub, trueType, falseType);
-            } else {
-                trueType = annoTypes.asSuper(trueType, alub);
-                falseType = annoTypes.asSuper(falseType, alub);
+            f.atypes.annotateAsLub(alub, trueType, falseType);
 
-                if (trueType.equals(falseType))
-                    return trueType;
-
-                f.atypes.annotateAsLub(alub, trueType, falseType);
-            }
             return alub;
         }
 
@@ -436,7 +378,7 @@ abstract class TypeFromTree extends
             // nullable), but not remove annotations?
             com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getType();
             if (ntype.type.getKind() == TypeKind.TYPEVAR &&
-                    hasTypeAnnotation(elt.getAnnotationMirrors())) {
+                    AnnotatedTypes.containsTypeAnnotation(elt.getAnnotationMirrors())) {
                 clearAnnotationsFromElt(result);
             }
             addAnnotationsToElt(result, elt.getAnnotationMirrors());
@@ -469,7 +411,7 @@ abstract class TypeFromTree extends
             com.sun.tools.javac.tree.JCTree ntype = (com.sun.tools.javac.tree.JCTree) node.getReturnType();
             if (ntype!=null &&
                     ntype.type.getKind() == TypeKind.TYPEVAR &&
-                    hasTypeAnnotation(elt.getAnnotationMirrors())) {
+                    AnnotatedTypes.containsTypeAnnotation(elt.getAnnotationMirrors())) {
                 clearAnnotationsFromElt(result.getReturnType());
             }
             addAnnotationsToElt(result.getReturnType(), elt.getAnnotationMirrors());

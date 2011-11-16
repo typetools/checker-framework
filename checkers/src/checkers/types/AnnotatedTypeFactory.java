@@ -563,12 +563,23 @@ public class AnnotatedTypeFactory {
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
-
+        List<AnnotatedTypeMirror> targs = type.getTypeArguments();
         List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
+                new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
+
         List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
 
+        assert targs.size() == tvars.size();
+        for(int i=0; i<targs.size(); ++i) {
+            mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
+        }
+
         for (AnnotatedTypeMirror atm : tvars) {
-            res.add((AnnotatedTypeVariable)atm);
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
+            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
+            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
+            res.add(atv);
         }
         return res;
     }
@@ -1066,7 +1077,7 @@ public class AnnotatedTypeFactory {
      * @return true if that annotation is part of the type system under which
      *         this type factory operates, false otherwise
      */
-    /*package-scope*/ boolean isSupportedQualifier(AnnotationMirror a) {
+    public boolean isSupportedQualifier(AnnotationMirror a) {
         if (a!=null && supportedQuals.isEmpty()) {
             // Only include with retention
             TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
@@ -1303,7 +1314,6 @@ public class AnnotatedTypeFactory {
             return currentPath;
         }
 
-        //
         // When running on Daikon, we noticed that a lot of calls happened
         // within a small subtree containing the node we are currently visiting
 
