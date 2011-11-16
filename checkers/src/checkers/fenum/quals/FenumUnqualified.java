@@ -12,5 +12,4 @@ import checkers.quals.*;
 // @Target( {} )
 @TypeQualifier
 @SubtypeOf( { FenumTop.class } )
-@DefaultQualifierInHierarchy
 public @interface FenumUnqualified {}

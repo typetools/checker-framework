@@ -99,12 +99,12 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
         POLYNULL = this.annotations.fromClass(PolyNull.class);
-        NONNULL = this.annotations.fromClass(NonNull.class);
+        NONNULL = checker.NONNULL;
         RAW = this.annotations.fromClass(Raw.class);
-        NULLABLE = this.annotations.fromClass(Nullable.class);
+        NULLABLE = checker.NULLABLE;
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
         UNUSED = this.annotations.fromClass(Unused.class);
-        PRIMITIVE = this.annotations.fromClass(Primitive.class);
+        PRIMITIVE = checker.PRIMITIVE;
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -135,7 +135,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
         defaults = new QualifierDefaults(this, this.annotations);
-        defaults.setAbsoluteDefaults(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+        defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
 
         this.poly = new QualifierPolymorphism(checker, this);
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);

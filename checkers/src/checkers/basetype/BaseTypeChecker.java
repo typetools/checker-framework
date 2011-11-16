@@ -125,11 +125,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (typeQualifiersAnnotation == null)
             return Collections.emptySet();
 
-        Set<Class<? extends Annotation>> typeQualifiers
-            = new HashSet<Class<? extends Annotation>>();
-        for (Class<? extends Annotation> qualifier :
-                typeQualifiersAnnotation.value())
+        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
+        for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
             typeQualifiers.add(qualifier);
+        }
         return Collections.unmodifiableSet(typeQualifiers);
     }
 
@@ -146,6 +145,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (supportedQuals == null)
             supportedQuals = createSupportedTypeQualifiers();
         return supportedQuals;
+    }
+
+    /** Factory method to easily change what Factory is used to
+     * create a QualifierHierarchy.
+     */
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+    	return new GraphQualifierHierarchy.GraphFactory(this);
     }
 
     /**
@@ -165,8 +171,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected QualifierHierarchy createQualifierHierarchy() {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
-        GraphQualifierHierarchy.Factory factory=
-            new GraphQualifierHierarchy.Factory(this);
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
@@ -187,7 +192,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
-        factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
+        // This no longer seems necessary.
+        // factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
@@ -436,15 +442,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (e.getCause()!=null) {
-                e.getCause().printStackTrace();
-            }
-            throw new RuntimeException("Unexpected " + e.getClass().getSimpleName() + " for " +
-                            "class name " + name +
-                            " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
-                            " and args: " + Arrays.toString(args),
-                    e.getCause());
+            throw new CheckerError("Unexpected " + e.getClass().getSimpleName() + " for " +
+                    "class name " + name +
+                    " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes) +
+                    " and args: " + Arrays.toString(args),
+            e);
         }
     }
 

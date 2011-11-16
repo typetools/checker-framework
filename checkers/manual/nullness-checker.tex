@@ -17,8 +17,9 @@ examples, see Section~\ref{nullness-example}.
 The Nullness checker uses three separate type hierarchies:  one for nullness,
 one for rawness (Section~\ref{raw-partially-initialized}),
 and one for map keys (Section~\ref{map-keys})
-The Nullness checker has three varieties of annotations:  nullness
-qualifiers, nullness method annotations, rawness qualifiers, and map key
+The Nullness checker has four varieties of annotations:  nullness
+type qualifiers, nullness method annotations, rawness type qualifiers, and
+map key type
 qualifiers.
 
 \subsection{Nullness qualifiers\label{nullness-qualifiers}}
@@ -386,8 +387,8 @@ The checker issues a warning in these cases:
 This example illustrates the programming errors that the checker detects:
 
 \begin{Verbatim}
-           Object   obj;  // might be null
-  @NonNull Object nnobj;  // never null
+  @Nullable Object   obj;  // might be null
+  @NonNull  Object nnobj;  // never null
   ...
   obj.toString()         // checker warning:  dereference might cause null pointer exception
   nnobj = obj;           // checker warning:  nnobj may become null
@@ -448,7 +449,7 @@ Section~\ref{suppressing-warnings}).  An example use is
 
 
 The Nullness Checker supports an additional warning suppression key,
-\<nullness:collection-typeargs>.
+\<nullness:generic.argument>.
 Use of \<@SuppressWarnings("nullness:generic.argument")> causes the Nullness
 Checker to suppress warnings related to misuse of generic type
 arguments.  One use for this key is when a class is declared to take only
@@ -691,7 +692,7 @@ An object is
 finishes.  This is relevant to the Nullness Checker because while the
 constructor is executing --- that is, before initialization completes ---
 a \<@NonNull>
-field may be observed to be non-null, until that field is set.  In
+field may be observed to be null, until that field is set.  In
 particular, the Nullness Checker issues a warning for code like this:
 
 \begin{Verbatim}
@@ -789,12 +790,13 @@ Figure~\ref{fig:rawness-examples} contains some examples.
 
 \begin{figure}
 \begin{tabular}{l|l|l}
-Declarations & Expression & Expression's nullness type or error \\ \hline
+Declarations & Expression & Expression's nullness type, or checker error \\ \hline
 \begin{minipage}{1.5in}
 \begin{Verbatim}
 class C {
   @NonNull Object f;
   @Nullable Object g;
+  ...
 }
 \end{Verbatim}
 \end{minipage} & & \\ \cline{2-3}

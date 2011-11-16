@@ -576,9 +576,9 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         public Void scan(AnnotatedTypeMirror type, ElementKind p) {       // case 3
             if (type != null && type.getElement() != null
                 && !hasImmutabilityAnnotation(type)
-                && type.getElement().getKind().isField())
+                && type.getElement().getKind().isField()) {
                 type.addAnnotation(THISMUTABLE);
-
+            }
             return super.scan(type, p);
         }
 
@@ -650,7 +650,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         public Void visitTypeVariable(AnnotatedTypeVariable type, ElementKind p) {
             // In a declaration the upperbound is ReadOnly, while
             // the upper bound in a use is Mutable
-            if (type.getUpperBound() != null
+            if (type.getUpperBoundField() != null
                     && !hasImmutabilityAnnotation(type.getUpperBound())) {
                 if (p.isClass() || p.isInterface()
                         || p == ElementKind.CONSTRUCTOR

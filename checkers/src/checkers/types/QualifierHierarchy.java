@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
+import checkers.source.SourceChecker;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -20,6 +21,15 @@ import checkers.util.AnnotationUtils;
  */
 public abstract class QualifierHierarchy {
 
+    /* The checker to use for error reporting.
+     * The field should be final, 
+     */
+    protected final SourceChecker checker;
+
+    protected QualifierHierarchy(SourceChecker c) {
+        this.checker = c;
+    }
+
     // **********************************************************************
     // Getter methods about this hierarchy
     // **********************************************************************
@@ -27,12 +37,24 @@ public abstract class QualifierHierarchy {
     /**
      * @return  the root (ultimate super) type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getRootAnnotation();
+	public abstract Set<AnnotationMirror> getRootAnnotations();
+	
+	/**
+	 * Return the root for the given qualifier, that is, the qualifier that is a
+	 * supertype of start but no further supertypes exist. 
+	 */
+	public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+
+	/**
+	 * Return the bottom for the given qualifier, that is, the qualifier that is a
+	 * subtype of start but no further subtypes exist. 
+	 */	
+	public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
      * @return the bottom type qualifier in the hierarchy
      */
-    public abstract AnnotationMirror getBottomQualifier();
+    public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
      * Returns the names of all type qualifiers in this type qualifier
@@ -66,22 +88,7 @@ public abstract class QualifierHierarchy {
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
     // this case, requires subtyping with respect to one qualifier only.
-    public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        Collection<AnnotationMirror> rhsAnnos = rhs;
-        Collection<AnnotationMirror> lhsAnnos = lhs;
-
-        if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
-            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
-        }
-        for (AnnotationMirror lhsAnno : lhsAnnos) {
-            for (AnnotationMirror rhsAnno : rhsAnnos) {
-                if (isSubtype(rhsAnno, lhsAnno)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
      * Returns the  least upper bound for the qualifiers a1 and a2.
@@ -121,19 +128,21 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     leastUpperBound(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        Collection<AnnotationMirror> as1 = annos1;
-        Collection<AnnotationMirror> as2 = annos2;
-
-        if (as1.size() == 1 && as2.size() == 1) {
-            AnnotationMirror a1 = as1.iterator().next();
-            AnnotationMirror a2 = as2.iterator().next();
+        if (annos1.size() == 1 && annos2.size() == 1) {
+            AnnotationMirror a1 = annos1.iterator().next();
+            AnnotationMirror a2 = annos2.iterator().next();
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
+        if (annos1.size() == 0 || annos2.size() == 0) {
+            checker.errorAbort("QualifierHierarchy: tried to determine LUB with an empty set!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2);
+        }
+
         // Let's hope that the difference is simply two elements
-        Set<AnnotationMirror> difference = difference(as1, as2);
+        Set<AnnotationMirror> difference = difference(annos1, annos2);
         Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
-        lub.addAll(intersect(as1, as2));
+        lub.addAll(intersect(annos1, annos2));
 
         if (difference.isEmpty())
             return lub;

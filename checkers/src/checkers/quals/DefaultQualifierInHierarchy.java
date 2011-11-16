@@ -22,6 +22,4 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ANNOTATION_TYPE)
-public @interface DefaultQualifierInHierarchy {
-
-}
+public @interface DefaultQualifierInHierarchy {}

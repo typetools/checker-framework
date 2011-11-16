@@ -29,10 +29,10 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory factory;
     private final AnnotationUtils annoFactory;
 
-    private AnnotationMirror absoluteDefaultAnno;
-    private Set<DefaultLocation> absoluteDefaultLocs;
+	private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
+			new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
 
-    private Map<String, String> qualifiedNameMap;
+    private final Map<String, String> qualifiedNameMap;
 
     /**
      * @param factory the factory for this checker
@@ -44,8 +44,6 @@ public class QualifierDefaults {
 
         qualifiedNameMap = new HashMap<String, String>();
         for (Name name : factory.getQualifierHierarchy().getTypeQualifiers()) {
-            if (name == null)
-                continue;
             String qualified = name.toString();
             String unqualified = qualified.substring(qualified.lastIndexOf('.') + 1);
             qualifiedNameMap.put(qualified, qualified);
@@ -57,9 +55,18 @@ public class QualifierDefaults {
      * Sets the default annotation.  A programmer may override this by
      * writing the @DefaultQualifier annotation.
      */
-    public void setAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, Set<DefaultLocation> locations) {
-        this.absoluteDefaultAnno = absoluteDefaultAnno;
-        this.absoluteDefaultLocs = new HashSet<DefaultLocation>(locations);
+    public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, Set<DefaultLocation> locations) {
+    	for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
+    		AnnotationMirror anno = def.first;
+    		QualifierHierarchy qh = factory.getQualifierHierarchy();
+    		if (!absoluteDefaultAnno.equals(anno) &&
+    				qh.isSubtype(absoluteDefaultAnno, qh.getRootAnnotation(anno))) {
+                // TODO: get a Checker for a nicer error message
+    			throw new Error("Only one qualifier from a hierarchy can be the default! Existing: "
+    				+ absoluteDefaults + " and new: " + absoluteDefaultAnno);
+    		}
+    	}
+    	absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
     }
 
     public void annotateTypeElement(TypeElement elt, AnnotatedTypeMirror type) {
@@ -181,10 +188,13 @@ public class QualifierDefaults {
             applyDefaults(elt, type);
     }
 
-    private Map<Element, List<DefaultQualifier>> qualifierCache =
+    private final Map<Element, List<DefaultQualifier>> qualifierCache =
         new IdentityHashMap<Element, List<DefaultQualifier>>();
 
-    private static AnnotationMirror WMD_localannot;
+    /** The default annotation for local variables.
+     */
+    // Static to allow access from static inner class; TODO: improve?
+    private static Set<AnnotationMirror> localVarDefaultAnnos;
 
     private List<DefaultQualifier> defaultsAt(final Element elt) {
         if (elt == null)
@@ -235,8 +245,9 @@ public class QualifierDefaults {
         for (DefaultQualifier dq : defaults)
             applyDefault(annotationScope, dq, type);
 
-        if (this.absoluteDefaultAnno != null)
-            new DefaultApplier(annotationScope, this.absoluteDefaultLocs, type).scan(type, absoluteDefaultAnno);
+        for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
+            new DefaultApplier(annotationScope, def.second, type).scan(type, def.first);
+        }
     }
 
     private void applyDefault(Element annotationScope, DefaultQualifier d, AnnotatedTypeMirror type) {
@@ -246,7 +257,9 @@ public class QualifierDefaults {
         AnnotationMirror anno = annoFactory.fromName(name);
         if (anno == null)
             return;
-        new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
+        if (factory.isSupportedQualifier(anno)) {
+        	new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
+        }
     }
 
     private static class DefaultApplier
@@ -285,9 +298,12 @@ public class QualifierDefaults {
                     && locations.contains(DefaultLocation.ALL_EXCEPT_LOCALS)
                     && t == type) {
 
-                // WMD: add the local variable annotation!
-                if (!t.isAnnotated() && WMD_localannot != null) {
-                    t.addAnnotation(WMD_localannot);
+                if (localVarDefaultAnnos != null) {
+                	for (AnnotationMirror anno : localVarDefaultAnnos) {
+                		if (!t.isAnnotatedInHierarchy(anno)) {
+                			t.addAnnotation(anno);
+                		}
+                	}
                 }
 
                 return super.scan(t, p);
@@ -300,7 +316,7 @@ public class QualifierDefaults {
             }
             // Add the default annotation, but only if no other
             // annotation is present.
-            if (!t.isAnnotated())
+            if (!t.isAnnotatedInHierarchy(p))
                 t.addAnnotation(p);
 
             return super.scan(t, p);
@@ -357,7 +373,7 @@ public class QualifierDefaults {
         }
     }
 
-    public void setLocalDefault(AnnotationMirror localannot) {
-        WMD_localannot = localannot;
+    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
+    	localVarDefaultAnnos = localannos;
     }
 }

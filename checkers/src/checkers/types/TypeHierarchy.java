@@ -1,5 +1,6 @@
 package checkers.types;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,8 +102,21 @@ public class TypeHierarchy {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
                 if (wildcard.getSuperBound() != null
-                    && isSubtypeImpl(rhs, wildcard.getSuperBound()))
+                        && isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound())) {
                     return true;
+                }
+                if (wildcard.isAnnotated()
+                        && qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
+                    return true;
+                } else {
+                    Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
+                    Set<AnnotationMirror> bot = Collections.singleton(qualifierHierarchy.getBottomAnnotation(bnd.iterator().next()));
+                    if (!wildcard.isMethodTypeArgHack() &&
+                            (!qualifierHierarchy.isSubtype(bnd, bot) ||
+                            !qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), bot))) {
+                        return false;
+                    }
+                }
                 lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
                 visited.add(lhsBase.getElement());
             } else if (rhs.getKind() == TypeKind.WILDCARD) {
@@ -161,9 +175,10 @@ public class TypeHierarchy {
                 return qualifierHierarchy.isSubtype(ras, las);
             }
             // No annotations on lhs lower bound
-            return qualifierHierarchy.getBottomQualifier() == null ?
+            // XXX: should bottomquals always be non-null?
+            return qualifierHierarchy.getBottomAnnotations() == null ?
                 rhs.getEffectiveAnnotations().isEmpty() :
-                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomQualifier());
+                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomAnnotations());
         }
 
         // It's probably OK to reach this case, because of the isSubtype test above.
@@ -229,14 +244,19 @@ public class TypeHierarchy {
                 return true;
 
             visited.add(lhs.getElement());
-            lhs = ((AnnotatedWildcardType)lhs).getExtendsBound();
+            if(!lhs.getAnnotations().isEmpty()) {
+                if (!lhs.getAnnotations().equals(rhs.getEffectiveAnnotations())) {
+                    return false;
+                }
+            }
+            lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null) return true;
             return isSubtypeImpl(rhs, lhs);
         }
 
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
-            return isSubtype(((AnnotatedWildcardType)rhs).getExtendsBound(),
-                    ((AnnotatedWildcardType)lhs).getExtendsBound());
+            return isSubtype(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
+                    ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound());
         }
 
         if (lhs.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
@@ -283,7 +303,25 @@ public class TypeHierarchy {
      *
      * @return true iff rhs is a subtype of lhs
      */
-    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {        
+        // TODO: I think this can only happen from the method type variable introduction
+        // of wildcards. If we change that (in AnnotatedTypes.inferTypeArguments)
+        if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
+            if (visited.contains(lhs.getElement()))
+                return true;
+
+            visited.add(lhs.getElement());
+            if(!lhs.getAnnotations().isEmpty()) {
+                if (!lhs.getAnnotations().equals(rhs.getEffectiveAnnotations())) {
+                    return false;
+                }
+            }
+            lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+            if (lhs == null) return true;
+            return checker.isSubtype(rhs, lhs);
+        }
+        // End of copied code.
+
         // TODO: go back to the type checker and invoke isSubtype from there.
         // Should we do this more consistently, e.g. also for type arguments?
         // The problem is that I was overriding isSubtype in the checker, but then

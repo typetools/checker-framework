@@ -208,7 +208,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Exception type used only internally to abort
      * processing.
      */
-    private class CheckerError extends RuntimeException { }
+    protected static class CheckerError extends RuntimeException {
+        String msg;
+        Throwable cause;
+
+        public CheckerError() {}
+
+        public CheckerError(String msg, Throwable cause) {
+            this.msg = msg;
+            this.cause = cause;
+        }
+    }
 
     /**
      * Log an error message and abort processing.
@@ -345,9 +355,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
         } catch (CheckerError ce) {
-            // Nothing to do, message will be output by javac.
-        	// TODO: there seems to be a difference between continuing here
-        	// and raising an exception again. Investigate.
+            // Only print something if there is a message attached.
+            // If there is no additional message, the error was already output earlier.
+            // TODO: should we always attach a message instead of printing it in errorAbort?
+            if (ce.msg!=null && processingEnv.getOptions().containsKey("printErrorStack")) {
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, ce.msg +
+                        "\nException: " +
+                        // TODO: format nicer
+                        Arrays.toString(ce.cause.getStackTrace()) +
+                        "\nUnderlying Exception: " +
+                        // TODO: format nicer
+                        (ce.cause.getCause()!=null ? Arrays.toString(ce.cause.getCause().getStackTrace()) : "null")
+                        );
+            }
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "

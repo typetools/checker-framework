@@ -67,7 +67,7 @@ public abstract class AnnotatedTypeMirror {
             case DECLARED:
                 return new AnnotatedDeclaredType((DeclaredType)type, env, typeFactory);
             case ERROR:
-                throw new AssertionError("Input should type-checked already...");
+                throw new AssertionError("Input should type-check already...");
             case EXECUTABLE:
                 return new AnnotatedExecutableType((ExecutableType)type, env, typeFactory);
             case VOID:
@@ -213,6 +213,31 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean isAnnotated() {
         return !annotations.isEmpty();
+    }
+
+    /**
+     * Returns true if an annotation from the given sub-hierarchy targets this type location.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return True iff an annotation from the same hierarchy as p is present. 
+     */
+    public boolean isAnnotatedInHierarchy(AnnotationMirror p) {
+    	AnnotationMirror aliased = p;
+    	if (!typeFactory.isSupportedQualifier(aliased)) {
+    		aliased = typeFactory.aliasedAnnotation(p);
+    	}
+    	if (typeFactory.isSupportedQualifier(aliased)) {
+    		AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
+    		for(AnnotationMirror anno : annotations) {
+    			if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
     }
 
     /**
@@ -537,17 +562,7 @@ public abstract class AnnotatedTypeMirror {
         /** Parametrized Type Arguments **/
         protected List<AnnotatedTypeMirror> typeArgs;
 
-        /** Supertype of this type **/
-        // This field seems to be unused.
-        // @Deprecated
-        // protected AnnotatedDeclaredType superclass;
-
-        /** The interfaces that this type implements **/
-        // This field seems to be unused.
-        // @Deprecated
-        // protected List<AnnotatedDeclaredType> interfaces;
-
-        boolean isGeneric = false;
+        protected boolean isGeneric = false;
 
         protected final DeclaredType actualType;
 
@@ -566,10 +581,8 @@ public abstract class AnnotatedTypeMirror {
             this.actualType = type;
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
-            // this.interfaces = new LinkedList<AnnotatedDeclaredType>();
             this.supertypes = null;
         }
-
 
         @Override
         public String toString() {
@@ -642,32 +655,6 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the super type of this
-         */
-        /*
-        @Deprecated
-        public AnnotatedTypeMirror getSuperclass() {
-
-            TypeElement elt = (TypeElement)this.actualType.asElement();
-            assert elt.getSuperclass() != null;
-
-            AnnotatedTypeMirror type = createType(elt.asType(), env, typeFactory);
-
-            // Some types don't have a supertype (e.g., java.lang.Cloneable),
-            // so we return a copy of their NoType.
-            if (type instanceof AnnotatedNoType) return type.getCopy(true);
-
-            assert type instanceof AnnotatedDeclaredType : "not a declared type: "
-                    + type;
-
-            AnnotatedDeclaredType at = (AnnotatedDeclaredType)type;
-            at.addAnnotations(this.getAnnotations());
-
-            return at;
-        }
-        */
-
-        /**
          * Returns true if the type is generic, even if the type is erased
          * or used as a RAW type.
          *
@@ -690,22 +677,6 @@ public abstract class AnnotatedTypeMirror {
                 && !getUnderlyingType().getTypeArguments().isEmpty();
         }
 
-        /**
-         * @return the interfaces of this type
-         */
-        @Deprecated
-        public List<AnnotatedDeclaredType> getInterfaces() {
-            TypeElement elt = (TypeElement)this.actualType.asElement();
-            List<AnnotatedDeclaredType> myInterfaces = new LinkedList<AnnotatedDeclaredType>();
-            for (TypeMirror dt : elt.getInterfaces()) {
-                AnnotatedDeclaredType at =
-                    (AnnotatedDeclaredType)createType(dt, env, typeFactory);
-                at.addAnnotations(this.getAnnotations());
-                myInterfaces.add(at);
-            }
-            return Collections.unmodifiableList(myInterfaces);
-        }
-
         @Override
         public DeclaredType getUnderlyingType() {
             return actualType;
@@ -720,6 +691,8 @@ public abstract class AnnotatedTypeMirror {
             if (supertypes == null) {
                 supertypes = directSuperTypes(this);
             }
+            // TODO: the overridden version directly returns the
+            // result of directSuperTypes.
             return Collections.unmodifiableList(supertypes);
         }
 
@@ -743,11 +716,6 @@ public abstract class AnnotatedTypeMirror {
 
             AnnotatedDeclaredType type = getCopy(true);
 
-            // No need to substitute type params for now!
-            //
-            // Why is this the case? The following was necessary to get the
-            // Interning checker's Generics test case to work. -MP
-
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror t : getTypeArguments())
                 typeArgs.add(t.substitute(mapping));
@@ -763,7 +731,6 @@ public abstract class AnnotatedTypeMirror {
             }
             return type;
         }
-
 
         @Override
         public AnnotatedDeclaredType getErased() {
@@ -1292,7 +1259,7 @@ public abstract class AnnotatedTypeMirror {
                         lowerBound.addAnnotations(annotations);
                     } else {
                         if (typeFactory.qualHierarchy!=null) {
-                            lowerBound.addAnnotation(typeFactory.qualHierarchy.getBottomQualifier());
+                            lowerBound.addAnnotations(typeFactory.qualHierarchy.getBottomAnnotations());
                         }
                         // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                         // How should this be handled? What is that factory doing?
@@ -1591,6 +1558,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             // This output is not helpful if there is a (non-default) annotation.
+            // return formatAnnotationString(getAnnotations()) + "null";
             return "null";
         }
     }
@@ -1633,14 +1601,10 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
-            // cannot substitute
-            // return getCopy(true);
-            // WMD wants to substitute primitive types!
             if (mappings.containsKey(this))
                 return mappings.get(this);
             return getCopy(true);
         }
-
     }
 
     /**
@@ -1687,6 +1651,19 @@ public abstract class AnnotatedTypeMirror {
                 setSuperBound(createType(
                         actualType.getSuperBound(), env, typeFactory));
             return this.superBound;
+        }
+
+        public AnnotatedTypeMirror getEffectiveSuperBound() {
+            AnnotatedTypeMirror spb = getSuperBound();
+            if (spb==null) {
+                return null;
+            }
+            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(spb);
+            if (!annotations.isEmpty()) {
+                effbnd.clearAnnotations();
+                effbnd.addAnnotations(annotations);
+            }
+            return effbnd;
         }
 
         /**
@@ -1763,6 +1740,8 @@ public abstract class AnnotatedTypeMirror {
             type.setExtendsBound(getExtendsBound());
             type.setSuperBound(getSuperBound());
 
+            type.methodTypeArgHack = methodTypeArgHack;
+            
             return type;
         }
 
@@ -1818,10 +1797,22 @@ public abstract class AnnotatedTypeMirror {
             }
             return sb.toString();
         }
+
+        // Remove the methodTypeArgHack once method type
+        // argument inference (in AnnotatedTypes) is done
+        // correctly.
+        private boolean methodTypeArgHack = false;
+        public void setMethodTypeArgHack() {
+            methodTypeArgHack = true;
+        }
+        public boolean isMethodTypeArgHack() {
+            return methodTypeArgHack;
+        }
     }
 
-    protected final List<AnnotatedDeclaredType>
-    directSuperTypes(AnnotatedDeclaredType type) {
+    // Version of method below for declared types
+    protected final List<AnnotatedDeclaredType> directSuperTypes(
+            AnnotatedDeclaredType type) {
         setSuperTypeFinder(type.typeFactory);
         List<AnnotatedDeclaredType> supertypes =
             superTypeFinder.visitDeclared(type, null);
@@ -1829,6 +1820,7 @@ public abstract class AnnotatedTypeMirror {
         return supertypes;
     }
 
+    // Version of method above for all types
     private final List<? extends AnnotatedTypeMirror> directSuperTypes(
             AnnotatedTypeMirror type) {
         setSuperTypeFinder(type.typeFactory);
@@ -1942,9 +1934,9 @@ public abstract class AnnotatedTypeMirror {
             ClassTree classTree = typeFactory.trees.getTree(typeElement);
             // Testing against enum and annotation. Ideally we can simply use element!
             if (classTree != null) {
-                supertypes.addAll(supertypesFromTree(classTree));
+                supertypes.addAll(supertypesFromTree(type, classTree));
             } else {
-                supertypes.addAll(supertypesFromElement(typeElement));
+                supertypes.addAll(supertypesFromElement(type, typeElement));
                 // final Element elem = type.getElement() == null ? typeElement : type.getElement();
             }
 
@@ -1959,10 +1951,24 @@ public abstract class AnnotatedTypeMirror {
             return supertypes;
         }
 
-        private List<AnnotatedDeclaredType> supertypesFromElement(TypeElement typeElement) {
+        private List<AnnotatedDeclaredType> supertypesFromElement(AnnotatedDeclaredType type, TypeElement typeElement) {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
-            // Find the super types: Start with superclass
-            if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
+            // Find the super types: Start with enums and superclass
+            if (typeElement.getKind() == ElementKind.ENUM) {
+                DeclaredType dt = (DeclaredType) typeElement.getSuperclass();
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeFactory.toAnnotatedType(dt);
+                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                for (AnnotatedTypeMirror t : tas) {
+                    // If the type argument of super is the same as the input type
+                    if (typeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
+                        t.addAnnotations(type.getAnnotations());
+                        newtas.add(t);
+                    }
+                }
+                adt.setTypeArguments(newtas);
+                supertypes.add(adt);
+            } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
                 DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
                 AnnotatedDeclaredType dt =
                     (AnnotatedDeclaredType)typeFactory.toAnnotatedType(superClass);
@@ -1976,10 +1982,11 @@ public abstract class AnnotatedTypeMirror {
                 supertypes.add(ast);
             }
             TypeFromElement.annotateSupers(supertypes, typeElement);
+
             return supertypes;
         }
 
-        private List<AnnotatedDeclaredType> supertypesFromTree(ClassTree classTree) {
+        private List<AnnotatedDeclaredType> supertypesFromTree(AnnotatedDeclaredType type, ClassTree classTree) {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
             if (classTree.getExtendsClause() != null) {
                 AnnotatedDeclaredType adt = (AnnotatedDeclaredType)
@@ -1998,14 +2005,19 @@ public abstract class AnnotatedTypeMirror {
             TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
             if (elem.getKind() == ElementKind.ENUM) {
                 DeclaredType dt = (DeclaredType) elem.getSuperclass();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType)typeFactory.toAnnotatedType(dt);
-                supertypes.add(adt);
-            } else if (elem.getKind() == ElementKind.ANNOTATION_TYPE) {
-                DeclaredType dt = (DeclaredType) typeFactory.elements.getTypeElement("java.lang.annotation.Annotation").asType();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType)typeFactory.toAnnotatedType(dt);
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeFactory.toAnnotatedType(dt);
+                List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
+                List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
+                for (AnnotatedTypeMirror t : tas) {
+                    // If the type argument of super is the same as the input type
+                    if (typeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
+                        t.addAnnotations(type.getAnnotations());
+                        newtas.add(t);
+                    }
+                }
+                adt.setTypeArguments(newtas);
                 supertypes.add(adt);
             }
-
             return supertypes;
         }
 
