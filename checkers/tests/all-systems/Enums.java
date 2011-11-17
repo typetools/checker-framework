@@ -1,3 +1,5 @@
+import checkers.nullness.quals.*;
+
 import java.lang.annotation.ElementType;
 
 class MyEnumSet<E extends Enum<E>> {}
@@ -20,6 +22,10 @@ class Enumeration {
   class Test<T extends Enum<T>> {
     void m(Class<T> p) {
       checkNotNull(p);
+    }
+
+    public <S> S firstNonNull(S first, S second) {
+        return first!=null ? first : checkNotNull(second);
     }
   }
 
