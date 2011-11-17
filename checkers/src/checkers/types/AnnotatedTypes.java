@@ -96,7 +96,7 @@ public class AnnotatedTypes {
                 return type;
             // Operate on the effective upper bound
             AnnotatedTypeMirror res = asSuper(type.getEffectiveUpperBound(), p);
-            if (!res.isAnnotated()) {
+            if (res!=null && !res.isAnnotated()) {
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
                 // Is there a better place for this?
@@ -916,30 +916,30 @@ public class AnnotatedTypes {
                 this.addAnnotations(lub, adts);
             }
         } else {
-            AnnotatedTypeMirror[] subtypes = new AnnotatedTypeMirror[types.length];
+            List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.length);
+
             for (int i = 0; i < types.length; ++i) {
                 AnnotatedTypeMirror type = types[i];
-
+                if (type == null) {
+                    continue;
+                }
                 if (type.getKind() == TypeKind.WILDCARD &&
                         ((AnnotatedWildcardType)type).getSuperBound() != null) {
                     type = ((AnnotatedWildcardType)type).getSuperBound();
                 }
-                if (type == null) {
-                    return;
-                }
                 if (type.getKind() == TypeKind.WILDCARD) {
-                    subtypes[i] = deepCopy(lub);
+                    subtypes.add(deepCopy(lub));
                 } else if (asSuper(type, lub) == null) {
-                    subtypes[i] = deepCopy(lub);
+                    subtypes.add(deepCopy(lub));
                 } else {
-                    subtypes[i] = asSuper(type, lub);
+                    subtypes.add(asSuper(type, lub));
                 }
             }
-            if (subtypes.length > 0) {
+            if (subtypes.size() > 0) {
                 lub.clearAnnotations();
             }
 
-            addAnnotations(lub, subtypes);
+            addAnnotations(lub, subtypes.toArray(new AnnotatedTypeMirror[0]));
         }
     }
 
