@@ -150,10 +150,13 @@ abstract class TypeFromTree extends
             trueType = f.atypes.asSuper(trueType, alub);
             falseType = f.atypes.asSuper(falseType, alub);
 
-            if (trueType.equals(falseType))
+            if (trueType!=null && trueType.equals(falseType))
                 return trueType;
 
-            f.atypes.annotateAsLub(alub, trueType, falseType);
+            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+            types.add(trueType);
+            types.add(falseType);
+            f.atypes.annotateAsLub(alub, types);
 
             return alub;
         }
