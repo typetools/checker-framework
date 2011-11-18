@@ -594,6 +594,8 @@ public abstract class AnnotatedTypeMirror {
                 sb.append(smpl);
             } else {
                 // The simple name is empty for multiple upper bounds.
+                // This check is similar to TypesUtils.isAnonymousType,
+                // but we need the partial result anyway.
                 // The upper bounds are stored in the supertypes field; see
                 // TypeFromTree.visitTypeParameter for initialization.
                 // TODO: Should multiple bounds be represented more directly?
@@ -694,6 +696,16 @@ public abstract class AnnotatedTypeMirror {
             // TODO: the overridden version directly returns the
             // result of directSuperTypes.
             return Collections.unmodifiableList(supertypes);
+        }
+
+        /*
+         * Return the direct super types field without lazy initialization,
+         * to prevent infinite recursion in IGJATF.postDirectSuperTypes.
+         * TODO: find a nicer way, see the single caller in QualifierDefaults
+         * for comment.
+         */
+        public List<AnnotatedDeclaredType> directSuperTypesField() {
+            return supertypes;
         }
 
         @Override
