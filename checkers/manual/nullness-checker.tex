@@ -426,6 +426,9 @@ command-line option.
   null pointer exception.  However, you might want to enable this warning
   because it is better code style to supply an explicit initializer, even
   if there is a default value such as \code{0} or \code{false}.
+  This command-line option does not affect the Nullness Checker's tests
+  that fields of \code{@\refclass{nullness/quals}{NonNull}} type are
+  initialized --- such initialization is mandatory, not optional.
 
 \end{enumerate}
 
