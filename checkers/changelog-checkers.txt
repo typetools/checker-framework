@@ -2,8 +2,13 @@ Version 1.2.4, x Nov 2011
 
 Nullness Checker:
 - Do not allow nullness annotations on primitive types.
-- Improvements to rawness and field initialization checks.
+- Improvements to rawness checks.
 - Special-case known keys for System.getProperty.
+- The -Alint=uninitialized command-line option now defaults to off, and
+  applies only to initialization of primitive and @Nullable fields.  It is
+  not possible to disable, from the command line, the check that all
+  @NonNull fields are initialized.  Such warnings must be suppressed
+  explicitly, for example by using @SuppressWarnings.
 
 Implementation details:
 - Add a new @InvisibleQualifier meta-annotation for type qualifiers.

@@ -292,7 +292,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     // Returns the uninitialized instance fields
-    private Set<VariableElement> getUninitializedFields(ClassTree classTree, List<? extends AnnotationMirror> annos) {
+    protected Set<VariableElement> getUninitializedFields(ClassTree classTree, List<? extends AnnotationMirror> annos) {
         Set<VariableElement> fields = new HashSet<VariableElement>();
 
         boolean check_all_fields
