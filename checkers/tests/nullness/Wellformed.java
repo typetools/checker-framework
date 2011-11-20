@@ -26,7 +26,7 @@ class Wellformed {
         @Nullable T get() { return null; }
     }
 
-    //:: warning: (fields.uninitialized)
+    //:: error: (fields.uninitialized)
     class Gen4<T extends @Nullable Object> {
         @NonNull T f;
         @NonNull T get() { throw new RuntimeException(); }
