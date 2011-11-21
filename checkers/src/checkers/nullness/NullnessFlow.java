@@ -5,10 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.DefaultFlow;
@@ -557,12 +554,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     @Override
-    protected void clearOnCall(ExecutableElement method) {
+    protected void clearOnCall(MethodTree enclMeth, ExecutableElement method) {
         if (debug != null) {
             debug.println("NullnessFlow::clearOnCall: " + method);
         }
 
-        super.clearOnCall(method);
+        super.clearOnCall(enclMeth, method);
 
         boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
@@ -589,6 +586,28 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 }
             }
         }
+    }
+
+    /**
+     * ClearOnCall calls this method to decide whether an annotation
+     * is already present on the variable definition.
+     * In constructors and raw methods, even if the variable is
+     * declared NONNULL, we must reset it.
+     */
+    @Override
+    protected boolean varDefHasAnnotation(MethodTree enclMeth,
+            AnnotationMirror annotation, Element var) {
+        if (AnnotationUtils.areSame(annotation, NONNULL)) {
+            if (TreeUtils.isConstructor(enclMeth)) {
+                return false;
+            }
+            Set<AnnotationMirror> recv = factory.getAnnotatedType(enclMeth).getReceiverType().getAnnotations();
+            // We cannot use AnnotationUtils.containsSame, b/c it's the wrong List class.
+            if (AnnotationUtils.containsSame(recv, RAW)) {
+                return false;
+            }
+        }
+        return super.varDefHasAnnotation(enclMeth, annotation, var);
     }
 
     @Override
