@@ -100,9 +100,6 @@ public class ControlFlowGraphDOTVisualizer {
 	 * @return String representation.
 	 */
 	protected static String visualizeContent(BasicBlock v) {
-		if (v instanceof ConditionalBasicBlock) {
-			return visualizeConditionalContent((ConditionalBasicBlock) v);
-		}
 		StringBuilder sb = new StringBuilder();
 		boolean b = false;
 		for (Node t : v.getContents()) {
@@ -110,7 +107,7 @@ public class ControlFlowGraphDOTVisualizer {
 				sb.append("\\n");
 			}
 			b = true;
-			sb.append(prepareString(t.toString()));
+			sb.append(prepareString(visualizeNode(t)));
 		}
 		if (sb.length() == 0) {
 			return "<empty>"; // the empty node
@@ -118,16 +115,13 @@ public class ControlFlowGraphDOTVisualizer {
 		return sb.toString();
 	}
 
-	/**
-	 * Produce a string representation of the contests of a conditional basic
-	 * block.
-	 * 
-	 * @param v
-	 *            Basic block to visualize.
-	 * @return String representation.
-	 */
-	protected static String visualizeConditionalContent(ConditionalBasicBlock v) {
-		return "if ("+prepareString(v.getCondition().toString())+")";
+	protected static String visualizeNode(Node t) {
+		return t.toString() + "   [ "+visualizeType(t)+" ]";
+	}
+
+	protected static String visualizeType(Node t) {
+		String name = t.getClass().getSimpleName();
+		return name.replace("Node", "");
 	}
 	
 	protected static String prepareString(String s) {

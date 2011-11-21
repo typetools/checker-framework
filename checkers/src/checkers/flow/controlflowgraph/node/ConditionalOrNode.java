@@ -1,34 +1,35 @@
 package checkers.flow.controlflowgraph.node;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree;
 
 /**
- * A node for an assignment. For example:
+ * A node for a conditional or expression. For example:
  * <pre>
- *   <em>variable</em> = <em>expression</em>
+ *   <em>expression</em> || <em>expression</em>
  * </pre>
  * 
  * @author Stefan Heule
  * 
  */
-public class AssignmentNode extends Node {
+public class ConditionalOrNode extends Node {
 
-	protected AssignmentTree tree;
+	protected BinaryTree tree;
 	protected Node lhs;
 	protected Node rhs;
 	
-	public AssignmentNode(AssignmentTree tree, Node target, Node expression) {
+	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs) {
 		this.tree = tree;
-		this.lhs = target;
-		this.rhs = expression;
+		this.lhs = lhs;
+		this.rhs = rhs;
 	}
 
-	public Node getTarget() {
+	public Node getLeftOperand() {
 		return lhs;
 	}
 	
-	public Node getExpression() {
+	public Node getRightOperand() {
 		return rhs;
 	}
 
@@ -36,23 +37,23 @@ public class AssignmentNode extends Node {
 	 * Guaranteed to return the same tree as {@link getTree}, but with a more
 	 * specific type.
 	 */
-	public AssignmentTree getAssignmentTree() {
+	public BinaryTree getBinaryTree() {
 		return tree;
 	}
 
 	@Override
 	public Tree getTree() {
-		return getAssignmentTree();
+		return getBinaryTree();
 	}
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitAssignment(this, p);
+		return visitor.visitConditionalOr(this, p);
 	}
 	
 	@Override
 	public String toString() {
-		return getTarget() + " = " + getExpression();
+		return "(" + getLeftOperand() + " || " + getRightOperand() + ")";
 	}
 
 }
