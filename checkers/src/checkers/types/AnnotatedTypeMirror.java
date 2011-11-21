@@ -302,19 +302,58 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Determines whether this type contains the given annotation.
+     * This method considers the annotation's values, that is,
+     * if the type is "@A("s") @B(3) Object" a call with
+     * "@A("t") or "@A" will return false, whereas a call with
+     * "@B(3)" will return true.
+     *
+     * In contrast to {@link #hasAnnotationRelaxed(AnnotationMirror)}
+     * this method also compares annotation values.
+     * 
+     * @param a the annotation to check for
+     * @return true iff the type contains the annotation {@code a}
+     * 
+     * @see #hasAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasAnnotation(AnnotationMirror a) {
+    	return AnnotationUtils.containsSame(getAnnotations(), a);
+    }
+
+    /**
+     * A version of hasAnnotation that considers annotations on the
+     * upper bound of wildcards and type variables.
+     * 
+     * @see #hasAnnotation(AnnotationMirror)
+     */
+    public boolean hasEffectiveAnnotation(AnnotationMirror a) {
+    	return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
+    }
+
+    /**
      * Determines whether this type contains an annotation with the same
      * annotation type as a particular annotation. This method does not
-     * consider an annotation's values.
+     * consider an annotation's values, that is,
+     * if the type is "@A("s") @B(3) Object" a call with
+     * "@A("t"), "@A", or "@B" will return true.
      *
      * @param a the annotation to check for
      * @return true iff the type contains an annotation with the same type as
      * the annotation given by {@code a}
+     * 
+     * @see #hasAnnotation(AnnotationMirror)
      */
-    public boolean hasAnnotation(AnnotationMirror a) {
+    public boolean hasAnnotationRelaxed(AnnotationMirror a) {
         return getAnnotations().contains(a);
     }
 
-    public boolean hasEffectiveAnnotation(AnnotationMirror a) {
+    /**
+     * A version of hasAnnotationRelaxed that considers annotations on the
+     * upper bound of wildcards and type variables.
+     * 
+     * @see #hasAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
         return getEffectiveAnnotations().contains(a);
     }
 
@@ -383,9 +422,11 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean removeAnnotation(AnnotationMirror a) {
         // Going from the AnnotationMirror to its name and then calling
-        // getAnnotation
-        // ensures that we get the canonical AnnotationMirror that can be
+        // getAnnotation ensures that we get the canonical AnnotationMirror that can be
         // removed.
+    	// TODO: however, this also means that if we are annotated with "@I(1)" and
+    	// remove "@I(2)" it will be removed. Is this what we want?
+    	// It's currently necessary for the IGJ and Lock Checkers.
         return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
     }
 
