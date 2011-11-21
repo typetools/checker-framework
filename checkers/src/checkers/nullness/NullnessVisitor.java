@@ -44,7 +44,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
+    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE, RAW;
     private final TypeMirror stringType;
 
     /**
@@ -58,6 +58,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
         PRIMITIVE = checker.PRIMITIVE;
+        RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -418,12 +419,29 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         if (TreeUtils.isSelfAccess(node)) {
-            // It's OK to call 'this' when all fields are initialized
-            if (nonInitializedFields != null
-                    && nonInitializedFields.first.isEmpty()
-                    && nonInitializedFields.second.isEmpty())
-                // ***** shouldn't we return "false" if not all fields are initialized, rather than delegating to the superclass?
-                return true;
+            // An alternate approach would be to let the rawness checker
+            // issue the warning, but the approach taken here gives, in the
+            // error message, an explicit list of the fields that have been
+            // initialized so far.
+
+            Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = ((NullnessAnnotatedTypeFactory)atypeFactory).rawnessFactory.methodFromUse(node);
+            AnnotatedExecutableType invokedMethod = mfuPair.first;
+            List<AnnotatedTypeMirror> typeargs = mfuPair.second;
+            if (! invokedMethod.getReceiverType().hasAnnotation(RAW)) {
+                if (nonInitializedFields != null) {
+                    if (! nonInitializedFields.first.isEmpty()) {
+                        checker.report(Result.failure("method.invocation.invalid.rawness",
+                                                      TreeUtils.elementFromUse(node),
+                                                      nonInitializedFields.first), node);
+                        return false;
+                    } else if (! nonInitializedFields.second.isEmpty()) {
+                        checker.report(Result.warning("method.invocation.invalid.rawness",
+                                                      TreeUtils.elementFromUse(node),
+                                                      nonInitializedFields.second), node);
+                        return false;
+                    }
+                }
+            }
         } else {
             // Claim that methods with a @NonNull receiver are invokable so that
             // visitMemberSelect issues dereference errors instead.
