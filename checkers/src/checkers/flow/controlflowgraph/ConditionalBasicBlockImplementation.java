@@ -5,8 +5,6 @@ import java.util.Set;
 
 import checkers.flow.controlflowgraph.node.Node;
 
-import com.sun.source.tree.ExpressionTree;
-
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
  * block in a control flow graph that has a condition of an if statement as
@@ -40,6 +38,7 @@ public class ConditionalBasicBlockImplementation extends
 
 	/**
 	 * Set the condition.
+	 * TODO: remove if not needed
 	 */
 	void setCondition(Node c) {
 		condition = c;
@@ -67,23 +66,15 @@ public class ConditionalBasicBlockImplementation extends
 	}
 
 	/**
-	 * For {@link ConditionalBasicBlock}, use setThenSuccessor, setElseSuccessor
-	 * or addExceptionalSuccessor instead.
+	 * Sets both the then and else successor of this node to
+	 * <code>successor</code>
 	 */
 	@Override
 	void addSuccessor(BasicBlock successor) {
-		assert false : "setThenSuccessor, setElseSuccessor or addExceptionalSuccessor"
-				+ " should be used instead of addSuccessor.";
+		setThenSuccessor(successor);
+		setElseSuccessor(successor);
 	}
 
-	/**
-	 * For {@link ConditionalBasicBlock}, use setCondition instead.
-	 */
-	@Override
-	void addStatement(Node t) {
-		assert false : "setCondition should be used instead of addStatement.";
-	}
-	
 	@Override
 	public Set<BasicBlock> getSuccessors() {
 		Set<BasicBlock> r = new HashSet<BasicBlock>();

@@ -28,8 +28,14 @@ public class IdentifierNode extends Node {
 	}
 
 	@Override
+	public
 	<R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitIdentifier(this, p);
+	}
+	
+	@Override
+	public String toString() {
+		return getName().toString();
 	}
 
 }

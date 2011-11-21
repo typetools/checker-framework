@@ -4,12 +4,12 @@ package checkers.flow.controlflowgraph.node;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
-public class IntegerLiteralNode extends Node {
+public class BooleanLiteralNode extends Node {
 	
 	protected LiteralTree tree;
 	
-	public IntegerLiteralNode(LiteralTree t) {
-		assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+	public BooleanLiteralNode(LiteralTree t) {
+		assert t.getKind().equals(Tree.Kind.BOOLEAN_LITERAL);
 		tree = t;
 	}
 	
@@ -17,8 +17,8 @@ public class IntegerLiteralNode extends Node {
 		return tree;
 	}
 	
-	public int getValue() {
-		return (Integer)tree.getValue();
+	public boolean getValue() {
+		return (Boolean)tree.getValue();
 	}
 
 	@Override
@@ -29,12 +29,12 @@ public class IntegerLiteralNode extends Node {
 	@Override
 	public
 	<R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitIntegerLiteral(this, p);
+		return visitor.visitBooleanLiteral(this, p);
 	}
 	
 	@Override
 	public String toString() {
-		return Integer.toString(getValue());
+		return Boolean.toString(getValue());
 	}
 
 }
