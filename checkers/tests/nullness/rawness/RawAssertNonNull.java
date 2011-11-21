@@ -48,6 +48,25 @@ class RawAssertNonNull {
         }
     }
 
+    class Test1d {
+        private Object f;
+        private Object g;
+
+        Test1d() {
+            m();
+            // If one has some additional information that the type system hasn't
+            // one can suppress the error from Test1c using an assertion,
+            // which is nicer than suppressing the warning.
+            assert this.g!=null : "nullness assumption";
+        }
+
+        @AssertNonNullAfter({"f"})
+        private void m() @Raw {
+            this.f = new Object();
+            this.g = new Object();
+        }
+    }
+
     class Test2 {
         private List<String> f;
         private List<String> g;
