@@ -1,5 +1,13 @@
 package checkers.flow.controlflowgraph;
 
+import checkers.flow.controlflowgraph.node.AssignmentNode;
+import checkers.flow.controlflowgraph.node.BooleanLiteralNode;
+import checkers.flow.controlflowgraph.node.ConditionalOrNode;
+import checkers.flow.controlflowgraph.node.IdentifierNode;
+import checkers.flow.controlflowgraph.node.IntegerLiteralNode;
+import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.controlflowgraph.node.NodeUtils;
+
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -75,10 +83,21 @@ public class CFGBuilder {
 	 * hide implementation details and keep the interface of {@link CFGBuilder}
 	 * clean.
 	 * 
+	 * <p>
+	 * 
+	 * The return type of this visitor is {@link Node}. For expressions, the
+	 * corresponding node is returned to allow linking between different nodes.
+	 * For instance, in visitAssignment, we can run the visitor on the left and
+	 * right hand side and store the result as target and expression in the
+	 * newly created {@link AssignmentNode}.
+	 * 
+	 * However, for statements there is usually no single {@link Node} that is
+	 * created, and thus no node is returned (rather, null is returned).
+	 * 
 	 * @author Stefan Heule
 	 * 
 	 */
-	protected class CFGHelper implements TreeVisitor<Void, Void> {
+	protected class CFGHelper implements TreeVisitor<Node, Void> {
 
 		/** The basic block that is currently being filled with contents. */
 		protected BasicBlockImplementation currentBlock;
@@ -98,175 +117,229 @@ public class CFGBuilder {
 			return startBlock;
 		}
 
+		/**
+		 * Add a node to the current basic block, automatically deciding whether
+		 * it has to be a {@link ConditionalBasicBlock}.
+		 * 
+		 * @param node
+		 *            The node to add.
+		 * @return The same node (for convenience).
+		 */
+		protected Node addToCurrentBlock(Node node) {
+			if (NodeUtils.isBooleanTypeNode(node)) {
+				ConditionalBasicBlockImplementation cb = new ConditionalBasicBlockImplementation();
+				cb.addStatement(node);
+				currentBlock.addSuccessor(cb);
+				currentBlock = cb;
+			} else {
+				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
+					// a basic block only contains a single boolean expression,
+					// therefore we create a new basic block here
+					BasicBlockImplementation bb = new BasicBlockImplementation();
+					bb.addStatement(node);
+					currentBlock.addSuccessor(bb);
+					currentBlock = bb;
+				} else {
+					currentBlock.addStatement(node);
+				}
+			}
+			return node;
+		}
+
+		/**
+		 * @return The current basic block as conditional basic block (only
+		 *         applicable if {@link currentBlock} is a conditional basic
+		 *         block.
+		 */
+		protected ConditionalBasicBlockImplementation getCurrentConditionalBasicBlock() {
+			assert currentBlock instanceof ConditionalBasicBlockImplementation;
+			return (ConditionalBasicBlockImplementation) currentBlock;
+		}
+
 		@Override
-		public Void visitAnnotatedType(AnnotatedTypeTree node, Void p) {
+		public Node visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitAnnotation(AnnotationTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitMethodInvocation(MethodInvocationTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitAnnotation(AnnotationTree node, Void p) {
+		public Node visitAssert(AssertTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+		public Node visitAssignment(AssignmentTree tree, Void p) {
+			Node expression = tree.getExpression().accept(this, p);
+			Node target = tree.getVariable().accept(this, p);
+			AssignmentNode assignmentNode = new AssignmentNode(tree, target,
+					expression);
+			addToCurrentBlock(assignmentNode);
+			return expression;
+		}
+
+		@Override
+		public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitAssert(AssertTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
+		public Node visitBinary(BinaryTree tree, Void p) {
+			// TODO: remaining binary node types
+			Node r = null;
+			switch (tree.getKind()) {
+			case CONDITIONAL_OR:
+				Node left = tree.getLeftOperand().accept(this, p);
+				ConditionalBasicBlockImplementation lhsBB = getCurrentConditionalBasicBlock();
+				Node right = tree.getRightOperand().accept(this, p);
+				lhsBB.setElseSuccessor(currentBlock);
+				r = new ConditionalOrNode(tree, left, right);
+				addToCurrentBlock(r);
+				lhsBB.setThenSuccessor(currentBlock);
+				return r;
+			}
+			assert r != null : "unexpected binary tree";
+			return addToCurrentBlock(r);
 		}
 
 		@Override
-		public Void visitAssignment(AssignmentTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitBinary(BinaryTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitBlock(BlockTree node, Void p) {
-			for (StatementTree n : node.getStatements()) {
+		public Node visitBlock(BlockTree tree, Void p) {
+			for (StatementTree n : tree.getStatements()) {
 				n.accept(this, null);
 			}
 			return null;
 		}
 
 		@Override
-		public Void visitBreak(BreakTree node, Void p) {
+		public Node visitBreak(BreakTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitCase(CaseTree node, Void p) {
+		public Node visitCase(CaseTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitCatch(CatchTree node, Void p) {
+		public Node visitCatch(CatchTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitClass(ClassTree node, Void p) {
-			// TODO Auto-generated method stub
+		public Node visitClass(ClassTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
 			return null;
 		}
 
 		@Override
-		public Void visitConditionalExpression(ConditionalExpressionTree node,
+		public Node visitConditionalExpression(ConditionalExpressionTree tree,
 				Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitContinue(ContinueTree node, Void p) {
+		public Node visitContinue(ContinueTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+		public Node visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitErroneous(ErroneousTree node, Void p) {
-			// TODO Auto-generated method stub
+		public Node visitErroneous(ErroneousTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
 			return null;
 		}
 
 		@Override
-		public Void visitExpressionStatement(ExpressionStatementTree node,
+		public Node visitExpressionStatement(ExpressionStatementTree tree,
 				Void p) {
-			return node.accept(this, p);
+			return tree.getExpression().accept(this, p);
 		}
 
 		@Override
-		public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+		public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitForLoop(ForLoopTree node, Void p) {
-			/*BasicBlockImplementation initBlock = new BasicBlockImplementation();
-			ConditionalBasicBlockImplementation conditionBlock = new ConditionalBasicBlockImplementation();
-			BasicBlockImplementation afterBlock = new BasicBlockImplementation();
-			BasicBlockImplementation loopBodyBlock = new BasicBlockImplementation();
-
-			initBlock.addStatements(node.getInitializer());
-
-			conditionBlock.setCondition(node.getCondition());
-
-			// visit the initialization statements
-			for (StatementTree t : node.getInitializer()) {
-				t.accept(this, null);
-			}
-
-			currentBlock.addSuccessor(conditionBlock);
-			conditionBlock.setThenSuccessor(loopBodyBlock);
-			conditionBlock.setElseSuccessor(afterBlock);
-
-			currentBlock = loopBodyBlock;
-			node.getStatement().accept(this, null);
-			for (StatementTree t : node.getUpdate()) {
-				t.accept(this, null);
-			}
-			currentBlock.addSuccessor(conditionBlock);
-
-			currentBlock = afterBlock;*/
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitIdentifier(IdentifierTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitIf(IfTree node, Void p) {
+		public Node visitForLoop(ForLoopTree tree, Void p) {
 			/*
+			 * BasicBlockImplementation initBlock = new
+			 * BasicBlockImplementation(); ConditionalBasicBlockImplementation
+			 * conditionBlock = new ConditionalBasicBlockImplementation();
+			 * BasicBlockImplementation afterBlock = new
+			 * BasicBlockImplementation(); BasicBlockImplementation
+			 * loopBodyBlock = new BasicBlockImplementation();
+			 * 
+			 * initBlock.addStatements(tree.getInitializer());
+			 * 
+			 * conditionBlock.setCondition(tree.getCondition());
+			 * 
+			 * // visit the initialization statements for (StatementTree t :
+			 * tree.getInitializer()) { t.accept(this, null); }
+			 * 
+			 * currentBlock.addSuccessor(conditionBlock);
+			 * conditionBlock.setThenSuccessor(loopBodyBlock);
+			 * conditionBlock.setElseSuccessor(afterBlock);
+			 * 
+			 * currentBlock = loopBodyBlock; tree.getStatement().accept(this,
+			 * null); for (StatementTree t : tree.getUpdate()) { t.accept(this,
+			 * null); } currentBlock.addSuccessor(conditionBlock);
+			 * 
+			 * currentBlock = afterBlock;
+			 */
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Node visitIdentifier(IdentifierTree tree, Void p) {
+			return addToCurrentBlock(new IdentifierNode(tree));
+		}
+
+		@Override
+		public Node visitIf(IfTree tree, Void p) {
+
 			// TODO exceptions
 			BasicBlockImplementation afterIfBlock = new BasicBlockImplementation();
 
 			// basic block for the condition
-			ConditionalBasicBlockImplementation conditionalBlock = new ConditionalBasicBlockImplementation();
-			conditionalBlock.setCondition(node.getCondition());
-			currentBlock.addSuccessor(conditionalBlock);
+			tree.getCondition().accept(this, null);
+			assert currentBlock instanceof ConditionalBasicBlockImplementation;
+			ConditionalBasicBlockImplementation conditionalBlock = (ConditionalBasicBlockImplementation) currentBlock;
 
 			// then branch
 			currentBlock = new BasicBlockImplementation();
 			conditionalBlock.setThenSuccessor(currentBlock);
-			StatementTree thenStatement = node.getThenStatement();
+			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
 			currentBlock.addSuccessor(afterIfBlock);
 
 			// else branch
-			StatementTree elseStatement = node.getElseStatement();
+			StatementTree elseStatement = tree.getElseStatement();
 			if (elseStatement != null) {
 				currentBlock = new BasicBlockImplementation();
 				conditionalBlock.setElseSuccessor(currentBlock);
@@ -277,184 +350,189 @@ public class CFGBuilder {
 			}
 
 			currentBlock = afterIfBlock;
-			*/
+			return null;
+		}
+
+		@Override
+		public Node visitImport(ImportTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitImport(ImportTree node, Void p) {
+		public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+		public Node visitLiteral(LiteralTree tree, Void p) {
+			// TODO: remaining literals
+			Node r = null;
+			switch (tree.getKind()) {
+			case INT_LITERAL:
+				r = new IntegerLiteralNode(tree);
+				break;
+			case BOOLEAN_LITERAL:
+				r = new BooleanLiteralNode(tree);
+				break;
+			}
+			assert r != null : "unexpected literal tree";
+			return addToCurrentBlock(r);
+		}
+
+		@Override
+		public Node visitMethod(MethodTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitModifiers(ModifiersTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitNewArray(NewArrayTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitLabeledStatement(LabeledStatementTree node, Void p) {
+		public Node visitNewClass(NewClassTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitLiteral(LiteralTree node, Void p) {
+		public Node visitParenthesized(ParenthesizedTree tree, Void p) {
+			return tree.getExpression().accept(this, p);
+		}
+
+		@Override
+		public Node visitReturn(ReturnTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitMethod(MethodTree node, Void p) {
+		public Node visitMemberSelect(MemberSelectTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitModifiers(ModifiersTree node, Void p) {
+		public Node visitEmptyStatement(EmptyStatementTree tree, Void p) {
+			return null;
+		}
+
+		@Override
+		public Node visitSwitch(SwitchTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitNewArray(NewArrayTree node, Void p) {
+		public Node visitSynchronized(SynchronizedTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitNewClass(NewClassTree node, Void p) {
+		public Node visitThrow(ThrowTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitParenthesized(ParenthesizedTree node, Void p) {
+		public Node visitCompilationUnit(CompilationUnitTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitTry(TryTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitReturn(ReturnTree node, Void p) {
+		public Node visitParameterizedType(ParameterizedTypeTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitUnionType(UnionTypeTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitArrayType(ArrayTypeTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitTypeCast(TypeCastTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitMemberSelect(MemberSelectTree node, Void p) {
+		public Node visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitTypeParameter(TypeParameterTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
+			return null;
+		}
+
+		@Override
+		public Node visitInstanceOf(InstanceOfTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitEmptyStatement(EmptyStatementTree node, Void p) {
+		public Node visitUnary(UnaryTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitSwitch(SwitchTree node, Void p) {
+		public Node visitVariable(VariableTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitSynchronized(SynchronizedTree node, Void p) {
+		public Node visitWhileLoop(WhileLoopTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Void visitThrow(ThrowTree node, Void p) {
-			// TODO Auto-generated method stub
+		public Node visitWildcard(WildcardTree tree, Void p) {
+			assert false : "WildcardTree is unexpected in AST to CFG translation";
 			return null;
 		}
 
 		@Override
-		public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
-			// TODO Auto-generated method stub
+		public Node visitOther(Tree tree, Void p) {
+			assert false : "Unknown AST element encountered in AST to CFG translation.";
 			return null;
-		}
-
-		@Override
-		public Void visitTry(TryTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitUnionType(UnionTypeTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitArrayType(ArrayTypeTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitTypeCast(TypeCastTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitPrimitiveType(PrimitiveTypeTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitTypeParameter(TypeParameterTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitInstanceOf(InstanceOfTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitUnary(UnaryTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitVariable(VariableTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitWhileLoop(WhileLoopTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitWildcard(WildcardTree node, Void p) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Void visitOther(Tree node, Void p) {
-			// TODO better handling
-			throw new RuntimeException(
-					"Unknown AST element encountered in AST to CFG translation.");
 		}
 
 	}

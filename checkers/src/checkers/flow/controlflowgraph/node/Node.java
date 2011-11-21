@@ -25,6 +25,6 @@ public abstract class Node {
 	 * @param p
 	 *            The parameter for this operation.
 	 */
-	abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
+	public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
 }
