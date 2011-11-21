@@ -286,7 +286,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 
-                if (!hasImmutabilityAnnotation(ct) || ct.hasEffectiveAnnotation(I)) {
+                if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotationRelaxed(I)) {
                     AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
                     if (con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
                         p.addAnnotation(IMMUTABLE);
@@ -341,7 +341,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         if (methodReceiver.hasEffectiveAnnotation(MUTABLE) ||
                 methodReceiver.hasEffectiveAnnotation(IMMUTABLE)) {
             return methodReceiver;
-        } else if (act.hasEffectiveAnnotation(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
+        } else if (act.hasAnnotationRelaxed(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
             if (methodReceiver.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                 act.addAnnotation(ASSIGNS_FIELDS);
             return act;
@@ -416,7 +416,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         new AnnotatedTypeScanner<Void, Void>() {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-                if (type.hasEffectiveAnnotation(I)) {
+                if (type.hasAnnotationRelaxed(I)) {
                     AnnotationMirror anno =
                         type.getAnnotation(I.class.getCanonicalName());
                     if (!mapping.containsValue(anno)) {
@@ -480,7 +480,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type,
                 Map<String, AnnotationMirror> p) {
-            if (type.hasEffectiveAnnotation(I)) {
+            if (type.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY);
@@ -568,7 +568,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (dcType.hasEffectiveAnnotation(I)) {
+            if (dcType.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
@@ -611,7 +611,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (arType.hasEffectiveAnnotation(I)) {
+            if (arType.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
                             IMMUTABILITY_KEY);
@@ -696,7 +696,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         // @I and @AssignsFields annotate the type of 'this' together
         // this one ensures that it returns @I
         //
-        if (type.hasEffectiveAnnotation(I))
+        if (type.hasAnnotationRelaxed(I))
             return type.getAnnotation(I.class.getCanonicalName());
         if (hasImmutabilityAnnotation(type)) {
             return type.getAnnotations().iterator().next();
