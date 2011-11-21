@@ -15,10 +15,7 @@ import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 
 /**
  * The default implementation of the flow-sensitive type inference.
@@ -194,17 +191,20 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     }
 
     @Override
-    protected void clearOnCall(ExecutableElement method) {
+    protected void clearOnCall(MethodTree enclMeth, ExecutableElement method) {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
         boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
-        for (int i = 0; i < this.flowState.vars.size(); i++) {
-            Element var = this.flowState.vars.get(i);
-            for (AnnotationMirror a : this.flowState.annotations)
-                if (!isJDKMethod && isNonFinalField(var)
-                        && !varDefHasAnnotation(a, var) && !isPure)
-                    flowState.annos.clear(a, i);
+        if (!isPure) {
+            for (int i = 0; i < this.flowState.vars.size(); i++) {
+                Element var = this.flowState.vars.get(i);
+                for (AnnotationMirror a : this.flowState.annotations)
+                    if (!isJDKMethod && isNonFinalField(var)
+                            && !varDefHasAnnotation(enclMeth, a, var)) {
+                        flowState.annos.clear(a, i);
+                    }
+            }
         }
     }
 
