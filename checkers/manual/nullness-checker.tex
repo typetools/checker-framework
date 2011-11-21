@@ -746,7 +746,7 @@ The rawness hierarchy contains these qualifiers:
 \begin{description}
 
 \item[\code{@\refclass{nullness/quals}{Raw}}]
-  indicates a type that contains a partially-initialized object.  In a
+  indicates a type that may contain a partially-initialized object.  In a
   partially-initialized object, fields that are annotated as
   \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
   has not yet been assigned.  Within the constructor,
