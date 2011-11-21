@@ -832,7 +832,7 @@ implements Flow {
                 && method.getEnclosingElement().getSimpleName().contentEquals("System"))
             alive = false;
 
-        this.clearOnCall(method);
+        this.clearOnCall(TreeUtils.enclosingMethod(getCurrentPath()), method);
 
         List<? extends TypeMirror> thrown = method.getThrownTypes();
         if (!thrown.isEmpty()
@@ -849,10 +849,11 @@ implements Flow {
     /**
      * Clear whatever part of the state that gets invalidated by
      * invoking the method.
-     *
+     * 
+     * @param enclMeth The method within which "method" is called. 
      * @param method The invoked method.
      */
-    protected abstract void clearOnCall(ExecutableElement method);
+    protected abstract void clearOnCall(MethodTree enclMeth, ExecutableElement method);
 
     @Override
     public Void visitBlock(BlockTree node, Void p) {
@@ -908,12 +909,13 @@ implements Flow {
     /**
      * Determines whether a variable definition has been annotated.
      *
+     * @param enclMeth the method within which the check happens
      * @param annotation the annotation to check for
      * @param var the variable to check
      * @return true if the variable has the given annotation, false otherwise
      */
-    protected boolean varDefHasAnnotation(AnnotationMirror annotation, Element var) {
-
+    protected boolean varDefHasAnnotation(MethodTree enclMeth,
+            AnnotationMirror annotation, Element var) {
         if (annotatedVarDefs.containsKey(var))
             return annotatedVarDefs.get(var);
 

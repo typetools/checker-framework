@@ -365,7 +365,7 @@ public class AnnotationUtils {
         extends AbstractAnnotationValueParser<R> {
 
         private R value = null;
-        private Class<R> enumType;
+        private final Class<R> enumType;
 
         public EnumConstantValueParser(Class<R> enumType) {
             this.enumType = enumType;
@@ -392,8 +392,8 @@ public class AnnotationUtils {
     private static class EnumConstantArrayValueParser<R extends Enum<R>>
         extends AbstractAnnotationValueParser<Set<R>> {
 
-        private Set<R> values = new HashSet<R>();
-        private Class<R> enumType;
+        private final Set<R> values = new HashSet<R>();
+        private final Class<R> enumType;
 
         public EnumConstantArrayValueParser(Class<R> enumType) {
             this.enumType = enumType;
@@ -568,6 +568,22 @@ public class AnnotationUtils {
                 return false;
         }
         return true;
+    }
+
+    /**
+     * Checks that the collection contains the annotation.
+     * Using Collection.contains does not always work, because it
+     * does not use areSame for comparison.
+     *
+     * @return true iff c contains anno, according to areSame.
+     */
+    public static boolean containsSame(Collection<AnnotationMirror> c, AnnotationMirror anno) {
+        for(AnnotationMirror an : c) {
+            if(AnnotationUtils.areSame(an, anno)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING
