@@ -62,7 +62,7 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public native boolean isPrimitive();
   @AssertNonNullIfTrue("getComponentType()")
   public native @Pure boolean isArray();
-  public native boolean isAssignableFrom(Class<?> cls);
+  public native boolean isAssignableFrom(Class<? extends @Nullable Object> cls);
   public native boolean isInterface();
   public native int getModifiers();
 }
