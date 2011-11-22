@@ -66,7 +66,10 @@ public class NullnessSubchecker extends BaseTypeChecker {
              // check whether the element contained a type annotation.
              // Note that non-type annotations, e.g. SuppressWarnings, might
              // be present on the element.
-             AnnotatedTypes.containsTypeAnnotation(type.getElement().getAnnotationMirrors()))) {
+             // The element is null if the primitive type is an array component ->
+             // always a reason to warn.
+             (type.getElement()==null ||
+             AnnotatedTypes.containsTypeAnnotation(type.getElement().getAnnotationMirrors())))) {
             return false;
         }
         return super.isValidUse(type);
