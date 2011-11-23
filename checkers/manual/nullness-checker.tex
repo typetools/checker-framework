@@ -7,9 +7,95 @@ guarantee enables a programmer to prevent errors from occurring when a
 program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
+The most important annotations supported by the Nullness Checker are 
+\code{@\refclass{nullness/quals}{NonNull}} and 
+\code{@\refclass{nullness/quals}{Nullable}}.
+\code{@\refclass{nullness/quals}{NonNull}} is rarely written, because it is
+the default.  All of the annotations are explained in
+Section~\ref{nullness-annotations}.
+
 To run the Nullness Checker, supply the \code{-processor
   checkers.nullness.NullnessChecker} command-line option to javac.  For
 examples, see Section~\ref{nullness-example}.
+
+
+\section{What the Nullness checker checks\label{nullness-checks}}
+
+The checker issues a warning in these cases:
+
+\begin{enumerate}
+
+\item
+  When an expression of non-\code{@\refclass{nullness/quals}{NonNull}} type
+  is dereferenced, because it might cause a null pointer exception.
+  Dereferences occur not only when a field is accessed, but when an array
+  is indexed, an exception is thrown, a lock is taken in a synchronized
+  block, and more.  For a complete description of all checks performed by
+  the Nullness checker, see the Javadoc for
+  \refclass{nullness}{NullnessVisitor}.
+
+\item
+  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type
+  might become null, because it
+  is a misuse of the type:  the null value could flow to a dereference that
+  the checker does not warn about.
+
+  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
+  type becoming null, the checker also warns whenever a field of
+  \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
+  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
+  command-line option below.
+
+\end{enumerate}
+
+This example illustrates the programming errors that the checker detects:
+
+\begin{Verbatim}
+  @Nullable Object   obj;  // might be null
+  @NonNull  Object nnobj;  // never null
+  ...
+  obj.toString()         // checker warning:  dereference might cause null pointer exception
+  nnobj = obj;           // checker warning:  nnobj may become null
+  if (nnobj == null)     // checker warning:  redundant test
+\end{Verbatim}
+
+Parameter passing and return values are checked analogously to assignments.
+
+The Nullness Checker also checks the correctness, and correct use, of
+rawness annotations for checking initialization (see
+Section~\ref{raw-partially-initialized}) and of map key annotations (see
+Section~\ref{map-keys}).
+
+
+The checker performs additional checks if certain \code{-Alint}
+command-line options are provided.  (See
+Section~\ref{alint} for more details about the \code{-Alint}
+command-line option.)
+
+\begin{enumerate}
+\item
+  \label{lint-nulltest}%
+  If you supply the \code{-Alint=nulltest} command-line option, then the
+  checker warns when a null check is performed against a value that is
+  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
+  unnecessary and might indicate a programmer error or misunderstanding.
+  The lint option is disabled by default because sometimes such checks are
+  part of ordinary defensive programming.  
+
+\item
+  \label{lint-uninitialized}%
+  If you supply the \code{-Alint=uninitialized} command-line option, then
+  the checker warns if a constructor fails to initialize any field,
+  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
+  types.  Such a warning is unrelated to whether your code might throw a
+  null pointer exception.  However, you might want to enable this warning
+  because it is better code style to supply an explicit initializer, even
+  if there is a default value such as \code{0} or \code{false}.
+  This command-line option does not affect the Nullness Checker's tests
+  that fields of \code{@\refclass{nullness/quals}{NonNull}} type are
+  initialized --- such initialization is mandatory, not optional.
+
+\end{enumerate}
 
 
 \section{Nullness annotations\label{nullness-annotations}}
@@ -352,85 +438,6 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \end{itemize}
 
 \end{itemize}
-
-
-
-\section{What the Nullness checker checks\label{nullness-checks}}
-
-The checker issues a warning in these cases:
-
-\begin{enumerate}
-
-\item
-  When an expression of non-\code{@\refclass{nullness/quals}{NonNull}} type
-  is dereferenced, because it might cause a null pointer exception.
-  Dereferences occur not only when a field is accessed, but when an array
-  is indexed, an exception is thrown, a lock is taken in a synchronized
-  block, and more.  For a complete description of all checks performed by
-  the Nullness checker, see the Javadoc for
-  \refclass{nullness}{NullnessVisitor}.
-
-\item
-  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type
-  might become null, because it
-  is a misuse of the type:  the null value could flow to a dereference that
-  the checker does not warn about.
-
-  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
-  type becoming null, the checker also warns whenever a field of
-  \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
-  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
-  command-line option below.
-
-\end{enumerate}
-
-This example illustrates the programming errors that the checker detects:
-
-\begin{Verbatim}
-  @Nullable Object   obj;  // might be null
-  @NonNull  Object nnobj;  // never null
-  ...
-  obj.toString()         // checker warning:  dereference might cause null pointer exception
-  nnobj = obj;           // checker warning:  nnobj may become null
-  if (nnobj == null)     // checker warning:  redundant test
-\end{Verbatim}
-
-Parameter passing and return values are checked analogously to assignments.
-
-The Nullness Checker also checks the correctness, and correct use, of
-rawness annotations for checking initialization (see
-Section~\ref{raw-partially-initialized}) and of map key annotations (see
-Section~\ref{map-keys}).
-
-
-The checker can perform additional checks if desired.  See
-Section~\ref{suppressing-warnings} for more details about the \code{-Alint}
-command-line option.
-
-\begin{enumerate}
-\item
-  \label{lint-nulltest}%
-  If you supply the \code{-Alint=nulltest} command-line option, then the
-  checker warns when a null check is performed against a value that is
-  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
-  unnecessary and might indicate a programmer error or misunderstanding.
-  The lint option is disabled by default because sometimes such checks are
-  part of ordinary defensive programming.  
-
-\item
-  \label{lint-uninitialized}%
-  If you supply the \code{-Alint=uninitialized} command-line option, then
-  the checker warns if a constructor fails to initialize any field,
-  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
-  types.  Such a warning is unrelated to whether your code might throw a
-  null pointer exception.  However, you might want to enable this warning
-  because it is better code style to supply an explicit initializer, even
-  if there is a default value such as \code{0} or \code{false}.
-  This command-line option does not affect the Nullness Checker's tests
-  that fields of \code{@\refclass{nullness/quals}{NonNull}} type are
-  initialized --- such initialization is mandatory, not optional.
-
-\end{enumerate}
 
 
 
