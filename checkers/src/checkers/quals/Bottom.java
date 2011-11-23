@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
  * This qualifier is only used if the existing qualifiers do not have a
  * bottom type.
  * 
- * @see checkers.types.QualifierHierarchy#getBottomQualifier()
- * @see checkers.util.GraphQualifierHierarchy.Factory#setBottomQualifier(javax.lang.model.element.AnnotationMirror)
+ * @see checkers.types.QualifierHierarchy#getBottomAnnotations()
  *
  * <p>
  * Programmers cannot write this in source code.
