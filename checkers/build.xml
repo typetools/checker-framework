@@ -273,7 +273,7 @@ ${build.version} of the 'javac.jar' library."/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jar,jdk.jar,build-tests"
+    <target name="all-tests" depends="jar,jdk.jar,build-tests,nullness-extra-tests"
       description="Run tests for all checkers">
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
