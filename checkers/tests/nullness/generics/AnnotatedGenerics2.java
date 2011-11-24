@@ -9,7 +9,7 @@ class AnnotatedGenerics2Nble<T extends @Nullable Object> {
     @Nullable T myFieldNble;
     T myFieldT;
 
-    /* TODO: This test case get's affected by flow inference.
+    /* TODO: This test case gets affected by flow inference.
      * Investigate what the desired behavior is later.
     void fields() {
         myFieldNN = myFieldNN;
@@ -76,7 +76,7 @@ class AnnotatedGenerics2NN<T extends @NonNull Object> {
     @Nullable T myFieldNble;
     T myFieldT;
 
-    /* TODO: This test case get's affected by flow inference.
+    /* TODO: This test case gets affected by flow inference.
      * Investigate what the desired behavior is later.
     void fields() {
         myFieldNN = myFieldNN;
