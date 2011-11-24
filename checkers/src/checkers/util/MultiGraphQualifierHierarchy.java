@@ -330,7 +330,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     /**
      * Infer the bottoms of the subtype hierarchy.  Simple finds the qualifiers
-     * are not supertypesMap of other qualifiers.
+     * that are not supertypes of other qualifiers.
      *
      * @param ignore
      *      a qualifier that cannot be a bottom candidate, like polymorphic
