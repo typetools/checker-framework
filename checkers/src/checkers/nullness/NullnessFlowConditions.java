@@ -352,11 +352,11 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             } else {
                 AnnotatedTypeMirror leftType = typefactory.getAnnotatedType(left);
                 AnnotatedTypeMirror rightType = typefactory.getAnnotatedType(right);
-                if (leftType.hasEffectiveAnnotation(typefactory.NONNULL)
-                        && !rightType.hasEffectiveAnnotation(typefactory.NONNULL))
+                if (leftType.hasAnnotation(typefactory.NONNULL)
+                        && !rightType.hasAnnotation(typefactory.NONNULL))
                     mark(var(right), true);
-                if (rightType.hasEffectiveAnnotation(typefactory.NONNULL)
-                        && !leftType.hasEffectiveAnnotation(typefactory.NONNULL))
+                if (rightType.hasAnnotation(typefactory.NONNULL)
+                        && !leftType.hasAnnotation(typefactory.NONNULL))
                     mark(var(left), true);
             }
 
