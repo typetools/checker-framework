@@ -358,14 +358,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // Only print something if there is a message attached.
             // If there is no additional message, the error was already output earlier.
             // TODO: should we always attach a message instead of printing it in errorAbort?
-            if (ce.msg!=null && processingEnv.getOptions().containsKey("printErrorStack")) {
+            // TODO: for an InvocationTargetException we want an additional cause.
+            if (ce.msg!=null) {
                 this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, ce.msg +
+                        (processingEnv.getOptions().containsKey("printErrorStack") ?
                         "\nException: " +
                         // TODO: format nicer
                         Arrays.toString(ce.cause.getStackTrace()) +
                         "\nUnderlying Exception: " +
                         // TODO: format nicer
                         (ce.cause.getCause()!=null ? Arrays.toString(ce.cause.getCause().getStackTrace()) : "null")
+                        : "")
                         );
             }
         } catch (Throwable exception) {
@@ -731,6 +734,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("warns");
         options.add("annotatedTypeParams");
         options.add("printErrorStack");
+        options.add("printAllQualifiers");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }

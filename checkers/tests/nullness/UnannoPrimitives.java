@@ -21,4 +21,9 @@ class UnannoPrimitives {
     int year = new java.util.Date().getYear() + 1900;
     String strDate = "/" + year;
   }
+
+  //:: error: (type.invalid)
+  @Nullable byte[] d1 = {4};
+
+  @SuppressWarnings("ha!") byte[] d2 = {4};
 }

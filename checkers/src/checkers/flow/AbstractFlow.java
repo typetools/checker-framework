@@ -919,7 +919,7 @@ implements Flow {
         if (annotatedVarDefs.containsKey(var))
             return annotatedVarDefs.get(var);
 
-        boolean result = factory.getAnnotatedType(var).hasEffectiveAnnotation(annotation);
+        boolean result = factory.getAnnotatedType(var).hasAnnotation(annotation);
         annotatedVarDefs.put(var, result);
         return result;
     }

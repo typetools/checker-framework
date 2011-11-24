@@ -129,8 +129,8 @@ public class TypeHierarchy {
         }
 
         if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
-            return isSubtype(((AnnotatedWildcardType)rhs).getExtendsBound(),
-                    ((AnnotatedWildcardType)lhsBase).getExtendsBound());
+            return isSubtype(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
+                    ((AnnotatedWildcardType)lhsBase).getEffectiveExtendsBound());
         }
 
         AnnotatedTypeMirror rhsBase = rhs.typeFactory.atypes.asSuper(rhs, lhsBase);
@@ -159,33 +159,107 @@ public class TypeHierarchy {
             return isSubtypeTypeArguments((AnnotatedDeclaredType)rhsBase, (AnnotatedDeclaredType)lhsBase);
         } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhsBase.getKind() == TypeKind.TYPEVAR) {
             // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
-            // Should this logic also appear elsewhere?
+
+            if (areCorrespondingTypeVariables(lhsBase, rhsBase)) {
+                // We have corresponding type variables 
+                if(!lhsBase.getAnnotations().isEmpty() && !rhsBase.getAnnotations().isEmpty() &&
+                    qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations())) {
+                    // Both sides have annotations and the rhs is a subtype of the lhs -> good
+                    return true;
+                }
+                if(!rhsBase.getAnnotations().isEmpty() &&
+                        lhsBase.getAnnotations().isEmpty()) {
+                    for (AnnotationMirror bot : qualifierHierarchy.getBottomAnnotations()) {
+                        for(AnnotationMirror rhsAnno : rhsBase.getAnnotations()) {
+                            if (!AnnotationUtils.areSame(bot, rhsAnno)) {
+                                return false;
+                            }
+                        }
+                    }
+                    // Only the rhs is annotated and it's only bottom annotations -> good
+                    return true;
+                }
+                if(!lhsBase.getAnnotations().isEmpty() &&
+                        rhsBase.getAnnotations().isEmpty()) {
+                    if (qualifierHierarchy.isSubtype(((AnnotatedTypeVariable)rhsBase).getEffectiveUpperBound().getAnnotations(),
+                            lhsBase.getAnnotations())) {
+                        // The annotations on the upper bound of the RHS are below the annotation on the LHS -> good
+                        return true;
+                    } else {
+                        // LHS has annotation that is not a root annotation -> bad
+                        return false;
+                    }
+                }
+                if (lhsBase.getAnnotations().isEmpty() && rhsBase.getAnnotations().isEmpty()) {
+                    // Neither type variable has an annotation and they correspond -> good
+                    return true;
+                } else {
+                    // Go away.
+                    return false;
+                }
+            }
+
             AnnotatedTypeMirror rhsSuperClass = rhsBase;
             while (rhsSuperClass.getKind() == TypeKind.TYPEVAR) {
                 if (lhsBase.equals(rhsSuperClass))
-                    return true;
-                if (lhsBase.toString().equals(rhsSuperClass.toString())) // hack
                     return true;
                 rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
             }
             // compare lower bound of lhs to upper bound of rhs
             Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBoundAnnotations();
             Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBoundAnnotations();
-            if (!las.isEmpty()) {
-                return qualifierHierarchy.isSubtype(ras, las);
-            }
-            // No annotations on lhs lower bound
-            // XXX: should bottomquals always be non-null?
-            return qualifierHierarchy.getBottomAnnotations() == null ?
-                rhs.getEffectiveAnnotations().isEmpty() :
-                rhs.getEffectiveAnnotations().contains(qualifierHierarchy.getBottomAnnotations());
+            return qualifierHierarchy.isSubtype(ras, las);
+        } else if ((lhsBase.getKind().isPrimitive() || lhsBase.getKind() == TypeKind.DECLARED)
+                && rhsBase.getKind().isPrimitive()) {
+            // There are only the main qualifiers and they were compared above.
+            // Allow declared on LHS for boxing.
+            return true;
+        } else if (lhsBase.getKind() == TypeKind.NULL || rhsBase.getKind() == TypeKind.NULL) {
+            // There are only the main qualifiers and they were compared above.
+            return true;
+        } else if (lhsBase.getKind() == TypeKind.ARRAY) {
+            // The qualifiers on the LHS and RHS have been compared already. Done?
+            // Test case IdentityArrayList triggered this.
+            // TODO: Maybe something is wrong with method type argument inference?
+            return true;
         }
 
-        // It's probably OK to reach this case, because of the isSubtype test above.
-        // Still, the use of this default fallthrough is troubling.
-        // System.out.printf("isSubtypeImpl(%s, %s):%n  return true via default fallthrough case%n", rhs, lhs);
+        /* This point is not reached in the test suite.
+        System.out.printf("isSubtypeImpl(rhs: %s [%s]; lhs: %s [%s]):%n" +
+                "  rhsBase: %s; lhsBase: %s%n" +
+                "  return false via default fallthrough case%n",
+                rhs, rhs.getKind(), lhs, lhs.getKind(),
+                rhsBase, lhsBase);
+         */
+        return false;
+    }
 
-        return true;
+    private boolean areCorrespondingTypeVariables(AnnotatedTypeMirror lhs,
+            AnnotatedTypeMirror rhs) {
+        com.sun.tools.javac.code.Symbol.TypeSymbol lhstsym = ((com.sun.tools.javac.code.Type)lhs.actualType).tsym;
+        com.sun.tools.javac.code.Symbol.TypeSymbol rhstsym = ((com.sun.tools.javac.code.Type)rhs.actualType).tsym;
+
+        List<com.sun.tools.javac.code.Symbol.TypeSymbol> lhsTPs =
+                lhstsym.getEnclosingElement().getTypeParameters();
+        List<com.sun.tools.javac.code.Symbol.TypeSymbol> rhsTPs =
+                rhstsym.getEnclosingElement().getTypeParameters();
+
+        if (lhsTPs.size() != rhsTPs.size()) {
+            // different lenghts -> definitely not the same
+            return false;
+        }
+
+        int i;
+        for (i = 0; i < lhsTPs.size(); ++i) {
+            com.sun.tools.javac.code.Symbol.TypeSymbol lTS = lhsTPs.get(i);
+            if(lTS.equals(lhstsym)) {
+                break;
+            }
+        }
+        if (i < lhsTPs.size()) {
+            return rhsTPs.get(i).equals(rhstsym);
+        }
+        return false;
     }
 
     /**

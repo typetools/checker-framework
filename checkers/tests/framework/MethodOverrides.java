@@ -41,7 +41,45 @@ public abstract class MethodOverrides {
 
     static class Y extends X {
         @Override
-        <T> T @Odd [] method(T @Odd [] t) {
+        <S> S @Odd [] method(S @Odd [] s) {
+            return null;
+        }
+    }
+
+    static class Z extends X {
+        @Override
+        // return type is an incorrect override, as it's a supertype
+        //:: error: (override.return.invalid)
+        <A> A [] method(A [] s) {
+            return null;
+        }
+    }
+
+    static class Z2 extends X {
+        @Override
+        //:: error: (override.return.invalid) :: error: (override.param.invalid)
+        <A> @Odd A [] method(@Odd A [] s) {
+            return null;
+        }
+    }
+
+    static class ClX<T> {
+        T @Odd [] method(T @Odd [] t) {
+            return null;
+        }
+    }
+
+    static class ClY<S> extends ClX<S> {
+        @Override
+        S @Odd [] method(S @Odd [] s) {
+            return null;
+        }
+    }
+
+    static class ClZ<S> extends ClX<S> {
+        @Override
+        //:: error: (override.return.invalid) :: error: (override.param.invalid)
+        @Odd S [] method(@Odd S [] s) {
             return null;
         }
     }

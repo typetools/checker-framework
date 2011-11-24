@@ -476,13 +476,14 @@ public abstract class AnnotatedTypeMirror {
     }
 
     // A Helper method to print annotations separated with a space
-    protected final static String formatAnnotationString(Collection<? extends AnnotationMirror> lst) {
+    protected final static String formatAnnotationString(ProcessingEnvironment env, Collection<? extends AnnotationMirror> lst) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : lst) {
             if (obj==null) {
                 throw new Error("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
-            if (isInvisibleQualified(obj)) {
+            if (isInvisibleQualified(obj) &&
+                    !env.getOptions().containsKey("printAllQualifiers")) {
                 continue;
             }
 
@@ -503,7 +504,7 @@ public abstract class AnnotatedTypeMirror {
 
     @Override
     public String toString() {
-        return formatAnnotationString(getAnnotations())
+        return formatAnnotationString(env, getAnnotations())
                 + this.actualType;
     }
 
@@ -628,10 +629,10 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(getAnnotations()));
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (!smpl.isEmpty()) {
+                sb.append(formatAnnotationString(env, getAnnotations()));
                 sb.append(smpl);
             } else {
                 // The simple name is empty for multiple upper bounds.
@@ -1173,7 +1174,7 @@ public abstract class AnnotatedTypeMirror {
                 component = array.getComponentType();
                 if (array.getAnnotations().size() > 0) {
                     sb.append(' ');
-                    sb.append(formatAnnotationString(array.getAnnotations()).trim());
+                    sb.append(formatAnnotationString(env, array.getAnnotations()).trim());
                     sb.append(' ');
                 }
                 sb.append("[]");
@@ -1478,7 +1479,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(annotations));
+            sb.append(formatAnnotationString(env, annotations));
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
@@ -1831,7 +1832,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(annotations));
+            sb.append(formatAnnotationString(env, annotations));
             sb.append("?");
             if (!isPrintingBound) {
                 try {
