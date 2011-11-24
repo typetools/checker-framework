@@ -891,6 +891,10 @@ pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; s
 
 \item \code{-AprintErrorStack}: print a stack trace together with
 internal Checker Framework error messages
+
+\item \code{-AprintAllQualifiers}: print all type qualifiers, including
+qualifiers like \code{@Unqualified} which are usually not shown.
+(Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 \end{itemize}
 
 The following example demonstrates how these options are used:
