@@ -525,12 +525,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.visitIdentifier(node, p);
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
-            // else is needed to avoid the double marking bug
-//        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
-//                !isNonNull(TreeUtils.elementFromUse(node))) {
-//              markTree(node, NONNULL);
         }
-
         return null;
     }
 
@@ -602,7 +597,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 return false;
             }
             Set<AnnotationMirror> recv = factory.getAnnotatedType(enclMeth).getReceiverType().getAnnotations();
-            // We cannot use AnnotationUtils.containsSame, b/c it's the wrong List class.
             if (AnnotationUtils.containsSame(recv, RAW)) {
                 return false;
             }
@@ -636,7 +630,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = node.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-            if (methodParams.get(i).hasEffectiveAnnotation(NONNULL))
+            if (methodParams.get(i).hasAnnotation(NONNULL))
                 inferNullness(methodArgs.get(i));
         }
 
@@ -1319,7 +1313,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @return true if the method has a {@link Raw} receiver, false otherwise
      */
     private final boolean hasRawReceiver(MethodTree node) {
-        return rawFactory.getAnnotatedType(node).getReceiverType().hasEffectiveAnnotation(RAW);
+        return rawFactory.getAnnotatedType(node).getReceiverType().hasAnnotation(RAW);
     }
 
     /**
