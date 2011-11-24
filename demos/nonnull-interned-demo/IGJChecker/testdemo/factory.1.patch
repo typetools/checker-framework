@@ -1,0 +1,13 @@
+Index: src/checkers/types/AnnotatedTypeFactory.java
+===================================================================
+--- src/checkers/types/AnnotatedTypeFactory.java	(revision 3580)
++++ src/checkers/types/AnnotatedTypeFactory.java	(working copy)
+@@ -67,7 +67,7 @@
+ 
+     /** Various Caches **/
+     private Map<Tree, @Immutable AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+-    private Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
++    private Map<Element, @Immutable AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+     private Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+ 
+     /**

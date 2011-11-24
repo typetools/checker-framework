@@ -1,0 +1,7 @@
+This directory contains test cases for all type systems.
+As they are meant for all type systems, they do not contain any
+actual annotations.
+They exercise tricky Java coding patterns that should be handled
+correctly.
+TODO: move interesting general purpose test cases from specific
+type systems to this directory.
