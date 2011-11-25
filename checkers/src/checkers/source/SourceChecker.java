@@ -360,16 +360,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // TODO: should we always attach a message instead of printing it in errorAbort?
             // TODO: for an InvocationTargetException we want an additional cause.
             if (ce.msg!=null) {
-                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, ce.msg +
-                        (processingEnv.getOptions().containsKey("printErrorStack") ?
-                        "\nException: " +
-                        // TODO: format nicer
-                        Arrays.toString(ce.cause.getStackTrace()) +
-                        "\nUnderlying Exception: " +
-                        // TODO: format nicer
-                        (ce.cause.getCause()!=null ? Arrays.toString(ce.cause.getCause().getStackTrace()) : "null")
-                        : "")
-                        );
+                String msg = ce.msg;
+                if (processingEnv.getOptions().containsKey("printErrorStack")) {
+                    msg += "\nException: " +
+                            // TODO: format nicer
+                            ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
+                    if (ce.cause.getCause()!=null) {
+                        msg += "\nUnderlying Exception: " +
+                                // TODO: format nicer
+                                (ce.cause.getCause().toString() + ": " +
+                                        Arrays.toString(ce.cause.getCause().getStackTrace()));
+                        if (ce.cause.getCause().getCause()!=null) {
+                            msg += "\nUnderlying Exception: " +
+                                    // TODO: format nicer
+                                    (ce.cause.getCause().getCause().toString() + ": " +
+                                            Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                        }
+                    }
+                }
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
             }
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
