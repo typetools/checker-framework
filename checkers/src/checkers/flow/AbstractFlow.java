@@ -850,10 +850,11 @@ implements Flow {
      * Clear whatever part of the state that gets invalidated by
      * invoking the method.
      * 
-     * @param enclMeth The method within which "method" is called. 
+     * @param enclMeth The method within which "method" is called.
+     *   Might be null if the invocation is in a field initializer.  
      * @param method The invoked method.
      */
-    protected abstract void clearOnCall(MethodTree enclMeth, ExecutableElement method);
+    protected abstract void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method);
 
     @Override
     public Void visitBlock(BlockTree node, Void p) {
@@ -909,12 +910,13 @@ implements Flow {
     /**
      * Determines whether a variable definition has been annotated.
      *
-     * @param enclMeth the method within which the check happens
+     * @param enclMeth the method within which the check happens;
+     *   null e.g. in field initializers
      * @param annotation the annotation to check for
      * @param var the variable to check
      * @return true if the variable has the given annotation, false otherwise
      */
-    protected boolean varDefHasAnnotation(MethodTree enclMeth,
+    protected boolean varDefHasAnnotation(/*@Nullable*/ MethodTree enclMeth,
             AnnotationMirror annotation, Element var) {
         if (annotatedVarDefs.containsKey(var))
             return annotatedVarDefs.get(var);
