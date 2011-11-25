@@ -200,7 +200,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     }
 
     @Override
-    protected void clearOnCall(MethodTree enclMeth, ExecutableElement method) {
+    protected void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method) {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
