@@ -15,6 +15,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 
