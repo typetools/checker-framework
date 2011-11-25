@@ -16,6 +16,7 @@ import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
+import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
