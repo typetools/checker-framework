@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Pure;
@@ -105,9 +106,20 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = this.flowState.vars.indexOf(rElt);
 
-        // Get the effective annotations from the RHS, but not the LHS.
-        Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
-        Set<AnnotationMirror> eltTypeAnnos = eltType.getAnnotations();
+        Set<AnnotationMirror> typeAnnos;
+        Set<AnnotationMirror> eltTypeAnnos;
+
+        if ((type.getKind() == TypeKind.TYPEVAR ||
+                type.getKind() == TypeKind.WILDCARD) &&
+                (eltType.getKind() != TypeKind.TYPEVAR &&
+                eltType.getKind() != TypeKind.WILDCARD)) {
+            // Only take the effective upper bound if the LHS
+            // is not also a type variable/wildcard
+            typeAnnos = type.getEffectiveAnnotations();
+        } else {
+            typeAnnos = type.getAnnotations();
+        }
+        eltTypeAnnos = eltType.getAnnotations();
 
         if (!eltTypeAnnos.isEmpty() && !typeAnnos.isEmpty()
                 && !annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
@@ -119,19 +131,12 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
             // had been inferred previously.
             if (AnnotationUtils.containsSame(typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
-                flowState.annos.set(annotation, idx);
                 // to ensure that there is always just one annotation set, we
-                // clear the annotation that was previously used
-                // for (AnnotationMirror oldsuper : eltType.getAnnotations()) {
+                // first clear the annotation that was previously used
                 for (AnnotationMirror other : this.flowState.annotations) {
-                    if (!other.equals(annotation)
-                            && flowState.annos.contains(other)) {
-                        // The get is not necessary and might observe annos in
-                        // an invalid state.
-                        // annos.get(other, idx)
-                        flowState.annos.clear(other, idx);
-                    }
+                    flowState.annos.clear(other, idx);
                 }
+                flowState.annos.set(annotation, idx);
             } else if (rIdx >= 0 && flowState.annos.get(annotation, rIdx)) {
                 flowState.annos.set(annotation, idx);
             } else {

@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
@@ -15,6 +16,7 @@ import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.ElementUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
 import checkers.nullness.quals.*;
 
@@ -124,7 +126,7 @@ implements Flow {
     protected final QualifierHierarchy annoRelations;
 
     /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
-    private final Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
+    private final Map<Pair<Element, AnnotationMirror>, Boolean> annotatedVarDefs = new HashMap<Pair<Element, AnnotationMirror>, Boolean>();
 
     /**
      * Creates a new analysis. The analysis will use the given {@link
@@ -414,9 +416,20 @@ implements Flow {
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         super.visitTypeCast(node, p);
-        if (factory.fromTypeTree(node.getType()).isAnnotated())
+        AnnotatedTypeMirror nodeType = factory.fromTypeTree(node.getType());
+        if (nodeType.isAnnotated())
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
+
+        if ((nodeType.getKind() == TypeKind.TYPEVAR ||
+                nodeType.getKind() == TypeKind.WILDCARD) &&
+                (t.getKind() != TypeKind.TYPEVAR &&
+                t.getKind() != TypeKind.WILDCARD)) {
+            // Do not propagate annotations from a non-type variable/wildcard
+            // onto a type variable/wildcard.
+            return null;
+        }
+
         for (AnnotationMirror a : this.flowState.getAnnotations())
             if (t.hasAnnotation(a))
                 flowResults.put(node, a);
@@ -919,11 +932,13 @@ implements Flow {
      */
     protected boolean varDefHasAnnotation(/*@Nullable*/ MethodTree enclMeth,
             AnnotationMirror annotation, Element var) {
-        if (annotatedVarDefs.containsKey(var))
-            return annotatedVarDefs.get(var);
+        Pair<Element, AnnotationMirror> key = Pair.of(var, annotation);
+        if (annotatedVarDefs.containsKey(key)) {
+            return annotatedVarDefs.get(key);
+        }
 
         boolean result = factory.getAnnotatedType(var).hasAnnotation(annotation);
-        annotatedVarDefs.put(var, result);
+        annotatedVarDefs.put(key, result);
         return result;
     }
 
