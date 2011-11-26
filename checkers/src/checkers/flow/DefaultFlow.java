@@ -15,6 +15,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 
@@ -200,7 +201,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     }
 
     @Override
-    protected void clearOnCall(MethodTree enclMeth, ExecutableElement method) {
+    protected void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method) {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
