@@ -590,10 +590,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * declared NONNULL, we must reset it.
      */
     @Override
-    protected boolean varDefHasAnnotation(MethodTree enclMeth,
+    protected boolean varDefHasAnnotation(/*@Nullable*/ MethodTree enclMeth,
             AnnotationMirror annotation, Element var) {
         if (AnnotationUtils.areSame(annotation, NONNULL)) {
-            if (TreeUtils.isConstructor(enclMeth)) {
+            if (enclMeth==null || TreeUtils.isConstructor(enclMeth)) {
                 return false;
             }
             Set<AnnotationMirror> recv = factory.getAnnotatedType(enclMeth).getReceiverType().getAnnotations();
