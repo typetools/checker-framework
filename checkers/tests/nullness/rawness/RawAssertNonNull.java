@@ -76,13 +76,12 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f", "g"})
-        //:: error: (assert.postcondition.not.satisfied)
         private void m(Global g) @Raw {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
             g.nonpure();
-            // The call to the non-pure method erases all knowledge
-            // about fields -> assertion not satisfied.
+            // The global method sees the fields as non-null and
+            // cannot set them to null.
         }
     }
 

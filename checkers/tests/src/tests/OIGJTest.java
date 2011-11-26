@@ -43,6 +43,7 @@ public class OIGJTest extends ParameterizedCheckerTest {
                 o.toString().equals("tests/all-systems/MethodTypeVars.java") ||
                 o.toString().equals("tests/all-systems/Ternary.java") ||
                 o.toString().equals("tests/all-systems/FieldWithInit.java") ||
+                o.toString().equals("tests/all-systems/TypeVars.java") ||
                 o.toString().equals("tests/all-systems/Enums.java");
     }
 }

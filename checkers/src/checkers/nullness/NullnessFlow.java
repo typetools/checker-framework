@@ -583,27 +583,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
     }
 
-    /**
-     * ClearOnCall calls this method to decide whether an annotation
-     * is already present on the variable definition.
-     * In constructors and raw methods, even if the variable is
-     * declared NONNULL, we must reset it.
-     */
-    @Override
-    protected boolean varDefHasAnnotation(/*@Nullable*/ MethodTree enclMeth,
-            AnnotationMirror annotation, Element var) {
-        if (AnnotationUtils.areSame(annotation, NONNULL)) {
-            if (enclMeth==null || TreeUtils.isConstructor(enclMeth)) {
-                return false;
-            }
-            Set<AnnotationMirror> recv = factory.getAnnotatedType(enclMeth).getReceiverType().getAnnotations();
-            if (AnnotationUtils.containsSame(recv, RAW)) {
-                return false;
-            }
-        }
-        return super.varDefHasAnnotation(enclMeth, annotation, var);
-    }
-
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (debug != null) {
