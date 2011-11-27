@@ -1,17 +1,32 @@
-import java.util.List;
+import checkers.regex.quals.*;
 
-public class RawTypeTest {
-  public void m(ClassLoader cl) throws ClassNotFoundException {
-    Class clazz = cl.loadClass("");
-  }
-}
+class RawTypeTest {
 
-interface I {
-  public void m(List<? extends String> l);
-}
+    class MyList<X extends @Regex String> {
+        X f;
+    }
 
-class C implements I {
-  public void m(List l) {
-    
-  }
+    /* TODO: implement annotations on wildcard bounds
+    interface I1 {
+        public void m(MyList<? extends @Regex String> l);
+    }
+
+    class C1 implements I1 {
+        public void m(MyList par) {
+            @Regex String xxx = par.f;
+        }
+    }*/
+
+    interface I2 {
+        public void m(MyList<@Regex String> l);
+    }
+
+    class C2 implements I2 {
+        public void m(MyList<@Regex String> l) {}
+    }
+
+    class C3 implements I2 {
+        //:: error: (override.param.invalid) :: error: (generic.argument.invalid)
+        public void m(MyList<String> l) {}
+    }
 }
