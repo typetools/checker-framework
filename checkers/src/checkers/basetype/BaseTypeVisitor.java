@@ -1365,7 +1365,4 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             }
         }
     }
-
-
-
 }
