@@ -208,11 +208,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Exception type used only internally to abort
      * processing.
      */
-    protected static class CheckerError extends RuntimeException {
+    public static class CheckerError extends RuntimeException {
         String msg;
         Throwable cause;
 
         public CheckerError() {}
+
+        public CheckerError(String msg) {
+            this.msg = msg;
+            this.cause = null;
+        }
 
         public CheckerError(String msg, Throwable cause) {
             this.msg = msg;
@@ -362,19 +367,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             if (ce.msg!=null) {
                 String msg = ce.msg;
                 if (processingEnv.getOptions().containsKey("printErrorStack")) {
-                    msg += "\nException: " +
-                            // TODO: format nicer
-                            ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
-                    if (ce.cause.getCause()!=null) {
-                        msg += "\nUnderlying Exception: " +
+                    if (ce.cause!=null) {
+                        msg += "\nException: " +
                                 // TODO: format nicer
-                                (ce.cause.getCause().toString() + ": " +
-                                        Arrays.toString(ce.cause.getCause().getStackTrace()));
-                        if (ce.cause.getCause().getCause()!=null) {
+                                ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
+                        if (ce.cause.getCause()!=null) {
                             msg += "\nUnderlying Exception: " +
                                     // TODO: format nicer
-                                    (ce.cause.getCause().getCause().toString() + ": " +
-                                            Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                                    (ce.cause.getCause().toString() + ": " +
+                                            Arrays.toString(ce.cause.getCause().getStackTrace()));
+                            if (ce.cause.getCause().getCause()!=null) {
+                                msg += "\nUnderlying Exception: " +
+                                        // TODO: format nicer
+                                        (ce.cause.getCause().getCause().toString() + ": " +
+                                                Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                            }
                         }
                     }
                 }
