@@ -28,7 +28,7 @@ public class TypeFromElement {
     /**
      * Whether to throw a CheckerError if an error in the elements was found.
      */
-    private static final boolean strict = true;
+    private static final boolean strict = false;
 
     /**
      * Extracts type annotations from the element and inserts them into the
