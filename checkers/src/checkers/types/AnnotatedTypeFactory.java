@@ -14,6 +14,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -22,11 +23,8 @@ import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.source.SourceChecker.CheckerError;
+import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.TypeFromTree.TypeFromClass;
 import checkers.types.TypeFromTree.TypeFromExpression;
 import checkers.types.TypeFromTree.TypeFromMember;
@@ -319,8 +317,9 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elementCache.containsKey(elt))
+        if (elementCache.containsKey(elt)) {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
+        }
         if (elt.getKind() == ElementKind.PACKAGE)
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
@@ -345,9 +344,10 @@ public class AnnotatedTypeFactory {
             type = fromMember(decl);
         } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
             type = fromTypeTree(decl);
-        } else
-            throw new AssertionError("Cannot be here " + decl.getKind() +
-                    " " + elt);
+        } else {
+            throw new CheckerError("AnnotatedTypeFactory.fromElement: cannot be here! decl: " + decl.getKind() +
+                    " elt: " + elt, null);
+        }
 
         // Caching is disabled if indexTypes == null, because calls to this
         // method before the stub files are fully read can return incorrect
@@ -382,8 +382,9 @@ public class AnnotatedTypeFactory {
     public AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree))
             throw new IllegalArgumentException("not a method or variable declaration");
-        if (fromTreeCache.containsKey(tree))
+        if (fromTreeCache.containsKey(tree)) {
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
+        }
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromMember.INSTANCE, tree);
         annotateInheritedFromClass(result);
@@ -434,10 +435,19 @@ public class AnnotatedTypeFactory {
                 AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
                 for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
                     AnnotatedTypeVariable typeParamVar = (AnnotatedTypeVariable)typeParam;
-                    AnnotatedTypeMirror upperBound = typeParamVar.getUpperBound();
+                    AnnotatedTypeMirror upperBound = typeParamVar.getEffectiveUpperBound();
                     while (upperBound.getKind() == TypeKind.TYPEVAR)
-                        upperBound = ((AnnotatedTypeVariable)upperBound).getUpperBound();
-                    typeArgs.add(upperBound.getCopy(false));
+                        upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
+                    
+                    WildcardType wc = env.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
+                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, env, this);
+                    wctype.setElement(typeParam.getElement());
+                    wctype.setExtendsBound(upperBound);
+                    wctype.addAnnotations(typeParam.getAnnotations());
+                    // This hack allows top-level wildcards to be supertypes of non-wildcards
+                    // wctype.setMethodTypeArgHack();
+
+                    typeArgs.add(wctype);
                 }
                 dt.setTypeArguments(typeArgs);
             }
@@ -570,7 +580,7 @@ public class AnnotatedTypeFactory {
 
         List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
 
-        assert targs.size() == tvars.size();
+        assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
         for(int i=0; i<targs.size(); ++i) {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
         }
@@ -1191,9 +1201,9 @@ public class AnnotatedTypeFactory {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
-
-        if (elementToTreeCache.containsKey(elt))
+        if (elementToTreeCache.containsKey(elt)) {
             return elementToTreeCache.get(elt);
+        }
         // TODO: handle type parameter declarations?
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have

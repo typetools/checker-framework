@@ -273,7 +273,7 @@ ${build.version} of the 'javac.jar' library."/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jar,jdk.jar,build-tests,nullness-extra-tests"
+    <target name="all-tests" depends="jar,jdk.jar,build-tests"
       description="Run tests for all checkers">
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
@@ -305,6 +305,8 @@ ${build.version} of the 'javac.jar' library."/>
               </fileset>
           </batchtest>
       </junit>
+
+      <antcall target="nullness-extra-tests"/>
   </target>
 
     <target name="annotation-builder-tests" depends="jar,build-tests"
