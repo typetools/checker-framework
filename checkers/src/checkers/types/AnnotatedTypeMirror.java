@@ -12,6 +12,7 @@ import javax.lang.model.util.Types;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
+import checkers.source.SourceChecker;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
@@ -67,7 +68,7 @@ public abstract class AnnotatedTypeMirror {
             case DECLARED:
                 return new AnnotatedDeclaredType((DeclaredType)type, env, typeFactory);
             case ERROR:
-                throw new AssertionError("Input should type-check already...");
+                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
             case EXECUTABLE:
                 return new AnnotatedExecutableType((ExecutableType)type, env, typeFactory);
             case VOID:
@@ -84,7 +85,7 @@ public abstract class AnnotatedTypeMirror {
                 if (type.getKind().isPrimitive()) {
                     return new AnnotatedPrimitiveType((PrimitiveType)type, env, typeFactory);
                 }
-                throw new AssertionError("Unidentified type " + type);
+                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.createType: unidentified type " + type);
         }
     }
 
@@ -379,7 +380,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new Error("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            throw new SourceChecker.CheckerError("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (typeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
@@ -480,7 +481,7 @@ public abstract class AnnotatedTypeMirror {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : lst) {
             if (obj==null) {
-                throw new Error("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
             if (isInvisibleQualified(obj) &&
                     !env.getOptions().containsKey("printAllQualifiers")) {
@@ -1324,7 +1325,7 @@ public abstract class AnnotatedTypeMirror {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);
                 } else {
-                    throw new Error("Default annotation on lower bound is inconsistent with explicit upper bound: " + this);
+                    throw new SourceChecker.CheckerError("AnnotatedTypeMirror.fixupLowerBoundAnnotations: default annotation on lower bound is inconsistent with explicit upper bound: " + this);
                 }
             }
         }
