@@ -38,6 +38,21 @@ public class RegexUtil {
     }
     return null;
   }
+  
+  /**
+   * Returns null if the argument is a syntactically valid regular
+   * expression. Otherwise returns a PatternSyntaxException describing
+   * why the string is not a regex.
+   */
+  @SuppressWarnings("regex")    // tests whether s is a regex
+  public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
+    try {
+      Pattern.compile(s);
+    } catch (PatternSyntaxException pse) {
+      return pse;
+    }
+    return null;
+  }
 
   /**
    * Returns the argument if it is a regex, otherwise throws an error.
