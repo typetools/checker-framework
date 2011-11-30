@@ -70,6 +70,10 @@ public class NullnessSubchecker extends BaseTypeChecker {
              // always a reason to warn.
              (type.getElement()==null ||
              AnnotatedTypes.containsTypeAnnotation(type.getElement().getAnnotationMirrors())))) {
+            System.out.println("Looking at type: " + type);
+            System.out.println("  the element: " + type.getElement());
+            System.out.println("  the element annotations: " + (type.getElement()!=null ? type.getElement().getAnnotationMirrors() : "null"));
+            new Throwable().printStackTrace();
             return false;
         }
         return super.isValidUse(type);
