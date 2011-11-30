@@ -171,7 +171,7 @@ You can suppress all errors and warnings at all \emph{uses} of a given
 class (but the class itself is still type-checked, unless you also use
 the \code{-AskipDefs} command-line option, see~\ref{askipdefs}).
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches classes for which warnings and errors
+regular expression that matches class names (not file names) for which warnings and errors
 should be suppressed.  For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
@@ -193,7 +193,7 @@ You can suppress all errors and warnings in the \emph{definition} of a given
 class (but uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} command-line option, see~\ref{askipuses}).
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches classes in whose definition warnings and errors
+regular expression that matches class names (not file names) in whose definition warnings and errors
 should be suppressed.  For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
