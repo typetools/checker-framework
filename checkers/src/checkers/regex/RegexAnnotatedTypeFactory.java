@@ -2,8 +2,6 @@ package checkers.regex;
 
 import checkers.regex.quals.Regex;
 
-import java.util.regex.Pattern;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
@@ -55,7 +53,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotated()
                 && tree.getKind() == Tree.Kind.STRING_LITERAL
-                && isRegex((String)((LiteralTree)tree).getValue())) {
+                && RegexUtil.isRegex((String)((LiteralTree)tree).getValue())) {
                 type.addAnnotation(Regex.class);
             }
             return super.visitLiteral(tree, type);
@@ -75,18 +73,6 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(Regex.class);
             }
             return super.visitBinary(tree, type);
-        }
-    }
-
-    /**
-     * Returns true iff {@code str} is a valid regular expression.
-     */
-    private static boolean isRegex(String str) {
-        try {
-            Pattern.compile(str);
-            return true;
-        } catch (Exception e) {
-            return false;
         }
     }
 }

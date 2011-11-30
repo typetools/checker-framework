@@ -87,7 +87,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasEffectiveAnnotation(GUARDED_BY) || TreeUtils.isSelfAccess(expr))
+        if (!type.hasAnnotationRelaxed(GUARDED_BY) || TreeUtils.isSelfAccess(expr))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
@@ -109,7 +109,7 @@ public class LockAnnotatedTypeFactory
             return;
         ExpressionTree expr = (ExpressionTree)tree;
 
-        if (!type.hasEffectiveAnnotation(GUARDED_BY))
+        if (!type.hasAnnotationRelaxed(GUARDED_BY))
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());

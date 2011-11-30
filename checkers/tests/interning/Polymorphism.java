@@ -60,6 +60,10 @@ public class Polymorphism {
     void processMap(Map<String, String> map) { }
     void testRaw() {
         Map m = null;
+        // The raw type has "? extends Object" as argument,
+        // which cannot be assigned to String. Does this
+        // happen somewhere in real code?
+        //:: error: (argument.type.incompatible)
         processMap(m);
     }
 

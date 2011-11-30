@@ -7,9 +7,9 @@ class RawTypes {
         @NonNull String field;
 
         public Bad() {
-            //:: error: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid.rawness)
             this.init();                                // error
-            //:: error: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid.rawness)
             init();                                     // error
             this.field = "field";                       // valid
             //:: error: (assignment.type.incompatible)

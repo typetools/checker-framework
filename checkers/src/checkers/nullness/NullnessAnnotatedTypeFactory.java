@@ -196,11 +196,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
         AnnotatedDeclaredType type = super.getImplicitReceiverType(tree);
-//        // 'this' should always be nonnull, unless it's raw
-//        if (type != null && !type.hasAnnotation(RAW)) {
-//            type.clearAnnotations();
-//            type.addAnnotation(NONNULL);
-//        }
+        // 'this' should always be nonnull, unless it's raw
+        if (type != null && !type.hasAnnotation(RAW)) {
+            type.clearAnnotations();
+            type.addAnnotation(NONNULL);
+        }
         return type;
     }
 

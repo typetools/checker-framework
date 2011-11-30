@@ -63,6 +63,8 @@ checkers/tests/nullness-extra/*.class
 checkers/tests/nullness-extra/multiple-errors/*.class
 checkers/tests/nullness-extra/multiple-errors/Out.txt
 checkers/tests/nullness/generics/*.class
+checkers/tests/nullness-temp/*.java
+checkers/tests/nullness-temp/*.class
 
 # release tmps
 tmp

@@ -46,6 +46,8 @@ public class JavariTest extends ParameterizedCheckerTest {
         return o.toString().equals("tests/all-systems/GenericsCasts.java") ||
                 o.toString().equals("tests/all-systems/Ternary.java") ||
                 o.toString().equals("tests/all-systems/Enums.java") ||
+                o.toString().equals("tests/all-systems/TypeVars.java") ||
+                o.toString().equals("tests/all-systems/RawTypes.java") ||
                 o.toString().equals("tests/all-systems/MethodTypeVars.java");
     }
 }

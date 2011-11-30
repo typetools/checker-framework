@@ -7,9 +7,9 @@ class RawTypes {
         @NonNull String field;
 
         public Bad() {
-            //:: error: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid.rawness)
             this.init();                                // error
-            //:: error: (method.invocation.invalid)
+            //:: error: (method.invocation.invalid.rawness)
             init();                                     // error
             this.field = "field";                       // valid
             //:: error: (assignment.type.incompatible)
@@ -130,7 +130,7 @@ class RawTypes {
         // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            //:: error: (method.invocation.invalid)
+            //:: warning: (method.invocation.invalid.rawness)
             nonRawMethod();     // error
             startTime = 0;
             nonRawMethod();     // no error
@@ -139,7 +139,7 @@ class RawTypes {
 
         //:: warning: (fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            //:: error: (method.invocation.invalid)
+            //:: warning: (method.invocation.invalid.rawness)
             nonRawMethod();     // error
         }
 
