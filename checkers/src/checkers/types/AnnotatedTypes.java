@@ -96,7 +96,7 @@ public class AnnotatedTypes {
                 return type;
             // Operate on the effective upper bound
             AnnotatedTypeMirror res = asSuper(type.getEffectiveUpperBound(), p);
-            if (!res.isAnnotated()) {
+            if (res!=null && !res.isAnnotated()) {
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
                 // Is there a better place for this?
@@ -134,6 +134,16 @@ public class AnnotatedTypes {
             // If visited Element is the desired one, we are done
             if (p.getKind().isPrimitive())
                 return visit(factory.getUnboxedType(type), p);
+
+            /* Something like the following seemed sensible for intersection types,
+             * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
+             * However, it results in an infinite recursion with the IGJ checker.
+             * For now, let's handle the null result in the caller, TypeFromTree.visitConditionalExpression.
+            if (p.getKind() == TypeKind.DECLARED &&
+                    ((AnnotatedDeclaredType)p).getUnderlyingType().asElement().getSimpleName().length()==0) {
+                p = ((AnnotatedDeclaredType)p).directSuperTypes().get(0);
+            }
+            */
 
             if (shouldStop(p, type))
                 return type;
@@ -694,8 +704,7 @@ public class AnnotatedTypes {
             return null;
 
         // Found arguments! Great!
-        AnnotatedTypeMirror[] argsArray = passedArgs.toArray(new AnnotatedTypeMirror[0]);
-        annotateAsLub(lubForVar.get(0), argsArray);
+        annotateAsLub(lubForVar.get(0), passedArgs);
         return lubForVar.get(0);
     }
 
@@ -899,47 +908,48 @@ public class AnnotatedTypes {
      * @param lub   the type to be the least upper bound
      * @param types the type arguments
      */
-    public void annotateAsLub(AnnotatedTypeMirror lub,
-            AnnotatedTypeMirror ...types) {
+    public void annotateAsLub(AnnotatedTypeMirror lub, Collection<AnnotatedTypeMirror> types) {
         // Is it anonymous?
         if (isAnonymousType(lub)) {
             // Find the intersect types
             AnnotatedDeclaredType adt = (AnnotatedDeclaredType)lub;
 
             for (AnnotatedDeclaredType adts : adt.directSuperTypes()) {
-                AnnotatedTypeMirror[] subtypes = new AnnotatedTypeMirror[types.length];
-                for (int i = 0; i < types.length; ++i) {
-                    subtypes[i] = asSuper(types[i], adts);
+                List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
+                for (AnnotatedTypeMirror type : types) {
+                    AnnotatedTypeMirror sup = asSuper(type, adts);
+                    if (sup!=null) {
+                        subtypes.add(sup);
+                    }
                 }
 
-                addAnnotations(adts, subtypes);
+                addAnnotations(adts, subtypes.toArray(new AnnotatedTypeMirror[0]));
                 this.addAnnotations(lub, adts);
             }
         } else {
-            AnnotatedTypeMirror[] subtypes = new AnnotatedTypeMirror[types.length];
-            for (int i = 0; i < types.length; ++i) {
-                AnnotatedTypeMirror type = types[i];
+            List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
 
+            for (AnnotatedTypeMirror type : types) {
+                if (type == null) {
+                    continue;
+                }
                 if (type.getKind() == TypeKind.WILDCARD &&
                         ((AnnotatedWildcardType)type).getSuperBound() != null) {
                     type = ((AnnotatedWildcardType)type).getSuperBound();
                 }
-                if (type == null) {
-                    return;
-                }
                 if (type.getKind() == TypeKind.WILDCARD) {
-                    subtypes[i] = deepCopy(lub);
+                    subtypes.add(deepCopy(lub));
                 } else if (asSuper(type, lub) == null) {
-                    subtypes[i] = deepCopy(lub);
+                    subtypes.add(deepCopy(lub));
                 } else {
-                    subtypes[i] = asSuper(type, lub);
+                    subtypes.add(asSuper(type, lub));
                 }
             }
-            if (subtypes.length > 0) {
+            if (subtypes.size() > 0) {
                 lub.clearAnnotations();
             }
 
-            addAnnotations(lub, subtypes);
+            addAnnotations(lub, subtypes.toArray(new AnnotatedTypeMirror[0]));
         }
     }
 

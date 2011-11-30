@@ -38,6 +38,15 @@ class AnnotatedGenerics {
         public void compare(T a1, T a2) {
             a1.compareTo(a2);
         }
+
+        public void compare2(@NonNull T a1, @NonNull T a2) {
+            a1.compareTo(a2);
+        }
+
+        public void compare3(T a1, @Nullable T a2) {
+            //:: error: (argument.type.incompatible)
+            a1.compareTo(a2);
+        }
     }
 
     class MyComparable<T> {

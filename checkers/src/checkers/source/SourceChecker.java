@@ -69,7 +69,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     protected Properties messages;
 
     /** Used to report error messages and warnings via the compiler. */
-    protected JavacMessager messager;
+    protected Messager messager;
 
     /** Used as a helper for the {@link SourceVisitor}. */
     protected Trees trees;
@@ -208,11 +208,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Exception type used only internally to abort
      * processing.
      */
-    protected static class CheckerError extends RuntimeException {
+    public static class CheckerError extends RuntimeException {
         String msg;
         Throwable cause;
 
         public CheckerError() {}
+
+        public CheckerError(String msg) {
+            this.msg = msg;
+            this.cause = null;
+        }
 
         public CheckerError(String msg, Throwable cause) {
             this.msg = msg;
@@ -307,7 +312,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
-        this.messager = (JavacMessager) processingEnv.getMessager();
+        this.messager = processingEnv.getMessager();
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
@@ -358,15 +363,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // Only print something if there is a message attached.
             // If there is no additional message, the error was already output earlier.
             // TODO: should we always attach a message instead of printing it in errorAbort?
-            if (ce.msg!=null && processingEnv.getOptions().containsKey("printErrorStack")) {
-                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, ce.msg +
-                        "\nException: " +
-                        // TODO: format nicer
-                        Arrays.toString(ce.cause.getStackTrace()) +
-                        "\nUnderlying Exception: " +
-                        // TODO: format nicer
-                        (ce.cause.getCause()!=null ? Arrays.toString(ce.cause.getCause().getStackTrace()) : "null")
-                        );
+            // TODO: for an InvocationTargetException we want an additional cause.
+            if (ce.msg!=null) {
+                String msg = ce.msg;
+                if (processingEnv.getOptions().containsKey("printErrorStack")) {
+                    if (ce.cause!=null) {
+                        msg += "\nException: " +
+                                // TODO: format nicer
+                                ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
+                        if (ce.cause.getCause()!=null) {
+                            msg += "\nUnderlying Exception: " +
+                                    // TODO: format nicer
+                                    (ce.cause.getCause().toString() + ": " +
+                                            Arrays.toString(ce.cause.getCause().getStackTrace()));
+                            if (ce.cause.getCause().getCause()!=null) {
+                                msg += "\nUnderlying Exception: " +
+                                        // TODO: format nicer
+                                        (ce.cause.getCause().getCause().toString() + ": " +
+                                                Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                            }
+                        }
+                    }
+                }
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
             }
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
@@ -731,6 +750,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("warns");
         options.add("annotatedTypeParams");
         options.add("printErrorStack");
+        options.add("printAllQualifiers");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }

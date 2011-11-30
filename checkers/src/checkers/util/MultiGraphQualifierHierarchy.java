@@ -330,7 +330,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     /**
      * Infer the bottoms of the subtype hierarchy.  Simple finds the qualifiers
-     * are not supertypesMap of other qualifiers.
+     * that are not supertypes of other qualifiers.
      *
      * @param ignore
      *      a qualifier that cannot be a bottom candidate, like polymorphic
@@ -359,9 +359,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     private Map<AnnotationPair, AnnotationMirror>  calculateLubs() {
         Map<AnnotationPair, AnnotationMirror> newlubs = new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet())
+        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2))
+                    continue;
+                if (!AnnotationUtils.areSame(getRootAnnotation(a1), getRootAnnotation(a2)))
                     continue;
                 AnnotationPair pair = new AnnotationPair(a1, a2);
                 if (newlubs.containsKey(pair))
@@ -369,6 +371,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 AnnotationMirror lub = findLub(a1, a2);
                 newlubs.put(pair, lub);
             }
+        }
         return newlubs;
     }
 
@@ -377,6 +380,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return a2;
         if (isSubtype(a2, a1))
             return a1;
+
+        assert getRootAnnotation(a1) == getRootAnnotation(a2) :
+            "MultiGraphQualifierHierarchy.findLub: this method may only be called " +
+                "with qualifiers from the same hierarchy. Found a1: " + a1 + " [root: " + getRootAnnotation(a1) +
+                "], a2: " + a2 + " [root: " + getRootAnnotation(a2) + "]";
 
         Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
         for (AnnotationMirror a1Super : findSmallestTypes(supertypesMap.get(a1))) {
@@ -404,6 +412,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             // if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
             return outset.iterator().next();
         }
+
         checker.errorAbort("GraphQualifierHierarchy could not determine LUB for " + a1 + " and " + a2 +
                                  ". Please ensure that the checker knows about all type qualifiers.");
         return null;
@@ -451,9 +460,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     private Map<AnnotationPair, AnnotationMirror>  calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<AnnotationPair, AnnotationMirror>();
-        for (AnnotationMirror a1 : supertypesGraph.keySet())
+        for (AnnotationMirror a1 : supertypesGraph.keySet()) {
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
                 if (AnnotationUtils.areSameIgnoringValues(a1, a2))
+                    continue;
+                if (!AnnotationUtils.areSame(getRootAnnotation(a1), getRootAnnotation(a2)))
                     continue;
                 AnnotationPair pair = new AnnotationPair(a1, a2);
                 if (newglbs.containsKey(pair))
@@ -461,6 +472,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 AnnotationMirror glb = findGlb(a1, a2);
                 newglbs.put(pair, glb);
             }
+        }
         return newglbs;
     }
 
@@ -469,6 +481,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return a1;
         if (isSubtype(a2, a1))
             return a2;
+
+        assert getRootAnnotation(a1) == getRootAnnotation(a2) :
+            "MultiGraphQualifierHierarchy.findGlb: this method may only be called " +
+                "with qualifiers from the same hierarchy. Found a1: " + a1 + " [root: " + getRootAnnotation(a1) +
+                "], a2: " + a2 + " [root: " + getRootAnnotation(a2) + "]";
 
         Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
         for (AnnotationMirror a1Sub : supertypesGraph.keySet()) {
@@ -487,6 +504,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             // if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
             return outset.iterator().next();
         }
+
         checker.errorAbort("GraphQualifierHierarchy could not determine GLB for " + a1 + " and " + a2 +
                 ". Please ensure that the checker knows about all type qualifiers.");
         return null;

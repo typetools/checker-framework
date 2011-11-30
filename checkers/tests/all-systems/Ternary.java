@@ -1,4 +1,6 @@
 import checkers.nullness.quals.Nullable;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.*;
 
 class Ternary {
     void m1(boolean b) {
@@ -52,5 +54,19 @@ class Ternary {
 
     void primarray(boolean b) {
         long[] result = b ? null : new long[10];
+    }
+
+    void vars() {
+        // ClassSymbol and MethodSymbol generate an intersection type.
+        ClassSymbol c = null;
+        MethodSymbol m = null;
+        Object s = (m!=null) ? m : c;
+    }
+
+    void vars2() {
+        // ClassSymbol and MethodSymbol generate an intersection type.
+        ClassSymbol c = null;
+        MethodSymbol m = null;
+        Symbol s = (m!=null) ? m : c;
     }
 }

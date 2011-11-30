@@ -7,9 +7,95 @@ guarantee enables a programmer to prevent errors from occurring when a
 program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
+The most important annotations supported by the Nullness Checker are 
+\code{@\refclass{nullness/quals}{NonNull}} and 
+\code{@\refclass{nullness/quals}{Nullable}}.
+\code{@\refclass{nullness/quals}{NonNull}} is rarely written, because it is
+the default.  All of the annotations are explained in
+Section~\ref{nullness-annotations}.
+
 To run the Nullness Checker, supply the \code{-processor
   checkers.nullness.NullnessChecker} command-line option to javac.  For
 examples, see Section~\ref{nullness-example}.
+
+
+\section{What the Nullness checker checks\label{nullness-checks}}
+
+The checker issues a warning in these cases:
+
+\begin{enumerate}
+
+\item
+  When an expression of non-\code{@\refclass{nullness/quals}{NonNull}} type
+  is dereferenced, because it might cause a null pointer exception.
+  Dereferences occur not only when a field is accessed, but when an array
+  is indexed, an exception is thrown, a lock is taken in a synchronized
+  block, and more.  For a complete description of all checks performed by
+  the Nullness checker, see the Javadoc for
+  \refclass{nullness}{NullnessVisitor}.
+
+\item
+  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type
+  might become null, because it
+  is a misuse of the type:  the null value could flow to a dereference that
+  the checker does not warn about.
+
+  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
+  type becoming null, the checker also warns whenever a field of
+  \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
+  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
+  command-line option below.
+
+\end{enumerate}
+
+This example illustrates the programming errors that the checker detects:
+
+\begin{Verbatim}
+  @Nullable Object   obj;  // might be null
+  @NonNull  Object nnobj;  // never null
+  ...
+  obj.toString()         // checker warning:  dereference might cause null pointer exception
+  nnobj = obj;           // checker warning:  nnobj may become null
+  if (nnobj == null)     // checker warning:  redundant test
+\end{Verbatim}
+
+Parameter passing and return values are checked analogously to assignments.
+
+The Nullness Checker also checks the correctness, and correct use, of
+rawness annotations for checking initialization (see
+Section~\ref{raw-partially-initialized}) and of map key annotations (see
+Section~\ref{map-keys}).
+
+
+The checker performs additional checks if certain \code{-Alint}
+command-line options are provided.  (See
+Section~\ref{alint} for more details about the \code{-Alint}
+command-line option.)
+
+\begin{enumerate}
+\item
+  \label{lint-nulltest}%
+  If you supply the \code{-Alint=nulltest} command-line option, then the
+  checker warns when a null check is performed against a value that is
+  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
+  unnecessary and might indicate a programmer error or misunderstanding.
+  The lint option is disabled by default because sometimes such checks are
+  part of ordinary defensive programming.  
+
+\item
+  \label{lint-uninitialized}%
+  If you supply the \code{-Alint=uninitialized} command-line option, then
+  the checker warns if a constructor fails to initialize any field,
+  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
+  types.  Such a warning is unrelated to whether your code might throw a
+  null pointer exception.  However, you might want to enable this warning
+  because it is better code style to supply an explicit initializer, even
+  if there is a default value such as \code{0} or \code{false}.
+  This command-line option does not affect the Nullness Checker's tests
+  that fields of \code{@\refclass{nullness/quals}{NonNull}} type are
+  initialized --- such initialization is mandatory, not optional.
+
+\end{enumerate}
 
 
 \section{Nullness annotations\label{nullness-annotations}}
@@ -355,82 +441,6 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 
 
-\section{What the Nullness checker checks\label{nullness-checks}}
-
-The checker issues a warning in these cases:
-
-\begin{enumerate}
-
-\item
-  When an expression of non-\code{@\refclass{nullness/quals}{NonNull}} type
-  is dereferenced, because it might cause a null pointer exception.
-  Dereferences occur not only when a field is accessed, but when an array
-  is indexed, an exception is thrown, a lock is taken in a synchronized
-  block, and more.  For a complete description of all checks performed by
-  the Nullness checker, see the Javadoc for
-  \refclass{nullness}{NullnessVisitor}.
-
-\item
-  When an expression of \code{@\refclass{nullness/quals}{NonNull}} type
-  might become null, because it
-  is a misuse of the type:  the null value could flow to a dereference that
-  the checker does not warn about.
-
-  As a special case of an of \code{@\refclass{nullness/quals}{NonNull}}
-  type becoming null, the checker also warns whenever a field of
-  \code{@\refclass{nullness/quals}{NonNull}} type is not initialized in a
-  constructor.  Also see the discussion of the \code{-Alint=uninitialized}
-  command-line option below.
-
-\end{enumerate}
-
-This example illustrates the programming errors that the checker detects:
-
-\begin{Verbatim}
-  @Nullable Object   obj;  // might be null
-  @NonNull  Object nnobj;  // never null
-  ...
-  obj.toString()         // checker warning:  dereference might cause null pointer exception
-  nnobj = obj;           // checker warning:  nnobj may become null
-  if (nnobj == null)     // checker warning:  redundant test
-\end{Verbatim}
-
-Parameter passing and return values are checked analogously to assignments.
-
-The Nullness Checker also checks the correctness, and correct use, of
-rawness annotations for checking initialization (see
-Section~\ref{raw-partially-initialized}) and of map key annotations (see
-Section:~\ref{map-keys}).
-
-
-The checker can perform additional checks if desired.  See
-Section~\ref{suppressing-warnings} for more details about the \code{-Alint}
-command-line option.
-
-\begin{enumerate}
-\item
-  \label{lint-nulltest}%
-  If you supply the \code{-Alint=nulltest} command-line option, then the
-  checker warns when a null check is performed against a value that is
-  guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
-  unnecessary and might indicate a programmer error or misunderstanding.
-  The lint option is disabled by default because sometimes such checks are
-  part of ordinary defensive programming.  
-
-\item
-  \label{lint-uninitialized}%
-  If you supply the \code{-Alint=uninitialized} command-line option, then
-  the checker warns if a constructor fails to initialize any field,
-  including \code{@\refclass{nullness/quals}{Nullable}} types and primitive
-  types.  Such a warning is unrelated to whether your code might throw a
-  null pointer exception.  However, you might want to enable this warning
-  because it is better code style to supply an explicit initializer, even
-  if there is a default value such as \code{0} or \code{false}.
-
-\end{enumerate}
-
-
-
 \section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
 
 The Checker Framework supplies several ways to suppress warnings, most
@@ -698,15 +708,15 @@ particular, the Nullness Checker issues a warning for code like this:
 \begin{Verbatim}
   public class MyClass {
     private @NonNull Object f;
+    public MyClass(int x, int y) {
+      // Error because constructor contains no assignment to this.f.
+      // By the time the constructor exits, f must be initialized to a non-null value.
+    }
     public MyClass(int x) {
       // Error because this.f is accessed before f is initialized.
       // At the beginning of the constructor's execution, accessing this.f
       // yields null, even though field f has a non-null type.
       this.f.toString();
-    }
-    public MyClass(int x, int y) {
-      // Error because constructor contains no assignment to this.f.
-      // By the time the constructor exits, f must be initialized to a non-null value.
     }
     public MyClass(int x, int y, int z) {
       m();
@@ -721,15 +731,16 @@ particular, the Nullness Checker issues a warning for code like this:
 \end{Verbatim}
 
 \noindent
-In general, code can depend on field \<f> not being null, but not in a
-partially-initialized object.
+In general, code can depend that field \<f> is not \<null>, because the
+field is declared with a \code{@\refclass{nullness/quals}{NonNull}} type.
+However, this guarantee does not hold for a partially-initialized object.
 
 The Nullness Checker uses the \<@Raw> annotation to indicate that an object
 is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
 assigned.  Rawness is mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
-in a field or passed to a method before initialization is complete).  Thus, use of
-rawness annotations in quite rare in most code.
+in a field or passed to a method before initialization is complete).  
+Use of rawness annotations in rare in most code.
 
 % Most readers can
 % skip this section on first reading; you can return to it once you have
@@ -743,7 +754,7 @@ The rawness hierarchy contains these qualifiers:
 \begin{description}
 
 \item[\code{@\refclass{nullness/quals}{Raw}}]
-  indicates a type that contains a partially-initialized object.  In a
+  indicates a type that may contain a partially-initialized object.  In a
   partially-initialized object, fields that are annotated as
   \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
   has not yet been assigned.  Within the constructor,
@@ -828,19 +839,14 @@ class C {
 % #105.  Maybe document this?
 
 
-\subsection{More details about rawness checking\label{rawness-checking}}
-
-You can suppress warnings related to partially-initialized objects with
-\<@SuppressWarnings("rawness")>.  (Do not confuse this with the unrelated
-\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!)
-
-
-\paragraph{How an object becomes non-raw}
+\subsection{How an object becomes non-raw\label{becoming-non-raw}}
 
 Within the constructor,
 \code{this} starts out with \code{@\refclass{nullness/quals}{Raw}} type.
 As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
-have been initialized, then \code{this} is treated as non-raw.
+have been initialized, then \code{this} is treated as non-raw.  (See
+Section~\ref{becoming-non-raw-clarification} for a slight clarification of
+this rule.)
 
 The Nullness checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
@@ -881,42 +887,190 @@ command-line option (see Section~\ref{lint-uninitialized}).
 % when we are dealing with a field of primitive type.
 
 
-\paragraph{Invoking the superclass constructor; rawness of the superclass reference}
+\subsection{Partial initialization\label{partial-initialization}}
 
-Suppose that class B extends class A.  Within the B
-constructor, until the A superclass constructor is called, \code{this} has
-type \code{@Raw B} and also \code{@Raw A}.  After the
-superclass constructor has been exited, then \code{this} has type
-\code{@Raw B} and also \code{@NonRaw A}.
-By the time that the constructor exits, \<this> has type \<@NonRaw B> and
-also \<@NonRaw A>.
+So far, we have discussed rawness as if it is an all-or-nothing property:
+an object is fully raw until initialization completes, and then it is no
+longer raw.  The full truth is a bit more complex:  during the
+initialization process, an object can be partially initialized, and as the
+object's superclass constructors complete, its rawness changes.  The
+Nullness Checker lets you express such properties when necessary.
 
-When you write \<@Raw>, the annotation applies only to the given class, not
-to any superclass.  For instance, the checker interprets \<@Raw B> as
-``\code{@Raw B} and also \code{{\bfseries @NonRaw} A}'', rather than
-``\code{@Raw B} and also \code{@Raw A}'', which would be less useful.  The
-only exception is when a method overriding relationship forces the
-superclass to also be raw.  For example:
+Consider a simple example:
 
 \begin{Verbatim}
-  class A extends Object {
-    // receiver is "@NonRaw A"
-    void nonRawAReceiver() { }
-    // annotation forces receiver to be "@Raw A"; also is "@NonRaw Object"
-    void rawAReciever(@Raw A this) { }
+class A {
+  Object a;
+  A() {
+    a = new Object();
   }
-
-  class B extends A {
-    // annotation forces receiver to be "@Raw B", method overriding forces "@Raw A"
-    void rawAReceiver(@Raw B this) {
-      super.nonRawAReceiver();  // illegal!  rawness of A does not match
-    }
-    // annotation forces receiver to be "@Raw B"; also is "@NonRaw A"
-    void rawBReceiver(@Raw B this) {
-      super.nonRawAReceiver();  // OK
-    }
+}
+class B extends A {
+  Object b;
+  B() {
+    super();
+    b = new Object();
   }
+}
 \end{Verbatim}
+
+Consider what happens during execution of \<new B()>.
+
+\begin{enumerate}
+\item \<B>'s constructor begins to execute.  At this point, neither the
+  fields of \<A> nor those of \<B> have been initialized yet.
+\item \<B>'s constructor calls \<A>'s constructor, which begins to execute.
+  No fields of \<A> nor of \<B> have been initialized yet.
+\item \<A>'s constructor completes.  Now, all the fields of \<A> have been
+  initialized, and their invariants (such as that field \<a> is non-null) can be
+  depended on.  However, because \<B>'s constructor has not yet completed
+  executing, the object being constructed is not yet fully initialized.
+  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
+  object is initialized (non-raw), but when treated as a \<B>, the object
+  is still raw.
+\item \<B>'s constructor completes.  The object is fully initialized
+  (non-raw), if \<B>'s constructor was invoked via a \<new B()>
+  expression.  On the other hand, if there was a \<class C extends B \{
+  ... \}>, and \<B>'s constructor had been invoked from that, then the
+  object currently under construction would \emph{not} be fully initialized
+  --- it would only be initialized when treated as an \<A> or a \<B>, but
+  not when treated as a \<C>.
+\end{enumerate}
+
+At any moment during initialization, the superclasses of a given class
+can be divided into those that have completed initialization and those that
+have not yet completed initialization.  More precisely, at any moment there
+is a point in the class hierarchy such that all the classes above that
+point are fully initialized, and all those below it are not yet
+initialized.  As initialization proceeds, this dividing line between the
+initialized and raw classes moves down the type hierarchy.
+
+The Nullness Checker lets you indicate where the dividing line is between
+the initialized and non-initialized classes.
+You have two equivalent ways to indicate the dividing line:  \<@Raw>
+indicates the first class \emph{below} the dividing line, or
+\<@NonRaw(\emph{classliteral})> indicates the first class \emph{above} the
+dividing line.
+
+When you write \code{@\refclass{nullness/quals}{Raw} MyClass x;}, that
+means that variable \<x> is initialized for all superclasses of \<MyClass>,
+and (possibly) uninitialized for \<MyClass> and all subclasses.
+
+When you write \code{@\refclass{nullness/quals}{NonRaw(Foo.class)} MyClass
+  x;}, that means that variable \<x> is initialized for \<Foo> and all its
+superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
+
+If \<A> is a direct superclass of \<B> (as in the example above), then 
+\<@Raw A x;> and \<@NonRaw(B.class) A x;> are equivalent declarations.
+Neither one is the same as \<@NonRaw A x;>, which indicates that, whatever
+the actual class of the object that \<x> refers to, that object is fully
+initialized.  Since \<@NonRaw> (with no argument) is the default, you will
+rarely see it written.
+
+\label{becoming-non-raw-clarification}
+
+We can now state a clarification of Section~\ref{becoming-non-raw}'s rule
+for an object becoming non-raw.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+have been initialized, then \code{this} is treated as
+\code{@\refclass{nullness/quals}{NonRaw}(\emph{typeofthis})}, rather than
+treated as simply 
+\code{@\refclass{nullness/quals}{NonRaw}}.
+
+The example above lists 4 moments during construction.  At those moments,
+the type of the object being constructed is:
+
+\begin{enumerate}
+\item
+  \<@Raw Object>
+\item
+  \<@Raw Object>
+\item
+  \<@NonRaw(A.class) A>
+  %% Not quite equivalent because the Java (non-qualified) type differs
+  % ; equivalently, \<@Raw B>
+\item
+  \<@NonRaw(B.class) B>
+\end{enumerate}
+
+\paragraph{Example}
+
+As another example, consider the following 12 declarations:
+
+\begin{Verbatim}
+    @Raw Object rO;
+    @NonRaw(Object.class) Object nroO;
+    Object o;
+
+    @Raw A rA;
+    @NonRaw(Object.class) A nroA;  // same as "@Raw A"
+    @NonRaw(A.class) A nraA;
+    A a;
+
+    @NonRaw(Object.class) B nroB;
+    @Raw B rB;
+    @NonRaw(A.class) B nraB;  // same as "@Raw B"
+    @NonRaw(B.class) B nrbB;
+    B b;
+\end{Verbatim}
+
+In the following table, the type in cell C1 is a supertype of the type in
+cell C2 if:  C1 is at least as high and at least as far left in the table
+as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
+\<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
+types, but are not expressible.  The other empty cells are not interesting
+types.)
+
+\noindent
+\begin{tabular}{|c|c|c|}
+
+\hline
+    \<@Raw Object rO;>
+&
+& 
+\\
+\hline
+
+    \<@NonRaw(Object.class) Object nroO;>
+&
+\begin{minipage}{2in}
+\begin{Verbatim}
+@Raw A rA;
+@NonRaw(Object.class) A nroA;
+\end{Verbatim}
+\end{minipage}
+&
+    \<@NonRaw(Object.class) B nroB;>
+\\
+\hline
+
+&
+    \<@NonRaw(A.class) A nraA;>
+&
+\begin{minipage}{1.75in}
+\begin{Verbatim}
+@Raw B rB;
+@NonRaw(A.class) B nraB;
+\end{Verbatim}
+\end{minipage}
+\\
+\hline
+
+&
+&
+    \<@NonRaw(B.class) B nrbB;>
+\\
+\hline
+
+    \<Object o;>
+&
+    \<A a;>
+&
+    \<B b;>
+\\
+\hline
+\end{tabular}
+
 
 
 
@@ -928,7 +1082,17 @@ superclass to also be raw.  For example:
 
 
 
-\paragraph{Checking assignment of all fields, not just \code{@NonNull} ones}
+\subsection{More details about rawness checking\label{rawness-checking}}
+
+
+\paragraph{Suppressing warnings}
+
+You can suppress warnings related to partially-initialized objects with
+\<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
+\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!
+
+
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered raw until \emph{all} its fields are assigned, not
@@ -936,7 +1100,7 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 
 
 % Should we change the terminology?
-\paragraph{A note about the terminology ``raw''}
+\paragraph{The terminology ``raw''}
 
 The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.
@@ -1450,8 +1614,9 @@ tool like the Checker Framework.)
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
-% LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings
+% LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
 % LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
-% LocalWords:  keySet getField keyfor param TypeName containsValue indexOf
-% LocalWords:  lastIndexOf deref getProperty getProperties
+% LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
+% LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB

@@ -275,6 +275,9 @@ ${build.version} of the 'javac.jar' library."/>
 
     <target name="all-tests" depends="jar,jdk.jar,build-tests"
       description="Run tests for all checkers">
+
+      <antcall target="nullness-extra-tests"/>
+
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
       <junit fork="${run.tests.should.fork}"
@@ -391,6 +394,8 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <!-- Differs from other targets in that it is defined via a Makefile and
+       is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="jar,build-tests"
       description="Run extra tests for the Nullness checker">
       <exec executable="make">
@@ -410,6 +415,14 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run skipdefs tests for the Nullness checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipDefsTest"/>
+        </antcall>
+    </target>
+
+    <!-- Do not include this as a dependence for nullness-tests! -->
+    <target name="nullness-temp-tests" depends="jar,build-tests"
+      description="Run temporary tests for the Nullness checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessTempTest"/>
         </antcall>
     </target>
 
