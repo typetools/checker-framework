@@ -10,6 +10,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -149,15 +150,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
-    private Pattern getSkipUsesPattern(Map<String, String> options) {
+    private Pattern getSkipPattern(String patternName, Map<String, String> options) {
         String pattern = "";
 
-        if (options.containsKey("skipUses"))
-            pattern = options.get("skipUses");
-        else if (System.getProperty("checkers.skipUses") != null)
-            pattern = System.getProperty("checkers.skipUses");
-        else if (System.getenv("skipUses") != null)
-            pattern = System.getenv("skipUses");
+        if (options.containsKey(patternName))
+            pattern = options.get(patternName);
+        else if (System.getProperty("checkers." + patternName) != null)
+            pattern = System.getProperty("checkers." + patternName);
+        else if (System.getenv(patternName) != null)
+            pattern = System.getenv(patternName);
+
+        if (pattern.indexOf("/") != -1) {
+            getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+              "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
+        }
 
         // return a pattern of an illegal Java identifier character
         // so that it won't match anything
@@ -167,22 +173,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return Pattern.compile(pattern);
     }
 
+    private Pattern getSkipUsesPattern(Map<String, String> options) {
+        return getSkipPattern("skipUses", options);
+    }
+
     private Pattern getSkipDefsPattern(Map<String, String> options) {
-        String pattern = "";
-
-        if (options.containsKey("skipDefs"))
-            pattern = options.get("skipDefs");
-        else if (System.getProperty("checkers.skipDefs") != null)
-            pattern = System.getProperty("checkers.skipDefs");
-        else if (System.getenv("skipDefs") != null)
-            pattern = System.getenv("skipDefs");
-
-        // return a pattern of an illegal Java identifier character
-        // so that it won't match anything
-        if (pattern.equals(""))
-            pattern = "\\(";
-
-        return Pattern.compile(pattern);
+        return getSkipPattern("skipDefs", options);
     }
 
     private Set<String> createActiveLints(Map<String, String> options) {
