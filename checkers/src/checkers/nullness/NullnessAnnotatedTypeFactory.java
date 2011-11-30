@@ -136,6 +136,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         defaults = new QualifierDefaults(this, this.annotations);
         defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+        defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
 
         this.poly = new QualifierPolymorphism(checker, this);
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
