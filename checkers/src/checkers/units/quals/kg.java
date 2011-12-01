@@ -9,8 +9,8 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Mass.class } )
+@SubtypeOf(Mass.class)
 @UnitsMultiple(quantity=g.class, prefix=Prefix.kilo)
 public @interface kg {}

@@ -29,6 +29,9 @@ import checkers.quals.TypeQualifier;
  *
  * Note that LazyNonNull is a field declaration annotation, not a type annotation.
  * Final fields are treated as LazyNonNull by default.
+ * TODO: this qualifier has the @TypeQualifier and @SubtypeOf meta-annotations and
+ * the type factory treats it as a type qualifier. The above comment seems wrong.
+ * 
  * <p>
  *
  * This annotation is associated with the {@link NullnessChecker}.
@@ -39,9 +42,7 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE_USE)
 @TypeQualifier
-@SubtypeOf( Nullable.class )
-public @interface LazyNonNull {
-
-}
+@SubtypeOf(Nullable.class)
+public @interface LazyNonNull {}

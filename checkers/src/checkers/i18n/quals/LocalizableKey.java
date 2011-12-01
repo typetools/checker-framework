@@ -14,5 +14,5 @@ import checkers.quals.TypeQualifier;
 @SubtypeOf(PropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface LocalizableKey { }
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface LocalizableKey {}

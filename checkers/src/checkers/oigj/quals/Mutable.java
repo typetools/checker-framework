@@ -20,11 +20,11 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf( { AssignsFields.class } )
+@SubtypeOf(AssignsFields.class)
 @ImplicitFor(
         trees = { Tree.Kind.NEW_CLASS },
         types = { TypeKind.ARRAY }
 )
-public @interface Mutable { }
+public @interface Mutable {}
