@@ -57,10 +57,18 @@ class Poly {
         return encrypt(null);
     }
 
+    @PolyEncrypted String substituteSuper(Map<String, ? super @PolyEncrypted String> map) {
+        return encrypt(null);
+    }
+
     void test3() {
         //:: error: (assignment.type.incompatible)
         @Encrypted String s = substitute(new HashMap<String, String>());
         @Encrypted String t = substitute(new HashMap<String, @Encrypted String>());
+
+        //:: error: (assignment.type.incompatible)
+        @Encrypted String q = substituteSuper(new HashMap<String, String>());
+        @Encrypted String r = substituteSuper(new HashMap<String, @Encrypted String>());
     }
 
     // Test assignment to poly
