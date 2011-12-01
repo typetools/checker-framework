@@ -62,10 +62,10 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later
-@SubtypeOf( ReadOnly.class )
+@SubtypeOf(ReadOnly.class)
 public @interface I {
     String value() default "I";
 }

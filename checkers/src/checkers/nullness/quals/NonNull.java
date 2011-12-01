@@ -8,7 +8,6 @@ import checkers.nullness.NullnessChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import com.sun.source.tree.Tree;
 
@@ -35,10 +34,10 @@ import com.sun.source.tree.Tree;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 // See note on subtyping in Primitive.java.
-@SubtypeOf( Primitive.class )
+@SubtypeOf(Primitive.class)
 @ImplicitFor(
     types = { TypeKind.PACKAGE },
     trees = { Tree.Kind.NEW_CLASS,
@@ -47,4 +46,4 @@ import com.sun.source.tree.Tree;
         // The NULL_LITERAL is @Nullable and all primitive type literals are @Primitive
         Tree.Kind.STRING_LITERAL
     })
-public @interface NonNull { }
+public @interface NonNull {}
