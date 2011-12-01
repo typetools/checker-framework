@@ -106,14 +106,13 @@ public class QualifierPolymorphism {
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
                 collector.visit(factory.getReceiver(tree), type.getReceiverType()));
+
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             AnnotationMirror qual = matchingMapping.values().iterator().next();
             if (qual!=null) {
                 replacer.visit(type, qual);
             }
         }
-//        else
-//            completer.visit(type);
     }
 
     private final AnnotatedTypeScanner<Void, AnnotationMirror> replacer
@@ -135,8 +134,9 @@ public class QualifierPolymorphism {
     class Completer extends AnnotatedTypeScanner<Void, Void> {
         @Override
         protected Void scan(AnnotatedTypeMirror type, Void p) {
-            if (type != null && type.hasAnnotation(polyQual))
+            if (type != null && type.hasAnnotation(polyQual)) {
                 type.removeAnnotation(polyQual);
+            }
             if (type != null &&
                     !type.isAnnotated() && !(type.getKind()==TypeKind.TYPEVAR || type.getKind()==TypeKind.WILDCARD)) {
                 // Do not add the root qualifier to type variables and wildcards
@@ -222,9 +222,11 @@ public class QualifierPolymorphism {
                     type.addAnnotations(actual.getAnnotations());
                     return true;
                 }
-                for (AnnotationMirror a : type.getAnnotations())
-                    if (!actual.hasAnnotation(a))
+                for (AnnotationMirror a : type.getAnnotations()) {
+                    if (!actual.hasAnnotation(a)) {
                         type.removeAnnotation(a);
+                    }
+                }
             }
             return false;
         }
@@ -325,11 +327,21 @@ public class QualifierPolymorphism {
                 typeVar.remove(actualType.getUnderlyingType());
                 return result;
             }
-            if (actualType.getKind() == TypeKind.WILDCARD)
-                return visit(type, ((AnnotatedWildcardType)actualType).getExtendsBound());
 
-            if (actualType.getKind() != type.getKind() || actualType == type)
+            if (actualType.getKind() == TypeKind.WILDCARD) {
+                AnnotatedWildcardType wctype = (AnnotatedWildcardType)actualType;
+
+                if (wctype.getUnderlyingType().getExtendsBound()!=null) {
+                    return visit(type, wctype.getExtendsBound());
+                } else {
+                    // TODO: is the logic different for super bounds?
+                    return visit(type, wctype.getSuperBound());
+                }
+            }
+
+            if (actualType.getKind() != type.getKind() || actualType == type) {
                 return Collections.emptyMap();
+            }
 
             assert actualType.getKind() == type.getKind();
             type = (AnnotatedDeclaredType)atypes.asSuper(type, actualType);
