@@ -1355,8 +1355,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 // Therefore, we go to the Element and get all annotations on
                 // the parameter.
 
-                if (m.getParameters().get(0).getAnnotation(
-                        checkers.nullness.quals.Nullable.class) == null) {
+                // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(), Nullable.class)
+                // or types.typeAnnotationsOf(m.asType())
+                // does not work any more. It should.
+
+                boolean foundNN = false;
+                for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
+                        ((com.sun.tools.javac.code.Symbol)m).typeAnnotations) {
+                    if ( tc.position.type==com.sun.tools.javac.code.TargetType.METHOD_PARAMETER &&
+                            tc.position.parameter_index==0 &&
+                            tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
+                        foundNN = true;
+                    }
+                }
+
+                if (!foundNN) {
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
