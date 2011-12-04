@@ -184,13 +184,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         substituteRaw(tree, type);
         substituteUnused(tree, type);
 
-        dependentTypes.handle(tree, type);
         final AnnotationMirror inferred = flow.test(tree);
         if (inferred != null) {
             // case 7: flow analysis
             type.clearAnnotations();
             type.addAnnotation(inferred);
         }
+        dependentTypes.handle(tree, type);
         completer.visit(type);
     }
 
