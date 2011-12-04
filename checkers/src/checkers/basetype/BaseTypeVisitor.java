@@ -580,7 +580,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null;
         checkAssignability(var, varTree);
@@ -597,7 +597,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -624,7 +624,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         boolean success = checker.isSubtype(valueType, varType);
 
@@ -1010,14 +1010,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (shouldSkipUses(type.getElement()))
                 return super.visitDeclared(type, tree);
 
-            // Ensure that type use is a subtype of the element type
-            AnnotatedDeclaredType useType = type.getErased();
-            AnnotatedDeclaredType elemType = (AnnotatedDeclaredType)
-                atypeFactory.getAnnotatedType(
-                        useType.getUnderlyingType().asElement()).getErased();
+            {
+                // Ensure that type use is a subtype of the element type
+                // isValidUse determines the erasure of the types.
+                AnnotatedDeclaredType elemType = (AnnotatedDeclaredType)
+                        atypeFactory.getAnnotatedType(
+                                type.getUnderlyingType().asElement());
 
-            if (!checker.isValidUse(elemType, useType)) {
-                reportError(useType, tree);
+                if (!checker.isValidUse(elemType, type)) {
+                    reportError(type, tree);
+                }
             }
 
             // System.out.println("Type: " + type);
