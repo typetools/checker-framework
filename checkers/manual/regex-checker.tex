@@ -39,6 +39,62 @@ These qualifiers make up the Regex type system:
 
 \section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
 
+\subsection{Helpful methods when using the Regex Checker\label{regex-methods}}
+
+The Regex Checker provides a few utility methods that may be useful when
+using the Regex Checker. Figure~\ref{fig:regex-util-example} gives an
+example of the \code{RegexUtil} methods.
+
+\begin{description}
+
+\item[\refmethod{regex}{RegexUtil}{isRegex}{(String)}]
+  is used to determine if a String is a valid regular expression. This is
+  most useful for user-provided regular expressions (such as ones passed
+  on the command-line.) As described in Section~\ref{regex-implicit-qualifiers}
+  this method is usually not needed for regular expressions embedded in
+  code.
+
+\item[\refmethod{regex}{RegexUtil}{regexError}{(String)}]
+  is used to get a detailed error message if a String is not a valid
+  regular expression. If the String is a valid regular expression then
+  this method will return null.
+
+\item[\refmethod{regex}{RegexUtil}{regexException}{(String)}]
+  is used to get the
+  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{PatternSyntaxException}
+  that \sunjavadoc{java/util/regex/Pattern.html#compile(java.lang.String)}{Pattern.compile(String)}
+  throws when compiling an invalid regular expression. This will
+  return null if the String is a valid regular expression.
+
+\item[\refmethod{regex}{RegexUtil}{asRegex}{(String)}]
+  returns the argument as a \code{@Regex String} if it is a valid
+  regular expression, otherwise it throws an Error. This method is
+  mainly a workaround until the Regex Checker supports
+  flow-sensitivity (see Section~\ref{type-refinement}) and should
+  be used rarely once the Regex Checker supports flow-sensitivity.
+
+\end{description}
+
+\begin{figure}
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+String regex = getRegexFromUser();
+if (!RegexUtil.isRegex(regex)) {
+   throw new RuntimeException("Error parsing regex.", RegexUtil.regexException(regex));
+   // or System.out.println("Error parsing regex: " + RegexUtil.regexError(regex));
+}
+regex = RegexUtil.asRegex(regex); // Only necessary until the Regex Checker supports flow-sensitivity.
+Pattern p = Pattern.compile(regex);
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+\caption{Example of the \code{RegexUtil} methods.}
+\label{fig:regex-util-example}
+\end{figure}
+
 \subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
 
 As described in Section~\ref{effective-qualifier}, the Regex checker adds
