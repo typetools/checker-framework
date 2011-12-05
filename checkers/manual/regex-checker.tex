@@ -39,36 +39,48 @@ These qualifiers make up the Regex type system:
 
 \section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
 
-\subsection{Helpful methods when using the Regex Checker\label{regex-methods}}
 
-The Regex Checker provides a few utility methods that may be useful when
-using the Regex Checker. Figure~\ref{fig:regex-util-example} gives an
-example of the \code{RegexUtil} methods.
+\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Regex checker adds
+implicit qualifiers, reducing the number of annotations that must appear
+in your code. The checker implicitly adds the \code{Regex} qualifier to
+any \code{String} literal that is a valid regex and to the \code{null}
+literal.
+
+
+\subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
+
+Sometimes, the Regex Checker cannot infer whether a particular expression
+is a regular expression --- and sometimes your code cannot either!  In
+these cases, you can use the \<isRegex> method to perform such a test, and
+other helper methods to provide useful error messages.  A
+common use is for user-provided regular expressions (such as ones passed
+on the command-line).
+Figure~\ref{fig:regex-util-example} gives an
+example of use of the \code{RegexUtil} methods.
 
 \begin{description}
 
 \item[\refmethod{regex}{RegexUtil}{isRegex}{(String)}]
-  is used to determine if a String is a valid regular expression. This is
-  most useful for user-provided regular expressions (such as ones passed
-  on the command-line.) As described in Section~\ref{regex-implicit-qualifiers}
-  this method is usually not needed for regular expressions embedded in
-  code.
+  returns \<true> if its argument is a valid regular expression.
 
 \item[\refmethod{regex}{RegexUtil}{regexError}{(String)}]
-  is used to get a detailed error message if a String is not a valid
-  regular expression. If the String is a valid regular expression then
-  this method will return null.
+  returns a \<String> error message if its argument is not a valid regular
+  expression, or \<null> if its argument is a valid regular expression.
 
 \item[\refmethod{regex}{RegexUtil}{regexException}{(String)}]
-  is used to get the
+  returns the
   \sunjavadoc{java/util/regex/PatternSyntaxException.html}{PatternSyntaxException}
   that \sunjavadoc{java/util/regex/Pattern.html#compile(java.lang.String)}{Pattern.compile(String)}
-  throws when compiling an invalid regular expression. This will
-  return null if the String is a valid regular expression.
+  throws when compiling an invalid regular expression.  It returns \<null>
+  if its argument is a valid regular expression.
 
 \item[\refmethod{regex}{RegexUtil}{asRegex}{(String)}]
-  returns the argument as a \code{@Regex String} if it is a valid
-  regular expression, otherwise it throws an Error. This method is
+  is a cast:  it returns its argument unchanged, but with the type
+  \code{@Regex String} if it is a valid
+  regular expression.  It throws an Error if its argument is not a valid
+  regular expression. This method is
   mainly a workaround until the Regex Checker supports
   flow-sensitivity (see Section~\ref{type-refinement}) and should
   be used rarely once the Regex Checker supports flow-sensitivity.
@@ -81,26 +93,22 @@ example of the \code{RegexUtil} methods.
 %END LATEX
 \begin{Verbatim}
 String regex = getRegexFromUser();
-if (!RegexUtil.isRegex(regex)) {
-   throw new RuntimeException("Error parsing regex.", RegexUtil.regexException(regex));
-   // or System.out.println("Error parsing regex: " + RegexUtil.regexError(regex));
+if (! RegexUtil.isRegex(regex)) {
+   throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
+   // or: System.out.println("Error parsing regex "\"" + regex + "\"": " + RegexUtil.regexError(regex));
 }
-regex = RegexUtil.asRegex(regex); // Only necessary until the Regex Checker supports flow-sensitivity.
+// The following line is only necessary until the Regex Checker supports
+// flow-sensitivity, after which time it can be removed from the code.
+regex = RegexUtil.asRegex(regex);
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
-\caption{Example of the \code{RegexUtil} methods.}
+\caption{Example use of \code{RegexUtil} methods.}
 \label{fig:regex-util-example}
 \end{figure}
 
-\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the Regex checker adds
-implicit qualifiers, reducing the number of annotations that must appear
-in your code. The checker implicitly adds the \code{Regex} qualifier to
-any \code{String} literal that is a valid regex and to the \code{null}
-literal.
-
-% LocalWords:  Regex regex quals
+% LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
+% LocalWords:  regexException PatternSyntaxException
