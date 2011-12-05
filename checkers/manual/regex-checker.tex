@@ -76,15 +76,6 @@ example of use of the \code{RegexUtil} methods.
   throws when compiling an invalid regular expression.  It returns \<null>
   if its argument is a valid regular expression.
 
-\item[\refmethod{regex}{RegexUtil}{asRegex}{(String)}]
-  is a cast:  it returns its argument unchanged, but with the type
-  \code{@Regex String} if it is a valid
-  regular expression.  It throws an Error if its argument is not a valid
-  regular expression. This method is
-  mainly a workaround until the Regex Checker supports
-  flow-sensitivity (see Section~\ref{type-refinement}) and should
-  be used rarely once the Regex Checker supports flow-sensitivity.
-
 \end{description}
 
 \begin{figure}
@@ -97,8 +88,8 @@ if (! RegexUtil.isRegex(regex)) {
    throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
    // or: System.out.println("Error parsing regex "\"" + regex + "\"": " + RegexUtil.regexError(regex));
 }
-// The following line is only necessary until the Regex Checker supports
-// flow-sensitivity, after which time it can be removed from the code.
+// The following line suppresses a Regex Checker warning and is only necessary until the 
+// Regex Checker supports flow-sensitivity, after which time it can be removed from the code.
 regex = RegexUtil.asRegex(regex);
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
@@ -108,6 +99,29 @@ Pattern p = Pattern.compile(regex);
 \caption{Example use of \code{RegexUtil} methods.}
 \label{fig:regex-util-example}
 \end{figure}
+
+
+\subsection{Suppressing warnings}
+
+If you are positive that a particular string that is being used as a
+regular expression is syntactically valid, but the Regex Checker cannot
+conclude this and issues a warning about possible use of an invalid regular
+expression, then you can use the
+\refmethod{regex}{RegexUtil}{asRegex}{(String)} method to suppress the
+warning.
+
+You can think of this method 
+is a cast:  it returns its argument unchanged, but with the type
+\code{@Regex String} if it is a valid regular expression.  It throws an
+Error if its argument is not a valid regular expression, but you should
+only use it when you are sure it will not throw an error.
+
+This method is
+mainly a workaround until the Regex Checker supports flow-sensitivity (see
+Section~\ref{type-refinement}) and should be used rarely once the Regex
+Checker supports flow-sensitivity.
+
+
 
 
 % LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
