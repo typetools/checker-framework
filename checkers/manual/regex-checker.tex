@@ -62,14 +62,14 @@ example of use of the \code{RegexUtil} methods.
 
 \begin{description}
 
-\item[\refmethod{regex}{RegexUtil}{isRegex}{(String)}]
+\item[\refmethod{regex}{RegexUtil}{isRegex}{(java.lang.String)}]
   returns \<true> if its argument is a valid regular expression.
 
-\item[\refmethod{regex}{RegexUtil}{regexError}{(String)}]
+\item[\refmethod{regex}{RegexUtil}{regexError}{(java.lang.String)}]
   returns a \<String> error message if its argument is not a valid regular
   expression, or \<null> if its argument is a valid regular expression.
 
-\item[\refmethod{regex}{RegexUtil}{regexException}{(String)}]
+\item[\refmethod{regex}{RegexUtil}{regexException}{(java.lang.String)}]
   returns the
   \sunjavadoc{java/util/regex/PatternSyntaxException.html}{PatternSyntaxException}
   that \sunjavadoc{java/util/regex/Pattern.html#compile(java.lang.String)}{Pattern.compile(String)}
@@ -107,7 +107,7 @@ If you are positive that a particular string that is being used as a
 regular expression is syntactically valid, but the Regex Checker cannot
 conclude this and issues a warning about possible use of an invalid regular
 expression, then you can use the
-\refmethod{regex}{RegexUtil}{asRegex}{(String)} method to suppress the
+\refmethod{regex}{RegexUtil}{asRegex}{(java.lang.String)} method to suppress the
 warning.
 
 You can think of this method 
