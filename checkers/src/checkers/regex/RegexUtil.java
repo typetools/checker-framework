@@ -6,8 +6,17 @@ import java.util.regex.PatternSyntaxException;
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
 
-/*
+/**
  * Utility methods for the Regex checker.
+ *
+ * <b>Runtime Dependency</b>
+ *
+ * Please note that using this class introduces a Runtime dependency.
+ * This means that if you need to distribute (or link to) the Checker
+ * Framework, along with your binaries.
+ *
+ * To eliminate this dependency, you can simply copy this class into your
+ * own project.
  */
 public class RegexUtil {
 
