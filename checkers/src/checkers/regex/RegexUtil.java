@@ -10,6 +10,10 @@ import checkers.regex.quals.*;
  * Utility methods for the Regex checker.
  */
 public class RegexUtil {
+
+  private RegexUtil()
+  { throw new AssertionError("shouldn't be instantiated"); }
+
   /** 
    * Returns true if the argument is a syntactically valid regular
    * expression. 
