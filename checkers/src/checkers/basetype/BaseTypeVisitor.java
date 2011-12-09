@@ -862,7 +862,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Check the receiver type.
         // isSubtype() requires its arguments to be actual subtypes with
         // respect to JLS, but overrider receiver is not a subtype of the
-        // overridden receiver.  Hence copying the annotations
+        // overridden receiver.  Hence copying the annotations.
+        // TODO: this will need to be improved for generic receivers.
         AnnotatedTypeMirror overriddenReceiver =
             overrider.getReceiverType().getErased().getCopy(false);
         overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
