@@ -79,6 +79,18 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         }
     }
 
+    public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
+        treeClasses.put(treeClass, theQual);
+    }
+
+    public void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
+        treeKinds.put(treeKind, theQual);
+    }
+
+    public void addStringPattern(String pattern, AnnotationMirror theQual) {
+        stringPatterns.put(Pattern.compile(pattern), theQual);
+    }
+
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
 
