@@ -3,6 +3,10 @@ import checkers.util.test.*;
 
 class Arrays {
     Object[] @Odd [] objB1 = new Object[] @Odd [] {};
+    Object[][] @Odd [] objB1a = new Object[][] @Odd [] {};
+    Object @Odd [][][] objB1b = new Object @Odd [][][] {};
+    @Odd Object[][][] objB1c = new @Odd Object[][][] {};
+
     @interface A {}
     @interface B {}
     @interface C {}
@@ -106,7 +110,7 @@ class Arrays {
 //      @Odd String [] ara1 = { null, null };
         @Odd String [] ara2 = new @Odd String [] { null, null };
 
-//        //:: error: (assignment.type.incompatible)
+//        //xx:: error: (assignment.type.incompatible)
 //        @Odd String [] arb1 = { null, "m" };
         //:: error: (type.incompatible)
         @Odd String [] arb2 = new @Odd String [] { null, "m" };
