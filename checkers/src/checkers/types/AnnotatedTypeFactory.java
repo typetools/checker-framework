@@ -25,10 +25,7 @@ import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.source.SourceChecker.CheckerError;
 import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.TypeFromTree.TypeFromClass;
-import checkers.types.TypeFromTree.TypeFromExpression;
-import checkers.types.TypeFromTree.TypeFromMember;
-import checkers.types.TypeFromTree.TypeFromTypeTree;
+import checkers.types.TypeFromTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
 import checkers.util.stub.StubParser;
@@ -93,7 +90,7 @@ public class AnnotatedTypeFactory {
     final protected VisitorState visitorState;
 
     /** Represent the annotation relations **/
-    protected final @Nullable QualifierHierarchy qualHierarchy;
+    protected final /*@Nullable*/ QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     // Initially null, then assigned in postInit().  Caching is enabled as
@@ -135,7 +132,7 @@ public class AnnotatedTypeFactory {
      *            annotated types for
      * @throws IllegalArgumentException if either argument is {@code null}
      */
-    public AnnotatedTypeFactory(SourceChecker checker, @Nullable CompilationUnitTree root) {
+    public AnnotatedTypeFactory(SourceChecker checker, /*@Nullable*/ CompilationUnitTree root) {
         this(checker.getProcessingEnvironment(),
                 (checker instanceof BaseTypeChecker) ? ((BaseTypeChecker)checker).getQualifierHierarchy() : null,
                 root,
@@ -144,8 +141,8 @@ public class AnnotatedTypeFactory {
 
     /** A subclass must call postInit at the end of its constructor. */
     public AnnotatedTypeFactory(ProcessingEnvironment env,
-                                @Nullable QualifierHierarchy qualHierarchy,
-                                @Nullable CompilationUnitTree root,
+                                /*@Nullable*/ QualifierHierarchy qualHierarchy,
+                                /*@Nullable*/ CompilationUnitTree root,
                                 Class<? extends SourceChecker> checkerClass) {
         uid = ++uidCounter;
         this.env = env;
@@ -365,7 +362,7 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedDeclaredType fromClass(ClassTree tree) {
         AnnotatedDeclaredType result = (AnnotatedDeclaredType)
-            fromTreeWithVisitor(TypeFromClass.INSTANCE, tree);
+            fromTreeWithVisitor(TypeFromTree.TypeFromClassINSTANCE, tree);
         return result;
     }
 
@@ -386,7 +383,7 @@ public class AnnotatedTypeFactory {
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         }
         AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromMember.INSTANCE, tree);
+                TypeFromTree.TypeFromMemberINSTANCE, tree);
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
@@ -403,7 +400,7 @@ public class AnnotatedTypeFactory {
         if (fromTreeCache.containsKey(tree))
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromExpression.INSTANCE, tree);
+                TypeFromTree.TypeFromExpressionINSTANCE, tree);
         annotateInheritedFromClass(result);
         if (SHOULD_CACHE)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
@@ -422,7 +419,7 @@ public class AnnotatedTypeFactory {
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromTypeTree.INSTANCE, tree);
+                TypeFromTree.TypeFromTypeTreeINSTANCE, tree);
 
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
@@ -457,6 +454,7 @@ public class AnnotatedTypeFactory {
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
+
     /**
      * A convenience method that takes any visitor for converting trees to
      * annotated types, and applies the visitor to the tree, add implicit
@@ -468,9 +466,9 @@ public class AnnotatedTypeFactory {
      */
     private AnnotatedTypeMirror fromTreeWithVisitor(TypeFromTree converter, Tree tree) {
         if (tree == null)
-            throw new IllegalArgumentException("null tree");
+            throw new CheckerError("AnnotatedTypeFactory.fromTreeWithVisitor: null tree");
         if (converter == null)
-            throw new IllegalArgumentException("null visitor");
+            throw new CheckerError("AnnotatedTypeFactory.fromTreeWithVisitor: null visitor");
         AnnotatedTypeMirror result = converter.visit(tree, this);
         checkRep(result);
         return result;
@@ -489,7 +487,7 @@ public class AnnotatedTypeFactory {
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
      */
-    protected void annotateImplicit(Tree tree, @Mutable AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -501,7 +499,7 @@ public class AnnotatedTypeFactory {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    protected void annotateImplicit(Element elt, @Mutable AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -601,7 +599,7 @@ public class AnnotatedTypeFactory {
      * @param type the type for which class annotations will be inherited if
      * there are no annotations already present
      */
-    protected void annotateInheritedFromClass(@Mutable AnnotatedTypeMirror type) {
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
         InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 
@@ -651,6 +649,24 @@ public class AnnotatedTypeFactory {
             }
 
             return super.visitDeclared(type, p);
+        }
+
+        private final Map<TypeParameterElement, AnnotatedTypeVariable> visited =
+                new HashMap<TypeParameterElement, AnnotatedTypeVariable>();
+
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory p) {
+            TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
+            if (!visited.containsKey(tpelt)) {
+                visited.put(tpelt, type);
+                if (!type.isAnnotated() &&
+                        tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
+                   TypeFromElement.annotate(type, tpelt);
+                }
+                super.visitTypeVariable(type, p);
+                visited.remove(tpelt);
+            }
+            return null;
         }
     }
 
@@ -1090,6 +1106,7 @@ public class AnnotatedTypeFactory {
     public boolean isSupportedQualifier(AnnotationMirror a) {
         if (a!=null && supportedQuals.isEmpty()) {
             // Only include with retention
+            // TODO: what is the logic behind this?? Why does Retention matter?
             TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
             Retention retention = elt.getAnnotation(Retention.class);
             return (retention == null) || retention.value() != RetentionPolicy.SOURCE;
