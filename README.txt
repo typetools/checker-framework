@@ -8,7 +8,8 @@ This repository contains several related projects:
  release     buildfiles for making a release
 
 
-To build the Checker Framework, run:
+To build the Checker Framework, see section "Building from source" in the
+Checker Framework manual.  After building the first time, you can run:
   cd checkers
   ant
 
