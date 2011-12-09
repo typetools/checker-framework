@@ -42,7 +42,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
                         addSubtype(bottom, abot);
                     }
                 }
-            
+
                 if (this.polyQualifier!=null) {
                     addSubtype(bottom, polyQualifier);
                 }
