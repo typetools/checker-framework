@@ -616,7 +616,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         for (int i = 0; i < this.flowState.vars.size(); ++i) {
             Element elem = this.flowState.vars.get(i);
             if (elem.getKind() == ElementKind.FIELD
-                    && factory.getDeclAnnotation(elem, LazyNonNull.class) != null
+                    && factory.getAnnotatedType(elem).hasAnnotation(LazyNonNull.class)
                     && prev.annos.get(NONNULL, i))
                 this.flowState.annos.set(NONNULL, i);
         }
