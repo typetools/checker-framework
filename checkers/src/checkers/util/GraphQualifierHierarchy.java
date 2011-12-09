@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.nullness.quals.*;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 
@@ -19,13 +18,36 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 	/**
 	 * We only need to make sure that "build" instantiates the right QualifierHierarchy. 
 	 */
-    public static class GraphFactory extends MultiGraphFactory {        
+    public static class GraphFactory extends MultiGraphFactory {
+        private final AnnotationMirror bottom;
+
         public GraphFactory(SourceChecker checker) {
-        	super(checker);
+            super(checker);
+            this.bottom = null;
+        }
+
+        public GraphFactory(SourceChecker checker, AnnotationMirror bottom) {
+            super(checker);
+            this.bottom = bottom;
         }
 
         @Override
     	protected QualifierHierarchy createQualifierHierarchy() {
+            if (this.bottom!=null) {
+                // A special bottom qualifier was provided; go through the existing
+                // bottom qualifiers and tie them all to this bottom qualifier.
+                Set<AnnotationMirror> bottoms = findBottoms(supertypes, null);
+                for (AnnotationMirror abot : bottoms) {
+                    if (!AnnotationUtils.areSame(bottom, abot)) {
+                        addSubtype(bottom, abot);
+                    }
+                }
+            
+                if (this.polyQualifier!=null) {
+                    addSubtype(bottom, polyQualifier);
+                }
+            }
+
     		return new GraphQualifierHierarchy(this);
     	}
     }
