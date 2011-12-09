@@ -48,8 +48,8 @@ public class Arrays {
     return elts_String[0];
   }
 
-  private @Interned double[][] elts_da;
-  public void add_mod_elem (@Interned double[] v, int count) {
+  private double @Interned [] @Interned [] elts_da;
+  public void add_mod_elem (double @Interned [] v, int count) {
     elts_da[0] = v;
   }
 
