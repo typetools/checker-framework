@@ -46,8 +46,7 @@ public class LazyInitialization {
         lazy3.toString();
     }
 
-    @LazyNonNull
-    private double [] intersect = null;
+    private double @LazyNonNull [] intersect;
 
     public void check_modified(double[] a, int count) {
         if (intersect!=null) {
