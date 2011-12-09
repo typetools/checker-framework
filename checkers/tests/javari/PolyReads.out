@@ -1,6 +1,8 @@
 :10: error: (assignment.type.incompatible)
+:11: error: (assignment.type.incompatible)
 :19: error: (assignment.type.incompatible)
 :21: error: (assignment.type.incompatible)
+:22: error: (assignment.type.incompatible)
 :27: error: (assignment.type.incompatible)
 :28: error: (assignment.type.incompatible)
 :36: error: (assignment.type.incompatible)
