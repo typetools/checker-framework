@@ -147,7 +147,7 @@ public class TypeHierarchy {
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
             if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
-                throw new RuntimeException("TypeHierarchy: empty annotations in lhs: " +
+                checker.errorAbort("TypeHierarchy: empty annotations in lhs: " +
                         lhs + " " + lhsAnnos + " or rhs: " + rhs + " " + rhsAnnos);
             }
 
