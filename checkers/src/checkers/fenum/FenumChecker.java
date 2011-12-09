@@ -1,22 +1,21 @@
 package checkers.fenum;
 
-
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
-import checkers.fenum.quals.FenumBottom;
+import checkers.quals.Bottom;
 import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.basetype.BaseTypeChecker;
@@ -44,6 +43,14 @@ import checkers.basetype.BaseTypeChecker;
 @SupportedOptions( { "quals" } )
 @SupportedLintOptions( { "flowinference" } )
 public class FenumChecker extends BaseTypeChecker {
+    protected AnnotationMirror BOTTOM;
+
+    @Override
+    public void initChecker(ProcessingEnvironment env) {
+        BOTTOM = AnnotationUtils.getInstance(env).fromClass(Bottom.class);
+        super.initChecker(env);
+    }
+
     /** Copied from BasicChecker.
      * Instead of returning an empty set if no "quals" option is given,
      * we return Fenum as the only qualifier.
@@ -71,7 +78,7 @@ public class FenumChecker extends BaseTypeChecker {
         qualSet.add(FenumTop.class);
         qualSet.add(Fenum.class);
         qualSet.add(FenumUnqualified.class);
-        qualSet.add(FenumBottom.class);
+        qualSet.add(Bottom.class);
 
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
@@ -104,35 +111,15 @@ public class FenumChecker extends BaseTypeChecker {
         return true;
     }
 
-    @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
-    }
-
     /* The user is expected to introduce additional fenum annotations.
      * These annotations are declared to be subtypes of FenumTop, using the
      * @SubtypeOf annotation.
-     * However, there is no way to declare that it is a supertype of FenumBottom.
-     * Therefore, we fix the bottom of the type hierarchy here and add a special
-     * case when the subtype has the FenumBottom annotation.
+     * However, there is no way to declare that it is a supertype of Bottom.
+     * Therefore, we use the constructor of GraphQualifierHierarchy that allows
+     * us to set a dedicated bottom qualifier.
      */
-    // TODO: reuse existing Bottom annotation?
-    private final class FenumQualifierHierarchy extends GraphQualifierHierarchy {
-        public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
-        }
-
-        @Override
-        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-          if ( AnnotationUtils.getInstance(env).fromClass(FenumBottom.class).equals(anno1)) {
-            return true;
-          }
-          return super.isSubtype(anno1, anno2);
-        }
-
-        @Override
-        public Set<AnnotationMirror> getBottomAnnotations() {
-          return Collections.singleton(AnnotationUtils.getInstance(env).fromClass(FenumBottom.class));
-        }
+    @Override
+    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
+        return new GraphQualifierHierarchy.GraphFactory(this, BOTTOM);
     }
 }
