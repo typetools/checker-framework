@@ -217,7 +217,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns true if an annotation from the given sub-hierarchy targets this type location.
+     * Returns true if an annotation from the given sub-hierarchy targets this type.
      *
      * It doesn't account for annotations in deep types (type arguments,
      * array components, etc).
@@ -226,6 +226,25 @@ public abstract class AnnotatedTypeMirror {
      * @return True iff an annotation from the same hierarchy as p is present. 
      */
     public boolean isAnnotatedInHierarchy(AnnotationMirror p) {
+        return getAnnotationInHierarchy(p) != null;
+    }
+
+    /**
+     * Returns an annotation from the given sub-hierarchy, if such
+     * an annotation targets this type; otherwise returns null.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return An annotation from the same hierarchy as p if present. 
+     */
+    public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+        if (this.typeFactory.qualHierarchy==null) {
+            // This happens for one of the factories in the Nullness Checker...
+            // TODO: try to remove
+            return null;
+        }
     	AnnotationMirror aliased = p;
     	if (!typeFactory.isSupportedQualifier(aliased)) {
     		aliased = typeFactory.aliasedAnnotation(p);
@@ -234,11 +253,11 @@ public abstract class AnnotatedTypeMirror {
     		AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
     		for(AnnotationMirror anno : annotations) {
     			if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
-    				return true;
+    				return anno;
     			}
     		}
     	}
-    	return false;
+    	return null;
     }
 
     /**
@@ -436,6 +455,20 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Remove any annotation that is in the same qualifier hierarchy as the parameter.
+     *
+     * @param a An annotation from the same qualifier hierarchy
+     * @return If an annotation was removed
+     */
+    public boolean removeAnnotationInHierarchy(AnnotationMirror a) {
+        AnnotationMirror prev = this.getAnnotationInHierarchy(a);
+        if (prev!=null) {
+            return this.removeAnnotation(prev);
+        }
+        return false;
+    }
+
+    /**
      * Remove an Unqualified annotation if it exists. This might be a good thing
      * to do before adding a new annotation to a type.
      */
@@ -586,9 +619,9 @@ public abstract class AnnotatedTypeMirror {
     public AnnotatedTypeMirror substitute(
             Map<? extends AnnotatedTypeMirror,
                     ? extends AnnotatedTypeMirror> mappings) {
-        if (mappings.containsKey(this))
+        if (mappings.containsKey(this)) {
             return mappings.get(this).getCopy(true);
-
+        }
         return this.getCopy(true);
     }
 
@@ -661,6 +694,10 @@ public abstract class AnnotatedTypeMirror {
         }
 
         private void formatConjunctiveSuperTypes(StringBuilder sb) {
+            // Prevent an infinite recursion that might happen when calling toString
+            // within deepCopy, caused by postAsSuper in (at least) the IGJ checker.
+            // if (this.supertypes == null) { return; }
+
             boolean isFirst = true;
             for(AnnotatedDeclaredType adt : this.directSuperTypes()) {
                 if (!isFirst) sb.append(" & ");
@@ -980,9 +1017,10 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedTypeVariable> getTypeVariables() {
             if (typeVarTypes.isEmpty()
                     && !actualType.getTypeVariables().isEmpty()) { // lazy init
-                for (TypeMirror t : actualType.getTypeVariables())
+                for (TypeMirror t : actualType.getTypeVariables()) {
                     typeVarTypes.add((AnnotatedTypeVariable)createType(
                             t, env, typeFactory));
+                }
             }
             return Collections.unmodifiableList(typeVarTypes);
         }
@@ -1077,8 +1115,8 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public String toString() {
-            return getReturnType()
-                + (getTypeVariables().isEmpty() ? "" : " <" + getTypeVariables() + ">")
+            return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
+                + getReturnType()
                 + (getParameterTypes().isEmpty() ? " ()" : " (" + getParameterTypes() + ")")
                 + " " + getReceiverType()
                 + (getThrownTypes().isEmpty() ? "" : " throws " + getThrownTypes());
@@ -1244,6 +1282,13 @@ public abstract class AnnotatedTypeMirror {
             this.lowerBound = type;
         }
 
+        /**
+         * Get the lower bound field directly, bypassing any lazy initialization.
+         * This method is necessary to prevent infinite recursions in initialization.
+         * In general, prefer getLowerBound.
+         * 
+         * @return the lower bound field.
+         */
         public AnnotatedTypeMirror getLowerBoundField() {
             return lowerBound;
         }
@@ -1257,7 +1302,7 @@ public abstract class AnnotatedTypeMirror {
                 setLowerBound(createType(actualType.getLowerBound(), env, typeFactory));
             }
             if (lowerBound!=null) {
-                fixupLowerBoundAnnotations();
+                fixupBoundAnnotations();
             }
             return lowerBound;
         }
@@ -1301,7 +1346,22 @@ public abstract class AnnotatedTypeMirror {
         // then the type "X extends @NonNull Y" should not be converted
         // into "X extends @NonNull Y super @Nullable bottomtype" but be
         // converted into "X extends @NonNull Y super @NonNull bottomtype".
-        private void fixupLowerBoundAnnotations() {
+        //
+        // In addition, ensure consistency of annotations on type variables
+        // and the upper bound. Assume class C<X extends @Nullable Object>.
+        // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
+        // because otherwise the annotations are inconsistent.
+        private void fixupBoundAnnotations() {
+            if (!annotations.isEmpty() && upperBound!=null) {
+                // TODO: there seems to be some (for me) unexpected sharing
+                // between upper bounds. Without the copying in the next line, test
+                // case KeyForChecked fails, because the annotation on the return type
+                // type variable changes the upper bound of the parameter type variable.
+                // Should such a copy be made somewhere else and for more?
+                upperBound = upperBound.getCopy(false);
+                upperBound.clearAnnotations();
+                upperBound.addAnnotations(annotations);
+            }
             if (actualType.getLowerBound() instanceof NullType &&
                     lowerBound!=null && upperBound!=null) {
                 Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
@@ -1325,7 +1385,7 @@ public abstract class AnnotatedTypeMirror {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);
                 } else {
-                    throw new SourceChecker.CheckerError("AnnotatedTypeMirror.fixupLowerBoundAnnotations: default annotation on lower bound is inconsistent with explicit upper bound: " + this);
+                    throw new SourceChecker.CheckerError("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound is inconsistent with explicit upper bound: " + this);
                 }
             }
         }
@@ -1339,19 +1399,36 @@ public abstract class AnnotatedTypeMirror {
             this.upperBound = type;
         }
 
+        /**
+         * Get the upper bound field directly, bypassing any lazy initialization.
+         * This method is necessary to prevent infinite recursions in initialization.
+         * In general, prefer getUpperBound.
+         * 
+         * @return the upper bound field.
+         */
         public AnnotatedTypeMirror getUpperBoundField() {
             return upperBound;
         }
 
         /**
+         * Get the upper bound of the type variable, possibly lazily initializing it.
+         * Attention: If the upper bound is lazily initialized, it will not contain
+         * any annotations! Callers of the method have to make sure that an
+         * AnnotatedTypeFactory first processed the bound.
+         *  
          * @return the upper bound type of this type variable
          * @see #getEffectiveUpperBoundAnnotations
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null
-                    && actualType.getUpperBound() != null) // lazy init
+                    && actualType.getUpperBound() != null) {
+                // lazy init
                 setUpperBound(createType(
                         actualType.getUpperBound(), env, typeFactory));
+            }
+            if (upperBound!=null) {
+                fixupBoundAnnotations();
+            }
             return upperBound;
         }
 
@@ -1463,6 +1540,17 @@ public abstract class AnnotatedTypeMirror {
             if (found != null) return found;
 
             AnnotatedTypeVariable type = getCopy(true);
+            /* TODO: the above call of getCopy results in calls of
+             * getUpperBound, which lazily initializes the field.
+             * This causes a modification of the data structure, when
+             * all we want to do is copy it.
+             * However, if we only do the first part of getCopy,
+             * test cases fail. I spent a huge amount of time debugging
+             * this and added the annotateImplicitHack above.
+            AnnotatedTypeVariable type =
+                    new AnnotatedTypeVariable(actualType, env, typeFactory);
+            copyFields(type, true);*/
+
             Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
                 new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
             newMappings.put(this, type);
@@ -1696,15 +1784,21 @@ public abstract class AnnotatedTypeMirror {
             this.superBound = type;
         }
 
+        public AnnotatedTypeMirror getSuperBoundField() {
+            return superBound;
+        }
+
         /**
          * @return the lower bound of this wildcard. If no lower bound is
          * explicitly declared, {@code null} is returned.
          */
         public AnnotatedTypeMirror getSuperBound() {
             if (superBound == null
-                    && actualType.getSuperBound() != null) // lazy init
+                    && actualType.getSuperBound() != null) {
+                // lazy init
                 setSuperBound(createType(
                         actualType.getSuperBound(), env, typeFactory));
+            }
             return this.superBound;
         }
 
@@ -1730,12 +1824,17 @@ public abstract class AnnotatedTypeMirror {
             this.extendsBound = type;
         }
 
+        public AnnotatedTypeMirror getExtendsBoundField() {
+            return extendsBound;
+        }
+
         /**
          * @return the lower bound of this wildcard. If no lower bound is
          * explicitly declared, {@code null} is returned.
          */
         public AnnotatedTypeMirror getExtendsBound() {
-            if (extendsBound == null) { // lazy init
+            if (extendsBound == null) {
+                // lazy init
                 TypeMirror superType = actualType.getExtendsBound();
                 if (superType == null)
                     superType = env.getElementUtils().getTypeElement("java.lang.Object").asType();
@@ -1815,10 +1914,10 @@ public abstract class AnnotatedTypeMirror {
 
             // The extends and super bounds can be null because the underlying
             // type's extends and super bounds can be null.
-            if (getExtendsBound() != null)
-                type.setExtendsBound(getExtendsBound().substitute(newMapping));
-            if (getSuperBound() != null)
-                type.setSuperBound(getSuperBound().substitute(newMapping));
+            if (extendsBound != null)
+                type.setExtendsBound(extendsBound.substitute(newMapping));
+            if (superBound != null)
+                type.setSuperBound(superBound.substitute(newMapping));
 
             return type;
         }
