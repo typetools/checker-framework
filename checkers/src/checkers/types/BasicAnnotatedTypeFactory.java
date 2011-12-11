@@ -194,7 +194,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                      * Flow inference should always just return subtypes of the declared type, so something is going wrong!
                      * TODO!
                      */
-                    type.clearAnnotations();
+                    type.removeAnnotationInHierarchy(inferred);
                     type.addAnnotation(inferred);
                 }
             }
