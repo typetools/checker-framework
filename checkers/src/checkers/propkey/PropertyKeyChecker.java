@@ -13,15 +13,14 @@ import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.propkey.quals.Bottom;
+import checkers.quals.Bottom;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 
 
 /**
@@ -167,11 +166,8 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        AnnotationMirror bot = AnnotationUtils.getInstance(env).fromClass(Bottom.class);
-        if (sub.getAnnotations().contains(bot)) {
-            return true;
-        }
-        return super.isSubtype(sub, sup);
+    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
+        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
     }
+
 }

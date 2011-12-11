@@ -1,5 +1,8 @@
 package checkers.util.test;
 
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+
 import checkers.quals.*;
 
 /**
@@ -7,4 +10,5 @@ import checkers.quals.*;
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
+@Target(ElementType.TYPE_USE)
 public @interface Critical {}

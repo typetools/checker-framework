@@ -9,9 +9,9 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Current.class } )
+@SubtypeOf(Current.class)
 public @interface A {
     Prefix value() default Prefix.one;
 }

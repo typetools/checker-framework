@@ -14,6 +14,4 @@ import checkers.quals.TypeQualifier;
 @TypeQualifier
 @Target({}) // A programmer cannot write @ThisMutable in a program
 @SubtypeOf(ReadOnly.class)
-public @interface ThisMutable {
-
-}
+public @interface ThisMutable {}

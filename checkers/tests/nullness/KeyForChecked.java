@@ -4,12 +4,11 @@ import java.util.*;
 
 public class KeyForChecked {
 
-// Taken from the annotated JDK, because tests execute without the JDK.
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
     @Covariant(0)
-    public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
-        K getKey();
-        V getValue();
+    public static interface Entry<K1 extends @Nullable Object, V1 extends @Nullable Object> {
+        K1 getKey();
+        V1 getValue();
     }
     @Pure boolean containsKey(@Nullable Object a1);
     @Pure @Nullable V get(@Nullable Object a1);
@@ -19,13 +18,13 @@ interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
     KFIterator<K> iterator();
 }
 
-class KFHashMap<K extends @NonNull Object, V extends @NonNull Object> implements KFMap<K, V> {
+class KFHashMap<K2 extends @NonNull Object, V2 extends @NonNull Object> implements KFMap<K2, V2> {
     public @Pure boolean containsKey(@Nullable Object a1) { return false; }
-    public @Pure @Nullable V get(@Nullable Object a1) { return null; }
-    public @Nullable V put(K a1, V a2) { return null; }
-    public Set<@KeyFor("this") K> keySet() { return new HashSet<@KeyFor("this") K>(); }
-    public Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K, V>>(); }
-    public KFIterator<K> iterator() { return new KFIterator<K>(); }
+    public @Pure @Nullable V2 get(@Nullable Object a1) { return null; }
+    public @Nullable V2 put(K2 a1, V2 a2) { return null; }
+    public Set<@KeyFor("this") K2> keySet() { return new HashSet<@KeyFor("this") K2>(); }
+    public Set<KFMap.Entry<@KeyFor("this") K2, V2>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K2, V2>>(); }
+    public KFIterator<K2> iterator() { return new KFIterator<K2>(); }
 }
 
 @Covariant(0)

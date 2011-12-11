@@ -580,7 +580,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null;
         checkAssignability(var, varTree);
@@ -597,7 +597,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -624,7 +624,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey String errorKey) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         boolean success = checker.isSubtype(valueType, varType);
 
@@ -862,7 +862,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Check the receiver type.
         // isSubtype() requires its arguments to be actual subtypes with
         // respect to JLS, but overrider receiver is not a subtype of the
-        // overridden receiver.  Hence copying the annotations
+        // overridden receiver.  Hence copying the annotations.
+        // TODO: this will need to be improved for generic receivers.
         AnnotatedTypeMirror overriddenReceiver =
             overrider.getReceiverType().getErased().getCopy(false);
         overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
@@ -1010,14 +1011,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (shouldSkipUses(type.getElement()))
                 return super.visitDeclared(type, tree);
 
-            // Ensure that type use is a subtype of the element type
-            AnnotatedDeclaredType useType = type.getErased();
-            AnnotatedDeclaredType elemType = (AnnotatedDeclaredType)
-                atypeFactory.getAnnotatedType(
-                        useType.getUnderlyingType().asElement()).getErased();
+            {
+                // Ensure that type use is a subtype of the element type
+                // isValidUse determines the erasure of the types.
+                AnnotatedDeclaredType elemType = (AnnotatedDeclaredType)
+                        atypeFactory.getAnnotatedType(
+                                type.getUnderlyingType().asElement());
 
-            if (!checker.isValidUse(elemType, useType)) {
-                reportError(useType, tree);
+                if (!checker.isValidUse(elemType, type)) {
+                    reportError(type, tree);
+                }
             }
 
             // System.out.println("Type: " + type);
@@ -1186,6 +1189,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     }
                 }
             }
+
+            /* TODO:
+             * This should not be necessary and should be correctly done in the ATF.
+             * However, without it two test cases fail. It is related to how
+             * ATM.substitute replaces upper bounds and when they get initialized.
+             */
+            atypeFactory.annotateImplicitHack(tree, type);
+
             return super.visitTypeVariable(type, tree);
         }
 
@@ -1353,8 +1364,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 // Therefore, we go to the Element and get all annotations on
                 // the parameter.
 
-                if (m.getParameters().get(0).getAnnotation(
-                        checkers.nullness.quals.Nullable.class) == null) {
+                // TODO: doing types.typeAnnotationOf(m.getParameters().get(0).asType(), Nullable.class)
+                // or types.typeAnnotationsOf(m.asType())
+                // does not work any more. It should.
+
+                boolean foundNN = false;
+                for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
+                        ((com.sun.tools.javac.code.Symbol)m).typeAnnotations) {
+                    if ( tc.position.type==com.sun.tools.javac.code.TargetType.METHOD_PARAMETER &&
+                            tc.position.parameter_index==0 &&
+                            tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
+                        foundNN = true;
+                    }
+                }
+
+                if (!foundNN) {
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +

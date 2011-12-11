@@ -105,8 +105,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         public QualifierHierarchy build() {
             assertNotBuilt();
             addPolyRelations();
+            QualifierHierarchy result = createQualifierHierarchy();
             wasBuilt = true;
-            return createQualifierHierarchy();
+            return result;
         }
 
     	protected QualifierHierarchy createQualifierHierarchy() {
@@ -122,7 +123,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         /**
-         * add the relationships for polymorphic qualifiers.
+         * Add the relationships for polymorphic qualifiers.
          *
          * A polymorphic qualifier needs to be (take {@link PolyNull} for example)
          * 1. a subtype of the root qualifier (e.g. {@link Nullable})
@@ -140,8 +141,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
 
             Set<AnnotationMirror> bottoms = findBottoms(supertypes, polyQualifier);
-            for (AnnotationMirror bottom : bottoms)
+            for (AnnotationMirror bottom : bottoms) {
                 addSubtype(bottom, polyQualifier);
+            }
         }
     }
 
@@ -176,6 +178,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 	}
 
 	@Override
+	public String toString() {
+	    return "Supertypes Graph: " + supertypesGraph.toString() +
+	            "\nSupertypes Map: " + supertypesMap.toString() +
+	            "\nRoots: " + roots +
+	            "\nBottoms: " + bottoms;
+	}
+
+	@Override
     public Set<AnnotationMirror> getRootAnnotations() {
         return this.roots;
     }
@@ -183,22 +193,26 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @Override
     public AnnotationMirror getRootAnnotation(AnnotationMirror start) {
     	for (AnnotationMirror root : roots) {
-    		if (isSubtype(start, root)) {
+    		if (AnnotationUtils.areSameIgnoringValues(start, root) ||
+    		        isSubtype(start, root)) {
     			return root;
     		}
     	}
-    	checker.errorAbort("Did not find the root corresponding to qualifier " + start);
+    	checker.errorAbort("Did not find the root corresponding to qualifier " + start +
+    	        " all roots: " + roots);
         return null;
     }
 
     @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
     	for (AnnotationMirror bot : bottoms) {
-    		if (isSubtype(bot, start)) {
+    		if (AnnotationUtils.areSameIgnoringValues(start, bot) ||
+    		        isSubtype(bot, start)) {
     			return bot;
     		}
     	}
-    	checker.errorAbort("Did not find the bottom corresponding to qualifier " + start);
+    	checker.errorAbort("Did not find the bottom corresponding to qualifier " + start +
+    	        " all bottoms: " + bottoms);
         return null;
     }
 

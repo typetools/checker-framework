@@ -37,10 +37,8 @@ import com.sun.source.tree.Tree;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf({})
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-public @interface Nullable {
-
-}
+public @interface Nullable {}

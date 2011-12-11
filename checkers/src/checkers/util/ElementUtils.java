@@ -29,7 +29,7 @@ public class ElementUtils {
         Element result = elem;
         while (result != null && !result.getKind().isClass()
                 && !result.getKind().isInterface()) {
-            @Nullable Element encl = result.getEnclosingElement();
+            /*@Nullable*/ Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (TypeElement) result;
@@ -46,7 +46,7 @@ public class ElementUtils {
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
         while (result != null && result.getKind()!=ElementKind.PACKAGE) {
-            @Nullable Element encl = result.getEnclosingElement();
+            /*@Nullable*/ Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (PackageElement) result;
@@ -101,7 +101,7 @@ public class ElementUtils {
      * @return The qualified {@code Name} of the innermost class
      *         enclosing the element
      */
-    public static @Nullable Name getQualifiedClassName(Element element) {
+    public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
         if (element.getKind() == ElementKind.PACKAGE) {
             PackageElement elem = (PackageElement) element;
             return elem.getQualifiedName();

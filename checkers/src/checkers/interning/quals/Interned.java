@@ -30,12 +30,10 @@ import com.sun.source.tree.LiteralTree;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Unqualified.class})
+@SubtypeOf(Unqualified.class)
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @ImplicitFor(
     treeClasses={LiteralTree.class},
     typeClasses={AnnotatedPrimitiveType.class})
-public @interface Interned {
-
-}
+public @interface Interned {}
