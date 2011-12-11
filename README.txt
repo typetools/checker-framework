@@ -8,14 +8,7 @@ This repository contains several related projects:
  release     buildfiles for making a release
 
 
-To build the Checker Framework, run:
-  cd checkers
-  ant
-
-To generate the Checker Framework manual, run:
-  make -C checkers/manual
-This produces the two files:
-  checkers/manual/manual.html
-  checkers/manual/manual.pdf
-Alternately, you can find the manual on the Web at
-  http://types.cs.washington.edu/checker-framework/
+Documentation for installing and using the Checker Framework appears in the
+Checker Framework manual, which you can find in directory checkers/manual
+and online at
+http://types.cs.washington.edu/checker-framework/current/checkers-manual.html
