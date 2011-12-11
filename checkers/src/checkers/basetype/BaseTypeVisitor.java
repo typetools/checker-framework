@@ -1189,6 +1189,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     }
                 }
             }
+
+            /* TODO:
+             * This should not be necessary and should be correctly done in the ATF.
+             * However, without it two test cases fail. It is related to how
+             * ATM.substitute replaces upper bounds and when they get initialized.
+             */
+            atypeFactory.annotateImplicitHack(tree, type);
+
             return super.visitTypeVariable(type, tree);
         }
 

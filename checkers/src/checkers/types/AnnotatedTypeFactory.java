@@ -491,6 +491,12 @@ public class AnnotatedTypeFactory {
         // Pass.
     }
 
+    /* Temporary hack to allow access to annotateImplicit.
+     */
+    public void annotateImplicitHack(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
+        annotateImplicit(tree, type);
+    }
+
     /**
      * Adds implicit annotations to a type obtained from a {@link Element}. By
      * default, this method does nothing. Subclasses should use this method to
