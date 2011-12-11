@@ -341,7 +341,7 @@ But, please report your bug even if you do not report it in this format.
 
 The Checker Framework release (Section~\ref{installation}) contains
 everything that most users need, both to use the distributed checkers and
-to write your own checkers.  This section describes how to re-build its
+to write your own checkers.  This section describes how to compile its
 binaries from source.  You will be using the latest development version of
 the Checker Framework, rather than an official release.
 
@@ -460,7 +460,7 @@ Run \code{ant} to create \<checkers.jar>:
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-\item Add \code{tools.jar} and \code{checkers.jar} to your classpath
+\item Add \code{tools.jar} and \code{checkers.jar} to your classpath.
   (If you do not do this, you will have to supply the \code{-cp} option
   whenever you run \code{javac} and use a checker plugin.)
   Example command:
@@ -594,6 +594,16 @@ The technical
 paper also describes case
 studies in which each of the checkers found
 previously-unknown errors in real software.
+
+The paper ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+discusses further experience with the Checker Framework, increasing the
+number of lines of verified code to 3 million.
+
+In addition to these papers that discuss use the Checker Framework
+directly, other academic papers use the Checker Framework in their
+implementation or evaluation.  Most educational use of the Checker
+Framework is never published, and most commercial use of the Checker
+Framework is never discussed publicly.
 
 
 \section{Comparison to other tools\label{other-tools}}

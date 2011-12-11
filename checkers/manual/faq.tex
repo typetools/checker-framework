@@ -19,21 +19,22 @@ There is a separate FAQ for the type annotations syntax
 \textbf{Contents:} \\
 \ref{faq-ease-of-use}: Are type annotations easy to read and write? \\
 \ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
+\ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
 \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
-\ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
-\ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
-\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
-\ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
 \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
+\ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked? \\
+\ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
 \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker? \\
+\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
 \ref{faq-create-a-checker}: How do I create a new checker? \\
 \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
 \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
 \ref{faq-jml}: How does pluggable type-checking compare with JML? \\
+\ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
 \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
-\ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
+\ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
 
 
 
@@ -103,6 +104,36 @@ less frequently than generic types, which Java programmers find acceptable;
 and they reduce the overall volume of documentation that a codebase needs.
 
 
+\section{I don't make type errors, so would pluggable type checking help me?\label{never-make-type-errors}}
+
+Occasionally, a developer says that he makes no errors that typechecking
+could catch, or that any such errors are unimportant because they have low
+impact and are easy to fix.  When I investigate the claim, I invariably
+find that the developer is mistaken.
+
+Very frequently, the developer has underestimated what typechecking can
+discover.  Not every type error leads to an exception being thrown; and
+even if an exception is thrown, it may not seem related to classical types.
+Remember that a type system can discover
+null pointer dereferences,
+incorrect side effects, 
+security errors such as information leakage or SQL injection,
+partially-initialized data,
+wrong units of measurement,
+and many other errors.  Even where type-checking does not discover a
+problem directly, it can indicate code with bad smells, thus revealing
+problems, improving documentation, and making future maintenance easier.
+
+There are other ways to discover errors, including extensive testing and
+debugging.  You should continue to use these.
+But type-checking is a good complement to these.  Type-checking is more
+effective for some problems, and less effective for other problems.  It can
+reduce (but not eliminate) the time and effort that you spend on other
+approaches.  There are many important errors that type checking and other
+automated approaches cannot find; pluggable typechecking gives you more
+time to focus on those.
+
+
 \section{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
 
 For a discussion of this issue, see Section~\ref{handling-warnings}.
@@ -139,102 +170,31 @@ possible class of problems), and increasing confidence in a piece of
 software.
 
 
-\section{I don't make type errors, so would pluggable type checking help me?\label{never-make-type-errors}}
-
-Occasionally, a developer says that he makes no errors that typechecking
-could catch, or that any such errors are unimportant because they have low
-impact and are easy to fix.  When I investigate the claim, I invariably
-find that the developer is mistaken.
-
-Very frequently, the developer has underestimated what typechecking can
-discover.  Not every type error leads to an exception being thrown; and
-even if an exception is thrown, it may not seem related to classical types.
-Remember that a type system can discover
-null pointer dereferences,
-incorrect side effects, 
-security errors such as information leakage or SQL injection,
-partially-initialized data,
-and many other errors.  Even where type-checking does not discover a
-problem directly, it can indicate code with bad smells, thus revealing
-problems, improving documentation, and making future maintenance easier.
-
-There are other ways to discover errors, including extensive testing and
-debugging.  But type-checking is a good complement to these.  It is more
-effective for some problems, and less effective for other problems.  It can
-reduce (but not eliminate) the time and effort that you spend on other
-approaches.  There are many important errors that type checking and other
-automated approaches cannot find; pluggable typechecking gives you more
-time to focus on those.
-
-
-\section{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
-
-It is bad style for an annotation to apply to both types and declarations.
-In other words, every annotation should have a \<@Target> meta-annotation,
-and the \<@Target> meta-annotation should list either only declaration
-locations or only type annotations.  (It's OK for an annotation to target
-both \<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no
-other declaration location along with \<ElementType.TYPE\_USE>.)
-
-Sometimes, it may seem tempting for an annotation to apply to both type
-uses and (say) method declarations.  Here is a hypothetical example:
-
-\begin{quote}
-  ``Each \<Widget> type may have a \<@Version> annotation.
-  I wish to prove that versions of widgets don't get assigned to
-  incompatible variables, and that older code does not call newer code (to
-  avoid problems when backporting).
-
-  A \<@Version> annotation could be written like so:
-
-\begin{Verbatim}
-  @Version("2.0") Widget createWidget(String value) { ... }
-\end{Verbatim}
-
-\<@Version("2.0")> on the method could mean that the \<createWidget> method
-only appears in the 2.0 version.  \<@Version("2.0")> on the return type
-could mean that the returned \<Widget> should only be used by code that
-uses the 2.0 API of \<Widget>.  It should be possible to specify these
-independently, such as a 2.0 method that returns a value that allows the
-1.0 API method invocations.''
-\end{quote}
-
-Both of these are type properties and should be specified with type
-annotations.  No method annotation is necessary or desirable.  The best way
-to require that the receiver has a certain property is to use a type
-annotation on the receiver of the method.  (Slightly more formally, the
-property being checked is compatibility between the annotation on the type
-of the formal parameter receiver and the annotation on the type of the
-actual receiver.)
-
-
-Another example of a type-and-declaration annotation that represents poor
-design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
-in Section~\ref{jcip-annotations}, it means two different things when
-applied to a field or a method.  To reduce confusion and increase
-expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
-\<@Holding> annotation for one of these meanings, rather than overloading
-\<@GuardedBy> with two distinct meanings.
-
-
-
-\section{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
-
-In brief, use subtypes when you can, and use type qualifiers when you cannot
-use subtypes.
-For more details, see section~\ref{when-to-use-type-qualifiers}.
-
-
-\section{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
-
-See Section~\ref{get-started-with-legacy-code}.
-
-
 \section{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}
 
 Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, so type-checking errors
 will not cause \<javac> to exit with a failure status.
+
+
+\section{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
+
+Currently, the Checker Framework has no support for adding code to check,
+at run time, code that was not checked (see
+Chapter~\ref{warnings-and-legacy} for reasons that code might not be
+checked).  An exception is the Nullness Checker, which has ways to
+dynamically check nullness via assertions and casts (the
+\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method); see
+Section~\ref{suppressing-warnings-with-assertions}.
+
+More general support would be an interesting and valuable project.  If you
+are able to add run-time verification functionality, we would gladly
+welcome it as a contribution to the Checker Framework.
+
+
+\section{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+
+See Section~\ref{get-started-with-legacy-code}.
 
 
 \section{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
@@ -243,6 +203,13 @@ The compile options to javac can be a pain to type; for example,
 \code{javac -processor checkers.nullness.NullnessChecker ...}.
 See Section~\ref{checker-auto-discovery} for a way to avoid the need for
 the \code{-processor} command-line option.
+
+
+\section{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
+
+In brief, use subtypes when you can, and use type qualifiers when you cannot
+use subtypes.
+For more details, see section~\ref{when-to-use-type-qualifiers}.
 
 
 \section{How do I create a new checker?\label{faq-create-a-checker}}
@@ -337,6 +304,57 @@ The JML toolset is less mature.  For instance, if your code uses
 generics or other features of Java 5, then you cannot use JML.  
 However, JML has a run-time checker, which the Checker Framework currently
 lacks.
+
+
+\section{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
+
+It is bad style for an annotation to apply to both types and declarations.
+In other words, every annotation should have a \<@Target> meta-annotation,
+and the \<@Target> meta-annotation should list either only declaration
+locations or only type annotations.  (It's OK for an annotation to target
+both \<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no
+other declaration location along with \<ElementType.TYPE\_USE>.)
+
+Sometimes, it may seem tempting for an annotation to apply to both type
+uses and (say) method declarations.  Here is a hypothetical example:
+
+\begin{quote}
+  ``Each \<Widget> type may have a \<@Version> annotation.
+  I wish to prove that versions of widgets don't get assigned to
+  incompatible variables, and that older code does not call newer code (to
+  avoid problems when backporting).
+
+  A \<@Version> annotation could be written like so:
+
+\begin{Verbatim}
+  @Version("2.0") Widget createWidget(String value) { ... }
+\end{Verbatim}
+
+\<@Version("2.0")> on the method could mean that the \<createWidget> method
+only appears in the 2.0 version.  \<@Version("2.0")> on the return type
+could mean that the returned \<Widget> should only be used by code that
+uses the 2.0 API of \<Widget>.  It should be possible to specify these
+independently, such as a 2.0 method that returns a value that allows the
+1.0 API method invocations.''
+\end{quote}
+
+Both of these are type properties and should be specified with type
+annotations.  No method annotation is necessary or desirable.  The best way
+to require that the receiver has a certain property is to use a type
+annotation on the receiver of the method.  (Slightly more formally, the
+property being checked is compatibility between the annotation on the type
+of the formal parameter receiver and the annotation on the type of the
+actual receiver.)
+
+
+Another example of a type-and-declaration annotation that represents poor
+design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
+in Section~\ref{jcip-annotations}, it means two different things when
+applied to a field or a method.  To reduce confusion and increase
+expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
+\<@Holding> annotation for one of these meanings, rather than overloading
+\<@GuardedBy> with two distinct meanings.
+
 
 
 \section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
@@ -521,19 +539,12 @@ For more details on suppressing nullness warnings, see
 Section~\ref{suppressing-warnings-nullness}.
 
 
-\section{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
+\section{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}
 
-Currently, the Checker Framework has no support for adding code to check,
-at run time, code that was not checked (see
-Chapter~\ref{warnings-and-legacy} for reasons that code might not be
-checked).  An exception is the Nullness Checker, which has ways to
-dynamically check nullness via assertions and casts (the
-\refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method); see
-Section~\ref{suppressing-warnings-with-assertions}.
-
-More general support would be an interesting and valuable project.  If you
-are able to add run-time verification functionality, we would gladly
-welcome it as a contribution to the Checker Framework.
+The Checker Framework is not an official part of Java, though it relies on
+type annotations, which are part of Java 8.  See the
+\ahref{http://types.cs.washington.edu/jsr308/jsr308-faq.html#checkers-in-java}{Type
+  Annotations (JSR 308) FAQ} for more details.
 
 
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
