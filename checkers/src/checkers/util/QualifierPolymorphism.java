@@ -339,9 +339,11 @@ public class QualifierPolymorphism {
                 Map<String, AnnotationMirror> result;
                 if (wctype.getUnderlyingType().getExtendsBound()!=null) {
                     result = visit(type, wctype.getExtendsBound());
-                } else {
+                } else if (wctype.getUnderlyingType().getSuperBound()!=null) {
                     // TODO: is the logic different for super bounds?
                     result = visit(type, wctype.getSuperBound());
+                } else {
+                    result = Collections.emptyMap();
                 }
                 visited.remove(actualType.getUnderlyingType());
                 return result;
