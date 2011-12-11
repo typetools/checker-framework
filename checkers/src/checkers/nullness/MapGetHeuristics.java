@@ -91,7 +91,7 @@ import com.sun.source.util.TreePath;
         MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
         if (TreeUtils.isMethodInvocation(tree, mapGet, env)) {
             AnnotatedTypeMirror type = method.getReturnType();
-            type.clearAnnotations();
+            type.removeAnnotationInHierarchy(factory.NULLABLE);
             if (!isSuppressable(path)) {
                 type.addAnnotation(factory.NULLABLE);
             } else {
