@@ -368,8 +368,9 @@ public class AnnotatedTypes {
     @SuppressWarnings("unchecked")
     public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
         // TODO: Test this, specify behavior, merge/compare to ATM.copy
-        return (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
+        ATM result = (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
                 AnnotatedTypeMirror>emptyMap());
+        return result;
     }
 
     /**
@@ -491,8 +492,7 @@ public class AnnotatedTypes {
             assert superElement != null; /*nninvariant*/
             // For all method in the supertype, add it to the set if
             // it overrides the given method.
-            for (ExecutableElement supermethod : methodsIn(superElement
-                    .getEnclosedElements())) {
+            for (ExecutableElement supermethod : methodsIn(superElement.getEnclosedElements())) {
                 if (env.getElementUtils().overrides(method, supermethod,
                         superElement)) {
                     overrides.put(supertype, supermethod);
