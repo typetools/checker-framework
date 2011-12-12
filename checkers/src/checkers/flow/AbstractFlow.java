@@ -755,12 +755,25 @@ implements Flow {
 
         AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
         AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
-        if (iter != null)
-            propagateFromType(var, iter);
+        if (iter != null) {
+            // Use the erased type in order to propagate the annotations from the upper/extends
+            // bound of a type variable/wildcard.
+            propagateFromType(var, iter.getErased());
+        } else {
+            checker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+        }
 
-        // only visit statement. skip variable and expression..
-        // visited variable and expression already
+        ST stEntry = copyState(flowState);
+
+        // Visit the statement twice to account for the effect
+        // the loop body might have on the enclosing state.
         scanStat(node.getStatement());
+        flowState.and(stEntry, annoRelations);
+        scanStat(node.getStatement());
+
+        // The loop might never get executed -> restore state.
+        flowState = stEntry;
+
         return null;
     }
 
