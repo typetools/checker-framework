@@ -2,13 +2,18 @@ Version 1.2.4, x Nov 2011
 
 Nullness Checker:
 - Do not allow nullness annotations on primitive types.
-- Improvements to rawness checks.
+- Improvements to rawness (initialization) checks.
 - Special-case known keys for System.getProperty.
 - The -Alint=uninitialized command-line option now defaults to off, and
   applies only to initialization of primitive and @Nullable fields.  It is
   not possible to disable, from the command line, the check that all
   @NonNull fields are initialized.  Such warnings must be suppressed
   explicitly, for example by using @SuppressWarnings.
+
+Manual:
+- Add FAQ item "Is the Checker Framework an official part of Java?"
+- Trim down README.txt; users should read the manual instead.
+- Improvements throughout, especially to Nullness and Regex Checker sections.
 
 Implementation details:
 - Add a new @InvisibleQualifier meta-annotation for type qualifiers.
@@ -18,6 +23,7 @@ Implementation details:
   Nullness Checker to hide the @Primitive annotation.
 - Nullness Checker:  Introduce a new internal qualifier @Primitive that is
   used for primitive types.
+- Many bug fixes.
 
 ----------------------------------------------------------------------
 Version 1.2.3, 1 Nov 2011
