@@ -388,11 +388,11 @@ public class AnnotatedTypes {
             return ((AnnotatedArrayType) iterableType).getComponentType();
         }
 
+        // For type variables and wildcards take the effective upper bound.
         if (iterableType.getKind() == TypeKind.WILDCARD)
-            return getIteratedType(((AnnotatedWildcardType) iterableType).getExtendsBound());
-
+            return getIteratedType(((AnnotatedWildcardType) iterableType).getEffectiveExtendsBound());
         if (iterableType.getKind() == TypeKind.TYPEVAR)
-            return getIteratedType(((AnnotatedTypeVariable) iterableType).getUpperBound());
+            return getIteratedType(((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED)
             throw new IllegalArgumentException("Not iterable type: " + iterableType);
