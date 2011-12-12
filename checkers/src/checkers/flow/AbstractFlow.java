@@ -509,27 +509,6 @@ implements Flow {
         return null;
     }
 
-    @Override
-    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        scan(node.getVariable(), p);
-
-        VariableTree var = node.getVariable();
-        newVar(var);
-
-        ExpressionTree expr = node.getExpression();
-        scanExpr(expr);
-
-        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
-        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
-        if (iter != null)
-            propagateFromType(var, iter);
-
-        // only visit statement. skip variable and expression..
-        // visited variable and expression already
-        scanStat(node.getStatement());
-        return null;
-    }
-
     protected static boolean containsKey(Tree tree, Collection<String> keys) {
         if (tree == null)
             return false;
@@ -761,6 +740,27 @@ implements Flow {
         } else {
             flowState = stEntry;
         }
+        return null;
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        scan(node.getVariable(), p);
+
+        VariableTree var = node.getVariable();
+        newVar(var);
+
+        ExpressionTree expr = node.getExpression();
+        scanExpr(expr);
+
+        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
+        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+        if (iter != null)
+            propagateFromType(var, iter);
+
+        // only visit statement. skip variable and expression..
+        // visited variable and expression already
+        scanStat(node.getStatement());
         return null;
     }
 
