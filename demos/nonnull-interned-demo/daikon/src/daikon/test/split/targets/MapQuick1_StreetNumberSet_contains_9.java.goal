@@ -1,0 +1,58 @@
+import daikon.*; 
+import daikon.inv.*; 
+import daikon.split.*; 
+
+public final class MapQuick1_StreetNumberSet_contains_9 extends Splitter { 
+
+  public String condition() { 
+    return "orig(i<sets.length)"; 
+  } 
+
+
+  static DummyInvariant dummyInvFactory;
+  DummyInvariant dummyInv;
+
+  public MapQuick1_StreetNumberSet_contains_9() { } 
+  public MapQuick1_StreetNumberSet_contains_9(Ppt ppt) { 
+  }
+
+  public Splitter instantiate(Ppt ppt) { 
+    return new MapQuick1_StreetNumberSet_contains_9(ppt); 
+  } 
+
+  public boolean valid() { 
+    /* no variables were found */
+    return false;
+  } 
+
+  public boolean test(ValueTuple vt) { 
+    /* writeTestBody: 0 declarations */
+    return(orig_i<orig_sets.length); 
+  } 
+
+  public String repr() { 
+    return "MapQuick1_StreetNumberSet_contains_9: "
+      ;
+  } 
+
+  public void makeDummyInvariant(DummyInvariant inv) { 
+    dummyInvFactory = inv; 
+  } 
+
+  public void instantiateDummy(PptTopLevel ppt) { 
+    dummyInv = null; 
+  } 
+
+  public DummyInvariant getDummyInvariant() { 
+    return dummyInv; 
+  } 
+
+  public int[] getIntArray(long[] longArray) { 
+    int[] intArray = new int[longArray.length]; 
+    for (int i = 0; i < intArray.length; i++) { 
+      intArray[i] = (int) longArray[i]; 
+    } 
+    return intArray; 
+  } 
+
+} 
