@@ -20,8 +20,9 @@ you to write too many qualifiers in your program.
 In particular, qualifiers in method bodies are extremely rare.
 
 Most of this section is applicable only to source code that is being
-checked by a checker.  For defaulting rules when the compiler reads a
-\<.class> file, see Section~\ref{defaults-classfile}.
+checked by a checker.
+% TODO:  For defaulting rules when the compiler reads a
+% \<.class> file, see Section~\ref{defaults-classfile}.
 
   The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -378,7 +379,7 @@ future.  Or, it may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 
-
+\iffalse TODO
 \subsection{Default qualifiers for \<.class> files\label{defaults-classfile}}
 
 The defaulting rules presented so far apply to source code that is read by
@@ -421,6 +422,9 @@ better than the type checker silently permitting such uses.
 To eliminate the errors, you should either re-compile the library while
 running the checker to create new \<.class> and/or \<.jar> files, or you
 should suppress the warnings (see Section~\ref{suppressing-warnings}).
+
+TODO
+\fi
 
 
 % If you add a Javadoc link to this location, also add the qualifier to the
