@@ -495,6 +495,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return super.visitNewArray(node, p);
     }
 
+    /* TODO: add once lambda is fully integrated.
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        System.out.println("Params: " + node.getParameters());
+        System.out.println("Body: " + node.getBody());
+        return super.visitLambdaExpression(node, p);
+    }
+
+    @Override
+    public Void visitMemberReference(MemberReferenceTree node, Void p) {
+        // node.getQualifierExpression()
+        // node.getTypeArguments()
+        return super.visitMemberReference(node, p);
+    }*/
+
     /**
      * Do not override this method!
      * Previously, this method contained some logic, but the main modifier of types was missing.
