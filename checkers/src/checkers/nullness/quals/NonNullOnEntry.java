@@ -29,7 +29,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface NonNullOnEntry {
     /**
      * Java expression(s) that are non-null when the method is entered --

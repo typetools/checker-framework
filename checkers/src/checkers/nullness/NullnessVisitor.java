@@ -204,11 +204,11 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, @CompilerMessageKey String errorKey) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         // allow LazyNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils.elementFromDeclaration((VariableTree)varTree);
-            if (atypeFactory.getDeclAnnotation(elem, LazyNonNull.class) != null)
+            if (atypeFactory.fromElement(elem).hasAnnotation(LazyNonNull.class))
                 return;
         }
 
@@ -333,7 +333,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                  && (! blockInitialized.contains(var.getName())))
                 // var is not @LazyNonNull -- don't check @LazyNonNull fields
                 // even if checking all fields
-                && atypeFactory.getDeclAnnotation(varElt, LazyNonNull.class) == null
+                && !atypeFactory.fromElement(varElt).hasAnnotation(LazyNonNull.class)
                 // var is not static -- need a check of initializer blocks,
                 // not of constructor which is where this is used
                 && !varElt.getModifiers().contains(Modifier.STATIC)
@@ -458,7 +458,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      * @param type  type to be checked nullability
      * @param tree  the tree where the error is to reported
      */
-    private void checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
+    private void checkForNullability(ExpressionTree tree, /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         Set<AnnotationMirror> annos = type.getEffectiveAnnotations();
         if (!(annos.contains(NONNULL) || annos.contains(PRIMITIVE))) {

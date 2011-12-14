@@ -10,6 +10,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -149,15 +150,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
-    private Pattern getSkipUsesPattern(Map<String, String> options) {
+    private Pattern getSkipPattern(String patternName, Map<String, String> options) {
         String pattern = "";
 
-        if (options.containsKey("skipUses"))
-            pattern = options.get("skipUses");
-        else if (System.getProperty("checkers.skipUses") != null)
-            pattern = System.getProperty("checkers.skipUses");
-        else if (System.getenv("skipUses") != null)
-            pattern = System.getenv("skipUses");
+        if (options.containsKey(patternName))
+            pattern = options.get(patternName);
+        else if (System.getProperty("checkers." + patternName) != null)
+            pattern = System.getProperty("checkers." + patternName);
+        else if (System.getenv(patternName) != null)
+            pattern = System.getenv(patternName);
+
+        if (pattern.indexOf("/") != -1) {
+            getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+              "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
+        }
 
         // return a pattern of an illegal Java identifier character
         // so that it won't match anything
@@ -167,22 +173,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return Pattern.compile(pattern);
     }
 
+    private Pattern getSkipUsesPattern(Map<String, String> options) {
+        return getSkipPattern("skipUses", options);
+    }
+
     private Pattern getSkipDefsPattern(Map<String, String> options) {
-        String pattern = "";
-
-        if (options.containsKey("skipDefs"))
-            pattern = options.get("skipDefs");
-        else if (System.getProperty("checkers.skipDefs") != null)
-            pattern = System.getProperty("checkers.skipDefs");
-        else if (System.getenv("skipDefs") != null)
-            pattern = System.getenv("skipDefs");
-
-        // return a pattern of an illegal Java identifier character
-        // so that it won't match anything
-        if (pattern.equals(""))
-            pattern = "\\(";
-
-        return Pattern.compile(pattern);
+        return getSkipPattern("skipDefs", options);
     }
 
     private Set<String> createActiveLints(Map<String, String> options) {
@@ -308,7 +304,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
-        @Nullable Trees trees = Trees.instance(processingEnv);
+        /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
@@ -452,7 +448,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    protected void message(Diagnostic.Kind kind, Object source, @CompilerMessageKey String msgKey,
+    protected void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -561,26 +557,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (swKeys.isEmpty())
             return false;
 
-        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+        /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null)
             return false;
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err))
             return true;
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method), err))
             return true;
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls), err))
             return true;
 
         return false;
     }
 
-    private boolean shouldSuppressWarnings(@Nullable Element elt, String err) {
+    private boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
         if (elt == null)
             return false;
@@ -710,16 +706,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         this checker
      */
     public Set<String> getSupportedLintOptions() {
-        @Nullable SupportedLintOptions sl =
+        /*@Nullable*/ SupportedLintOptions sl =
             this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null)
             return Collections.</*@NonNull*/ String>emptySet();
 
-        @Nullable String /*@Nullable*/ [] slValue = sl.value();
+        /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        @Nullable String [] lintArray = slValue;
+        /*@Nullable*/ String [] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray)
             lintSet.add(s);

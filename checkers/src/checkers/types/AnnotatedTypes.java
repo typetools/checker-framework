@@ -2,8 +2,6 @@ package checkers.types;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -13,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 
+import checkers.quals.TypeQualifier;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -369,8 +368,9 @@ public class AnnotatedTypes {
     @SuppressWarnings("unchecked")
     public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
         // TODO: Test this, specify behavior, merge/compare to ATM.copy
-        return (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
+        ATM result = (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
                 AnnotatedTypeMirror>emptyMap());
+        return result;
     }
 
     /**
@@ -388,11 +388,11 @@ public class AnnotatedTypes {
             return ((AnnotatedArrayType) iterableType).getComponentType();
         }
 
+        // For type variables and wildcards take the effective upper bound.
         if (iterableType.getKind() == TypeKind.WILDCARD)
-            return getIteratedType(((AnnotatedWildcardType) iterableType).getExtendsBound());
-
+            return getIteratedType(((AnnotatedWildcardType) iterableType).getEffectiveExtendsBound());
         if (iterableType.getKind() == TypeKind.TYPEVAR)
-            return getIteratedType(((AnnotatedTypeVariable) iterableType).getUpperBound());
+            return getIteratedType(((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED)
             throw new IllegalArgumentException("Not iterable type: " + iterableType);
@@ -492,8 +492,7 @@ public class AnnotatedTypes {
             assert superElement != null; /*nninvariant*/
             // For all method in the supertype, add it to the set if
             // it overrides the given method.
-            for (ExecutableElement supermethod : methodsIn(superElement
-                    .getEnclosedElements())) {
+            for (ExecutableElement supermethod : methodsIn(superElement.getEnclosedElements())) {
                 if (env.getElementUtils().overrides(method, supermethod,
                         superElement)) {
                     overrides.put(supertype, supermethod);
@@ -1201,18 +1200,10 @@ public class AnnotatedTypes {
     }
 
     private static boolean isTypeAnnotationImpl(TypeElement type) {
-        Target target = type.getAnnotation(Target.class);
-        if (target == null)
-            return true;
-        for (ElementType et : target.value()) {
-            // TODO: Why is this checking TYPE_USE and not @TypeQualifier?
-            if (et == ElementType.TYPE_USE)
-                return true;
-        }
-        return false;
+        return type.getAnnotation(TypeQualifier.class)!=null;
     }
 
-    public static boolean containsTypeAnnotation(List<? extends AnnotationMirror> annos) {
+    public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos) {
         for(AnnotationMirror am : annos) {
             if(isTypeAnnotation(am)) return true;
         }

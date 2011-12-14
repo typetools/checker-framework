@@ -509,27 +509,6 @@ implements Flow {
         return null;
     }
 
-    @Override
-    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        scan(node.getVariable(), p);
-
-        VariableTree var = node.getVariable();
-        newVar(var);
-
-        ExpressionTree expr = node.getExpression();
-        scanExpr(expr);
-
-        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
-        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
-        if (iter != null)
-            propagateFromType(var, iter);
-
-        // only visit statement. skip variable and expression..
-        // visited variable and expression already
-        scanStat(node.getStatement());
-        return null;
-    }
-
     protected static boolean containsKey(Tree tree, Collection<String> keys) {
         if (tree == null)
             return false;
@@ -624,11 +603,7 @@ implements Flow {
                 // the else branch is not alive at the end
                 // we use the liveness-result from the then branch
                 alive = aliveAfterThen;
-                // annosAfterThen.or(annos);
-                // GenKillBits.orlub(annosAfterThen, annos, annoRelations);
                 afterThen.or(flowState, annoRelations);
-                // annos = GenKillBits.copy(annosAfterThen);
-                // flowState = copyState(afterThen);
                 flowState = afterThen;
             } else if (!aliveAfterThen) {
                 // annos = annos;  // NOOP
@@ -638,17 +613,14 @@ implements Flow {
             } else {
                 // both branches are alive
                 // alive = true;
-                // GenKillBits.andlub(annos, annosAfterThen, annoRelations);
                 flowState.and(afterThen, annoRelations);
             }
         } else {
             if (!alive) {
-                // annos = GenKillBits.copy(annosBeforeElse);
                 // there is no alias to beforeElse, so copy is not needed
                 // flowState = copyState(beforeElse);
                 flowState = beforeElse;
             } else {
-                // GenKillBits.andlub(annos, annosBeforeElse, annoRelations);
                 flowState.and(beforeElse, annoRelations);
             }
         }
@@ -669,7 +641,6 @@ implements Flow {
 
         flowState = whenFalse;
         scanExpr(node.getFalseExpression());
-        // annos.and(after);
         flowState.and(after, annoRelations);
 
         return null;
@@ -692,13 +663,8 @@ implements Flow {
 
             if (pass) break;
 
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
             stCondTrue.and(stEntry, annoRelations);
-            // annos.and(annoEntry);
-            // GenKillBits.andlub(annos, annoEntry, annoRelations);
             flowState.and(stEntry, annoRelations);
-
             pass = true;
         } while (true);
 
@@ -728,9 +694,9 @@ implements Flow {
             scanCond(node.getCondition());
             stCond = flowState_whenFalse;
             flowState = flowState_whenTrue;
+
             if (pass) break;
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(split.annosWhenTrue, annoEntry, annoRelations);
+
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
@@ -764,11 +730,7 @@ implements Flow {
 
             if (pass) break;
 
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
             stCondTrue.and(stEntry, annoRelations);
-            // annos.and(annoEntry);
-            // GenKillBits.andlub(annos, annoEntry, annoRelations);
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
@@ -778,6 +740,39 @@ implements Flow {
         } else {
             flowState = stEntry;
         }
+        return null;
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        scan(node.getVariable(), p);
+
+        VariableTree var = node.getVariable();
+        newVar(var);
+
+        ExpressionTree expr = node.getExpression();
+        scanExpr(expr);
+
+        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
+        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+
+        if (iter != null) {
+            propagateFromType(var, iter);
+        } else {
+            checker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+        }
+
+        ST stEntry = copyState(flowState);
+
+        // Visit the statement twice to account for the effect
+        // the loop body might have on the enclosing state.
+        scanStat(node.getStatement());
+        flowState.and(stEntry, annoRelations);
+        scanStat(node.getStatement());
+
+        // The loop might never get executed -> restore state.
+        flowState = stEntry;
+
         return null;
     }
 
@@ -817,8 +812,6 @@ implements Flow {
         ST stAfterBlock = copyState(flowState);
         ST result = tryBits.pop();
 
-        // annos.and(result);
-        // GenKillBits.andlub(annos, result, annoRelations);
         flowState.and(result, annoRelations);
 
         if (node.getCatches() != null) {
@@ -829,7 +822,6 @@ implements Flow {
             }
             // Conservative: only if there's no finally
             if (!catchAlive && node.getFinallyBlock() == null) {
-                // annos = GenKillBits.copy(annoAfterBlock);
                 flowState = copyState(stAfterBlock);
             }
         }
@@ -852,8 +844,6 @@ implements Flow {
         if (!thrown.isEmpty()
                 && TreeUtils.enclosingOfKind(getCurrentPath(), Tree.Kind.TRY) != null) {
             if (!tryBits.isEmpty())
-                // tryBits.peek().and(annos);
-                // GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
                 tryBits.peek().and(flowState, annoRelations);
         }
 
@@ -873,7 +863,6 @@ implements Flow {
     @Override
     public Void visitBlock(BlockTree node, Void p) {
         if (node.isStatic()) {
-            // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
             ST prev = copyState(flowState);
             try {
                 super.visitBlock(node, p);
@@ -894,7 +883,6 @@ implements Flow {
         visitorState.setMethodTree(node);
 
         // Intraprocedural, so save and restore bits.
-        // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
         ST prev = copyState(flowState);
 
         try {

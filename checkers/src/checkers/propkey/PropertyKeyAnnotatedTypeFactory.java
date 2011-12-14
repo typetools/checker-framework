@@ -3,12 +3,15 @@ package checkers.propkey;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.propkey.quals.PropertyKey;
+import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
@@ -29,6 +32,11 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
             CompilationUnitTree root) {
         super(checker, root);
         this.lookupKeys = checker.getLookupKeys();
+
+        // Reuse the framework Bottom annotation and make it the default for the
+        // null literal.
+        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
     }
 
     @Override

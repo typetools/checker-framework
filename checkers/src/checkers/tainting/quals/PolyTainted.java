@@ -12,7 +12,5 @@ import checkers.quals.*;
 @TypeQualifier
 @PolymorphicQualifier
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PolyTainted {
-
-}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface PolyTainted {}

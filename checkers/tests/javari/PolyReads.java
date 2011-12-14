@@ -8,7 +8,7 @@ class PolyReads {
 
     @PolyRead PolyReads (@PolyRead Object s) {
         mObject = s;           // error, cannot assign to mutable
-        tmObject = s;          // assignable at constructor
+        tmObject = s;          // error, cannot assign to thismutable TODO?
         roObject = s;          // assignable at constructor
 
         @PolyRead Object a = s; // ok
@@ -19,7 +19,7 @@ class PolyReads {
         a = roObject;          // error
 
         mObject = a;           // error
-        tmObject = a;          // ok
+        tmObject = a;          // error, cannot assign to thismutable TODO?
         roObject = a;          // ok
     }
 
