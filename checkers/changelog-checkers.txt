@@ -1,5 +1,8 @@
 Version 1.2.4, x Nov 2011
 
+All checkers:
+- @Target(TYPE_USE) meta-annotation is properly handled.
+
 Nullness Checker:
 - Do not allow nullness annotations on primitive types.
 - Improvements to rawness (initialization) checks.
