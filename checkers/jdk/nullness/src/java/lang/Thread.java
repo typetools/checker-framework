@@ -47,7 +47,7 @@ public class Thread implements Runnable {
   public final synchronized void join(long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public final void join() throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void dumpStack() { throw new RuntimeException("skeleton method"); }
-  public final void setDaemon(boolean a1) @Raw { throw new RuntimeException("skeleton method"); }
+  public final void setDaemon(@Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
   public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
   public String toString() { throw new RuntimeException("skeleton method"); }
