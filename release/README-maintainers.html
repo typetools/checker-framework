@@ -164,15 +164,10 @@ prepared release directory, set up a release directory as follows:
 <li>
 <p>Check out the jsr308-langtools and checker-framework repositories:</p>
 <pre>
-    # First, plume-lib
-    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
-
-    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
+    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
     hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
-    # Just to be on the safe side.
-    cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
-
 </pre>
 </li>
 
