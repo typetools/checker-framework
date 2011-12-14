@@ -844,9 +844,10 @@ class C {
 Within the constructor,
 \code{this} starts out with \code{@\refclass{nullness/quals}{Raw}} type.
 As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
-have been initialized, then \code{this} is treated as non-raw.  (See
-Section~\ref{becoming-non-raw-clarification} for a slight clarification of
-this rule.)
+have been initialized, then \code{this} is treated as non-raw.
+% TODO:  (See
+% Section~\ref{becoming-non-raw-clarification} for a slight clarification of
+% this rule.)
 
 The Nullness checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
@@ -886,7 +887,7 @@ command-line option (see Section~\ref{lint-uninitialized}).
 %   @AssertNonNullAfter("b")
 % when we are dealing with a field of primitive type.
 
-
+\iffalse TODO
 \subsection{Partial initialization\label{partial-initialization}}
 
 So far, we have discussed rawness as if it is an all-or-nothing property:
@@ -1071,8 +1072,8 @@ types.)
 \hline
 \end{tabular}
 
-
-
+TODO
+\fi
 
 
 % \urldef{\jlsconstructorbodyurl}{\url}{http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.8.7}
