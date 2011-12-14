@@ -1,5 +1,5 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{GPB{\etalchar{+}}06}
+\begin{thebibliography}{DDE{\etalchar{+}}11}
 
 \bibitem[Art01]{Artho2001}
 Cyrille Artho.
@@ -23,6 +23,14 @@ Joe Darcy.
 \newblock {JSR} 269: Pluggable annotation processing {API}.
 \newblock \url{http://jcp.org/en/jsr/detail?id=269}, May~17, 2006.
 \newblock Public review version.
+
+\bibitem[DDE{\etalchar{+}}11]{DietlDEMS2011}
+Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
+  and Todd Schiller.
+\newblock Building and using pluggable type-checkers.
+\newblock In {\em ICSE'11, Proceedings of the 33rd International Conference on
+  Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May~25--27,
+  2011.
 
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.

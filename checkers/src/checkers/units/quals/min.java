@@ -9,8 +9,8 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Time.class } )
+@SubtypeOf(Time.class)
 // TODO: @UnitsMultiple(quantity=s.class, factor=60)
 public @interface min {}

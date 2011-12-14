@@ -9,8 +9,8 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Unqualified.class } )
+@SubtypeOf(Unqualified.class)
 // TODO: is Luminance the correct term? Or is it Luminosity? Or Luminous Intensity?
 public @interface Luminance {}

@@ -70,6 +70,10 @@ public class QualifierDefaults {
     	absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
     }
 
+    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
+        localVarDefaultAnnos = localannos;
+    }
+
     public void annotateTypeElement(TypeElement elt, AnnotatedTypeMirror type) {
         applyDefaults(elt, type);
     }
@@ -315,6 +319,7 @@ public class QualifierDefaults {
                 && !this.isTypeVarExtends) {
                 return super.scan(t, p);
             }
+
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!t.isAnnotatedInHierarchy(p))
@@ -376,9 +381,5 @@ public class QualifierDefaults {
             visitedNodes.put(type, r);
             return r;
         }
-    }
-
-    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
-    	localVarDefaultAnnos = localannos;
     }
 }

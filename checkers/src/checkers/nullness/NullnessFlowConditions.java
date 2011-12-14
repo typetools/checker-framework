@@ -69,7 +69,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
      * @return the elements that this analysis has determined to be NonNull when
      *         the condition being analyzed is true
      */
-    public @ReadOnly Set<VariableElement> getNonnullElements() {
+    public /*@ReadOnly*/ Set<VariableElement> getNonnullElements() {
         return getElements(true);
     }
 
@@ -77,7 +77,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
      * @return the elements that this analysis has determined to be Nullable
      *         when the condition being analyzed is true
      */
-    public @ReadOnly Set<VariableElement> getNullableElements() {
+    public /*@ReadOnly*/ Set<VariableElement> getNullableElements() {
         return getElements(false);
     }
 
@@ -88,7 +88,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
      *         isNN is true) or Nullable (if isNN is false) when the condition
      *         being analyzed is true
      */
-    private @ReadOnly Set<VariableElement> getElements(boolean isNN) {
+    private /*@ReadOnly*/ Set<VariableElement> getElements(boolean isNN) {
         Set<VariableElement> result = new HashSet<VariableElement>();
         for (int i = 0; i < vars.size(); i++)
             if ((isNN && nonnull.get(i) && !nullable.get(i))
@@ -97,19 +97,19 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         return Collections.unmodifiableSet(result);
     }
 
-    public @ReadOnly List<String> getNonnullExpressions() {
+    public /*@ReadOnly*/ List<String> getNonnullExpressions() {
         return nonnullExpressions;
     }
 
-    public @ReadOnly List<String> getNullableExpressions() {
+    public /*@ReadOnly*/ List<String> getNullableExpressions() {
         return nullableExpressions;
     }
 
-    public @ReadOnly List<VariableElement> getExplicitNonnullElements() {
+    public /*@ReadOnly*/ List<VariableElement> getExplicitNonnullElements() {
         return nonnullElements;
     }
 
-    public @ReadOnly List<VariableElement> getExplicitNullableElements() {
+    public /*@ReadOnly*/ List<VariableElement> getExplicitNullableElements() {
         return nullableElements;
     }
 
@@ -117,11 +117,11 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         return isNullPolyNull;
     }
 
-    public @ReadOnly Set<Element> getExcludes() {
+    public /*@ReadOnly*/ Set<Element> getExcludes() {
         return excludes;
     }
 
-    public @ReadOnly Map<Tree, AnnotationMirror> getTreeResults() {
+    public /*@ReadOnly*/ Map<Tree, AnnotationMirror> getTreeResults() {
         return treeResults;
     }
 
