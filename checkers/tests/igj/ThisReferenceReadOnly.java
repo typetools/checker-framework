@@ -8,25 +8,25 @@ class ThisReference {
     public static void isMutable(@Mutable ThisReference obj) { }
     public static void isImmutable(@Immutable ThisReference obj) { }
 
-    public void testRO() @ReadOnly {
+    public void testRO(@ReadOnly ThisReference this) {
         isRO(this);
         isMutable(this);   // should emit error
         isImmutable(this); // should emit error
     }
 
-    public void testAssignsFields () @AssignsFields {
+    public void testAssignsFields (@AssignsFields ThisReference this) {
         isRO(this);
         isMutable(this);   // should emit error
         isImmutable(this); // should emit error
     }
 
-    public void testMutable() @Mutable {
+    public void testMutable(@Mutable ThisReference this) {
         isRO(this);
         isMutable(this);
         isImmutable(this); // should emit error
     }
 
-    public void testImmutable() @Immutable {
+    public void testImmutable(@Immutable ThisReference this) {
         isRO(this);
         isMutable(this);   // should emit error
         isImmutable(this);

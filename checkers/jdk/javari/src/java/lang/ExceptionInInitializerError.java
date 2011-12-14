@@ -16,11 +16,11 @@ public class ExceptionInInitializerError extends LinkageError {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getException() @ReadOnly {
+    public Throwable getException(@ReadOnly ExceptionInInitializerError this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getCause() @ReadOnly {
+    public Throwable getCause(@ReadOnly ExceptionInInitializerError this) {
         throw new RuntimeException("skeleton method");
     }
 }
