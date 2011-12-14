@@ -1,4 +1,4 @@
-Version 1.2.4, x Nov 2011
+Version 1.2.4, 14 Dec 2011
 
 All checkers:
 - @Target(TYPE_USE) meta-annotation is properly handled.
@@ -13,6 +13,9 @@ Nullness Checker:
   @NonNull fields are initialized.  Such warnings must be suppressed
   explicitly, for example by using @SuppressWarnings.
 
+Regex Checker:
+- Improved RegexUtil class.
+
 Manual:
 - Add FAQ item "Is the Checker Framework an official part of Java?"
 - Trim down README.txt; users should read the manual instead.
@@ -26,6 +29,13 @@ Implementation details:
   Nullness Checker to hide the @Primitive annotation.
 - Nullness Checker:  Introduce a new internal qualifier @Primitive that is
   used for primitive types.
+- Be stricter about qualifiers being present on all types. If you get
+  errors about missing qualifiers, check your defaulting rules.
+  This helped in fixing small bugs in corner cases of the type
+  hierarchy and type factory.
+- Unify decoding type annotations from trees and elements.
+- Improve handling of annotations on type variables and upper bounds.
+- Support checkers that use multiple, disjoint qualifier hierarchies.
 - Many bug fixes.
 
 ----------------------------------------------------------------------
