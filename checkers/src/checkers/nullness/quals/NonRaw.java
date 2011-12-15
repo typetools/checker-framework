@@ -36,10 +36,10 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @DefaultQualifierInHierarchy
-@SubtypeOf( Raw.class )
+@SubtypeOf(Raw.class)
 public @interface NonRaw {
   // TODO: implement this
   // Class<?> upFrom() default Object.class;

@@ -36,6 +36,7 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
         return reduce(scan(types, p), r);
     }
 
+    @Override
     public R scanAndReduce(AnnotatedTypeMirror type, AnnotatedTypeMirror p, R r) {
         return reduce(scan(type, p), r);
     }

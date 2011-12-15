@@ -2,10 +2,7 @@ package checkers.flow;
 
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
@@ -163,10 +160,14 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
         // WMD: if we're setting something, can the GenKillBits invariant be violated?
         for (AnnotationMirror annotation : this.flowState.annotations) {
-            if (rhs.hasAnnotation(annotation))
+            if (elt.asType().getKind()!=TypeKind.TYPEVAR && rhs.hasEffectiveAnnotation(annotation)) {
+                // Only take the effective annotations if the LHS is not a type variable
                 flowState.annos.set(annotation, idx);
-            else
+            } else if (rhs.hasAnnotation(annotation)) {
+                flowState.annos.set(annotation, idx);
+            } else {
                 flowState.annos.clear(annotation, idx);
+            }
         }
     }
 

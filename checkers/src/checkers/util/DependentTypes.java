@@ -5,6 +5,8 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 import com.sun.source.tree.*;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.model.JavacElements;
 
 import checkers.quals.Dependent;
 import checkers.types.AnnotatedTypeFactory;
@@ -42,8 +44,12 @@ public class DependentTypes {
         return null;
     }
 
+    private Dependent findDependent(Element element) {
+        return (Dependent) JavacElements.getAnnotation(((Symbol) element).typeAnnotations, Dependent.class);
+    }
+
     public void doSubsitution(Element symbol, AnnotatedTypeMirror type, AnnotatedTypeMirror receiver) {
-        Dependent dependentInfo = symbol.getAnnotation(Dependent.class);
+        Dependent dependentInfo = findDependent(symbol);
         if (dependentInfo == null)
             return;
 
@@ -52,8 +58,8 @@ public class DependentTypes {
 
         AnnotationMirror ifpresent = getWhen(dependentInfo);
         if (receiver.hasAnnotation(ifpresent)) {
-            type.clearAnnotations();
             AnnotationMirror then = getResult(dependentInfo);
+            type.removeAnnotationInHierarchy(then);
             type.addAnnotation(then);
         }
     }

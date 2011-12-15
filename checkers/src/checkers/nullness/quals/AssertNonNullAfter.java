@@ -17,9 +17,8 @@ import checkers.nullness.NullnessChecker;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface AssertNonNullAfter {
-
     /**
      * Java expression(s) that are non-null after successful method termination.
      * @see <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>

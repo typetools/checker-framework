@@ -17,4 +17,7 @@ class WildcardAnnos {
   @Nullable List<@NonNull ? super @Nullable Object> l4 = null;
 
   @Nullable List<? super @Nullable Object> l5 = null;
+
+  @Nullable List<? extends @Nullable Object> inReturn() { return null; }
+  void asParam(List<? extends @Nullable Object> p) {}
 }

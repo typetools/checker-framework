@@ -13,5 +13,5 @@ import checkers.quals.Unqualified;
 @SubtypeOf(Unqualified.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PropertyKey { }
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface PropertyKey {}

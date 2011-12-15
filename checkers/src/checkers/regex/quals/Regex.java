@@ -13,7 +13,7 @@ import checkers.quals.*;
 @TypeQualifier
 @Inherited
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-@SubtypeOf({Unqualified.class})
+@SubtypeOf(Unqualified.class)
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Regex {}

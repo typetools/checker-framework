@@ -9,8 +9,8 @@ import checkers.quals.*;
  * Specifies the allowed mutabilities of a method's return value or the arguments,
  * based on the mutability type of the arguments and the receiver at a method
  * invocation. {@link PolyRead} has the same behavior as creating two copies
- * of the method signature, one where all of its ocurrences are substituted with
- * {@link ReadOnly}, and one where all of its occurences are substituted with
+ * of the method signature, one where all of its occurrences are substituted with
+ * {@link ReadOnly}, and one where all of its occurrences are substituted with
  * {@link Mutable}; that is, if it were possible to have annotation overloading,
  * <pre>
  * &#064;PolyRead getA() &#064;PolyRead {return a;}
@@ -25,7 +25,7 @@ import checkers.quals.*;
  * method, at the method invocation it will be interpreted as {@link
  * ReadOnly} if any the arguments passed to parameter annotated with
  * {@link ReadOnly} is a readonly instance, or if the receiver type
- * is readonly and the method is invocated from a readonly context. That is,
+ * is readonly and the method is invoked from a readonly context. That is,
  * <pre>
  *  &#064;PolyRead aTestMethod(String a,
  *                            &#064;PolyRead Object b,
@@ -46,9 +46,9 @@ import checkers.quals.*;
  *                   &#064;PolyRead Object b,
  *                   List<&#064;PolyRead Date> c) &#064;PolyRead
  * </pre>
- * instanciates a readonly Something if a readonly argument is passed
+ * instantiates a readonly Something if a readonly argument is passed
  * as b, or if the argument passed as c is a list of readonly
- * Dates. Otherwise, it instanciates a mutable Something.
+ * Dates. Otherwise, it instantiates a mutable Something.
  *
  * As a third example, if the return type of a method is not annotated
  * anywhere with {@link PolyRead}, but its receiver type and some of
@@ -81,8 +81,7 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @PolymorphicQualifier
-public @interface PolyRead {
-}
+public @interface PolyRead {}
