@@ -304,7 +304,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
-        @Nullable Trees trees = Trees.instance(processingEnv);
+        /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
@@ -448,7 +448,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    protected void message(Diagnostic.Kind kind, Object source, @CompilerMessageKey String msgKey,
+    protected void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -557,26 +557,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (swKeys.isEmpty())
             return false;
 
-        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+        /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null)
             return false;
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err))
             return true;
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method), err))
             return true;
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls), err))
             return true;
 
         return false;
     }
 
-    private boolean shouldSuppressWarnings(@Nullable Element elt, String err) {
+    private boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
         if (elt == null)
             return false;
@@ -706,16 +706,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         this checker
      */
     public Set<String> getSupportedLintOptions() {
-        @Nullable SupportedLintOptions sl =
+        /*@Nullable*/ SupportedLintOptions sl =
             this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null)
             return Collections.</*@NonNull*/ String>emptySet();
 
-        @Nullable String /*@Nullable*/ [] slValue = sl.value();
+        /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        @Nullable String [] lintArray = slValue;
+        /*@Nullable*/ String [] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray)
             lintSet.add(s);

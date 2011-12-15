@@ -174,9 +174,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
-        R r = scan(type.getExtendsBound(), p);
+        R r = scan(type.getExtendsBoundField(), p);
         visitedNodes.put(type, r);
-        r = scanAndReduce(type.getSuperBound(), p, r);
+        r = scanAndReduce(type.getSuperBoundField(), p, r);
         visitedNodes.put(type, r);
         return r;
     }

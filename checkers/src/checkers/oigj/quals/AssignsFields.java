@@ -18,9 +18,7 @@ import checkers.quals.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier // (for now)
-@SubtypeOf( ReadOnly.class )
-public @interface AssignsFields {
-
-}
+@SubtypeOf(ReadOnly.class)
+public @interface AssignsFields {}

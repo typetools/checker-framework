@@ -46,7 +46,7 @@ public class DependentNull {
     }
 
     void receiverProto() @Prototype {
-        // dep = null;   FIXME
+        dep = null;
         dep = "m";
 
         //:: error: (assignment.type.incompatible)

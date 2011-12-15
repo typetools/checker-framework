@@ -120,7 +120,7 @@
     </target>
 
     <target name="build" depends="prep,build.check.uptodate" unless="build.uptodate"
-            description="Compile files">
+            description="Compile files.  Does not update jsr308-all.jar">
         <fail unless="compiler.exists"
             message="
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
@@ -396,7 +396,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
-    <target name="nullness-extra-tests" depends="jar,build-tests"
+    <target name="nullness-extra-tests" depends="bindist,build-tests"
       description="Run extra tests for the Nullness checker">
       <exec executable="make">
 	<env key="JAVAC" value="${basedir}/binary/javac"/>

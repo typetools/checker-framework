@@ -132,8 +132,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work.
 
-        collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
-
         defaults = new QualifierDefaults(this, this.annotations);
         defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
@@ -150,6 +148,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         flowQuals.add(NONNULL);
         flowQuals.add(PRIMITIVE);
         flow = new NullnessFlow(checker, root, flowQuals, this);
+
+        // do this last, as it might use the factory again.
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
         postInit();
     }
@@ -184,13 +185,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         substituteRaw(tree, type);
         substituteUnused(tree, type);
 
-        dependentTypes.handle(tree, type);
         final AnnotationMirror inferred = flow.test(tree);
         if (inferred != null) {
             // case 7: flow analysis
-            type.clearAnnotations();
+            type.removeAnnotationInHierarchy(inferred);
             type.addAnnotation(inferred);
         }
+        dependentTypes.handle(tree, type);
         completer.visit(type);
     }
 
@@ -283,7 +284,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (receiver == null || receiver.getAnnotation(whenName) == null) {
             return false;
         }
-        type.clearAnnotations();
+        type.removeAnnotationInHierarchy(NULLABLE);
         type.addAnnotation(NULLABLE);
         return true;
     }
@@ -329,7 +330,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (select != null && select.hasEffectiveAnnotation(RAW)
                 && !type.hasEffectiveAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
             boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
-            type.clearAnnotations();
+            type.removeAnnotationInHierarchy(LAZYNONNULL);
             type.addAnnotation(LAZYNONNULL);
             return wasNN;
         }
@@ -352,7 +353,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 // Workaround for System.{out,in,err} issue: assume all static
                 // fields in java.lang.System are nonnull.
                 || isSystemField(elt)) {
-            type.clearAnnotations();
+            type.removeAnnotationInHierarchy(NONNULL);
             type.addAnnotation(NONNULL);
         }
     }

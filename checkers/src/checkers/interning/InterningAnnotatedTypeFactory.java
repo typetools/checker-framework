@@ -132,7 +132,8 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         return primitive;
     }
 
-    protected void annotateInheritedFromClass(@Mutable AnnotatedTypeMirror type) {
+    @Override
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
       InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 

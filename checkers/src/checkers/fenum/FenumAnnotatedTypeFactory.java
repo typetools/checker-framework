@@ -34,6 +34,10 @@ public class FenumAnnotatedTypeFactory extends
 
     super(checker, root, checker.getLintOption("flowinference", false));
 
+    // Reuse the framework Bottom annotation and make it the default for the
+    // null literal.
+    treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, checker.BOTTOM);
+
     if(checker.getLintOption("flowinference", false)) {
       defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
                                    Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));

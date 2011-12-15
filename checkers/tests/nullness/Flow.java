@@ -300,8 +300,7 @@ public class Flow {
         }
     }
 
-    @LazyNonNull
-    private double [] intersect = null;
+    private double @LazyNonNull [] intersect = null;
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));

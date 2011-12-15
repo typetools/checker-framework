@@ -11,6 +11,6 @@ import static com.sun.source.tree.Tree.Kind.STRING_LITERAL;
 @TypeQualifier
 @SubtypeOf(Tainted.class)
 @ImplicitFor(trees = { STRING_LITERAL })
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Untainted { }
+public @interface Untainted {}

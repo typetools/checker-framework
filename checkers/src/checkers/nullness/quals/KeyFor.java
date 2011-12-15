@@ -29,9 +29,9 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-//@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf( Unqualified.class )
+@SubtypeOf(Unqualified.class)
 public @interface KeyFor {
     /**
      * Java expression(s) that evaluate to a map for which the annotated type is a key.
