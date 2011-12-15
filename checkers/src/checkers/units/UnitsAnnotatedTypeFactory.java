@@ -148,47 +148,13 @@ public class UnitsAnnotatedTypeFactory extends
                     break;
 
 		// Placeholders for unhandled binary operations
-		case EQUAL_TO:
-		case GREATER_THAN:
-		case GREATER_THAN_EQUAL:
-		case LESS_THAN:
-		case LESS_THAN_EQUAL:
-		case NOT_EQUAL_TO:
-		    // The checker allows comparison of two quantities with the
-		    // same units.
-		    // TODO:  That seems correct, but confirm that it is.
-		    break;
-
-		case CONDITIONAL_AND:
-		case CONDITIONAL_OR:
-		    // The checkers allows operations on qualified boolean types.
-		    // TODO:  That seems wrong, but confirm that it is.
-		    break;
-
-		case AND:
-		case OR:
-		case XOR:
-		case LEFT_SHIFT:
-		case RIGHT_SHIFT:
-		case UNSIGNED_RIGHT_SHIFT:
-		    // The checker allows bitwise operations on
-		    // qualified ints, with result type int. That
-		    // seems somewhat wrong because bitwise operations
-		    // are nonsensical for physical quantities.
-		    // However, this depends on what the goal of the
-		    // units checker is.  Is it for physical units
-		    // only?  Or is it for arbitrary type qualifiers
-		    // that behave like units under arithmetic operations?
-		    // TODO:  Decide this question.
-		    break;
-
 		case REMAINDER:
 		    // The checker disallows the following:
 		    //     @Length int q = 10 * UnitTools.m;
 		    //     @Length int r = q % 3;
 		    // This seems wrong because it allows this:
 		    //     @Length int r = q - (q / 3) * 3;
-		    // TODO: Fix this.
+		    // TODO: We agreed to treat remainder like division.
 		    break;
                 }
             }
