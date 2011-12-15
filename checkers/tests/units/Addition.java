@@ -4,47 +4,6 @@ import checkers.units.quals.*;
 public class Addition {
     // Addition is legal when the operands have the same units.
     void good() {
-        // Dimensions
-        // Area
-        @Area int aArea = 5 * UnitsTools.km2;
-        @Area int bArea = 5 * UnitsTools.mm2;
-        @Area int sArea = aArea + bArea;
-
-        // Current
-        @Current int aCurrent = 5 * UnitsTools.A;
-        @Current int bCurrent = 5 * UnitsTools.A;
-        @Current int sCurrent = aCurrent + bCurrent;
-
-        // Length
-        @Length int aLength = 5 * UnitsTools.m;
-        @Length int bLength = 5 * UnitsTools.mm;
-        @Length int sLength = aLength + bLength;
-
-        // Luminance
-        @Luminance int aLuminance = 5 * UnitsTools.cd;
-        @Luminance int bLuminance = 5 * UnitsTools.cd;
-        @Luminance int sLuminance = aLuminance + bLuminance;
-
-        // Mass
-        @Mass int aMass = 5 * UnitsTools.kg;
-        @Mass int bMass = 5 * UnitsTools.g;
-        @Mass int sMass = aMass + bMass;
-
-        // Substance
-        @Substance int aSubstance = 5 * UnitsTools.mol;
-        @Substance int bSubstance = 5 * UnitsTools.mol;
-        @Substance int sSubstance = aSubstance + bSubstance;
-
-        // Temperature
-        @Temperature int aTemperature = 5 * UnitsTools.K;
-        @Temperature int bTemperature = 5 * UnitsTools.K;
-        @Temperature int sTemperature = aTemperature + bTemperature;
-
-        // Time
-        @Time int aTime = 5 * UnitsTools.min;
-        @Time int bTime = 5 * UnitsTools.h;
-        @Time int sTime = aTime + bTime;
-
         // Units
         // Amperes
         @A int aAmpere = 5 * UnitsTools.A;
