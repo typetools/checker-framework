@@ -51,7 +51,7 @@ public class Expressions {
       Comparable<Date> d = new Date();
   }
 
-  void testInersection() {
+  void testIntersection() {
       java.util.Arrays.asList("m",1);
   }
 

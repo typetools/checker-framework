@@ -146,6 +146,11 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
+            if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
+                checker.errorAbort("TypeHierarchy: empty annotations in lhs: " +
+                        lhs + " " + lhsAnnos + " or rhs: " + rhs + " " + rhsAnnos);
+            }
+
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
             }

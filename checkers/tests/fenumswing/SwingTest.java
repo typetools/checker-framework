@@ -46,6 +46,15 @@ public class SwingTest {
     @SwingVerticalOrientation Object box = null;
   }
 
+  @SwingVerticalOrientation Object testNullb() {
+      return null;
+  }
+
+  @SwingVerticalOrientation Object testNullc() {
+      Object o = null;
+      return o;
+  }
+
   @SwingVerticalOrientation int testInference0() {
     //:: error: (assignment.type.incompatible)
     @SwingVerticalOrientation int boxint = 5;
@@ -108,8 +117,6 @@ public class SwingTest {
     return last;
   }
 
-  // TODO: doesn't work with a null initialisation yet,
-  // b/c null is not a subtype of the Swing fenums.
   @SwingBoxOrientation Object testInference7() {
       Object o = new @SwingVerticalOrientation Object();
       if( 5==4 ) {
@@ -118,6 +125,26 @@ public class SwingTest {
       //   o = new @SwingVerticalOrientation Object();
       }
       return o;
+  }
+
+  @SwingBoxOrientation Object testInference7b() {
+    Object o;
+    if( 5==4 ) {
+      o = new @SwingHorizontalOrientation Object();
+    } else {
+      o = new @SwingVerticalOrientation Object();
+    }
+    return o;
+  }
+
+  @SwingBoxOrientation Object testInference7c() {
+    Object o = null;
+    if( 5==4 ) {
+      o = new @SwingHorizontalOrientation Object();
+    } else {
+      o = new @SwingVerticalOrientation Object();
+    }
+    return o;
   }
 
   int s1 = 0;
@@ -202,6 +229,18 @@ public class SwingTest {
       }
       //:: error: (return.type.incompatible)
       return o;
+  }
+
+  @SwingBoxOrientation Object testInference9e() {
+    Object o = null;
+    while(flag) {
+      if( 5==4 ) {
+        o = new @SwingHorizontalOrientation Object();
+      } else {
+        o = new @SwingVerticalOrientation Object();
+      }
+    }
+    return o;
   }
 
   /* TODO: Flow inference does not handle dead branches correctly.

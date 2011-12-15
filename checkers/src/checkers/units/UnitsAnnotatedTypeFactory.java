@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -20,7 +21,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -45,6 +46,8 @@ public class UnitsAnnotatedTypeFactory extends
         AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
 
         mixedUnits = annoUtils.fromClass(MixedUnits.class);
+        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
     }
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
@@ -90,7 +93,7 @@ public class UnitsAnnotatedTypeFactory extends
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror lht = getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rht = getAnnotatedType(node.getRightOperand());
-            Kind kind = node.getKind();
+            Tree.Kind kind = node.getKind();
             
             AnnotationMirror bestres = null;
             for (UnitsRelations ur : checker.unitsRel.values()) {
@@ -209,7 +212,7 @@ public class UnitsAnnotatedTypeFactory extends
             return super.visitCompoundAssignment(node, type);
         }
         
-        private AnnotationMirror useUnitsRelation(Kind kind, UnitsRelations ur,
+        private AnnotationMirror useUnitsRelation(Tree.Kind kind, UnitsRelations ur,
                 AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
             
             AnnotationMirror res = null;

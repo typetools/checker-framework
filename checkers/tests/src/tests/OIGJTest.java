@@ -45,6 +45,7 @@ public class OIGJTest extends ParameterizedCheckerTest {
                 o.toString().equals("tests/all-systems/FieldWithInit.java") ||
                 o.toString().equals("tests/all-systems/TypeVars.java") ||
                 o.toString().equals("tests/all-systems/RawTypes.java") ||
+                o.toString().equals("tests/all-systems/ForEach.java") ||
                 o.toString().equals("tests/all-systems/Enums.java");
     }
 }

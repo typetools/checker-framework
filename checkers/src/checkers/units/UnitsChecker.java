@@ -12,10 +12,12 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.units.quals.*;
 import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -107,6 +109,10 @@ public class UnitsChecker extends BaseTypeChecker {
         qualSet.add(C.class);
         qualSet.add(K.class);
 
+        // Use the framework-provided bottom qualifier. It will automatically be
+        // at the bottom of the qualifier hierarchy.
+        qualSet.add(Bottom.class);
+
         return Collections.unmodifiableSet(qualSet);
     }
 
@@ -168,4 +174,10 @@ public class UnitsChecker extends BaseTypeChecker {
         return true;
     }
 
+    /* Set the Bottom qualifier as the bottom of the hierarchy.
+     */
+    @Override
+    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
+        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
+    }
 }
