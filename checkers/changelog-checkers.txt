@@ -1,4 +1,4 @@
-Version 1.2.4, 14 Dec 2011
+Version 1.2.4, 15 Dec 2011
 
 All checkers:
 - @Target(TYPE_USE) meta-annotation is properly handled.
