@@ -60,7 +60,7 @@ manual.html: manual.dvi
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
 
-export BIBINPUTS ?= .:bib
+export BIBINPUTS = $BIBINPUTS:.:bib
 
 bib:
 	hg clone https://plume-bib.googlecode.com/hg/ bib
