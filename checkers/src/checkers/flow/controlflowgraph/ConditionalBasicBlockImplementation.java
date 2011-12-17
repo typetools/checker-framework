@@ -53,14 +53,9 @@ public class ConditionalBasicBlockImplementation extends
 		elseSuccessor = b;
 	}
 
-	/**
-	 * Sets both the then and else successor of this node to
-	 * <code>successor</code>
-	 */
 	@Override
 	void addSuccessor(BasicBlock successor) {
-		setThenSuccessor(successor);
-		setElseSuccessor(successor);
+		assert false; // use set[Then/Else]Successor instead
 	}
 
 	@Override

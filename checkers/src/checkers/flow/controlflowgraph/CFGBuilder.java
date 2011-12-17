@@ -129,6 +129,9 @@ public class CFGBuilder {
 		 * <code>currentBlock</code> is <code>null</code>, then adding a block
 		 * will make all blocks in <code>predecessors</code> a predecessor of
 		 * the newly created block.
+		 * 
+		 * Note that for conditional basic block in <code>predecessors</code>,
+		 * the following block will be added as the 'then' successor.
 		 */
 		protected BasicBlockImplementation currentBlock;
 
@@ -180,6 +183,19 @@ public class CFGBuilder {
 		}
 
 		/**
+		 * Add the current block to a set of predecessors (or the predecessors
+		 * if currentBlock is null).
+		 */
+		protected void addCurrentBlockAsPredecessor(
+				Set<BasicBlockImplementation> newPredecessors) {
+			if (currentBlock != null) {
+				newPredecessors.add(currentBlock);
+			} else {
+				newPredecessors.addAll(predecessors);
+			}
+		}
+
+		/**
 		 * Add a node to the current basic block, correctly linking all blocks
 		 * and handling conditional basic block appropriately.
 		 * 
@@ -218,7 +234,14 @@ public class CFGBuilder {
 				currentBlock = bb;
 			} else {
 				for (BasicBlockImplementation p : predecessors) {
-					p.addSuccessor(bb);
+					if (p instanceof ConditionalBasicBlockImplementation) {
+						// for a conditional basic block, we assume that the
+						// successors should be the 'then' successor
+						ConditionalBasicBlockImplementation cp = (ConditionalBasicBlockImplementation) p;
+						cp.setElseSuccessor(bb);
+					} else {
+						p.addSuccessor(bb);
+					}
 				}
 				currentBlock = bb;
 				predecessors = null;
@@ -514,7 +537,7 @@ public class CFGBuilder {
 			conditionalBlock.setThenSuccessor(currentBlock);
 			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
-			newPredecessors.add(currentBlock);
+			addCurrentBlockAsPredecessor(newPredecessors);
 
 			// else branch
 			StatementTree elseStatement = tree.getElseStatement();
@@ -522,7 +545,7 @@ public class CFGBuilder {
 				currentBlock = new BasicBlockImplementation();
 				conditionalBlock.setElseSuccessor(currentBlock);
 				elseStatement.accept(this, null);
-				newPredecessors.add(currentBlock);
+				addCurrentBlockAsPredecessor(newPredecessors);
 			} else {
 				newPredecessors.add(conditionalBlock);
 			}
