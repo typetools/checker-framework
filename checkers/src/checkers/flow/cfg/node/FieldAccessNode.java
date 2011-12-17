@@ -19,6 +19,8 @@ public class FieldAccessNode extends Node {
 	protected String field;
 	protected Node receiver;
 	
+	// TODO: add method to get modifiers (static, access level, ..)
+	
 	public FieldAccessNode(Tree tree, Node receiver, String field) {
 		assert ASTUtils.isFieldAccess(tree);
 		this.tree = tree;
