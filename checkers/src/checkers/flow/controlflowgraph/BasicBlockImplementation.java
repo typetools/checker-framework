@@ -1,9 +1,11 @@
 package checkers.flow.controlflowgraph;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import checkers.flow.controlflowgraph.node.Node;
@@ -22,24 +24,25 @@ public class BasicBlockImplementation implements BasicBlock {
 
 	/** Internal representation of the successors. */
 	protected Set<BasicBlock> successors;
+	
+	/** Set of exceptional successors. */
+	protected Map<Class<?>, BasicBlock> exceptionalSuccessors;
 
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
 	 * other basic blocks later.
 	 */
 	public BasicBlockImplementation() {
-		contents = new LinkedList<Node>();
-		successors = new HashSet<BasicBlock>();
+		contents = new LinkedList<>();
+		successors = new HashSet<>();
+		exceptionalSuccessors = new HashMap<>();
 	}
-
-	@Override
-	public List<Node> getContents() {
-		return new LinkedList<Node>(contents);
-	}
-
-	@Override
-	public Set<BasicBlock> getSuccessors() {
-		return new HashSet<BasicBlock>(successors);
+	
+	/**
+	 * Add an exceptional successor.
+	 */
+	void addExceptionalSuccessor(BasicBlock b, Class<?> cause) {
+		exceptionalSuccessors.put(cause, b);
 	}
 
 	/**
@@ -61,6 +64,21 @@ public class BasicBlockImplementation implements BasicBlock {
 	 */
 	public void addStatements(Collection<? extends Node> ts) {
 		contents.addAll(ts);
+	}
+
+	@Override
+	public List<Node> getContents() {
+		return new LinkedList<Node>(contents);
+	}
+
+	@Override
+	public Set<BasicBlock> getSuccessors() {
+		return new HashSet<BasicBlock>(successors);
+	}
+	
+	@Override
+	public Map<Class<?>, BasicBlock> getExceptionalSuccessors() {
+		return new HashMap<>(exceptionalSuccessors);
 	}
 
 }

@@ -7,8 +7,8 @@ import checkers.flow.controlflowgraph.node.Node;
 
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
- * block in a control flow graph that has a condition of an if statement as
- * contents.
+ * block in a control flow graph that has a boolean expression as contents
+ * (e.g., from an if-block).
  * 
  * @author Stefan Heule
  * 
@@ -25,20 +25,15 @@ public class ConditionalBasicBlockImplementation extends
 	/** Successor of the else branch. */
 	protected BasicBlock elseSuccessor;
 
-	/** Set of exceptional successors. */
-	protected Set<BasicBlock> exceptionalSuccessors;
-
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
 	 * other basic blocks later.
 	 */
 	public ConditionalBasicBlockImplementation() {
-		exceptionalSuccessors = new HashSet<BasicBlock>();
 	}
 
 	/**
-	 * Set the condition.
-	 * TODO: remove if not needed
+	 * Set the condition. TODO: remove if not needed
 	 */
 	void setCondition(Node c) {
 		condition = c;
@@ -59,13 +54,6 @@ public class ConditionalBasicBlockImplementation extends
 	}
 
 	/**
-	 * Add an exceptional successor.
-	 */
-	void addExceptionalSuccessor(BasicBlock b) {
-		exceptionalSuccessors.add(b);
-	}
-
-	/**
 	 * Sets both the then and else successor of this node to
 	 * <code>successor</code>
 	 */
@@ -80,7 +68,6 @@ public class ConditionalBasicBlockImplementation extends
 		Set<BasicBlock> r = new HashSet<BasicBlock>();
 		r.add(thenSuccessor);
 		r.add(elseSuccessor);
-		r.addAll(getExceptionalSuccessors());
 		return r;
 	}
 
@@ -92,11 +79,6 @@ public class ConditionalBasicBlockImplementation extends
 	@Override
 	public BasicBlock getElseSuccessor() {
 		return elseSuccessor;
-	}
-
-	@Override
-	public Set<BasicBlock> getExceptionalSuccessors() {
-		return new HashSet<BasicBlock>(exceptionalSuccessors);
 	}
 
 	@Override
