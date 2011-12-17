@@ -1,4 +1,6 @@
-package checkers.flow.controlflowgraph.node;
+package checkers.flow.cfg.node;
+
+import checkers.flow.util.NodeUtils;
 
 import com.sun.source.tree.Tree;
 

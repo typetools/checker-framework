@@ -1,20 +1,20 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import checkers.flow.controlflowgraph.SpecialBasicBlockImplementation.SpecialBasicBlockTypes;
-import checkers.flow.controlflowgraph.node.AssignmentNode;
-import checkers.flow.controlflowgraph.node.BooleanLiteralNode;
-import checkers.flow.controlflowgraph.node.ConditionalOrNode;
-import checkers.flow.controlflowgraph.node.FieldAccessNode;
-import checkers.flow.controlflowgraph.node.IdentifierNode;
-import checkers.flow.controlflowgraph.node.ImplicitThisLiteralNode;
-import checkers.flow.controlflowgraph.node.IntegerLiteralNode;
-import checkers.flow.controlflowgraph.node.Node;
-import checkers.flow.controlflowgraph.node.NodeUtils;
+import checkers.flow.cfg.SpecialBasicBlockImpl.SpecialBasicBlockTypes;
+import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.BooleanLiteralNode;
+import checkers.flow.cfg.node.ConditionalOrNode;
+import checkers.flow.cfg.node.FieldAccessNode;
+import checkers.flow.cfg.node.IdentifierNode;
+import checkers.flow.cfg.node.ImplicitThisLiteralNode;
+import checkers.flow.cfg.node.IntegerLiteralNode;
+import checkers.flow.cfg.node.Node;
 import checkers.flow.util.ASTUtils;
+import checkers.flow.util.NodeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -133,17 +133,17 @@ public class CFGBuilder {
 		 * Note that for conditional basic block in <code>predecessors</code>,
 		 * the following block will be added as the 'then' successor.
 		 */
-		protected BasicBlockImplementation currentBlock;
+		protected BasicBlockImpl currentBlock;
 
 		/**
 		 * Predecessors, details see <code>currentBlock</code>.
 		 */
-		protected Set<BasicBlockImplementation> predecessors;
+		protected Set<BasicBlockImpl> predecessors;
 
 		/**
 		 * The exceptional exit basic block (which might or might not be used).
 		 */
-		protected SpecialBasicBlockImplementation exceptionalExitBlock;
+		protected SpecialBasicBlockImpl exceptionalExitBlock;
 
 		/**
 		 * Build the control flow graph for a {@link BlockTree} that represents
@@ -155,20 +155,20 @@ public class CFGBuilder {
 		 */
 		public BasicBlock build(BlockTree t) {
 			// create start block
-			BasicBlockImplementation startBlock = new SpecialBasicBlockImplementation(
+			BasicBlockImpl startBlock = new SpecialBasicBlockImpl(
 					SpecialBasicBlockTypes.ENTRY);
 			currentBlock = null;
 			predecessors = Collections.singleton(startBlock);
 
 			// create exceptional end block
-			exceptionalExitBlock = new SpecialBasicBlockImplementation(
+			exceptionalExitBlock = new SpecialBasicBlockImpl(
 					SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
 
 			// traverse AST
 			t.accept(this, null);
 
 			// finish CFG
-			SpecialBasicBlockImplementation exit = new SpecialBasicBlockImplementation(
+			SpecialBasicBlockImpl exit = new SpecialBasicBlockImpl(
 					SpecialBasicBlockTypes.EXIT);
 			extendWithBasicBlock(exit);
 			return startBlock;
@@ -179,7 +179,7 @@ public class CFGBuilder {
 		 * if currentBlock is null).
 		 */
 		protected void addCurrentBlockAsPredecessor(
-				Set<BasicBlockImplementation> newPredecessors) {
+				Set<BasicBlockImpl> newPredecessors) {
 			if (currentBlock != null) {
 				newPredecessors.add(currentBlock);
 			} else {
@@ -197,19 +197,19 @@ public class CFGBuilder {
 		 */
 		protected Node addToCurrentBlock(Node node) {
 			if (NodeUtils.isBooleanTypeNode(node)) {
-				ConditionalBasicBlockImplementation cb = new ConditionalBasicBlockImplementation();
+				ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
 				cb.addStatement(node);
 				extendWithBasicBlock(cb);
 			} else {
-				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
+				if (currentBlock instanceof ConditionalBasicBlockImpl) {
 					// a conditional basic block only contains a single boolean
 					// expression, therefore we create a new basic block here
-					BasicBlockImplementation bb = new BasicBlockImplementation();
+					BasicBlockImpl bb = new BasicBlockImpl();
 					bb.addStatement(node);
 					extendWithBasicBlock(bb);
 				} else {
 					if (currentBlock == null) {
-						extendWithBasicBlock(new BasicBlockImplementation());
+						extendWithBasicBlock(new BasicBlockImpl());
 					}
 					currentBlock.addStatement(node);
 				}
@@ -220,22 +220,22 @@ public class CFGBuilder {
 		/**
 		 * Extend the control flow graph with <code>bb</code>.
 		 */
-		protected void extendWithBasicBlock(BasicBlockImplementation bb) {
+		protected void extendWithBasicBlock(BasicBlockImpl bb) {
 			if (currentBlock != null) {
-				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
+				if (currentBlock instanceof ConditionalBasicBlockImpl) {
 					// for a conditional basic block, we assume that the
 					// successors should be the 'then' successor
-					ConditionalBasicBlockImplementation cp = (ConditionalBasicBlockImplementation) currentBlock;
+					ConditionalBasicBlockImpl cp = (ConditionalBasicBlockImpl) currentBlock;
 					cp.setElseSuccessor(bb);
 				} else {
 					currentBlock.addSuccessor(bb);
 				}
 			} else {
-				for (BasicBlockImplementation p : predecessors) {
-					if (p instanceof ConditionalBasicBlockImplementation) {
+				for (BasicBlockImpl p : predecessors) {
+					if (p instanceof ConditionalBasicBlockImpl) {
 						// for a conditional basic block, we assume that the
 						// successors should be the 'then' successor
-						ConditionalBasicBlockImplementation cp = (ConditionalBasicBlockImplementation) p;
+						ConditionalBasicBlockImpl cp = (ConditionalBasicBlockImpl) p;
 						cp.setElseSuccessor(bb);
 					} else {
 						p.addSuccessor(bb);
@@ -261,8 +261,8 @@ public class CFGBuilder {
 			// make sure that 'node' gets its own basic block so that the
 			// exception linking is correct
 			if (!NodeUtils.isBooleanTypeNode(node)
-					&& !(currentBlock instanceof ConditionalBasicBlockImplementation)) {
-				extendWithBasicBlock(new BasicBlockImplementation());
+					&& !(currentBlock instanceof ConditionalBasicBlockImpl)) {
+				extendWithBasicBlock(new BasicBlockImpl());
 			} else {
 				// in this case, addToCurrentBlock will create a new block for
 				// 'node'
@@ -299,9 +299,9 @@ public class CFGBuilder {
 		 *         applicable if {@link currentBlock} is a conditional basic
 		 *         block.
 		 */
-		protected ConditionalBasicBlockImplementation getCurrentConditionalBasicBlock() {
-			assert currentBlock instanceof ConditionalBasicBlockImplementation;
-			return (ConditionalBasicBlockImplementation) currentBlock;
+		protected ConditionalBasicBlockImpl getCurrentConditionalBasicBlock() {
+			assert currentBlock instanceof ConditionalBasicBlockImpl;
+			return (ConditionalBasicBlockImpl) currentBlock;
 		}
 
 		@Override
@@ -402,7 +402,7 @@ public class CFGBuilder {
 			switch (tree.getKind()) {
 			case CONDITIONAL_OR:
 				Node left = tree.getLeftOperand().accept(this, p);
-				ConditionalBasicBlockImplementation lhsBB = getCurrentConditionalBasicBlock();
+				ConditionalBasicBlockImpl lhsBB = getCurrentConditionalBasicBlock();
 				Node right = tree.getRightOperand().accept(this, p);
 				lhsBB.setElseSuccessor(currentBlock);
 				r = new ConditionalOrNode(tree, left, right);
@@ -523,15 +523,15 @@ public class CFGBuilder {
 		public Node visitIf(IfTree tree, Void p) {
 
 			// TODO exceptions
-			Set<BasicBlockImplementation> newPredecessors = new HashSet<>();
+			Set<BasicBlockImpl> newPredecessors = new HashSet<>();
 
 			// basic block for the condition
 			tree.getCondition().accept(this, null);
-			assert currentBlock instanceof ConditionalBasicBlockImplementation;
-			ConditionalBasicBlockImplementation conditionalBlock = (ConditionalBasicBlockImplementation) currentBlock;
+			assert currentBlock instanceof ConditionalBasicBlockImpl;
+			ConditionalBasicBlockImpl conditionalBlock = (ConditionalBasicBlockImpl) currentBlock;
 
 			// then branch
-			currentBlock = new BasicBlockImplementation();
+			currentBlock = new BasicBlockImpl();
 			conditionalBlock.setThenSuccessor(currentBlock);
 			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
@@ -540,7 +540,7 @@ public class CFGBuilder {
 			// else branch
 			StatementTree elseStatement = tree.getElseStatement();
 			if (elseStatement != null) {
-				currentBlock = new BasicBlockImplementation();
+				currentBlock = new BasicBlockImpl();
 				conditionalBlock.setElseSuccessor(currentBlock);
 				elseStatement.accept(this, null);
 				addCurrentBlockAsPredecessor(newPredecessors);

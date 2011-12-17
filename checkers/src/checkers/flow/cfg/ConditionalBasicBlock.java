@@ -1,6 +1,6 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * Represents a conditional basic block in a control graph, that is a basic

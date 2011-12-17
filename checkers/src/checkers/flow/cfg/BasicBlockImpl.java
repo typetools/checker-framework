@@ -1,4 +1,4 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
@@ -17,7 +17,7 @@ import checkers.flow.controlflowgraph.node.Node;
  * @author Stefan Heule
  * 
  */
-public class BasicBlockImplementation implements BasicBlock {
+public class BasicBlockImpl implements BasicBlock {
 
 	/** Internal representation of the contents. */
 	protected List<Node> contents;
@@ -32,7 +32,7 @@ public class BasicBlockImplementation implements BasicBlock {
 	 * Initialize an empty basic block to be filled with contents and linked to
 	 * other basic blocks later.
 	 */
-	public BasicBlockImplementation() {
+	public BasicBlockImpl() {
 		contents = new LinkedList<>();
 		successors = new HashSet<>();
 		exceptionalSuccessors = new HashMap<>();
