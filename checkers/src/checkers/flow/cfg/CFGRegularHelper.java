@@ -299,13 +299,13 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitMethodInvocation(MethodInvocationTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitAssert(AssertTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -372,7 +372,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -405,19 +405,19 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitBreak(BreakTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitCase(CaseTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitCatch(CatchTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -430,19 +430,19 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	@Override
 	public Node visitConditionalExpression(ConditionalExpressionTree tree,
 			Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitContinue(ContinueTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -460,7 +460,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -491,7 +491,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		 * 
 		 * currentBlock = afterBlock;
 		 */
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -542,13 +542,13 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -582,13 +582,13 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitNewArray(NewArrayTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitNewClass(NewClassTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -599,13 +599,13 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitReturn(ReturnTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitMemberSelect(MemberSelectTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -629,19 +629,19 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitSwitch(SwitchTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitSynchronized(SynchronizedTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitThrow(ThrowTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -653,7 +653,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitTry(TryTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -677,7 +677,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitTypeCast(TypeCastTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
@@ -695,25 +695,25 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitInstanceOf(InstanceOfTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitUnary(UnaryTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitVariable(VariableTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node visitWhileLoop(WhileLoopTree tree, Void p) {
-		// TODO Auto-generated method stub
+		assert false; // TODO Auto-generated method stub
 		return null;
 	}
 
