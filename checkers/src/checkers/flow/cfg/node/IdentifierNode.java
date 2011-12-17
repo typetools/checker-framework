@@ -1,38 +1,35 @@
 package checkers.flow.cfg.node;
 
-import javax.lang.model.element.Name;
-
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-
+import com.sun.source.tree.VariableTree;
 
 public class IdentifierNode extends Node {
-	
-	protected IdentifierTree tree;
-	
-	public IdentifierNode(IdentifierTree t) {
+
+	protected Tree tree;
+
+	public IdentifierNode(Tree t) {
+		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
 	}
-	
-	public Name getName() {
-		return tree.getName();
-	}
-	
-	public IdentifierTree getIdentifierTree() {
-		return tree;
+
+	public String getName() {
+		if (tree instanceof IdentifierTree) {
+			return ((IdentifierTree) tree).getName().toString();
+		}
+		return ((VariableTree) tree).getName().toString();
 	}
 
 	@Override
 	public Tree getTree() {
-		return getIdentifierTree();
+		return tree;
 	}
 
 	@Override
-	public
-	<R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitIdentifier(this, p);
 	}
-	
+
 	@Override
 	public String toString() {
 		return getName().toString();
