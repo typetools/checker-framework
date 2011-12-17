@@ -1,5 +1,9 @@
 syntax: glob
 
+# git
+.gitignore
+.git
+
 # Emacs and other temporary files
 *~
 .#*
