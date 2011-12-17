@@ -2,6 +2,7 @@ package checkers.flow.cfg.node;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * A node for an assignment. For example:
@@ -14,11 +15,12 @@ import com.sun.source.tree.Tree;
  */
 public class AssignmentNode extends Node {
 
-	protected AssignmentTree tree;
+	protected Tree tree;
 	protected Node lhs;
 	protected Node rhs;
 	
-	public AssignmentNode(AssignmentTree tree, Node target, Node expression) {
+	public AssignmentNode(Tree tree, Node target, Node expression) {
+		assert tree instanceof AssignmentTree || tree instanceof VariableTree;
 		this.tree = tree;
 		this.lhs = target;
 		this.rhs = expression;
@@ -32,17 +34,9 @@ public class AssignmentNode extends Node {
 		return rhs;
 	}
 
-	/**
-	 * Guaranteed to return the same tree as {@link getTree}, but with a more
-	 * specific type.
-	 */
-	public AssignmentTree getAssignmentTree() {
-		return tree;
-	}
-
 	@Override
 	public Tree getTree() {
-		return getAssignmentTree();
+		return tree;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import checkers.flow.cfg.node.IdentifierNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
 import checkers.flow.util.NodeUtils;
 
@@ -343,11 +344,21 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		// case 3: other cases
 		else {
 			Node target = variable.accept(this, p);
-			expression = tree.getExpression().accept(this, p);
-			AssignmentNode assignmentNode = new AssignmentNode(tree,
-					target, expression);
-			addToCurrentBlock(assignmentNode);
+			expression = translateAssignment(tree, target, tree.getExpression());
 		}
+		return expression;
+	}
+
+	/**
+	 * Translate an assignment.
+	 */
+	protected Node translateAssignment(Tree tree, Node target, ExpressionTree rhs) {
+		assert tree instanceof AssignmentTree || tree instanceof VariableTree;
+		Node expression;
+		expression = rhs.accept(this, null);
+		AssignmentNode assignmentNode = new AssignmentNode(tree,
+				target, expression);
+		addToCurrentBlock(assignmentNode);
 		return expression;
 	}
 
@@ -707,8 +718,20 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitVariable(VariableTree tree, Void p) {
-		assert false; // TODO Auto-generated method stub
-		return null;
+		
+		// see JLS 14.4
+		
+		// local variable definition
+		addToCurrentBlock(new VariableDeclarationNode(tree));
+		
+		// initializer
+		Node node = null;
+		ExpressionTree initializer = tree.getInitializer();
+		if (initializer != null) {
+			node = translateAssignment(tree, new IdentifierNode(tree), initializer);
+		}
+		
+		return node;
 	}
 
 	@Override
