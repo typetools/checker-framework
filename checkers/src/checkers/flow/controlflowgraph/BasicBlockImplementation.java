@@ -18,10 +18,10 @@ import checkers.flow.controlflowgraph.node.Node;
 public class BasicBlockImplementation implements BasicBlock {
 
 	/** Internal representation of the contents. */
-	private List<Node> contents;
+	protected List<Node> contents;
 
 	/** Internal representation of the successors. */
-	private Set<BasicBlock> successors;
+	protected Set<BasicBlock> successors;
 
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
