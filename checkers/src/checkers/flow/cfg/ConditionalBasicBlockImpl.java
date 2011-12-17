@@ -1,9 +1,9 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * Implementation of the {@link BasicBlock} interface, representing a basic
@@ -13,8 +13,8 @@ import checkers.flow.controlflowgraph.node.Node;
  * @author Stefan Heule
  * 
  */
-public class ConditionalBasicBlockImplementation extends
-		BasicBlockImplementation implements ConditionalBasicBlock {
+public class ConditionalBasicBlockImpl extends
+		BasicBlockImpl implements ConditionalBasicBlock {
 
 	/** Condition of the if statement. */
 	protected Node condition;
@@ -29,7 +29,7 @@ public class ConditionalBasicBlockImplementation extends
 	 * Initialize an empty basic block to be filled with contents and linked to
 	 * other basic blocks later.
 	 */
-	public ConditionalBasicBlockImplementation() {
+	public ConditionalBasicBlockImpl() {
 	}
 
 	/**

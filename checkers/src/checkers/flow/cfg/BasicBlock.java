@@ -1,10 +1,10 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * Represents a basic block in a control graph. Internally maintains a list of
