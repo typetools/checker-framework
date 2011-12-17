@@ -9,7 +9,7 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Temperature.class } )
+@SubtypeOf(Temperature.class)
 public @interface C {}

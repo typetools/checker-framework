@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -20,7 +21,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 /**
  * Annotated type factory for the Units Checker.
@@ -45,6 +46,8 @@ public class UnitsAnnotatedTypeFactory extends
         AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
 
         mixedUnits = annoUtils.fromClass(MixedUnits.class);
+        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
     }
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
@@ -90,7 +93,7 @@ public class UnitsAnnotatedTypeFactory extends
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror lht = getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rht = getAnnotatedType(node.getRightOperand());
-            Kind kind = node.getKind();
+            Tree.Kind kind = node.getKind();
             
             AnnotationMirror bestres = null;
             for (UnitsRelations ur : checker.unitsRel.values()) {
@@ -111,9 +114,20 @@ public class UnitsAnnotatedTypeFactory extends
             if (bestres!=null) {
                 type.addAnnotation(bestres);
             } else {
-                // Did not find a UnitsRelation, only propagate through scalars.
+                // Handle the binary operations that do not produce a UnitsRelation.
                 
                 switch(kind) {
+                case MINUS:
+                case PLUS:
+                    if (lht.getAnnotations().equals(rht.getAnnotations())) {
+                        // The sum or difference has the same units as both
+                        // operands.
+                        type.addAnnotations(lht.getAnnotations());
+                        break;
+                    } else {
+                        type.addAnnotation(mixedUnits);
+                        break;
+                    }
                 case DIVIDE:
                     if (lht.getAnnotations().equals(rht.getAnnotations())) {
                         // If the units of the division match,
@@ -132,6 +146,16 @@ public class UnitsAnnotatedTypeFactory extends
                     }
                     type.addAnnotation(mixedUnits);
                     break;
+
+		// Placeholders for unhandled binary operations
+		case REMAINDER:
+		    // The checker disallows the following:
+		    //     @Length int q = 10 * UnitTools.m;
+		    //     @Length int r = q % 3;
+		    // This seems wrong because it allows this:
+		    //     @Length int r = q - (q / 3) * 3;
+		    // TODO: We agreed to treat remainder like division.
+		    break;
                 }
             }
 
@@ -154,7 +178,7 @@ public class UnitsAnnotatedTypeFactory extends
             return super.visitCompoundAssignment(node, type);
         }
         
-        private AnnotationMirror useUnitsRelation(Kind kind, UnitsRelations ur,
+        private AnnotationMirror useUnitsRelation(Tree.Kind kind, UnitsRelations ur,
                 AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
             
             AnnotationMirror res = null;

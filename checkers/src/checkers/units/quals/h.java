@@ -9,9 +9,9 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Time.class } )
+@SubtypeOf(Time.class)
 // TODO: support arbitrary factors and +/- for Fahrenheit/Celsius?
 // @UnitsMultiple(quantity=s.class, factor=3600)
 public @interface h {}

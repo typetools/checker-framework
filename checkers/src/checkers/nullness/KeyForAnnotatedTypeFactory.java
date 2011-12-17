@@ -1,9 +1,6 @@
 package checkers.nullness;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -16,6 +13,8 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 import checkers.nullness.quals.KeyFor;
+import checkers.quals.DefaultLocation;
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -32,6 +31,9 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     super(checker, root, false);
     // The "false" above disables flow inference, because the current implementation
     // ignores annotation attributes. Enable once Flow supports attributes.
+
+    AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
+    this.defaults.addAbsoluteDefault(UNQUALIFIED, Collections.singleton(DefaultLocation.ALL));
   }
 
   /* TODO: we currently do not substitute field types.

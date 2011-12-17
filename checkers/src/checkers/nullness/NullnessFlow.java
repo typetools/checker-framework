@@ -5,10 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 
 import checkers.flow.DefaultFlow;
@@ -528,12 +525,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         super.visitIdentifier(node, p);
         if (this.flowState.nnExprs.contains(node.toString())) {
             markTree(node, NONNULL);
-            // else is needed to avoid the double marking bug
-//        } else if (this.flowState.nnElems.contains(TreeUtils.elementFromUse(node)) &&
-//                !isNonNull(TreeUtils.elementFromUse(node))) {
-//              markTree(node, NONNULL);
         }
-
         return null;
     }
 
@@ -557,12 +549,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     @Override
-    protected void clearOnCall(ExecutableElement method) {
+    protected void clearOnCall(MethodTree enclMeth, ExecutableElement method) {
         if (debug != null) {
             debug.println("NullnessFlow::clearOnCall: " + method);
         }
 
-        super.clearOnCall(method);
+        super.clearOnCall(enclMeth, method);
 
         boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
@@ -617,14 +609,14 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = node.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-            if (methodParams.get(i).hasEffectiveAnnotation(NONNULL))
+            if (methodParams.get(i).hasAnnotation(NONNULL))
                 inferNullness(methodArgs.get(i));
         }
 
         for (int i = 0; i < this.flowState.vars.size(); ++i) {
             Element elem = this.flowState.vars.get(i);
             if (elem.getKind() == ElementKind.FIELD
-                    && factory.getDeclAnnotation(elem, LazyNonNull.class) != null
+                    && factory.getAnnotatedType(elem).hasAnnotation(LazyNonNull.class)
                     && prev.annos.get(NONNULL, i))
                 this.flowState.annos.set(NONNULL, i);
         }
@@ -1300,7 +1292,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @return true if the method has a {@link Raw} receiver, false otherwise
      */
     private final boolean hasRawReceiver(MethodTree node) {
-        return rawFactory.getAnnotatedType(node).getReceiverType().hasEffectiveAnnotation(RAW);
+        return rawFactory.getAnnotatedType(node).getReceiverType().hasAnnotation(RAW);
     }
 
     /**

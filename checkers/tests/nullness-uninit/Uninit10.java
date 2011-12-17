@@ -4,14 +4,14 @@ public class Uninit10 {
 
   @NonNull String[] strings;
 
-  //:: warning: (fields.uninitialized)
+  //:: error: (fields.uninitialized)
   Uninit10() { }
 
   public class Inner {
 
     @NonNull String[] stringsInner;
 
-    //:: warning: (fields.uninitialized)
+    //:: error: (fields.uninitialized)
     Inner() { }
 
   }

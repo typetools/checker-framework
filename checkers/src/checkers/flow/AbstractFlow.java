@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
@@ -15,7 +16,9 @@ import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.ElementUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
+import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -123,7 +126,7 @@ implements Flow {
     protected final QualifierHierarchy annoRelations;
 
     /** Memoization for {@link #varDefHasAnnotation(AnnotationMirror, Element)}. */
-    private final Map<Element, Boolean> annotatedVarDefs = new HashMap<Element, Boolean>();
+    private final Map<Pair<Element, AnnotationMirror>, Boolean> annotatedVarDefs = new HashMap<Pair<Element, AnnotationMirror>, Boolean>();
 
     /**
      * Creates a new analysis. The analysis will use the given {@link
@@ -413,9 +416,20 @@ implements Flow {
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         super.visitTypeCast(node, p);
-        if (factory.fromTypeTree(node.getType()).isAnnotated())
+        AnnotatedTypeMirror nodeType = factory.fromTypeTree(node.getType());
+        if (nodeType.isAnnotated())
             return null;
         AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
+
+        if ((nodeType.getKind() == TypeKind.TYPEVAR ||
+                nodeType.getKind() == TypeKind.WILDCARD) &&
+                (t.getKind() != TypeKind.TYPEVAR &&
+                t.getKind() != TypeKind.WILDCARD)) {
+            // Do not propagate annotations from a non-type variable/wildcard
+            // onto a type variable/wildcard.
+            return null;
+        }
+
         for (AnnotationMirror a : this.flowState.getAnnotations())
             if (t.hasAnnotation(a))
                 flowResults.put(node, a);
@@ -492,27 +506,6 @@ implements Flow {
             }
         }
 
-        return null;
-    }
-
-    @Override
-    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        scan(node.getVariable(), p);
-
-        VariableTree var = node.getVariable();
-        newVar(var);
-
-        ExpressionTree expr = node.getExpression();
-        scanExpr(expr);
-
-        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
-        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
-        if (iter != null)
-            propagateFromType(var, iter);
-
-        // only visit statement. skip variable and expression..
-        // visited variable and expression already
-        scanStat(node.getStatement());
         return null;
     }
 
@@ -610,11 +603,7 @@ implements Flow {
                 // the else branch is not alive at the end
                 // we use the liveness-result from the then branch
                 alive = aliveAfterThen;
-                // annosAfterThen.or(annos);
-                // GenKillBits.orlub(annosAfterThen, annos, annoRelations);
                 afterThen.or(flowState, annoRelations);
-                // annos = GenKillBits.copy(annosAfterThen);
-                // flowState = copyState(afterThen);
                 flowState = afterThen;
             } else if (!aliveAfterThen) {
                 // annos = annos;  // NOOP
@@ -624,17 +613,14 @@ implements Flow {
             } else {
                 // both branches are alive
                 // alive = true;
-                // GenKillBits.andlub(annos, annosAfterThen, annoRelations);
                 flowState.and(afterThen, annoRelations);
             }
         } else {
             if (!alive) {
-                // annos = GenKillBits.copy(annosBeforeElse);
                 // there is no alias to beforeElse, so copy is not needed
                 // flowState = copyState(beforeElse);
                 flowState = beforeElse;
             } else {
-                // GenKillBits.andlub(annos, annosBeforeElse, annoRelations);
                 flowState.and(beforeElse, annoRelations);
             }
         }
@@ -655,7 +641,6 @@ implements Flow {
 
         flowState = whenFalse;
         scanExpr(node.getFalseExpression());
-        // annos.and(after);
         flowState.and(after, annoRelations);
 
         return null;
@@ -678,13 +663,8 @@ implements Flow {
 
             if (pass) break;
 
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
             stCondTrue.and(stEntry, annoRelations);
-            // annos.and(annoEntry);
-            // GenKillBits.andlub(annos, annoEntry, annoRelations);
             flowState.and(stEntry, annoRelations);
-
             pass = true;
         } while (true);
 
@@ -714,9 +694,9 @@ implements Flow {
             scanCond(node.getCondition());
             stCond = flowState_whenFalse;
             flowState = flowState_whenTrue;
+
             if (pass) break;
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(split.annosWhenTrue, annoEntry, annoRelations);
+
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
@@ -750,11 +730,7 @@ implements Flow {
 
             if (pass) break;
 
-            // annosWhenTrue.and(annoEntry);
-            // GenKillBits.andlub(annoCondTrue, annoEntry, annoRelations);
             stCondTrue.and(stEntry, annoRelations);
-            // annos.and(annoEntry);
-            // GenKillBits.andlub(annos, annoEntry, annoRelations);
             flowState.and(stEntry, annoRelations);
             pass = true;
         } while (true);
@@ -764,6 +740,39 @@ implements Flow {
         } else {
             flowState = stEntry;
         }
+        return null;
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        scan(node.getVariable(), p);
+
+        VariableTree var = node.getVariable();
+        newVar(var);
+
+        ExpressionTree expr = node.getExpression();
+        scanExpr(expr);
+
+        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
+        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+
+        if (iter != null) {
+            propagateFromType(var, iter);
+        } else {
+            checker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+        }
+
+        ST stEntry = copyState(flowState);
+
+        // Visit the statement twice to account for the effect
+        // the loop body might have on the enclosing state.
+        scanStat(node.getStatement());
+        flowState.and(stEntry, annoRelations);
+        scanStat(node.getStatement());
+
+        // The loop might never get executed -> restore state.
+        flowState = stEntry;
+
         return null;
     }
 
@@ -803,8 +812,6 @@ implements Flow {
         ST stAfterBlock = copyState(flowState);
         ST result = tryBits.pop();
 
-        // annos.and(result);
-        // GenKillBits.andlub(annos, result, annoRelations);
         flowState.and(result, annoRelations);
 
         if (node.getCatches() != null) {
@@ -815,7 +822,6 @@ implements Flow {
             }
             // Conservative: only if there's no finally
             if (!catchAlive && node.getFinallyBlock() == null) {
-                // annos = GenKillBits.copy(annoAfterBlock);
                 flowState = copyState(stAfterBlock);
             }
         }
@@ -832,14 +838,12 @@ implements Flow {
                 && method.getEnclosingElement().getSimpleName().contentEquals("System"))
             alive = false;
 
-        this.clearOnCall(method);
+        this.clearOnCall(TreeUtils.enclosingMethod(getCurrentPath()), method);
 
         List<? extends TypeMirror> thrown = method.getThrownTypes();
         if (!thrown.isEmpty()
                 && TreeUtils.enclosingOfKind(getCurrentPath(), Tree.Kind.TRY) != null) {
             if (!tryBits.isEmpty())
-                // tryBits.peek().and(annos);
-                // GenKillBits.andlub(tryBits.peek(), annos, annoRelations);
                 tryBits.peek().and(flowState, annoRelations);
         }
 
@@ -849,15 +853,16 @@ implements Flow {
     /**
      * Clear whatever part of the state that gets invalidated by
      * invoking the method.
-     *
+     * 
+     * @param enclMeth The method within which "method" is called.
+     *   Might be null if the invocation is in a field initializer.  
      * @param method The invoked method.
      */
-    protected abstract void clearOnCall(ExecutableElement method);
+    protected abstract void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method);
 
     @Override
     public Void visitBlock(BlockTree node, Void p) {
         if (node.isStatic()) {
-            // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
             ST prev = copyState(flowState);
             try {
                 super.visitBlock(node, p);
@@ -878,7 +883,6 @@ implements Flow {
         visitorState.setMethodTree(node);
 
         // Intraprocedural, so save and restore bits.
-        // GenKillBits<AnnotationMirror> prev = GenKillBits.copy(annos);
         ST prev = copyState(flowState);
 
         try {
@@ -908,17 +912,21 @@ implements Flow {
     /**
      * Determines whether a variable definition has been annotated.
      *
+     * @param enclMeth the method within which the check happens;
+     *   null e.g. in field initializers
      * @param annotation the annotation to check for
      * @param var the variable to check
      * @return true if the variable has the given annotation, false otherwise
      */
-    protected boolean varDefHasAnnotation(AnnotationMirror annotation, Element var) {
+    protected boolean varDefHasAnnotation(/*@Nullable*/ MethodTree enclMeth,
+            AnnotationMirror annotation, Element var) {
+        Pair<Element, AnnotationMirror> key = Pair.of(var, annotation);
+        if (annotatedVarDefs.containsKey(key)) {
+            return annotatedVarDefs.get(key);
+        }
 
-        if (annotatedVarDefs.containsKey(var))
-            return annotatedVarDefs.get(var);
-
-        boolean result = factory.getAnnotatedType(var).hasEffectiveAnnotation(annotation);
-        annotatedVarDefs.put(var, result);
+        boolean result = factory.getAnnotatedType(var).hasAnnotation(annotation);
+        annotatedVarDefs.put(key, result);
         return result;
     }
 

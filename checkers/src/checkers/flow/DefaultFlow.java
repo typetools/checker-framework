@@ -2,23 +2,20 @@ package checkers.flow;
 
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Pure;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.nullness.quals.*;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 
 /**
  * The default implementation of the flow-sensitive type inference.
@@ -57,24 +54,29 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
         assert type != null : "no type from symbol";
 
-        if (debug != null)
+        if (debug != null) {
             debug.println("Flow: newVar(" + tree + ") -- " + type);
+            debug.println("  flowState before newVar: " + flowState);
+        }
 
         // Determine the initial status of the variable by checking its
         // annotated type.
         for (AnnotationMirror annotation : this.flowState.annotations) {
-            if (type.hasEffectiveAnnotation(annotation))
+            if (type.hasAnnotation(annotation))
                 flowState.annos.set(annotation, idx);
             else
                 flowState.annos.clear(annotation, idx);
+        }
+
+        if (debug != null) {
+            debug.println("  flowState after newVar: " + flowState);
         }
     }
 
     @Override
     protected void propagate(Tree lhs, ExpressionTree rhs) {
-
         if (debug != null)
-            debug.println("Flow: try propagate from " + rhs);
+            debug.println("Flow: try propagate from rhs: " + rhs + " into lhs: " + lhs);
 
         // Skip assignment to arrays.
         if (lhs.getKind() == Tree.Kind.ARRAY_ACCESS)
@@ -101,9 +103,20 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = this.flowState.vars.indexOf(rElt);
 
-        // Get the effective annotations from the RHS, but not the LHS.
-        Set<AnnotationMirror> typeAnnos = type.getEffectiveAnnotations();
-        Set<AnnotationMirror> eltTypeAnnos = eltType.getAnnotations();
+        Set<AnnotationMirror> typeAnnos;
+        Set<AnnotationMirror> eltTypeAnnos;
+
+        if ((type.getKind() == TypeKind.TYPEVAR ||
+                type.getKind() == TypeKind.WILDCARD) &&
+                (eltType.getKind() != TypeKind.TYPEVAR &&
+                eltType.getKind() != TypeKind.WILDCARD)) {
+            // Only take the effective upper bound if the LHS
+            // is not also a type variable/wildcard
+            typeAnnos = type.getEffectiveAnnotations();
+        } else {
+            typeAnnos = type.getAnnotations();
+        }
+        eltTypeAnnos = eltType.getAnnotations();
 
         if (!eltTypeAnnos.isEmpty() && !typeAnnos.isEmpty()
                 && !annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
@@ -113,21 +126,14 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         for (AnnotationMirror annotation : this.flowState.annotations) {
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
-            if (typeAnnos.contains(annotation) && !eltTypeAnnos.isEmpty()
+            if (AnnotationUtils.containsSame(typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
-                flowState.annos.set(annotation, idx);
                 // to ensure that there is always just one annotation set, we
-                // clear the annotation that was previously used
-                // for (AnnotationMirror oldsuper : eltType.getAnnotations()) {
+                // first clear the annotation that was previously used
                 for (AnnotationMirror other : this.flowState.annotations) {
-                    if (!other.equals(annotation)
-                            && flowState.annos.contains(other)) {
-                        // The get is not necessary and might observe annos in
-                        // an invalid state.
-                        // annos.get(other, idx)
-                        flowState.annos.clear(other, idx);
-                    }
+                    flowState.annos.clear(other, idx);
                 }
+                flowState.annos.set(annotation, idx);
             } else if (rIdx >= 0 && flowState.annos.get(annotation, rIdx)) {
                 flowState.annos.set(annotation, idx);
             } else {
@@ -136,6 +142,9 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         }
         // just to make sure everything worked correctly
         flowState.annos.valid();
+
+        if (debug != null)
+            debug.println("  flowState after propagate: " + flowState);
     }
 
     @Override
@@ -151,10 +160,14 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
         // WMD: if we're setting something, can the GenKillBits invariant be violated?
         for (AnnotationMirror annotation : this.flowState.annotations) {
-            if (rhs.hasEffectiveAnnotation(annotation))
+            if (elt.asType().getKind()!=TypeKind.TYPEVAR && rhs.hasEffectiveAnnotation(annotation)) {
+                // Only take the effective annotations if the LHS is not a type variable
                 flowState.annos.set(annotation, idx);
-            else
+            } else if (rhs.hasAnnotation(annotation)) {
+                flowState.annos.set(annotation, idx);
+            } else {
                 flowState.annos.clear(annotation, idx);
+            }
         }
     }
 
@@ -194,17 +207,20 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     }
 
     @Override
-    protected void clearOnCall(ExecutableElement method) {
+    protected void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method) {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
         boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
-        for (int i = 0; i < this.flowState.vars.size(); i++) {
-            Element var = this.flowState.vars.get(i);
-            for (AnnotationMirror a : this.flowState.annotations)
-                if (!isJDKMethod && isNonFinalField(var)
-                        && !varDefHasAnnotation(a, var) && !isPure)
-                    flowState.annos.clear(a, i);
+        if (!isPure) {
+            for (int i = 0; i < this.flowState.vars.size(); i++) {
+                Element var = this.flowState.vars.get(i);
+                for (AnnotationMirror a : this.flowState.annotations)
+                    if (!isJDKMethod && isNonFinalField(var)
+                            && !varDefHasAnnotation(enclMeth, a, var)) {
+                        flowState.annos.clear(a, i);
+                    }
+            }
         }
     }
 

@@ -1,18 +1,42 @@
-Version 1.2.4, x Nov 2011
+Version 1.2.4, 15 Dec 2011
+
+All checkers:
+- @Target(TYPE_USE) meta-annotation is properly handled.
 
 Nullness Checker:
 - Do not allow nullness annotations on primitive types.
-- Improvements to rawness and field initialization checks.
+- Improvements to rawness (initialization) checks.
 - Special-case known keys for System.getProperty.
+- The -Alint=uninitialized command-line option now defaults to off, and
+  applies only to initialization of primitive and @Nullable fields.  It is
+  not possible to disable, from the command line, the check that all
+  @NonNull fields are initialized.  Such warnings must be suppressed
+  explicitly, for example by using @SuppressWarnings.
+
+Regex Checker:
+- Improved RegexUtil class.
+
+Manual:
+- Add FAQ item "Is the Checker Framework an official part of Java?"
+- Trim down README.txt; users should read the manual instead.
+- Improvements throughout, especially to Nullness and Regex Checker sections.
 
 Implementation details:
 - Add a new @InvisibleQualifier meta-annotation for type qualifiers.
   Instead of special-casing @Unqualified in the AnnotatedTypeMirror it
   now looks for this meta-annotation. This also allows type systems to
-  hide type qualifiers it doesn't wan't visible, which we now use in the
+  hide type qualifiers it doesn't want visible, which we now use in the
   Nullness Checker to hide the @Primitive annotation.
 - Nullness Checker:  Introduce a new internal qualifier @Primitive that is
   used for primitive types.
+- Be stricter about qualifiers being present on all types. If you get
+  errors about missing qualifiers, check your defaulting rules.
+  This helped in fixing small bugs in corner cases of the type
+  hierarchy and type factory.
+- Unify decoding type annotations from trees and elements.
+- Improve handling of annotations on type variables and upper bounds.
+- Support checkers that use multiple, disjoint qualifier hierarchies.
+- Many bug fixes.
 
 ----------------------------------------------------------------------
 Version 1.2.3, 1 Nov 2011
@@ -24,7 +48,7 @@ Regex Checker:
 Implementation details:
 - Do not use "null" for unqualified types. Explicitly use @Unqualified
   and be strict about correct usage. If this causes trouble for you,
-  check your ImplicitFor and DefaultQualifierInHierarchy
+  check your @ImplicitFor and @DefaultQualifierInHierarchy
   meta-annotations and ensure correct defaulting in your
   AnnotatedTypeFactory.
 

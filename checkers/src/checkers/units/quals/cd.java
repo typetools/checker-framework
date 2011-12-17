@@ -9,9 +9,9 @@ import checkers.quals.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @TypeQualifier
-@SubtypeOf( { Luminance.class } )
+@SubtypeOf(Luminance.class)
 public @interface cd {
     Prefix value() default Prefix.one;
 }
