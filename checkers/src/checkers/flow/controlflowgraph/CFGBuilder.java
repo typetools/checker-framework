@@ -170,15 +170,7 @@ public class CFGBuilder {
 			// finish CFG
 			SpecialBasicBlockImplementation exit = new SpecialBasicBlockImplementation(
 					SpecialBasicBlockTypes.EXIT);
-			if (currentBlock == null) {
-				if (predecessors.size() > 0) {
-					for (BasicBlockImplementation p : predecessors) {
-						p.addSuccessor(exit);
-					}
-				}
-			} else {
-				currentBlock.addSuccessor(exit);
-			}
+			extendWithBasicBlock(exit);
 			return startBlock;
 		}
 
@@ -230,8 +222,14 @@ public class CFGBuilder {
 		 */
 		protected void extendWithBasicBlock(BasicBlockImplementation bb) {
 			if (currentBlock != null) {
-				currentBlock.addSuccessor(bb);
-				currentBlock = bb;
+				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
+					// for a conditional basic block, we assume that the
+					// successors should be the 'then' successor
+					ConditionalBasicBlockImplementation cp = (ConditionalBasicBlockImplementation) currentBlock;
+					cp.setElseSuccessor(bb);
+				} else {
+					currentBlock.addSuccessor(bb);
+				}
 			} else {
 				for (BasicBlockImplementation p : predecessors) {
 					if (p instanceof ConditionalBasicBlockImplementation) {
