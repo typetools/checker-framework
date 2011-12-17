@@ -11,6 +11,17 @@ import com.sun.source.tree.Tree;
  */
 public abstract class Node {
 
+	/**
+	 * Returns the {@link Tree} in the abstract synatx tree, or
+	 * <code>null</code> if no corresponding tree exists. For instance, this is
+	 * the case for an {@link ImplicitThisLiteralNode}.
+	 * <p>
+	 * 
+	 * <em>Important:</em> If this method returns <code>null</code>, then the
+	 * node is not of a boolean type (cf. {@link NodeUtils.isBooleanTypeNode}).
+	 * 
+	 * @return The corresponding {@link Tree} or <code>null</code>.
+	 */
 	abstract public Tree getTree();
 
 	/**

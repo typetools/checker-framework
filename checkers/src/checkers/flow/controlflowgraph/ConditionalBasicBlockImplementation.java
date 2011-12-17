@@ -17,16 +17,16 @@ public class ConditionalBasicBlockImplementation extends
 		BasicBlockImplementation implements ConditionalBasicBlock {
 
 	/** Condition of the if statement. */
-	private Node condition;
+	protected Node condition;
 
 	/** Successor of the then branch. */
-	private BasicBlock thenSuccessor;
+	protected BasicBlock thenSuccessor;
 
 	/** Successor of the else branch. */
-	private BasicBlock elseSuccessor;
+	protected BasicBlock elseSuccessor;
 
 	/** Set of exceptional successors. */
-	private Set<BasicBlock> exceptionalSuccessors;
+	protected Set<BasicBlock> exceptionalSuccessors;
 
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
