@@ -1,10 +1,10 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * A <em>special</em> basic block that does not contain any contents and is used
@@ -22,7 +22,7 @@ import checkers.flow.controlflowgraph.node.Node;
  * @author Stefan Heule
  * 
  */
-public class SpecialBasicBlockImplementation extends BasicBlockImplementation {
+public class SpecialBasicBlockImpl extends BasicBlockImpl {
 
 	/** The types of special basic blocks */
 	public static enum SpecialBasicBlockTypes {
@@ -43,7 +43,7 @@ public class SpecialBasicBlockImplementation extends BasicBlockImplementation {
 	/**
 	 * Initialize a special basic block of a given type.
 	 */
-	public SpecialBasicBlockImplementation(SpecialBasicBlockTypes type) {
+	public SpecialBasicBlockImpl(SpecialBasicBlockTypes type) {
 		this.type = type;
 	}
 

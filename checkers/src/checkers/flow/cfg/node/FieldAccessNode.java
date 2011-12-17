@@ -1,4 +1,4 @@
-package checkers.flow.controlflowgraph.node;
+package checkers.flow.cfg.node;
 
 import checkers.flow.util.ASTUtils;
 

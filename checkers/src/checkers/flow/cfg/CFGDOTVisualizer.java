@@ -1,4 +1,4 @@
-package checkers.flow.controlflowgraph;
+package checkers.flow.cfg;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import checkers.flow.controlflowgraph.node.Node;
+import checkers.flow.cfg.node.Node;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
@@ -14,7 +14,7 @@ import checkers.flow.controlflowgraph.node.Node;
  * @author Stefan Heule
  * 
  */
-public class ControlFlowGraphDOTVisualizer {
+public class CFGDOTVisualizer {
 
 	/**
 	 * Output a graph description in the DOT language, representing the control
@@ -94,7 +94,7 @@ public class ControlFlowGraphDOTVisualizer {
 			sb1.append("    " + v.hashCode() + " [");
 			if (v instanceof ConditionalBasicBlock) {
 				sb1.append("shape=polygon sides=8 ");
-			} else if (v instanceof SpecialBasicBlockImplementation) {
+			} else if (v instanceof SpecialBasicBlockImpl) {
 				sb1.append("shape=oval ");
 			}
 			sb1.append("label=\""
@@ -128,8 +128,8 @@ public class ControlFlowGraphDOTVisualizer {
 			sb.append(prepareString(visualizeNode(t)));
 		}
 		if (sb.length() == 0) {
-			if (bb instanceof SpecialBasicBlockImplementation) {
-				SpecialBasicBlockImplementation sbb = (SpecialBasicBlockImplementation) bb;
+			if (bb instanceof SpecialBasicBlockImpl) {
+				SpecialBasicBlockImpl sbb = (SpecialBasicBlockImpl) bb;
 				switch (sbb.getType()) {
 				case ENTRY:
 					return "<entry>";
