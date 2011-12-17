@@ -1,6 +1,5 @@
 package checkers.flow.cfg.node;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree;
 
