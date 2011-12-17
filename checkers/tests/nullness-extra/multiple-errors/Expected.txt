@@ -1,4 +1,4 @@
-C1.java:1: warning: constructor does not initialize fields [o]
+C1.java:1: error: constructor does not initialize fields [o]
 public class C1 {
        ^
 C2.java:2: error: incompatible types.
@@ -11,8 +11,10 @@ C3.java:4: error: cannot find symbol
                ^
   symbol:   class XXX
   location: class C3b
+error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
+error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
+error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
 C4.java:3: error: dereference of possibly-null reference p
     p.toString();
     ^
-3 errors
-1 warning
+7 errors

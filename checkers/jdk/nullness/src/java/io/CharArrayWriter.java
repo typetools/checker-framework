@@ -13,7 +13,7 @@ public class CharArrayWriter extends Writer {
   public void writeTo(Writer a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public CharArrayWriter append(@Nullable CharSequence a1) { throw new RuntimeException("skeleton method"); }
   public CharArrayWriter append(@Nullable CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public CharArrayWriter append(@Nullable char a1) { throw new RuntimeException("skeleton method"); }
+  public CharArrayWriter append(char a1) { throw new RuntimeException("skeleton method"); }
   public void reset() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }

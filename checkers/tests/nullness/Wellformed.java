@@ -9,12 +9,16 @@ class Wellformed {
     class Gen1b {
         //:: error: (type.invalid)
         <T extends @NonNull @Nullable Object> void m(T p){}
+        //:: error: (type.invalid)
+        <@NonNull @Nullable T> void m2(T p){}
     }
+    //:: error: (type.invalid)
+    class Gen1c<@NonNull @Nullable T> {}
 
+    // Annotations on type variables override implicit and explicit
+    // annotations on the bounds.
     class Gen2a<@Nullable T> {}
-    //:: error: (type.invalid)
     class Gen2b<@Nullable T extends Object> {}
-    //:: error: (type.invalid)
     class Gen2c<@Nullable T extends @NonNull Object> {}
 
     class Gen3a<T> {
@@ -26,7 +30,7 @@ class Wellformed {
         @Nullable T get() { return null; }
     }
 
-    //:: warning: (fields.uninitialized)
+    //:: error: (fields.uninitialized)
     class Gen4<T extends @Nullable Object> {
         @NonNull T f;
         @NonNull T get() { throw new RuntimeException(); }

@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.quals.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 
@@ -67,6 +68,10 @@ public class QualifierDefaults {
     		}
     	}
     	absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
+    }
+
+    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
+        localVarDefaultAnnos = localannos;
     }
 
     public void annotateTypeElement(TypeElement elt, AnnotatedTypeMirror type) {
@@ -314,24 +319,29 @@ public class QualifierDefaults {
                 && !this.isTypeVarExtends) {
                 return super.scan(t, p);
             }
+
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!t.isAnnotatedInHierarchy(p))
                 t.addAnnotation(p);
 
-            return super.scan(t, p);
-        }
+            /* Anonymous types, e.g. intersection types, list the types
+             * in the direct supertypes. Make sure to apply the default there too.
+             * Use the direct supertypes field to prevent an infinite recursion
+             * with the IGJATF.postDirectSuperTypes. TODO: investigate better way.
+             */
+            if (TypesUtils.isAnonymousType(t.getUnderlyingType())) {
+                List<AnnotatedDeclaredType> sups = ((AnnotatedDeclaredType)t).directSuperTypesField();
+                if (sups!=null) {
+                    for (AnnotatedTypeMirror sup : sups) {
+                        if (!sup.isAnnotatedInHierarchy(p)) {
+                            sup.addAnnotation(p);
+                        }
+                    }
+                }
+            }
 
-        // Skip method receivers.
-        @Override
-        public Void visitExecutable(AnnotatedExecutableType t,
-                AnnotationMirror p) {
-            return super.visitExecutable(t, p);
-//            scan(t.getReturnType(), p);
-//            scanAndReduce(t.getParameterTypes(), p, null);
-//            scanAndReduce(t.getThrownTypes(), p, null);
-//            scanAndReduce(t.getTypeVariables(), p, null);
-//            return null;
+            return super.scan(t, p);
         }
 
         private boolean isTypeVarExtends = false;
@@ -371,9 +381,5 @@ public class QualifierDefaults {
             visitedNodes.put(type, r);
             return r;
         }
-    }
-
-    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
-    	localVarDefaultAnnos = localannos;
     }
 }

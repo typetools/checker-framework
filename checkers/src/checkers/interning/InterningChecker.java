@@ -8,6 +8,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
 import checkers.quals.TypeQualifiers;
+import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
 
 /**
@@ -25,9 +26,7 @@ import checkers.source.SupportedLintOptions;
  *
  * @checker.framework.manual #interning-checker Interning checker
  */
-// TODO: Strange! When I add the missing Unqualified.class qualifier,
-// test case Arrays fails. Why?
-@TypeQualifiers({ Interned.class, PolyInterned.class})
+@TypeQualifiers({ Interned.class, PolyInterned.class, Unqualified.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {

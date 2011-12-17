@@ -156,23 +156,18 @@ prepared release directory, set up a release directory as follows:
   NFS.</p>
 
 <pre>
-    mkdir -p /scratch/$USER/jsr308-release
-    cd /scratch/$USER/jsr308-release
+    mkdir -p $anno
+    cd $anno
 </pre>
 </li>
 
 <li>
 <p>Check out the jsr308-langtools and checker-framework repositories:</p>
 <pre>
-    # First, plume-lib
-    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
-
-    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
     hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
+    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
+    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
     hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
-    # Just to be on the safe side.
-    cd checker-framework; ln -s ../jsr308-langtools jsr308-langtools
-
 </pre>
 </li>
 
@@ -180,7 +175,7 @@ prepared release directory, set up a release directory as follows:
 testing site:</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/checker-framework/release
+    cd $anno/checker-framework/release
     ant -f release.xml site-copy
 </pre>
 
@@ -472,7 +467,7 @@ and setting environment variables accordingly:
 <li><p>Update your release checkout:</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/checker-framework
+    cd $anno/checker-framework
     hg fetch
     cd ../jsr308-langtools
     hg fetch
@@ -500,7 +495,7 @@ update the live site after you've sanity-checked the release.)</p></li>
 <li><p>Do a dry-run of the release:</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/checker-framework/release
+    cd $anno/checker-framework/release
     ant -f release.xml -Drelease.ver=$CFVERSION clean web sanitycheck
 </pre>
 
@@ -546,7 +541,7 @@ JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-
 <li>Make the final release:
 
 <pre>
-    cd /scratch/$USER/jsr308-release/checker-framework/release
+    cd $anno/checker-framework/release
     ant -f release.xml -Drelease.ver=$CFVERSION -Drelease.is.real=true clean web checklinks sanitycheck
 </pre>
 
@@ -568,14 +563,14 @@ the release process.  (Should this be done before the release, so
 that its data is consistent?)</p>
 
 <pre>
-    cd /scratch/$USER/jsr308-release/jsr308-langtools
+    cd $anno/jsr308-langtools
     hg diff
     # As always, review the changes output by "hg diff" before committing.
     # Typical commit message:
     hg commit -m "Update version number to $CFVERSION"
     hg push
 
-    cd /scratch/$USER/jsr308-release/checker-framework
+    cd $anno/checker-framework
     hg diff
     # As always, review the changes output by "hg diff" before committing.
     # Typical commit message:

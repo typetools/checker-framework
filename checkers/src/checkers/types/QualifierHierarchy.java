@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
+import checkers.source.SourceChecker;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -19,6 +20,15 @@ import checkers.util.AnnotationUtils;
  * with at least one qualifier from the hierarchy.
  */
 public abstract class QualifierHierarchy {
+
+    /* The checker to use for error reporting.
+     * The field should be final, 
+     */
+    protected final SourceChecker checker;
+
+    protected QualifierHierarchy(SourceChecker c) {
+        this.checker = c;
+    }
 
     // **********************************************************************
     // Getter methods about this hierarchy
@@ -87,6 +97,9 @@ public abstract class QualifierHierarchy {
      * For NonNull, leastUpperBound('Nullable', 'NonNull') ==> Nullable
      * For IGJ,     leastUpperBound('Immutable', 'Mutable') ==> ReadOnly
      *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     * 
      * @return  the least restrictive qualifiers for both types
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
@@ -94,6 +107,9 @@ public abstract class QualifierHierarchy {
     /**
      * Returns the greatest lower bound for the qualifiers a1 and a2.
      *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     * 
      * @param a1 First annotation
      * @param a2 Second annotation
      * @return Greatest lower bound of the two annotations
@@ -110,56 +126,33 @@ public abstract class QualifierHierarchy {
      * least upper bound of the true and false clauses.
      * <p>
      *
-     * The current implementation returns the intersection of annos1 and
-     * annos2 along with the qualifier that is the least upper bound of all
-     * other annotations.
-     *
      * @return the least upper bound of annos1 and annos2
      */
     public Set<AnnotationMirror>
     leastUpperBound(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        Collection<AnnotationMirror> as1 = annos1;
-        Collection<AnnotationMirror> as2 = annos2;
-
-        if (as1.size() == 1 && as2.size() == 1) {
-            AnnotationMirror a1 = as1.iterator().next();
-            AnnotationMirror a2 = as2.iterator().next();
+        if (annos1.size() == 1 && annos2.size() == 1) {
+            AnnotationMirror a1 = annos1.iterator().next();
+            AnnotationMirror a2 = annos2.iterator().next();
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
-        // Let's hope that the difference is simply two elements
-        Set<AnnotationMirror> difference = difference(as1, as2);
-        Set<AnnotationMirror> lub = AnnotationUtils.createAnnotationSet();
-        lub.addAll(intersect(as1, as2));
+        assert annos1.size() == annos2.size() && annos1.size()!=0 :
+            "QualifierHierarchy.leastUpperBound: tried to determine LUB with empty sets or sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
 
-        if (difference.isEmpty())
-            return lub;
-        AnnotationMirror lubOfDiff = difference.iterator().next();
-        for (AnnotationMirror a : difference)
-            lubOfDiff = leastUpperBound(lubOfDiff, a);
-        lub.add(lubOfDiff);
-        return lub;
-    }
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : annos1) {
+            for (AnnotationMirror a2 : annos2) {
+                AnnotationMirror lub = leastUpperBound(a1, a2);
+                if (lub!=null) {
+                    result.add(lub);
+                }
+            }
+        }
 
+        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBound: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
 
-    /**
-     * @return the intersection set of as1 and as2
-     */
-    protected Set<AnnotationMirror> intersect(Collection<AnnotationMirror> as1, Collection<AnnotationMirror> as2) {
-        Set<AnnotationMirror> intersects = AnnotationUtils.createAnnotationSet();
-        intersects.addAll(as1);
-        intersects.retainAll(as2);
-        return intersects;
-    }
-
-    /**
-     * @return the elements belonging to exactly one of as1 or as2
-     */
-    protected Set<AnnotationMirror> difference(Collection<AnnotationMirror> as1, Collection<AnnotationMirror> as2) {
-        Set<AnnotationMirror> difference = AnnotationUtils.createAnnotationSet();
-        difference.addAll(as1);
-        difference.addAll(as2);
-        difference.removeAll(intersect(as1, as2));
-        return difference;
+        return result;
     }
 }

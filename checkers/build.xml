@@ -120,7 +120,7 @@
     </target>
 
     <target name="build" depends="prep,build.check.uptodate" unless="build.uptodate"
-            description="Compile files">
+            description="Compile files.  Does not update jsr308-all.jar">
         <fail unless="compiler.exists"
             message="
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
@@ -275,6 +275,9 @@ ${build.version} of the 'javac.jar' library."/>
 
     <target name="all-tests" depends="jar,jdk.jar,build-tests"
       description="Run tests for all checkers">
+
+      <antcall target="nullness-extra-tests"/>
+
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
       <junit fork="${run.tests.should.fork}"
@@ -391,7 +394,9 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nullness-extra-tests" depends="jar,build-tests"
+    <!-- Differs from other targets in that it is defined via a Makefile and
+       is not run via the "-run-tests" Antfile target, as other tests are. -->
+    <target name="nullness-extra-tests" depends="bindist,build-tests"
       description="Run extra tests for the Nullness checker">
       <exec executable="make">
 	<env key="JAVAC" value="${basedir}/binary/javac"/>
@@ -413,6 +418,14 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <!-- Do not include this as a dependence for nullness-tests! -->
+    <target name="nullness-temp-tests" depends="jar,build-tests"
+      description="Run temporary tests for the Nullness checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessTempTest"/>
+        </antcall>
+    </target>
+
     <target name="regex-tests" depends="jar,build-tests"
       description="Run tests for the Signature checker">
         <antcall target="-run-tests">
@@ -431,6 +444,13 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the Tainting checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingTest"/>
+        </antcall>
+    </target>
+
+    <target name="units-tests" depends="jar,build-tests"
+      description="Run tests for the Units checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.UnitsTest"/>
         </antcall>
     </target>
 

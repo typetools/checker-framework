@@ -10,6 +10,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -69,7 +70,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     protected Properties messages;
 
     /** Used to report error messages and warnings via the compiler. */
-    protected JavacMessager messager;
+    protected Messager messager;
 
     /** Used as a helper for the {@link SourceVisitor}. */
     protected Trees trees;
@@ -149,15 +150,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return this.messages;
     }
 
-    private Pattern getSkipUsesPattern(Map<String, String> options) {
+    private Pattern getSkipPattern(String patternName, Map<String, String> options) {
         String pattern = "";
 
-        if (options.containsKey("skipUses"))
-            pattern = options.get("skipUses");
-        else if (System.getProperty("checkers.skipUses") != null)
-            pattern = System.getProperty("checkers.skipUses");
-        else if (System.getenv("skipUses") != null)
-            pattern = System.getenv("skipUses");
+        if (options.containsKey(patternName))
+            pattern = options.get(patternName);
+        else if (System.getProperty("checkers." + patternName) != null)
+            pattern = System.getProperty("checkers." + patternName);
+        else if (System.getenv(patternName) != null)
+            pattern = System.getenv(patternName);
+
+        if (pattern.indexOf("/") != -1) {
+            getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+              "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
+        }
 
         // return a pattern of an illegal Java identifier character
         // so that it won't match anything
@@ -167,22 +173,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return Pattern.compile(pattern);
     }
 
+    private Pattern getSkipUsesPattern(Map<String, String> options) {
+        return getSkipPattern("skipUses", options);
+    }
+
     private Pattern getSkipDefsPattern(Map<String, String> options) {
-        String pattern = "";
-
-        if (options.containsKey("skipDefs"))
-            pattern = options.get("skipDefs");
-        else if (System.getProperty("checkers.skipDefs") != null)
-            pattern = System.getProperty("checkers.skipDefs");
-        else if (System.getenv("skipDefs") != null)
-            pattern = System.getenv("skipDefs");
-
-        // return a pattern of an illegal Java identifier character
-        // so that it won't match anything
-        if (pattern.equals(""))
-            pattern = "\\(";
-
-        return Pattern.compile(pattern);
+        return getSkipPattern("skipDefs", options);
     }
 
     private Set<String> createActiveLints(Map<String, String> options) {
@@ -208,7 +204,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Exception type used only internally to abort
      * processing.
      */
-    private class CheckerError extends RuntimeException { }
+    public static class CheckerError extends RuntimeException {
+        String msg;
+        Throwable cause;
+
+        public CheckerError() {}
+
+        public CheckerError(String msg) {
+            this.msg = msg;
+            this.cause = null;
+        }
+
+        public CheckerError(String msg, Throwable cause) {
+            this.msg = msg;
+            this.cause = cause;
+        }
+    }
 
     /**
      * Log an error message and abort processing.
@@ -293,11 +304,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
-        @Nullable Trees trees = Trees.instance(processingEnv);
+        /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
         assert trees != null; /*nninvariant*/
         this.trees = trees;
 
-        this.messager = (JavacMessager) processingEnv.getMessager();
+        this.messager = processingEnv.getMessager();
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
@@ -345,9 +356,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
         } catch (CheckerError ce) {
-            // Nothing to do, message will be output by javac.
-        	// TODO: there seems to be a difference between continuing here
-        	// and raising an exception again. Investigate.
+            // Only print something if there is a message attached.
+            // If there is no additional message, the error was already output earlier.
+            // TODO: should we always attach a message instead of printing it in errorAbort?
+            // TODO: for an InvocationTargetException we want an additional cause.
+            if (ce.msg!=null) {
+                String msg = ce.msg;
+                if (processingEnv.getOptions().containsKey("printErrorStack")) {
+                    if (ce.cause!=null) {
+                        msg += "\nException: " +
+                                // TODO: format nicer
+                                ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
+                        if (ce.cause.getCause()!=null) {
+                            msg += "\nUnderlying Exception: " +
+                                    // TODO: format nicer
+                                    (ce.cause.getCause().toString() + ": " +
+                                            Arrays.toString(ce.cause.getCause().getStackTrace()));
+                            if (ce.cause.getCause().getCause()!=null) {
+                                msg += "\nUnderlying Exception: " +
+                                        // TODO: format nicer
+                                        (ce.cause.getCause().getCause().toString() + ": " +
+                                                Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                            }
+                        }
+                    }
+                }
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+            }
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "
@@ -413,7 +448,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    protected void message(Diagnostic.Kind kind, Object source, @CompilerMessageKey String msgKey,
+    protected void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -522,26 +557,26 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (swKeys.isEmpty())
             return false;
 
-        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+        /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null)
             return false;
 
-        @Nullable VariableTree var = TreeUtils.enclosingVariable(path);
+        /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
         if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err))
             return true;
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
+        /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method), err))
             return true;
 
-        @Nullable ClassTree cls = TreeUtils.enclosingClass(path);
+        /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls), err))
             return true;
 
         return false;
     }
 
-    private boolean shouldSuppressWarnings(@Nullable Element elt, String err) {
+    private boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
         if (elt == null)
             return false;
@@ -671,16 +706,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         this checker
      */
     public Set<String> getSupportedLintOptions() {
-        @Nullable SupportedLintOptions sl =
+        /*@Nullable*/ SupportedLintOptions sl =
             this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null)
             return Collections.</*@NonNull*/ String>emptySet();
 
-        @Nullable String /*@Nullable*/ [] slValue = sl.value();
+        /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        @Nullable String [] lintArray = slValue;
+        /*@Nullable*/ String [] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray)
             lintSet.add(s);
@@ -711,6 +746,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("warns");
         options.add("annotatedTypeParams");
         options.add("printErrorStack");
+        options.add("printAllQualifiers");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }

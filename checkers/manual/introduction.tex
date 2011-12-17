@@ -66,8 +66,9 @@ The Checker Framework comes with checkers for specific types of errors:
   performed on objects that are in the right state, such as only opened
   files being read (see \chapterpageref{typestate-checker})
 \item
-  \ahrefloc{external-checkers}{External checkers} provided by third
-  parties (see \chapterpageref{external-checkers})
+  \ahrefloc{third-party-checkers}{Third-party checkers} that are distributed
+  separately from thee Checker Framework
+  (see \chapterpageref{third-party-checkers})
 
 % Keep this list in sync with the list in manual.tex.
 \end{enumerate}
@@ -218,7 +219,7 @@ full pathname to \<javac> if you did not add it to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.3
+  javac 1.7.0-jsr308-1.2.4
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -507,7 +508,7 @@ checkers support the following command-line options:
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-Afilenames>, \<-Anomsgtext>, \<-Ashowchecks>, \<-AprintErrorStack> Aids for testing or debugging a checker; see Section~\ref{debugging-options}
+\item \<-Afilenames>, \<-Anomsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>, \<-AprintAllQualifiers> Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \end{itemize}
 
 \noindent

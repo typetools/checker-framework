@@ -19,7 +19,7 @@ public class BasicEncryptedTest extends ParameterizedCheckerTest {
                 BasicChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",
-                "-Aquals=checkers.util.test.Encrypted,checkers.util.test.PolyEncrypted");
+                "-Aquals=checkers.util.test.Encrypted,checkers.util.test.PolyEncrypted,checkers.quals.Unqualified");
     }
 
     @Parameters
