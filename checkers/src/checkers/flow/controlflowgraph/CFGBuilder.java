@@ -1,5 +1,8 @@
 package checkers.flow.controlflowgraph;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import checkers.flow.controlflowgraph.SpecialBasicBlockImplementation.SpecialBasicBlockTypes;
 import checkers.flow.controlflowgraph.node.AssignmentNode;
 import checkers.flow.controlflowgraph.node.BooleanLiteralNode;
@@ -111,12 +114,27 @@ public class CFGBuilder {
 		 * 
 		 * <strong>Important:</strong> Contents should be added through
 		 * {@link addToCurrentBlock} instead of directly accessing
-		 * {@link currentBlock}. Furthermore, whenever {@link currentBlock} does
-		 * not yet contain any contents, it should be a
-		 * {@link SpecialBasicBlockImplementation} of type EXIT. This ensures,
-		 * that in the end the final basic block is an exit block.
+		 * {@link currentBlock}. Furthermore, the following invariant holds
+		 * during CFG construction:
+		 * 
+		 * <pre>
+		 * currentBlock == null  <==>  predecessors != null
+		 * </pre>
+		 * 
+		 * <code>currentBlock</code> can be <code>null</code> to indicate that
+		 * there is currently not a single current block, but rather a set of
+		 * predecessors. This happens, for instance after an if-block where the
+		 * then and else branch are the predecessors. If
+		 * <code>currentBlock</code> is <code>null</code>, then adding a block
+		 * will make all blocks in <code>predecessors</code> a predecessor of
+		 * the newly created block.
 		 */
 		protected BasicBlockImplementation currentBlock;
+
+		/**
+		 * Predecessors, details see <code>currentBlock</code>.
+		 */
+		protected Set<BasicBlockImplementation> predecessors;
 
 		/**
 		 * The exceptional exit basic block (which might or might not be used).
@@ -132,12 +150,30 @@ public class CFGBuilder {
 		 * @return The entry node of the resulting control flow graph.
 		 */
 		public BasicBlock build(BlockTree t) {
+			// create start block
 			BasicBlockImplementation startBlock = new SpecialBasicBlockImplementation(
 					SpecialBasicBlockTypes.ENTRY);
 			currentBlock = startBlock;
+
+			// create exceptional end block
 			exceptionalExitBlock = new SpecialBasicBlockImplementation(
 					SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
+
+			// traverse AST
 			t.accept(this, null);
+
+			// finish CFG
+			SpecialBasicBlockImplementation exit = new SpecialBasicBlockImplementation(
+					SpecialBasicBlockTypes.EXIT);
+			if (currentBlock == null) {
+				if (predecessors.size() > 0) {
+					for (BasicBlockImplementation p : predecessors) {
+						p.addSuccessor(exit);
+					}
+				}
+			} else {
+				currentBlock.addSuccessor(exit);
+			}
 			return startBlock;
 		}
 
@@ -157,15 +193,17 @@ public class CFGBuilder {
 				currentBlock = cb;
 			} else {
 				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
-					// a basic block only contains a single boolean expression,
-					// therefore we create a new basic block here
+					// a conditional basic block only contains a single boolean
+					// expression, therefore we create a new basic block here
 					BasicBlockImplementation bb = new BasicBlockImplementation();
 					bb.addStatement(node);
 					currentBlock.addSuccessor(bb);
 					currentBlock = bb;
 				} else {
 					if (currentBlock instanceof SpecialBasicBlockImplementation) {
+						BasicBlockImplementation old = currentBlock;
 						currentBlock = new BasicBlockImplementation();
+						old.addSuccessor(currentBlock);
 					}
 					currentBlock.addStatement(node);
 				}
@@ -224,6 +262,7 @@ public class CFGBuilder {
 				expression = tree.getExpression().accept(this, p);
 
 				// visit field access (throws null-pointer exception)
+				// TODO: exception
 				String field = ASTUtils.getFieldName(variable);
 				FieldAccessNode target = new FieldAccessNode(variable,
 						receiver, field);
@@ -256,16 +295,15 @@ public class CFGBuilder {
 		 * @return The receiver of the field access.
 		 */
 		private Node getReceiver(Tree tree) {
-			Node node;
 			assert ASTUtils.isFieldAccess(tree);
 			if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
 				MemberSelectTree mtree = (MemberSelectTree) tree;
-				node = mtree.getExpression().accept(this, null);
+				return mtree.getExpression().accept(this, null);
 			} else {
-				node = new ImplicitThisLiteralNode();
+				Node node = new ImplicitThisLiteralNode();
+				addToCurrentBlock(node);
+				return node;
 			}
-			addToCurrentBlock(node);
-			return node;
 		}
 
 		@Override
@@ -402,8 +440,7 @@ public class CFGBuilder {
 		public Node visitIf(IfTree tree, Void p) {
 
 			// TODO exceptions
-			BasicBlockImplementation afterIfBlock = new SpecialBasicBlockImplementation(
-					SpecialBasicBlockTypes.EXIT);
+			Set<BasicBlockImplementation> newPredecessors = new HashSet<>();
 
 			// basic block for the condition
 			tree.getCondition().accept(this, null);
@@ -415,7 +452,7 @@ public class CFGBuilder {
 			conditionalBlock.setThenSuccessor(currentBlock);
 			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
-			currentBlock.addSuccessor(afterIfBlock);
+			newPredecessors.add(currentBlock);
 
 			// else branch
 			StatementTree elseStatement = tree.getElseStatement();
@@ -423,12 +460,13 @@ public class CFGBuilder {
 				currentBlock = new BasicBlockImplementation();
 				conditionalBlock.setElseSuccessor(currentBlock);
 				elseStatement.accept(this, null);
-				currentBlock.addSuccessor(afterIfBlock);
+				newPredecessors.add(currentBlock);
 			} else {
-				conditionalBlock.setElseSuccessor(afterIfBlock);
+				newPredecessors.add(conditionalBlock);
 			}
 
-			currentBlock = afterIfBlock;
+			currentBlock = null;
+			predecessors = newPredecessors;
 			return null;
 		}
 
@@ -505,6 +543,20 @@ public class CFGBuilder {
 		public Node visitMemberSelect(MemberSelectTree tree, Void p) {
 			// TODO Auto-generated method stub
 			return null;
+		}
+
+		protected Node translateFieldAccess(Tree tree) {
+			assert ASTUtils.isFieldAccess(tree);
+			// visit receiver
+			Node receiver = getReceiver(tree);
+
+			// visit field access (throws null-pointer exception)
+			// TODO: exception
+			String field = ASTUtils.getFieldName(tree);
+			FieldAccessNode access = new FieldAccessNode(tree, receiver,
+					field);
+			addToCurrentBlock(access);
+			return access;
 		}
 
 		@Override
