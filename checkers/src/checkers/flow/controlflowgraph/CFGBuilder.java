@@ -1,5 +1,6 @@
 package checkers.flow.controlflowgraph;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -153,7 +154,8 @@ public class CFGBuilder {
 			// create start block
 			BasicBlockImplementation startBlock = new SpecialBasicBlockImplementation(
 					SpecialBasicBlockTypes.ENTRY);
-			currentBlock = startBlock;
+			currentBlock = null;
+			predecessors = Collections.singleton(startBlock);
 
 			// create exceptional end block
 			exceptionalExitBlock = new SpecialBasicBlockImplementation(
@@ -178,8 +180,8 @@ public class CFGBuilder {
 		}
 
 		/**
-		 * Add a node to the current basic block, automatically deciding whether
-		 * it has to be a {@link ConditionalBasicBlock}.
+		 * Add a node to the current basic block, correctly linking all blocks
+		 * and handling conditional basic block appropriately.
 		 * 
 		 * @param node
 		 *            The node to add.
@@ -189,26 +191,86 @@ public class CFGBuilder {
 			if (NodeUtils.isBooleanTypeNode(node)) {
 				ConditionalBasicBlockImplementation cb = new ConditionalBasicBlockImplementation();
 				cb.addStatement(node);
-				currentBlock.addSuccessor(cb);
-				currentBlock = cb;
+				extendWithBasicBlock(cb);
 			} else {
 				if (currentBlock instanceof ConditionalBasicBlockImplementation) {
 					// a conditional basic block only contains a single boolean
 					// expression, therefore we create a new basic block here
 					BasicBlockImplementation bb = new BasicBlockImplementation();
 					bb.addStatement(node);
-					currentBlock.addSuccessor(bb);
-					currentBlock = bb;
+					extendWithBasicBlock(bb);
 				} else {
-					if (currentBlock instanceof SpecialBasicBlockImplementation) {
-						BasicBlockImplementation old = currentBlock;
-						currentBlock = new BasicBlockImplementation();
-						old.addSuccessor(currentBlock);
+					if (currentBlock == null) {
+						extendWithBasicBlock(new BasicBlockImplementation());
 					}
 					currentBlock.addStatement(node);
 				}
 			}
 			return node;
+		}
+
+		/**
+		 * Extend the control flow graph with <code>bb</code>.
+		 */
+		protected void extendWithBasicBlock(BasicBlockImplementation bb) {
+			if (currentBlock != null) {
+				currentBlock.addSuccessor(bb);
+				currentBlock = bb;
+			} else {
+				for (BasicBlockImplementation p : predecessors) {
+					p.addSuccessor(bb);
+				}
+				currentBlock = bb;
+				predecessors = null;
+			}
+		}
+
+		/**
+		 * Add a node to the current basic block, where <code>node</code> might
+		 * throw any of the exception in <code>causes</code>.
+		 * 
+		 * @param node
+		 *            The node to add.
+		 * @param causes
+		 *            Set of exceptions that the node might throw.
+		 * @return The same node (for convenience).
+		 */
+		protected Node addToCurrentBlockWithException(Node node,
+				Set<Class<?>> causes) {
+			// make sure that 'node' gets its own basic block so that the
+			// exception linking is correct
+			if (!NodeUtils.isBooleanTypeNode(node)
+					&& !(currentBlock instanceof ConditionalBasicBlockImplementation)) {
+				extendWithBasicBlock(new BasicBlockImplementation());
+			} else {
+				// in this case, addToCurrentBlock will create a new block for
+				// 'node'
+			}
+
+			addToCurrentBlock(node);
+
+			// add exceptional edges
+			// TODO: catch clauses, finally, ...
+			for (Class<?> c : causes) {
+				currentBlock.addExceptionalSuccessor(exceptionalExitBlock, c);
+			}
+
+			// finish block (so that a block with exceptional edges only has one
+			// node inside)
+			predecessors = Collections.singleton(currentBlock);
+			currentBlock = null;
+
+			return node;
+		}
+
+		/**
+		 * Helper with just one cause, see
+		 * <code>addToCurrentBlockWithException</code> for details.
+		 */
+		protected Node addToCurrentBlockWithException(Node node, Class<?> cause) {
+			Set<Class<?>> causes = new HashSet<>();
+			causes.add(cause);
+			return addToCurrentBlockWithException(node, causes);
 		}
 
 		/**
@@ -262,11 +324,11 @@ public class CFGBuilder {
 				expression = tree.getExpression().accept(this, p);
 
 				// visit field access (throws null-pointer exception)
-				// TODO: exception
 				String field = ASTUtils.getFieldName(variable);
 				FieldAccessNode target = new FieldAccessNode(variable,
 						receiver, field);
-				addToCurrentBlock(target);
+				addToCurrentBlockWithException(target,
+						NullPointerException.class);
 
 				// add assignment node
 				AssignmentNode assignmentNode = new AssignmentNode(tree,
@@ -553,8 +615,7 @@ public class CFGBuilder {
 			// visit field access (throws null-pointer exception)
 			// TODO: exception
 			String field = ASTUtils.getFieldName(tree);
-			FieldAccessNode access = new FieldAccessNode(tree, receiver,
-					field);
+			FieldAccessNode access = new FieldAccessNode(tree, receiver, field);
 			addToCurrentBlock(access);
 			return access;
 		}

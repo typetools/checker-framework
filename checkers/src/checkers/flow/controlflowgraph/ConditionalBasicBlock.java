@@ -1,7 +1,5 @@
 package checkers.flow.controlflowgraph;
 
-import java.util.Set;
-
 import checkers.flow.controlflowgraph.node.Node;
 
 /**
@@ -29,11 +27,6 @@ public interface ConditionalBasicBlock extends BasicBlock {
 	 * @return The entry block of the else branch.
 	 */
 	public BasicBlock getElseSuccessor();
-
-	/**
-	 * @return The exceptional successors of the condition.
-	 */
-	public Set<BasicBlock> getExceptionalSuccessors();
 
 	/**
 	 * @return The condition of the if statement.

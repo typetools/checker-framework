@@ -2,6 +2,7 @@ package checkers.flow.controlflowgraph;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
@@ -40,11 +41,8 @@ public class ControlFlowGraphDOTVisualizer {
 			if (cur == null)
 				break;
 
-			Set<BasicBlock> succs;
-
 			if (cur instanceof ConditionalBasicBlock) {
 				ConditionalBasicBlock ccur = ((ConditionalBasicBlock) cur);
-				succs = ccur.getExceptionalSuccessors();
 				BasicBlock thenSuccessor = ccur.getThenSuccessor();
 				sb2.append("    " + ccur.hashCode() + " -> "
 						+ thenSuccessor.hashCode());
@@ -62,12 +60,26 @@ public class ControlFlowGraphDOTVisualizer {
 					worklist.add(elseSuccessor);
 				}
 			} else {
-				succs = cur.getSuccessors();
+				for (BasicBlock b : cur.getSuccessors()) {
+					sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
+					sb2.append(";\n");
+					if (!visited.contains(b)) {
+						visited.add(b);
+						worklist.add(b);
+					}
+				}
 			}
 
-			for (BasicBlock b : succs) {
+			for (Entry<Class<?>, BasicBlock> e : cur.getExceptionalSuccessors().entrySet()) {
+				BasicBlock b = e.getValue();
+				Class<?> cause = e.getKey();
+				String exception = cause.getCanonicalName();
+				if (exception.startsWith("java.lang.")) {
+					exception = exception.replace("java.lang.", "");
+				}
+				
 				sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
-				sb2.append(";\n");
+				sb2.append(" [label=\""+exception+"\"];\n");
 				if (!visited.contains(b)) {
 					visited.add(b);
 					worklist.add(b);
