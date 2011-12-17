@@ -1,6 +1,7 @@
 package checkers.flow.controlflowgraph;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import checkers.flow.controlflowgraph.node.Node;
@@ -17,15 +18,19 @@ import checkers.flow.controlflowgraph.node.Node;
 public interface BasicBlock {
 
 	/**
-	 * Returns list of {@link Node}s that represent the contents of the basic
-	 * block.
+	 * @return The list of {@link Node}s that represent the contents of the
+	 *         basic block.
 	 */
 	public List<Node> getContents();
 
 	/**
-	 * Returns a list of successors. An empty list indicates this basic block is
-	 * the end of the control flow graph.
+	 * @return The list of regular (i.e., non-exceptional) successors.
 	 */
 	public Set<BasicBlock> getSuccessors();
+	
+	/**
+	 * @return The list of exceptional successors.
+	 */
+	public Map<Class<?>, BasicBlock> getExceptionalSuccessors();
 
 }
