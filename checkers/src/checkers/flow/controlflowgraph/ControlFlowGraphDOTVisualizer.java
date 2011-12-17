@@ -79,7 +79,13 @@ public class ControlFlowGraphDOTVisualizer {
 
 		// definition of all nodes including their labels
 		for (BasicBlock v : visited) {
-			sb1.append("    " + v.hashCode() + " [label=\""
+			sb1.append("    " + v.hashCode() + " [");
+			if (v instanceof ConditionalBasicBlock) {
+				sb1.append("shape=polygon sides=8 ");
+			} else if (v instanceof SpecialBasicBlockImplementation) {
+				sb1.append("shape=oval ");
+			}
+			sb1.append("label=\""
 					+ visualizeContent(v) + "\"];\n");
 		}
 
@@ -95,14 +101,14 @@ public class ControlFlowGraphDOTVisualizer {
 	/**
 	 * Produce a string representation of the contests of a basic block.
 	 * 
-	 * @param v
+	 * @param bb
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static String visualizeContent(BasicBlock v) {
+	protected static String visualizeContent(BasicBlock bb) {
 		StringBuilder sb = new StringBuilder();
 		boolean b = false;
-		for (Node t : v.getContents()) {
+		for (Node t : bb.getContents()) {
 			if (b) {
 				sb.append("\\n");
 			}
@@ -110,7 +116,19 @@ public class ControlFlowGraphDOTVisualizer {
 			sb.append(prepareString(visualizeNode(t)));
 		}
 		if (sb.length() == 0) {
-			return "<empty>"; // the empty node
+			if (bb instanceof SpecialBasicBlockImplementation) {
+				SpecialBasicBlockImplementation sbb = (SpecialBasicBlockImplementation) bb;
+				switch (sbb.getType()) {
+				case ENTRY:
+					return "<entry>";
+				case EXIT:
+					return "<exit>";
+				case EXCEPTIONAL_EXIT:
+					return "<exceptional-exit>";
+				}
+			} else {
+				return "?? empty ??";
+			}
 		}
 		return sb.toString();
 	}

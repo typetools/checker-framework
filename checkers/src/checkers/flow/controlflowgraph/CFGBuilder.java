@@ -1,12 +1,16 @@
 package checkers.flow.controlflowgraph;
 
+import checkers.flow.controlflowgraph.SpecialBasicBlockImplementation.SpecialBasicBlockTypes;
 import checkers.flow.controlflowgraph.node.AssignmentNode;
 import checkers.flow.controlflowgraph.node.BooleanLiteralNode;
 import checkers.flow.controlflowgraph.node.ConditionalOrNode;
+import checkers.flow.controlflowgraph.node.FieldAccessNode;
 import checkers.flow.controlflowgraph.node.IdentifierNode;
+import checkers.flow.controlflowgraph.node.ImplicitThisLiteralNode;
 import checkers.flow.controlflowgraph.node.IntegerLiteralNode;
 import checkers.flow.controlflowgraph.node.Node;
 import checkers.flow.controlflowgraph.node.NodeUtils;
+import checkers.flow.util.ASTUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -29,6 +33,7 @@ import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
@@ -99,8 +104,24 @@ public class CFGBuilder {
 	 */
 	protected class CFGHelper implements TreeVisitor<Node, Void> {
 
-		/** The basic block that is currently being filled with contents. */
+		/**
+		 * The basic block that is currently being filled with contents.
+		 * 
+		 * <p>
+		 * 
+		 * <strong>Important:</strong> Contents should be added through
+		 * {@link addToCurrentBlock} instead of directly accessing
+		 * {@link currentBlock}. Furthermore, whenever {@link currentBlock} does
+		 * not yet contain any contents, it should be a
+		 * {@link SpecialBasicBlockImplementation} of type EXIT. This ensures,
+		 * that in the end the final basic block is an exit block.
+		 */
 		protected BasicBlockImplementation currentBlock;
+
+		/**
+		 * The exceptional exit basic block (which might or might not be used).
+		 */
+		protected SpecialBasicBlockImplementation exceptionalExitBlock;
 
 		/**
 		 * Build the control flow graph for a {@link BlockTree} that represents
@@ -111,8 +132,11 @@ public class CFGBuilder {
 		 * @return The entry node of the resulting control flow graph.
 		 */
 		public BasicBlock build(BlockTree t) {
-			BasicBlockImplementation startBlock = new BasicBlockImplementation();
+			BasicBlockImplementation startBlock = new SpecialBasicBlockImplementation(
+					SpecialBasicBlockTypes.ENTRY);
 			currentBlock = startBlock;
+			exceptionalExitBlock = new SpecialBasicBlockImplementation(
+					SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
 			t.accept(this, null);
 			return startBlock;
 		}
@@ -140,6 +164,9 @@ public class CFGBuilder {
 					currentBlock.addSuccessor(bb);
 					currentBlock = bb;
 				} else {
+					if (currentBlock instanceof SpecialBasicBlockImplementation) {
+						currentBlock = new BasicBlockImplementation();
+					}
 					currentBlock.addStatement(node);
 				}
 			}
@@ -182,12 +209,63 @@ public class CFGBuilder {
 
 		@Override
 		public Node visitAssignment(AssignmentTree tree, Void p) {
-			Node expression = tree.getExpression().accept(this, p);
-			Node target = tree.getVariable().accept(this, p);
-			AssignmentNode assignmentNode = new AssignmentNode(tree, target,
-					expression);
-			addToCurrentBlock(assignmentNode);
+
+			// see JLS 15.26.1
+
+			Node expression;
+			ExpressionTree variable = tree.getVariable();
+
+			// case 1: field access
+			if (ASTUtils.isFieldAccess(variable)) {
+				// visit receiver
+				Node receiver = getReceiver(variable);
+
+				// visit expression
+				expression = tree.getExpression().accept(this, p);
+
+				// visit field access (throws null-pointer exception)
+				String field = ASTUtils.getFieldName(variable);
+				FieldAccessNode target = new FieldAccessNode(variable,
+						receiver, field);
+				addToCurrentBlock(target);
+
+				// add assignment node
+				AssignmentNode assignmentNode = new AssignmentNode(tree,
+						target, expression);
+				addToCurrentBlock(assignmentNode);
+			}
+
+			// TODO: case 2: array access
+
+			// case 3: other cases
+			else {
+				Node target = variable.accept(this, p);
+				expression = tree.getExpression().accept(this, p);
+				AssignmentNode assignmentNode = new AssignmentNode(tree,
+						target, expression);
+				addToCurrentBlock(assignmentNode);
+			}
 			return expression;
+		}
+
+		/**
+		 * Note 1: Requires <code>tree</code> to be a field access tree.
+		 * <p>
+		 * Node 2: Visits the receiver and adds all necessary blocks to the CFG.
+		 * 
+		 * @return The receiver of the field access.
+		 */
+		private Node getReceiver(Tree tree) {
+			Node node;
+			assert ASTUtils.isFieldAccess(tree);
+			if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+				MemberSelectTree mtree = (MemberSelectTree) tree;
+				node = mtree.getExpression().accept(this, null);
+			} else {
+				node = new ImplicitThisLiteralNode();
+			}
+			addToCurrentBlock(node);
+			return node;
 		}
 
 		@Override
@@ -324,7 +402,8 @@ public class CFGBuilder {
 		public Node visitIf(IfTree tree, Void p) {
 
 			// TODO exceptions
-			BasicBlockImplementation afterIfBlock = new BasicBlockImplementation();
+			BasicBlockImplementation afterIfBlock = new SpecialBasicBlockImplementation(
+					SpecialBasicBlockTypes.EXIT);
 
 			// basic block for the condition
 			tree.getCondition().accept(this, null);

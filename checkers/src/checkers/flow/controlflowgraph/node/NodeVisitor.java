@@ -1,5 +1,6 @@
 package checkers.flow.controlflowgraph.node;
 
+
 /**
  * A visitor for an {@link IdentifierNode} tree.
  * 
@@ -15,7 +16,9 @@ package checkers.flow.controlflowgraph.node;
 public interface NodeVisitor<R, P> {
 	public R visitAssignment(AssignmentNode n, P p);
 	public R visitIdentifier(IdentifierNode n, P p);
+	public R visitFieldAccess(FieldAccessNode n, P p);
 	public R visitIntegerLiteral(IntegerLiteralNode n, P p);
+	public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
 	public R visitBooleanLiteral(BooleanLiteralNode n, P p);
 	public R visitConditionalOr(ConditionalOrNode n, P p);
 }

@@ -2,6 +2,7 @@ package checkers.flow.controlflowgraph.node;
 
 import checkers.util.TypesUtils;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
@@ -19,12 +20,19 @@ public class NodeUtils {
 	 *         class type {@link java.lang.Boolean})
 	 */
 	public static boolean isBooleanTypeNode(Node node) {
-		Type type = ((JCTree) node.getTree()).type;
 
 		if (node instanceof ConditionalOrNode) {
 			return true;
 		}
 
+		// not all nodes have an associated tree, but those are all not of a
+		// boolean type.
+		Tree tree = node.getTree();
+		if (tree == null) {
+			return false;
+		}
+		
+		Type type = ((JCTree) tree).type;
 		if (TypesUtils.isBooleanType(type)) {
 			return true;
 		}
