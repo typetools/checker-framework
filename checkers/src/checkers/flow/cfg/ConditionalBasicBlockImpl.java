@@ -80,5 +80,10 @@ public class ConditionalBasicBlockImpl extends
 	public Node getCondition() {
 		return condition;
 	}
+	
+	@Override
+	public String toString() {
+		return "CBB(cond="+condition+")";
+	}
 
 }

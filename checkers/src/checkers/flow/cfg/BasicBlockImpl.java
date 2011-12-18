@@ -80,5 +80,10 @@ public class BasicBlockImpl implements BasicBlock {
 	public Map<Class<?>, BasicBlock> getExceptionalSuccessors() {
 		return new HashMap<>(exceptionalSuccessors);
 	}
+	
+	@Override
+	public String toString() {
+		return "BB("+contents+")";
+	}
 
 }
