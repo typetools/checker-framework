@@ -2,6 +2,7 @@ package checkers.flow.cfg;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -119,14 +120,22 @@ public class CFGDOTVisualizer {
 	 */
 	protected static String visualizeContent(BasicBlock bb) {
 		StringBuilder sb = new StringBuilder();
-		boolean b = false;
-		for (Node t : bb.getContents()) {
-			if (b) {
+		
+		// loop over contents
+		List<Node> contents = new LinkedList<>(bb.getContents());
+		if (bb instanceof ConditionalBasicBlock) {
+			contents.add(((ConditionalBasicBlock) bb).getCondition());
+		}
+		boolean notFirst = false;
+		for (Node t : contents) {
+			if (notFirst) {
 				sb.append("\\n");
 			}
-			b = true;
+			notFirst = true;
 			sb.append(prepareString(visualizeNode(t)));
 		}
+		
+		// handle case where no contents are present
 		if (sb.length() == 0) {
 			if (bb instanceof SpecialBasicBlockImpl) {
 				SpecialBasicBlockImpl sbb = (SpecialBasicBlockImpl) bb;
@@ -142,6 +151,7 @@ public class CFGDOTVisualizer {
 				return "?? empty ??";
 			}
 		}
+		
 		return sb.toString();
 	}
 
