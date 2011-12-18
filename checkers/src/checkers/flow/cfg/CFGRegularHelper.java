@@ -180,7 +180,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	protected Node addToCurrentBlock(Node node) {
 		if (NodeUtils.isBooleanTypeNode(node)) {
 			ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
-			cb.addStatement(node);
+			cb.setCondition(node);
 			extendWithBasicBlock(cb);
 		} else {
 			if (currentBlock instanceof ConditionalBasicBlockImpl) {
@@ -211,6 +211,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 				cp.setElseSuccessor(bb);
 			} else {
 				currentBlock.addSuccessor(bb);
+				currentBlock = bb;
 			}
 		} else {
 			for (BasicBlockImpl p : predecessors) {
