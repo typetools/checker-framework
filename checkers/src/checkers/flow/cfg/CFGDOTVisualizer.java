@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -156,7 +157,16 @@ public class CFGDOTVisualizer {
 	}
 
 	protected static String visualizeNode(Node t) {
-		return t.toString() + "   [ "+visualizeType(t)+" ]";
+		return t.toString() + "   [ "+visualizeType(t)+visualizeArguments(t)+" ]";
+	}
+
+	protected static String visualizeArguments(Node t) {
+		String arg = "";
+		if (t instanceof ConditionalOrNode) {
+			ConditionalOrNode ct = (ConditionalOrNode) t;
+			arg = ct.getTruthValue().toString();
+		}
+		return arg.length() == 0 ? "" : "("+arg+")";
 	}
 
 	protected static String visualizeType(Node t) {
