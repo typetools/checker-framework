@@ -1,6 +1,5 @@
 package checkers.flow.cfg;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -97,50 +96,133 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	 * 
 	 * <strong>Important:</strong> Contents should be added through
 	 * {@link addToCurrentBlock} instead of directly accessing
-	 * {@link currentBlock}. Furthermore, the following invariant holds
-	 * during CFG construction:
+	 * {@link currentBlock}. Furthermore, the following invariant holds during
+	 * CFG construction:
 	 * 
 	 * <pre>
 	 * currentBlock == null  <==>  predecessors != null
 	 * </pre>
 	 * 
-	 * <code>currentBlock</code> can be <code>null</code> to indicate that
-	 * there is currently not a single current block, but rather a set of
-	 * predecessors. This happens, for instance after an if-block where the
-	 * then and else branch are the predecessors. If
-	 * <code>currentBlock</code> is <code>null</code>, then adding a block
-	 * will make all blocks in <code>predecessors</code> a predecessor of
-	 * the newly created block.
+	 * <code>currentBlock</code> can be <code>null</code> to indicate that there
+	 * is currently not a single current block, but rather a set of
+	 * predecessors. This happens, for instance after an if-block where the then
+	 * and else branch are the predecessors. If <code>currentBlock</code> is
+	 * <code>null</code>, then adding a block will make all blocks in
+	 * <code>predecessors</code> a predecessor of the newly created block.
 	 * 
-	 * Note that for conditional basic block in <code>predecessors</code>,
-	 * the following block will be added as the 'then' successor.
+	 * Note that for conditional basic block in <code>predecessors</code>, the
+	 * following block will be added as the 'then' successor.
 	 */
 	protected BasicBlockImpl currentBlock;
 
 	/**
 	 * Predecessors, details see <code>currentBlock</code>.
 	 */
-	protected Set<BasicBlockImpl> predecessors;
+	protected PredecessorBlockHolder predecessors;
 
 	/**
 	 * The exceptional exit basic block (which might or might not be used).
 	 */
 	protected SpecialBasicBlockImpl exceptionalExitBlock;
 
+	// TODO: docu
+	// conditionalMode ==> currentBlock == null
+	// conditionalMode ==> (truePredecessors != null && falsePredecessors !=
+	// null) || predecessors != null (?)
+	protected boolean conditionalMode;
+	protected PredecessorBlockHolder truePredecessors;
+	protected PredecessorBlockHolder falsePredecessors;
+
+	protected interface PredecessorBlockHolder {
+		public void setSuccessorAs(BasicBlock b);
+	}
+
+	protected void setTruePredecessor(final BasicBlockImpl bb) {
+		assert truePredecessors == null;
+		assert !(bb instanceof ConditionalBasicBlockImpl);
+		truePredecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				bb.addSuccessor(b);
+			}
+		};
+	}
+	
+	protected void setFalsePredecessor(final BasicBlockImpl bb) {
+		assert falsePredecessors == null;
+		assert !(bb instanceof ConditionalBasicBlockImpl);
+		falsePredecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				bb.addSuccessor(b);
+			}
+		};
+	}
+	
+	protected void setThenAsTruePredecessor(final ConditionalBasicBlockImpl cb) {
+		assert truePredecessors == null;
+		truePredecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				cb.setThenSuccessor(b);
+			}
+		};
+	}
+	
+	protected void setElseAsFalsePredecessor(final ConditionalBasicBlockImpl cb) {
+		assert falsePredecessors == null;
+		falsePredecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				cb.setThenSuccessor(b);
+			}
+		};
+	}
+
+	protected void setSinglePredecessor(final BasicBlockImpl bb) {
+		assert predecessors == null;
+		assert conditionalMode == false;
+		predecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				bb.addSuccessor(b);
+			}
+		};
+	}
+
+	protected void addPredecessor(final PredecessorBlockHolder more) {
+		final PredecessorBlockHolder old = predecessors;
+		predecessors = new PredecessorBlockHolder() {
+			@Override
+			public void setSuccessorAs(BasicBlock b) {
+				if (old != null) {
+					old.setSuccessorAs(b);
+				}
+				if (more != null) {
+					more.setSuccessorAs(b);
+				}
+			}
+		};
+	}
+
 	/**
-	 * Build the control flow graph for a {@link BlockTree} that represents
-	 * a methods body.
+	 * Build the control flow graph for a {@link BlockTree} that represents a
+	 * methods body.
 	 * 
 	 * @param t
 	 *            Method body.
 	 * @return The entry node of the resulting control flow graph.
 	 */
 	public BasicBlock build(BlockTree t) {
+
+		// start in regular mode
+		conditionalMode = false;
+
 		// create start block
 		BasicBlockImpl startBlock = new SpecialBasicBlockImpl(
 				SpecialBasicBlockTypes.ENTRY);
 		currentBlock = null;
-		predecessors = Collections.singleton(startBlock);
+		setSinglePredecessor(startBlock);
 
 		// create exceptional end block
 		exceptionalExitBlock = new SpecialBasicBlockImpl(
@@ -157,76 +239,97 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	}
 
 	/**
-	 * Add the current block to a set of predecessors (or the predecessors
-	 * if currentBlock is null).
+	 * Add the current block to a predecessor list (or the predecessors if
+	 * currentBlock is null).
+	 * 
+	 * Note: newPredecessors can also be null.
 	 */
-	protected void addCurrentBlockAsPredecessor(
-			Set<BasicBlockImpl> newPredecessors) {
+	protected PredecessorBlockHolder addCurrentBlockAsPredecessor(
+			final PredecessorBlockHolder newPredecessors) {
+		assert !conditionalMode;
 		if (currentBlock != null) {
-			newPredecessors.add(currentBlock);
+			return new PredecessorBlockHolder() {
+				@Override
+				public void setSuccessorAs(BasicBlock b) {
+					if (newPredecessors != null) {
+						newPredecessors.setSuccessorAs(b);
+					}
+					currentBlock.addSuccessor(b);
+				}
+			};
 		} else {
-			newPredecessors.addAll(predecessors);
+			final PredecessorBlockHolder o = predecessors;
+			return new PredecessorBlockHolder() {
+				@Override
+				public void setSuccessorAs(BasicBlock b) {
+					if (newPredecessors != null) {
+						newPredecessors.setSuccessorAs(b);
+					}
+					o.setSuccessorAs(b);
+				}
+			};
 		}
 	}
 
 	/**
-	 * Add a node to the current basic block, correctly linking all blocks
-	 * and handling conditional basic block appropriately.
+	 * Add a node to the current basic block, correctly linking all blocks and
+	 * handling conditional basic block appropriately.
 	 * 
 	 * @param node
 	 *            The node to add.
 	 * @return The same node (for convenience).
 	 */
-	protected Node addToCurrentBlock(Node node) {
-		if (NodeUtils.isBooleanTypeNode(node)) {
-			ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
-			cb.setCondition(node);
-			extendWithBasicBlock(cb);
-		} else {
-			if (currentBlock instanceof ConditionalBasicBlockImpl) {
-				// a conditional basic block only contains a single boolean
-				// expression, therefore we create a new basic block here
-				BasicBlockImpl bb = new BasicBlockImpl();
-				bb.addStatement(node);
-				extendWithBasicBlock(bb);
-			} else {
-				if (currentBlock == null) {
-					extendWithBasicBlock(new BasicBlockImpl());
-				}
-				currentBlock.addStatement(node);
-			}
+	protected Node extendWithNode(Node node) {
+		if (conditionalMode) {
+			extendWithConditionalNode(node);
+			return node;
 		}
+		if (currentBlock == null) {
+			extendWithBasicBlock(new BasicBlockImpl());
+		}
+		currentBlock.addStatement(node);
 		return node;
+	}
+
+	// TODO: docu + check docu of other method above
+	// note: does not set 'currentblock' or
+	//addThenPredecessor((ConditionalBasicBlockImpl) bb);
+	protected ConditionalBasicBlockImpl extendWithConditionalNode(Node node) {
+		assert conditionalMode;
+		ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
+		cb.setCondition(node);
+		extendWithBasicBlock(cb);
+		return cb;
 	}
 
 	/**
 	 * Extend the control flow graph with <code>bb</code>.
 	 */
 	protected void extendWithBasicBlock(BasicBlockImpl bb) {
+		assert conditionalMode ? bb instanceof ConditionalBasicBlockImpl : true;
+
 		if (currentBlock != null) {
-			if (currentBlock instanceof ConditionalBasicBlockImpl) {
-				// for a conditional basic block, we assume that the
-				// successors should be the 'then' successor
-				ConditionalBasicBlockImpl cp = (ConditionalBasicBlockImpl) currentBlock;
-				cp.setElseSuccessor(bb);
-			} else {
-				currentBlock.addSuccessor(bb);
-				currentBlock = bb;
-			}
+			currentBlock.addSuccessor(bb);
 		} else {
-			for (BasicBlockImpl p : predecessors) {
-				if (p instanceof ConditionalBasicBlockImpl) {
-					// for a conditional basic block, we assume that the
-					// successors should be the 'then' successor
-					ConditionalBasicBlockImpl cp = (ConditionalBasicBlockImpl) p;
-					cp.setElseSuccessor(bb);
-				} else {
-					p.addSuccessor(bb);
-				}
-			}
-			currentBlock = bb;
+			predecessors.setSuccessorAs(bb);
 			predecessors = null;
 		}
+		if (conditionalMode) {
+			currentBlock = null;
+		} else {
+			currentBlock = bb;
+		}
+	}
+	
+	// TODO: docu
+	protected BasicBlockImpl finishCurrentBlock() {
+		assert currentBlock != null;
+		assert truePredecessors == null && falsePredecessors == null;
+		assert !conditionalMode;
+		BasicBlockImpl b = currentBlock;
+		setSinglePredecessor(currentBlock);
+		currentBlock = null;
+		return b;
 	}
 
 	/**
@@ -251,7 +354,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			// 'node'
 		}
 
-		addToCurrentBlock(node);
+		extendWithNode(node);
 
 		// add exceptional edges
 		// TODO: catch clauses, finally, ...
@@ -259,10 +362,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			currentBlock.addExceptionalSuccessor(exceptionalExitBlock, c);
 		}
 
-		// finish block (so that a block with exceptional edges only has one
-		// node inside)
-		predecessors = Collections.singleton(currentBlock);
-		currentBlock = null;
+		finishCurrentBlock();
 
 		return node;
 	}
@@ -275,16 +375,6 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		Set<Class<?>> causes = new HashSet<>();
 		causes.add(cause);
 		return addToCurrentBlockWithException(node, causes);
-	}
-
-	/**
-	 * @return The current basic block as conditional basic block (only
-	 *         applicable if {@link currentBlock} is a conditional basic
-	 *         block.
-	 */
-	protected ConditionalBasicBlockImpl getCurrentConditionalBasicBlock() {
-		assert currentBlock instanceof ConditionalBasicBlockImpl;
-		return (ConditionalBasicBlockImpl) currentBlock;
 	}
 
 	@Override
@@ -329,15 +419,14 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 			// visit field access (throws null-pointer exception)
 			String field = ASTUtils.getFieldName(variable);
-			FieldAccessNode target = new FieldAccessNode(variable,
-					receiver, field);
-			addToCurrentBlockWithException(target,
-					NullPointerException.class);
+			FieldAccessNode target = new FieldAccessNode(variable, receiver,
+					field);
+			addToCurrentBlockWithException(target, NullPointerException.class);
 
 			// add assignment node
-			AssignmentNode assignmentNode = new AssignmentNode(tree,
-					target, expression);
-			addToCurrentBlock(assignmentNode);
+			AssignmentNode assignmentNode = new AssignmentNode(tree, target,
+					expression);
+			extendWithNode(assignmentNode);
 		}
 
 		// TODO: case 2: array access
@@ -353,13 +442,14 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	/**
 	 * Translate an assignment.
 	 */
-	protected Node translateAssignment(Tree tree, Node target, ExpressionTree rhs) {
+	protected Node translateAssignment(Tree tree, Node target,
+			ExpressionTree rhs) {
 		assert tree instanceof AssignmentTree || tree instanceof VariableTree;
 		Node expression;
 		expression = rhs.accept(this, null);
-		AssignmentNode assignmentNode = new AssignmentNode(tree,
-				target, expression);
-		addToCurrentBlock(assignmentNode);
+		AssignmentNode assignmentNode = new AssignmentNode(tree, target,
+				expression);
+		extendWithNode(assignmentNode);
 		return expression;
 	}
 
@@ -377,7 +467,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			return mtree.getExpression().accept(this, null);
 		} else {
 			Node node = new ImplicitThisLiteralNode();
-			addToCurrentBlock(node);
+			extendWithNode(node);
 			return node;
 		}
 	}
@@ -394,17 +484,50 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		Node r = null;
 		switch (tree.getKind()) {
 		case CONDITIONAL_OR:
-			Node left = tree.getLeftOperand().accept(this, p);
-			ConditionalBasicBlockImpl lhsBB = getCurrentConditionalBasicBlock();
-			Node right = tree.getRightOperand().accept(this, p);
-			lhsBB.setElseSuccessor(currentBlock);
-			r = new ConditionalOrNode(tree, left, right);
-			addToCurrentBlock(r);
-			lhsBB.setThenSuccessor(currentBlock);
-			return r;
+			if (conditionalMode) {
+				// left-hand side
+				Node left = tree.getLeftOperand().accept(this, p);
+				PredecessorBlockHolder leftOutTrue = truePredecessors;
+				PredecessorBlockHolder leftOutFalse = falsePredecessors;
+				truePredecessors = falsePredecessors = null;
+
+				// right-hand side
+				predecessors = leftOutFalse;
+				Node right = tree.getRightOperand().accept(this, p);
+				PredecessorBlockHolder rightOutTrue = truePredecessors;
+				PredecessorBlockHolder rightOutFalse = falsePredecessors;
+				truePredecessors = falsePredecessors = null;
+
+				// TODO: add true/false information to conditional node
+
+				// node for true case
+				predecessors = leftOutTrue;
+				addPredecessor(rightOutTrue);
+				Node trueNode = new ConditionalOrNode(tree, left, right);
+				conditionalMode = false; // trueNode has only one successor
+				extendWithNode(trueNode);
+				BasicBlockImpl trueBlock = finishCurrentBlock();
+				conditionalMode = true;
+				
+				// node for false case
+				predecessors = rightOutFalse;
+				Node falseNode = new ConditionalOrNode(tree, left, right);
+				conditionalMode = false; // trueNode has only one successor
+				extendWithNode(falseNode);
+				BasicBlockImpl falseBlock = finishCurrentBlock();
+				conditionalMode = true;
+
+				predecessors = null;
+				setTruePredecessor(trueBlock);
+				setFalsePredecessor(falseBlock);
+				return null; // TODO: document null return value if
+								// conditionalMode == true
+			} else {
+				assert false : "not implemetned yet"; // TODO implement
+			}
 		}
 		assert r != null : "unexpected binary tree";
-		return addToCurrentBlock(r);
+		return extendWithNode(r);
 	}
 
 	@Override
@@ -465,8 +588,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	}
 
 	@Override
-	public Node visitExpressionStatement(ExpressionStatementTree tree,
-			Void p) {
+	public Node visitExpressionStatement(ExpressionStatementTree tree, Void p) {
 		return tree.getExpression().accept(this, p);
 	}
 
@@ -479,11 +601,10 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	@Override
 	public Node visitForLoop(ForLoopTree tree, Void p) {
 		/*
-		 * BasicBlockImplementation initBlock = new
-		 * BasicBlockImplementation(); ConditionalBasicBlockImplementation
-		 * conditionBlock = new ConditionalBasicBlockImplementation();
-		 * BasicBlockImplementation afterBlock = new
-		 * BasicBlockImplementation(); BasicBlockImplementation
+		 * BasicBlockImplementation initBlock = new BasicBlockImplementation();
+		 * ConditionalBasicBlockImplementation conditionBlock = new
+		 * ConditionalBasicBlockImplementation(); BasicBlockImplementation
+		 * afterBlock = new BasicBlockImplementation(); BasicBlockImplementation
 		 * loopBodyBlock = new BasicBlockImplementation();
 		 * 
 		 * initBlock.addStatements(tree.getInitializer());
@@ -497,9 +618,9 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		 * conditionBlock.setThenSuccessor(loopBodyBlock);
 		 * conditionBlock.setElseSuccessor(afterBlock);
 		 * 
-		 * currentBlock = loopBodyBlock; tree.getStatement().accept(this,
-		 * null); for (StatementTree t : tree.getUpdate()) { t.accept(this,
-		 * null); } currentBlock.addSuccessor(conditionBlock);
+		 * currentBlock = loopBodyBlock; tree.getStatement().accept(this, null);
+		 * for (StatementTree t : tree.getUpdate()) { t.accept(this, null); }
+		 * currentBlock.addSuccessor(conditionBlock);
 		 * 
 		 * currentBlock = afterBlock;
 		 */
@@ -509,36 +630,61 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitIdentifier(IdentifierTree tree, Void p) {
-		return addToCurrentBlock(new IdentifierNode(tree));
+		IdentifierNode node = new IdentifierNode(tree);
+		if (conditionalMode) {
+			ConditionalBasicBlockImpl cb = extendWithConditionalNode(node);
+			setThenAsTruePredecessor(cb);
+			setElseAsFalsePredecessor(cb);
+			return node;
+		} else {
+			return extendWithNode(node);
+		}
 	}
 
 	@Override
 	public Node visitIf(IfTree tree, Void p) {
 
+		assert conditionalMode == false;
+
 		// TODO exceptions
-		Set<BasicBlockImpl> newPredecessors = new HashSet<>();
+		PredecessorBlockHolder newPredecessors = null;
 
 		// basic block for the condition
+		// TODO make method switchToConditionalMode
+		if (currentBlock != null) {
+			finishCurrentBlock();
+		}
+		conditionalMode = true;
 		tree.getCondition().accept(this, null);
-		assert currentBlock instanceof ConditionalBasicBlockImpl;
-		ConditionalBasicBlockImpl conditionalBlock = (ConditionalBasicBlockImpl) currentBlock;
+		conditionalMode = false;
+		PredecessorBlockHolder trueOut = truePredecessors;
+		final PredecessorBlockHolder falseOut = falsePredecessors;
+		truePredecessors = falsePredecessors = null;
 
 		// then branch
-		currentBlock = new BasicBlockImpl();
-		conditionalBlock.setThenSuccessor(currentBlock);
+		assert currentBlock == null;
+		predecessors = trueOut;
 		StatementTree thenStatement = tree.getThenStatement();
 		thenStatement.accept(this, null);
-		addCurrentBlockAsPredecessor(newPredecessors);
+		newPredecessors = addCurrentBlockAsPredecessor(newPredecessors);
+		currentBlock = null;
+		predecessors = null;
 
 		// else branch
 		StatementTree elseStatement = tree.getElseStatement();
 		if (elseStatement != null) {
-			currentBlock = new BasicBlockImpl();
-			conditionalBlock.setElseSuccessor(currentBlock);
+			assert currentBlock == null;
+			predecessors = falseOut;
 			elseStatement.accept(this, null);
-			addCurrentBlockAsPredecessor(newPredecessors);
+			newPredecessors = addCurrentBlockAsPredecessor(newPredecessors);
 		} else {
-			newPredecessors.add(conditionalBlock);
+			// directly link the 'false' outgoing edge to the end
+			newPredecessors = new PredecessorBlockHolder() {
+				@Override
+				public void setSuccessorAs(BasicBlock b) {
+					falseOut.setSuccessorAs(b);
+				}
+			};
 		}
 
 		currentBlock = null;
@@ -577,7 +723,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			break;
 		}
 		assert r != null : "unexpected literal tree";
-		return addToCurrentBlock(r);
+		return extendWithNode(r);
 	}
 
 	@Override
@@ -630,7 +776,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		// TODO: exception
 		String field = ASTUtils.getFieldName(tree);
 		FieldAccessNode access = new FieldAccessNode(tree, receiver, field);
-		addToCurrentBlock(access);
+		extendWithNode(access);
 		return access;
 	}
 
@@ -719,19 +865,20 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitVariable(VariableTree tree, Void p) {
-		
+
 		// see JLS 14.4
-		
+
 		// local variable definition
-		addToCurrentBlock(new VariableDeclarationNode(tree));
-		
+		extendWithNode(new VariableDeclarationNode(tree));
+
 		// initializer
 		Node node = null;
 		ExpressionTree initializer = tree.getInitializer();
 		if (initializer != null) {
-			node = translateAssignment(tree, new IdentifierNode(tree), initializer);
+			node = translateAssignment(tree, new IdentifierNode(tree),
+					initializer);
 		}
-		
+
 		return node;
 	}
 
