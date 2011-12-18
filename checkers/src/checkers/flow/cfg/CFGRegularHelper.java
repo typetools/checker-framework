@@ -595,12 +595,12 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 				// node for true case
 				predecessors = leftOutTrue;
 				addPredecessor(rightOutTrue);
-				Node trueNode = new ConditionalOrNode(tree, trueLeft, trueRight);
+				Node trueNode = new ConditionalOrNode(tree, trueLeft, trueRight, true);
 				BasicBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
 				
 				// node for false case
 				predecessors = rightOutFalse;
-				Node falseNode = new ConditionalOrNode(tree, falseLeft, falseRight);
+				Node falseNode = new ConditionalOrNode(tree, falseLeft, falseRight, false);
 				BasicBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
 
 				predecessors = null;

@@ -17,11 +17,13 @@ public class ConditionalOrNode extends Node {
 	protected BinaryTree tree;
 	protected Node lhs;
 	protected Node rhs;
+	protected Boolean truthValue;
 	
-	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs) {
+	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs, Boolean truthValue) {
 		this.tree = tree;
 		this.lhs = lhs;
 		this.rhs = rhs;
+		this.truthValue = truthValue;
 	}
 
 	public Node getLeftOperand() {
@@ -30,6 +32,10 @@ public class ConditionalOrNode extends Node {
 	
 	public Node getRightOperand() {
 		return rhs;
+	}
+	
+	public Boolean getTruthValue() {
+		return truthValue;
 	}
 
 	/**
