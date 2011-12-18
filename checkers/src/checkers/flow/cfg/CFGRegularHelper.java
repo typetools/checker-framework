@@ -1,6 +1,9 @@
 package checkers.flow.cfg;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import checkers.flow.cfg.SpecialBasicBlockImpl.SpecialBasicBlockTypes;
@@ -133,8 +136,13 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	protected PredecessorBlockHolder truePredecessors;
 	protected PredecessorBlockHolder falsePredecessors;
 
-	protected interface PredecessorBlockHolder {
-		public void setSuccessorAs(BasicBlock b);
+	protected abstract class PredecessorBlockHolder {
+		abstract public void setSuccessorAs(BasicBlock b);
+		abstract public List<String> componentList();
+		@Override
+		public String toString() {
+			return componentList().toString();
+		}
 	}
 
 	protected void setTruePredecessor(final BasicBlockImpl bb) {
@@ -144,6 +152,10 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
 				bb.addSuccessor(b);
+			}
+			@Override
+			public List<String> componentList() {
+				return Collections.singletonList(bb.toString());
 			}
 		};
 	}
@@ -156,6 +168,10 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				bb.addSuccessor(b);
 			}
+			@Override
+			public List<String> componentList() {
+				return Collections.singletonList(bb.toString());
+			}
 		};
 	}
 	
@@ -166,6 +182,10 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				cb.setThenSuccessor(b);
 			}
+			@Override
+			public List<String> componentList() {
+				return Collections.singletonList(cb.toString()+"<then>");
+			}
 		};
 	}
 	
@@ -174,7 +194,11 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		falsePredecessors = new PredecessorBlockHolder() {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
-				cb.setThenSuccessor(b);
+				cb.setElseSuccessor(b);
+			}
+			@Override
+			public List<String> componentList() {
+				return Collections.singletonList(cb.toString()+"<else>");
 			}
 		};
 	}
@@ -186,6 +210,10 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
 				bb.addSuccessor(b);
+			}
+			@Override
+			public List<String> componentList() {
+				return Collections.singletonList(bb.toString());
 			}
 		};
 	}
@@ -201,6 +229,12 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 				if (more != null) {
 					more.setSuccessorAs(b);
 				}
+			}
+			@Override
+			public List<String> componentList() {
+				List<String> l = new LinkedList<>(old.componentList());
+				l.addAll(more.componentList());
+				return l;
 			}
 		};
 	}
@@ -248,13 +282,23 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			final PredecessorBlockHolder newPredecessors) {
 		assert !conditionalMode;
 		if (currentBlock != null) {
+			final BasicBlockImpl cb = currentBlock;
 			return new PredecessorBlockHolder() {
 				@Override
 				public void setSuccessorAs(BasicBlock b) {
 					if (newPredecessors != null) {
 						newPredecessors.setSuccessorAs(b);
 					}
-					currentBlock.addSuccessor(b);
+					cb.addSuccessor(b);
+				}
+				@Override
+				public List<String> componentList() {
+					List<String> l = new LinkedList<>();
+					if (newPredecessors != null) {
+						l.addAll(newPredecessors.componentList());
+					}
+					l.add(cb.toString());
+					return l;
 				}
 			};
 		} else {
@@ -266,6 +310,14 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 						newPredecessors.setSuccessorAs(b);
 					}
 					o.setSuccessorAs(b);
+				}
+				@Override
+				public List<String> componentList() {
+					List<String> l = new LinkedList<>(o.componentList());
+					if (newPredecessors != null) {
+						l.addAll(newPredecessors.componentList());
+					}
+					return l;
 				}
 			};
 		}
@@ -679,10 +731,19 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			newPredecessors = addCurrentBlockAsPredecessor(newPredecessors);
 		} else {
 			// directly link the 'false' outgoing edge to the end
+			final PredecessorBlockHolder np = newPredecessors;
 			newPredecessors = new PredecessorBlockHolder() {
 				@Override
 				public void setSuccessorAs(BasicBlock b) {
+					np.setSuccessorAs(b);
 					falseOut.setSuccessorAs(b);
+				}
+
+				@Override
+				public List<String> componentList() {
+					List<String> l = new LinkedList<>(np.componentList());
+					l.addAll(falseOut.componentList());
+					return l ;
 				}
 			};
 		}
