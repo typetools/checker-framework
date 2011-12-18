@@ -80,5 +80,10 @@ public class SpecialBasicBlockImpl extends BasicBlockImpl {
 	public void addStatements(Collection<? extends Node> ts) {
 		assert false : "Special basic blocks do not have contents.";
 	}
+	
+	@Override
+	public String toString() {
+		return "SBB(type="+type+")";
+	}
 
 }
