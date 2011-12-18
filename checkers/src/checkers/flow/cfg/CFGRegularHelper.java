@@ -144,6 +144,18 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			return componentList().toString();
 		}
 	}
+	
+	protected PredecessorBlockHolder getAndResetFalsePredecessors() {
+		PredecessorBlockHolder old = falsePredecessors;
+		falsePredecessors = null;
+		return old;
+	}
+
+	protected PredecessorBlockHolder getAndResetTruePredecessors() {
+		PredecessorBlockHolder old = truePredecessors;
+		truePredecessors = null;
+		return old;
+	}
 
 	protected void setTruePredecessor(final BasicBlockImpl bb) {
 		assert truePredecessors == null;
@@ -346,12 +358,23 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 	// TODO: docu + check docu of other method above
 	// note: does not set 'currentblock' or
 	//addThenPredecessor((ConditionalBasicBlockImpl) bb);
+	
+	// only in conditional mode we add conditional nodes, but possibly also normal blocks
 	protected ConditionalBasicBlockImpl extendWithConditionalNode(Node node) {
 		assert conditionalMode;
 		ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
 		cb.setCondition(node);
 		extendWithBasicBlock(cb);
 		return cb;
+	}
+	
+	protected BasicBlockImpl extendWithNodeInConditionalMode(Node node) {
+		assert conditionalMode;
+		conditionalMode = false;
+		extendWithNode(node);
+		BasicBlockImpl trueBlock = finishCurrentBlock();
+		conditionalMode = true;
+		return trueBlock;
 	}
 
 	/**
@@ -539,16 +562,14 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			if (conditionalMode) {
 				// left-hand side
 				Node left = tree.getLeftOperand().accept(this, p);
-				PredecessorBlockHolder leftOutTrue = truePredecessors;
-				PredecessorBlockHolder leftOutFalse = falsePredecessors;
-				truePredecessors = falsePredecessors = null;
+				PredecessorBlockHolder leftOutTrue = getAndResetTruePredecessors();
+				PredecessorBlockHolder leftOutFalse = getAndResetFalsePredecessors();
 
 				// right-hand side
 				predecessors = leftOutFalse;
 				Node right = tree.getRightOperand().accept(this, p);
-				PredecessorBlockHolder rightOutTrue = truePredecessors;
-				PredecessorBlockHolder rightOutFalse = falsePredecessors;
-				truePredecessors = falsePredecessors = null;
+				PredecessorBlockHolder rightOutTrue = getAndResetTruePredecessors();
+				PredecessorBlockHolder rightOutFalse = getAndResetFalsePredecessors();
 
 				// TODO: add true/false information to conditional node
 
@@ -556,18 +577,12 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 				predecessors = leftOutTrue;
 				addPredecessor(rightOutTrue);
 				Node trueNode = new ConditionalOrNode(tree, left, right);
-				conditionalMode = false; // trueNode has only one successor
-				extendWithNode(trueNode);
-				BasicBlockImpl trueBlock = finishCurrentBlock();
-				conditionalMode = true;
+				BasicBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
 				
 				// node for false case
 				predecessors = rightOutFalse;
 				Node falseNode = new ConditionalOrNode(tree, left, right);
-				conditionalMode = false; // trueNode has only one successor
-				extendWithNode(falseNode);
-				BasicBlockImpl falseBlock = finishCurrentBlock();
-				conditionalMode = true;
+				BasicBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
 
 				predecessors = null;
 				setTruePredecessor(trueBlock);
@@ -709,9 +724,8 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		conditionalMode = true;
 		tree.getCondition().accept(this, null);
 		conditionalMode = false;
-		PredecessorBlockHolder trueOut = truePredecessors;
-		final PredecessorBlockHolder falseOut = falsePredecessors;
-		truePredecessors = falsePredecessors = null;
+		PredecessorBlockHolder trueOut = getAndResetTruePredecessors();
+		final PredecessorBlockHolder falseOut = getAndResetFalsePredecessors();
 
 		// then branch
 		assert currentBlock == null;
