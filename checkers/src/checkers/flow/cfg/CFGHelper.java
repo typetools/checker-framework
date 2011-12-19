@@ -136,18 +136,18 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	protected boolean conditionalMode;
 	protected PredecessorBlockHolder truePredecessors;
 	protected PredecessorBlockHolder falsePredecessors;
-	protected Node trueNode;
-	protected Node falseNode;
 
 	protected abstract class PredecessorBlockHolder {
 		abstract public void setSuccessorAs(BasicBlock b);
+
 		abstract public List<String> componentList();
+
 		@Override
 		public String toString() {
 			return componentList().toString();
 		}
 	}
-	
+
 	protected PredecessorBlockHolder getAndResetFalsePredecessors() {
 		PredecessorBlockHolder old = falsePredecessors;
 		falsePredecessors = null;
@@ -159,18 +159,6 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		truePredecessors = null;
 		return old;
 	}
-	
-	protected Node getAndResetTrueNode() {
-		Node old = trueNode;
-		trueNode = null;
-		return old;
-	}
-	
-	protected Node getAndResetFalseNode() {
-		Node old = falseNode;
-		falseNode = null;
-		return old;
-	}
 
 	protected void setTruePredecessor(final BasicBlockImpl bb) {
 		assert truePredecessors == null;
@@ -180,13 +168,14 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				bb.setSuccessor(b);
 			}
+
 			@Override
 			public List<String> componentList() {
 				return Collections.singletonList(bb.toString());
 			}
 		};
 	}
-	
+
 	protected void setFalsePredecessor(final BasicBlockImpl bb) {
 		assert falsePredecessors == null;
 		assert !(bb instanceof ConditionalBasicBlockImpl);
@@ -195,13 +184,14 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				bb.setSuccessor(b);
 			}
+
 			@Override
 			public List<String> componentList() {
 				return Collections.singletonList(bb.toString());
 			}
 		};
 	}
-	
+
 	protected void setThenAsTruePredecessor(final ConditionalBasicBlockImpl cb) {
 		assert truePredecessors == null;
 		truePredecessors = new PredecessorBlockHolder() {
@@ -209,13 +199,14 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				cb.setThenSuccessor(b);
 			}
+
 			@Override
 			public List<String> componentList() {
-				return Collections.singletonList(cb.toString()+"<then>");
+				return Collections.singletonList(cb.toString() + "<then>");
 			}
 		};
 	}
-	
+
 	protected void setElseAsFalsePredecessor(final ConditionalBasicBlockImpl cb) {
 		assert falsePredecessors == null;
 		falsePredecessors = new PredecessorBlockHolder() {
@@ -223,9 +214,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				cb.setElseSuccessor(b);
 			}
+
 			@Override
 			public List<String> componentList() {
-				return Collections.singletonList(cb.toString()+"<else>");
+				return Collections.singletonList(cb.toString() + "<else>");
 			}
 		};
 	}
@@ -238,6 +230,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			public void setSuccessorAs(BasicBlock b) {
 				bb.setSuccessor(b);
 			}
+
 			@Override
 			public List<String> componentList() {
 				return Collections.singletonList(bb.toString());
@@ -257,6 +250,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 					more.setSuccessorAs(b);
 				}
 			}
+
 			@Override
 			public List<String> componentList() {
 				List<String> l = new LinkedList<>(old.componentList());
@@ -318,6 +312,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 					}
 					cb.setSuccessor(b);
 				}
+
 				@Override
 				public List<String> componentList() {
 					List<String> l = new LinkedList<>();
@@ -338,6 +333,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 					}
 					o.setSuccessorAs(b);
 				}
+
 				@Override
 				public List<String> componentList() {
 					List<String> l = new LinkedList<>(o.componentList());
@@ -372,9 +368,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	// TODO: docu + check docu of other method above
 	// note: does not set 'currentblock' or
-	//addThenPredecessor((ConditionalBasicBlockImpl) bb);
-	
-	// only in conditional mode we add conditional nodes, but possibly also normal blocks
+	// addThenPredecessor((ConditionalBasicBlockImpl) bb);
+
+	// only in conditional mode we add conditional nodes, but possibly also
+	// normal blocks
 	protected ConditionalBasicBlockImpl extendWithConditionalNode(Node node) {
 		assert conditionalMode;
 		ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
@@ -382,7 +379,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		extendWithBasicBlock(cb);
 		return cb;
 	}
-	
+
 	protected BasicBlockImpl extendWithNodeInConditionalMode(Node node) {
 		assert conditionalMode;
 		conditionalMode = false;
@@ -410,7 +407,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			currentBlock = bb;
 		}
 	}
-	
+
 	// TODO: docu
 	protected BasicBlockImpl finishCurrentBlock() {
 		assert currentBlock != null;
@@ -575,46 +572,49 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		Node r = null;
 		switch (tree.getKind()) {
 		case CONDITIONAL_OR:
-			
+
 			// see JLS 15.24
 			
+			boolean condMode = conditionalMode;
+			conditionalMode = true;
+
+			// left-hand side
+			Node left = tree.getLeftOperand().accept(this, p);
+			PredecessorBlockHolder leftOutTrue = getAndResetTruePredecessors();
+			PredecessorBlockHolder leftOutFalse = getAndResetFalsePredecessors();
+
+			// right-hand side
+			predecessors = leftOutFalse;
+			Node right = tree.getRightOperand().accept(this, p);
+			PredecessorBlockHolder rightOutTrue = getAndResetTruePredecessors();
+			PredecessorBlockHolder rightOutFalse = getAndResetFalsePredecessors();
+			
+			conditionalMode = condMode;
+
 			if (conditionalMode) {
-				// left-hand side
-				tree.getLeftOperand().accept(this, p);
-				Node trueLeft = getAndResetTrueNode();
-				Node falseLeft = getAndResetFalseNode();
-				PredecessorBlockHolder leftOutTrue = getAndResetTruePredecessors();
-				PredecessorBlockHolder leftOutFalse = getAndResetFalsePredecessors();
-
-				// right-hand side
-				predecessors = leftOutFalse;
-				tree.getRightOperand().accept(this, p);
-				Node trueRight = getAndResetTrueNode();
-				Node falseRight = getAndResetFalseNode();
-				PredecessorBlockHolder rightOutTrue = getAndResetTruePredecessors();
-				PredecessorBlockHolder rightOutFalse = getAndResetFalsePredecessors();
-
-				// TODO: add true/false information to conditional node
-
 				// node for true case
 				predecessors = leftOutTrue;
 				addPredecessor(rightOutTrue);
-				Node trueNode = new ConditionalOrNode(tree, trueLeft, trueRight, true);
+				Node trueNode = new ConditionalOrNode(tree, left, right, true);
 				BasicBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
-				
+
 				// node for false case
 				predecessors = rightOutFalse;
-				Node falseNode = new ConditionalOrNode(tree, falseLeft, falseRight, false);
+				Node falseNode = new ConditionalOrNode(tree, left, right, false);
 				BasicBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
 
 				predecessors = null;
 				setTruePredecessor(trueBlock);
 				setFalsePredecessor(falseBlock);
-				this.trueNode = trueNode;
-				this.falseNode = falseNode;
-				return null;
+				return trueNode;
 			} else {
-				assert false : "not implemetned yet"; // TODO implement
+				// one node for true/false
+				predecessors = leftOutTrue;
+				addPredecessor(rightOutTrue);
+				addPredecessor(rightOutFalse);
+				Node node = new ConditionalOrNode(tree, left, right, null);
+				extendWithNode(node);
+				return node;
 			}
 		}
 		assert r != null : "unexpected binary tree";
@@ -726,8 +726,6 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			ConditionalBasicBlockImpl cb = extendWithConditionalNode(node);
 			setThenAsTruePredecessor(cb);
 			setElseAsFalsePredecessor(cb);
-			trueNode = node;
-			falseNode = node;
 			return node;
 		} else {
 			return extendWithNode(node);
@@ -783,7 +781,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 				public List<String> componentList() {
 					List<String> l = new LinkedList<>(np.componentList());
 					l.addAll(falseOut.componentList());
-					return l ;
+					return l;
 				}
 			};
 		}
