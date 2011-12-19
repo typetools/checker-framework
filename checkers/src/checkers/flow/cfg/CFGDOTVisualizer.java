@@ -166,7 +166,12 @@ public class CFGDOTVisualizer {
 		String arg = "";
 		if (t instanceof ConditionalOrNode) {
 			ConditionalOrNode ct = (ConditionalOrNode) t;
-			arg = ct.getTruthValue().toString();
+			Boolean truthValue = ct.getTruthValue();
+			if (truthValue != null) {
+				arg = truthValue.toString();
+			} else {
+				arg = "top";
+			}
 		}
 		return arg.length() == 0 ? "" : "(" + arg + ")";
 	}
