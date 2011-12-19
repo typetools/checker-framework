@@ -21,8 +21,6 @@ import checkers.quals.*;
  * @see java.awt.AlphaComposite#SRC_ATOP
  * @see java.awt.AlphaComposite#DST_ATOP
  * @see java.awt.AlphaComposite#XOR
- * @see java.awt.AlphaComposite#MIN_RULE
- * @see java.awt.AlphaComposite#MAX_RULE
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
