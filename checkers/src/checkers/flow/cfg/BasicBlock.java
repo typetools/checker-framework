@@ -2,7 +2,6 @@ package checkers.flow.cfg;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import checkers.flow.cfg.node.Node;
 
@@ -26,7 +25,7 @@ public interface BasicBlock {
 	/**
 	 * @return The list of regular (i.e., non-exceptional) successors.
 	 */
-	public Set<BasicBlock> getSuccessors();
+	public BasicBlock getSuccessor();
 	
 	/**
 	 * @return The list of exceptional successors.

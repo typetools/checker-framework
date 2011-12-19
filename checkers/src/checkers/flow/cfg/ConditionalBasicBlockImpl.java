@@ -1,8 +1,5 @@
 package checkers.flow.cfg;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -13,8 +10,8 @@ import checkers.flow.cfg.node.Node;
  * @author Stefan Heule
  * 
  */
-public class ConditionalBasicBlockImpl extends
-		BasicBlockImpl implements ConditionalBasicBlock {
+public class ConditionalBasicBlockImpl extends BasicBlockImpl implements
+		ConditionalBasicBlock {
 
 	/** Condition of the if statement. */
 	protected Node condition;
@@ -54,16 +51,14 @@ public class ConditionalBasicBlockImpl extends
 	}
 
 	@Override
-	void addSuccessor(BasicBlock successor) {
+	void setSuccessor(BasicBlock successor) {
 		assert false; // use set[Then/Else]Successor instead
 	}
 
 	@Override
-	public Set<BasicBlock> getSuccessors() {
-		Set<BasicBlock> r = new HashSet<BasicBlock>();
-		r.add(thenSuccessor);
-		r.add(elseSuccessor);
-		return r;
+	public BasicBlock getSuccessor() {
+		assert false : "use getThenSuccessor or getElseSuccessor instead";
+		return null;
 	}
 
 	@Override
@@ -80,10 +75,10 @@ public class ConditionalBasicBlockImpl extends
 	public Node getCondition() {
 		return condition;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "CBB(cond="+condition+")";
+		return "CBB(cond=" + condition + ")";
 	}
 
 }

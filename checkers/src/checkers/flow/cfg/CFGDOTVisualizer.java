@@ -62,7 +62,8 @@ public class CFGDOTVisualizer {
 					worklist.add(elseSuccessor);
 				}
 			} else {
-				for (BasicBlock b : cur.getSuccessors()) {
+				BasicBlock b = cur.getSuccessor();
+				if (b != null) {
 					sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
 					sb2.append(";\n");
 					if (!visited.contains(b)) {
@@ -72,16 +73,17 @@ public class CFGDOTVisualizer {
 				}
 			}
 
-			for (Entry<Class<?>, BasicBlock> e : cur.getExceptionalSuccessors().entrySet()) {
+			for (Entry<Class<?>, BasicBlock> e : cur.getExceptionalSuccessors()
+					.entrySet()) {
 				BasicBlock b = e.getValue();
 				Class<?> cause = e.getKey();
 				String exception = cause.getCanonicalName();
 				if (exception.startsWith("java.lang.")) {
 					exception = exception.replace("java.lang.", "");
 				}
-				
+
 				sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
-				sb2.append(" [label=\""+exception+"\"];\n");
+				sb2.append(" [label=\"" + exception + "\"];\n");
 				if (!visited.contains(b)) {
 					visited.add(b);
 					worklist.add(b);
@@ -99,8 +101,7 @@ public class CFGDOTVisualizer {
 			} else if (v instanceof SpecialBasicBlockImpl) {
 				sb1.append("shape=oval ");
 			}
-			sb1.append("label=\""
-					+ visualizeContent(v) + "\"];\n");
+			sb1.append("label=\"" + visualizeContent(v) + "\"];\n");
 		}
 
 		sb1.append("\n");
@@ -121,7 +122,7 @@ public class CFGDOTVisualizer {
 	 */
 	protected static String visualizeContent(BasicBlock bb) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		// loop over contents
 		List<Node> contents = new LinkedList<>(bb.getContents());
 		if (bb instanceof ConditionalBasicBlock) {
@@ -135,7 +136,7 @@ public class CFGDOTVisualizer {
 			notFirst = true;
 			sb.append(prepareString(visualizeNode(t)));
 		}
-		
+
 		// handle case where no contents are present
 		if (sb.length() == 0) {
 			if (bb instanceof SpecialBasicBlockImpl) {
@@ -152,12 +153,13 @@ public class CFGDOTVisualizer {
 				return "?? empty ??";
 			}
 		}
-		
+
 		return sb.toString();
 	}
 
 	protected static String visualizeNode(Node t) {
-		return t.toString() + "   [ "+visualizeType(t)+visualizeArguments(t)+" ]";
+		return t.toString() + "   [ " + visualizeType(t)
+				+ visualizeArguments(t) + " ]";
 	}
 
 	protected static String visualizeArguments(Node t) {
@@ -166,14 +168,14 @@ public class CFGDOTVisualizer {
 			ConditionalOrNode ct = (ConditionalOrNode) t;
 			arg = ct.getTruthValue().toString();
 		}
-		return arg.length() == 0 ? "" : "("+arg+")";
+		return arg.length() == 0 ? "" : "(" + arg + ")";
 	}
 
 	protected static String visualizeType(Node t) {
 		String name = t.getClass().getSimpleName();
 		return name.replace("Node", "");
 	}
-	
+
 	protected static String prepareString(String s) {
 		return s.replace("\"", "\\\"");
 	}

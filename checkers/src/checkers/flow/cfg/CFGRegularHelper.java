@@ -178,7 +178,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		truePredecessors = new PredecessorBlockHolder() {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
-				bb.addSuccessor(b);
+				bb.setSuccessor(b);
 			}
 			@Override
 			public List<String> componentList() {
@@ -193,7 +193,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		falsePredecessors = new PredecessorBlockHolder() {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
-				bb.addSuccessor(b);
+				bb.setSuccessor(b);
 			}
 			@Override
 			public List<String> componentList() {
@@ -236,7 +236,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		predecessors = new PredecessorBlockHolder() {
 			@Override
 			public void setSuccessorAs(BasicBlock b) {
-				bb.addSuccessor(b);
+				bb.setSuccessor(b);
 			}
 			@Override
 			public List<String> componentList() {
@@ -316,7 +316,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 					if (newPredecessors != null) {
 						newPredecessors.setSuccessorAs(b);
 					}
-					cb.addSuccessor(b);
+					cb.setSuccessor(b);
 				}
 				@Override
 				public List<String> componentList() {
@@ -399,7 +399,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		assert conditionalMode ? bb instanceof ConditionalBasicBlockImpl : true;
 
 		if (currentBlock != null) {
-			currentBlock.addSuccessor(bb);
+			currentBlock.setSuccessor(bb);
 		} else {
 			predecessors.setSuccessorAs(bb);
 			predecessors = null;
@@ -574,6 +574,9 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 		Node r = null;
 		switch (tree.getKind()) {
 		case CONDITIONAL_OR:
+			
+			// see JLS 15.24
+			
 			if (conditionalMode) {
 				// left-hand side
 				tree.getLeftOperand().accept(this, p);
