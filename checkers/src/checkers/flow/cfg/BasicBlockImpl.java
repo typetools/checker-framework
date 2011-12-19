@@ -2,11 +2,9 @@ package checkers.flow.cfg;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import checkers.flow.cfg.node.Node;
 
@@ -22,8 +20,8 @@ public class BasicBlockImpl implements BasicBlock {
 	/** Internal representation of the contents. */
 	protected List<Node> contents;
 
-	/** Internal representation of the successors. */
-	protected Set<BasicBlock> successors;
+	/** Internal representation of the successor. */
+	protected BasicBlock successor;
 	
 	/** Set of exceptional successors. */
 	protected Map<Class<?>, BasicBlock> exceptionalSuccessors;
@@ -34,7 +32,6 @@ public class BasicBlockImpl implements BasicBlock {
 	 */
 	public BasicBlockImpl() {
 		contents = new LinkedList<>();
-		successors = new HashSet<>();
 		exceptionalSuccessors = new HashMap<>();
 	}
 	
@@ -48,8 +45,9 @@ public class BasicBlockImpl implements BasicBlock {
 	/**
 	 * Add a basic block as the successor of this block.
 	 */
-	void addSuccessor(BasicBlock successor) {
-		successors.add(successor);
+	void setSuccessor(BasicBlock successor) {
+		assert this.successor == null : "cannot set successor twice";
+		this.successor = successor;
 	}
 
 	/**
@@ -72,8 +70,8 @@ public class BasicBlockImpl implements BasicBlock {
 	}
 
 	@Override
-	public Set<BasicBlock> getSuccessors() {
-		return new HashSet<BasicBlock>(successors);
+	public BasicBlock getSuccessor() {
+		return successor;
 	}
 	
 	@Override
