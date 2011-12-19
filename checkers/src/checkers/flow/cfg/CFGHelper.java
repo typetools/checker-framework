@@ -11,7 +11,7 @@ import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.IdentifierNode;
+import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.Node;
@@ -112,6 +112,9 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * <pre>
 	 *   currentBlock == null   <==>  (truePredecessors != null && falsePredecessors != null)
 	 * </pre>
+	 * 
+	 * These three fields should only be managed by the methods below that are
+	 * titled 'Manage Predecessors' and 'Basic Block Linking'.
 	 */
 	protected BasicBlockImpl currentBlock;
 
@@ -140,7 +143,47 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * The exceptional exit basic block (which might or might not be used).
 	 */
 	protected SpecialBasicBlockImpl exceptionalExitBlock;
+	
+	/* --------------------------------------------------------- */
+	/* Translation (AST to CFG) */
+	/* --------------------------------------------------------- */
+	
+	/**
+	 * Build the control flow graph for a {@link BlockTree} that represents a
+	 * methods body.
+	 * 
+	 * @param t
+	 *            Method body.
+	 * @return The entry node of the resulting control flow graph.
+	 */
+	public BasicBlock build(BlockTree t) {
 
+		// start in regular mode
+		conditionalMode = false;
+
+		// create start block
+		BasicBlockImpl startBlock = new SpecialBasicBlockImpl(
+				SpecialBasicBlockTypes.ENTRY);
+		setSingleAnyPredecessor(startBlock);
+
+		// create exceptional end block
+		exceptionalExitBlock = new SpecialBasicBlockImpl(
+				SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
+
+		// traverse AST
+		t.accept(this, null);
+
+		// finish CFG
+		SpecialBasicBlockImpl exit = new SpecialBasicBlockImpl(
+				SpecialBasicBlockTypes.EXIT);
+		extendWithBasicBlock(exit);
+		return startBlock;
+	}
+
+	/* --------------------------------------------------------- */
+	/* Manage Predecessors */
+	/* --------------------------------------------------------- */
+	
 	/**
 	 * Used to keep track of the predecessors (to allow setting their successor
 	 * appropriately when a new block is added).
@@ -280,38 +323,6 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	}
 
 	/**
-	 * Build the control flow graph for a {@link BlockTree} that represents a
-	 * methods body.
-	 * 
-	 * @param t
-	 *            Method body.
-	 * @return The entry node of the resulting control flow graph.
-	 */
-	public BasicBlock build(BlockTree t) {
-
-		// start in regular mode
-		conditionalMode = false;
-
-		// create start block
-		BasicBlockImpl startBlock = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.ENTRY);
-		setSingleAnyPredecessor(startBlock);
-
-		// create exceptional end block
-		exceptionalExitBlock = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
-
-		// traverse AST
-		t.accept(this, null);
-
-		// finish CFG
-		SpecialBasicBlockImpl exit = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.EXIT);
-		extendWithBasicBlock(exit);
-		return startBlock;
-	}
-
-	/**
 	 * Add the current block to a predecessor list (or the predecessors if
 	 * currentBlock is null).
 	 * 
@@ -327,6 +338,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 					combinePredecessors(truePredecessors, newPredecessors));
 		}
 	}
+	
+	/* --------------------------------------------------------- */
+	/* Basic Block Linking */
+	/* --------------------------------------------------------- */
 
 	/**
 	 * Add a node to the current basic block, correctly linking all blocks and
@@ -445,6 +460,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		causes.add(cause);
 		return addToCurrentBlockWithException(node, causes);
 	}
+	
+	/* --------------------------------------------------------- */
+	/* Visitor Methods */
+	/* --------------------------------------------------------- */
 
 	@Override
 	public Node visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
@@ -704,7 +723,8 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitIdentifier(IdentifierTree tree, Void p) {
-		IdentifierNode node = new IdentifierNode(tree);
+		// TODO: thise are not always local variables
+		LocalVariableNode node = new LocalVariableNode(tree);
 		if (conditionalMode) {
 			ConditionalBasicBlockImpl cb = extendWithConditionalNode(node);
 			clearAnyPredecessor();
@@ -935,7 +955,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		Node node = null;
 		ExpressionTree initializer = tree.getInitializer();
 		if (initializer != null) {
-			node = translateAssignment(tree, new IdentifierNode(tree),
+			node = translateAssignment(tree, new LocalVariableNode(tree),
 					initializer);
 		}
 
