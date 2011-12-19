@@ -143,11 +143,11 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * The exceptional exit basic block (which might or might not be used).
 	 */
 	protected SpecialBasicBlockImpl exceptionalExitBlock;
-	
+
 	/* --------------------------------------------------------- */
 	/* Translation (AST to CFG) */
 	/* --------------------------------------------------------- */
-	
+
 	/**
 	 * Build the control flow graph for a {@link BlockTree} that represents a
 	 * methods body.
@@ -183,7 +183,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	/* --------------------------------------------------------- */
 	/* Manage Predecessors */
 	/* --------------------------------------------------------- */
-	
+
 	/**
 	 * Used to keep track of the predecessors (to allow setting their successor
 	 * appropriately when a new block is added).
@@ -204,28 +204,55 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		}
 	}
 
+	/**
+	 * Retrieve the contents of <code>falsePredecessors</code> and set its value
+	 * to null.
+	 */
 	protected PredecessorBlockHolder getAndResetFalsePredecessors() {
 		PredecessorBlockHolder old = falsePredecessors;
 		falsePredecessors = null;
 		return old;
 	}
 
+	/**
+	 * Retrieve the contents of <code>truePredecessors</code> and set its value
+	 * to null.
+	 */
 	protected PredecessorBlockHolder getAndResetTruePredecessors() {
 		PredecessorBlockHolder old = truePredecessors;
 		truePredecessors = null;
 		return old;
 	}
 
+	/**
+	 * Set a single basic block as true predecessor.
+	 * 
+	 * @param bb
+	 *            The basic block to set.
+	 */
 	protected void setSingleTruePredecessor(final BasicBlockImpl bb) {
 		assert !(bb instanceof ConditionalBasicBlockImpl);
 		truePredecessors = singletonPredecessor(bb);
 	}
 
+	/**
+	 * Set a single basic block as false predecessor.
+	 * 
+	 * @param bb
+	 *            The basic block to set.
+	 */
 	protected void setSingleFalsePredecessor(final BasicBlockImpl bb) {
 		assert !(bb instanceof ConditionalBasicBlockImpl);
 		falsePredecessors = singletonPredecessor(bb);
 	}
 
+	/**
+	 * Set a single conditional basic block as true predecessor, using the
+	 * then-successor.
+	 * 
+	 * @param cb
+	 *            The basic block to set.
+	 */
 	protected void setThenAsTruePredecessor(final ConditionalBasicBlockImpl cb) {
 		assert truePredecessors == null;
 		truePredecessors = new PredecessorBlockHolder() {
@@ -241,6 +268,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		};
 	}
 
+	/**
+	 * Set a single conditional basic block as false predecessor, using the
+	 * else-successor.
+	 * 
+	 * @param cb
+	 *            The basic block to set.
+	 */
 	protected void setElseAsFalsePredecessor(final ConditionalBasicBlockImpl cb) {
 		assert falsePredecessors == null;
 		falsePredecessors = new PredecessorBlockHolder() {
@@ -256,6 +290,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		};
 	}
 
+	/**
+	 * Set a single basic block as the predecessor (not distinguishing
+	 * true/false).
+	 * 
+	 * @param more
+	 *            The basic block to set.
+	 */
 	protected void setSingleAnyPredecessor(BasicBlockImpl bb) {
 		assert bb != null;
 		currentBlock = null;
@@ -263,6 +304,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		falsePredecessors = singletonPredecessor(bb);
 	}
 
+	/**
+	 * Set a set of predecessors as the predecessors (not distinguishing
+	 * true/false).
+	 * 
+	 * @param more
+	 *            The predecessors to set.
+	 */
 	protected void setAnyPredecessor(PredecessorBlockHolder h) {
 		assert h != null;
 		currentBlock = null;
@@ -270,16 +318,30 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		falsePredecessors = h;
 	}
 
+	/**
+	 * Reset all predecessors to null.
+	 */
 	protected void clearAnyPredecessor() {
 		truePredecessors = null;
 		falsePredecessors = null;
 	}
 
+	/**
+	 * Add a set of predecessors (identified by <code>more</code>) to the
+	 * predecessors (not distinguishing true/false).
+	 * 
+	 * @param more
+	 *            The predecessors to add.
+	 */
 	protected void addAnyPredecessor(final PredecessorBlockHolder more) {
 		truePredecessors = combinePredecessors(truePredecessors, more);
 		falsePredecessors = combinePredecessors(falsePredecessors, more);
 	}
 
+	/**
+	 * @return A {@link PredecessorBlockHolder} that stores the basic block
+	 *         <code>bb</code>.
+	 */
 	protected static PredecessorBlockHolder singletonPredecessor(
 			final BasicBlockImpl bb) {
 		return new PredecessorBlockHolder() {
@@ -295,6 +357,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		};
 	}
 
+	/**
+	 * Combine two {@link PredecessorBlockHolder}s to a single one containing
+	 * all basic blocks.
+	 */
 	protected static PredecessorBlockHolder combinePredecessors(
 			final PredecessorBlockHolder a, final PredecessorBlockHolder b) {
 		return new PredecessorBlockHolder() {
@@ -338,14 +404,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 					combinePredecessors(truePredecessors, newPredecessors));
 		}
 	}
-	
+
 	/* --------------------------------------------------------- */
 	/* Basic Block Linking */
 	/* --------------------------------------------------------- */
 
 	/**
-	 * Add a node to the current basic block, correctly linking all blocks and
-	 * handling conditional basic block appropriately.
+	 * Extend the CFG with a node.
 	 * 
 	 * @param node
 	 *            The node to add.
@@ -364,12 +429,14 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		}
 	}
 
-	// TODO: docu + check docu of other method above
-	// note: does not set 'currentblock' or
-	// addThenPredecessor((ConditionalBasicBlockImpl) bb);
-
-	// only in conditional mode we add conditional nodes, but possibly also
-	// normal blocks
+	/**
+	 * Extend the CFG with a conditional node (place in a conditional basic
+	 * block). Can only be called in the conditional mode.
+	 * 
+	 * @param node
+	 *            The node to add.
+	 * @return The conditional basic block the node has been added to.
+	 */
 	protected ConditionalBasicBlockImpl extendWithConditionalNode(Node node) {
 		assert conditionalMode;
 		ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
@@ -378,6 +445,15 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		return cb;
 	}
 
+	/**
+	 * Extend the CFG with a regular node (not a conditional node), even though
+	 * the helper is currently in the conditional mode. Can only be called when
+	 * <code>conditionalMode</code> is true.
+	 * 
+	 * @param node
+	 *            The node to add.
+	 * @return The basic block the node has been added to.
+	 */
 	protected BasicBlockImpl extendWithNodeInConditionalMode(Node node) {
 		assert conditionalMode;
 		conditionalMode = false;
@@ -388,7 +464,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	}
 
 	/**
-	 * Extend the control flow graph with <code>bb</code>.
+	 * Extend the CFG with the basic block <code>bb</code>.
 	 */
 	protected void extendWithBasicBlock(BasicBlockImpl bb) {
 		if (currentBlock != null) {
@@ -407,7 +483,12 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		}
 	}
 
-	// TODO: docu
+	/**
+	 * Finish the current basic block to not allow further additions to that
+	 * block. Can only be called when there is a current block.
+	 * 
+	 * @return The basic block just finished.
+	 */
 	protected BasicBlockImpl finishCurrentBlock() {
 		assert currentBlock != null;
 		assert truePredecessors == null && falsePredecessors == null;
@@ -417,8 +498,8 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	}
 
 	/**
-	 * Add a node to the current basic block, where <code>node</code> might
-	 * throw any of the exception in <code>causes</code>.
+	 * Extend the CFG by a node, where <code>node</code> might throw any of the
+	 * exception in <code>causes</code>.
 	 * 
 	 * @param node
 	 *            The node to add.
@@ -460,7 +541,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		causes.add(cause);
 		return addToCurrentBlockWithException(node, causes);
 	}
-	
+
 	/* --------------------------------------------------------- */
 	/* Visitor Methods */
 	/* --------------------------------------------------------- */
