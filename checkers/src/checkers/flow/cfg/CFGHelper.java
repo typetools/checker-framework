@@ -90,7 +90,7 @@ import com.sun.source.tree.WildcardTree;
  * @author Stefan Heule
  * 
  */
-class CFGRegularHelper implements TreeVisitor<Node, Void> {
+class CFGHelper implements TreeVisitor<Node, Void> {
 
 	/**
 	 * The basic block that is currently being filled with contents.
