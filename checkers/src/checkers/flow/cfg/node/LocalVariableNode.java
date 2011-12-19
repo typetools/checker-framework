@@ -13,11 +13,11 @@ import com.sun.source.tree.VariableTree;
  * @author Stefan Heule
  * 
  */
-public class IdentifierNode extends Node {
+public class LocalVariableNode extends Node {
 
 	protected Tree tree;
 
-	public IdentifierNode(Tree t) {
+	public LocalVariableNode(Tree t) {
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
 	}
