@@ -22,7 +22,7 @@ public class BasicBlockImpl implements BasicBlock {
 
 	/** Internal representation of the successor. */
 	protected BasicBlock successor;
-	
+
 	/** Set of exceptional successors. */
 	protected Map<Class<?>, BasicBlock> exceptionalSuccessors;
 
@@ -34,7 +34,7 @@ public class BasicBlockImpl implements BasicBlock {
 		contents = new LinkedList<>();
 		exceptionalSuccessors = new HashMap<>();
 	}
-	
+
 	/**
 	 * Add an exceptional successor.
 	 */
@@ -46,7 +46,9 @@ public class BasicBlockImpl implements BasicBlock {
 	 * Add a basic block as the successor of this block.
 	 */
 	void setSuccessor(BasicBlock successor) {
-		assert this.successor == null : "cannot set successor twice";
+		// setting the same successor twice is OK, as this is performed during
+		// regular operation of the CFG to AST translation
+		assert this.successor == null || this.successor == successor : "cannot set successor twice";
 		this.successor = successor;
 	}
 
@@ -56,7 +58,7 @@ public class BasicBlockImpl implements BasicBlock {
 	void addStatement(Node t) {
 		contents.add(t);
 	}
-	
+
 	/**
 	 * Add multiple statements to the contents of this basic block.
 	 */
@@ -73,15 +75,15 @@ public class BasicBlockImpl implements BasicBlock {
 	public BasicBlock getSuccessor() {
 		return successor;
 	}
-	
+
 	@Override
 	public Map<Class<?>, BasicBlock> getExceptionalSuccessors() {
 		return new HashMap<>(exceptionalSuccessors);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "BB("+contents+")";
+		return "BB(" + contents + ")";
 	}
 
 }
