@@ -1,9 +1,9 @@
 \htmlhr
 \chapter{How to create a new checker\label{writing-a-checker}}
 
-\newcommand{\TreeAPIBase}{http://download.oracle.com/javase/7/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{http://download.oracle.com/javase/7/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{http://docs.oracle.com/javase/7/docs/api/javax/lang/model}
 \newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -338,7 +338,7 @@ manner (e.g.,
 
 % This paragraph is out of place.
 
-\urldef{\setAbsoluteDefaultsURL}\url{doc/checkers/util/QualifierDefaults.html#setAbsoluteDefaults(javax.lang.model.element.AnnotationMirror,%20java.util.Set)}
+\urldef{\addAbsoluteDefaultURL}\url{doc/checkers/util/QualifierDefaults.html#addAbsoluteDefault(javax.lang.model.element.AnnotationMirror,%20java.util.Set)}
 
 A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
