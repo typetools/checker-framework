@@ -18,7 +18,7 @@ public abstract class ParameterizedCheckerTest extends CheckerTest {
         this.testFile = testFile;
     }
 
-    @Test public void run()     {
+    @Test public void run() {
         test(testFile);
     }
 
