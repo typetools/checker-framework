@@ -4,6 +4,16 @@ package checkers.flow.cfg.node;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
+/**
+ * A node for a boolean literals. For example:
+ * <pre>
+ *   <em>true</em>
+ *   <em>false</em>
+ * </pre>
+ * 
+ * @author Stefan Heule
+ * 
+ */
 public class BooleanLiteralNode extends Node {
 	
 	protected LiteralTree tree;
