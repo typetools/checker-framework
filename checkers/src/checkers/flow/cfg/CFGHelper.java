@@ -47,7 +47,9 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1061,4 +1063,15 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		return null;
 	}
 
+	@Override
+    public Node visitLambdaExpression(LambdaExpressionTree node, Void p) {
+    	assert false : "Lambda expressions not yet handled in AST to CFG translation.";
+        return null;
+    }
+
+	@Override
+    public Node visitMemberReference(MemberReferenceTree node, Void p) {
+    	assert false : "Member references not yet handled in AST to CFG translation.";
+        return null;
+    }
 }
