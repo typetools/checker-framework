@@ -17,6 +17,6 @@ public class CFGBuilder {
 	 * Build the control flow graph of a method.
 	 */
 	public static BasicBlock build(MethodTree method) {
-		return new CFGRegularHelper().build(method.getBody());
+		return new CFGHelper().build(method.getBody());
 	}
 }
