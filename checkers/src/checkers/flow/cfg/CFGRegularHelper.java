@@ -511,6 +511,7 @@ class CFGRegularHelper implements TreeVisitor<Node, Void> {
 			String field = ASTUtils.getFieldName(variable);
 			FieldAccessNode target = new FieldAccessNode(variable, receiver,
 					field);
+			// TODO: static field access does not throw exception
 			addToCurrentBlockWithException(target, NullPointerException.class);
 
 			// add assignment node
