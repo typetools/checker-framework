@@ -93,45 +93,63 @@ import com.sun.source.tree.WildcardTree;
 class CFGHelper implements TreeVisitor<Node, Void> {
 
 	/**
-	 * The basic block that is currently being filled with contents.
+	 * The {@link CFGHelper} visits the AST to build the control flow graph. To
+	 * correctly link the basic blocks, three fields are used:
+	 * <code>currentBlock</code>, <code>truePredecessors</code> and
+	 * <code>falsePredecessors</code>. If there is one currently active block
+	 * and this block is a regular block (and not a conditional basic block),
+	 * then <code>currentBlock</code> is used to store this block. Further nodes
+	 * can still be added to this block. Otherwise, that is if there are
+	 * multiple blocks to which the next block should be added as successor
+	 * (e.g. after an if statement), or if the last block is a conditional basic
+	 * block, then <code>truePredecessors</code> and
+	 * <code>falsePredecessors</code> are used to store these blocks (both
+	 * fields store the predecessor, for the difference see explanation of
+	 * <code>conditionalMode</code>).
 	 * 
-	 * <p>
-	 * 
-	 * <strong>Important:</strong> Contents should be added through
-	 * {@link addToCurrentBlock} instead of directly accessing
-	 * {@link currentBlock}. Furthermore, the following invariant holds during
-	 * CFG construction:
+	 * The following invariant is maintained:
 	 * 
 	 * <pre>
-	 * currentBlock == null  <==>  predecessors != null
+	 *   currentBlock == null   <==>  (truePredecessors != null && falsePredecessors != null)
 	 * </pre>
-	 * 
-	 * <code>currentBlock</code> can be <code>null</code> to indicate that there
-	 * is currently not a single current block, but rather a set of
-	 * predecessors. This happens, for instance after an if-block where the then
-	 * and else branch are the predecessors. If <code>currentBlock</code> is
-	 * <code>null</code>, then adding a block will make all blocks in
-	 * <code>predecessors</code> a predecessor of the newly created block.
-	 * 
-	 * Note that for conditional basic block in <code>predecessors</code>, the
-	 * following block will be added as the 'then' successor.
 	 */
 	protected BasicBlockImpl currentBlock;
+
+	/** See description of <code>currentBlock</code>. */
+	protected PredecessorBlockHolder truePredecessors;
+
+	/** See description of <code>currentBlock</code>. */
+	protected PredecessorBlockHolder falsePredecessors;
+
+	/**
+	 * The translation starts in regular mode, that is
+	 * <code>conditionalMode</code> is false. In this case, no conditional basic
+	 * blocks are generated.
+	 * 
+	 * To correctly model control flow when the evaluation of an expression
+	 * determines control flow (e.g. for if-conditions, while loops, or
+	 * short-circuiting conditional expressions), <code>conditionalMode</code>
+	 * can be set to true. Then, the fields <code>truePredecessors</code> and
+	 * <code>falsePredecessors</code> are used to store the predecessor blocks
+	 * when the expression just visited evaluates to true or false,
+	 * respectively.
+	 */
+	protected boolean conditionalMode;
 
 	/**
 	 * The exceptional exit basic block (which might or might not be used).
 	 */
 	protected SpecialBasicBlockImpl exceptionalExitBlock;
 
-	// TODO: docu
-	// conditionalMode ==> currentBlock == null
-	// conditionalMode ==> (truePredecessors != null && falsePredecessors !=
-	// null) || predecessors != null (?)
-	// in conditionalMode, the visit methods return null and use x instead
-	protected boolean conditionalMode;
-	protected PredecessorBlockHolder truePredecessors;
-	protected PredecessorBlockHolder falsePredecessors;
-
+	/**
+	 * Used to keep track of the predecessors (to allow setting their successor
+	 * appropriately when a new block is added).
+	 * 
+	 * The reason a simple list is not sufficient, is the following: For
+	 * {@link ConditionalBasicBlock}s, there are two possibilities to set the
+	 * successor, and a simple list would not give the information which one to
+	 * use.
+	 */
 	protected abstract static class PredecessorBlockHolder {
 		abstract public void setSuccessorAs(BasicBlock b);
 
@@ -456,7 +474,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	public Node visitAssignment(AssignmentTree tree, Void p) {
 
 		// see JLS 15.26.1
-		
+
 		assert !conditionalMode;
 
 		Node expression;
@@ -707,10 +725,6 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		PredecessorBlockHolder newPredecessors = null;
 
 		// basic block for the condition
-		// TODO make method switchToConditionalMode
-		if (currentBlock != null) {
-			finishCurrentBlock();
-		}
 		conditionalMode = true;
 		tree.getCondition().accept(this, null);
 		conditionalMode = false;
@@ -726,7 +740,6 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		// else branch
 		StatementTree elseStatement = tree.getElseStatement();
 		if (elseStatement != null) {
-			assert currentBlock == null;
 			setAnyPredecessor(falseOut);
 			elseStatement.accept(this, null);
 			newPredecessors = addCurrentPredecessorToPredecessor(newPredecessors);

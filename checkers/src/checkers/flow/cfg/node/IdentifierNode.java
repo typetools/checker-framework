@@ -4,6 +4,15 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
+/**
+ * A node for local variables. For example:
+ * <pre>
+ *   <em>a</em>
+ * </pre>
+ * 
+ * @author Stefan Heule
+ * 
+ */
 public class IdentifierNode extends Node {
 
 	protected Tree tree;
