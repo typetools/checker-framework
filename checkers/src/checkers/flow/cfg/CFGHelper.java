@@ -510,7 +510,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @return The same node (for convenience).
 	 */
 	protected Node addToCurrentBlockWithException(Node node,
-			Set<Class<?>> causes) {
+			Set<Class<? extends Throwable>> causes) {
 		// make sure that 'node' gets its own basic block so that the
 		// exception linking is correct
 		if (!NodeUtils.isBooleanTypeNode(node)
@@ -525,7 +525,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 		// add exceptional edges
 		// TODO: catch clauses, finally, ...
-		for (Class<?> c : causes) {
+		for (Class<? extends Throwable> c : causes) {
 			currentBlock.addExceptionalSuccessor(exceptionalExitBlock, c);
 		}
 
@@ -538,8 +538,8 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * Helper with just one cause, see
 	 * <code>addToCurrentBlockWithException</code> for details.
 	 */
-	protected Node addToCurrentBlockWithException(Node node, Class<?> cause) {
-		Set<Class<?>> causes = new HashSet<>();
+	protected Node addToCurrentBlockWithException(Node node, Class<? extends Throwable> cause) {
+		Set<Class<? extends Throwable>> causes = new HashSet<>();
 		causes.add(cause);
 		return addToCurrentBlockWithException(node, causes);
 	}
@@ -550,13 +550,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "AnnotatedTypeTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
 	@Override
 	public Node visitAnnotation(AnnotationTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "AnnotationTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -732,7 +732,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitClass(ClassTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ClassTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -757,7 +757,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitErroneous(ErroneousTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ErroneousTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -855,7 +855,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitImport(ImportTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ImportTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -889,13 +889,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitMethod(MethodTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "MethodTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
 	@Override
 	public Node visitModifiers(ModifiersTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ModifiersTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -965,7 +965,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitCompilationUnit(CompilationUnitTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "CompilationUnitTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -977,19 +977,19 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitParameterizedType(ParameterizedTypeTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ParameterizedTypeTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
 	@Override
 	public Node visitUnionType(UnionTypeTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "UnionTypeTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
 	@Override
 	public Node visitArrayType(ArrayTypeTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "ArrayTypeTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
@@ -1001,13 +1001,13 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "PrimitiveTypeTree is unexpected in AST to CFG translation";
 		return null;
 	}
 
 	@Override
 	public Node visitTypeParameter(TypeParameterTree tree, Void p) {
-		assert false : "WildcardTree is unexpected in AST to CFG translation";
+		assert false : "TypeParameterTree is unexpected in AST to CFG translation";
 		return null;
 	}
 

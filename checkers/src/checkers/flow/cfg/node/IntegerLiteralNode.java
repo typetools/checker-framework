@@ -4,7 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
 /**
- * A node for integer literals. For example:
+ * A node for an integer literal. For example:
  * 
  * <pre>
  *   <em>42</em>
