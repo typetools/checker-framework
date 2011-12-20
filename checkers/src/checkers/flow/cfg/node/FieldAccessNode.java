@@ -21,11 +21,11 @@ public class FieldAccessNode extends Node {
 	
 	// TODO: add method to get modifiers (static, access level, ..)
 	
-	public FieldAccessNode(Tree tree, Node receiver, String field) {
+	public FieldAccessNode(Tree tree, Node receiver) {
 		assert ASTUtils.isFieldAccess(tree);
 		this.tree = tree;
 		this.receiver = receiver;
-		this.field = field;
+		this.field = ASTUtils.getFieldName(tree);
 	}
 
 	public Node getReceiver() {
