@@ -54,7 +54,7 @@ import com.sun.tools.javac.util.Context;
  * <p><code>javac -processor SignaturePrinter
  *         -Achecker=checkers.nullness.NullnessChecker JavaFile.java</code>
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("*")
 @SupportedOptions("checker")
 public class SignaturePrinter extends AbstractTypeProcessor {
@@ -104,9 +104,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     static class ElementPrinter extends AbstractElementVisitor6<Void, Void> {
         private final static String INDENTION = "    ";
 
-        private PrintStream out;
+        private final PrintStream out;
         private String indent = "";
-        private AnnotatedTypeFactory factory;
+        private final AnnotatedTypeFactory factory;
 
         public ElementPrinter(AnnotatedTypeFactory factory, PrintStream out) {
             this.factory = factory;

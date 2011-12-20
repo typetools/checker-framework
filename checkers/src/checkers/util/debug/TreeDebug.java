@@ -10,7 +10,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import java.util.*;
 
 import javax.annotation.processing.*;
-// import javax.lang.model.SourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
@@ -33,9 +33,10 @@ import javax.lang.model.util.ElementFilter;
  * are displayed (since these names are not tree nodes and therefore not
  * directly visited during AST traversal).
  *
+ * @see checkers.util.debug.TreePrinter
  */
 @SupportedAnnotationTypes("*")
-//@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TreeDebug extends AbstractProcessor {
 
     protected Visitor createSourceVisitor(CompilationUnitTree root) {
@@ -46,7 +47,7 @@ public class TreeDebug extends AbstractProcessor {
 
     public static class Visitor extends TreePathScanner<Void, Void> {
 
-        private StringBuffer buf;
+        private final StringBuffer buf;
 
         public Visitor() {
             buf = new StringBuffer();
