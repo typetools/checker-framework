@@ -10,7 +10,7 @@ import checkers.quals.*;
 import checkers.javari.quals.*;
 
 /**
- * Abstract class for testing a checker framework.
+ * Abstract class for testing a checker in the Checker Framework.
  */
 abstract public class CheckerTest {
 
