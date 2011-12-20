@@ -73,7 +73,7 @@ public class CFGDOTVisualizer {
 				}
 			}
 
-			for (Entry<Class<?>, BasicBlock> e : cur.getExceptionalSuccessors()
+			for (Entry<Class<? extends Throwable>, BasicBlock> e : cur.getExceptionalSuccessors()
 					.entrySet()) {
 				BasicBlock b = e.getValue();
 				Class<?> cause = e.getKey();

@@ -2,7 +2,7 @@ package checkers.flow.cfg.node;
 
 
 /**
- * A visitor for an {@link LocalVariableNode} tree.
+ * A visitor for a {@link Node} tree.
  * 
  * @author Stefan Heule
  * 
@@ -14,12 +14,12 @@ package checkers.flow.cfg.node;
  *            does not have a parameter.
  */
 public interface NodeVisitor<R, P> {
-	public R visitAssignment(AssignmentNode n, P p);
-	public R visitIdentifier(LocalVariableNode n, P p);
-	public R visitVariableDeclaration(VariableDeclarationNode n, P p);
-	public R visitFieldAccess(FieldAccessNode n, P p);
-	public R visitIntegerLiteral(IntegerLiteralNode n, P p);
-	public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
-	public R visitBooleanLiteral(BooleanLiteralNode n, P p);
-	public R visitConditionalOr(ConditionalOrNode n, P p);
+	R visitAssignment(AssignmentNode n, P p);
+	R visitIdentifier(LocalVariableNode n, P p);
+	R visitVariableDeclaration(VariableDeclarationNode n, P p);
+	R visitFieldAccess(FieldAccessNode n, P p);
+	R visitIntegerLiteral(IntegerLiteralNode n, P p);
+	R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
+	R visitBooleanLiteral(BooleanLiteralNode n, P p);
+	R visitConditionalOr(ConditionalOrNode n, P p);
 }

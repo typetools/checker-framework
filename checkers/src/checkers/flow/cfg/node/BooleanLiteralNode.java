@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
 /**
- * A node for a boolean literals. For example:
+ * A node for a boolean literal. For example:
  * <pre>
  *   <em>true</em>
  *   <em>false</em>

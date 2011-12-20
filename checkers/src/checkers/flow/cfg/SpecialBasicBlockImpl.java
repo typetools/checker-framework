@@ -1,6 +1,5 @@
 package checkers.flow.cfg;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -77,7 +76,7 @@ public class SpecialBasicBlockImpl extends BasicBlockImpl {
 	/**
 	 * Note: not supported for special basic blocks.
 	 */
-	public void addStatements(Collection<? extends Node> ts) {
+	public void addStatements(List<? extends Node> ts) {
 		assert false : "Special basic blocks do not have contents.";
 	}
 	

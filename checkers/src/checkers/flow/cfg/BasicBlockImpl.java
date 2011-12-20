@@ -1,6 +1,5 @@
 package checkers.flow.cfg;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +23,7 @@ public class BasicBlockImpl implements BasicBlock {
 	protected BasicBlock successor;
 
 	/** Set of exceptional successors. */
-	protected Map<Class<?>, BasicBlock> exceptionalSuccessors;
+	protected Map<Class<? extends Throwable>, BasicBlock> exceptionalSuccessors;
 
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
@@ -38,7 +37,7 @@ public class BasicBlockImpl implements BasicBlock {
 	/**
 	 * Add an exceptional successor.
 	 */
-	void addExceptionalSuccessor(BasicBlock b, Class<?> cause) {
+	void addExceptionalSuccessor(BasicBlock b, Class<? extends Throwable> cause) {
 		exceptionalSuccessors.put(cause, b);
 	}
 
@@ -62,7 +61,7 @@ public class BasicBlockImpl implements BasicBlock {
 	/**
 	 * Add multiple statements to the contents of this basic block.
 	 */
-	public void addStatements(Collection<? extends Node> ts) {
+	public void addStatements(List<? extends Node> ts) {
 		contents.addAll(ts);
 	}
 
@@ -77,7 +76,7 @@ public class BasicBlockImpl implements BasicBlock {
 	}
 
 	@Override
-	public Map<Class<?>, BasicBlock> getExceptionalSuccessors() {
+	public Map<Class<? extends Throwable>, BasicBlock> getExceptionalSuccessors() {
 		return new HashMap<>(exceptionalSuccessors);
 	}
 
