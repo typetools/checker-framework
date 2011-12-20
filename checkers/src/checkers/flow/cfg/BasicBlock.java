@@ -23,13 +23,13 @@ public interface BasicBlock {
 	public List<Node> getContents();
 
 	/**
-	 * @return The list of regular (i.e., non-exceptional) successors.
+	 * @return The regular (i.e., non-exceptional) successor.
 	 */
 	public BasicBlock getSuccessor();
 	
 	/**
 	 * @return The list of exceptional successors.
 	 */
-	public Map<Class<?>, BasicBlock> getExceptionalSuccessors();
+	public Map<Class<? extends Throwable>, BasicBlock> getExceptionalSuccessors();
 
 }

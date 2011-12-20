@@ -4,7 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
- * A node for a local variable declaraiont. For example:
+ * A node for a local variable declaration. For example:
  * <pre>
  *   <em>modifier</em> <em>type</em>  <em>var</em>;
  * </pre>
