@@ -11,9 +11,9 @@ import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
+import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
@@ -591,9 +591,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			expression = tree.getExpression().accept(this, p);
 
 			// visit field access (throws null-pointer exception)
-			String field = ASTUtils.getFieldName(variable);
-			FieldAccessNode target = new FieldAccessNode(variable, receiver,
-					field);
+			FieldAccessNode target = new FieldAccessNode(variable, receiver);
 			// TODO: static field access does not throw exception
 			addToCurrentBlockWithException(target, NullPointerException.class);
 
@@ -937,8 +935,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 		// visit field access (throws null-pointer exception)
 		// TODO: exception
-		String field = ASTUtils.getFieldName(tree);
-		FieldAccessNode access = new FieldAccessNode(tree, receiver, field);
+		FieldAccessNode access = new FieldAccessNode(tree, receiver);
 		extendWithNode(access);
 		return access;
 	}
