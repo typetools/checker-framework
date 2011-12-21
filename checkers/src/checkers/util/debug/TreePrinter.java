@@ -16,7 +16,6 @@ import javax.lang.model.element.TypeElement;
  * A utility class for pretty-printing the AST of a program.
  *
  * <p>
- *
  * The class is actually an annotation processor; in order to use it, invoke the
  * compiler on the source file(s) for which you wish to view the AST of the program.
  * You may also wish to use the {@code -proc:only} javac option to
@@ -24,7 +23,14 @@ import javax.lang.model.element.TypeElement;
  * {@code -proc:only} causes type annotation processors not to be run.)
  *
  * <p>
+ * A simple main method is also provided. Put jsr308-all.jar on the bootclasspath
+ * and you can invoke this tool as:
  *
+ *   java checkers.util.debug.TreePrinter *.java
+ *
+ * TODO: is there an environment variable for the bootclasspath?
+ *
+ * <p>
  * The visitor simply uses the javac Pretty visitor to output a nicely formatted
  * version of the AST.
  *
@@ -51,5 +57,14 @@ public class TreePrinter extends AbstractTypeProcessor {
             e.printStackTrace();
         }
         System.out.println(out.toString());
+    }
+
+    public static void main(String[] args) throws Exception {
+        String[] newArgs = new String[args.length + 3];
+        newArgs[0] = "-processor";
+        newArgs[1] = "checkers.util.debug.TreePrinter";
+        newArgs[2] = "-proc:only";
+        System.arraycopy(args, 0, newArgs, 3, args.length);
+        com.sun.tools.javac.Main.compile(newArgs);
     }
 }
