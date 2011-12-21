@@ -62,7 +62,7 @@ Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
-\newblock \url{http://www.ibm.com/developerworks/library/j-jtp02216.html},
+\newblock \url{http://www.ibm.com/developerworks/java/library/j-jtp02216/},
   February~21, 2006.
 
 \bibitem[GPB{\etalchar{+}}06]{Goetz2006}
