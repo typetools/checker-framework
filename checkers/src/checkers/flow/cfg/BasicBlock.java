@@ -14,22 +14,42 @@ import checkers.flow.cfg.node.Node;
  * @see ConditionalBasicBlock
  * 
  */
-public interface BasicBlock {
+public abstract class BasicBlock {
 
 	/**
 	 * @return The list of {@link Node}s that represent the contents of the
 	 *         basic block.
 	 */
-	public List<Node> getContents();
+	abstract public List<Node> getContents();
 
 	/**
 	 * @return The regular (i.e., non-exceptional) successor.
 	 */
-	public BasicBlock getSuccessor();
+	abstract BasicBlock getSuccessor();
 	
 	/**
 	 * @return The list of exceptional successors.
 	 */
-	public Map<Class<? extends Throwable>, BasicBlock> getExceptionalSuccessors();
+	abstract Map<Class<? extends Throwable>, BasicBlock> getExceptionalSuccessors();
+	
+	/**
+	 * @return The unique identifier of this node.
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/** A unique ID for this node. */
+	protected long id = BasicBlock.uniqueID();
+
+	/** The last ID that has already been used. */
+	protected static long lastId = 0;
+
+	/**
+	 * @return A currently unused identifier.
+	 */
+	private static long uniqueID() {
+		return lastId++;
+	}
 
 }

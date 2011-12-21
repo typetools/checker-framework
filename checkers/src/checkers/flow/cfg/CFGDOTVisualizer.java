@@ -46,16 +46,16 @@ public class CFGDOTVisualizer {
 			if (cur instanceof ConditionalBasicBlock) {
 				ConditionalBasicBlock ccur = ((ConditionalBasicBlock) cur);
 				BasicBlock thenSuccessor = ccur.getThenSuccessor();
-				sb2.append("    " + ccur.hashCode() + " -> "
-						+ thenSuccessor.hashCode());
+				sb2.append("    " + ccur.getId() + " -> "
+						+ thenSuccessor.getId());
 				sb2.append(" [label=\"then\"];\n");
 				if (!visited.contains(thenSuccessor)) {
 					visited.add(thenSuccessor);
 					worklist.add(thenSuccessor);
 				}
 				BasicBlock elseSuccessor = ccur.getElseSuccessor();
-				sb2.append("    " + ccur.hashCode() + " -> "
-						+ elseSuccessor.hashCode());
+				sb2.append("    " + ccur.getId() + " -> "
+						+ elseSuccessor.getId());
 				sb2.append(" [label=\"else\"];\n");
 				if (!visited.contains(elseSuccessor)) {
 					visited.add(elseSuccessor);
@@ -64,7 +64,7 @@ public class CFGDOTVisualizer {
 			} else {
 				BasicBlock b = cur.getSuccessor();
 				if (b != null) {
-					sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
+					sb2.append("    " + cur.getId() + " -> " + b.getId());
 					sb2.append(";\n");
 					if (!visited.contains(b)) {
 						visited.add(b);
@@ -82,7 +82,7 @@ public class CFGDOTVisualizer {
 					exception = exception.replace("java.lang.", "");
 				}
 
-				sb2.append("    " + cur.hashCode() + " -> " + b.hashCode());
+				sb2.append("    " + cur.getId() + " -> " + b.getId());
 				sb2.append(" [label=\"" + exception + "\"];\n");
 				if (!visited.contains(b)) {
 					visited.add(b);
@@ -95,7 +95,7 @@ public class CFGDOTVisualizer {
 
 		// definition of all nodes including their labels
 		for (BasicBlock v : visited) {
-			sb1.append("    " + v.hashCode() + " [");
+			sb1.append("    " + v.getId() + " [");
 			if (v instanceof ConditionalBasicBlock) {
 				sb1.append("shape=polygon sides=8 ");
 			} else if (v instanceof SpecialBasicBlockImpl) {
