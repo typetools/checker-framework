@@ -16,20 +16,20 @@ import checkers.flow.cfg.node.Node;
  * @author Stefan Heule
  * 
  */
-public interface ConditionalBasicBlock extends BasicBlock {
+public abstract class ConditionalBasicBlock extends BasicBlock {
 
 	/**
 	 * @return The entry block of the then branch.
 	 */
-	public BasicBlock getThenSuccessor();
+	abstract public BasicBlock getThenSuccessor();
 
 	/**
 	 * @return The entry block of the else branch.
 	 */
-	public BasicBlock getElseSuccessor();
+	abstract public BasicBlock getElseSuccessor();
 
 	/**
 	 * @return The condition of the if statement.
 	 */
-	public Node getCondition();
+	abstract public Node getCondition();
 }

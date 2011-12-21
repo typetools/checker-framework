@@ -10,8 +10,7 @@ import checkers.flow.cfg.node.Node;
  * @author Stefan Heule
  * 
  */
-public class ConditionalBasicBlockImpl extends BasicBlockImpl implements
-		ConditionalBasicBlock {
+public class ConditionalBasicBlockImpl extends BasicBlockImpl {
 
 	/** Condition of the if statement. */
 	protected Node condition;
@@ -61,17 +60,23 @@ public class ConditionalBasicBlockImpl extends BasicBlockImpl implements
 		return null;
 	}
 
-	@Override
+	/**
+	 * @return The entry block of the then branch.
+	 */
 	public BasicBlock getThenSuccessor() {
 		return thenSuccessor;
 	}
 
-	@Override
+	/**
+	 * @return The entry block of the else branch.
+	 */
 	public BasicBlock getElseSuccessor() {
 		return elseSuccessor;
 	}
 
-	@Override
+	/**
+	 * @return The condition of the if statement.
+	 */
 	public Node getCondition() {
 		return condition;
 	}
