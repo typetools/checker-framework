@@ -1,0 +1,25 @@
+package checkers.flow.cfg.node;
+
+
+/**
+ * A visitor for a {@link Node} tree.
+ * 
+ * @author Stefan Heule
+ * 
+ * @param <R>
+ *            Return type of the visitor. Use {@link Void} if the visitor does
+ *            not have a return.
+ * @param <P>
+ *            Parameter type of the visitor. Use {@link Void} if the visitor
+ *            does not have a parameter.
+ */
+public interface NodeVisitor<R, P> {
+	R visitAssignment(AssignmentNode n, P p);
+	R visitIdentifier(LocalVariableNode n, P p);
+	R visitVariableDeclaration(VariableDeclarationNode n, P p);
+	R visitFieldAccess(FieldAccessNode n, P p);
+	R visitIntegerLiteral(IntegerLiteralNode n, P p);
+	R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
+	R visitBooleanLiteral(BooleanLiteralNode n, P p);
+	R visitConditionalOr(ConditionalOrNode n, P p);
+}
