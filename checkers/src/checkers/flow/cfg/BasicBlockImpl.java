@@ -14,7 +14,7 @@ import checkers.flow.cfg.node.Node;
  * @author Stefan Heule
  * 
  */
-public class BasicBlockImpl implements BasicBlock {
+public class BasicBlockImpl extends BasicBlock {
 
 	/** Internal representation of the contents. */
 	protected List<Node> contents;
