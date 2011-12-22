@@ -6,7 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import checkers.flow.cfg.SpecialBasicBlockImpl.SpecialBasicBlockTypes;
+import checkers.flow.cfg.block.Block;
+import checkers.flow.cfg.block.BlockImpl;
+import checkers.flow.cfg.block.ConditionalBlockImpl;
+import checkers.flow.cfg.block.RegularBlockImpl;
+import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
+import checkers.flow.cfg.block.SpecialBlock;
+import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
+import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
@@ -118,7 +125,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * These three fields should only be managed by the methods below that are
 	 * titled 'Manage Predecessors' and 'Basic Block Linking'.
 	 */
-	protected BasicBlockImpl currentBlock;
+	protected RegularBlockImpl currentBlock;
 
 	/** See description of <code>currentBlock</code>. */
 	protected PredecessorBlockHolder truePredecessors;
@@ -144,7 +151,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	/**
 	 * The exceptional exit basic block (which might or might not be used).
 	 */
-	protected SpecialBasicBlockImpl exceptionalExitBlock;
+	protected SpecialBlock exceptionalExitBlock;
 
 	/* --------------------------------------------------------- */
 	/* Translation (AST to CFG) */
@@ -158,26 +165,25 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 *            Method body.
 	 * @return The entry node of the resulting control flow graph.
 	 */
-	public BasicBlock build(BlockTree t) {
+	public Block build(BlockTree t) {
 
 		// start in regular mode
 		conditionalMode = false;
 
 		// create start block
-		BasicBlockImpl startBlock = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.ENTRY);
+		SpecialBlockImpl startBlock = new SpecialBlockImpl(
+				SpecialBlockType.ENTRY);
 		setSingleAnyPredecessor(startBlock);
 
 		// create exceptional end block
-		exceptionalExitBlock = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.EXCEPTIONAL_EXIT);
+		exceptionalExitBlock = new SpecialBlockImpl(
+				SpecialBlockType.EXCEPTIONAL_EXIT);
 
 		// traverse AST
 		t.accept(this, null);
 
 		// finish CFG
-		SpecialBasicBlockImpl exit = new SpecialBasicBlockImpl(
-				SpecialBasicBlockTypes.EXIT);
+		SpecialBlockImpl exit = new SpecialBlockImpl(SpecialBlockType.EXIT);
 		extendWithBasicBlock(exit);
 		return startBlock;
 	}
@@ -196,7 +202,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * use.
 	 */
 	protected abstract static class PredecessorBlockHolder {
-		abstract public void setSuccessorAs(BasicBlock b);
+		abstract public void setSuccessorAs(BlockImpl b);
 
 		abstract public List<String> componentList();
 
@@ -232,8 +238,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @param bb
 	 *            The basic block to set.
 	 */
-	protected void setSingleTruePredecessor(final BasicBlockImpl bb) {
-		assert !(bb instanceof ConditionalBasicBlockImpl);
+	protected void setSingleTruePredecessor(final SingleSuccessorBlockImpl bb) {
 		truePredecessors = singletonPredecessor(bb);
 	}
 
@@ -243,8 +248,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @param bb
 	 *            The basic block to set.
 	 */
-	protected void setSingleFalsePredecessor(final BasicBlockImpl bb) {
-		assert !(bb instanceof ConditionalBasicBlockImpl);
+	protected void setSingleFalsePredecessor(final SingleSuccessorBlockImpl bb) {
 		falsePredecessors = singletonPredecessor(bb);
 	}
 
@@ -255,11 +259,11 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @param cb
 	 *            The basic block to set.
 	 */
-	protected void setThenAsTruePredecessor(final ConditionalBasicBlockImpl cb) {
+	protected void setThenAsTruePredecessor(final ConditionalBlockImpl cb) {
 		assert truePredecessors == null;
 		truePredecessors = new PredecessorBlockHolder() {
 			@Override
-			public void setSuccessorAs(BasicBlock b) {
+			public void setSuccessorAs(BlockImpl b) {
 				cb.setThenSuccessor(b);
 			}
 
@@ -277,11 +281,11 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @param cb
 	 *            The basic block to set.
 	 */
-	protected void setElseAsFalsePredecessor(final ConditionalBasicBlockImpl cb) {
+	protected void setElseAsFalsePredecessor(final ConditionalBlockImpl cb) {
 		assert falsePredecessors == null;
 		falsePredecessors = new PredecessorBlockHolder() {
 			@Override
-			public void setSuccessorAs(BasicBlock b) {
+			public void setSuccessorAs(BlockImpl b) {
 				cb.setElseSuccessor(b);
 			}
 
@@ -299,7 +303,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * @param more
 	 *            The basic block to set.
 	 */
-	protected void setSingleAnyPredecessor(BasicBlockImpl bb) {
+	protected void setSingleAnyPredecessor(SingleSuccessorBlockImpl bb) {
 		assert bb != null;
 		currentBlock = null;
 		truePredecessors = singletonPredecessor(bb);
@@ -345,10 +349,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 *         <code>bb</code>.
 	 */
 	protected static PredecessorBlockHolder singletonPredecessor(
-			final BasicBlockImpl bb) {
+			final SingleSuccessorBlockImpl bb) {
 		return new PredecessorBlockHolder() {
 			@Override
-			public void setSuccessorAs(BasicBlock b) {
+			public void setSuccessorAs(BlockImpl b) {
 				bb.setSuccessor(b);
 			}
 
@@ -367,7 +371,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			final PredecessorBlockHolder a, final PredecessorBlockHolder b) {
 		return new PredecessorBlockHolder() {
 			@Override
-			public void setSuccessorAs(BasicBlock c) {
+			public void setSuccessorAs(BlockImpl c) {
 				if (a != null) {
 					a.setSuccessorAs(c);
 				}
@@ -420,31 +424,17 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 */
 	protected Node extendWithNode(Node node) {
 		if (conditionalMode) {
-			extendWithConditionalNode(node);
+			ConditionalBlockImpl cb = new ConditionalBlockImpl();
+			cb.setCondition(node);
+			extendWithBasicBlock(cb);
 			return node;
 		} else {
 			if (currentBlock == null) {
-				extendWithBasicBlock(new BasicBlockImpl());
+				extendWithBasicBlock(new RegularBlockImpl());
 			}
 			currentBlock.addStatement(node);
 			return node;
 		}
-	}
-
-	/**
-	 * Extend the CFG with a conditional node (place in a conditional basic
-	 * block). Can only be called in the conditional mode.
-	 * 
-	 * @param node
-	 *            The node to add.
-	 * @return The conditional basic block the node has been added to.
-	 */
-	protected ConditionalBasicBlockImpl extendWithConditionalNode(Node node) {
-		assert conditionalMode;
-		ConditionalBasicBlockImpl cb = new ConditionalBasicBlockImpl();
-		cb.setCondition(node);
-		extendWithBasicBlock(cb);
-		return cb;
 	}
 
 	/**
@@ -456,11 +446,11 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 *            The node to add.
 	 * @return The basic block the node has been added to.
 	 */
-	protected BasicBlockImpl extendWithNodeInConditionalMode(Node node) {
+	protected RegularBlockImpl extendWithNodeInConditionalMode(Node node) {
 		assert conditionalMode;
 		conditionalMode = false;
 		extendWithNode(node);
-		BasicBlockImpl trueBlock = finishCurrentBlock();
+		RegularBlockImpl trueBlock = finishCurrentBlock();
 		conditionalMode = true;
 		return trueBlock;
 	}
@@ -468,7 +458,7 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	/**
 	 * Extend the CFG with the basic block <code>bb</code>.
 	 */
-	protected void extendWithBasicBlock(BasicBlockImpl bb) {
+	protected void extendWithBasicBlock(BlockImpl bb) {
 		if (currentBlock != null) {
 			currentBlock.setSuccessor(bb);
 		} else {
@@ -476,12 +466,17 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 			falsePredecessors.setSuccessorAs(bb);
 			clearAnyPredecessor();
 		}
-		if (bb instanceof ConditionalBasicBlockImpl) {
-			setSingleAnyPredecessor(bb);
-			currentBlock = null;
+
+		clearAnyPredecessor();
+		if (bb instanceof RegularBlockImpl) {
+			currentBlock = (RegularBlockImpl) bb;
+		} else if (bb instanceof SingleSuccessorBlockImpl) {
+			setSingleAnyPredecessor((SingleSuccessorBlockImpl) bb);
 		} else {
-			clearAnyPredecessor();
-			currentBlock = bb;
+			assert bb instanceof ConditionalBlockImpl;
+			ConditionalBlockImpl cb = (ConditionalBlockImpl) bb;
+			setThenAsTruePredecessor(cb);
+			setElseAsFalsePredecessor(cb);
 		}
 	}
 
@@ -491,10 +486,10 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * 
 	 * @return The basic block just finished.
 	 */
-	protected BasicBlockImpl finishCurrentBlock() {
+	protected RegularBlockImpl finishCurrentBlock() {
 		assert currentBlock != null;
 		assert truePredecessors == null && falsePredecessors == null;
-		BasicBlockImpl b = currentBlock;
+		RegularBlockImpl b = currentBlock;
 		setSingleAnyPredecessor(currentBlock);
 		return b;
 	}
@@ -511,11 +506,11 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 */
 	protected Node addToCurrentBlockWithException(Node node,
 			Set<Class<? extends Throwable>> causes) {
+		// TODO: make this method more general
 		// make sure that 'node' gets its own basic block so that the
 		// exception linking is correct
-		if (!NodeUtils.isBooleanTypeNode(node)
-				&& !(currentBlock instanceof ConditionalBasicBlockImpl)) {
-			extendWithBasicBlock(new BasicBlockImpl());
+		if (!NodeUtils.isBooleanTypeNode(node)) {
+			extendWithBasicBlock(new RegularBlockImpl());
 		} else {
 			// in this case, addToCurrentBlock will create a new block for
 			// 'node'
@@ -538,7 +533,8 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	 * Helper with just one cause, see
 	 * <code>addToCurrentBlockWithException</code> for details.
 	 */
-	protected Node addToCurrentBlockWithException(Node node, Class<? extends Throwable> cause) {
+	protected Node addToCurrentBlockWithException(Node node,
+			Class<? extends Throwable> cause) {
 		Set<Class<? extends Throwable>> causes = new HashSet<>();
 		causes.add(cause);
 		return addToCurrentBlockWithException(node, causes);
@@ -680,12 +676,12 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 				setAnyPredecessor(leftOutTrue);
 				addAnyPredecessor(rightOutTrue);
 				Node trueNode = new ConditionalOrNode(tree, left, right, true);
-				BasicBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
+				RegularBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
 
 				// node for false case
 				setAnyPredecessor(rightOutFalse);
 				Node falseNode = new ConditionalOrNode(tree, left, right, false);
-				BasicBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
+				RegularBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
 
 				setSingleTruePredecessor(trueBlock);
 				setSingleFalsePredecessor(falseBlock);
@@ -804,17 +800,9 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 
 	@Override
 	public Node visitIdentifier(IdentifierTree tree, Void p) {
-		// TODO: thise are not always local variables
+		// TODO: these are not always local variables
 		LocalVariableNode node = new LocalVariableNode(tree);
-		if (conditionalMode) {
-			ConditionalBasicBlockImpl cb = extendWithConditionalNode(node);
-			clearAnyPredecessor();
-			setThenAsTruePredecessor(cb);
-			setElseAsFalsePredecessor(cb);
-			return node;
-		} else {
-			return extendWithNode(node);
-		}
+		return extendWithNode(node);
 	}
 
 	@Override
@@ -1061,14 +1049,14 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 	}
 
 	@Override
-    public Node visitLambdaExpression(LambdaExpressionTree node, Void p) {
-    	assert false : "Lambda expressions not yet handled in AST to CFG translation.";
-        return null;
-    }
+	public Node visitLambdaExpression(LambdaExpressionTree node, Void p) {
+		assert false : "Lambda expressions not yet handled in AST to CFG translation.";
+		return null;
+	}
 
 	@Override
-    public Node visitMemberReference(MemberReferenceTree node, Void p) {
-    	assert false : "Member references not yet handled in AST to CFG translation.";
-        return null;
-    }
+	public Node visitMemberReference(MemberReferenceTree node, Void p) {
+		assert false : "Member references not yet handled in AST to CFG translation.";
+		return null;
+	}
 }

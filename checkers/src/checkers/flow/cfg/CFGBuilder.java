@@ -2,6 +2,8 @@ package checkers.flow.cfg;
 
 
 
+import checkers.flow.cfg.block.Block;
+
 import com.sun.source.tree.MethodTree;
 
 /**
@@ -16,7 +18,7 @@ public class CFGBuilder {
 	/**
 	 * Build the control flow graph of a method.
 	 */
-	public static BasicBlock build(MethodTree method) {
+	public static Block build(MethodTree method) {
 		return new CFGHelper().build(method.getBody());
 	}
 }

@@ -7,6 +7,11 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import checkers.flow.cfg.block.Block;
+import checkers.flow.cfg.block.ConditionalBlock;
+import checkers.flow.cfg.block.RegularBlock;
+import checkers.flow.cfg.block.SingleSuccessorBlock;
+import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.Node;
 
@@ -26,12 +31,12 @@ public class CFGDOTVisualizer {
 	 *            The entry node of the control flow graph to be represented.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static String visualize(BasicBlock entry) {
+	public static String visualize(Block entry) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
-		Set<BasicBlock> visited = new HashSet<BasicBlock>();
-		Queue<BasicBlock> worklist = new LinkedList<BasicBlock>();
-		BasicBlock cur = entry;
+		Set<Block> visited = new HashSet<Block>();
+		Queue<Block> worklist = new LinkedList<Block>();
+		Block cur = entry;
 		visited.add(entry);
 
 		// header
@@ -43,9 +48,9 @@ public class CFGDOTVisualizer {
 			if (cur == null)
 				break;
 
-			if (cur instanceof ConditionalBasicBlockImpl) {
-				ConditionalBasicBlockImpl ccur = ((ConditionalBasicBlockImpl) cur);
-				BasicBlock thenSuccessor = ccur.getThenSuccessor();
+			if (cur instanceof ConditionalBlock) {
+				ConditionalBlock ccur = ((ConditionalBlock) cur);
+				Block thenSuccessor = ccur.getThenSuccessor();
 				sb2.append("    " + ccur.getId() + " -> "
 						+ thenSuccessor.getId());
 				sb2.append(" [label=\"then\"];\n");
@@ -53,7 +58,7 @@ public class CFGDOTVisualizer {
 					visited.add(thenSuccessor);
 					worklist.add(thenSuccessor);
 				}
-				BasicBlock elseSuccessor = ccur.getElseSuccessor();
+				Block elseSuccessor = ccur.getElseSuccessor();
 				sb2.append("    " + ccur.getId() + " -> "
 						+ elseSuccessor.getId());
 				sb2.append(" [label=\"else\"];\n");
@@ -62,7 +67,8 @@ public class CFGDOTVisualizer {
 					worklist.add(elseSuccessor);
 				}
 			} else {
-				BasicBlock b = cur.getSuccessor();
+				assert cur instanceof SingleSuccessorBlock;
+				Block b = ((SingleSuccessorBlock) cur).getSuccessor();
 				if (b != null) {
 					sb2.append("    " + cur.getId() + " -> " + b.getId());
 					sb2.append(";\n");
@@ -73,9 +79,9 @@ public class CFGDOTVisualizer {
 				}
 			}
 
-			for (Entry<Class<? extends Throwable>, BasicBlock> e : cur.getExceptionalSuccessors()
-					.entrySet()) {
-				BasicBlock b = e.getValue();
+			for (Entry<Class<? extends Throwable>, Block> e : cur
+					.getExceptionalSuccessors().entrySet()) {
+				Block b = e.getValue();
 				Class<?> cause = e.getKey();
 				String exception = cause.getCanonicalName();
 				if (exception.startsWith("java.lang.")) {
@@ -94,11 +100,11 @@ public class CFGDOTVisualizer {
 		}
 
 		// definition of all nodes including their labels
-		for (BasicBlock v : visited) {
+		for (Block v : visited) {
 			sb1.append("    " + v.getId() + " [");
-			if (v instanceof ConditionalBasicBlockImpl) {
+			if (v instanceof ConditionalBlock) {
 				sb1.append("shape=polygon sides=8 ");
-			} else if (v instanceof SpecialBasicBlockImpl) {
+			} else if (v instanceof SpecialBlock) {
 				sb1.append("shape=oval ");
 			}
 			sb1.append("label=\"" + visualizeContent(v) + "\"];\n");
@@ -120,13 +126,18 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static String visualizeContent(BasicBlock bb) {
+	protected static String visualizeContent(Block bb) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
-		List<Node> contents = new LinkedList<>(bb.getContents());
-		if (bb instanceof ConditionalBasicBlockImpl) {
-			contents.add(((ConditionalBasicBlockImpl) bb).getCondition());
+		List<Node> contents = new LinkedList<>();
+		if (bb instanceof ConditionalBlock) {
+			contents.add(((ConditionalBlock) bb).getCondition());
+		} else if (bb instanceof SpecialBlock) {
+			
+		} else {
+			// TODO: improve code
+			contents.addAll(((RegularBlock) bb).getContents());
 		}
 		boolean notFirst = false;
 		for (Node t : contents) {
@@ -139,8 +150,8 @@ public class CFGDOTVisualizer {
 
 		// handle case where no contents are present
 		if (sb.length() == 0) {
-			if (bb instanceof SpecialBasicBlockImpl) {
-				SpecialBasicBlockImpl sbb = (SpecialBasicBlockImpl) bb;
+			if (bb instanceof SpecialBlock) {
+				SpecialBlock sbb = (SpecialBlock) bb;
 				switch (sbb.getType()) {
 				case ENTRY:
 					return "<entry>";
