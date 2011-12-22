@@ -612,8 +612,14 @@ public class CFGBuilder {
 				// visit field access (throws null-pointer exception)
 				FieldAccessNode target = new FieldAccessNode(variable, receiver);
 				// TODO: static field access does not throw exception
-				addToCurrentBlockWithException(target,
-						NullPointerException.class);
+				boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
+				// TODO: explicit this access does not throw exception
+				if (canThrow) {
+					addToCurrentBlockWithException(target,
+							NullPointerException.class);
+				} else {
+					extendWithNode(target);
+				}
 
 				// add assignment node
 				AssignmentNode assignmentNode = new AssignmentNode(tree,
