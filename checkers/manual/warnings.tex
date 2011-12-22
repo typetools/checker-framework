@@ -359,8 +359,12 @@ annotations on receivers in a forward-compatible way.
 
 When writing source code with annotations, it is more convenient to write a
 short form such as \code{@NonNull} instead of
-\code{@checkers.nullness.quals.NonNull}.
+\code{@checkers.nullness.quals.NonNull}.  Here are ways to achieve this goal.
 
+\label{jsr308_imports}
+
+\begin{itemize}
+\item
 The traditional way to do this is to write an import statement like
 ``\code{import checkers.nullness.quals.*;}''.  This works, but everyone who
 compiles the code (no matter what compiler they use, and even if the
@@ -369,8 +373,17 @@ the \code{checkers.jar} or \code{checkers-quals.jar} file) on their
 classpath.  The reason is that a Java compiler issues an error if an
 imported package is not on the classpath.  See Section~\ref{distributing}.
 
-\label{jsr308_imports}
+\item
+There is no mechanism for the compiler to read import statements written in
+comments, as it does for annotations in comments (see
+Section~\ref{annotations-in-comments}).
+% The annotations in comments feature is fragile and its implementation is
+% complex.  It can already pick up unintended comments, and it cannot be
+% turned off.  Using implicit import statements seems less risky and
+% equally effective.  If you want to implement import statements in
+% comments, we would consider accepting such a patch.
 
+\item
 An alternative is to set the shell environment variable
 \code{jsr308\_imports} when you compile the code.
 The Type Annotations compiler treats this as if the given packages were
@@ -386,26 +399,39 @@ Mac).  For example, to implicitly import the Nullness and Interning
 qualifiers, set \code{jsr308\_imports} to
 \code{checkers.nullness.quals.*:checkers.interning.quals.*}.
 
+Three ways to set an environment variable are:
+\begin{itemize}
+\item
+  Set the environment variable in your shell.  For example, in bash, you
+  could do \code{export jsr308\_imports='checkers.nullness.quals.*'}.
+  This takes effect for all subsequent commands in that shell.  To take
+  effect for all shells that you run, put the command in your
+  \verb|~/.bashrc| file.
+\item
+  Set the environment variable for a single command.  For example, in bash
+  prefix the \code{javac} command by
+  \code{jsr308\_imports='checkers.nullness.quals.*'}.
+\item
+  Set the environment variable for a single comamnd, via a \code{javac}
+  argument.  Use the \code{javac} command-line argument
+  \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
+\end{itemize}
+
 If you issue the javac command from the command line or in a Makefile, you
-may need to add quotes, to prevent your shell from expanding the \code{*}
-character.
-In bash, you could write \code{export
-  jsr308\_imports='checkers.nullness.quals.*'}, or prefix the \code{javac}
-command by \code{jsr308\_imports='checkers.nullness.quals.*'} .
-Alternately, you can set the environment variable via the javac
-command-line argument \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
+may need to add quotes (as shown above), to prevent your shell from
+expanding the \code{*} character.
 If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
 you do not need the extra quoting.
 
+\item
+If it is not possible to set the environment variable (for example, Maven
+makes this difficult), you can instead use the javac command-line argument:
+\code{-jsr308_imports ...} or \code{-Djsr308.imports=...}.  The same
+syntax, and warnings about quoting from the command line, apply as for the
+\code{jsr308\_imports} environment variable.
 
-There is no mechanism for the compiler to read import statements written in
-comments, as it does for annotations in comments (see
-Section~\ref{annotations-in-comments}).
-% The annotations in comments feature is fragile and its implementation is
-% complex.  It can already pick up unintended comments, and it cannot be
-% turned off.  Using implicit import statements seems less risky and
-% equally effective.  If you want to implement import statements in
-% comments, we would consider accepting such a patch.
+\end{itemize}
+
 
 
 \subsection{Migrating away from annotations in comments\label{uncommenting-annotations}}
