@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import checkers.flow.cfg.block.Block;
+import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
 import checkers.flow.cfg.block.RegularBlockImpl;
@@ -468,12 +469,12 @@ class CFGHelper implements TreeVisitor<Node, Void> {
 		}
 
 		clearAnyPredecessor();
-		if (bb instanceof RegularBlockImpl) {
+		if (bb.getType() == BlockType.REGULAR_BLOCK) {
 			currentBlock = (RegularBlockImpl) bb;
 		} else if (bb instanceof SingleSuccessorBlockImpl) {
 			setSingleAnyPredecessor((SingleSuccessorBlockImpl) bb);
 		} else {
-			assert bb instanceof ConditionalBlockImpl;
+			assert bb.getType() == BlockType.CONDITIONAL_BLOCK;
 			ConditionalBlockImpl cb = (ConditionalBlockImpl) bb;
 			setThenAsTruePredecessor(cb);
 			setElseAsFalsePredecessor(cb);

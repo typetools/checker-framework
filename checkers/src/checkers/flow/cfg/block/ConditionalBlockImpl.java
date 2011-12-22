@@ -25,6 +25,7 @@ public class ConditionalBlockImpl extends BlockImpl implements
 	 * and linked to other basic blocks later.
 	 */
 	public ConditionalBlockImpl() {
+		type = BlockType.CONDITIONAL_BLOCK;
 	}
 
 	/**
