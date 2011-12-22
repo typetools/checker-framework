@@ -10,6 +10,7 @@ class OverrideNNOE {
   static class Sub extends Super {
     @Override
     @NonNullOnEntry("f")
+    //:: error: (override.pre.method.annotation.invalid)
     void call() {
       f.hashCode();
     }

@@ -19,7 +19,7 @@ class OverrideANNA {
   static class Sub extends Super {
     @Override
     @AssertNonNullAfter("f")
-    //:: error: (override.method.annotation.part.invalid)
+    //:: error: (override.post.method.annotation.part.invalid)
     void setfg() {
       f = new Object();
     }
