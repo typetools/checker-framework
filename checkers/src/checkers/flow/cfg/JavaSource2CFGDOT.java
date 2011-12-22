@@ -146,7 +146,7 @@ public class JavaSource2CFGDOT {
 	 */
 	protected static void producePDF(String file) {
 		try {
-			String command = "dot -Tpdf " + file + ".txt -o \"" + file
+			String command = "dot -Tpdf \"" + file + ".txt\" -o \"" + file
 					+ ".pdf\"";
 			Process child = Runtime.getRuntime().exec(command);
 			child.waitFor();
