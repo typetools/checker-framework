@@ -18,6 +18,8 @@ public class ConditionalOrNode extends Node {
 	protected BinaryTree tree;
 	protected Node lhs;
 	protected Node rhs;
+	
+	// TODO: is this actually needed?
 	protected Boolean truthValue;
 
 	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs,
