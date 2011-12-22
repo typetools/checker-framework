@@ -13,36 +13,21 @@ import com.sun.source.tree.LiteralTree;
  * @author Stefan Heule
  * 
  */
-public class IntegerLiteralNode extends Node {
-
-	protected LiteralTree tree;
+public class IntegerLiteralNode extends ValueLiteralNode {
 
 	public IntegerLiteralNode(LiteralTree t) {
 		assert t.getKind().equals(Tree.Kind.INT_LITERAL);
 		tree = t;
 	}
 
-	public LiteralTree getLiteralTree() {
-		return tree;
-	}
-
-	public int getValue() {
-		return (Integer) tree.getValue();
-	}
-
 	@Override
-	public Tree getTree() {
-		return getLiteralTree();
+	public Integer getValue() {
+		return (Integer) tree.getValue();
 	}
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitIntegerLiteral(this, p);
-	}
-
-	@Override
-	public String toString() {
-		return Integer.toString(getValue());
 	}
 
 }
