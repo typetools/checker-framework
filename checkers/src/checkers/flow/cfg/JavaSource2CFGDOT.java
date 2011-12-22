@@ -10,6 +10,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.xml.ws.Holder;
 
+import checkers.flow.cfg.block.Block;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.util.TreeUtils;
@@ -121,7 +122,7 @@ public class JavaSource2CFGDOT {
 			System.exit(1);
 		}
 
-		BasicBlock b = CFGBuilder.build(m);
+		Block b = CFGBuilder.build(m);
 		String s = CFGDOTVisualizer.visualize(b);
 
 		try {
