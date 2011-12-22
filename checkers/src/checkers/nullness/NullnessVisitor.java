@@ -500,15 +500,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation>[] methodAnnos = new Class[] {
-                AssertNonNullAfter.class,
-                AssertNonNullIfTrue.class,
-                AssertNonNullIfFalse.class,
-                AssertNonNullIfNonNull.class,
-                // NonNullOnEntry.class is not needed, it's a precondition and can be changed
+        Class<? extends Annotation>[] postMethodAnnos = new Class[] {
+            AssertNonNullAfter.class,
+            AssertNonNullIfTrue.class,
+            AssertNonNullIfFalse.class,
+            AssertNonNullIfNonNull.class,
         };
 
-        for (Class<? extends Annotation> methodAnno : methodAnnos) {
+        for (Class<? extends Annotation> methodAnno : postMethodAnnos) {
             AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
 
             // nothing to do if the overridden method has no annotation
@@ -517,7 +516,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
 
             if (overriderAnno==null) {
-                checker.report(Result.failure("override.method.annotations.invalid",
+                checker.report(Result.failure("override.post.method.annotations.invalid",
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderAnno,
                         overriddenAnno),
@@ -530,8 +529,9 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 for (String f : overriddenValue) {
                     // The overrider may have additional fields, but all fields from the
                     // overridden method must be mentioned again.
+                    // -> You cannot weaken postconditions in an overriding method.
                     if (!overriderValue.contains(f)) {
-                        checker.report(Result.failure("override.method.annotation.part.invalid",
+                        checker.report(Result.failure("override.post.method.annotation.part.invalid",
                                 overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                                 overriderAnno,
                                 overriddenAnno,
@@ -545,6 +545,51 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 }
             }
         }
+
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation>[] preMethodAnnos = new Class[] {
+            NonNullOnEntry.class
+        };
+
+        for (Class<? extends Annotation> methodAnno : preMethodAnnos) {
+            AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
+
+            // nothing to do if the overrider method has no annotation
+            if (overriderAnno==null) continue;
+
+            AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
+
+            if (overriddenAnno==null) {
+                checker.report(Result.failure("override.pre.method.annotations.invalid",
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overriderAnno,
+                        overriddenAnno),
+                        overriderTree);
+                result = false;
+            } else {
+                List<String> overriddenValue = AnnotationUtils.elementValueStringArray(overriddenAnno, "value");
+                List<String> overriderValue = AnnotationUtils.elementValueStringArray(overriderAnno, "value");
+
+                for (String f : overriderValue) {
+                    // The overridden method may have additional fields, but all fields from the
+                    // overrider must be mentioned again.
+                    // -> You cannot strengthen preconditions in an overriding method.
+                    if (!overriddenValue.contains(f)) {
+                        checker.report(Result.failure("override.pre.method.annotation.part.invalid",
+                                overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                                overriderAnno,
+                                overriddenAnno,
+                                f),
+                                overriderTree);
+                        result = false;
+                        break;
+                    }
+                    // TODO: This purely syntactic comparison is not sufficient in general.
+                    // See test case tests/nullness/OverrideANNA2.
+                }
+            }
+        }
+
         return result;
     }
 
