@@ -221,7 +221,11 @@ public class CFGBuilder {
 		protected abstract static class PredecessorBlockHolder {
 			abstract public void setSuccessorAs(BlockImpl b);
 
-			abstract public List<String> componentList();
+			/**
+			 * List of the string representation of all components in this
+			 * predecessor list (used for toString).
+			 */
+			abstract protected List<String> componentList();
 
 			@Override
 			public String toString() {
@@ -287,7 +291,7 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public List<String> componentList() {
+				protected List<String> componentList() {
 					return Collections.singletonList(cb.toString() + "<then>");
 				}
 			};
@@ -309,7 +313,7 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public List<String> componentList() {
+				protected List<String> componentList() {
 					return Collections.singletonList(cb.toString() + "<else>");
 				}
 			};
@@ -376,7 +380,7 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public List<String> componentList() {
+				protected List<String> componentList() {
 					return Collections.singletonList(bb.toString());
 				}
 			};
@@ -400,7 +404,7 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public List<String> componentList() {
+				protected List<String> componentList() {
 					List<String> l = new LinkedList<>();
 					if (a != null) {
 						l.addAll(a.componentList());
