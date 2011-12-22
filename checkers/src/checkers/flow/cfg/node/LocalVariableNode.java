@@ -5,9 +5,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
- * A node for a local variable. For example:
+ * A node for a local variable:
+ * 
  * <pre>
- *   <em>a</em>
+ *   <em>identifier</em>
  * </pre>
  * 
  * @author Stefan Heule
