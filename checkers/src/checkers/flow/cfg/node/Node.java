@@ -24,7 +24,7 @@ public abstract class Node {
 	 * 
 	 * @return The corresponding {@link Tree} or <code>null</code>.
 	 */
-	abstract public Tree getTree();
+	abstract public/* @Nullable */Tree getTree();
 
 	/**
 	 * Accept method of the visitor pattern
