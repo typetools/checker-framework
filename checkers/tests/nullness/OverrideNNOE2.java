@@ -13,6 +13,7 @@ class OverrideNNOE {
 
     @Override
     @NonNullOnEntry({"f", "g"})
+    //:: error: (override.pre.method.annotation.part.invalid)
     void call() {
       g.hashCode();
     }

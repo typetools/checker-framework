@@ -16,7 +16,7 @@ class OverrideANNA {
 
   static class Sub extends Super {
     @Override
-    //:: error: (override.method.annotations.invalid)
+    //:: error: (override.post.method.annotation.invalid)
     void setf() { }
   }
 
