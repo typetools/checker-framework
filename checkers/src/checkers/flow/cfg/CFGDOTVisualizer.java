@@ -43,8 +43,8 @@ public class CFGDOTVisualizer {
 			if (cur == null)
 				break;
 
-			if (cur instanceof ConditionalBasicBlock) {
-				ConditionalBasicBlock ccur = ((ConditionalBasicBlock) cur);
+			if (cur instanceof ConditionalBasicBlockImpl) {
+				ConditionalBasicBlockImpl ccur = ((ConditionalBasicBlockImpl) cur);
 				BasicBlock thenSuccessor = ccur.getThenSuccessor();
 				sb2.append("    " + ccur.getId() + " -> "
 						+ thenSuccessor.getId());
@@ -96,7 +96,7 @@ public class CFGDOTVisualizer {
 		// definition of all nodes including their labels
 		for (BasicBlock v : visited) {
 			sb1.append("    " + v.getId() + " [");
-			if (v instanceof ConditionalBasicBlock) {
+			if (v instanceof ConditionalBasicBlockImpl) {
 				sb1.append("shape=polygon sides=8 ");
 			} else if (v instanceof SpecialBasicBlockImpl) {
 				sb1.append("shape=oval ");
@@ -125,8 +125,8 @@ public class CFGDOTVisualizer {
 
 		// loop over contents
 		List<Node> contents = new LinkedList<>(bb.getContents());
-		if (bb instanceof ConditionalBasicBlock) {
-			contents.add(((ConditionalBasicBlock) bb).getCondition());
+		if (bb instanceof ConditionalBasicBlockImpl) {
+			contents.add(((ConditionalBasicBlockImpl) bb).getCondition());
 		}
 		boolean notFirst = false;
 		for (Node t : contents) {
