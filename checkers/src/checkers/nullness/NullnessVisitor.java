@@ -516,7 +516,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
 
             if (overriderAnno==null) {
-                checker.report(Result.failure("override.post.method.annotations.invalid",
+                checker.report(Result.failure("override.post.method.annotation.invalid",
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderAnno,
                         overriddenAnno),
@@ -560,7 +560,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
 
             if (overriddenAnno==null) {
-                checker.report(Result.failure("override.pre.method.annotations.invalid",
+                checker.report(Result.failure("override.pre.method.annotation.invalid",
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderAnno,
                         overriddenAnno),
