@@ -14,9 +14,7 @@ import com.sun.source.tree.LiteralTree;
  * @author Stefan Heule
  * 
  */
-public class BooleanLiteralNode extends Node {
-	
-	protected LiteralTree tree;
+public class BooleanLiteralNode extends ValueLiteralNode {
 	
 	public BooleanLiteralNode(LiteralTree t) {
 		assert t.getKind().equals(Tree.Kind.BOOLEAN_LITERAL);
@@ -27,13 +25,9 @@ public class BooleanLiteralNode extends Node {
 		return tree;
 	}
 	
-	public boolean getValue() {
-		return (Boolean)tree.getValue();
-	}
-
 	@Override
-	public Tree getTree() {
-		return getLiteralTree();
+	public Boolean getValue() {
+		return (Boolean)tree.getValue();
 	}
 
 	@Override
@@ -42,9 +36,4 @@ public class BooleanLiteralNode extends Node {
 		return visitor.visitBooleanLiteral(this, p);
 	}
 	
-	@Override
-	public String toString() {
-		return Boolean.toString(getValue());
-	}
-
 }
