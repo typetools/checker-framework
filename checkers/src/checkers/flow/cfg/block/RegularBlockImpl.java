@@ -22,6 +22,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 	 */
 	public RegularBlockImpl() {
 		contents = new LinkedList<>();
+		type = BlockType.REGULAR_BLOCK;
 	}
 
 	/**

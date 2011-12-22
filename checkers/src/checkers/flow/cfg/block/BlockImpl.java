@@ -20,6 +20,9 @@ public abstract class BlockImpl implements Block {
 
 	/** The last ID that has already been used. */
 	protected static long lastId = 0;
+	
+	/** The type of this basic block. */
+	protected BlockType type;
 
 	/**
 	 * @return A currently unused identifier.
@@ -47,6 +50,11 @@ public abstract class BlockImpl implements Block {
 	@Override
 	public long getId() {
 		return id;
+	}
+	
+	@Override
+	public BlockType getType() {
+		return type;
 	}
 
 }

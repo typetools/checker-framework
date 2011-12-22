@@ -8,6 +8,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import checkers.flow.cfg.block.Block;
+import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
@@ -48,7 +49,7 @@ public class CFGDOTVisualizer {
 			if (cur == null)
 				break;
 
-			if (cur instanceof ConditionalBlock) {
+			if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
 				ConditionalBlock ccur = ((ConditionalBlock) cur);
 				Block thenSuccessor = ccur.getThenSuccessor();
 				sb2.append("    " + ccur.getId() + " -> "
@@ -102,9 +103,9 @@ public class CFGDOTVisualizer {
 		// definition of all nodes including their labels
 		for (Block v : visited) {
 			sb1.append("    " + v.getId() + " [");
-			if (v instanceof ConditionalBlock) {
+			if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
 				sb1.append("shape=polygon sides=8 ");
-			} else if (v instanceof SpecialBlock) {
+			} else if (v.getType() == BlockType.SPECIAL_BLOCK) {
 				sb1.append("shape=oval ");
 			}
 			sb1.append("label=\"" + visualizeContent(v) + "\"];\n");
@@ -131,13 +132,17 @@ public class CFGDOTVisualizer {
 
 		// loop over contents
 		List<Node> contents = new LinkedList<>();
-		if (bb instanceof ConditionalBlock) {
-			contents.add(((ConditionalBlock) bb).getCondition());
-		} else if (bb instanceof SpecialBlock) {
-			
-		} else {
-			// TODO: improve code
+		switch (bb.getType()) {
+		case REGULAR_BLOCK:
 			contents.addAll(((RegularBlock) bb).getContents());
+			break;
+		case CONDITIONAL_BLOCK:
+			contents.add(((ConditionalBlock) bb).getCondition());
+			break;
+		case SPECIAL_BLOCK:
+			break;
+		default:
+			assert false : "All types of basic blocks covered";
 		}
 		boolean notFirst = false;
 		for (Node t : contents) {
@@ -150,9 +155,9 @@ public class CFGDOTVisualizer {
 
 		// handle case where no contents are present
 		if (sb.length() == 0) {
-			if (bb instanceof SpecialBlock) {
+			if (bb.getType() == BlockType.SPECIAL_BLOCK) {
 				SpecialBlock sbb = (SpecialBlock) bb;
-				switch (sbb.getType()) {
+				switch (sbb.getSpecialType()) {
 				case ENTRY:
 					return "<entry>";
 				case EXIT:

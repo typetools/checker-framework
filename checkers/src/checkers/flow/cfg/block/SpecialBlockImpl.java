@@ -3,20 +3,21 @@ package checkers.flow.cfg.block;
 public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock {
 	
 	/** The type of this special basic block. */
-	protected SpecialBlockType type;
+	protected SpecialBlockType specialType;
 	
 	public SpecialBlockImpl(SpecialBlockType type) {
-		this.type = type;
+		this.specialType = type;
+		this.type = BlockType.SPECIAL_BLOCK;
 	}
 
 	@Override
-	public SpecialBlockType getType() {
-		return type;
+	public SpecialBlockType getSpecialType() {
+		return specialType;
 	}
 	
 	@Override
 	public String toString() {
-		return "SpecialBlock("+type+")";
+		return "SpecialBlock("+specialType+")";
 	}
 
 }
