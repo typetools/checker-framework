@@ -5,9 +5,9 @@ import checkers.flow.util.ASTUtils;
 import com.sun.source.tree.Tree;
 
 /**
- * A node for a field access. For example:
+ * A node for a field access:
  * <pre>
- *   <em>receiver</em> . <em>f</em>
+ *   <em>expression</em> . <em>field</em>
  * </pre>
  * 
  * @author Stefan Heule
