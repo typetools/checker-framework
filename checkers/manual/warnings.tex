@@ -386,14 +386,14 @@ Section~\ref{annotations-in-comments}).
 \item
 An alternative is to set the shell environment variable
 \code{jsr308\_imports} when you compile the code.
-The Type Annotations compiler treats this as if the given packages were
+The Type Annotations compiler treats this as if the given packages/classes were
 imported, but other compilers
 ignore the
 \code{jsr308\_imports} environment variable --- they do not need it, since
 they do not support annotations in comments.  Thus, your code can compile
 whether or not the Type Annotations compiler is being used.
 
-You can specify multiple packages separated by the classpath separator
+You can specify multiple packages/classes separated by the classpath separator
 (same as the file path separator:  \<;> for Windows, and \<:> for Unix and
 Mac).  For example, to implicitly import the Nullness and Interning
 qualifiers, set \code{jsr308\_imports} to
@@ -425,9 +425,12 @@ you do not need the extra quoting.
 
 \item
 If it is not possible to set the environment variable (for example, Maven
-makes this difficult), you can instead use the javac command-line argument:
-\code{-jsr308_imports ...} or \code{-Djsr308.imports=...}.  The same
-syntax, and warnings about quoting from the command line, apply as for the
+bug \ahref{http://jira.codehaus.org/browse/PLXCOMP-190}{PLXCOMP-190}
+makes it impossible to use the \code{-J-Djsr308\_imports} command-line
+argument), you can instead use a different javac command-line argument:
+\code{-jsr308_imports ...} or \code{-Djsr308.imports=...} (they have the
+same effect).  The same syntax for the packages/classes, and the same
+warnings about quoting from the command line, apply as for the
 \code{jsr308\_imports} environment variable.
 
 \end{itemize}
