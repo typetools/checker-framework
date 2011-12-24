@@ -382,7 +382,9 @@ in the Checker Framework release.)
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checkers/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
-7 installation (not the JRE installation).  (It may already be set for Ant to work.)
+7 installation (not the JRE installation).  This needs to be an Oracle JDK.
+(The \<JAVA\_HOME> environment
+variable might already be set, because it is needed for Ant to work.)
 
 %% This does not work, because "java" might be the version in the JDK or in
 %% the JRE.
@@ -391,6 +393,14 @@ Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
 % \begin{Verbatim}
 %   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 % \end{Verbatim}
+
+% # To build your own JDK:
+% mkdir -p /scratch/$USER/jdk7
+% cd /scratch/$USER/jdk7
+% wget http://docs.oracle.com/otn-pub/java/jdk/7/jdk-7-linux-x64.tar.gz
+% tar xzf jdk-7-linux-x64.tar.gz
+% export JAVA_HOME=/scratch/$USER/jdk7/jdk1.7.0
+% export PATH=${JAVA_HOME}/bin:${PATH}
 
 \item
 Compile the Type Annotations javac compiler and the javap tool:
@@ -596,6 +606,7 @@ studies in which each of the checkers found
 previously-unknown errors in real software.
 
 The paper ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+(\myurl{http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-icse2011.pdf})
 discusses further experience with the Checker Framework, increasing the
 number of lines of verified code to 3 million.
 

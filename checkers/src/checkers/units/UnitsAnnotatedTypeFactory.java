@@ -114,9 +114,20 @@ public class UnitsAnnotatedTypeFactory extends
             if (bestres!=null) {
                 type.addAnnotation(bestres);
             } else {
-                // Did not find a UnitsRelation, only propagate through scalars.
+                // Handle the binary operations that do not produce a UnitsRelation.
                 
                 switch(kind) {
+                case MINUS:
+                case PLUS:
+                    if (lht.getAnnotations().equals(rht.getAnnotations())) {
+                        // The sum or difference has the same units as both
+                        // operands.
+                        type.addAnnotations(lht.getAnnotations());
+                        break;
+                    } else {
+                        type.addAnnotation(mixedUnits);
+                        break;
+                    }
                 case DIVIDE:
                     if (lht.getAnnotations().equals(rht.getAnnotations())) {
                         // If the units of the division match,
@@ -135,6 +146,16 @@ public class UnitsAnnotatedTypeFactory extends
                     }
                     type.addAnnotation(mixedUnits);
                     break;
+
+		// Placeholders for unhandled binary operations
+		case REMAINDER:
+		    // The checker disallows the following:
+		    //     @Length int q = 10 * UnitTools.m;
+		    //     @Length int r = q % 3;
+		    // This seems wrong because it allows this:
+		    //     @Length int r = q - (q / 3) * 3;
+		    // TODO: We agreed to treat remainder like division.
+		    break;
                 }
             }
 

@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;
@@ -12,6 +13,7 @@ import checkers.nullness.quals.*;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
@@ -466,6 +468,130 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         }
     }
 
+    /**
+     * Ensure that also the method post-condition annotations (like @AssertNonNullAfter) are
+     * overridden consistently: at least the same fields have to be listed in the overriding method.
+     */
+    @Override
+    protected boolean checkOverride(MethodTree overriderTree,
+            AnnotatedDeclaredType enclosingType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            Void p) {
+
+        if (!super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p)) {
+            return false;
+        }
+        if (shouldSkipUses(overriddenType.getElement())) {
+            return true;
+        }
+
+        // Get the type of the overriding method.
+        AnnotatedExecutableType overrider = atypeFactory.getAnnotatedType(overriderTree);
+
+        boolean result = true;
+
+        if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
+            overridden = overridden.getErased();
+        }
+        String overriderMeth = overrider.getElement().toString();
+        String overriderTyp = enclosingType.getUnderlyingType().asElement().toString();
+        String overriddenMeth = overridden.getElement().toString();
+        String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
+
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation>[] postMethodAnnos = new Class[] {
+            AssertNonNullAfter.class,
+            AssertNonNullIfTrue.class,
+            AssertNonNullIfFalse.class,
+            AssertNonNullIfNonNull.class,
+        };
+
+        for (Class<? extends Annotation> methodAnno : postMethodAnnos) {
+            AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
+
+            // nothing to do if the overridden method has no annotation
+            if (overriddenAnno==null) continue;
+
+            AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
+
+            if (overriderAnno==null) {
+                checker.report(Result.failure("override.post.method.annotation.invalid",
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overriderAnno,
+                        overriddenAnno),
+                        overriderTree);
+                result = false;
+            } else {
+                List<String> overriddenValue = AnnotationUtils.elementValueStringArray(overriddenAnno, "value");
+                List<String> overriderValue = AnnotationUtils.elementValueStringArray(overriderAnno, "value");
+
+                for (String f : overriddenValue) {
+                    // The overrider may have additional fields, but all fields from the
+                    // overridden method must be mentioned again.
+                    // -> You cannot weaken postconditions in an overriding method.
+                    if (!overriderValue.contains(f)) {
+                        checker.report(Result.failure("override.post.method.annotation.part.invalid",
+                                overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                                overriderAnno,
+                                overriddenAnno,
+                                f),
+                                overriderTree);
+                        result = false;
+                        break;
+                    }
+                    // TODO: This purely syntactic comparison is not sufficient in general.
+                    // See test case tests/nullness/OverrideANNA2.
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation>[] preMethodAnnos = new Class[] {
+            NonNullOnEntry.class
+        };
+
+        for (Class<? extends Annotation> methodAnno : preMethodAnnos) {
+            AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
+
+            // nothing to do if the overrider method has no annotation
+            if (overriderAnno==null) continue;
+
+            AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
+
+            if (overriddenAnno==null) {
+                checker.report(Result.failure("override.pre.method.annotation.invalid",
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overriderAnno,
+                        overriddenAnno),
+                        overriderTree);
+                result = false;
+            } else {
+                List<String> overriddenValue = AnnotationUtils.elementValueStringArray(overriddenAnno, "value");
+                List<String> overriderValue = AnnotationUtils.elementValueStringArray(overriderAnno, "value");
+
+                for (String f : overriderValue) {
+                    // The overridden method may have additional fields, but all fields from the
+                    // overrider must be mentioned again.
+                    // -> You cannot strengthen preconditions in an overriding method.
+                    if (!overriddenValue.contains(f)) {
+                        checker.report(Result.failure("override.pre.method.annotation.part.invalid",
+                                overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                                overriderAnno,
+                                overriddenAnno,
+                                f),
+                                overriderTree);
+                        result = false;
+                        break;
+                    }
+                    // TODO: This purely syntactic comparison is not sufficient in general.
+                    // See test case tests/nullness/OverrideANNA2.
+                }
+            }
+        }
+
+        return result;
+    }
 
     /////////////// Utility methods //////////////////////////////
 
