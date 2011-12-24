@@ -27,11 +27,11 @@ public class ByteArrayInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int available() @ReadOnly {
+    public synchronized int available(@ReadOnly ByteArrayInputStream this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported() @ReadOnly {
+    public boolean markSupported(@ReadOnly ByteArrayInputStream this) {
         throw new RuntimeException("skeleton method");
     }
 
