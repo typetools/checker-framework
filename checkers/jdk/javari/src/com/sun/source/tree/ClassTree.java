@@ -5,10 +5,10 @@ import javax.lang.model.element.Name;
 import checkers.javari.quals.*;
 
 public interface ClassTree extends StatementTree {
-    @PolyRead ModifiersTree getModifiers() @PolyRead;
-    @PolyRead Name getSimpleName() @PolyRead;
-    @PolyRead List<? extends TypeParameterTree> getTypeParameters() @PolyRead;
-    @PolyRead Tree getExtendsClause() @PolyRead;
-    @PolyRead List<? extends Tree> getImplementsClause() @PolyRead;
-    @PolyRead List<? extends Tree> getMembers() @PolyRead;
+    @PolyRead ModifiersTree getModifiers(@PolyRead ClassTree this);
+    @PolyRead Name getSimpleName(@PolyRead ClassTree this);
+    @PolyRead List<? extends TypeParameterTree> getTypeParameters(@PolyRead ClassTree this);
+    @PolyRead Tree getExtendsClause(@PolyRead ClassTree this);
+    @PolyRead List<? extends Tree> getImplementsClause(@PolyRead ClassTree this);
+    @PolyRead List<? extends Tree> getMembers(@PolyRead ClassTree this);
 }

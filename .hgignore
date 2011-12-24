@@ -83,3 +83,6 @@ syntax: regexp
 # Not a glob because it starts with # which looks like a comment.
 (.*/)?\#[^/]*\#$
 (.*/)?\.\#.*
+
+syntax: regexp
+^checkers/tests/nullness-extra/multiple-errors/Out\.txt$

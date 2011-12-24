@@ -24,7 +24,7 @@ public class GenericClass {
     @Mutable GenericClass mutableRef = new @Mutable GenericClass();
     @ReadOnly GenericClass readOnlyRef = new @ReadOnly GenericClass();
 
-    public void mutableReassign() @Mutable {
+    public void mutableReassign(@Mutable GenericClass this) {
         // try to mutate
         field = 3;
         field += 2;
@@ -50,7 +50,7 @@ public class GenericClass {
 
     }
 
-    public void roReassign() @ReadOnly {
+    public void roReassign(@ReadOnly GenericClass this) {
         // try to mutate
         field = 3;  // should emit error
         field += 2; // should emit error
@@ -77,7 +77,7 @@ public class GenericClass {
 
     // Method Calling
 
-    public void roMethodInvoke() @ReadOnly {
+    public void roMethodInvoke(@ReadOnly GenericClass this) {
         mutableReassign();  // should emit error
         this.mutableReassign(); // should emit error
 
@@ -85,7 +85,7 @@ public class GenericClass {
         roReassign();
     }
 
-    public void mutableRecieverInvoke() @Mutable {
+    public void mutableRecieverInvoke(@Mutable GenericClass this) {
         mutableReassign();
         this.mutableReassign();
 
@@ -93,7 +93,7 @@ public class GenericClass {
         roReassign();
     }
 
-    public void mutateOther() @ReadOnly {
+    public void mutateOther(@ReadOnly GenericClass this) {
         @Mutable GenericClass instance = new @Mutable GenericClass();
         instance.mutableRecieverInvoke();
         instance.mutableReassign();
@@ -103,7 +103,7 @@ public class GenericClass {
         instance.readOnlyRef.assignable = 2;
     }
 
-    public void mutateOtherRO() @Mutable {
+    public void mutateOtherRO(@Mutable GenericClass this) {
         @ReadOnly GenericClass instance = new @ReadOnly GenericClass();
         instance.mutableRecieverInvoke(); //should emit error
         instance.mutableReassign(); //should emit error
@@ -114,7 +114,7 @@ public class GenericClass {
         instance.readOnlyRef.field++;   // should emit error
     }
 
-    public void testConstructor() @ReadOnly {
+    public void testConstructor(@ReadOnly GenericClass this) {
         @Mutable GenericClass c1 = new @Mutable GenericClass();
         @Immutable GenericClass c2 = new @Immutable GenericClass();
 

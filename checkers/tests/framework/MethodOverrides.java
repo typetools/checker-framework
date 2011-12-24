@@ -9,8 +9,8 @@ public abstract class MethodOverrides {
     public abstract void param(@Odd String s);
     public abstract void paramSup(@Odd String s);
 
-    public abstract void receiver() @Odd;
-    public abstract void receiverSub() @Odd;
+    public abstract void receiver(@Odd MethodOverrides this);
+    public abstract void receiverSub(@Odd MethodOverrides this);
 
     public static class SubclassA extends MethodOverrides {
 
@@ -29,7 +29,7 @@ public abstract class MethodOverrides {
         public void param(@Odd String s) {}
         public void paramSup(String s) {}
 
-        public void receiver() @Odd {}
+        public void receiver(@Odd SubclassA this) {}
         public void receiverSub() {}
     }
 
