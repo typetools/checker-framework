@@ -60,7 +60,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of two regular expression Strings literals
+         * Case 2: concatenation of two regular expression String literals
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
