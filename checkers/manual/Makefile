@@ -63,7 +63,7 @@ manual.html: manual.dvi
 export BIBINPUTS = $BIBINPUTS:.:bib
 
 bib:
-	hg clone https://plume-bib.googlecode.com/hg/ bib
+	hg clone https://code.google.com/p/plume-bib/ bib
 .PHONY: bib-update
 bib-update: bib
 # To skip running the hg command, invoke make like this:  make NOHG=t ...
