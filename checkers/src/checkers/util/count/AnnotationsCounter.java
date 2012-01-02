@@ -24,7 +24,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  * the compiler on the source file(s) for which you wish to count annotations
  * locations. You may also wish to use the {@code -proc:only} javac option to
  * stop compilation after annotation processing.  (But, in general
- * {@code -proc:only} causes type annotation processors not te be run.)
+ * {@code -proc:only} causes type annotation processors not to be run.)
  *
  */
 @SupportedAnnotationTypes("*")
