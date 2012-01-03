@@ -11,15 +11,11 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 
 /**
- * A utility class for listing the potential locations of annotations.
- *
- * <p>
- *
- * The class is actually an annotation processor; in order to use it, invoke
- * the compiler on the source file(s) for which you wish to count annotations
- * locations, and supply the argument:
- * <pre>-processor checkers.util.count.Locations</pre>
- *
+ * An annotation processor for listing the potential locations of annotations.
+ * To invoke it, use
+ * <pre>
+ * javac -proc:only -processor checkers.util.count.Locations <em>MyFile.java ...</em>
+ * </pre>
  *
  * <p>
  *
@@ -37,12 +33,14 @@ import javax.lang.model.SourceVersion;
  * two options may be used to adjust the output:
  *
  * <ul>
- *  <li>{@code -Anolocations}: suppresses location output</li>
- *  <li>{@code -Aannotations}: enables annotation output</li>
+ *  <li>{@code -Aannotations}: prints, on the same line as each location,
+ *  information about the annotation that is written there, if any</li> 
+ *  <li>{@code -Anolocations}: suppresses location output;
+ *  only makes sense in conjunction with {@code -Aannotations}</li>
  * </ul>
  */
 @SupportedOptions({"nolocations", "annotations"})
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class Locations extends SourceChecker {
 
     @Override

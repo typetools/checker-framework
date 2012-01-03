@@ -16,19 +16,14 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 /**
- * A utility class for counting the occurrences of annotations
- *
- * <p>
- *
- * The class is actually an annotation processor; in order to use it, invoke
- * the compiler on the source file(s) for which you wish to count annotations
- * locations. You may also wish to use the {@code -proc:only} javac option to
- * stop compilation after annotation processing.  (But, in general
- * {@code -proc:only} causes type annotation processors not to be run.)
- *
+ * An annotation processor for counting the occurrences of annotations.
+ * To invoke it, use
+ * <pre>
+ * javac -proc:only -processor checkers.util.count.AnnotationsCounter <em>MyFile.java ...</em>
+ * </pre>
  */
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationsCounter extends AbstractProcessor {
     final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
 
