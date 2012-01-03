@@ -73,7 +73,7 @@ import checkers.types.AnnotatedTypeFactory;
  * The code here is one of the most ugliest I have ever written.  I should revise
  * it in the future.  - Mahmood
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions( { "checker" } )
 public class FactoryTestChecker extends SourceChecker {
     SourceChecker checker;
