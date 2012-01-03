@@ -85,7 +85,7 @@ public class JavaSource2CFGDOT {
 		System.err.println("ERROR: " + string);
 	}
 
-	/** Print usage information */
+	/** Print usage information. */
 	protected static void printUsage() {
 		System.out
 				.println("Generate the control flow graph of a Java method, represented as a DOT graph.");
@@ -158,7 +158,7 @@ public class JavaSource2CFGDOT {
 
 	/**
 	 * Get the AST of a specific method in a specific class in a specific file
-	 * (or null if no such method exists.
+	 * (or null if no such method exists).
 	 */
 	public static/* @Nullable */MethodTree getMethodTree(String file,
 			final String method, String clas) {
