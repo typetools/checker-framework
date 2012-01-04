@@ -105,7 +105,7 @@ public class JavaSource2CFGDOT {
 	/** Just like method above but without analysis. */
 	public static void generateDOTofCFG(String inputFile, String outputFile,
 			String method, String clas, boolean pdf) {
-
+		generateDOTofCFG(inputFile, outputFile, method, clas, pdf, null);
 	}
 
 	/**
@@ -136,9 +136,11 @@ public class JavaSource2CFGDOT {
 		}
 
 		ControlFlowGraph cfg = CFGBuilder.build(m);
-		analysis.performAnalysis(cfg);
+		if (analysis != null) {
+			analysis.performAnalysis(cfg);
+		}
 		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(),
-				analysis.getStores());
+				analysis == null ? null : analysis.getStores());
 
 		try {
 			FileWriter fstream = new FileWriter(outputFile + ".txt");
