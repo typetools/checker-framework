@@ -1,12 +1,13 @@
 package checkers.flow.cfg;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
@@ -95,8 +96,8 @@ public class CFGBuilder {
 	/**
 	 * Build the control flow graph of a method.
 	 */
-	public static Block build(MethodTree method) {
-		return new CFGHelper().build(method.getBody());
+	public static ControlFlowGraph build(MethodTree method) {
+		return new CFGHelper().build(method);
 	}
 
 	/**
@@ -170,6 +171,10 @@ public class CFGBuilder {
 		 */
 		protected SpecialBlock exceptionalExitBlock;
 
+		/** Map from AST {@link Tree}s to {@link Node}s. */
+		// TODO: fill this map with contents.
+		protected Map<Tree, Node> treeLookupMap;
+
 		/* --------------------------------------------------------- */
 		/* Translation (AST to CFG) */
 		/* --------------------------------------------------------- */
@@ -180,12 +185,15 @@ public class CFGBuilder {
 		 * 
 		 * @param t
 		 *            Method body.
-		 * @return The entry node of the resulting control flow graph.
+		 * @return The resulting control flow graph.
 		 */
-		public Block build(BlockTree t) {
+		public ControlFlowGraph build(MethodTree t) {
 
 			// start in regular mode
 			conditionalMode = false;
+			
+			// start with empty map
+			treeLookupMap = new HashMap<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
@@ -196,13 +204,14 @@ public class CFGBuilder {
 			exceptionalExitBlock = new SpecialBlockImpl(
 					SpecialBlockType.EXCEPTIONAL_EXIT);
 
-			// traverse AST
-			t.accept(this, null);
+			// traverse AST of the method body
+			t.getBody().accept(this, null);
 
 			// finish CFG
 			SpecialBlockImpl exit = new SpecialBlockImpl(SpecialBlockType.EXIT);
 			extendWithBasicBlock(exit);
-			return startBlock;
+			
+			return new ControlFlowGraph(startBlock, t, treeLookupMap);
 		}
 
 		/* --------------------------------------------------------- */
