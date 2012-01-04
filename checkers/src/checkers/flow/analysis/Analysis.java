@@ -1,9 +1,10 @@
 package checkers.flow.analysis;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
+import java.util.Queue;
 
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
@@ -11,42 +12,43 @@ import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.constantpropagation.ConstantPropagationStore;
 
-public class Analysis<A extends AbstractValue, S extends Store<A>> {
+public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> {
 
 	/** The transfer function for regular nodes. */
-	protected TransferFunction<A, S> regularTransfer;
+	protected T regularTransfer;
 
 	/**
 	 * The transfer function for conditional nodes to compute the result along
 	 * the 'true' edge in the control flow graph.
 	 */
-	protected TransferFunction<A, S> condTrueTransfer;
+	protected T condTrueTransfer;
 
 	/**
 	 * The transfer function for conditional nodes to compute the result along
 	 * the 'false' edge in the control flow graph.
 	 */
-	protected TransferFunction<A, S> condFalseTransfer;
+	protected T condFalseTransfer;
 
 	/** The control flow graph to perform the analysis on. */
 	protected ControlFlowGraph cfg;
 
 	/**
-	 * The stores before every basic blocks (assumed to be 'top' if not
-	 * present).
+	 * The stores before every basic blocks (assumed to be 'no information' if
+	 * not present).
 	 */
 	protected Map<Block, S> stores;
 
 	/** The worklist used for the fixpoint iteration. */
-	protected Stack<Block> worklist;
+	protected Queue<Block> worklist;
 
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
 	 * flow graph, given a single transfer function (information along
 	 * 'true'/'false' edges of conditionals is the same).
 	 */
-	public Analysis(TransferFunction<A, S> transfer) {
+	public Analysis(T transfer) {
 		this.regularTransfer = transfer;
 		this.condTrueTransfer = transfer;
 		this.condFalseTransfer = transfer;
@@ -56,9 +58,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 	 * Construct an object that can perform a dataflow analysis over a control
 	 * flow graph, given a set of transfer functions.
 	 */
-	public Analysis(TransferFunction<A, S> regularTransfer,
-			TransferFunction<A, S> condTrueTransfer,
-			TransferFunction<A, S> condFalseTransfer) {
+	public Analysis(T regularTransfer, T condTrueTransfer, T condFalseTransfer) {
 		this.regularTransfer = regularTransfer;
 		this.condTrueTransfer = condTrueTransfer;
 		this.condFalseTransfer = condFalseTransfer;
@@ -75,7 +75,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 		init(cfg);
 
 		while (!worklist.isEmpty()) {
-			Block b = worklist.pop();
+			Block b = worklist.poll();
 
 			// this basic block does not have any side-effects for the
 			// exceptional successors
@@ -134,9 +134,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 				// perform any analysis.
 				SpecialBlock sb = (SpecialBlock) b;
 				Block succ = sb.getSuccessor();
-				if (succ != null) {
-					addStoreBefore(succ, getStoreBefore(b));
-				}
+				addStoreBefore(succ, getStoreBefore(b));
 				break;
 			}
 
@@ -151,8 +149,8 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 	protected void init(ControlFlowGraph cfg) {
 		this.cfg = cfg;
 		stores = new HashMap<>();
-		worklist = new Stack<>();
-		addToWorklist(cfg.getEntryBlock());
+		worklist = new ArrayDeque<>();
+		worklist.addAll(cfg.getAllBlocks());
 	}
 
 	/**
@@ -170,12 +168,14 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 	 * Add a store before the basic block <code>b</code> by merging with the
 	 * existing store for that location.
 	 */
-	protected boolean addStoreBefore(Block b, S s) {
+	protected void addStoreBefore(Block b, S s) {
 		S storeBefore = getStoreBefore(b);
 		@SuppressWarnings("unchecked")
 		S newStoreBefore = (S) storeBefore.leastUpperBound(s);
 		setStoreBefore(b, newStoreBefore);
-		return !storeBefore.equals(newStoreBefore);
+		if (!storeBefore.equals(newStoreBefore)) {
+			addToWorklist(b);
+		}
 	}
 
 	/** Change the store before basic block <code>b</code> to <code>s</code>. */
@@ -200,7 +200,8 @@ public class Analysis<A extends AbstractValue, S extends Store<A>> {
 			return stores.get(b);
 		}
 		// return new S();
-		return (S) new DefaultStore<>(); // TODO: how do we instantiate S?
+		return (S) new ConstantPropagationStore(); // TODO: how do we
+													// instantiate S?
 	}
 
 	public Map<Block, S> getStores() {
