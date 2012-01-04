@@ -12,9 +12,12 @@ import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.constantpropagation.Constant;
+import checkers.flow.constantpropagation.Constant.Type;
 import checkers.flow.constantpropagation.ConstantPropagationStore;
 
-public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> {
+public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>>
+		implements AnalysisState<A> {
 
 	/** The transfer function for regular nodes. */
 	protected T regularTransfer;
@@ -43,6 +46,9 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 	/** The worklist used for the fixpoint iteration. */
 	protected Queue<Block> worklist;
 
+	/** Abstract values of nodes. */
+	protected Map<Node, A> nodeInformation;
+
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
 	 * flow graph, given a single transfer function (information along
@@ -52,6 +58,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		this.regularTransfer = transfer;
 		this.condTrueTransfer = transfer;
 		this.condFalseTransfer = transfer;
+		transfer.setAnalysisState(this);
 	}
 
 	/**
@@ -60,8 +67,39 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 	 */
 	public Analysis(T regularTransfer, T condTrueTransfer, T condFalseTransfer) {
 		this.regularTransfer = regularTransfer;
+		regularTransfer.setAnalysisState(this);
 		this.condTrueTransfer = condTrueTransfer;
+		condTrueTransfer.setAnalysisState(this);
 		this.condFalseTransfer = condFalseTransfer;
+		condFalseTransfer.setAnalysisState(this);
+	}
+
+	@Override
+	public A getValue(Node n) {
+		if (!nodeInformation.containsKey(n)) {
+			// TODO how do we return the top value? (this is just a hack for the
+			// moment)
+			return (A) new Constant(Type.TOP);
+		}
+		return nodeInformation.get(n);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void addValue(Node n, A val) {
+		A value;
+		if (nodeInformation.containsKey(n)) {
+			value = (A) nodeInformation.get(n).leastUpperBound(val);
+		} else {
+			value = val;
+		}
+		nodeInformation.put(n, value);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void setValue(Node n, A val) {
+		nodeInformation.put(n, val);
 	}
 
 	/**
@@ -152,6 +190,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		this.cfg = cfg;
 		stores = new HashMap<>();
 		worklist = new ArrayDeque<>();
+		nodeInformation = new HashMap<>();
 		worklist.addAll(cfg.getAllBlocks());
 	}
 
@@ -196,9 +235,9 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		if (stores.containsKey(b)) {
 			return stores.get(b);
 		}
-		// return new S();
-		return (S) new ConstantPropagationStore(); // TODO: how do we
-													// instantiate S?
+		// TODO: how do we instantiate S?
+		return (S) new ConstantPropagationStore(); // this is just a temporary
+													// hack
 	}
 
 	public Map<Block, S> getStores() {
