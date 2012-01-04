@@ -49,8 +49,8 @@ public class CFGDOTVisualizer {
 			Block entry, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
-		Set<Block> visited = new HashSet<Block>();
-		Queue<Block> worklist = new LinkedList<Block>();
+		Set<Block> visited = new HashSet<>();
+		Queue<Block> worklist = new LinkedList<>();
 		Block cur = entry;
 		visited.add(entry);
 
@@ -190,7 +190,7 @@ public class CFGDOTVisualizer {
 			Object store = Analysis.readFromStore(stores, bb);
 			StringBuilder sb2 = new StringBuilder();
 			sb2.append(store.toString());
-			sb2.append("\n---------\n");
+			sb2.append("\\n---------\\n");
 			sb2.append(sb);
 			sb = sb2;
 		}
