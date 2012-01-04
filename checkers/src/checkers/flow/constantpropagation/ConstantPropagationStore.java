@@ -5,32 +5,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import checkers.flow.analysis.Store;
-import checkers.flow.cfg.node.Node;
 
 public class ConstantPropagationStore implements Store<Constant> {
 
 	/** Information about variables gathered so far. */
 	Map<String, Constant> contents;
 	
-	/** Information about nodes. */
-	Map<Node, Constant> nodeContents;
-	
 	public ConstantPropagationStore() {
 		contents = new HashMap<>();
-		nodeContents = new HashMap<>();
 	}
 
 	protected ConstantPropagationStore(Map<String, Constant> contents) {
 		this.contents = contents;
-		nodeContents = new HashMap<>();
-	}
-	
-	public void setNodeInformation(Node n, Constant val) {
-		nodeContents.put(n, val);
-	}
-	
-	public Constant getNodeInformation(Node n) {
-		return nodeContents.get(n);
 	}
 	
 	public void addInformation(String var, Constant val) {
