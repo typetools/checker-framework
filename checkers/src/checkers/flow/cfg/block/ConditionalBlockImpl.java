@@ -33,6 +33,7 @@ public class ConditionalBlockImpl extends BlockImpl implements
 	 */
 	public void setCondition(Node c) {
 		condition = c;
+		c.setBlock(this);
 	}
 
 	/**
