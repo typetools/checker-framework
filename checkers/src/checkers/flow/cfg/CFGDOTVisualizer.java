@@ -174,11 +174,14 @@ public class CFGDOTVisualizer {
 				SpecialBlock sbb = (SpecialBlock) bb;
 				switch (sbb.getSpecialType()) {
 				case ENTRY:
-					return "<entry>";
+					sb.append("<entry>");
+					break;
 				case EXIT:
-					return "<exit>";
+					sb.append("<exit>");
+					break;
 				case EXCEPTIONAL_EXIT:
-					return "<exceptional-exit>";
+					sb.append("<exceptional-exit>");
+					break;
 				}
 			} else {
 				return "?? empty ??";
@@ -190,7 +193,7 @@ public class CFGDOTVisualizer {
 			Object store = Analysis.readFromStore(stores, bb);
 			StringBuilder sb2 = new StringBuilder();
 			sb2.append(store.toString());
-			sb2.append("\\n---------\\n");
+			sb2.append("\\n~~~~~~~~~\\n");
 			sb2.append(sb);
 			sb = sb2;
 		}
