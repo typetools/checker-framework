@@ -174,15 +174,10 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		S storeBefore = getStoreBefore(b);
 		@SuppressWarnings("unchecked")
 		S newStoreBefore = (S) storeBefore.leastUpperBound(s);
-		setStoreBefore(b, newStoreBefore);
+		stores.put(b, newStoreBefore);
 		if (!storeBefore.equals(newStoreBefore)) {
 			addToWorklist(b);
 		}
-	}
-
-	/** Change the store before basic block <code>b</code> to <code>s</code>. */
-	protected void setStoreBefore(Block b, S s) {
-		stores.put(b, s);
 	}
 
 	/**
