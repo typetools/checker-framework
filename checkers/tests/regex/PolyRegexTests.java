@@ -1,9 +1,10 @@
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
+import java.util.regex.Pattern;
 
 public class PolyRegexTests {
 
-	public static @PolyRegex String method (@PolyRegex String s) {
+	public static @PolyRegex String method(@PolyRegex String s) {
 		return s;
 	}
 	
@@ -14,5 +15,14 @@ public class PolyRegexTests {
 	public void testNonRegex(String str) {
 		//:: error: (assignment.type.incompatible)
 		@Regex String s = method(str);	// error
+	}
+	
+	public void testInternRegex(@Regex String str) {
+	  @Regex String s = str.intern();
+	}
+	
+	public void testInternNonRegex(String str) {
+	  //:: error: (assignment.type.incompatible)
+	  @Regex String s = str.intern(); // error
 	}
 }
