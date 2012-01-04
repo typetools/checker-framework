@@ -134,7 +134,9 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 				// perform any analysis.
 				SpecialBlock sb = (SpecialBlock) b;
 				Block succ = sb.getSuccessor();
-				addStoreBefore(succ, getStoreBefore(b));
+				if (succ != null) {
+					addStoreBefore(succ, getStoreBefore(b));
+				}
 				break;
 			}
 
