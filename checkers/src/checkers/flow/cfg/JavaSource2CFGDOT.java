@@ -13,6 +13,7 @@ import javax.xml.ws.Holder;
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
+import checkers.flow.analysis.TransferFunction;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.util.TreeUtils;
@@ -122,9 +123,9 @@ public class JavaSource2CFGDOT {
 	 *            Analysis to perform befor the visualization (or
 	 *            <code>null</code> if no analysis is to be performed).
 	 */
-	public static <A extends AbstractValue, S extends Store<A>> void generateDOTofCFG(
+	public static <A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> void generateDOTofCFG(
 			String inputFile, String outputFile, String method, String clas,
-			boolean pdf, /* @Nullable */Analysis<A, S> analysis) {
+			boolean pdf, /* @Nullable */Analysis<A, S, T> analysis) {
 		String fileName = (new File(inputFile)).getName();
 		System.out.println("Working on " + fileName + "...");
 		MethodTree m = getMethodTree(inputFile, method, clas);
@@ -136,7 +137,8 @@ public class JavaSource2CFGDOT {
 
 		ControlFlowGraph cfg = CFGBuilder.build(m);
 		analysis.performAnalysis(cfg);
-		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(), analysis.getStores());
+		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(),
+				analysis.getStores());
 
 		try {
 			FileWriter fstream = new FileWriter(outputFile + ".txt");
