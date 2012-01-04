@@ -3,10 +3,14 @@ package checkers.flow.cfg;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.Analysis;
+import checkers.flow.analysis.Store;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
@@ -24,15 +28,25 @@ import checkers.flow.cfg.node.Node;
  */
 public class CFGDOTVisualizer {
 
+	public static String visualize(Block entry) {
+		return visualize(entry, null);
+	}
+
 	/**
 	 * Output a graph description in the DOT language, representing the control
 	 * flow graph starting at <code>entry</code>.
 	 * 
 	 * @param entry
 	 *            The entry node of the control flow graph to be represented.
+	 * @param stores
+	 *            A map from all basic blocks (reachable from <code>entry</code>
+	 *            ) to the {@link Store} corresponding to the begining of that
+	 *            block. Can also be <code>null</code> to indicate that this
+	 *            information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static String visualize(Block entry) {
+	public static <A extends AbstractValue, S extends Store<A>> String visualize(
+			Block entry, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<Block>();
@@ -108,7 +122,7 @@ public class CFGDOTVisualizer {
 			} else if (v.getType() == BlockType.SPECIAL_BLOCK) {
 				sb1.append("shape=oval ");
 			}
-			sb1.append("label=\"" + visualizeContent(v) + "\"];\n");
+			sb1.append("label=\"" + visualizeContent(v, stores) + "\"];\n");
 		}
 
 		sb1.append("\n");
@@ -127,7 +141,8 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static String visualizeContent(Block bb) {
+	protected static <A extends AbstractValue, S extends Store<A>> String visualizeContent(
+			Block bb, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -170,6 +185,16 @@ public class CFGDOTVisualizer {
 			}
 		}
 
+		// visualize store if necessary
+		if (stores != null) {
+			Object store = Analysis.readFromStore(stores, bb);
+			StringBuilder sb2 = new StringBuilder();
+			sb2.append(store.toString());
+			sb2.append("\n---------\n");
+			sb2.append(sb);
+			sb = sb2;
+		}
+		
 		return sb.toString();
 	}
 
