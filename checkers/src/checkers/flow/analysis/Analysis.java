@@ -40,11 +40,6 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	 */
 	protected Map<Block, S> beforeStores;
 
-	/**
-	 * The stores after every basic blocks (assumed to be 'top' if not present).
-	 */
-	protected Map<Block, S> afterStores;
-
 	/** The worklist used for the fixpoint iteration. */
 	protected Stack<Block> worklist;
 
@@ -60,7 +55,6 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 		this.condFalseTransfer = condFalseTransfer;
 		this.cfg = cfg;
 		beforeStores = new HashMap<>();
-		afterStores = new HashMap<>();
 		worklist = new Stack<>();
 	}
 
@@ -152,25 +146,8 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	}
 
 	/**
-	 * Add a store after the basic block <code>b</code>.
-	 * 
-	 * @return true iff the store changed.
-	 */
-	protected void addStoreAfter(Block b, S s) {
-		S storeAfter = getStoreAfter(b);
-		S newStoreAfter = lattice.leastUpperBound(storeAfter, s);
-		setStoreBefore(b, newStoreAfter);
-
-		// add the basic block to the worklist if necessary
-		if (!storeAfter.equals(newStoreAfter)) {
-			addToWorklist(b);
-		}
-	}
-
-	/**
-	 * Add a store before the basic block <code>b</code>.
-	 * 
-	 * @return true iff the store changed.
+	 * Add a store before the basic block <code>b</code> by merging with the
+	 * existing store for that location.
 	 */
 	protected boolean addStoreBefore(Block b, S s) {
 		S storeBefore = getStoreBefore(b);
@@ -185,7 +162,8 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	}
 
 	/**
-	 * @return The store before the basic block <code>b</code>.
+	 * @return The store corresponding to the location right before the basic
+	 *         block <code>b</code>.
 	 */
 	protected S getStoreBefore(Block b) {
 		if (beforeStores.containsKey(b)) {
@@ -195,14 +173,4 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 		return null; // TODO: how do we instantiate S?
 	}
 
-	/**
-	 * @return The store after the basic block <code>b</code>.
-	 */
-	protected S getStoreAfter(Block b) {
-		if (afterStores.containsKey(b)) {
-			return afterStores.get(b);
-		}
-		// return new S();
-		return null; // TODO: how do we instantiate S?
-	}
 }
