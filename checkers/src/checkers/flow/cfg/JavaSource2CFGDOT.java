@@ -122,7 +122,7 @@ public class JavaSource2CFGDOT {
 			System.exit(1);
 		}
 
-		Block b = CFGBuilder.build(m);
+		Block b = CFGBuilder.build(m).getEntryBlock();
 		String s = CFGDOTVisualizer.visualize(b);
 
 		try {
