@@ -5,13 +5,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
+import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
 
-public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lattice<A, S>> {
+public class Analysis<A extends AbstractValue, S extends Store<A>> {
 
 	/** The transfer function for regular nodes. */
 	protected TransferFunction<A, S> regularTransfer;
@@ -29,41 +30,49 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	protected TransferFunction<A, S> condFalseTransfer;
 
 	/** The control flow graph to perform the analysis on. */
-	protected Block cfg;
-
-	/** The lattice of the abstract values. */
-	protected L lattice;
+	protected ControlFlowGraph cfg;
 
 	/**
 	 * The stores before every basic blocks (assumed to be 'top' if not
 	 * present).
 	 */
-	protected Map<Block, S> beforeStores;
+	protected Map<Block, S> stores;
 
 	/** The worklist used for the fixpoint iteration. */
 	protected Stack<Block> worklist;
 
 	/**
-	 * Construct an object that can perform a dataflow analysis over the control
-	 * flow graph <code>cfg</code>, given a set of transfer functions.
+	 * Construct an object that can perform a dataflow analysis over a control
+	 * flow graph, given a single transfer function (information along
+	 * 'true'/'false' edges of conditionals is the same).
+	 */
+	public Analysis(TransferFunction<A, S> transfer) {
+		this.regularTransfer = transfer;
+		this.condTrueTransfer = transfer;
+		this.condFalseTransfer = transfer;
+	}
+
+	/**
+	 * Construct an object that can perform a dataflow analysis over a control
+	 * flow graph, given a set of transfer functions.
 	 */
 	public Analysis(TransferFunction<A, S> regularTransfer,
 			TransferFunction<A, S> condTrueTransfer,
-			TransferFunction<A, S> condFalseTransfer, Block cfg) {
+			TransferFunction<A, S> condFalseTransfer) {
 		this.regularTransfer = regularTransfer;
 		this.condTrueTransfer = condTrueTransfer;
 		this.condFalseTransfer = condFalseTransfer;
-		this.cfg = cfg;
-		beforeStores = new HashMap<>();
-		worklist = new Stack<>();
 	}
 
 	/**
 	 * Perform the actual analysis. Should only be called once after the object
 	 * has been created.
+	 * 
+	 * @param cfg
 	 */
-	public void performAnalysis() {
-		addToWorklist(cfg);
+	@SuppressWarnings("unchecked")
+	public void performAnalysis(ControlFlowGraph cfg) {
+		init(cfg);
 
 		while (!worklist.isEmpty()) {
 			Block b = worklist.pop();
@@ -81,7 +90,6 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 				RegularBlock rb = (RegularBlock) b;
 
 				// apply transfer function to contents
-				@SuppressWarnings("unchecked")
 				S store = (S) getStoreBefore(rb).copy();
 				for (Node n : rb.getContents()) {
 					store = n.accept(regularTransfer, store);
@@ -97,16 +105,21 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 				ConditionalBlock cb = (ConditionalBlock) b;
 
 				// apply transfer function to compute 'then' store
-				@SuppressWarnings("unchecked")
 				S thenStore = (S) getStoreBefore(cb).copy();
 				thenStore = cb.getCondition().accept(condTrueTransfer,
 						thenStore);
 
 				// apply transfer function to compute 'else' store
-				@SuppressWarnings("unchecked")
-				S elseStore = (S) getStoreBefore(cb).copy();
-				elseStore = cb.getCondition().accept(condFalseTransfer,
-						elseStore);
+				S elseStore;
+				if (condTrueTransfer != condFalseTransfer) {
+					elseStore = (S) getStoreBefore(cb).copy();
+					elseStore = cb.getCondition().accept(condFalseTransfer,
+							elseStore);
+				} else {
+					// optimization: if the two transfer function are the same,
+					// don't compute the resulting store twice.
+					elseStore = (S) thenStore.copy();
+				}
 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
@@ -134,6 +147,14 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 		}
 	}
 
+	/** Initialize the analysis with a new control flow graph. */
+	protected void init(ControlFlowGraph cfg) {
+		this.cfg = cfg;
+		stores = new HashMap<>();
+		worklist = new Stack<>();
+		addToWorklist(cfg.getEntryBlock());
+	}
+
 	/**
 	 * Add a basic block to the worklist. If <code>b</code> is already present,
 	 * the method does nothing.
@@ -151,14 +172,15 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	 */
 	protected boolean addStoreBefore(Block b, S s) {
 		S storeBefore = getStoreBefore(b);
-		S newStoreBefore = lattice.leastUpperBound(storeBefore, s);
+		@SuppressWarnings("unchecked")
+		S newStoreBefore = (S) storeBefore.leastUpperBound(s);
 		setStoreBefore(b, newStoreBefore);
 		return !storeBefore.equals(newStoreBefore);
 	}
 
 	/** Change the store before basic block <code>b</code> to <code>s</code>. */
 	protected void setStoreBefore(Block b, S s) {
-		beforeStores.put(b, s);
+		stores.put(b, s);
 	}
 
 	/**
@@ -166,11 +188,23 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, L extends Lat
 	 *         block <code>b</code>.
 	 */
 	protected S getStoreBefore(Block b) {
-		if (beforeStores.containsKey(b)) {
-			return beforeStores.get(b);
+		return readFromStore(stores, b);
+	}
+
+	/**
+	 * Read the {@link Store} for a particular basic block from a map of stores
+	 * (handles default stores).
+	 */
+	public static <S> S readFromStore(Map<Block, S> stores, Block b) {
+		if (stores.containsKey(b)) {
+			return stores.get(b);
 		}
 		// return new S();
-		return null; // TODO: how do we instantiate S?
+		return (S) new DefaultStore<>(); // TODO: how do we instantiate S?
+	}
+
+	public Map<Block, S> getStores() {
+		return stores;
 	}
 
 }

@@ -2,7 +2,6 @@ package checkers.flow.cfg;
 
 import java.util.Map;
 
-import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
 
@@ -34,9 +33,12 @@ public class ControlFlowGraph {
 		this.treeLookup = treeLookup;
 	}
 
-	/** @return The basic block to which the {@link Tree} <code>t</code> belongs. */
-	public Block getBlockOfTree(Tree t) {
-		return treeLookup.get(t).getBlock();
+	/**
+	 * @return The {@link Node} to which the {@link Tree} <code>t</code>
+	 *         corresponds.
+	 */
+	public Node getNodeCorrespondingToTree(Tree t) {
+		return treeLookup.get(t);
 	}
 
 	/** @return The entry block of the control flow graph. */

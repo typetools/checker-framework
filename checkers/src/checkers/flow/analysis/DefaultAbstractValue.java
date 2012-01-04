@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 public class DefaultAbstractValue implements AbstractValue {
 
 	/** The annotation corresponding to this abstract value. */
+	// TODO: should be a set of annotations
 	protected AnnotationMirror annotation;
 
 	public DefaultAbstractValue(AnnotationMirror annotation) {
@@ -19,6 +20,14 @@ public class DefaultAbstractValue implements AbstractValue {
 
 	public AnnotationMirror getAnnotation() {
 		return annotation;
+	}
+	
+	@Override
+	public DefaultAbstractValue leastUpperBound(AbstractValue o) {
+		assert o instanceof DefaultAbstractValue;
+		DefaultAbstractValue other = (DefaultAbstractValue) o;
+		// TODO: correct implementation
+		return null;
 	}
 
 	@Override
@@ -42,4 +51,5 @@ public class DefaultAbstractValue implements AbstractValue {
 	public String toString() {
 		return annotation.toString();
 	}
+
 }
