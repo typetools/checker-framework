@@ -1,5 +1,6 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.cfg.block.Block;
 import checkers.flow.util.NodeUtils;
 
 import com.sun.source.tree.Tree;
@@ -12,6 +13,19 @@ import com.sun.source.tree.Tree;
  * 
  */
 public abstract class Node {
+
+	/** The basic block this node belongs to. */
+	protected/* @LazyNonNull */Block block;
+
+	/** @return The basic block this node belongs to. */
+	public Block getBlock() {
+		return block;
+	}
+
+	/** Set the basic block this node belongs to. */
+	public void setBlock(Block b) {
+		block = b;
+	}
 
 	/**
 	 * Returns the {@link Tree} in the abstract synatx tree, or
