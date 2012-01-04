@@ -10,7 +10,9 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.xml.ws.Holder;
 
-import checkers.flow.cfg.block.Block;
+import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.Analysis;
+import checkers.flow.analysis.Store;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.util.TreeUtils;
@@ -99,6 +101,12 @@ public class JavaSource2CFGDOT {
 				.println("    -class:  The class in which to find the method (defaults to 'Test').");
 	}
 
+	/** Just like method above but without analysis. */
+	public static void generateDOTofCFG(String inputFile, String outputFile,
+			String method, String clas, boolean pdf) {
+
+	}
+
 	/**
 	 * Generate the DOT representation of the CFG for a method.
 	 * 
@@ -110,9 +118,13 @@ public class JavaSource2CFGDOT {
 	 *            Method name to generate the CFG for.
 	 * @param pdf
 	 *            Also generate a PDF?
+	 * @param analysis
+	 *            Analysis to perform befor the visualization (or
+	 *            <code>null</code> if no analysis is to be performed).
 	 */
-	public static void generateDOTofCFG(String inputFile, String outputFile,
-			String method, String clas, boolean pdf) {
+	public static <A extends AbstractValue, S extends Store<A>> void generateDOTofCFG(
+			String inputFile, String outputFile, String method, String clas,
+			boolean pdf, /* @Nullable */Analysis<A, S> analysis) {
 		String fileName = (new File(inputFile)).getName();
 		System.out.println("Working on " + fileName + "...");
 		MethodTree m = getMethodTree(inputFile, method, clas);
@@ -122,8 +134,9 @@ public class JavaSource2CFGDOT {
 			System.exit(1);
 		}
 
-		Block b = CFGBuilder.build(m).getEntryBlock();
-		String s = CFGDOTVisualizer.visualize(b);
+		ControlFlowGraph cfg = CFGBuilder.build(m);
+		analysis.performAnalysis(cfg);
+		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(), analysis.getStores());
 
 		try {
 			FileWriter fstream = new FileWriter(outputFile + ".txt");
