@@ -30,6 +30,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 	 */
 	public void addStatement(Node t) {
 		contents.add(t);
+		t.setBlock(this);
 	}
 
 	/**
