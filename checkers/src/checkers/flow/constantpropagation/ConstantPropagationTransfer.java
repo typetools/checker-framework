@@ -1,5 +1,6 @@
 package checkers.flow.constantpropagation;
 
+import checkers.flow.analysis.AnalysisState;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
@@ -10,6 +11,8 @@ import checkers.flow.cfg.node.SinkNodeVisitor;
 public class ConstantPropagationTransfer extends
 		SinkNodeVisitor<ConstantPropagationStore, ConstantPropagationStore>
 		implements TransferFunction<Constant, ConstantPropagationStore> {
+	
+	protected AnalysisState<Constant> analysisState;
 
 	@Override
 	public ConstantPropagationStore visitNode(Node n, ConstantPropagationStore p) {
@@ -24,7 +27,7 @@ public class ConstantPropagationTransfer extends
 		if (target instanceof LocalVariableNode) {
 			LocalVariableNode t = (LocalVariableNode) target;
 			r.setInformation(t.getName(),
-					p.getNodeInformation(n.getExpression()));
+					analysisState.getValue(n.getExpression()));
 		}
 		return r;
 	}
@@ -33,8 +36,13 @@ public class ConstantPropagationTransfer extends
 	public ConstantPropagationStore visitIntegerLiteral(IntegerLiteralNode n,
 			ConstantPropagationStore p) {
 		ConstantPropagationStore r = p.copy();
-		r.setNodeInformation(n, new Constant(n.getValue()));
+		analysisState.setValue(n, new Constant(n.getValue()));
 		return r;
+	}
+
+	@Override
+	public void setAnalysisState(AnalysisState<Constant> as) {
+		analysisState = as;
 	}
 
 }
