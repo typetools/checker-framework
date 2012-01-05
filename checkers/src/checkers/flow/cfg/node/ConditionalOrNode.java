@@ -2,6 +2,7 @@ package checkers.flow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for a conditional or expression:
@@ -24,6 +25,7 @@ public class ConditionalOrNode extends Node {
 
 	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs,
 			Boolean truthValue) {
+		assert tree.getKind().equals(Kind.CONDITIONAL_OR);
 		this.tree = tree;
 		this.lhs = lhs;
 		this.rhs = rhs;
