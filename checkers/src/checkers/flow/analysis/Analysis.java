@@ -1,16 +1,22 @@
 package checkers.flow.analysis;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
+import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.constantpropagation.Constant;
 import checkers.flow.constantpropagation.Constant.Type;
@@ -192,6 +198,15 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		worklist = new ArrayDeque<>();
 		nodeInformation = new HashMap<>();
 		worklist.addAll(cfg.getAllBlocks());
+		
+		List<LocalVariableNode> parameters = new ArrayList<>();
+		MethodTree tree = cfg.getTree();
+		for (VariableTree p : tree.getParameters()) {
+			LocalVariableNode var = new LocalVariableNode(p);
+			parameters.add(var);
+			// TODO: document that LocalVariableNode has no block that it belongs to
+		}
+		stores.put(cfg.getEntryBlock(), regularTransfer.initialStore(tree, parameters));
 	}
 
 	/**
