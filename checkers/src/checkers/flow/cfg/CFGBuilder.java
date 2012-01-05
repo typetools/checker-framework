@@ -19,6 +19,7 @@ import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
+import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
@@ -191,7 +192,7 @@ public class CFGBuilder {
 
 			// start in regular mode
 			conditionalMode = false;
-			
+
 			// start with empty map
 			treeLookupMap = new HashMap<>();
 
@@ -210,7 +211,7 @@ public class CFGBuilder {
 			// finish CFG
 			SpecialBlockImpl exit = new SpecialBlockImpl(SpecialBlockType.EXIT);
 			extendWithBasicBlock(exit);
-			
+
 			return new ControlFlowGraph(startBlock, t, treeLookupMap);
 		}
 
@@ -692,7 +693,7 @@ public class CFGBuilder {
 			// TODO: remaining binary node types
 			Node r = null;
 			switch (tree.getKind()) {
-			case CONDITIONAL_OR:
+			case CONDITIONAL_OR: {
 
 				// see JLS 15.24
 
@@ -738,6 +739,29 @@ public class CFGBuilder {
 					extendWithNode(node);
 					return node;
 				}
+			}
+
+			case EQUAL_TO: {
+
+				// see JLS 15.21
+				
+				boolean cm = conditionalMode;
+				conditionalMode = false;
+
+				// left-hand side
+				Node left = tree.getLeftOperand().accept(this, p);
+				extendWithNode(left);
+
+				// right-hand side
+				Node right = tree.getRightOperand().accept(this, p);
+				extendWithNode(right);
+				
+				conditionalMode = cm;
+				
+				// comparison
+				EqualToNode node = new EqualToNode(tree, left, right);
+				return extendWithNode(node);
+			}
 			}
 			assert r != null : "unexpected binary tree";
 			return extendWithNode(r);

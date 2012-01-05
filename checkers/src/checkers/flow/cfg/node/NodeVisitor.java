@@ -22,4 +22,5 @@ public interface NodeVisitor<R, P> {
 	R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
 	R visitBooleanLiteral(BooleanLiteralNode n, P p);
 	R visitConditionalOr(ConditionalOrNode n, P p);
+	R visitEqualTo(EqualToNode n, P p);
 }
