@@ -22,8 +22,7 @@ import checkers.flow.constantpropagation.Constant;
 import checkers.flow.constantpropagation.Constant.Type;
 import checkers.flow.constantpropagation.ConstantPropagationStore;
 
-public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>>
-		implements AnalysisState<A> {
+public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> {
 
 	/** The transfer function for regular nodes. */
 	protected T regularTransfer;
@@ -64,7 +63,6 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		this.regularTransfer = transfer;
 		this.condTrueTransfer = transfer;
 		this.condFalseTransfer = transfer;
-		transfer.setAnalysisState(this);
 	}
 
 	/**
@@ -73,39 +71,8 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 	 */
 	public Analysis(T regularTransfer, T condTrueTransfer, T condFalseTransfer) {
 		this.regularTransfer = regularTransfer;
-		regularTransfer.setAnalysisState(this);
 		this.condTrueTransfer = condTrueTransfer;
-		condTrueTransfer.setAnalysisState(this);
 		this.condFalseTransfer = condFalseTransfer;
-		condFalseTransfer.setAnalysisState(this);
-	}
-
-	@Override
-	public A getValue(Node n) {
-		if (!nodeInformation.containsKey(n)) {
-			// TODO how do we return the top value? (this is just a hack for the
-			// moment)
-			return (A) new Constant(Type.TOP);
-		}
-		return nodeInformation.get(n);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void addValue(Node n, A val) {
-		A value;
-		if (nodeInformation.containsKey(n)) {
-			value = (A) nodeInformation.get(n).leastUpperBound(val);
-		} else {
-			value = val;
-		}
-		nodeInformation.put(n, value);
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public void setValue(Node n, A val) {
-		nodeInformation.put(n, val);
 	}
 
 	/**

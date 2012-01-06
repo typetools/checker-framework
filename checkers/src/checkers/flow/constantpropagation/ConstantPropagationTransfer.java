@@ -2,7 +2,6 @@ package checkers.flow.constantpropagation;
 
 import java.util.List;
 
-import checkers.flow.analysis.AnalysisState;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
@@ -17,18 +16,16 @@ public class ConstantPropagationTransfer extends
 		SinkNodeVisitor<ConstantPropagationStore, ConstantPropagationStore>
 		implements TransferFunction<Constant, ConstantPropagationStore> {
 
-	protected AnalysisState<Constant> analysisState;
-
 	@Override
 	public ConstantPropagationStore initialStore(MethodTree tree,
 			List<LocalVariableNode> parameters) {
 		ConstantPropagationStore store = new ConstantPropagationStore();
-		
+
 		// we have no information about parameters
 		for (LocalVariableNode p : parameters) {
-			store.addInformation(p.getName(), new Constant(Type.TOP));
+			store.addInformation(p, new Constant(Type.TOP));
 		}
-		
+
 		return store;
 	}
 
@@ -43,8 +40,7 @@ public class ConstantPropagationTransfer extends
 		Node target = n.getTarget();
 		if (target instanceof LocalVariableNode) {
 			LocalVariableNode t = (LocalVariableNode) target;
-			p.setInformation(t.getName(),
-					analysisState.getValue(n.getExpression()));
+			p.setInformation(t, p.getInformation(n.getExpression()));
 		}
 		return p;
 	}
@@ -52,13 +48,8 @@ public class ConstantPropagationTransfer extends
 	@Override
 	public ConstantPropagationStore visitIntegerLiteral(IntegerLiteralNode n,
 			ConstantPropagationStore p) {
-		analysisState.setValue(n, new Constant(n.getValue()));
+		p.setInformation(n, new Constant(n.getValue()));
 		return p;
-	}
-
-	@Override
-	public void setAnalysisState(AnalysisState<Constant> as) {
-		analysisState = as;
 	}
 
 }

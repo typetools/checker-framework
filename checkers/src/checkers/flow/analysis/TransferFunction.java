@@ -42,9 +42,6 @@ import com.sun.source.tree.MethodTree;
 public interface TransferFunction<A extends AbstractValue, S extends Store<A>>
 		extends NodeVisitor<S, S> {
 
-	/** Set the analysis state to {@code as}. */
-	void setAnalysisState(AnalysisState<A> as);
-
 	/** @return The initial store to be used by the dataflow analysis. */
 	S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
 }
