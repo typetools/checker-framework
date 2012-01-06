@@ -1379,8 +1379,11 @@ public abstract class AnnotatedTypeMirror {
                         // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                         // How should this be handled? What is that factory doing?
                     }
-                } else if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
-                    // Nothing to do
+                } else if (uAnnos.isEmpty() || typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
+                    // Nothing to do if lAnnos is a subtype of uAnnos.
+                	// TODO: What should be done if lAnnos is non-empty, but uAnnos is empty?
+                	// This happens in method1 in the TypeVars test case, where the upper bound is
+                	// itself a type variable.
                 } else if (typeFactory.qualHierarchy.isSubtype(uAnnos, lAnnos)) {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);
