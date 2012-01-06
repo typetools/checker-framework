@@ -30,15 +30,16 @@ public class ConstantPropagationConditionalTransfer extends
 			ConstantPropagationStore p) {
 		Node left = n.getLeftOperand();
 		Node right = n.getRightOperand();
-		Constant leftVal = analysisState.getValue(left);
-		Constant rightVal = analysisState.getValue(right);
-		if (right instanceof LocalVariableNode && leftVal != null && leftVal.isConstant()) {
-			p.setInformation(((LocalVariableNode) right).getName(), leftVal);
-		}
-		if (left instanceof LocalVariableNode && rightVal != null && rightVal.isConstant()) {
-			p.setInformation(((LocalVariableNode) left).getName(), rightVal);
-		}
+		process(p, left, right);
+		process(p, right, left);
 		return p;
+	}
+
+	protected void process(ConstantPropagationStore p, Node a, Node b) {
+		Constant val = analysisState.getValue(a);
+		if (b instanceof LocalVariableNode && val != null && val.isConstant()) {
+			p.setInformation(((LocalVariableNode) b).getName(), val);
+		}
 	}
 
 	@Override
