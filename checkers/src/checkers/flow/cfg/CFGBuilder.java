@@ -749,11 +749,9 @@ public class CFGBuilder {
 
 				// left-hand side
 				Node left = tree.getLeftOperand().accept(this, p);
-				extendWithNode(left);
 
 				// right-hand side
 				Node right = tree.getRightOperand().accept(this, p);
-				extendWithNode(right);
 				
 				conditionalMode = cm;
 				
