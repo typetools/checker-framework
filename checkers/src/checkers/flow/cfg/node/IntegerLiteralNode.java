@@ -29,5 +29,19 @@ public class IntegerLiteralNode extends ValueLiteralNode {
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitIntegerLiteral(this, p);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof IntegerLiteralNode)) {
+			return false;
+		}
+		IntegerLiteralNode other = (IntegerLiteralNode) obj;
+		return other.getValue().equals(getValue());
+	}
+	
+	@Override
+	public int hashCode() {
+		return getValue().hashCode();
+	}
 
 }
