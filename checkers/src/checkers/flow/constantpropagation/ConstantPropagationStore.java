@@ -5,32 +5,49 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import checkers.flow.analysis.Store;
+import checkers.flow.cfg.node.IntegerLiteralNode;
+import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.Node;
+import checkers.flow.constantpropagation.Constant.Type;
 
 public class ConstantPropagationStore implements Store<Constant> {
 
 	/** Information about variables gathered so far. */
-	Map<String, Constant> contents;
-	
+	Map<Node, Constant> contents;
+
 	public ConstantPropagationStore() {
 		contents = new HashMap<>();
 	}
 
-	protected ConstantPropagationStore(Map<String, Constant> contents) {
+	protected ConstantPropagationStore(Map<Node, Constant> contents) {
 		this.contents = contents;
 	}
 	
-	public void addInformation(String var, Constant val) {
+	public Constant getInformation(Node n) {
+		if (contents.containsKey(n)) {
+			return contents.get(n);
+		}
+		return new Constant(Type.TOP);
+	}
+
+	public void addInformation(Node n, Constant val) {
 		Constant value;
-		if (contents.containsKey(var)) {
-			value = val.leastUpperBound(contents.get(var));
+		if (contents.containsKey(n)) {
+			value = val.leastUpperBound(contents.get(n));
 		} else {
 			value = val;
 		}
-		contents.put(var, value);
+		// TODO: remove (only two nodes supported atm)
+		assert n instanceof IntegerLiteralNode
+				|| n instanceof LocalVariableNode;
+		contents.put(n, value);
 	}
-	
-	public void setInformation(String var, Constant val) {
-		contents.put(var, val);
+
+	public void setInformation(Node n, Constant val) {
+		// TODO: remove (only two nodes supported atm)
+		assert n instanceof IntegerLiteralNode
+				|| n instanceof LocalVariableNode;
+		contents.put(n, val);
 	}
 
 	@Override
@@ -42,28 +59,27 @@ public class ConstantPropagationStore implements Store<Constant> {
 	public ConstantPropagationStore leastUpperBound(Store<Constant> o) {
 		assert o instanceof ConstantPropagationStore;
 		ConstantPropagationStore other = (ConstantPropagationStore) o;
-		Map<String, Constant> newContents = new HashMap<>();
+		Map<Node, Constant> newContents = new HashMap<>();
 
 		// go through all of the information of the other class
-		for (Entry<String, Constant> e : other.contents.entrySet()) {
-			String var = e.getKey();
+		for (Entry<Node, Constant> e : other.contents.entrySet()) {
+			Node n = e.getKey();
 			Constant otherVal = e.getValue();
-			if (contents.containsKey(var)) {
+			if (contents.containsKey(n)) {
 				// merge if both contain information about a variable
-				newContents.put(var,
-						otherVal.leastUpperBound(contents.get(var)));
+				newContents.put(n, otherVal.leastUpperBound(contents.get(n)));
 			} else {
 				// add new information
-				newContents.put(var, otherVal);
+				newContents.put(n, otherVal);
 			}
 		}
 
-		for (Entry<String, Constant> e : contents.entrySet()) {
-			String var = e.getKey();
+		for (Entry<Node, Constant> e : contents.entrySet()) {
+			Node n = e.getKey();
 			Constant thisVal = e.getValue();
-			if (!other.contents.containsKey(var)) {
+			if (!other.contents.containsKey(n)) {
 				// add new information
-				newContents.put(var, thisVal);
+				newContents.put(n, thisVal);
 			}
 		}
 
@@ -78,13 +94,13 @@ public class ConstantPropagationStore implements Store<Constant> {
 			return false;
 		ConstantPropagationStore other = (ConstantPropagationStore) o;
 		// go through all of the information of the other object
-		for (Entry<String, Constant> e : other.contents.entrySet()) {
-			String var = e.getKey();
+		for (Entry<Node, Constant> e : other.contents.entrySet()) {
+			Node n = e.getKey();
 			Constant otherVal = e.getValue();
 			if (otherVal.isBottom())
 				continue; // no information
-			if (contents.containsKey(var)) {
-				if (!otherVal.equals(contents.get(var))) {
+			if (contents.containsKey(n)) {
+				if (!otherVal.equals(contents.get(n))) {
 					return false;
 				}
 			} else {
@@ -92,12 +108,12 @@ public class ConstantPropagationStore implements Store<Constant> {
 			}
 		}
 		// go through all of the information of the this object
-		for (Entry<String, Constant> e : contents.entrySet()) {
-			String var = e.getKey();
+		for (Entry<Node, Constant> e : contents.entrySet()) {
+			Node n = e.getKey();
 			Constant thisVal = e.getValue();
 			if (thisVal.isBottom())
 				continue; // no information
-			if (other.contents.containsKey(var)) {
+			if (other.contents.containsKey(n)) {
 				continue;
 			} else {
 				return false;
@@ -109,17 +125,24 @@ public class ConstantPropagationStore implements Store<Constant> {
 	@Override
 	public int hashCode() {
 		int s = 0;
-		for (Entry<String, Constant> e : contents.entrySet()) {
+		for (Entry<Node, Constant> e : contents.entrySet()) {
 			if (!e.getValue().isBottom()) {
 				s += e.hashCode();
 			}
 		}
 		return s;
 	}
-	
+
 	@Override
 	public String toString() {
-		return contents.toString();
+		// only output local variable information
+		Map<Node, Constant> smallerContents = new HashMap<>();
+		for (Entry<Node, Constant> e : contents.entrySet()) {
+			if (e.getKey() instanceof LocalVariableNode) {
+				smallerContents.put(e.getKey(), e.getValue());
+			}
+		}
+		return smallerContents.toString();
 	}
 
 }

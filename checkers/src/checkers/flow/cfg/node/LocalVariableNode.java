@@ -46,5 +46,19 @@ public class LocalVariableNode extends Node {
 	public String toString() {
 		return getName().toString();
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof LocalVariableNode)) {
+			return false;
+		}
+		LocalVariableNode other = (LocalVariableNode) obj;
+		return other.getName().equals(getName());
+	}
+	
+	@Override
+	public int hashCode() {
+		return getName().hashCode();
+	}
 
 }
