@@ -9,6 +9,11 @@ class TypeVars {
 
       Object o = x;
     }
+
+    class Inner1<X extends T> {}
+    public Inner1<T> method1() {
+        return new Inner1<T>();
+    }
   }
 
   // It's difficult to add more test cases that
