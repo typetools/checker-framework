@@ -93,6 +93,7 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 			for (Entry<Class<? extends Throwable>, Block> e : b
 					.getExceptionalSuccessors().entrySet()) {
 				Block succ = e.getValue();
+				// note: at this point, getStoreBefore cannot return nullable
 				addStoreBefore(succ, getStoreBefore(b));
 			}
 
@@ -164,16 +165,18 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 		stores = new HashMap<>();
 		worklist = new ArrayDeque<>();
 		nodeInformation = new HashMap<>();
-		worklist.addAll(cfg.getAllBlocks());
-		
+		worklist.add(cfg.getEntryBlock());
+
 		List<LocalVariableNode> parameters = new ArrayList<>();
 		MethodTree tree = cfg.getTree();
 		for (VariableTree p : tree.getParameters()) {
 			LocalVariableNode var = new LocalVariableNode(p);
 			parameters.add(var);
-			// TODO: document that LocalVariableNode has no block that it belongs to
+			// TODO: document that LocalVariableNode has no block that it
+			// belongs to
 		}
-		stores.put(cfg.getEntryBlock(), regularTransfer.initialStore(tree, parameters));
+		stores.put(cfg.getEntryBlock(),
+				regularTransfer.initialStore(tree, parameters));
 	}
 
 	/**
@@ -191,12 +194,17 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 	 * Add a store before the basic block <code>b</code> by merging with the
 	 * existing store for that location.
 	 */
+	@SuppressWarnings("unchecked")
 	protected void addStoreBefore(Block b, S s) {
 		S storeBefore = getStoreBefore(b);
-		@SuppressWarnings("unchecked")
-		S newStoreBefore = (S) storeBefore.leastUpperBound(s);
+		S newStoreBefore;
+		if (storeBefore == null) {
+			newStoreBefore = s;
+		} else {
+			newStoreBefore = (S) storeBefore.leastUpperBound(s);
+		}
 		stores.put(b, newStoreBefore);
-		if (!storeBefore.equals(newStoreBefore)) {
+		if (storeBefore == null || !storeBefore.equals(newStoreBefore)) {
 			addToWorklist(b);
 		}
 	}
@@ -205,21 +213,16 @@ public class Analysis<A extends AbstractValue, S extends Store<A>, T extends Tra
 	 * @return The store corresponding to the location right before the basic
 	 *         block <code>b</code>.
 	 */
-	protected S getStoreBefore(Block b) {
+	protected/* @Nullable */S getStoreBefore(Block b) {
 		return readFromStore(stores, b);
 	}
 
 	/**
 	 * Read the {@link Store} for a particular basic block from a map of stores
-	 * (handles default stores).
+	 * (or {@code null} if none exists yet).
 	 */
-	public static <S> S readFromStore(Map<Block, S> stores, Block b) {
-		if (stores.containsKey(b)) {
-			return stores.get(b);
-		}
-		// TODO: how do we instantiate S?
-		return (S) new ConstantPropagationStore(); // this is just a temporary
-													// hack
+	public static <S> /* @Nullable */S readFromStore(Map<Block, S> stores, Block b) {
+		return stores.get(b);
 	}
 
 	public Map<Block, S> getStores() {

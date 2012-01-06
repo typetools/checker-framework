@@ -64,6 +64,7 @@ public class ControlFlowGraph {
 	/**
 	 * @return The list of all basic block in this control flow graph.
 	 */
+	// TODO: remove if not needed
 	public List<Block> getAllBlocks() {
 		ArrayList<Block> r = new ArrayList<>();
 		Set<Block> visited = new HashSet<>();
