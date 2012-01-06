@@ -1,11 +1,10 @@
 package checkers.flow.cfg;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import checkers.flow.cfg.block.Block.BlockType;
@@ -174,7 +173,7 @@ public class CFGBuilder {
 
 		/** Map from AST {@link Tree}s to {@link Node}s. */
 		// TODO: fill this map with contents.
-		protected Map<Tree, Node> treeLookupMap;
+		protected IdentityHashMap<Tree, Node> treeLookupMap;
 
 		/* --------------------------------------------------------- */
 		/* Translation (AST to CFG) */
@@ -194,7 +193,7 @@ public class CFGBuilder {
 			conditionalMode = false;
 
 			// start with empty map
-			treeLookupMap = new HashMap<>();
+			treeLookupMap = new IdentityHashMap<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(

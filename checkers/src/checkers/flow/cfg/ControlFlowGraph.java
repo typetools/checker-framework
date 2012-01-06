@@ -2,9 +2,9 @@ package checkers.flow.cfg;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -33,10 +33,10 @@ public class ControlFlowGraph {
 	protected MethodTree tree;
 
 	/** Map from AST {@link Tree}s to {@link Node}s. */
-	protected Map<Tree, Node> treeLookup;
+	protected IdentityHashMap<Tree, Node> treeLookup;
 
 	public ControlFlowGraph(SpecialBlock entryBlock, MethodTree tree,
-			Map<Tree, Node> treeLookup) {
+			IdentityHashMap<Tree, Node> treeLookup) {
 		super();
 		this.entryBlock = entryBlock;
 		this.tree = tree;
