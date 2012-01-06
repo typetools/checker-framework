@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
-
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
@@ -18,9 +15,9 @@ import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.constantpropagation.Constant;
-import checkers.flow.constantpropagation.Constant.Type;
-import checkers.flow.constantpropagation.ConstantPropagationStore;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 
 public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> {
 
