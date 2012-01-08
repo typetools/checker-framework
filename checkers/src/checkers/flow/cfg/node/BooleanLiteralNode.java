@@ -1,7 +1,7 @@
 package checkers.flow.cfg.node;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A node for a boolean literal:
@@ -33,6 +33,16 @@ public class BooleanLiteralNode extends ValueLiteralNode {
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitBooleanLiteral(this, p);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		// test that obj is a BooleanLiteralNode
+		if (obj == null || !(obj instanceof BooleanLiteralNode)) {
+			return false;
+		}
+		// super method compares values
+		return super.equals(obj);
 	}
 
 }

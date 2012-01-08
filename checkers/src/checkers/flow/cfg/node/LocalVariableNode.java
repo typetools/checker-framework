@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -53,12 +55,12 @@ public class LocalVariableNode extends Node {
 			return false;
 		}
 		LocalVariableNode other = (LocalVariableNode) obj;
-		return other.getName().equals(getName());
+		return getName().equals(other.getName());
 	}
 	
 	@Override
 	public int hashCode() {
-		return getName().hashCode();
+		return HashCodeUtils.hash(getName());
 	}
 
 }

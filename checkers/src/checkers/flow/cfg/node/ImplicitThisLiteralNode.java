@@ -28,4 +28,17 @@ public class ImplicitThisLiteralNode extends Node {
 		return "(this)";
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof ImplicitThisLiteralNode)) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 17; // constant value, same as in ExplicitThisLiteralNode
+	}
+
 }

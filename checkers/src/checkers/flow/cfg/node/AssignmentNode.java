@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -53,6 +55,20 @@ public class AssignmentNode extends Node {
 	@Override
 	public String toString() {
 		return getTarget() + " = " + getExpression();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof AssignmentNode)) {
+			return false;
+		}
+		AssignmentNode other = (AssignmentNode) obj;
+		return getTarget().equals(other.getTarget()) && getExpression().equals(other.getExpression());
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(getTarget(), getExpression());
 	}
 
 }
