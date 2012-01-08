@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -19,7 +21,7 @@ public class ConditionalOrNode extends Node {
 	protected BinaryTree tree;
 	protected Node lhs;
 	protected Node rhs;
-	
+
 	// TODO: is this actually needed?
 	protected Boolean truthValue;
 
@@ -65,6 +67,21 @@ public class ConditionalOrNode extends Node {
 	@Override
 	public String toString() {
 		return "(" + getLeftOperand() + " || " + getRightOperand() + ")";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof ConditionalOrNode)) {
+			return false;
+		}
+		ConditionalOrNode other = (ConditionalOrNode) obj;
+		return getLeftOperand().equals(other.getLeftOperand())
+				&& getRightOperand().equals(other.getRightOperand());
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
 	}
 
 }

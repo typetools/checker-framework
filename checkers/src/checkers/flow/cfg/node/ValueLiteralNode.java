@@ -1,6 +1,8 @@
 package checkers.flow.cfg.node;
 
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
@@ -44,6 +46,23 @@ public abstract class ValueLiteralNode extends Node {
 	@Override
 	public String toString() {
 		return getValue().toString();
+	}
+	
+	/**
+	 * Compare the value of this nodes.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof ValueLiteralNode)) {
+			return false;
+		}
+		ValueLiteralNode other = (ValueLiteralNode) obj;
+		return getValue().equals(other.getValue());
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(getValue());
 	}
 
 }
