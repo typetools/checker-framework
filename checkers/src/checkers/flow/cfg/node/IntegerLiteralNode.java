@@ -32,16 +32,12 @@ public class IntegerLiteralNode extends ValueLiteralNode {
 	
 	@Override
 	public boolean equals(Object obj) {
+		// test that obj is a IntegerLiteralNode
 		if (obj == null || !(obj instanceof IntegerLiteralNode)) {
 			return false;
 		}
-		IntegerLiteralNode other = (IntegerLiteralNode) obj;
-		return other.getValue().equals(getValue());
-	}
-	
-	@Override
-	public int hashCode() {
-		return getValue().hashCode();
+		// super method compares values
+		return super.equals(obj);
 	}
 
 }

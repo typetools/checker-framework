@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -19,7 +21,7 @@ public class EqualToNode extends Node {
 	protected BinaryTree tree;
 	protected Node lhs;
 	protected Node rhs;
-	
+
 	public EqualToNode(BinaryTree tree, Node lhs, Node rhs) {
 		assert tree.getKind().equals(Kind.EQUAL_TO);
 		this.tree = tree;
@@ -56,6 +58,21 @@ public class EqualToNode extends Node {
 	@Override
 	public String toString() {
 		return "(" + getLeftOperand() + " == " + getRightOperand() + ")";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof EqualToNode)) {
+			return false;
+		}
+		EqualToNode other = (EqualToNode) obj;
+		return getLeftOperand().equals(other.getLeftOperand())
+				&& getRightOperand().equals(other.getRightOperand());
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
 	}
 
 }

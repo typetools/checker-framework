@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import checkers.flow.util.HashCodeUtils;
+
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
@@ -52,5 +54,18 @@ public class VariableDeclarationNode extends Node {
 	public String toString() {
 		return getName().toString();
 	}
-
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof VariableDeclarationNode)) {
+			return false;
+		}
+		VariableDeclarationNode other = (VariableDeclarationNode) obj;
+		return getName().equals(other.getName());
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(getName());
+	}
 }
