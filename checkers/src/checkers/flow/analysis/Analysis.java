@@ -64,7 +64,8 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				RegularBlock rb = (RegularBlock) b;
 
 				// apply transfer function to contents
-				S store = getStoreBefore(rb).copy();
+				S storeBefore = getStoreBefore(rb);
+				S store = storeBefore.copy();
 				TransferResult<S> transferResult = null;
 				for (Node n : rb.getContents()) {
 					transferResult = n.accept(transferFunction, store);
@@ -75,7 +76,7 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				// propagate store to successors
 				Block succ = rb.getSuccessor();
 				addStoreBefore(succ, store);
-				propagateToExceptionalSuccessors(b, transferResult);
+				propagateToExceptionalSuccessors(b, transferResult, storeBefore);
 				break;
 			}
 
@@ -83,7 +84,8 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				ConditionalBlock cb = (ConditionalBlock) b;
 
 				// apply transfer function
-				S store = getStoreBefore(cb).copy();
+				S storeBefore = getStoreBefore(cb);
+				S store = storeBefore.copy();
 				TransferResult<S> transferResult = cb.getCondition().accept(
 						transferFunction, store);
 
@@ -92,7 +94,8 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				Block elseSucc = cb.getElseSuccessor();
 				addStoreBefore(thenSucc, transferResult.getThenStore());
 				addStoreBefore(elseSucc, transferResult.getElseStore());
-				propagateToExceptionalSuccessors(b, transferResult);
+				propagateToExceptionalSuccessors(cb, transferResult,
+						storeBefore);
 				break;
 			}
 
@@ -117,15 +120,28 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 	/**
 	 * Propagate the transfer results {@code transferResult} to the exceptional
 	 * successors of block {@code b}.
+	 * 
+	 * @param b
+	 *            The basic block.
+	 * @param transferResult
+	 *            The transfer result to get the exceptional stores.
+	 * @param storeBefore
+	 *            A reference to the store before the block {@code b}. This
+	 *            method will not alias or modify the store, but rather create a
+	 *            copy if necessary.
 	 */
 	protected void propagateToExceptionalSuccessors(Block b,
-			TransferResult<S> transferResult) {
+			TransferResult<S> transferResult, S storeBefore) {
 		for (Entry<Class<? extends Throwable>, Block> e : b
 				.getExceptionalSuccessors().entrySet()) {
 			Block exceptionSucc = e.getValue();
 			Class<? extends Throwable> cause = e.getKey();
-			addStoreBefore(exceptionSucc,
-					transferResult.getExceptionalStore(cause));
+			S exceptionalStore = transferResult.getExceptionalStore(cause);
+			if (exceptionalStore != null) {
+				addStoreBefore(exceptionSucc, exceptionalStore);
+			} else {
+				addStoreBefore(exceptionSucc, storeBefore.copy());
+			}
 		}
 	}
 

@@ -36,8 +36,7 @@ public class ConstantPropagationTransfer
 	@Override
 	public TransferResult<ConstantPropagationStore> visitNode(Node n,
 			ConstantPropagationStore p) {
-		// TODO: can/do we want to optimize this to not always copy a store?
-		return new TransferResult<>(p, p.copy());
+		return new TransferResult<>(p);
 	}
 
 	@Override
