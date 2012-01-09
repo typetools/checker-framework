@@ -30,8 +30,10 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 * 
 	 * <p>
 	 * 
-	 * <em>Exceptions</em>: The corresponding {@link Node} is not allowed to
-	 * throw any exceptions.
+	 * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+	 * exception, then it is assumed that no special handling is necessary and
+	 * the store before the corresponding {@link Node} will be passed along any
+	 * exceptional edge.
 	 * 
 	 * <p>
 	 * 
@@ -52,58 +54,11 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 * 
 	 * <p>
 	 * 
-	 * <em>Exceptions</em>: The corresponding {@link Node} is not allowed to
-	 * throw any exceptions.
-	 * 
-	 * <p>
-	 * 
-	 * <em>Aliasing</em>: {@code thenStore}, {@code elseStore}, and
-	 * {@code exceptionalStore} are not allowed to be used anywhere outside of
-	 * this class (including use through aliases). Complete control over the
-	 * objects is transfered to this class.
-	 */
-	public ConditionalTransferResult(S thenStore, S elseStore,
-			S exceptionalStore) {
-		super(null, exceptionalStore);
-		this.thenStore = thenStore;
-		this.elseStore = elseStore;
-	}
-
-	/**
-	 * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
-	 * resulting store if the corresponding {@link Node} evaluates to
-	 * {@code true} and {@code elseStore} otherwise.
-	 * 
-	 * <p>
-	 * 
-	 * <em>Exceptions</em>: The corresponding {@link Node} is not allowed to
-	 * throw any exceptions.
-	 * 
-	 * <p>
-	 * 
-	 * <em>Aliasing</em>: {@code thenStore}, {@code elseStore},
-	 * {@code defaultExceptionalStore}, and any store in
-	 * {@code exceptionalStores} are not allowed to be used anywhere outside of
-	 * this class (including use through aliases). Complete control over the
-	 * objects is transfered to this class.
-	 */
-	public ConditionalTransferResult(S thenStore, S elseStore,
-			S defaultExceptionalStore,
-			Map<Class<? extends Throwable>, S> exceptionalStores) {
-		super(null, defaultExceptionalStore, exceptionalStores);
-		this.thenStore = thenStore;
-		this.elseStore = elseStore;
-	}
-
-	/**
-	 * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
-	 * resulting store if the corresponding {@link Node} evaluates to
-	 * {@code true} and {@code elseStore} otherwise.
-	 * 
-	 * <p>
-	 * 
-	 * <em>Exceptions</em>: The corresponding {@link Node} is not allowed to
-	 * throw any exceptions.
+	 * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+	 * exception, then the corresponding store in {@code exceptionalStores} is
+	 * used. If no exception is found in {@code exceptionalStores}, then it is
+	 * assumed that no special handling is necessary and the store before the
+	 * corresponding {@link Node} will be passed along any exceptional edge.
 	 * 
 	 * <p>
 	 * 
