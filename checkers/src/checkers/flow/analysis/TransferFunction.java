@@ -39,7 +39,7 @@ import com.sun.source.tree.MethodTree;
  * @param <A>
  *            The {@link Store} used to keep track of intermediate results.
  */
-public interface TransferFunction<A extends AbstractValue, S extends Store<A>>
+public interface TransferFunction<S extends Store>
 		extends NodeVisitor<S, S> {
 
 	/** @return The initial store to be used by the dataflow analysis. */

@@ -19,7 +19,7 @@ import checkers.flow.cfg.node.Node;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
-public class Analysis<A extends AbstractValue, S extends Store<A>, T extends TransferFunction<A, S>> {
+public class Analysis<A extends AbstractValue, S extends Store, T extends TransferFunction<S>> {
 
 	/** The transfer function for regular nodes. */
 	protected T regularTransfer;
