@@ -1,8 +1,19 @@
 package checkers.flow.analysis;
 
+/**
+ * A store is used to keep track of the information that the dataflow analysis
+ * has accumulated at any given point in time.
+ * 
+ * @author Stefan Heule
+ * 
+ * @param <S>
+ *            The type of the store returned by {@code copy} and that is used in
+ *            {@code leastUpperBound}. Usually it is the implementing class
+ *            itself, e.g. in {@code T extends Store<T>}.
+ */
 public interface Store<S> {
 
-	/** Create an exact copy of this store. */
+	/** @return An exact copy of this store. */
 	S copy();
 
 	/**
