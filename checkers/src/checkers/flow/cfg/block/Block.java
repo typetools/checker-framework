@@ -10,7 +10,7 @@ import java.util.Map;
  * 
  */
 public interface Block {
-	
+
 	/** The types of basic blocks */
 	public static enum BlockType {
 
@@ -30,10 +30,10 @@ public interface Block {
 	BlockType getType();
 
 	/**
-	 * @return The unique identifier of this node.
+	 * @return The unique identifier of this block.
 	 */
 	long getId();
-	
+
 	/**
 	 * @return The list of exceptional successor blocks.
 	 */

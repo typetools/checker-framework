@@ -11,7 +11,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 
 	/** Internal representation of the successor. */
 	protected /*@Nullable*/BlockImpl successor;
-	
+
 	public SingleSuccessorBlockImpl() {
 	}
 
@@ -19,7 +19,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 	public /*@Nullable*/Block getSuccessor() {
 		return successor;
 	}
-	
+
 	/**
 	 * Set a basic block as the successor of this block.
 	 */
@@ -29,5 +29,5 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 		assert this.successor == null || this.successor == successor : "cannot set successor twice";
 		this.successor = successor;
 	}
-	
+
 }
