@@ -22,19 +22,7 @@ import com.sun.source.tree.VariableTree;
 public class Analysis<A extends AbstractValue, S extends Store<S>, T extends TransferFunction<S>> {
 
 	/** The transfer function for regular nodes. */
-	protected T regularTransfer;
-
-	/**
-	 * The transfer function for conditional nodes to compute the result along
-	 * the 'true' edge in the control flow graph.
-	 */
-	protected T condTrueTransfer;
-
-	/**
-	 * The transfer function for conditional nodes to compute the result along
-	 * the 'false' edge in the control flow graph.
-	 */
-	protected T condFalseTransfer;
+	protected T transferFunction;
 
 	/** The control flow graph to perform the analysis on. */
 	protected ControlFlowGraph cfg;
@@ -53,23 +41,10 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
-	 * flow graph, given a single transfer function (information along
-	 * 'true'/'false' edges of conditionals is the same).
+	 * flow graph, given a single transfer function.
 	 */
 	public Analysis(T transfer) {
-		this.regularTransfer = transfer;
-		this.condTrueTransfer = transfer;
-		this.condFalseTransfer = transfer;
-	}
-
-	/**
-	 * Construct an object that can perform a dataflow analysis over a control
-	 * flow graph, given a set of transfer functions.
-	 */
-	public Analysis(T regularTransfer, T condTrueTransfer, T condFalseTransfer) {
-		this.regularTransfer = regularTransfer;
-		this.condTrueTransfer = condTrueTransfer;
-		this.condFalseTransfer = condFalseTransfer;
+		this.transferFunction = transfer;
 	}
 
 	/**
@@ -84,62 +59,46 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 		while (!worklist.isEmpty()) {
 			Block b = worklist.poll();
 
-			// this basic block does not have any side-effects for the
-			// exceptional successors
-			for (Entry<Class<? extends Throwable>, Block> e : b
-					.getExceptionalSuccessors().entrySet()) {
-				Block succ = e.getValue();
-				// note: at this point, getStoreBefore cannot return nullable
-				addStoreBefore(succ, getStoreBefore(b));
-			}
-
 			switch (b.getType()) {
 			case REGULAR_BLOCK: {
 				RegularBlock rb = (RegularBlock) b;
 
 				// apply transfer function to contents
 				S store = getStoreBefore(rb).copy();
+				TransferResult<S> transferResult = null;
 				for (Node n : rb.getContents()) {
-					store = n.accept(regularTransfer, store);
+					transferResult = n.accept(transferFunction, store);
+					store = transferResult.getRegularStore();
 				}
+				// loop will run at least one, making transferResult non-null
 
-				// propagate store to successor
+				// propagate store to successors
 				Block succ = rb.getSuccessor();
 				addStoreBefore(succ, store);
+				propagateToExceptionalSuccessors(b, transferResult);
 				break;
 			}
 
 			case CONDITIONAL_BLOCK: {
 				ConditionalBlock cb = (ConditionalBlock) b;
 
-				// apply transfer function to compute 'then' store
-				S thenStore = getStoreBefore(cb).copy();
-				thenStore = cb.getCondition().accept(condTrueTransfer,
-						thenStore);
-
-				// apply transfer function to compute 'else' store
-				S elseStore;
-				if (condTrueTransfer != condFalseTransfer) {
-					elseStore = getStoreBefore(cb).copy();
-					elseStore = cb.getCondition().accept(condFalseTransfer,
-							elseStore);
-				} else {
-					// optimization: if the two transfer function are the same,
-					// don't compute the resulting store twice.
-					elseStore = thenStore.copy();
-				}
+				// apply transfer function
+				S store = getStoreBefore(cb).copy();
+				TransferResult<S> transferResult = cb.getCondition().accept(
+						transferFunction, store);
 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
-				addStoreBefore(thenSucc, thenStore);
-				addStoreBefore(elseSucc, elseStore);
+				addStoreBefore(thenSucc, transferResult.getThenStore());
+				addStoreBefore(elseSucc, transferResult.getElseStore());
+				propagateToExceptionalSuccessors(b, transferResult);
 				break;
 			}
 
 			case SPECIAL_BLOCK: {
-				// special basic blocks are empty, thus there is no need to
-				// perform any analysis.
+				// special basic blocks are empty and cannot throw exceptions,
+				// thus there is no need to perform any analysis.
 				SpecialBlock sb = (SpecialBlock) b;
 				Block succ = sb.getSuccessor();
 				if (succ != null) {
@@ -152,6 +111,21 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				assert false;
 				break;
 			}
+		}
+	}
+
+	/**
+	 * Propagate the transfer results {@code transferResult} to the exceptional
+	 * successors of block {@code b}.
+	 */
+	protected void propagateToExceptionalSuccessors(Block b,
+			TransferResult<S> transferResult) {
+		for (Entry<Class<? extends Throwable>, Block> e : b
+				.getExceptionalSuccessors().entrySet()) {
+			Block exceptionSucc = e.getValue();
+			Class<? extends Throwable> cause = e.getKey();
+			addStoreBefore(exceptionSucc,
+					transferResult.getExceptionalStore(cause));
 		}
 	}
 
@@ -172,7 +146,7 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 			// belongs to
 		}
 		stores.put(cfg.getEntryBlock(),
-				regularTransfer.initialStore(tree, parameters));
+				transferFunction.initialStore(tree, parameters));
 	}
 
 	/**
