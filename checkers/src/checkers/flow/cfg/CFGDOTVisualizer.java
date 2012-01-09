@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.block.Block;
@@ -45,7 +44,7 @@ public class CFGDOTVisualizer {
 	 *            information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <A extends AbstractValue, S extends Store<A>> String visualize(
+	public static <S extends Store> String visualize(
 			Block entry, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
@@ -141,7 +140,7 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <A extends AbstractValue, S extends Store<A>> String visualizeContent(
+	protected static <S extends Store> String visualizeContent(
 			Block bb, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb = new StringBuilder();
 

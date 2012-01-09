@@ -14,7 +14,7 @@ import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer extends
 		SinkNodeVisitor<ConstantPropagationStore, ConstantPropagationStore>
-		implements TransferFunction<Constant, ConstantPropagationStore> {
+		implements TransferFunction<ConstantPropagationStore> {
 
 	@Override
 	public ConstantPropagationStore initialStore(MethodTree tree,

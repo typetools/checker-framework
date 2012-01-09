@@ -1,15 +1,15 @@
 package checkers.flow.analysis;
 
-public class DefaultStore<A extends AbstractValue> implements Store<A> {
+public class DefaultStore<A extends AbstractValue> implements Store {
 
 	@Override
-	public Store<A> copy() {
+	public Store copy() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Store<A> leastUpperBound(Store<A> other) {
+	public Store leastUpperBound(Store other) {
 		// TODO Auto-generated method stub
 		return null;
 	}
