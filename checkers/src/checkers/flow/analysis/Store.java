@@ -1,9 +1,9 @@
 package checkers.flow.analysis;
 
-public interface Store {
+public interface Store<S> {
 
 	/** Create an exact copy of this store. */
-	Store copy();
+	S copy();
 
 	/**
 	 * Compute the least upper bound of two stores.
@@ -20,5 +20,5 @@ public interface Store {
 	 * <li>Is commutative.</li>
 	 * </ul>
 	 */
-	Store leastUpperBound(Store other);
+	S leastUpperBound(S other);
 }

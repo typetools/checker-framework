@@ -10,7 +10,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.constantpropagation.Constant.Type;
 
-public class ConstantPropagationStore implements Store {
+public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
 	/** Information about variables gathered so far. */
 	Map<Node, Constant> contents;
@@ -56,9 +56,7 @@ public class ConstantPropagationStore implements Store {
 	}
 
 	@Override
-	public ConstantPropagationStore leastUpperBound(Store o) {
-		assert o instanceof ConstantPropagationStore;
-		ConstantPropagationStore other = (ConstantPropagationStore) o;
+	public ConstantPropagationStore leastUpperBound(ConstantPropagationStore other) {
 		Map<Node, Constant> newContents = new HashMap<>();
 
 		// go through all of the information of the other class
