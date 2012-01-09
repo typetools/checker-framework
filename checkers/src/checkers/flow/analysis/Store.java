@@ -21,7 +21,7 @@ public interface Store<S> {
 	 * 
 	 * <p>
 	 * 
-	 * <em>Important</em>: This method must fullfil the following contract:
+	 * <em>Important</em>: This method must fulfill the following contract:
 	 * <ul>
 	 * <li>Does not change {@code this}.</li>
 	 * <li>Does not change {@code other}.</li>
