@@ -11,7 +11,7 @@ import java.util.Map;
  * 
  */
 public abstract class BlockImpl implements Block {
-	
+
 	/** Set of exceptional successors. */
 	protected Map<Class<? extends Throwable>, Block> exceptionalSuccessors;
 
@@ -20,38 +20,38 @@ public abstract class BlockImpl implements Block {
 
 	/** The last ID that has already been used. */
 	protected static long lastId = 0;
-	
+
 	/** The type of this basic block. */
 	protected BlockType type;
 
 	/**
-	 * @return A currently unused identifier.
+	 * @return A fresh identifier.
 	 */
 	private static long uniqueID() {
 		return lastId++;
 	}
-	
+
 	public BlockImpl() {
 		exceptionalSuccessors = new HashMap<>();
 	}
-	
+
 	/**
 	 * Add an exceptional successor.
 	 */
 	public void addExceptionalSuccessor(Block b, Class<? extends Throwable> cause) {
 		exceptionalSuccessors.put(cause, b);
 	}
-	
+
 	@Override
 	public Map<Class<? extends Throwable>, Block> getExceptionalSuccessors() {
 		return new HashMap<>(exceptionalSuccessors);
 	}
-	
+
 	@Override
 	public long getId() {
 		return id;
 	}
-	
+
 	@Override
 	public BlockType getType() {
 		return type;

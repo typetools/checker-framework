@@ -15,12 +15,12 @@ public interface ConditionalBlock extends Block {
 	 * @return The condition of this conditional basic block.
 	 */
 	Node getCondition();
-	
+
 	/**
 	 * @return The entry block of the then branch.
 	 */
 	Block getThenSuccessor();
-	
+
 	/**
 	 * @return The entry block of the else branch.
 	 */

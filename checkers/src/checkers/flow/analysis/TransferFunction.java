@@ -31,7 +31,7 @@ import com.sun.source.tree.MethodTree;
  * 
  * @author Stefan Heule
  * 
- * @param <A>
+ * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
 public interface TransferFunction<S extends Store<S>> extends
