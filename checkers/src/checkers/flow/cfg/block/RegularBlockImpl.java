@@ -15,7 +15,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 
 	/** Internal representation of the contents. */
 	protected List<Node> contents;
-	
+
 	/**
 	 * Initialize an empty basic block to be filled with contents and linked to
 	 * other basic blocks later.
@@ -39,7 +39,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 	public void addStatements(List<? extends Node> ts) {
 		contents.addAll(ts);
 	}
-	
+
 	@Override
 	public List<Node> getContents() {
 		return new LinkedList<Node>(contents);

@@ -2,7 +2,7 @@ package checkers.flow.cfg.block;
 
 
 /**
- * A basic block that is has at most one successor.
+ * A basic block that has at most one successor.
  * 
  * @author Stefan Heule
  * 

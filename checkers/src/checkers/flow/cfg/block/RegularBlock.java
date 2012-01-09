@@ -16,9 +16,9 @@ public interface RegularBlock extends SingleSuccessorBlock {
 	 * @return The sequence of {@link Node}s.
 	 */
 	List<Node> getContents();
-	
+
 	/**
-	 * @return The the regular successor block.
+	 * @return The regular successor block.
 	 */
 	Block getRegularSuccessor();
 

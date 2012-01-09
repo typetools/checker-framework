@@ -3,7 +3,7 @@ package checkers.flow.analysis;
 import javax.lang.model.element.AnnotationMirror;
 
 /**
- * An implementation of an asbtract value used by the default dataflow analysis.
+ * An implementation of an abstract value used by the default dataflow analysis.
  * 
  * @author Stefan Heule
  * 
