@@ -3,7 +3,6 @@ package checkers.flow.cfg.playground;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.cfg.JavaSource2CFGDOT;
 import checkers.flow.constantpropagation.Constant;
-import checkers.flow.constantpropagation.ConstantPropagationConditionalTransfer;
 import checkers.flow.constantpropagation.ConstantPropagationStore;
 import checkers.flow.constantpropagation.ConstantPropagationTransfer;
 
@@ -23,9 +22,8 @@ public class ConstantPropagationPlayground {
 
 		// run the analysis and create a PDF file
 		ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
-		ConstantPropagationConditionalTransfer condTransfer = new ConstantPropagationConditionalTransfer();
 		Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis = new Analysis<>(
-				transfer, condTransfer, transfer);
+				transfer);
 		JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputFileName, method,
 				clazz, true, analysis);
 	}
