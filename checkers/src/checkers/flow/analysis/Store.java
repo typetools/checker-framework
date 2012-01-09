@@ -11,7 +11,7 @@ package checkers.flow.analysis;
  *            {@code leastUpperBound}. Usually it is the implementing class
  *            itself, e.g. in {@code T extends Store<T>}.
  */
-public interface Store<S> {
+public interface Store<S extends Store<S>> {
 
 	/** @return An exact copy of this store. */
 	S copy();
