@@ -44,7 +44,7 @@ public class CFGDOTVisualizer {
 	 *            information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <S extends Store> String visualize(
+	public static <S extends Store<S>> String visualize(
 			Block entry, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
@@ -140,7 +140,7 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <S extends Store> String visualizeContent(
+	protected static <S extends Store<S>> String visualizeContent(
 			Block bb, /* @Nullable */Map<Block, S> stores) {
 		StringBuilder sb = new StringBuilder();
 

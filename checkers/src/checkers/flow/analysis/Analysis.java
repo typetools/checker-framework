@@ -19,7 +19,7 @@ import checkers.flow.cfg.node.Node;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
-public class Analysis<A extends AbstractValue, S extends Store, T extends TransferFunction<S>> {
+public class Analysis<A extends AbstractValue, S extends Store<S>, T extends TransferFunction<S>> {
 
 	/** The transfer function for regular nodes. */
 	protected T regularTransfer;
@@ -78,7 +78,6 @@ public class Analysis<A extends AbstractValue, S extends Store, T extends Transf
 	 * 
 	 * @param cfg
 	 */
-	@SuppressWarnings("unchecked")
 	public void performAnalysis(ControlFlowGraph cfg) {
 		init(cfg);
 
@@ -99,7 +98,7 @@ public class Analysis<A extends AbstractValue, S extends Store, T extends Transf
 				RegularBlock rb = (RegularBlock) b;
 
 				// apply transfer function to contents
-				S store = (S) getStoreBefore(rb).copy();
+				S store = getStoreBefore(rb).copy();
 				for (Node n : rb.getContents()) {
 					store = n.accept(regularTransfer, store);
 				}
@@ -114,20 +113,20 @@ public class Analysis<A extends AbstractValue, S extends Store, T extends Transf
 				ConditionalBlock cb = (ConditionalBlock) b;
 
 				// apply transfer function to compute 'then' store
-				S thenStore = (S) getStoreBefore(cb).copy();
+				S thenStore = getStoreBefore(cb).copy();
 				thenStore = cb.getCondition().accept(condTrueTransfer,
 						thenStore);
 
 				// apply transfer function to compute 'else' store
 				S elseStore;
 				if (condTrueTransfer != condFalseTransfer) {
-					elseStore = (S) getStoreBefore(cb).copy();
+					elseStore = getStoreBefore(cb).copy();
 					elseStore = cb.getCondition().accept(condFalseTransfer,
 							elseStore);
 				} else {
 					// optimization: if the two transfer function are the same,
 					// don't compute the resulting store twice.
-					elseStore = (S) thenStore.copy();
+					elseStore = thenStore.copy();
 				}
 
 				// propagate store to successor
@@ -191,14 +190,13 @@ public class Analysis<A extends AbstractValue, S extends Store, T extends Transf
 	 * Add a store before the basic block <code>b</code> by merging with the
 	 * existing store for that location.
 	 */
-	@SuppressWarnings("unchecked")
 	protected void addStoreBefore(Block b, S s) {
 		S storeBefore = getStoreBefore(b);
 		S newStoreBefore;
 		if (storeBefore == null) {
 			newStoreBefore = s;
 		} else {
-			newStoreBefore = (S) storeBefore.leastUpperBound(s);
+			newStoreBefore = storeBefore.leastUpperBound(s);
 		}
 		stores.put(b, newStoreBefore);
 		if (storeBefore == null || !storeBefore.equals(newStoreBefore)) {
