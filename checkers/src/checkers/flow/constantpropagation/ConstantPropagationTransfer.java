@@ -2,8 +2,11 @@ package checkers.flow.constantpropagation;
 
 import java.util.List;
 
+import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.TransferFunction;
+import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
@@ -12,8 +15,9 @@ import checkers.flow.constantpropagation.Constant.Type;
 
 import com.sun.source.tree.MethodTree;
 
-public class ConstantPropagationTransfer extends
-		SinkNodeVisitor<ConstantPropagationStore, ConstantPropagationStore>
+public class ConstantPropagationTransfer
+		extends
+		SinkNodeVisitor<TransferResult<ConstantPropagationStore>, ConstantPropagationStore>
 		implements TransferFunction<ConstantPropagationStore> {
 
 	@Override
@@ -30,26 +34,46 @@ public class ConstantPropagationTransfer extends
 	}
 
 	@Override
-	public ConstantPropagationStore visitNode(Node n, ConstantPropagationStore p) {
-		return p;
+	public TransferResult<ConstantPropagationStore> visitNode(Node n,
+			ConstantPropagationStore p) {
+		// TODO: can/do we want to optimize this to not always copy a store?
+		return new TransferResult<>(p, p.copy());
 	}
 
 	@Override
-	public ConstantPropagationStore visitAssignment(AssignmentNode n,
-			ConstantPropagationStore p) {
+	public TransferResult<ConstantPropagationStore> visitAssignment(
+			AssignmentNode n, ConstantPropagationStore p) {
 		Node target = n.getTarget();
 		if (target instanceof LocalVariableNode) {
 			LocalVariableNode t = (LocalVariableNode) target;
 			p.setInformation(t, p.getInformation(n.getExpression()));
 		}
-		return p;
+		return new TransferResult<>(p);
 	}
 
 	@Override
-	public ConstantPropagationStore visitIntegerLiteral(IntegerLiteralNode n,
-			ConstantPropagationStore p) {
+	public TransferResult<ConstantPropagationStore> visitIntegerLiteral(
+			IntegerLiteralNode n, ConstantPropagationStore p) {
 		p.setInformation(n, new Constant(n.getValue()));
-		return p;
+		return new TransferResult<>(p);
+	}
+	
+	@Override
+	public TransferResult<ConstantPropagationStore> visitEqualTo(EqualToNode n,
+			ConstantPropagationStore p) {
+		ConstantPropagationStore old = p.copy();
+		Node left = n.getLeftOperand();
+		Node right = n.getRightOperand();
+		process(p, left, right);
+		process(p, right, left);
+		return new ConditionalTransferResult<ConstantPropagationStore>(p, old);
+	}
+
+	protected void process(ConstantPropagationStore p, Node a, Node b) {
+		Constant val = p.getInformation(a);
+		if (b instanceof LocalVariableNode && val.isConstant()) {
+			p.setInformation(b, val);
+		}
 	}
 
 }
