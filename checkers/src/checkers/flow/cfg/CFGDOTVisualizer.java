@@ -10,6 +10,7 @@ import java.util.Set;
 
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
+import checkers.flow.analysis.TransferInput;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
@@ -45,7 +46,7 @@ public class CFGDOTVisualizer {
 	 * @return String representation of the graph in the DOT language.
 	 */
 	public static <S extends Store<S>> String visualize(
-			Block entry, /* @Nullable */Map<Block, S> stores) {
+			Block entry, /* @Nullable */Map<Block, TransferInput<S>> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<>();
@@ -141,7 +142,7 @@ public class CFGDOTVisualizer {
 	 * @return String representation.
 	 */
 	protected static <S extends Store<S>> String visualizeContent(
-			Block bb, /* @Nullable */Map<Block, S> stores) {
+			Block bb, /* @Nullable */Map<Block, TransferInput<S>> stores) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents

@@ -26,7 +26,7 @@ import com.sun.source.tree.MethodTree;
  * <p>
  * 
  * <em>Important</em>: The individual transfer functions ( {@code visit*}) are
- * allowed to use (and modify) the store passed as argument in any way; the
+ * allowed to use (and modify) the stores contained in the argument passed; the
  * ownership is transfered from the caller to that function.
  * 
  * @author Stefan Heule
@@ -35,7 +35,7 @@ import com.sun.source.tree.MethodTree;
  *            The {@link Store} used to keep track of intermediate results.
  */
 public interface TransferFunction<S extends Store<S>> extends
-		NodeVisitor<RegularTransferResult<S>, S> {
+		NodeVisitor<TransferResult<S>, TransferInput<S>> {
 
 	/** @return The initial store to be used by the dataflow analysis. */
 	S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
