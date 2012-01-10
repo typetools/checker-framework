@@ -3,11 +3,10 @@ package checkers.flow.analysis;
 import java.util.Map;
 
 /**
- * {@code ConditionalTransferResult} is used as the result type of the
- * individual transfer functions of a {@link TransferFunction}. Unlike
- * {@link TransferResult}, two different stores can potentially be returned for
- * the 'then' and 'else' edge. The corresponding {@link Node} must be of boolean
- * type and part of a conditional basic block.
+ * Implementation of a {@link TransferResult} with two non-exceptional store;
+ * one for the 'then' edge and one for 'else'. The result of
+ * {@code getRegularStore} will be the least upper bound of the two underlying
+ * stores.
  * 
  * @author Stefan Heule
  * 
@@ -42,7 +41,6 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 * aliases). Complete control over the objects is transfered to this class.
 	 */
 	public ConditionalTransferResult(S thenStore, S elseStore) {
-		super(null);
 		this.thenStore = thenStore;
 		this.elseStore = elseStore;
 	}
@@ -69,7 +67,7 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 */
 	public ConditionalTransferResult(S thenStore, S elseStore,
 			Map<Class<? extends Throwable>, S> exceptionalStores) {
-		super(null, exceptionalStores);
+		this.exceptionalStores = exceptionalStores;
 		this.thenStore = thenStore;
 		this.elseStore = elseStore;
 	}
@@ -87,6 +85,11 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	@Override
 	public S getElseStore() {
 		return elseStore;
+	}
+	
+	@Override
+	public boolean containsTwoStores() {
+		return true;
 	}
 
 }
