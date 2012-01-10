@@ -20,7 +20,7 @@ import com.sun.source.tree.MethodTree;
  * be used in the dataflow analysis.</li>
  * <li>A function for every {@link Node} type that determines the behavior of
  * the dataflow analysis in that case. This method takes a {@link Node} and an
- * incoming store, and produces a {@link TransferResult}.</li>
+ * incoming store, and produces a {@link RegularTransferResult}.</li>
  * </ul>
  * 
  * <p>
@@ -35,7 +35,7 @@ import com.sun.source.tree.MethodTree;
  *            The {@link Store} used to keep track of intermediate results.
  */
 public interface TransferFunction<S extends Store<S>> extends
-		NodeVisitor<TransferResult<S>, S> {
+		NodeVisitor<RegularTransferResult<S>, S> {
 
 	/** @return The initial store to be used by the dataflow analysis. */
 	S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
