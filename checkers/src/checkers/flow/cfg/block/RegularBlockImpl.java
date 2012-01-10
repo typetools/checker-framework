@@ -38,7 +38,9 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 	 * Add multiple statements to the contents of this basic block.
 	 */
 	public void addStatements(List<? extends Node> ts) {
-		contents.addAll(ts);
+		for (Node t : ts) {
+			addStatement(t);
+		}
 	}
 
 	@Override
