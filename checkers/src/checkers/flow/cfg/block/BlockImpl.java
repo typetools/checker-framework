@@ -1,5 +1,6 @@
 package checkers.flow.cfg.block;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public abstract class BlockImpl implements Block {
 
 	@Override
 	public Map<Class<? extends Throwable>, Block> getExceptionalSuccessors() {
-		return new HashMap<>(exceptionalSuccessors);
+		return Collections.unmodifiableMap(exceptionalSuccessors);
 	}
 
 	@Override
