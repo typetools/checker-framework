@@ -4,6 +4,7 @@ import java.util.List;
 
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.TransferFunction;
+import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.EqualToNode;
@@ -17,7 +18,7 @@ import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
 		extends
-		SinkNodeVisitor<TransferResult<ConstantPropagationStore>, ConstantPropagationStore>
+		SinkNodeVisitor<RegularTransferResult<ConstantPropagationStore>, ConstantPropagationStore>
 		implements TransferFunction<ConstantPropagationStore> {
 
 	@Override
@@ -36,7 +37,7 @@ public class ConstantPropagationTransfer
 	@Override
 	public TransferResult<ConstantPropagationStore> visitNode(Node n,
 			ConstantPropagationStore p) {
-		return new TransferResult<>(p);
+		return new RegularTransferResult<>(p);
 	}
 
 	@Override
@@ -47,14 +48,14 @@ public class ConstantPropagationTransfer
 			LocalVariableNode t = (LocalVariableNode) target;
 			p.setInformation(t, p.getInformation(n.getExpression()));
 		}
-		return new TransferResult<>(p);
+		return new RegularTransferResult<>(p);
 	}
 
 	@Override
 	public TransferResult<ConstantPropagationStore> visitIntegerLiteral(
 			IntegerLiteralNode n, ConstantPropagationStore p) {
 		p.setInformation(n, new Constant(n.getValue()));
-		return new TransferResult<>(p);
+		return new RegularTransferResult<>(p);
 	}
 	
 	@Override
