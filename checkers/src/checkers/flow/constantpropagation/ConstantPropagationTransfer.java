@@ -5,6 +5,7 @@ import java.util.List;
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.RegularTransferResult;
+import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.EqualToNode;
@@ -18,7 +19,7 @@ import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
 		extends
-		SinkNodeVisitor<RegularTransferResult<ConstantPropagationStore>, ConstantPropagationStore>
+		SinkNodeVisitor<TransferResult<ConstantPropagationStore>, TransferInput<ConstantPropagationStore>>
 		implements TransferFunction<ConstantPropagationStore> {
 
 	@Override
@@ -36,13 +37,14 @@ public class ConstantPropagationTransfer
 
 	@Override
 	public TransferResult<ConstantPropagationStore> visitNode(Node n,
-			ConstantPropagationStore p) {
-		return new RegularTransferResult<>(p);
+			TransferInput<ConstantPropagationStore> p) {
+		return new RegularTransferResult<>(p.getRegularStore());
 	}
 
 	@Override
 	public TransferResult<ConstantPropagationStore> visitAssignment(
-			AssignmentNode n, ConstantPropagationStore p) {
+			AssignmentNode n, TransferInput<ConstantPropagationStore> pi) {
+		ConstantPropagationStore p = pi.getRegularStore();
 		Node target = n.getTarget();
 		if (target instanceof LocalVariableNode) {
 			LocalVariableNode t = (LocalVariableNode) target;
@@ -53,14 +55,16 @@ public class ConstantPropagationTransfer
 
 	@Override
 	public TransferResult<ConstantPropagationStore> visitIntegerLiteral(
-			IntegerLiteralNode n, ConstantPropagationStore p) {
+			IntegerLiteralNode n, TransferInput<ConstantPropagationStore> pi) {
+		ConstantPropagationStore p = pi.getRegularStore();
 		p.setInformation(n, new Constant(n.getValue()));
 		return new RegularTransferResult<>(p);
 	}
 	
 	@Override
 	public TransferResult<ConstantPropagationStore> visitEqualTo(EqualToNode n,
-			ConstantPropagationStore p) {
+			TransferInput<ConstantPropagationStore> pi) {
+		ConstantPropagationStore p = pi.getRegularStore();
 		ConstantPropagationStore old = p.copy();
 		Node left = n.getLeftOperand();
 		Node right = n.getRightOperand();
