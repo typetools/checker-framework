@@ -14,8 +14,17 @@ import com.sun.source.tree.Tree;
  */
 public abstract class Node {
 
-	/** The basic block this node belongs to. */
-	protected/* @LazyNonNull */Block block;
+	/**
+	 * The basic block this node belongs to. The following invariants hold:
+	 * 
+	 * <pre>
+	 * block == null || block instanceof RegularBlock || block instanceof ConditionalBlock
+	 * block instanceof RegularBlock ==> block.getContents().contains(this)
+	 * block instanceof ConditionalBlock ==> block.getCondition() == this
+	 * block == null <==> "This object represents a parameter of the method."
+	 * </pre>
+	 */
+	protected/* @Nullable */Block block;
 
 	/** @return The basic block this node belongs to. */
 	public Block getBlock() {
