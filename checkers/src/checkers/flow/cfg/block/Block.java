@@ -2,7 +2,6 @@ package checkers.flow.cfg.block;
 
 import java.util.Map;
 
-
 /**
  * Represents a basic block in a control flow graph.
  * 
@@ -35,7 +34,7 @@ public interface Block {
 	long getId();
 
 	/**
-	 * @return The list of exceptional successor blocks.
+	 * @return The list of exceptional successor blocks as an unmodifiable map.
 	 */
 	Map<Class<? extends Throwable>, Block> getExceptionalSuccessors();
 

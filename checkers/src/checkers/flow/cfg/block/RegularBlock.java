@@ -13,7 +13,7 @@ import checkers.flow.cfg.node.Node;
 public interface RegularBlock extends SingleSuccessorBlock {
 
 	/**
-	 * @return The sequence of {@link Node}s.
+	 * @return The unmodifiable sequence of {@link Node}s.
 	 */
 	List<Node> getContents();
 

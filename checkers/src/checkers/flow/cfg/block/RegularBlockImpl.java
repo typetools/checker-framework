@@ -1,5 +1,6 @@
 package checkers.flow.cfg.block;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 
 	@Override
 	public List<Node> getContents() {
-		return new LinkedList<Node>(contents);
+		return Collections.unmodifiableList(contents);
 	}
 
 	@Override
