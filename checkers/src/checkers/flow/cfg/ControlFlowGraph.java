@@ -11,6 +11,7 @@ import java.util.Set;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
+import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
@@ -91,7 +92,10 @@ public class ControlFlowGraph {
 				}
 			}
 
-			succs.addAll(cur.getExceptionalSuccessors().values());
+			if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+				ExceptionBlock ecur = (ExceptionBlock) cur;
+				succs.addAll(ecur.getExceptionalSuccessors().values());
+			}
 
 			for (Block b : succs) {
 				if (!visited.contains(b)) {

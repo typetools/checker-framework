@@ -11,6 +11,7 @@ import java.util.Queue;
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
+import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -74,28 +75,49 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				// loop will run at least one, making transferResult non-null
 
 				// propagate store to successors
-				Block succ = rb.getSuccessor();
-				addStoreBefore(succ, store);
-				propagateToExceptionalSuccessors(b, transferResult, storeBefore);
+				addStoreBefore(rb.getSuccessor(), store);
+				break;
+			}
+			
+			case EXCEPTION_BLOCK: {
+				ExceptionBlock eb = (ExceptionBlock) b;
+
+				// apply transfer function to content
+				TransferInput<S> storeBefore = getStoreBefore(eb);
+				TransferInput<S> store = storeBefore.copy();
+				Node node = eb.getNode();
+				TransferResult<S> transferResult = node.accept(transferFunction, store);;
+
+				// propagate store to successor
+				addStoreBefore(eb.getSuccessor(), store);
+				
+				// propagate store to exceptional sucessors
+				for (Entry<Class<? extends Throwable>, Block> e : eb
+						.getExceptionalSuccessors().entrySet()) {
+					Block exceptionSucc = e.getValue();
+					Class<? extends Throwable> cause = e.getKey();
+					S exceptionalStore = transferResult.getExceptionalStore(cause);
+					if (exceptionalStore != null) {
+						addStoreBefore(exceptionSucc, new TransferInput<>(exceptionalStore));
+					} else {
+						addStoreBefore(exceptionSucc, storeBefore.copy());
+					}
+				}
 				break;
 			}
 
 			case CONDITIONAL_BLOCK: {
 				ConditionalBlock cb = (ConditionalBlock) b;
 
-				// apply transfer function
+				// get store before
 				TransferInput<S> storeBefore = getStoreBefore(cb);
 				TransferInput<S> store = storeBefore.copy();
-				TransferResult<S> transferResult = cb.getCondition().accept(
-						transferFunction, store);
 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
-				addStoreBefore(thenSucc, new TransferInput<>(transferResult.getThenStore()));
-				addStoreBefore(elseSucc, new TransferInput<>(transferResult.getElseStore()));
-				propagateToExceptionalSuccessors(cb, transferResult,
-						storeBefore);
+				addStoreBefore(thenSucc, new TransferInput<>(store.getThenStore()));
+				addStoreBefore(elseSucc, new TransferInput<>(store.getElseStore()));
 				break;
 			}
 
@@ -113,34 +135,6 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 			default:
 				assert false;
 				break;
-			}
-		}
-	}
-
-	/**
-	 * Propagate the transfer results {@code transferResult} to the exceptional
-	 * successors of block {@code b}.
-	 * 
-	 * @param b
-	 *            The basic block.
-	 * @param transferResult
-	 *            The transfer result to get the exceptional stores.
-	 * @param storeBefore
-	 *            A reference to the store before the block {@code b}. This
-	 *            method will not alias or modify the store, but rather create a
-	 *            copy if necessary.
-	 */
-	protected void propagateToExceptionalSuccessors(Block b,
-			TransferResult<S> transferResult, TransferInput<S> storeBefore) {
-		for (Entry<Class<? extends Throwable>, Block> e : b
-				.getExceptionalSuccessors().entrySet()) {
-			Block exceptionSucc = e.getValue();
-			Class<? extends Throwable> cause = e.getKey();
-			S exceptionalStore = transferResult.getExceptionalStore(cause);
-			if (exceptionalStore != null) {
-				addStoreBefore(exceptionSucc, new TransferInput<>(exceptionalStore));
-			} else {
-				addStoreBefore(exceptionSucc, storeBefore.copy());
 			}
 		}
 	}
