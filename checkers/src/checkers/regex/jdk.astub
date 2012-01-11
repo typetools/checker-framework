@@ -19,7 +19,6 @@ class String {
     public String replaceAll(@Regex String regex, String replacement);
     public String[] split(@Regex String regex, int limit);
     public String[] split(@Regex String regex);
-    public @PolyRegex String trim() @PolyRegex;
 }
 
 package javax.swing.plaf.synth;
