@@ -7,19 +7,20 @@ import checkers.flow.cfg.node.Node;
 /**
  * A regular basic block that contains a sequence of {@link Node}s.
  * 
+ * <p>
+ * 
+ * The following invariant holds.
+ * 
+ * <pre>
+ * forall n in getContents() :: n.getBlock() == this
+ * </pre>
+ * 
  * @author Stefan Heule
  * 
  */
 public interface RegularBlock extends SingleSuccessorBlock {
 
 	/**
-	 * Return the unmodifiable sequence of {@link Node}s. The following
-	 * invariant holds.
-	 * 
-	 * <pre>
-	 * forall n in getContents() :: n.getBlock() == this
-	 * </pre>
-	 * 
 	 * @return The unmodifiable sequence of {@link Node}s.
 	 */
 	List<Node> getContents();

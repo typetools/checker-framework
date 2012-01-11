@@ -14,6 +14,7 @@ import checkers.flow.analysis.TransferInput;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
+import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
@@ -45,8 +46,8 @@ public class CFGDOTVisualizer {
 	 *            information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <S extends Store<S>> String visualize(
-			Block entry, /* @Nullable */Map<Block, TransferInput<S>> stores) {
+	public static <S extends Store<S>> String visualize(Block entry, /* @Nullable */
+			Map<Block, TransferInput<S>> stores) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<>();
@@ -94,20 +95,24 @@ public class CFGDOTVisualizer {
 				}
 			}
 
-			for (Entry<Class<? extends Throwable>, Block> e : cur
-					.getExceptionalSuccessors().entrySet()) {
-				Block b = e.getValue();
-				Class<?> cause = e.getKey();
-				String exception = cause.getCanonicalName();
-				if (exception.startsWith("java.lang.")) {
-					exception = exception.replace("java.lang.", "");
-				}
+			// exceptional edges
+			if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+				ExceptionBlock ecur = (ExceptionBlock) cur;
+				for (Entry<Class<? extends Throwable>, Block> e : ecur
+						.getExceptionalSuccessors().entrySet()) {
+					Block b = e.getValue();
+					Class<?> cause = e.getKey();
+					String exception = cause.getCanonicalName();
+					if (exception.startsWith("java.lang.")) {
+						exception = exception.replace("java.lang.", "");
+					}
 
-				sb2.append("    " + cur.getId() + " -> " + b.getId());
-				sb2.append(" [label=\"" + exception + "\"];\n");
-				if (!visited.contains(b)) {
-					visited.add(b);
-					worklist.add(b);
+					sb2.append("    " + cur.getId() + " -> " + b.getId());
+					sb2.append(" [label=\"" + exception + "\"];\n");
+					if (!visited.contains(b)) {
+						visited.add(b);
+						worklist.add(b);
+					}
 				}
 			}
 
@@ -141,8 +146,11 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <S extends Store<S>> String visualizeContent(
-			Block bb, /* @Nullable */Map<Block, TransferInput<S>> stores) {
+	protected static <S extends Store<S>> String visualizeContent(Block bb, /*
+																			 * @
+																			 * Nullable
+																			 */
+			Map<Block, TransferInput<S>> stores) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -151,8 +159,10 @@ public class CFGDOTVisualizer {
 		case REGULAR_BLOCK:
 			contents.addAll(((RegularBlock) bb).getContents());
 			break;
+		case EXCEPTION_BLOCK:
+			contents.add(((ExceptionBlock) bb).getNode());
+			break;
 		case CONDITIONAL_BLOCK:
-			contents.add(((ConditionalBlock) bb).getCondition());
 			break;
 		case SPECIAL_BLOCK:
 			break;
@@ -183,6 +193,8 @@ public class CFGDOTVisualizer {
 					sb.append("<exceptional-exit>");
 					break;
 				}
+			} else if (bb.getType() == BlockType.CONDITIONAL_BLOCK) {
+				return "";
 			} else {
 				return "?? empty ??";
 			}
@@ -192,12 +204,17 @@ public class CFGDOTVisualizer {
 		if (stores != null) {
 			Object store = Analysis.readFromStore(stores, bb);
 			StringBuilder sb2 = new StringBuilder();
-			sb2.append(store.toString());
+			
+			// split store representation to two lines
+			String s = store.toString().replace("}, else={", "}\\nelse={");
+			sb2.append(s.subSequence(1, s.length() - 1));
+			
+			// separator
 			sb2.append("\\n~~~~~~~~~\\n");
 			sb2.append(sb);
 			sb = sb2;
 		}
-		
+
 		return sb.toString();
 	}
 

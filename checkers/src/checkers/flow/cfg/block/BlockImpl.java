@@ -1,8 +1,5 @@
 package checkers.flow.cfg.block;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Base class of the {@link Block} implementation hierarchy.
@@ -11,9 +8,6 @@ import java.util.Map;
  * 
  */
 public abstract class BlockImpl implements Block {
-
-	/** Set of exceptional successors (or null; lazily initialized). */
-	protected/* @Nullable */Map<Class<? extends Throwable>, Block> exceptionalSuccessors;
 
 	/** A unique ID for this node. */
 	protected long id = BlockImpl.uniqueID();
@@ -32,25 +26,6 @@ public abstract class BlockImpl implements Block {
 	}
 
 	public BlockImpl() {
-	}
-
-	/**
-	 * Add an exceptional successor.
-	 */
-	public void addExceptionalSuccessor(Block b,
-			Class<? extends Throwable> cause) {
-		if (exceptionalSuccessors == null) {
-			exceptionalSuccessors = new HashMap<>();
-		}
-		exceptionalSuccessors.put(cause, b);
-	}
-
-	@Override
-	public Map<Class<? extends Throwable>, Block> getExceptionalSuccessors() {
-		if (exceptionalSuccessors == null) {
-			return Collections.emptyMap();
-		}
-		return Collections.unmodifiableMap(exceptionalSuccessors);
 	}
 
 	@Override

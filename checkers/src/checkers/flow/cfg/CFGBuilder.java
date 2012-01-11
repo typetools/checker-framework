@@ -10,6 +10,7 @@ import java.util.Set;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
+import checkers.flow.cfg.block.ExceptionBlockImpl;
 import checkers.flow.cfg.block.RegularBlockImpl;
 import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock;
@@ -26,7 +27,6 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
-import checkers.flow.util.NodeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -455,18 +455,18 @@ public class CFGBuilder {
 		 * @return The same node (for convenience).
 		 */
 		protected Node extendWithNode(Node node) {
-			if (conditionalMode) {
-				ConditionalBlockImpl cb = new ConditionalBlockImpl();
-				cb.setCondition(node);
-				extendWithBasicBlock(cb);
-				return node;
-			} else {
-				if (currentBlock == null) {
-					extendWithBasicBlock(new RegularBlockImpl());
-				}
-				currentBlock.addStatement(node);
-				return node;
+			// add node
+			if (currentBlock == null) {
+				extendWithBasicBlock(new RegularBlockImpl());
 			}
+			currentBlock.addStatement(node);
+			
+			// add conditional block if necessary
+			if (conditionalMode) {
+				extendWithBasicBlock(new ConditionalBlockImpl());
+			}
+			
+			return node;
 		}
 
 		/**
@@ -482,9 +482,9 @@ public class CFGBuilder {
 			assert conditionalMode;
 			conditionalMode = false;
 			extendWithNode(node);
-			RegularBlockImpl trueBlock = finishCurrentBlock();
+			RegularBlockImpl block = finishCurrentBlock();
 			conditionalMode = true;
-			return trueBlock;
+			return block;
 		}
 
 		/**
@@ -499,7 +499,6 @@ public class CFGBuilder {
 				clearAnyPredecessor();
 			}
 
-			clearAnyPredecessor();
 			if (bb.getType() == BlockType.REGULAR_BLOCK) {
 				currentBlock = (RegularBlockImpl) bb;
 			} else if (bb instanceof SingleSuccessorBlockImpl) {
@@ -538,25 +537,20 @@ public class CFGBuilder {
 		 */
 		protected Node addToCurrentBlockWithException(Node node,
 				Set<Class<? extends Throwable>> causes) {
-			// TODO: make this method more general
-			// make sure that 'node' gets its own basic block so that the
-			// exception linking is correct
-			if (!NodeUtils.isBooleanTypeNode(node)) {
-				extendWithBasicBlock(new RegularBlockImpl());
-			} else {
-				// in this case, addToCurrentBlock will create a new block for
-				// 'node'
+			
+			if (currentBlock != null) {
+				finishCurrentBlock();
 			}
-
-			extendWithNode(node);
+			
+			ExceptionBlockImpl block = new ExceptionBlockImpl();
+			block.setNode(node);
+			extendWithBasicBlock(block);
 
 			// add exceptional edges
 			// TODO: catch clauses, finally, ...
 			for (Class<? extends Throwable> c : causes) {
-				currentBlock.addExceptionalSuccessor(exceptionalExitBlock, c);
+				block.addExceptionalSuccessor(exceptionalExitBlock, c);
 			}
-
-			finishCurrentBlock();
 
 			return node;
 		}

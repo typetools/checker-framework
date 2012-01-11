@@ -1,18 +1,12 @@
 package checkers.flow.cfg.block;
 
-import checkers.flow.cfg.node.Node;
-
 /**
  * Implementation of a conditional basic block.
  * 
  * @author Stefan Heule
  * 
  */
-public class ConditionalBlockImpl extends BlockImpl implements
-		ConditionalBlock {
-
-	/** Condition of the if statement. */
-	protected Node condition;
+public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock {
 
 	/** Successor of the then branch. */
 	protected BlockImpl thenSuccessor;
@@ -26,14 +20,6 @@ public class ConditionalBlockImpl extends BlockImpl implements
 	 */
 	public ConditionalBlockImpl() {
 		type = BlockType.CONDITIONAL_BLOCK;
-	}
-
-	/**
-	 * Set the condition.
-	 */
-	public void setCondition(Node c) {
-		condition = c;
-		c.setBlock(this);
 	}
 
 	/**
@@ -61,13 +47,8 @@ public class ConditionalBlockImpl extends BlockImpl implements
 	}
 
 	@Override
-	public Node getCondition() {
-		return condition;
-	}
-
-	@Override
 	public String toString() {
-		return "ConditionalBlock(cond=" + condition + ")";
+		return "ConditionalBlock()";
 	}
 
 }
