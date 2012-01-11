@@ -122,6 +122,9 @@ public class TransferInput<S extends Store<S>> {
 	 *         to evaluates to {@code true}.
 	 */
 	public S getThenStore() {
+		if (store == null) {
+			return thenStore;
+		}
 		return store;
 	}
 
@@ -130,6 +133,9 @@ public class TransferInput<S extends Store<S>> {
 	 *         to evaluates to {@code false}.
 	 */
 	public S getElseStore() {
+		if (store == null) {
+			return elseStore;
+		}
 		// copy the store such that it is the same as the result of getThenStore
 		// (that is, identical according to equals), but two different objects.
 		return store.copy();
