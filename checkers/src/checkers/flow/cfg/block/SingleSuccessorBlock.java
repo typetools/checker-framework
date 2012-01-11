@@ -1,8 +1,7 @@
 package checkers.flow.cfg.block;
 
-
 /**
- * A basic block that has at most one successor.
+ * A basic block that has at exactly one non-exceptional successor.
  * 
  * @author Stefan Heule
  * 
@@ -10,7 +9,8 @@ package checkers.flow.cfg.block;
 public interface SingleSuccessorBlock extends Block {
 
 	/**
-	 * @return The successor block, or null.
+	 * @return The non-exceptional successor block, or {@code null} if there is
+	 *         no successor.
 	 */
 	/* @Nullable */Block getSuccessor();
 

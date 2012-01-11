@@ -12,18 +12,6 @@ import checkers.flow.cfg.node.Node;
 public interface ConditionalBlock extends Block {
 
 	/**
-	 * Return the condition of this conditional basic block. The following
-	 * invariant holds.
-	 * 
-	 * <pre>
-	 * getCondition().getBlock() == this
-	 * </pre>
-	 * 
-	 * @return The condition of this conditional basic block.
-	 */
-	Node getCondition();
-
-	/**
 	 * @return The entry block of the then branch.
 	 */
 	Block getThenSuccessor();
