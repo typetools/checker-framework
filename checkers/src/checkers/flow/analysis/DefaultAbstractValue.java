@@ -1,6 +1,7 @@
 package checkers.flow.analysis;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -38,7 +39,7 @@ public class DefaultAbstractValue implements AbstractValue {
 	 */
 	public DefaultAbstractValue(Set<AnnotationMirror> annotations,
 			QualifierHierarchy qualifierHierarchy) {
-		this.annotations = annotations;
+		this.annotations = new HashSet<>(annotations);
 		this.qualifierHierarchy = qualifierHierarchy;
 	}
 
