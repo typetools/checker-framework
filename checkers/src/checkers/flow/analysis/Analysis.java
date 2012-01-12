@@ -75,7 +75,9 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				// loop will run at least one, making transferResult non-null
 
 				// propagate store to successors
-				addStoreBefore(rb.getSuccessor(), store);
+				Block succ = rb.getSuccessor();
+				assert succ != null : "regular basic block without non-exceptional successor unexpected";
+				addStoreBefore(succ, store);
 				break;
 			}
 			
@@ -89,7 +91,10 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 				TransferResult<S> transferResult = node.accept(transferFunction, store);;
 
 				// propagate store to successor
-				addStoreBefore(eb.getSuccessor(), store);
+				Block succ = eb.getSuccessor();
+				if (succ != null) {
+					addStoreBefore(succ, store);
+				}
 				
 				// propagate store to exceptional sucessors
 				for (Entry<Class<? extends Throwable>, Block> e : eb
