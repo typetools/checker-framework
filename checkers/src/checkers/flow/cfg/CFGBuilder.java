@@ -415,7 +415,7 @@ public class CFGBuilder {
 				public void mergeWith(RegularBlockImpl b2) {
 					assert bb.getType() == BlockType.REGULAR_BLOCK;
 					RegularBlockImpl rb = (RegularBlockImpl) bb;
-					rb.addStatements(b2.getContents());
+					rb.addNodes(b2.getContents());
 				}
 
 				@Override
@@ -498,10 +498,10 @@ public class CFGBuilder {
 			// add node
 			if (currentBlock == null) {
 				RegularBlockImpl bb = new RegularBlockImpl();
-				bb.addStatement(node);
+				bb.addNode(node);
 				extendWithBasicBlock(bb);
 			} else {
-				currentBlock.addStatement(node);
+				currentBlock.addNode(node);
 			}
 			
 			// add conditional block if necessary
