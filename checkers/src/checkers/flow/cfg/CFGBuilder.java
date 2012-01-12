@@ -240,6 +240,14 @@ public class CFGBuilder {
 			public String toString() {
 				return componentList().toString();
 			}
+
+			/**
+			 * Merge the contents of {@code bb} with the this block.
+			 */
+			abstract public void mergeWith(RegularBlockImpl bb);
+
+			/** Is a merge possible? */
+			abstract public boolean canMerge();
 		}
 
 		/**
@@ -285,14 +293,15 @@ public class CFGBuilder {
 		}
 
 		/**
-		 * Set a single conditional basic block as true predecessor, using the
-		 * then-successor.
+		 * Set a single conditional basic block as predecessor (using the 'then'
+		 * successor for {@code true} and 'else' for {@code false}).
 		 * 
 		 * @param cb
 		 *            The basic block to set.
 		 */
-		protected void setThenAsTruePredecessor(final ConditionalBlockImpl cb) {
+		protected void setConditionalPredecessor(final ConditionalBlockImpl cb) {
 			assert truePredecessors == null;
+			assert falsePredecessors == null;
 			truePredecessors = new PredecessorBlockHolder() {
 				@Override
 				public void setSuccessorAs(BlockImpl b) {
@@ -303,18 +312,17 @@ public class CFGBuilder {
 				protected List<String> componentList() {
 					return Collections.singletonList(cb.toString() + "<then>");
 				}
-			};
-		}
 
-		/**
-		 * Set a single conditional basic block as false predecessor, using the
-		 * else-successor.
-		 * 
-		 * @param cb
-		 *            The basic block to set.
-		 */
-		protected void setElseAsFalsePredecessor(final ConditionalBlockImpl cb) {
-			assert falsePredecessors == null;
+				@Override
+				public void mergeWith(RegularBlockImpl bb) {
+					assert false;
+				}
+
+				@Override
+				public boolean canMerge() {
+					return false;
+				}
+			};
 			falsePredecessors = new PredecessorBlockHolder() {
 				@Override
 				public void setSuccessorAs(BlockImpl b) {
@@ -324,6 +332,16 @@ public class CFGBuilder {
 				@Override
 				protected List<String> componentList() {
 					return Collections.singletonList(cb.toString() + "<else>");
+				}
+
+				@Override
+				public void mergeWith(RegularBlockImpl bb) {
+					assert false;
+				}
+
+				@Override
+				public boolean canMerge() {
+					return false;
 				}
 			};
 		}
@@ -392,6 +410,18 @@ public class CFGBuilder {
 				protected List<String> componentList() {
 					return Collections.singletonList(bb.toString());
 				}
+
+				@Override
+				public void mergeWith(RegularBlockImpl b2) {
+					assert bb.getType() == BlockType.REGULAR_BLOCK;
+					RegularBlockImpl rb = (RegularBlockImpl) bb;
+					rb.addStatements(b2.getContents());
+				}
+
+				@Override
+				public boolean canMerge() {
+					return bb.getType() == BlockType.REGULAR_BLOCK;
+				}
 			};
 		}
 
@@ -422,6 +452,16 @@ public class CFGBuilder {
 						l.addAll(b.componentList());
 					}
 					return l;
+				}
+
+				@Override
+				public void mergeWith(RegularBlockImpl bb) {
+					assert false;
+				}
+
+				@Override
+				public boolean canMerge() {
+					return false;
 				}
 			};
 		}
@@ -457,15 +497,18 @@ public class CFGBuilder {
 		protected Node extendWithNode(Node node) {
 			// add node
 			if (currentBlock == null) {
-				extendWithBasicBlock(new RegularBlockImpl());
+				RegularBlockImpl bb = new RegularBlockImpl();
+				bb.addStatement(node);
+				extendWithBasicBlock(bb);
+			} else {
+				currentBlock.addStatement(node);
 			}
-			currentBlock.addStatement(node);
 			
 			// add conditional block if necessary
 			if (conditionalMode) {
 				extendWithBasicBlock(new ConditionalBlockImpl());
 			}
-			
+
 			return node;
 		}
 
@@ -478,7 +521,8 @@ public class CFGBuilder {
 		 *            The node to add.
 		 * @return The basic block the node has been added to.
 		 */
-		protected SingleSuccessorBlockImpl extendWithNodeInConditionalMode(Node node) {
+		protected SingleSuccessorBlockImpl extendWithNodeInConditionalMode(
+				Node node) {
 			assert conditionalMode;
 			conditionalMode = false;
 			extendWithNode(node);
@@ -495,8 +539,17 @@ public class CFGBuilder {
 			if (currentBlock != null) {
 				currentBlock.setSuccessor(bb);
 			} else {
-				truePredecessors.setSuccessorAs(bb);
-				falsePredecessors.setSuccessorAs(bb);
+				// merge two contiguous regular basic blocks into a single one
+				// (only works with a single predecessor)
+				if (bb.getType() == BlockType.REGULAR_BLOCK
+						&& truePredecessors == falsePredecessors
+						&& truePredecessors.canMerge()) {
+					truePredecessors.mergeWith((RegularBlockImpl) bb);
+					return;
+				} else {
+					truePredecessors.setSuccessorAs(bb);
+					falsePredecessors.setSuccessorAs(bb);
+				}
 				clearAnyPredecessor();
 			}
 
@@ -507,8 +560,7 @@ public class CFGBuilder {
 			} else {
 				assert bb.getType() == BlockType.CONDITIONAL_BLOCK;
 				ConditionalBlockImpl cb = (ConditionalBlockImpl) bb;
-				setThenAsTruePredecessor(cb);
-				setElseAsFalsePredecessor(cb);
+				setConditionalPredecessor(cb);
 			}
 		}
 
@@ -539,7 +591,7 @@ public class CFGBuilder {
 		 */
 		protected Node addToCurrentBlockWithException(Node node,
 				Set<Class<? extends Throwable>> causes) {
-			
+
 			ExceptionBlockImpl block = new ExceptionBlockImpl();
 			block.setNode(node);
 			extendWithBasicBlock(block);
@@ -735,7 +787,7 @@ public class CFGBuilder {
 			case EQUAL_TO: {
 
 				// see JLS 15.21
-				
+
 				boolean cm = conditionalMode;
 				conditionalMode = false;
 
@@ -744,9 +796,9 @@ public class CFGBuilder {
 
 				// right-hand side
 				Node right = tree.getRightOperand().accept(this, p);
-				
+
 				conditionalMode = cm;
-				
+
 				// comparison
 				EqualToNode node = new EqualToNode(tree, left, right);
 				return extendWithNode(node);
