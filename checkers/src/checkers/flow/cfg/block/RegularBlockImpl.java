@@ -27,19 +27,19 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 	}
 
 	/**
-	 * Add a statement to the contents of this basic block.
+	 * Add a node to the contents of this basic block.
 	 */
-	public void addStatement(Node t) {
+	public void addNode(Node t) {
 		contents.add(t);
 		t.setBlock(this);
 	}
 
 	/**
-	 * Add multiple statements to the contents of this basic block.
+	 * Add multiple nodes to the contents of this basic block.
 	 */
-	public void addStatements(List<? extends Node> ts) {
+	public void addNodes(List<? extends Node> ts) {
 		for (Node t : ts) {
-			addStatement(t);
+			addNode(t);
 		}
 	}
 
