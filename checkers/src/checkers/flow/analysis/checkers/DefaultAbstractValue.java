@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package checkers.flow.analysis.checkers;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;

@@ -1,4 +1,7 @@
-package checkers.flow.analysis;
+package checkers.flow.analysis.checkers;
+
+import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.Store;
 
 public class DefaultStore<A extends AbstractValue> implements Store<DefaultStore<A>> {
 
