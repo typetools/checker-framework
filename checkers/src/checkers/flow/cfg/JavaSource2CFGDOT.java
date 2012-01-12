@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileManager;
@@ -191,6 +193,12 @@ public class JavaSource2CFGDOT {
 								.elementFromDeclaration(node);
 						if (el.getSimpleName().contentEquals(method)) {
 							m.value = node;
+							// stop execution by throwing an exception. this
+							// makes sure that compilation does not proceed, and
+							// thus the AST is not modified by further phases of
+							// the compilation (and we save the work to do the
+							// compilation).
+							throw new RuntimeException();
 						}
 						return null;
 					}
@@ -207,13 +215,21 @@ public class JavaSource2CFGDOT {
 		JavaFileObject l = fileManager
 				.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
 
+		PrintStream err = System.err;
 		try {
+			// redirect syserr to nothing (and prevent the compiler from issuing
+			// warnings about our exception.
+			System.setErr(new PrintStream(new OutputStream() {
+				@Override
+				public void write(int b) throws IOException {
+				}
+			}));
 			javac.compile(List.of(l), List.of(clas), List.of(sourceChecker));
 		} catch (Throwable e) {
-			e.printStackTrace();
-			System.exit(1);
+			// ok
+		} finally {
+			System.setErr(err);
 		}
-
 		return m.value;
 	}
 
