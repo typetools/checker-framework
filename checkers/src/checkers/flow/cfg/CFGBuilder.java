@@ -242,12 +242,13 @@ public class CFGBuilder {
 			}
 
 			/**
-			 * Merge the contents of {@code bb} with the this block.
+			 * Return the single regular basic block in this holder (only
+			 * applicable if {@code containsSingleRegularBlock} is true).
 			 */
-			abstract public void mergeWith(RegularBlockImpl bb);
+			abstract public RegularBlockImpl getSingleRegularBlock();
 
-			/** Is a merge possible? */
-			abstract public boolean canMerge();
+			/** Does this holder contain a single regular basic block? */
+			abstract public boolean containsSingleRegularBlock();
 		}
 
 		/**
@@ -314,12 +315,13 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public void mergeWith(RegularBlockImpl bb) {
+				public RegularBlockImpl getSingleRegularBlock() {
 					assert false;
+					return null;
 				}
 
 				@Override
-				public boolean canMerge() {
+				public boolean containsSingleRegularBlock() {
 					return false;
 				}
 			};
@@ -335,12 +337,13 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public void mergeWith(RegularBlockImpl bb) {
+				public RegularBlockImpl getSingleRegularBlock() {
 					assert false;
+					return null;
 				}
 
 				@Override
-				public boolean canMerge() {
+				public boolean containsSingleRegularBlock() {
 					return false;
 				}
 			};
@@ -348,13 +351,15 @@ public class CFGBuilder {
 
 		/**
 		 * Set a single basic block as the predecessor (not distinguishing
-		 * true/false).
+		 * true/false). {@code bb} cannot be a regular basic block (which would
+		 * be the {@code currentBlock} instead.
 		 * 
 		 * @param more
 		 *            The basic block to set.
 		 */
 		protected void setSingleAnyPredecessor(SingleSuccessorBlockImpl bb) {
 			assert bb != null;
+			assert bb.getType() != BlockType.REGULAR_BLOCK;
 			currentBlock = null;
 			truePredecessors = singletonPredecessor(bb);
 			falsePredecessors = singletonPredecessor(bb);
@@ -370,8 +375,13 @@ public class CFGBuilder {
 		protected void setAnyPredecessor(PredecessorBlockHolder h) {
 			assert h != null;
 			currentBlock = null;
-			truePredecessors = h;
-			falsePredecessors = h;
+			if (h.containsSingleRegularBlock()) {
+				currentBlock = h.getSingleRegularBlock();
+				truePredecessors = falsePredecessors = null;
+			} else {
+				truePredecessors = h;
+				falsePredecessors = h;
+			}
 		}
 
 		/**
@@ -412,14 +422,13 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public void mergeWith(RegularBlockImpl b2) {
+				public RegularBlockImpl getSingleRegularBlock() {
 					assert bb.getType() == BlockType.REGULAR_BLOCK;
-					RegularBlockImpl rb = (RegularBlockImpl) bb;
-					rb.addNodes(b2.getContents());
+					return (RegularBlockImpl) bb;
 				}
 
 				@Override
-				public boolean canMerge() {
+				public boolean containsSingleRegularBlock() {
 					return bb.getType() == BlockType.REGULAR_BLOCK;
 				}
 			};
@@ -455,12 +464,13 @@ public class CFGBuilder {
 				}
 
 				@Override
-				public void mergeWith(RegularBlockImpl bb) {
+				public RegularBlockImpl getSingleRegularBlock() {
 					assert false;
+					return null;
 				}
 
 				@Override
-				public boolean canMerge() {
+				public boolean containsSingleRegularBlock() {
 					return false;
 				}
 			};
@@ -503,7 +513,7 @@ public class CFGBuilder {
 			} else {
 				currentBlock.addNode(node);
 			}
-			
+
 			// add conditional block if necessary
 			if (conditionalMode) {
 				extendWithBasicBlock(new ConditionalBlockImpl());
@@ -539,17 +549,8 @@ public class CFGBuilder {
 			if (currentBlock != null) {
 				currentBlock.setSuccessor(bb);
 			} else {
-				// merge two contiguous regular basic blocks into a single one
-				// (only works with a single predecessor)
-				if (bb.getType() == BlockType.REGULAR_BLOCK
-						&& truePredecessors == falsePredecessors
-						&& truePredecessors.canMerge()) {
-					truePredecessors.mergeWith((RegularBlockImpl) bb);
-					return;
-				} else {
-					truePredecessors.setSuccessorAs(bb);
-					falsePredecessors.setSuccessorAs(bb);
-				}
+				truePredecessors.setSuccessorAs(bb);
+				falsePredecessors.setSuccessorAs(bb);
 				clearAnyPredecessor();
 			}
 
@@ -562,21 +563,6 @@ public class CFGBuilder {
 				ConditionalBlockImpl cb = (ConditionalBlockImpl) bb;
 				setConditionalPredecessor(cb);
 			}
-		}
-
-		/**
-		 * Finish the current basic block to not allow further additions to that
-		 * block. Can only be called when there is a current block.
-		 * 
-		 * @return The basic block just finished.
-		 */
-		// TODO: remove if not needed in the future
-		protected RegularBlockImpl finishCurrentBlock() {
-			assert currentBlock != null;
-			assert truePredecessors == null && falsePredecessors == null;
-			RegularBlockImpl b = currentBlock;
-			setSingleAnyPredecessor(currentBlock);
-			return b;
 		}
 
 		/**
