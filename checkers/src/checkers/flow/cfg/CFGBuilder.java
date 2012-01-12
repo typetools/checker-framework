@@ -478,11 +478,12 @@ public class CFGBuilder {
 		 *            The node to add.
 		 * @return The basic block the node has been added to.
 		 */
-		protected RegularBlockImpl extendWithNodeInConditionalMode(Node node) {
+		protected SingleSuccessorBlockImpl extendWithNodeInConditionalMode(Node node) {
 			assert conditionalMode;
 			conditionalMode = false;
 			extendWithNode(node);
-			RegularBlockImpl block = finishCurrentBlock();
+			assert currentBlock != null;
+			RegularBlockImpl block = currentBlock;
 			conditionalMode = true;
 			return block;
 		}
@@ -517,6 +518,7 @@ public class CFGBuilder {
 		 * 
 		 * @return The basic block just finished.
 		 */
+		// TODO: remove if not needed in the future
 		protected RegularBlockImpl finishCurrentBlock() {
 			assert currentBlock != null;
 			assert truePredecessors == null && falsePredecessors == null;
@@ -537,10 +539,6 @@ public class CFGBuilder {
 		 */
 		protected Node addToCurrentBlockWithException(Node node,
 				Set<Class<? extends Throwable>> causes) {
-			
-			if (currentBlock != null) {
-				finishCurrentBlock();
-			}
 			
 			ExceptionBlockImpl block = new ExceptionBlockImpl();
 			block.setNode(node);
@@ -712,13 +710,13 @@ public class CFGBuilder {
 					addAnyPredecessor(rightOutTrue);
 					Node trueNode = new ConditionalOrNode(tree, left, right,
 							true);
-					RegularBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
+					SingleSuccessorBlockImpl trueBlock = extendWithNodeInConditionalMode(trueNode);
 
 					// node for false case
 					setAnyPredecessor(rightOutFalse);
 					Node falseNode = new ConditionalOrNode(tree, left, right,
 							false);
-					RegularBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
+					SingleSuccessorBlockImpl falseBlock = extendWithNodeInConditionalMode(falseNode);
 
 					setSingleTruePredecessor(trueBlock);
 					setSingleFalsePredecessor(falseBlock);
