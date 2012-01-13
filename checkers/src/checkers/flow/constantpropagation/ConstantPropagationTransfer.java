@@ -29,7 +29,7 @@ public class ConstantPropagationTransfer
 
 		// we have no information about parameters
 		for (LocalVariableNode p : parameters) {
-			store.addInformation(p, new Constant(Type.TOP));
+			store.mergeInformation(p, new Constant(Type.TOP));
 		}
 
 		return store;
