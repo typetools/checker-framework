@@ -30,7 +30,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
 		return new Constant(Type.TOP);
 	}
 
-	public void addInformation(Node n, Constant val) {
+	public void mergeInformation(Node n, Constant val) {
 		Constant value;
 		if (contents.containsKey(n)) {
 			value = val.leastUpperBound(contents.get(n));
