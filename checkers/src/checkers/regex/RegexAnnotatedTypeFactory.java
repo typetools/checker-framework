@@ -1,5 +1,6 @@
 package checkers.regex;
 
+import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 
 import com.sun.source.tree.BinaryTree;
@@ -21,12 +22,12 @@ import checkers.util.TreeUtils;
  * <li value="1">a {@code String} literal that is a valid regular expression</li>
  *
  * <li value="2">a {@code String} concatenation tree of two valid regular
- * expression values.
+ * expression values.</li>
  *
  * </ol>
  *
- * Adds {@link Regex} to the type of each {@code String} literal that is
- * a syntactically valid regular expression.
+ * Also, adds {@link PolyRegex} to the type of concatenation of two PolyRegex
+ * {@code String}s.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
@@ -60,7 +61,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of two regular expression String literals
+         * Case 2: concatenation of two regular expression String literals and
+         * concatenation of two PolyRegex Strings.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -71,6 +73,9 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 if (lExpr.hasAnnotation(Regex.class)
                         && rExpr.hasAnnotation(Regex.class))
                     type.addAnnotation(Regex.class);
+                else if (lExpr.hasAnnotation(PolyRegex.class)
+                        && rExpr.hasAnnotation(PolyRegex.class))
+                    type.addAnnotation(PolyRegex.class);
             }
             return super.visitBinary(tree, type);
         }
