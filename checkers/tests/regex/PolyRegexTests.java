@@ -38,4 +38,23 @@ public class PolyRegexTests {
     //:: error: (assignment.type.incompatible)
     @PolyRegex String test3 = nonPolyReg + nonPolyReg; // error
   }
+  
+  public void testRegexPolyRegexConcat(@PolyRegex String polyReg, @Regex String reg) {
+    @PolyRegex String test1 = polyReg + reg;
+    @PolyRegex String test2 = reg + polyReg;
+  }
+  
+  public void testRegexPolyRegexConcatErrors(@PolyRegex String polyReg, @Regex String reg, String str) {
+    //:: error: (assignment.type.incompatible)
+    @PolyRegex String test1 = polyReg + str; // error
+    //:: error: (assignment.type.incompatible)
+    @PolyRegex String test2 = str + polyReg; // error
+    //:: error: (assignment.type.incompatible)
+    @PolyRegex String test3 = reg + str; // error
+    //:: error: (assignment.type.incompatible)
+    @PolyRegex String test4 = str + reg; // error
+
+    //:: error: (assignment.type.incompatible)
+    @PolyRegex String test5 = str + str; // error
+  }
 }
