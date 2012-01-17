@@ -26,8 +26,8 @@ import checkers.util.TreeUtils;
  *
  * </ol>
  *
- * Also, adds {@link PolyRegex} to the type of concatenation of two PolyRegex
- * {@code String}s.
+ * Also, adds {@link PolyRegex} to the type of concatenation of a Regex and a
+ * PolyRegex {@code String} or two PolyRegex {@code String}s.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
@@ -61,8 +61,9 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of two regular expression String literals and
-         * concatenation of two PolyRegex Strings.
+         * Case 2: concatenation of two regular expression String literals,
+         * concatenation of two PolyRegex Strings and concatenation of a Regex
+         * and PolyRegex String.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -73,8 +74,12 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 if (lExpr.hasAnnotation(Regex.class)
                         && rExpr.hasAnnotation(Regex.class))
                     type.addAnnotation(Regex.class);
-                else if (lExpr.hasAnnotation(PolyRegex.class)
-                        && rExpr.hasAnnotation(PolyRegex.class))
+                else if ((lExpr.hasAnnotation(PolyRegex.class)
+                            && rExpr.hasAnnotation(PolyRegex.class))
+                        || (lExpr.hasAnnotation(PolyRegex.class)
+                            && rExpr.hasAnnotation(Regex.class))
+                        || (lExpr.hasAnnotation(Regex.class)
+                            && rExpr.hasAnnotation(PolyRegex.class)))
                     type.addAnnotation(PolyRegex.class);
             }
             return super.visitBinary(tree, type);
