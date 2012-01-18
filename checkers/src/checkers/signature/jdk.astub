@@ -4,14 +4,15 @@ import checkers.signature.quals.FullyQualifiedName;
 package java.lang;
 
 class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedElement {
-    Class<?> forName(@BinaryName String className) throws ClassNotFoundException;
-    Class<?> forName(@BinaryName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
-    @BinaryName String getName();
-    @BinaryName String name;
-    @BinaryName String getName0();
+    Class<?> forName(@ClassGetName String className) throws ClassNotFoundException;
+    Class<?> forName(@GlassGetName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
+    @ClassGetName String getName();
+    @ClassGetName String name;
+    @ClassGetName String getName0();
     @FullyQualifiedName String getCanonicalName();
 }
 
+// Would BinaryNameForNonArray be more accurate for some of these methods?
 class ClassLoader {
     protected Class<?> loadClass(@BinaryName String name, boolean resolve) throws ClassNotFoundException;
     Class<?> loadClass(@BinaryName String name) throws ClassNotFoundException;
@@ -238,8 +239,8 @@ public class MonitorInfo extends LockInfo {
 }
 
 public class LockInfo {
-    public LockInfo(@BinaryName String className, int identityHashCode);
-    public @BinaryName String getClassName();
+    public LockInfo(@ClassGetName String className, int identityHashCode);
+    public @ClassGetName String getClassName();
 }
 
 package java.util;

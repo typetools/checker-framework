@@ -1,5 +1,6 @@
 package checkers.regex;
 
+import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 
 import com.sun.source.tree.BinaryTree;
@@ -21,12 +22,12 @@ import checkers.util.TreeUtils;
  * <li value="1">a {@code String} literal that is a valid regular expression</li>
  *
  * <li value="2">a {@code String} concatenation tree of two valid regular
- * expression values.
+ * expression values.</li>
  *
  * </ol>
  *
- * Adds {@link Regex} to the type of each {@code String} literal that is
- * a syntactically valid regular expression.
+ * Also, adds {@link PolyRegex} to the type of concatenation of a Regex and a
+ * PolyRegex {@code String} or two PolyRegex {@code String}s.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
@@ -60,7 +61,9 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of two regular expression String literals
+         * Case 2: concatenation of two regular expression String literals,
+         * concatenation of two PolyRegex Strings and concatenation of a Regex
+         * and PolyRegex String.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -68,9 +71,18 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 && TreeUtils.isStringConcatenation(tree)) {
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
-                if (lExpr.hasAnnotation(Regex.class)
-                        && rExpr.hasAnnotation(Regex.class))
+                
+                boolean lExprRE = lExpr.hasAnnotation(Regex.class);
+                boolean rExprRE = rExpr.hasAnnotation(Regex.class);
+                boolean lExprPoly = lExpr.hasAnnotation(PolyRegex.class);
+                boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
+                
+                if (lExprRE && rExprRE)
                     type.addAnnotation(Regex.class);
+                else if (lExprPoly && rExprPoly
+                        || lExprPoly && rExprRE
+                        || lExprRE && rExprPoly)
+                    type.addAnnotation(PolyRegex.class);
             }
             return super.visitBinary(tree, type);
         }

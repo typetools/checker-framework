@@ -7,16 +7,20 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * Represents a method descriptor (JVM signature type for methods) as defined in Java Language Specification: http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html (sec 4.3.3) 
+ * Represents a method descriptor (JVM representation of method signature)
+ * as defined in the <a
+ * href="http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#7035">Java Virtual Machine Specification, section 4.3.3</a>.
+ * <p>
  * Example:
- *	package edu.cs.washington;
- *	public class BinaryName {
- *		private class Inner {
- *			public void method(Object obj, int i) {}
- *		}
- *	}
+ * <pre>
+ *  package edu.cs.washington;
+ *  public class BinaryName {
+ *    private class Inner {
+ *      public void method(Object obj, int i) {}
+ *    }
+ *  }
+ * </pre>
  * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
- * @author Kivanc Muslu
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)
