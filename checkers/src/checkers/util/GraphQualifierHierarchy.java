@@ -15,9 +15,9 @@ import checkers.types.QualifierHierarchy;
 */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-	/**
-	 * We only need to make sure that "build" instantiates the right QualifierHierarchy. 
-	 */
+    /**
+     * We only need to make sure that "build" instantiates the right QualifierHierarchy. 
+     */
     public static class GraphFactory extends MultiGraphFactory {
         private final AnnotationMirror bottom;
 
@@ -32,7 +32,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         }
 
         @Override
-    	protected QualifierHierarchy createQualifierHierarchy() {
+        protected QualifierHierarchy createQualifierHierarchy() {
             if (this.bottom!=null) {
                 // A special bottom qualifier was provided; go through the existing
                 // bottom qualifiers and tie them all to this bottom qualifier.
@@ -48,17 +48,17 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
                 }
             }
 
-    		return new GraphQualifierHierarchy(this);
-    	}
+            return new GraphQualifierHierarchy(this);
+        }
     }
 
     
     protected GraphQualifierHierarchy(GraphFactory f) {
-    	super(f);
+        super(f);
     }
 
     protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
-    	super(h);
+        super(h);
     }
 
     /**
@@ -70,16 +70,17 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public Set<AnnotationMirror> getRootAnnotations() {
         if (roots.size() != 1) {
-        	checker.errorAbort("Other than one possible root: "
-                + roots + "\n"
-                + "Does the checker know about all type qualifiers?");
+            checker.errorAbort("Expected 1 possible root, found "
+                               + roots.size()
+                               + " (does the checker know about all type qualifiers?):: "
+                               + roots);
         }
         return this.roots;
     }
 
     @Override
     public Set<AnnotationMirror> getBottomAnnotations() {
-    	// TODO: checks?
+        // TODO: checks?
         return this.bottoms;
     }
 
