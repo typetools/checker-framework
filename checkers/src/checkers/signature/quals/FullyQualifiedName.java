@@ -8,21 +8,20 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * Represents a fully qualified name as defined in Java Language Specification: http://java.sun.com/docs/books/jls/second_edition/html/names.doc.html (sec 6.7)
- * Fully qualified names for objects are created as the following:
- *	<package name>.<class name>.<inner class name>
- *	where
- *	<package name> is a fully qualified (dot seperated) name.
- * Example:
- *	package edu.cs.washington;
- *	public class BinaryName {
- *		private class Inner {}
- *	}
- * In this example fully qualified name for class BinaryName: edu.cs.washington.BinaryName
- * and fully qualified name for class Inner: edu.cs.washington.BinaryName.Inner
- * Notice that binary names and fully qualified names are same for top level classes and only differ
- * by a '$' vs. '.' for inner classes.
- * @author Kivanc Muslu
+ * Represents a fully-qualified name as defined in the <a href="http://java.sun.com/docs/books/jls/third_edition/html/names.html#6.7">Java Language Specification, section 6.7</a>.
+ * <p>
+ * For example, in
+ * <pre>
+ *  package checkers.signature;
+ *  public class SignatureChecker {
+ *    private class Inner {}
+ *  }
+ * </pre>
+ * the fully-qualified names for the two types are checkers.signature.SignatureChecker
+ * and checkers.signature.SignatureChecker.Inner.
+ * <p>
+ * Fully-qualified names and {@linkplain BinaryName binary names} are the same
+ * for top-level classes and only differ by a '.' vs. '$' for inner classes.
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

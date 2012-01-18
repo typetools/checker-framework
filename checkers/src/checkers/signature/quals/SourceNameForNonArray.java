@@ -15,7 +15,8 @@ import checkers.quals.TypeQualifier;
  * Not to be used by the programmer, only used internally.
  */
 @TypeQualifier
-@SubtypeOf({BinaryName.class, FullyQualifiedName.class})
+@SubtypeOf({SourceName.class, BinaryNameForNonArray.class})
 // A @Target meta-annotation with an empty argument would prevent programmers
 // from writing this in a program, but it might sometimes be useful.
-public @interface SourceName {}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface SourceNameForNonArray {}

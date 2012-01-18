@@ -8,15 +8,19 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * Represents a field descriptor (JVM signature type) as defined in Java Language Specification: http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html (sec. 4.3.2)
- * Example:
- *	package edu.cs.washington;
- *	public class BinaryName {
- *		private class Inner {}
- *	}
- * In this example field descriptor for class BinaryName: Ledu/cs/washington/BinaryName;
- * and field descriptor for class Inner: Ledu/cs/washington/BinaryName$Inner;
- * @author Kivanc Muslu
+ * Represents a field descriptor (JVM type format) as defined in the <a
+ * href="http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14152">Java Virtual Machine Specification, section 4.3.2</a>.
+ * <p>
+ * For example, in
+ * <pre>
+ *  package checkers.signature;
+ *  public class SignatureChecker {
+ *    private class Inner {}
+ *  }
+ * </pre>
+ * the field descriptors for the two types are
+ * Lcheckers/signature/SignatureChecker; and
+ * Lcheckers/signature/SignatureChecker$Inner;.
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

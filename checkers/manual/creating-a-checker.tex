@@ -352,7 +352,7 @@ files that the checker reads.
 
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\ahref{\setAbsoluteDefaultsURL}{\<QualifierDefaults.setAbsoluteDefaults>}
+\ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness checker's implementation for an
 example.
@@ -570,7 +570,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/index.html}{Tree
+\ahref{http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 

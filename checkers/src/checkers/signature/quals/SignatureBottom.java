@@ -8,12 +8,12 @@ import com.sun.source.tree.Tree;
 
 /**
  * Represents the bottom of the type-qualifier hierarchy.
- * Not to be used by the annotator, only used internally.
- * @author Kivanc Muslu
+ * <p>
+ * Not to be written by programmers, only used internally.
  */
 @TypeQualifier
-@SubtypeOf({SourceName.class,
-    FieldDescriptor.class,
+@SubtypeOf({SourceNameForNonArray.class,
+    FieldDescriptorForArray.class,
     MethodDescriptor.class
     })
 @Target( {} )
