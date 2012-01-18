@@ -20,7 +20,9 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
 \begin{figure}
 \includeimage{signature-types}{2.5cm}
 \caption{Partial type hierarchy for the Signature type system, showing
-  string representations of a Java type.}
+  string representations of a Java type.  Programmers only need to write
+  the boldfaced qualifiers, in the second row; qualifiers below those are
+  included to improve the internal handling of String literals.}
 \label{fig:signature-hierarchy}
 \end{figure}
 
@@ -31,6 +33,7 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
 \urldef{\jvmsfielddescriptorurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14152}
 \urldef{\jvmsinternalformurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14757}
 \urldef{\jvmsmethoddescriptorurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#7035}
+\urldef{\classgetnameurl}{\url}{http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html#getName()}
 
 \begin{description}
 
@@ -51,12 +54,21 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
   for example to refer to other types; it abbreviates primitives and
   arrays, and uses internal form (\ahref{\jvmsinternalformurl}{JVMS \S 4.2}) for class names.
 
+\item[\code{@\refclass{signature/quals}{ClassGetName}}]
+  The type representation used by the \ahref{\classgetnameurl}{\<Class.getName()>},
+  \<Class.forName(String)>, and \<Class.forName(String, boolean,
+  ClassLoader)> methods.  This format is:  the binary name for any
+  non-array type, and the field descriptor for any array type.
+
 \item[\code{@\refclass{signature/quals}{SourceName}}]
   A source name is a string that is a valid fully qualified name \emph{and}
-  a valid binary name.  A programmer should never use this --- you should
+  a valid binary name.  A programmer should never or rarely use this --- you should
   know how you intend to use a given variable.  The checker infers it for
   literal strings such as \<"package.MyClass"> that are valid in both
   formats, and you might occasionally see it in an error message.
+  Likewise, you might see other types such as \<SourceNameForNonArray>,
+  \<BinaryNameForNonArray>, and \<FieldDescriptorForArray>, but you
+  generally should not use them either.
 
 \end{description}
 
