@@ -19,7 +19,9 @@ import com.sun.source.tree.CompilationUnitTree;
     FieldDescriptorForArray.class,
     SignatureBottom.class,
       
-    MethodDescriptor.class
+    MethodDescriptor.class,
+
+    PolySignature.class
 })
 public final class SignatureChecker extends BaseTypeChecker {
 
