@@ -1,5 +1,4 @@
-import checkers.regex.quals.PolyRegex;
-import checkers.regex.quals.Regex;
+import checkers.regex.quals.*;
 
 package java.util.regex;
 
