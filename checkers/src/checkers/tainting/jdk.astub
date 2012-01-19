@@ -1,4 +1,4 @@
-import checkers.tainting.quals.Untainted;
+import checkers.tainting.quals.*;
 
 package java.sql;
 
