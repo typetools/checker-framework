@@ -55,6 +55,10 @@ class StackTraceElement {
     public @FullyQualifiedName String getClassName(); 
 }
 
+class String {
+    public @PolySignature String intern() @PolySignature;
+}
+
 class TypeNotPresentException extends RuntimeException {
     public TypeNotPresentException(@FullyQualifiedName String typeName, Throwable cause);
     public @FullyQualifiedName String typeName();
