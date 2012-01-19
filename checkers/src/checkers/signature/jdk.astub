@@ -1,11 +1,10 @@
-import checkers.signature.quals.BinaryName;
-import checkers.signature.quals.FullyQualifiedName;
+import checkers.signature.quals.*;
 
 package java.lang;
 
 class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedElement {
     Class<?> forName(@ClassGetName String className) throws ClassNotFoundException;
-    Class<?> forName(@GlassGetName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
+    Class<?> forName(@ClassGetName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
     @ClassGetName String getName();
     @ClassGetName String name;
     @ClassGetName String getName0();
