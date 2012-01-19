@@ -9,7 +9,6 @@ public class PolySignatureTest {
   void m(@ClassGetName String s) {
     @ClassGetName String s1 = polyMethod(s);
     @ClassGetName String s2 = s.intern();
-    @ClassGetName String s3 = String.class.getName();
   }
 
 }
