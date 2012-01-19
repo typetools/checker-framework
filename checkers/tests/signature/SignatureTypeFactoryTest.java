@@ -14,7 +14,8 @@ public class SignatureTypeFactoryTest {
     //     SignatureBottom.class
     // There are also signature representations, which are not handled yet.
 
-    void bn() {
+    void m() {
+
       String s1 = "a";
       String s2 = "a.b";
       String s3 = "a.b$c";
@@ -30,6 +31,29 @@ public class SignatureTypeFactoryTest {
       String s12 = "a.b$c[][]";
       String s13 = "a.b.c[][]";
       String s14 = "[[Ljava/lang/String;";
+
+      // All the examples from the manual
+      String t1 = "I";
+      String t2 = "LMyClass;";
+      String t3 = "Ljava/lang/Integer;";
+      String t4 = "Lpackage/Outer$Inner;";
+      String t5 = "MyClass";
+      String t6 = "MyClass[]";
+      String t7 = "[LMyClass;";
+      String t8 = "[Ljava.lang.Integer;";
+      String t9 = "[Ljava/lang/Integer;";
+      String t10 = "[Lpackage.Outer$Inner;";
+      String t11 = "[Lpackage/Outer$Inner;";
+      String t12 = "[[I";
+      String t13 = "int";
+      String t14 = "int[][]";
+      String t15 = "java.lang.Integer";
+      String t16 = "java.lang.Integer[]";
+      String t17 = "package.Outer.Inner";
+      String t18 = "package.Outer.Inner[]";
+      String t19 = "package.Outer$Inner";
+      String t20 = "Lpackage.Outer$Inner;";
+      String t21 = "package.Outer$Inner[]";
 
       String us; // @UnannotatedString
       @FullyQualifiedName String fqn;
@@ -146,8 +170,181 @@ public class SignatureTypeFactoryTest {
       fqn = s14;
       //:: error: (assignment.type.incompatible)
       bn = s14;
+      //:: error: (assignment.type.incompatible)
       cgn = s14;
       fd = s14;
+
+      us = t1;
+      fqn = t1;
+      bn = t1;
+      cgn = t1;
+      fd = t1;
+      
+      us = t2;
+      //:: error: (assignment.type.incompatible)
+      fqn = t2;
+      //:: error: (assignment.type.incompatible)
+      bn = t2;
+      //:: error: (assignment.type.incompatible)
+      cgn = t2;
+      fd = t2;
+      
+      us = t3;
+      //:: error: (assignment.type.incompatible)
+      fqn = t3;
+      //:: error: (assignment.type.incompatible)
+      bn = t3;
+      //:: error: (assignment.type.incompatible)
+      cgn = t3;
+      fd = t3;
+      
+      us = t4;
+      //:: error: (assignment.type.incompatible)
+      fqn = t4;
+      //:: error: (assignment.type.incompatible)
+      bn = t4;
+      //:: error: (assignment.type.incompatible)
+      cgn = t4;
+      fd = t4;
+      
+      us = t5;
+      fqn = t5;
+      bn = t5;
+      cgn = t5;
+      //:: error: (assignment.type.incompatible)
+      fd = t5;
+      
+      us = t6;
+      fqn = t6;
+      bn = t6;
+      //:: error: (assignment.type.incompatible)
+      cgn = t6;
+      //:: error: (assignment.type.incompatible)
+      fd = t6;
+      
+      us = t7;
+      //:: error: (assignment.type.incompatible)
+      fqn = t7;
+      //:: error: (assignment.type.incompatible)
+      bn = t7;
+      cgn = t7;
+      fd = t7;
+      
+      us = t8;
+      //:: error: (assignment.type.incompatible)
+      fqn = t8;
+      //:: error: (assignment.type.incompatible)
+      bn = t8;
+      cgn = t8;
+      //:: error: (assignment.type.incompatible)
+      fd = t8;
+      
+      us = t9;
+      //:: error: (assignment.type.incompatible)
+      fqn = t9;
+      //:: error: (assignment.type.incompatible)
+      bn = t9;
+      //:: error: (assignment.type.incompatible)
+      cgn = t9;
+      fd = t9;
+      
+      us = t10;
+      //:: error: (assignment.type.incompatible)
+      fqn = t10;
+      //:: error: (assignment.type.incompatible)
+      bn = t10;
+      cgn = t10;
+      //:: error: (assignment.type.incompatible)
+      fd = t10;
+      
+      us = t11;
+      //:: error: (assignment.type.incompatible)
+      fqn = t11;
+      //:: error: (assignment.type.incompatible)
+      bn = t11;
+      //:: error: (assignment.type.incompatible)
+      cgn = t11;
+      fd = t11;
+      
+      us = t12;
+      //:: error: (assignment.type.incompatible)
+      fqn = t12;
+      //:: error: (assignment.type.incompatible)
+      bn = t12;
+      cgn = t12;
+      fd = t12;
+      
+      us = t13;
+      fqn = t13;
+      bn = t13;
+      cgn = t13;
+      //:: error: (assignment.type.incompatible)
+      fd = t13;
+      
+      us = t14;
+      fqn = t14;
+      bn = t14;
+      //:: error: (assignment.type.incompatible)
+      cgn = t14;
+      //:: error: (assignment.type.incompatible)
+      fd = t14;
+      
+      us = t15;
+      fqn = t15;
+      bn = t15;
+      cgn = t15;
+      //:: error: (assignment.type.incompatible)
+      fd = t15;
+      
+      us = t16;
+      fqn = t16;
+      bn = t16;
+      //:: error: (assignment.type.incompatible)
+      cgn = t16;
+      //:: error: (assignment.type.incompatible)
+      fd = t16;
+      
+      us = t17;
+      fqn = t17;
+      bn = t17;
+      cgn = t17;
+      //:: error: (assignment.type.incompatible)
+      fd = t17;
+      
+      us = t18;
+      fqn = t18;
+      bn = t18;
+      //:: error: (assignment.type.incompatible)
+      cgn = t18;
+      //:: error: (assignment.type.incompatible)
+      fd = t18;
+      
+      us = t19;
+      //:: error: (assignment.type.incompatible)
+      fqn = t19;
+      bn = t19;
+      cgn = t19;
+      //:: error: (assignment.type.incompatible)
+      fd = t19;
+      
+      us = t20;
+      //:: error: (assignment.type.incompatible)
+      fqn = t20;
+      //:: error: (assignment.type.incompatible)
+      bn = t20;
+      //:: error: (assignment.type.incompatible)
+      cgn = t20;
+      //:: error: (assignment.type.incompatible)
+      fd = t20;
+      
+      us = t21;
+      //:: error: (assignment.type.incompatible)
+      fqn = t21;
+      bn = t21;
+      //:: error: (assignment.type.incompatible)
+      cgn = t21;
+      //:: error: (assignment.type.incompatible)
+      fd = t21;
 
     }
 
