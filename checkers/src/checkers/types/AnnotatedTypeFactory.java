@@ -216,6 +216,7 @@ public class AnnotatedTypeFactory {
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
+        annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
@@ -648,7 +649,7 @@ public class AnnotatedTypeFactory {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
                 assert classType != null;
                 for (AnnotationMirror anno : classType.getAnnotations()) {
-                    if (AnnotationUtils.hasInheritiedMeta(anno)) {
+                    if (AnnotationUtils.hasInheritedMeta(anno)) {
                         type.addAnnotation(anno);
                     }
                 }
@@ -665,9 +666,10 @@ public class AnnotatedTypeFactory {
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
-                if (!type.isAnnotated() &&
+                if (!type.isAnnotated() && 
+                        !type.getUpperBound().isAnnotated() &&
                         tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
-                   TypeFromElement.annotate(type, tpelt);
+                        TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);

@@ -39,6 +39,11 @@ import javax.lang.model.SourceVersion;
  *  only makes sense in conjunction with {@code -Aannotations}</li>
  * </ul>
  */
+/*
+ * TODO: add an option to only list declaration or type annotations.
+ * This e.g. influences the output of "method return", which is only valid
+ * for type annotations for non-void methods.
+ */
 @SupportedOptions({"nolocations", "annotations"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class Locations extends SourceChecker {
