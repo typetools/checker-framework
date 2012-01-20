@@ -921,9 +921,12 @@ public class AnnotatedTypes {
                         subtypes.add(sup);
                     }
                 }
+                if (subtypes.size() > 0) {
+                    adts.clearAnnotations();
+                }
 
                 addAnnotations(adts, subtypes.toArray(new AnnotatedTypeMirror[0]));
-                this.addAnnotations(lub, adts);
+                addAnnotations(lub, adts);
             }
         } else {
             List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
@@ -969,7 +972,6 @@ public class AnnotatedTypes {
         // TODO: fix this
         boolean isFirst = true;
         // get rid of wildcards and type variables
-        // TODO: what about annotations on type variables?
         if (alub.getKind() == TypeKind.WILDCARD) {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
         }
@@ -986,16 +988,16 @@ public class AnnotatedTypes {
             if (types[i].getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
-                    types[i] = wildcard.getExtendsBound();
+                    types[i] = wildcard.getEffectiveExtendsBound();
                 else if (wildcard.getSuperBound() != null)
-                    types[i] = wildcard.getSuperBound();
+                    types[i] = wildcard.getEffectiveSuperBound();
             }
             if (types[i].getKind() == TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types[i];
                 if (typevar.getUpperBound() != null)
-                    types[i] = typevar.getUpperBound();
+                    types[i] = typevar.getEffectiveUpperBound();
                 else if (typevar.getLowerBound() != null)
-                    types[i] = typevar.getLowerBound();
+                    types[i] = typevar.getEffectiveLowerBound();
             }
         }
 
