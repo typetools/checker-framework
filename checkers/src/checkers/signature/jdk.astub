@@ -517,6 +517,9 @@ public class ObjectType extends ReferenceType {
 }
 
 public abstract class Type implements java.io.Serializable {
-  public /*@BinaryName*/ String toString();
+  public @BinaryName String toString();
 }
 
+public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
+  public @BinaryNameForNonArray String getClassName(ConstantPoolGen cpg);
+}
