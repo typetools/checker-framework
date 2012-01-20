@@ -80,30 +80,32 @@ public class NullnessSubchecker extends BaseTypeChecker {
         return super.isValidUse(type);
     }
 
+    @Override
+    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+        // @Primitive and @NonNull are interchangeable
+        if (sub.getEffectiveAnnotations().contains(PRIMITIVE) &&
+                sup.getEffectiveAnnotations().contains(NONNULL)) {
+            return true;
+        }
+        return super.isSubtype(sub, sup);
+    }
+
     /*
+     * TODO: actually use the MultiGraphQH and incorporate rawness.
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        // TODO: actually use the MultiGraphQH.
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }*/
+    }
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new NullnessQualifierHierarchy((/*Multi*/GraphQualifierHierarchy)super.createQualifierHierarchy());
+        return new NullnessQualifierHierarchy((MultiGraphQualifierHierarchy)super.createQualifierHierarchy());
     }
-    
+
     private final class NullnessQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        public NullnessQualifierHierarchy(/*Multi*/GraphQualifierHierarchy hierarchy) {
+        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy hierarchy) {
             super(hierarchy);
         }
-
-        @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if ( AnnotationUtils.areSame(sub, PRIMITIVE) &&
-                    AnnotationUtils.areSame(sup, NONNULL) ) {
-                return true;
-            }
-            return super.isSubtype(sub, sup);
-        }
     }
+    */
 }

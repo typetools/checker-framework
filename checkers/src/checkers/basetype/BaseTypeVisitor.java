@@ -844,16 +844,28 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
         // Check the return value.
-        if ((overrider.getReturnType().getKind() != TypeKind.VOID)
-            && !checker.isSubtype(overrider.getReturnType(),
-                overridden.getReturnType())) {
-            checker.report(Result.failure("override.return.invalid",
-                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
-                    overrider.getReturnType().toString(),
-                    overridden.getReturnType().toString()),
-                    overriderTree.getReturnType());
-            // emit error message
-            result = false;
+        if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
+            boolean success = checker.isSubtype(overrider.getReturnType(),
+                overridden.getReturnType());
+            if (options.containsKey("showchecks")) {
+                long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
+                System.out.printf(
+                        " %s (line %3d):%n     overrider: %s %s (return type %s)%n   overridden: %s %s (return type %s)%n",
+                        (success ? "success: overriding return type is subtype of overridden" : "FAILURE: overriding return type is not subtype of overridden"),
+                        root.getLineMap().getLineNumber(valuePos),
+                        overriderMeth, overriderTyp, overrider.getReturnType().toString(),
+                        overriddenMeth, overriddenTyp, overridden.getReturnType().toString());
+            }
+            if (!success) {
+                checker.report(Result.failure("override.return.invalid",
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
+                        overrider.getReturnType().toString(),
+                        overridden.getReturnType().toString()),
+                        overriderTree.getReturnType());
+                // emit error message
+                result = false;
+            }
         }
 
         // Check parameter values. (FIXME varargs)
@@ -862,12 +874,22 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         List<AnnotatedTypeMirror> overriddenParams =
             overridden.getParameterTypes();
         for (int i = 0; i < overriderParams.size(); ++i) {
-            if (!checker.isSubtype(overriddenParams.get(i), overriderParams.get(i))) {
+            boolean success = checker.isSubtype(overriddenParams.get(i), overriderParams.get(i));
+            if (options.containsKey("showchecks")) {
+                long valuePos = positions.getStartPosition(root, overriderTree.getParameters().get(i));
+                System.out.printf(
+                        " %s (line %3d):%n     overrider: %s %s (parameter %d type %s)%n   overridden: %s %s (parameter %d type %s)%n",
+                        (success ? "success: overridden parameter type is subtype of overriding" : "FAILURE: overridden parameter type is not subtype of overriding"),
+                        root.getLineMap().getLineNumber(valuePos),
+                        overriderMeth, overriderTyp, i, overriderParams.get(i).toString(),
+                        overriddenMeth, overriddenTyp, i, overriddenParams.get(i).toString());
+            }
+            if (!success) {
                 checker.report(Result.failure("override.param.invalid",
-                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
                         overriderParams.get(i).toString(),
-                        overriddenParams.get(i).toString()
-                        ),
+                        overriddenParams.get(i).toString()),
                                overriderTree.getParameters().get(i));
                 // emit error message
                 result = false;
