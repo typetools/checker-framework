@@ -94,8 +94,16 @@ public class CFGBuilder {
 	 * Build the control flow graph of a method.
 	 */
 	public static ControlFlowGraph build(MethodTree method) {
-		return new CFGPhaseTwo().process(new CFGPhaseOne().process(method));
+		PhaseOneResult phase1result = new CFGTranslationPhaseOne()
+				.process(method);
+		ControlFlowGraph phase2result = CFGTranslationPhaseTwo
+				.process(phase1result);
+		return phase2result;
 	}
+
+	/* --------------------------------------------------------- */
+	/* Extended Node Types and Labels */
+	/* --------------------------------------------------------- */
 
 	protected static class ExtendedNode {
 		protected BlockImpl block;
@@ -130,10 +138,10 @@ public class CFGBuilder {
 		public void setBlock(BlockImpl b) {
 			this.block = b;
 		}
-		
+
 		@Override
 		public String toString() {
-			return "ExtendedNode("+type+")";
+			return "ExtendedNode(" + type + ")";
 		}
 	}
 
@@ -150,10 +158,10 @@ public class CFGBuilder {
 		public Node getNode() {
 			return node;
 		}
-		
+
 		@Override
 		public String toString() {
-			return "NodeHolder("+node+")";
+			return "NodeHolder(" + node + ")";
 		}
 
 	}
@@ -171,10 +179,10 @@ public class CFGBuilder {
 		public Label getLabel() {
 			return falseSucc;
 		}
-		
+
 		@Override
 		public String toString() {
-			return "ConditionalMarker("+getLabel()+")";
+			return "ConditionalMarker(" + getLabel() + ")";
 		}
 	}
 
@@ -190,63 +198,47 @@ public class CFGBuilder {
 		public Label getLabel() {
 			return jumpTarget;
 		}
-		
+
 		@Override
 		public String toString() {
-			return "JumpMarker("+getLabel()+")";
+			return "JumpMarker(" + getLabel() + ")";
 		}
-	}
-
-	protected static class PhaseOneResult {
-
-		private IdentityHashMap<Tree, Node> treeLookupMap;
-		private MethodTree tree;
-		private Map<ExtendedNode, Label> references;
-		private Map<Label, Integer> bindings;
-		private ArrayList<ExtendedNode> nodeList;
-		private Set<Integer> leaders;
-
-		public PhaseOneResult(MethodTree t,
-				IdentityHashMap<Tree, Node> treeLookupMap,
-				ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
-				Map<ExtendedNode, Label> references, Set<Integer> leaders) {
-			this.tree = t;
-			this.treeLookupMap = treeLookupMap;
-			this.nodeList = nodeList;
-			this.bindings = bindings;
-			this.references = references;
-			this.leaders = leaders;
-		}
-
 	}
 
 	protected static class Label {
 
 	}
+	
+	/* --------------------------------------------------------- */
+	/* Phase Three */
+	/* --------------------------------------------------------- */
+	
+	protected static class CFGTranslationPhaseThree {
+		
+	}
 
-	protected static class CFGPhaseTwo {
+	/* --------------------------------------------------------- */
+	/* Phase Two */
+	/* --------------------------------------------------------- */
 
-		protected Map<SingleSuccessorBlockImpl, Integer> missingEdges;
+	protected static class CFGTranslationPhaseTwo {
 
-		SpecialBlockImpl regularExitBlock;
-		SpecialBlockImpl exceptionalExitBlock;
-
-		ControlFlowGraph process(PhaseOneResult in) {
+		public static ControlFlowGraph process(PhaseOneResult in) {
 
 			Map<Label, Integer> bindings = in.bindings;
 			ArrayList<ExtendedNode> nodeList = in.nodeList;
-			Map<ExtendedNode, Label> references = in.references;
 			Set<Integer> leaders = in.leaders;
 
 			assert in.nodeList.size() > 0;
 
 			// exit blocks
-			regularExitBlock = new SpecialBlockImpl(SpecialBlockType.EXIT);
-			exceptionalExitBlock = new SpecialBlockImpl(
+			SpecialBlockImpl regularExitBlock = new SpecialBlockImpl(
+					SpecialBlockType.EXIT);
+			SpecialBlockImpl exceptionalExitBlock = new SpecialBlockImpl(
 					SpecialBlockType.EXCEPTIONAL_EXIT);
 
 			// no missing edges yet
-			missingEdges = new HashMap<>();
+			Map<SingleSuccessorBlockImpl, Integer> missingEdges = new HashMap<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
@@ -324,6 +316,31 @@ public class CFGBuilder {
 		}
 	}
 
+	/* --------------------------------------------------------- */
+	/* Phase One */
+	/* --------------------------------------------------------- */
+
+	protected static class PhaseOneResult {
+
+		private IdentityHashMap<Tree, Node> treeLookupMap;
+		private MethodTree tree;
+		private Map<Label, Integer> bindings;
+		private ArrayList<ExtendedNode> nodeList;
+		private Set<Integer> leaders;
+
+		public PhaseOneResult(MethodTree t,
+				IdentityHashMap<Tree, Node> treeLookupMap,
+				ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
+				Set<Integer> leaders) {
+			this.tree = t;
+			this.treeLookupMap = treeLookupMap;
+			this.nodeList = nodeList;
+			this.bindings = bindings;
+			this.leaders = leaders;
+		}
+
+	}
+
 	/**
 	 * This helper class builds the actual control flow graph by visiting the
 	 * abstract syntax tree. A class separate from {@link CFGBuilder} is used to
@@ -341,7 +358,8 @@ public class CFGBuilder {
 	 * @author Stefan Heule
 	 * 
 	 */
-	protected static class CFGPhaseOne implements TreeVisitor<Node, Void> {
+	protected static class CFGTranslationPhaseOne implements
+			TreeVisitor<Node, Void> {
 
 		/**
 		 * The translation starts in regular mode, that is
@@ -366,13 +384,7 @@ public class CFGBuilder {
 
 		protected Map<Label, Integer> bindings;
 
-		protected Map<ExtendedNode, Label> references;
-		
 		protected Set<Integer> leaders;
-
-		/* --------------------------------------------------------- */
-		/* Translation (AST to CFG) */
-		/* --------------------------------------------------------- */
 
 		/**
 		 * Build the control flow graph for a {@link BlockTree} that represents
@@ -391,7 +403,6 @@ public class CFGBuilder {
 			treeLookupMap = new IdentityHashMap<>();
 			nodeList = new ArrayList<>();
 			bindings = new HashMap<>();
-			references = new HashMap<>();
 			leaders = new HashSet<>();
 
 			// traverse AST of the method body
@@ -401,11 +412,11 @@ public class CFGBuilder {
 			nodeList.add(new ExtendedNode(ExtendedNodeType.REGULAR_EXIT_JUMP));
 
 			return new PhaseOneResult(t, treeLookupMap, nodeList, bindings,
-					references, leaders);
+					leaders);
 		}
 
 		/* --------------------------------------------------------- */
-		/* Basic Block Linking */
+		/* Nodes and Labels Management */
 		/* --------------------------------------------------------- */
 
 		/**
@@ -422,16 +433,15 @@ public class CFGBuilder {
 
 		protected void extendWithExtendedNode(ExtendedNode n) {
 			if (n.getType() == ExtendedNodeType.CONDITIONAL_MARKER) {
-				leaders.add(nodeList.size()-1);
+				leaders.add(nodeList.size() - 1);
 			}
 			nodeList.add(n);
 		}
-		
+
 		protected void addLabelForNextNode(Label l) {
 			leaders.add(nodeList.size());
 			bindings.put(l, nodeList.size());
 		}
-		
 
 		/* --------------------------------------------------------- */
 		/* Visitor Methods */
