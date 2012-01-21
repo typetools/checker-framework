@@ -2,12 +2,13 @@ package checkers.flow.cfg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
-import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
 import checkers.flow.cfg.block.RegularBlockImpl;
@@ -129,6 +130,11 @@ public class CFGBuilder {
 		public void setBlock(BlockImpl b) {
 			this.block = b;
 		}
+		
+		@Override
+		public String toString() {
+			return "ExtendedNode("+type+")";
+		}
 	}
 
 	protected static class NodeHolder extends ExtendedNode {
@@ -143,6 +149,11 @@ public class CFGBuilder {
 		@Override
 		public Node getNode() {
 			return node;
+		}
+		
+		@Override
+		public String toString() {
+			return "NodeHolder("+node+")";
 		}
 
 	}
@@ -160,6 +171,30 @@ public class CFGBuilder {
 		public Label getLabel() {
 			return falseSucc;
 		}
+		
+		@Override
+		public String toString() {
+			return "ConditionalMarker("+getLabel()+")";
+		}
+	}
+
+	protected static class JumpMarker extends ExtendedNode {
+		private Label jumpTarget;
+
+		public JumpMarker(Label jumpTarget) {
+			super(ExtendedNodeType.JUMP_MARKER);
+			this.jumpTarget = jumpTarget;
+		}
+
+		@Override
+		public Label getLabel() {
+			return jumpTarget;
+		}
+		
+		@Override
+		public String toString() {
+			return "JumpMarker("+getLabel()+")";
+		}
 	}
 
 	protected static class PhaseOneResult {
@@ -169,16 +204,18 @@ public class CFGBuilder {
 		private Map<ExtendedNode, Label> references;
 		private Map<Label, Integer> bindings;
 		private ArrayList<ExtendedNode> nodeList;
+		private Set<Integer> leaders;
 
 		public PhaseOneResult(MethodTree t,
 				IdentityHashMap<Tree, Node> treeLookupMap,
 				ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
-				Map<ExtendedNode, Label> references) {
+				Map<ExtendedNode, Label> references, Set<Integer> leaders) {
 			this.tree = t;
 			this.treeLookupMap = treeLookupMap;
 			this.nodeList = nodeList;
 			this.bindings = bindings;
 			this.references = references;
+			this.leaders = leaders;
 		}
 
 	}
@@ -189,7 +226,7 @@ public class CFGBuilder {
 
 	protected static class CFGPhaseTwo {
 
-		protected Map<SingleSuccessorBlockImpl, Label> missingEdges;
+		protected Map<SingleSuccessorBlockImpl, Integer> missingEdges;
 
 		SpecialBlockImpl regularExitBlock;
 		SpecialBlockImpl exceptionalExitBlock;
@@ -199,6 +236,7 @@ public class CFGBuilder {
 			Map<Label, Integer> bindings = in.bindings;
 			ArrayList<ExtendedNode> nodeList = in.nodeList;
 			Map<ExtendedNode, Label> references = in.references;
+			Set<Integer> leaders = in.leaders;
 
 			assert in.nodeList.size() > 0;
 
@@ -213,16 +251,20 @@ public class CFGBuilder {
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
 					SpecialBlockType.ENTRY);
-			Label methodEntry = new Label();
-			bindings.put(methodEntry, 0);
-			missingEdges.put(startBlock, methodEntry);
+			missingEdges.put(startBlock, 0);
 
 			// loop through all 'leaders' (while dynamically detecting the
 			// leaders)
 			RegularBlockImpl block = new RegularBlockImpl();
+			int i = 0;
 			for (ExtendedNode node : nodeList) {
 				switch (node.getType()) {
 				case NODE:
+					if (leaders.contains(i)) {
+						RegularBlockImpl b = new RegularBlockImpl();
+						block.setSuccessor(b);
+						block = b;
+					}
 					block.addNode(node.getNode());
 					node.setBlock(block);
 					break;
@@ -230,14 +272,27 @@ public class CFGBuilder {
 					// no label is supposed to point to conditional marker
 					// nodes, thus we do not need to set block for 'node'
 					assert block != null;
-					ConditionalBlockImpl cb = new ConditionalBlockImpl();
+					final ConditionalBlockImpl cb = new ConditionalBlockImpl();
 					block.setSuccessor(cb);
 					block = new RegularBlockImpl();
-					// TODO: add cb to missing edges (twice)
+					// use two anonymous SingleSuccessorBlockImpl that set the
+					// 'then' and 'else' successor of the conditional block
+					missingEdges.put(new SingleSuccessorBlockImpl() {
+						@Override
+						public void setSuccessor(BlockImpl successor) {
+							cb.setThenSuccessor(successor);
+						}
+					}, i + 1);
+					missingEdges.put(new SingleSuccessorBlockImpl() {
+						@Override
+						public void setSuccessor(BlockImpl successor) {
+							cb.setElseSuccessor(successor);
+						}
+					}, bindings.get(node.getLabel()));
 					break;
 				case JUMP_MARKER:
 					node.setBlock(block);
-					missingEdges.put(block, node.getLabel());
+					missingEdges.put(block, bindings.get(node.getLabel()));
 					block = new RegularBlockImpl();
 					break;
 				case EXCEPTION_NODE:
@@ -254,13 +309,13 @@ public class CFGBuilder {
 					block = new RegularBlockImpl();
 					break;
 				}
+				i++;
 			}
 
 			// add missing edges
-			for (Entry<SingleSuccessorBlockImpl, Label> e : missingEdges
+			for (Entry<SingleSuccessorBlockImpl, Integer> e : missingEdges
 					.entrySet()) {
-				ExtendedNode extendedNode = nodeList.get(bindings.get(e
-						.getValue()));
+				ExtendedNode extendedNode = nodeList.get(e.getValue());
 				BlockImpl target = extendedNode.getBlock();
 				e.getKey().setSuccessor(target);
 			}
@@ -312,6 +367,8 @@ public class CFGBuilder {
 		protected Map<Label, Integer> bindings;
 
 		protected Map<ExtendedNode, Label> references;
+		
+		protected Set<Integer> leaders;
 
 		/* --------------------------------------------------------- */
 		/* Translation (AST to CFG) */
@@ -335,6 +392,7 @@ public class CFGBuilder {
 			nodeList = new ArrayList<>();
 			bindings = new HashMap<>();
 			references = new HashMap<>();
+			leaders = new HashSet<>();
 
 			// traverse AST of the method body
 			t.getBody().accept(this, null);
@@ -343,7 +401,7 @@ public class CFGBuilder {
 			nodeList.add(new ExtendedNode(ExtendedNodeType.REGULAR_EXIT_JUMP));
 
 			return new PhaseOneResult(t, treeLookupMap, nodeList, bindings,
-					references);
+					references, leaders);
 		}
 
 		/* --------------------------------------------------------- */
@@ -358,32 +416,22 @@ public class CFGBuilder {
 		 * @return The same node (for convenience).
 		 */
 		protected Node extendWithNode(Node node) {
-			nodeList.add(new NodeHolder(node));
+			extendWithExtendedNode(new NodeHolder(node));
 			return node;
 		}
 
-		protected Node extendWithConditionalNode(Node node, Label falseSucc) {
-			nodeList.add(new NodeHolder(node));
-			nodeList.add(new ConditionalMarker(falseSucc));
-			return node;
+		protected void extendWithExtendedNode(ExtendedNode n) {
+			if (n.getType() == ExtendedNodeType.CONDITIONAL_MARKER) {
+				leaders.add(nodeList.size()-1);
+			}
+			nodeList.add(n);
 		}
-
-		/**
-		 * Extend the CFG with a regular node (not a conditional node), even
-		 * though the helper is currently in the conditional mode. Can only be
-		 * called when <code>conditionalMode</code> is true.
-		 * 
-		 * @param node
-		 *            The node to add.
-		 * @return The same node (for convenience).
-		 */
-		protected Node extendWithNodeInConditionalMode(Node node) {
-			assert conditionalMode;
-			conditionalMode = false;
-			extendWithNode(node);
-			conditionalMode = true;
-			return node;
+		
+		protected void addLabelForNextNode(Label l) {
+			leaders.add(nodeList.size());
+			bindings.put(l, nodeList.size());
 		}
+		
 
 		/* --------------------------------------------------------- */
 		/* Visitor Methods */
@@ -673,32 +721,34 @@ public class CFGBuilder {
 
 		@Override
 		public Node visitIf(IfTree tree, Void p) {
-			/*
-			 * assert conditionalMode == false;
-			 * 
-			 * // TODO exceptions PredecessorBlockHolder newPredecessors = null;
-			 * 
-			 * // basic block for the condition conditionalMode = true;
-			 * tree.getCondition().accept(this, null); conditionalMode = false;
-			 * PredecessorBlockHolder trueOut = getAndResetTruePredecessors();
-			 * PredecessorBlockHolder falseOut = getAndResetFalsePredecessors();
-			 * 
-			 * // then branch setAnyPredecessor(trueOut); StatementTree
-			 * thenStatement = tree.getThenStatement();
-			 * thenStatement.accept(this, null); newPredecessors =
-			 * addCurrentPredecessorToPredecessor(newPredecessors);
-			 * 
-			 * // else branch StatementTree elseStatement =
-			 * tree.getElseStatement(); if (elseStatement != null) {
-			 * setAnyPredecessor(falseOut); elseStatement.accept(this, null);
-			 * newPredecessors =
-			 * addCurrentPredecessorToPredecessor(newPredecessors); } else { //
-			 * directly link the 'false' outgoing edge to the end
-			 * newPredecessors = combinePredecessors(newPredecessors, falseOut);
-			 * }
-			 * 
-			 * setAnyPredecessor(newPredecessors);
-			 */
+
+			assert conditionalMode == false;
+
+			// TODO exceptions
+
+			// basic block for the condition
+			conditionalMode = true;
+			tree.getCondition().accept(this, null);
+			conditionalMode = false;
+			Label elseEntry = new Label();
+			extendWithExtendedNode(new ConditionalMarker(elseEntry));
+
+			// then branch
+			Label endIf = new Label();
+			StatementTree thenStatement = tree.getThenStatement();
+			thenStatement.accept(this, null);
+			extendWithExtendedNode(new JumpMarker(endIf));
+
+			// else branch
+			addLabelForNextNode(elseEntry);
+			StatementTree elseStatement = tree.getElseStatement();
+			if (elseStatement != null) {
+				elseStatement.accept(this, null);
+			}
+
+			// label the end of the if statement
+			addLabelForNextNode(endIf);
+
 			return null;
 		}
 
