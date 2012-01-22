@@ -24,9 +24,6 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 	 * Set a basic block as the successor of this block.
 	 */
 	public void setSuccessor(BlockImpl successor) {
-		// setting the same successor twice is OK, as this is performed during
-		// regular operation of the CFG to AST translation
-		assert this.successor == null || this.successor == successor : "cannot set successor twice";
 		this.successor = successor;
 		successor.addPredecessor(this);
 	}
