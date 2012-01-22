@@ -91,6 +91,26 @@ import com.sun.source.tree.WildcardTree;
  * Builds the control flow graph of a Java method (represented by its abstract
  * syntax tree, {@link MethodTree}).
  * 
+ * <p>
+ * 
+ * The translation of the AST to the CFG is split into three phases:
+ * <ol>
+ * <li><em>Phase one.</em> In the first phase, the AST is translated into a
+ * sequence of {@link ExtendedNode}s. An extended node can either be a
+ * {@link Node}, or one of several meta elements such as a conditional or
+ * unconditional jump or a node with additional information about exceptions.
+ * Some of the extended nodes contain labels (e.g., for the jump target), and
+ * phase one additionally creates a mapping from labels to extended nodes.
+ * Finally, the list of leaders is computed: A leader is an extended node which
+ * will give rise to a basic block in phase two.</li>
+ * <li><em>Phase two.</em> In this phase, the sequence of extended nodes is
+ * translated to a graph of control flow blocks that contain nodes. The meta
+ * elements from phase one are translated into the correct edges.</li>
+ * <li><em>Phase three.</em> In phase two, some basic blocks that are generated
+ * might be empty. This phase removes empty basic blocks while preserving the
+ * control flow structure.</li>
+ * </ol>
+ * 
  * @author Stefan Heule
  * 
  */
@@ -113,27 +133,66 @@ public class CFGBuilder {
 	/* Extended Node Types and Labels */
 	/* --------------------------------------------------------- */
 
+	/**
+	 * An extended node can be one of several things (depending on its
+	 * {@code type}):
+	 * <ul>
+	 * <li><em>NODE</em>. An extended node of this type is just a wrapper for a
+	 * {@link Node} (that cannot throw exceptions).</li>
+	 * <li><em>EXCEPTION_NODE</em>. A wrapper for a {@link Node} which can throw
+	 * exceptions. It contains a label for every possible exception type the
+	 * node might throw.</li>
+	 * <li><em>CONDITIONAL_JUMP</em>. Marks that the previous extended node
+	 * (which is either of type <em>NODE</em> or <em>EXCEPTION_NODE</em>) is the
+	 * condition of a branch. Implicitly, the following extended node in the
+	 * sequence will be the jump target if the condition evaluates to
+	 * {@code true}. If it evaluates to {@code false}, then the control flow
+	 * continues at a specific label (stored in this extended node).</li>
+	 * <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.</li>
+	 * <li><em>REGULAR_EXIT_JUMP</em>. A special, unconditional jump to the
+	 * regular exit block.</li>
+	 * <li><em>EXCEPTIONAL_EXIT_JUMP</em>. A special, unconditional jump to the
+	 * exceptional exit block.</li>
+	 * </ul>
+	 */
 	protected static class ExtendedNode {
+
+		/**
+		 * The basic block this extended node belongs to (as determined in phase
+		 * two).
+		 */
 		protected BlockImpl block;
+
+		/** Type of this node. */
 		protected ExtendedNodeType type;
 
 		public ExtendedNode(ExtendedNodeType type) {
 			this.type = type;
 		}
 
+		/** Extended node types (description see above). */
 		public enum ExtendedNodeType {
-			NODE, CONDITIONAL_MARKER, JUMP_MARKER, EXCEPTION_NODE, REGULAR_EXIT_JUMP, EXCEPTIONAL_EXIT_JUMP
+			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP, REGULAR_EXIT_JUMP, EXCEPTIONAL_EXIT_JUMP
 		}
 
 		public ExtendedNodeType getType() {
 			return type;
 		}
 
+		/**
+		 * @return The node contained in this extended node (only applicable if
+		 *         the type is {@code NODE} or {@code EXCEPTION_NODE}).
+		 */
 		public Node getNode() {
 			assert false;
 			return null;
 		}
 
+		/**
+		 * @return The label associated with this extended node (only applicable
+		 *         if type is {@code CONDITIONAL_JUMP} or
+		 *         {@link UNCONDITIONAL_JUMP}).
+		 */
 		public Label getLabel() {
 			assert false;
 			return null;
@@ -153,6 +212,9 @@ public class CFGBuilder {
 		}
 	}
 
+	/**
+	 * An extended node of type {@code NODE}.
+	 */
 	protected static class NodeHolder extends ExtendedNode {
 
 		protected Node node;
@@ -174,12 +236,15 @@ public class CFGBuilder {
 
 	}
 
-	protected static class ConditionalMarker extends ExtendedNode {
+	/**
+	 * An extended node of type {@code CONDITIONAL_JUMP}.
+	 */
+	protected static class ConditionalJump extends ExtendedNode {
 
 		private Label falseSucc;
 
-		public ConditionalMarker(Label falseSucc) {
-			super(ExtendedNodeType.CONDITIONAL_MARKER);
+		public ConditionalJump(Label falseSucc) {
+			super(ExtendedNodeType.CONDITIONAL_JUMP);
 			this.falseSucc = falseSucc;
 		}
 
@@ -194,11 +259,14 @@ public class CFGBuilder {
 		}
 	}
 
-	protected static class JumpMarker extends ExtendedNode {
+	/**
+	 * An extended node of type {@code UNCONDITIONAL_JUMP}.
+	 */
+	protected static class UnconditionalJump extends ExtendedNode {
 		private Label jumpTarget;
 
-		public JumpMarker(Label jumpTarget) {
-			super(ExtendedNodeType.JUMP_MARKER);
+		public UnconditionalJump(Label jumpTarget) {
+			super(ExtendedNodeType.UNCONDITIONAL_JUMP);
 			this.jumpTarget = jumpTarget;
 		}
 
@@ -213,16 +281,25 @@ public class CFGBuilder {
 		}
 	}
 
+	/**
+	 * A label that can be used to refer to other extended nodes.
+	 */
 	protected static class Label {
-
 	}
 
 	/* --------------------------------------------------------- */
 	/* Phase Three */
 	/* --------------------------------------------------------- */
 
+	/**
+	 * Class that performs phase three of the translation process.
+	 */
 	protected static class CFGTranslationPhaseThree {
 
+		/**
+		 * A simple wrapper object that holds a basic block and allows to set
+		 * one of its successors.
+		 */
 		protected interface PredecessorHolder {
 			void setSuccessor(BlockImpl b);
 		}
@@ -241,7 +318,7 @@ public class CFGBuilder {
 			Set<Block> worklist = cfg.getAllBlocks();
 			Set<Block> dontVisit = new HashSet<>();
 
-			// traverse the whole control flow graph
+			// remove empty blocks
 			for (Block cur : worklist) {
 				if (dontVisit.contains(cur)) {
 					continue;
@@ -255,7 +332,8 @@ public class CFGBuilder {
 						BlockImpl succ = computeNeighborhoodOfEmptyBlock(b,
 								empty, predecessors);
 						dontVisit.addAll(empty);
-						dontVisit.addAll((Collection<? extends Block>) predecessors);
+						dontVisit
+								.addAll((Collection<? extends Block>) predecessors);
 						for (PredecessorHolder p : predecessors) {
 							p.setSuccessor(succ);
 						}
@@ -362,13 +440,15 @@ public class CFGBuilder {
 						if (e.getSuccessor() == cur) {
 							predecessors.add(singleSuccessorHolder(e));
 						} else {
-							Set<Entry<Class<? extends Throwable>, Block>> entrySet = e.getExceptionalSuccessors().entrySet();
+							Set<Entry<Class<? extends Throwable>, Block>> entrySet = e
+									.getExceptionalSuccessors().entrySet();
 							for (final Entry<Class<? extends Throwable>, Block> entry : entrySet) {
 								if (entry.getValue() == cur) {
 									predecessors.add(new PredecessorHolder() {
 										@Override
 										public void setSuccessor(BlockImpl b) {
-											e.addExceptionalSuccessor(b, entry.getKey());
+											e.addExceptionalSuccessor(b,
+													entry.getKey());
 										}
 									});
 									break;
@@ -380,7 +460,8 @@ public class CFGBuilder {
 						RegularBlockImpl r = (RegularBlockImpl) pred;
 						if (r.isEmpty()) {
 							// recursively look backwards
-							computeNeighborhoodOfEmptyBlockBackwards(r, empty, predecessors);
+							computeNeighborhoodOfEmptyBlockBackwards(r, empty,
+									predecessors);
 						} else {
 							// add pred correctly to predecessor list
 							predecessors.add(singleSuccessorHolder(r));
@@ -391,6 +472,10 @@ public class CFGBuilder {
 			}
 		}
 
+		/**
+		 * @return A {@link PredecessorHolder} that sets the successor of a
+		 *         single successor block {@code s}.
+		 */
 		protected static PredecessorHolder singleSuccessorHolder(
 				final SingleSuccessorBlockImpl s) {
 			return new PredecessorHolder() {
@@ -406,8 +491,19 @@ public class CFGBuilder {
 	/* Phase Two */
 	/* --------------------------------------------------------- */
 
+	/**
+	 * Class that performs phase two of the translation process.
+	 */
 	protected static class CFGTranslationPhaseTwo {
 
+		/**
+		 * Perform phase two of the translation.
+		 * 
+		 * @param in
+		 *            The result of phase one.
+		 * @return A control flow graph that might still contain empty basic
+		 *         blocks.
+		 */
 		public static ControlFlowGraph process(PhaseOneResult in) {
 
 			Map<Label, Integer> bindings = in.bindings;
@@ -445,7 +541,7 @@ public class CFGBuilder {
 					block.addNode(node.getNode());
 					node.setBlock(block);
 					break;
-				case CONDITIONAL_MARKER:
+				case CONDITIONAL_JUMP:
 					// no label is supposed to point to conditional marker
 					// nodes, thus we do not need to set block for 'node'
 					assert block != null;
@@ -467,7 +563,7 @@ public class CFGBuilder {
 						}
 					}, bindings.get(node.getLabel()));
 					break;
-				case JUMP_MARKER:
+				case UNCONDITIONAL_JUMP:
 					node.setBlock(block);
 					missingEdges.put(block, bindings.get(node.getLabel()));
 					block = new RegularBlockImpl();
@@ -505,6 +601,9 @@ public class CFGBuilder {
 	/* Phase One */
 	/* --------------------------------------------------------- */
 
+	/**
+	 * A wrapper object to pass around the result of phase one.
+	 */
 	protected static class PhaseOneResult {
 
 		private IdentityHashMap<Tree, Node> treeLookupMap;
@@ -527,10 +626,16 @@ public class CFGBuilder {
 	}
 
 	/**
-	 * This helper class builds the actual control flow graph by visiting the
-	 * abstract syntax tree. A class separate from {@link CFGBuilder} is used to
-	 * hide implementation details and keep the interface of {@link CFGBuilder}
-	 * clean.
+	 * Class that performs phase one of the translation process. It generates
+	 * the following information:
+	 * <ul>
+	 * <li>A sequence of extended nodes.</li>
+	 * <li>A set of bindings from {@link Label}s to positions in the node
+	 * sequence.</li>
+	 * <li>A set of leader nodes that give rise to basic blocks in phase two.</li>
+	 * <li>A lookup map that gives the mapping from AST tree nodes to
+	 * {@link Node}s.</li>
+	 * </ul>
 	 * 
 	 * <p>
 	 * 
@@ -549,15 +654,12 @@ public class CFGBuilder {
 		/**
 		 * The translation starts in regular mode, that is
 		 * <code>conditionalMode</code> is false. In this case, no conditional
-		 * basic blocks are generated.
+		 * jump nodes are generated.
 		 * 
 		 * To correctly model control flow when the evaluation of an expression
 		 * determines control flow (e.g. for if-conditions, while loops, or
 		 * short-circuiting conditional expressions),
-		 * <code>conditionalMode</code> can be set to true. Then, the fields
-		 * <code>truePredecessors</code> and <code>falsePredecessors</code> are
-		 * used to store the predecessor blocks when the expression just visited
-		 * evaluates to true or false, respectively.
+		 * <code>conditionalMode</code> can be set to true.
 		 */
 		protected boolean conditionalMode;
 
@@ -565,19 +667,21 @@ public class CFGBuilder {
 		// TODO: fill this map with contents.
 		protected IdentityHashMap<Tree, Node> treeLookupMap;
 
+		/** The list of extended nodes. */
 		protected ArrayList<ExtendedNode> nodeList;
 
+		/** The bindings. */
 		protected Map<Label, Integer> bindings;
 
+		/** The set of leaders. */
 		protected Set<Integer> leaders;
 
 		/**
-		 * Build the control flow graph for a {@link BlockTree} that represents
-		 * a methods body.
+		 * Performs the actual work of phase one.
 		 * 
 		 * @param t
-		 *            Method body.
-		 * @return The resulting control flow graph.
+		 *            A method (identified by its AST element).
+		 * @return The result of phase one.
 		 */
 		public PhaseOneResult process(MethodTree t) {
 
@@ -605,7 +709,7 @@ public class CFGBuilder {
 		/* --------------------------------------------------------- */
 
 		/**
-		 * Extend the CFG with a node.
+		 * Extend the list of extended nodes with a node.
 		 * 
 		 * @param node
 		 *            The node to add.
@@ -616,13 +720,20 @@ public class CFGBuilder {
 			return node;
 		}
 
+		/**
+		 * Extend the list of extended nodes with an extended node.
+		 * 
+		 * @param n
+		 *            The extended node.
+		 */
 		protected void extendWithExtendedNode(ExtendedNode n) {
-			if (n.getType() == ExtendedNodeType.CONDITIONAL_MARKER) {
-				leaders.add(nodeList.size() - 1);
-			}
 			nodeList.add(n);
 		}
 
+		/**
+		 * Add the label {@code l} to the extended node that will be placed next
+		 * in the sequence.
+		 */
 		protected void addLabelForNextNode(Label l) {
 			leaders.add(nodeList.size());
 			bindings.put(l, nodeList.size());
@@ -926,13 +1037,13 @@ public class CFGBuilder {
 			tree.getCondition().accept(this, null);
 			conditionalMode = false;
 			Label elseEntry = new Label();
-			extendWithExtendedNode(new ConditionalMarker(elseEntry));
+			extendWithExtendedNode(new ConditionalJump(elseEntry));
 
 			// then branch
 			Label endIf = new Label();
 			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
-			extendWithExtendedNode(new JumpMarker(endIf));
+			extendWithExtendedNode(new UnconditionalJump(endIf));
 
 			// else branch
 			addLabelForNextNode(elseEntry);
