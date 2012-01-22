@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
@@ -133,6 +132,12 @@ public class CFGBuilder {
 	/* Extended Node Types and Labels */
 	/* --------------------------------------------------------- */
 
+	/** Special label to identify the exceptional exit. */
+	protected static Label exceptionalExitLabel = new Label();
+
+	/** Special label to identify the regular exit. */
+	protected static Label regularExitLabel = new Label();
+
 	/**
 	 * An extended node can be one of several things (depending on its
 	 * {@code type}):
@@ -149,13 +154,9 @@ public class CFGBuilder {
 	 * {@code true}. If it evaluates to {@code false}, then the control flow
 	 * continues at a specific label (stored in this extended node).</li>
 	 * <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.</li>
-	 * <li><em>REGULAR_EXIT_JUMP</em>. A special, unconditional jump to the
-	 * regular exit block.</li>
-	 * <li><em>EXCEPTIONAL_EXIT_JUMP</em>. A special, unconditional jump to the
-	 * exceptional exit block.</li>
 	 * </ul>
 	 */
-	protected static class ExtendedNode {
+	protected static abstract class ExtendedNode {
 
 		/**
 		 * The basic block this extended node belongs to (as determined in phase
@@ -172,7 +173,7 @@ public class CFGBuilder {
 
 		/** Extended node types (description see above). */
 		public enum ExtendedNodeType {
-			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP, REGULAR_EXIT_JUMP, EXCEPTIONAL_EXIT_JUMP
+			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP
 		}
 
 		public ExtendedNodeType getType() {
@@ -237,11 +238,42 @@ public class CFGBuilder {
 	}
 
 	/**
+	 * An extended node of type {@code EXCEPTION_NODE}.
+	 */
+	protected static class NodeWithExceptionsHolder extends ExtendedNode {
+
+		protected Node node;
+		protected Map<Class<? extends Throwable>, Label> exceptions;
+
+		public NodeWithExceptionsHolder(Node node,
+				Map<Class<? extends Throwable>, Label> exceptions) {
+			super(ExtendedNodeType.EXCEPTION_NODE);
+			this.node = node;
+			this.exceptions = exceptions;
+		}
+
+		public Map<Class<? extends Throwable>, Label> getExceptions() {
+			return exceptions;
+		}
+
+		@Override
+		public Node getNode() {
+			return node;
+		}
+
+		@Override
+		public String toString() {
+			return "NodeWithExceptionsHolder(" + node + ")";
+		}
+
+	}
+
+	/**
 	 * An extended node of type {@code CONDITIONAL_JUMP}.
 	 */
 	protected static class ConditionalJump extends ExtendedNode {
 
-		private Label falseSucc;
+		protected Label falseSucc;
 
 		public ConditionalJump(Label falseSucc) {
 			super(ExtendedNodeType.CONDITIONAL_JUMP);
@@ -263,7 +295,8 @@ public class CFGBuilder {
 	 * An extended node of type {@code UNCONDITIONAL_JUMP}.
 	 */
 	protected static class UnconditionalJump extends ExtendedNode {
-		private Label jumpTarget;
+
+		protected Label jumpTarget;
 
 		public UnconditionalJump(Label jumpTarget) {
 			super(ExtendedNodeType.UNCONDITIONAL_JUMP);
@@ -491,6 +524,24 @@ public class CFGBuilder {
 	/* Phase Two */
 	/* --------------------------------------------------------- */
 
+	/** Tuple class with up to three members. */
+	protected static class Tuple<A, B, C> {
+		public A a;
+		public B b;
+		public C c;
+
+		public Tuple(A a, B b) {
+			this.a = a;
+			this.b = b;
+		}
+
+		public Tuple(A a, B b, C c) {
+			this.a = a;
+			this.b = b;
+			this.c = c;
+		}
+	}
+
 	/**
 	 * Class that performs phase two of the translation process.
 	 */
@@ -518,13 +569,17 @@ public class CFGBuilder {
 			SpecialBlockImpl exceptionalExitBlock = new SpecialBlockImpl(
 					SpecialBlockType.EXCEPTIONAL_EXIT);
 
-			// no missing edges yet
-			Map<SingleSuccessorBlockImpl, Integer> missingEdges = new HashMap<>();
+			// record missing edges that will be added later
+			Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
+
+			// missing exceptional edges (third type argument should really be
+			// Class<? extends Throwable>, but Java complains.
+			Set<Tuple<ExceptionBlockImpl, Integer, ?>> missingExceptionalEdges = new HashSet<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
 					SpecialBlockType.ENTRY);
-			missingEdges.put(startBlock, 0);
+			missingEdges.add(new Tuple<>(startBlock, 0));
 
 			// loop through all 'leaders' (while dynamically detecting the
 			// leaders)
@@ -550,47 +605,82 @@ public class CFGBuilder {
 					block = new RegularBlockImpl();
 					// use two anonymous SingleSuccessorBlockImpl that set the
 					// 'then' and 'else' successor of the conditional block
-					missingEdges.put(new SingleSuccessorBlockImpl() {
-						@Override
-						public void setSuccessor(BlockImpl successor) {
-							cb.setThenSuccessor(successor);
-						}
-					}, i + 1);
-					missingEdges.put(new SingleSuccessorBlockImpl() {
-						@Override
-						public void setSuccessor(BlockImpl successor) {
-							cb.setElseSuccessor(successor);
-						}
-					}, bindings.get(node.getLabel()));
+					missingEdges.add(new Tuple<>(
+							new SingleSuccessorBlockImpl() {
+								@Override
+								public void setSuccessor(BlockImpl successor) {
+									cb.setThenSuccessor(successor);
+								}
+							}, i + 1));
+					missingEdges.add(new Tuple<>(
+							new SingleSuccessorBlockImpl() {
+								@Override
+								public void setSuccessor(BlockImpl successor) {
+									cb.setElseSuccessor(successor);
+								}
+							}, bindings.get(node.getLabel())));
 					break;
 				case UNCONDITIONAL_JUMP:
 					node.setBlock(block);
-					missingEdges.put(block, bindings.get(node.getLabel()));
+					if (node.getLabel() == regularExitLabel) {
+						block.setSuccessor(regularExitBlock);
+					} else if (node.getLabel() == exceptionalExitLabel) {
+						block.setSuccessor(exceptionalExitBlock);
+					} else {
+						missingEdges.add(new Tuple<>(block, bindings.get(node
+								.getLabel())));
+					}
 					block = new RegularBlockImpl();
 					break;
 				case EXCEPTION_NODE:
-					// TODO
-					break;
-				case REGULAR_EXIT_JUMP:
-					block.setSuccessor(regularExitBlock);
-					node.setBlock(block);
+					NodeWithExceptionsHolder en = (NodeWithExceptionsHolder) node;
+					// create new exception block and link with previous block
+					ExceptionBlockImpl e = new ExceptionBlockImpl();
+					e.setNode(en.getNode());
+					block.setSuccessor(e);
 					block = new RegularBlockImpl();
-					break;
-				case EXCEPTIONAL_EXIT_JUMP:
-					block.setSuccessor(exceptionalExitBlock);
-					node.setBlock(block);
-					block = new RegularBlockImpl();
+
+					// ensure linking between e and next block (normal edge)
+					missingEdges.add(new Tuple<>(e, i + 1));
+
+					// exceptional edges
+					for (Entry<Class<? extends Throwable>, Label> entry : en
+							.getExceptions().entrySet()) {
+						// missingEdges.put(e, bindings.get(key))
+						Integer target = bindings.get(entry.getValue());
+						Class<? extends Throwable> cause = entry.getKey();
+						missingExceptionalEdges.add(new Tuple<>(e, target,
+								cause));
+					}
 					break;
 				}
 				i++;
 			}
 
 			// add missing edges
-			for (Entry<SingleSuccessorBlockImpl, Integer> e : missingEdges
-					.entrySet()) {
-				ExtendedNode extendedNode = nodeList.get(e.getValue());
+			for (Tuple<? extends SingleSuccessorBlockImpl, Integer, ?> p : missingEdges) {
+				Integer index = p.b;
+				ExtendedNode extendedNode = nodeList.get(index);
 				BlockImpl target = extendedNode.getBlock();
-				e.getKey().setSuccessor(target);
+				SingleSuccessorBlockImpl source = p.a;
+				source.setSuccessor(target);
+			}
+
+			// add missing exceptional edges
+			for (Tuple<ExceptionBlockImpl, Integer, ?> p : missingExceptionalEdges) {
+				Integer index = p.b;
+				@SuppressWarnings("unchecked")
+				Class<? extends Throwable> cause = (Class<? extends Throwable>) p.c;
+				ExceptionBlockImpl source = p.a;
+				if (index == null) {
+					// edge to exceptional exit
+					source.addExceptionalSuccessor(exceptionalExitBlock, cause);
+				} else {
+					// edge to specific target
+					ExtendedNode extendedNode = nodeList.get(index);
+					BlockImpl target = extendedNode.getBlock();
+					source.addExceptionalSuccessor(target, cause);
+				}
 			}
 
 			return new ControlFlowGraph(startBlock, in.tree, in.treeLookupMap);
@@ -698,7 +788,7 @@ public class CFGBuilder {
 			t.getBody().accept(this, null);
 
 			// add marker to indicate that the next block will be the exit block
-			nodeList.add(new ExtendedNode(ExtendedNodeType.REGULAR_EXIT_JUMP));
+			nodeList.add(new UnconditionalJump(regularExitLabel));
 
 			return new PhaseOneResult(t, treeLookupMap, nodeList, bindings,
 					leaders);
@@ -717,6 +807,47 @@ public class CFGBuilder {
 		 */
 		protected Node extendWithNode(Node node) {
 			extendWithExtendedNode(new NodeHolder(node));
+			return node;
+		}
+
+		/**
+		 * Extend the list of extended nodes with a node, where
+		 * <code>node</code> might throw the exception <code>cause</code>.
+		 * 
+		 * @param node
+		 *            The node to add.
+		 * @param causes
+		 *            Set of exceptions that the node might throw.
+		 * @return The same node (for convenience).
+		 */
+		protected Node extendWithNodeWithException(Node node,
+				Class<? extends Throwable> cause) {
+			Set<Class<? extends Throwable>> causes = new HashSet<>();
+			causes.add(cause);
+			return extendWithNodeWithExceptions(node, causes);
+		}
+
+		/**
+		 * Extend the list of extended nodes with a node, where
+		 * <code>node</code> might throw any of the exception in
+		 * <code>causes</code>.
+		 * 
+		 * @param node
+		 *            The node to add.
+		 * @param causes
+		 *            Set of exceptions that the node might throw.
+		 * @return The same node (for convenience).
+		 */
+		protected Node extendWithNodeWithExceptions(Node node,
+				Set<Class<? extends Throwable>> causes) {
+			// TODO: catch blocks
+			Map<Class<? extends Throwable>, Label> exceptions = new HashMap<>();
+			for (Class<? extends Throwable> cause : causes) {
+				exceptions.put(cause, exceptionalExitLabel);
+			}
+			NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(
+					node, exceptions);
+			extendWithExtendedNode(exNode);
 			return node;
 		}
 
@@ -791,9 +922,8 @@ public class CFGBuilder {
 				boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
 				// TODO: explicit this access does not throw exception
 				if (canThrow) {
-					// TODO: handle exceptions
-					// addToCurrentBlockWithException(target,
-					// NullPointerException.class);
+					extendWithNodeWithException(target,
+							NullPointerException.class);
 				} else {
 					extendWithNode(target);
 				}
