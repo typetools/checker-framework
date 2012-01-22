@@ -58,4 +58,9 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
 		return "RegularBlock(" + contents + ")";
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return contents.isEmpty();
+	}
+
 }

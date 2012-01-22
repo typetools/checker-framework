@@ -1,10 +1,8 @@
 package checkers.flow.cfg;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -65,9 +63,8 @@ public class ControlFlowGraph {
 	/**
 	 * @return The list of all basic block in this control flow graph.
 	 */
-	// TODO: remove if not needed
-	public List<Block> getAllBlocks() {
-		ArrayList<Block> r = new ArrayList<>();
+	public Set<Block> getAllBlocks() {
+		Set<Block> r = new HashSet<>();
 		Set<Block> visited = new HashSet<>();
 		Queue<Block> worklist = new LinkedList<>();
 		Block cur = entryBlock;
