@@ -5,9 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
@@ -15,6 +16,7 @@ import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
+import checkers.flow.cfg.block.ExceptionBlockImpl;
 import checkers.flow.cfg.block.RegularBlockImpl;
 import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
@@ -102,7 +104,9 @@ public class CFGBuilder {
 				.process(method);
 		ControlFlowGraph phase2result = CFGTranslationPhaseTwo
 				.process(phase1result);
-		return phase2result;
+		ControlFlowGraph phase3result = CFGTranslationPhaseThree
+				.process(phase2result);
+		return phase3result;
 	}
 
 	/* --------------------------------------------------------- */
@@ -220,7 +224,6 @@ public class CFGBuilder {
 	protected static class CFGTranslationPhaseThree {
 
 		protected interface PredecessorHolder {
-
 			void setSuccessor(BlockImpl b);
 		}
 
@@ -236,16 +239,13 @@ public class CFGBuilder {
 		@SuppressWarnings("unchecked")
 		public static ControlFlowGraph process(ControlFlowGraph cfg) {
 			Set<Block> worklist = cfg.getAllBlocks();
-			Set<Block> visited = new HashSet<>();
+			Set<Block> dontVisit = new HashSet<>();
 
 			// traverse the whole control flow graph
 			for (Block cur : worklist) {
-				if (visited.contains(cur)) {
+				if (dontVisit.contains(cur)) {
 					continue;
 				}
-				visited.add(cur);
-				if (cur == null)
-					break;
 
 				if (cur.getType() == BlockType.REGULAR_BLOCK) {
 					RegularBlockImpl b = (RegularBlockImpl) cur;
@@ -254,8 +254,8 @@ public class CFGBuilder {
 						Set<PredecessorHolder> predecessors = new HashSet<>();
 						BlockImpl succ = computeNeighborhoodOfEmptyBlock(b,
 								empty, predecessors);
-						visited.addAll(empty);
-						visited.addAll((Collection<? extends Block>) predecessors);
+						dontVisit.addAll(empty);
+						dontVisit.addAll((Collection<? extends Block>) predecessors);
 						for (PredecessorHolder p : predecessors) {
 							p.setSuccessor(succ);
 						}
@@ -286,8 +286,119 @@ public class CFGBuilder {
 		protected static BlockImpl computeNeighborhoodOfEmptyBlock(
 				RegularBlockImpl start, Set<RegularBlockImpl> empty,
 				Set<PredecessorHolder> predecessors) {
-			empty.add(start);
-			return null;
+
+			// get empty neighborhood that come before 'start'
+			computeNeighborhoodOfEmptyBlockBackwards(start, empty, predecessors);
+
+			// go forward
+			BlockImpl succ = (BlockImpl) start.getSuccessor();
+			while (succ.getType() == BlockType.REGULAR_BLOCK) {
+				RegularBlockImpl cur = (RegularBlockImpl) succ;
+				if (cur.isEmpty()) {
+					computeNeighborhoodOfEmptyBlockBackwards(cur, empty,
+							predecessors);
+					empty.add(cur);
+					succ = (BlockImpl) cur.getSuccessor();
+				} else {
+					break;
+				}
+			}
+			return succ;
+		}
+
+		/**
+		 * Compute the set of empty regular basic blocks {@code empty}, starting
+		 * at {@code start} and looking only backwards in the control flow
+		 * graph. Furthermore, compute the predecessors of these empty blocks (
+		 * {@code predecessors}).
+		 * 
+		 * @param start
+		 *            The starting point of the search (an empty, regular basic
+		 *            block).
+		 * @param empty
+		 *            A set to be filled by this method with all empty basic
+		 *            blocks found (including {@code start}).
+		 * @param predecessors
+		 *            A set to be filled by this method with all predecessors.
+		 */
+		protected static void computeNeighborhoodOfEmptyBlockBackwards(
+				RegularBlockImpl start, Set<RegularBlockImpl> empty,
+				Set<PredecessorHolder> predecessors) {
+			Queue<RegularBlockImpl> worklist = new LinkedList<>();
+			worklist.add(start);
+			while (!worklist.isEmpty()) {
+				RegularBlockImpl cur = worklist.poll();
+				empty.add(cur);
+				for (final BlockImpl pred : cur.getPredecessors()) {
+					switch (pred.getType()) {
+					case SPECIAL_BLOCK:
+						// add pred correctly to predecessor list
+						SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
+						predecessors.add(singleSuccessorHolder(s));
+						break;
+					case CONDITIONAL_BLOCK:
+						// add pred correctly to predecessor list
+						final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+						if (c.getThenSuccessor() == cur) {
+							predecessors.add(new PredecessorHolder() {
+								@Override
+								public void setSuccessor(BlockImpl b) {
+									c.setThenSuccessor(b);
+								}
+							});
+						} else {
+							assert c.getElseSuccessor() == cur;
+							predecessors.add(new PredecessorHolder() {
+								@Override
+								public void setSuccessor(BlockImpl b) {
+									c.setElseSuccessor(b);
+								}
+							});
+						}
+						break;
+					case EXCEPTION_BLOCK:
+						// add pred correctly to predecessor list
+						final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+						if (e.getSuccessor() == cur) {
+							predecessors.add(singleSuccessorHolder(e));
+						} else {
+							Set<Entry<Class<? extends Throwable>, Block>> entrySet = e.getExceptionalSuccessors().entrySet();
+							for (final Entry<Class<? extends Throwable>, Block> entry : entrySet) {
+								if (entry.getValue() == cur) {
+									predecessors.add(new PredecessorHolder() {
+										@Override
+										public void setSuccessor(BlockImpl b) {
+											e.addExceptionalSuccessor(b, entry.getKey());
+										}
+									});
+									break;
+								}
+							}
+						}
+						break;
+					case REGULAR_BLOCK:
+						RegularBlockImpl r = (RegularBlockImpl) pred;
+						if (r.isEmpty()) {
+							// recursively look backwards
+							computeNeighborhoodOfEmptyBlockBackwards(r, empty, predecessors);
+						} else {
+							// add pred correctly to predecessor list
+							predecessors.add(singleSuccessorHolder(r));
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		protected static PredecessorHolder singleSuccessorHolder(
+				final SingleSuccessorBlockImpl s) {
+			return new PredecessorHolder() {
+				@Override
+				public void setSuccessor(BlockImpl b) {
+					s.setSuccessor(b);
+				}
+			};
 		}
 	}
 
