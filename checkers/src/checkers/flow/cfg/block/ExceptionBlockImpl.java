@@ -41,12 +41,13 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
 	/**
 	 * Add an exceptional successor.
 	 */
-	public void addExceptionalSuccessor(Block b,
+	public void addExceptionalSuccessor(BlockImpl b,
 			Class<? extends Throwable> cause) {
 		if (exceptionalSuccessors == null) {
 			exceptionalSuccessors = new HashMap<>();
 		}
 		exceptionalSuccessors.put(cause, b);
+		b.addPredecessor(this);
 	}
 
 	@Override

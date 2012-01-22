@@ -1,5 +1,9 @@
 package checkers.flow.cfg.block;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * Base class of the {@link Block} implementation hierarchy.
@@ -17,6 +21,9 @@ public abstract class BlockImpl implements Block {
 
 	/** The type of this basic block. */
 	protected BlockType type;
+	
+	/** The set of predecessors. */
+	protected Set<BlockImpl> predecessors;
 
 	/**
 	 * @return A fresh identifier.
@@ -26,6 +33,7 @@ public abstract class BlockImpl implements Block {
 	}
 
 	public BlockImpl() {
+		predecessors = new HashSet<>();
 	}
 
 	@Override
@@ -36,6 +44,17 @@ public abstract class BlockImpl implements Block {
 	@Override
 	public BlockType getType() {
 		return type;
+	}
+	
+	/**
+	 * @return The list of predecessors of this basic block.
+	 */
+	public Set<BlockImpl> getPredecessors() {
+		return Collections.unmodifiableSet(predecessors);
+	}
+	
+	public void addPredecessor(BlockImpl pred) {
+		predecessors.add(pred);
 	}
 
 }
