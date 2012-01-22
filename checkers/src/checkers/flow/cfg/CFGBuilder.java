@@ -22,6 +22,8 @@ import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
+import checkers.flow.cfg.node.ConditionalOrNode;
+import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
@@ -752,6 +754,9 @@ public class CFGBuilder {
 		 * <code>conditionalMode</code> can be set to true.
 		 */
 		protected boolean conditionalMode;
+		
+		protected Label trueTarget;
+		protected Label falseTarget;
 
 		/** Map from AST {@link Tree}s to {@link Node}s. */
 		// TODO: fill this map with contents.
@@ -988,64 +993,72 @@ public class CFGBuilder {
 		@Override
 		public Node visitBinary(BinaryTree tree, Void p) {
 			// TODO: remaining binary node types
-			/*
-			 * Node r = null; switch (tree.getKind()) { case CONDITIONAL_OR: {
-			 * 
-			 * // see JLS 15.24
-			 * 
-			 * boolean condMode = conditionalMode; conditionalMode = true;
-			 * 
-			 * // left-hand side Node left = tree.getLeftOperand().accept(this,
-			 * p); PredecessorBlockHolder leftOutTrue =
-			 * getAndResetTruePredecessors(); PredecessorBlockHolder
-			 * leftOutFalse = getAndResetFalsePredecessors();
-			 * 
-			 * // right-hand side setAnyPredecessor(leftOutFalse); Node right =
-			 * tree.getRightOperand().accept(this, p); PredecessorBlockHolder
-			 * rightOutTrue = getAndResetTruePredecessors();
-			 * PredecessorBlockHolder rightOutFalse =
-			 * getAndResetFalsePredecessors();
-			 * 
-			 * conditionalMode = condMode;
-			 * 
-			 * if (conditionalMode) { // node for true case
-			 * setAnyPredecessor(leftOutTrue); addAnyPredecessor(rightOutTrue);
-			 * Node trueNode = new ConditionalOrNode(tree, left, right, true);
-			 * SingleSuccessorBlockImpl trueBlock =
-			 * extendWithNodeInConditionalMode(trueNode);
-			 * 
-			 * // node for false case setAnyPredecessor(rightOutFalse); Node
-			 * falseNode = new ConditionalOrNode(tree, left, right, false);
-			 * SingleSuccessorBlockImpl falseBlock =
-			 * extendWithNodeInConditionalMode(falseNode);
-			 * 
-			 * setSingleTruePredecessor(trueBlock);
-			 * setSingleFalsePredecessor(falseBlock); return trueNode; } else {
-			 * // one node for true/false setAnyPredecessor(leftOutTrue);
-			 * addAnyPredecessor(rightOutTrue);
-			 * addAnyPredecessor(rightOutFalse); Node node = new
-			 * ConditionalOrNode(tree, left, right, null); extendWithNode(node);
-			 * return node; } }
-			 * 
-			 * case EQUAL_TO: {
-			 * 
-			 * // see JLS 15.21
-			 * 
-			 * boolean cm = conditionalMode; conditionalMode = false;
-			 * 
-			 * // left-hand side Node left = tree.getLeftOperand().accept(this,
-			 * p);
-			 * 
-			 * // right-hand side Node right =
-			 * tree.getRightOperand().accept(this, p);
-			 * 
-			 * conditionalMode = cm;
-			 * 
-			 * // comparison EqualToNode node = new EqualToNode(tree, left,
-			 * right); return extendWithNode(node); } } assert r != null :
-			 * "unexpected binary tree"; return extendWithNode(r);
-			 */
-			return null;
+			Node r = null;
+			switch (tree.getKind()) {
+			case CONDITIONAL_OR: {
+
+				// see JLS 15.24
+
+				boolean condMode = conditionalMode;
+				conditionalMode = true;
+				
+				Label oldTrueTarget = trueTarget;
+				Label oldFalseTarget = falseTarget;
+				Label myTrueTarget = new Label();
+				trueTarget = myTrueTarget;
+				Label myFalseTarget = new Label();
+				falseTarget = myFalseTarget;
+
+				// left-hand side
+				Label leftFalse = new Label();
+				Node left = tree.getLeftOperand().accept(this, p);
+
+				// right-hand side
+				Label rightFalse = new Label();
+				Node right = tree.getRightOperand().accept(this, p);
+
+				conditionalMode = condMode;
+
+				if (conditionalMode) {
+					// node for true case
+					Node trueNode = new ConditionalOrNode(tree, left, right,
+							true);
+
+					// node for false case
+					Node falseNode = new ConditionalOrNode(tree, left, right,
+							false);
+
+					return trueNode;
+				} else {
+					// one node for true/false
+					Node node = new ConditionalOrNode(tree, left, right, null);
+					extendWithNode(node);
+					return node;
+				}
+			}
+
+			case EQUAL_TO: {
+
+				// see JLS 15.21
+
+				boolean cm = conditionalMode;
+				conditionalMode = false;
+
+				// left-hand side
+				Node left = tree.getLeftOperand().accept(this, p);
+
+				// right-hand side
+				Node right = tree.getRightOperand().accept(this, p);
+
+				conditionalMode = cm;
+
+				// comparison
+				EqualToNode node = new EqualToNode(tree, left, right);
+				return extendWithNode(node);
+			}
+			}
+			assert r != null : "unexpected binary tree";
+			return extendWithNode(r);
 		}
 
 		@Override
