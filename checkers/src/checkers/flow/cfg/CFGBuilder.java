@@ -1,14 +1,18 @@
 package checkers.flow.cfg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
+import checkers.flow.cfg.block.Block;
+import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
 import checkers.flow.cfg.block.RegularBlockImpl;
@@ -208,13 +212,83 @@ public class CFGBuilder {
 	protected static class Label {
 
 	}
-	
+
 	/* --------------------------------------------------------- */
 	/* Phase Three */
 	/* --------------------------------------------------------- */
-	
+
 	protected static class CFGTranslationPhaseThree {
-		
+
+		protected interface PredecessorHolder {
+
+			void setSuccessor(BlockImpl b);
+		}
+
+		/**
+		 * Perform phase three on the control flow graph {@code cfg}.
+		 * 
+		 * @param cfg
+		 *            The control flow graph. Ownership is transfered to this
+		 *            method and the caller is not allowed to read or modify
+		 *            {@code cfg} after the call to {@code process} any more.
+		 * @return The resulting control flow graph.
+		 */
+		@SuppressWarnings("unchecked")
+		public static ControlFlowGraph process(ControlFlowGraph cfg) {
+			Set<Block> worklist = cfg.getAllBlocks();
+			Set<Block> visited = new HashSet<>();
+
+			// traverse the whole control flow graph
+			for (Block cur : worklist) {
+				if (visited.contains(cur)) {
+					continue;
+				}
+				visited.add(cur);
+				if (cur == null)
+					break;
+
+				if (cur.getType() == BlockType.REGULAR_BLOCK) {
+					RegularBlockImpl b = (RegularBlockImpl) cur;
+					if (b.isEmpty()) {
+						Set<RegularBlockImpl> empty = new HashSet<>();
+						Set<PredecessorHolder> predecessors = new HashSet<>();
+						BlockImpl succ = computeNeighborhoodOfEmptyBlock(b,
+								empty, predecessors);
+						visited.addAll(empty);
+						visited.addAll((Collection<? extends Block>) predecessors);
+						for (PredecessorHolder p : predecessors) {
+							p.setSuccessor(succ);
+						}
+					}
+				}
+			}
+
+			return cfg;
+		}
+
+		/**
+		 * Compute the set of empty regular basic blocks {@code empty}, starting
+		 * at {@code start} and going both forward and backwards. Furthermore,
+		 * compute the predecessors of these empty blocks ({@code predecessors}
+		 * ), and their single successor (return value).
+		 * 
+		 * @param start
+		 *            The starting point of the search (an empty, regular basic
+		 *            block).
+		 * @param empty
+		 *            An empty set to be filled by this method with all empty
+		 *            basic blocks found (including {@code start}).
+		 * @param predecessors
+		 *            An empty set to be filled by this method with all
+		 *            predecessors.
+		 * @return The single successor of the set of the empty basic blocks.
+		 */
+		protected static BlockImpl computeNeighborhoodOfEmptyBlock(
+				RegularBlockImpl start, Set<RegularBlockImpl> empty,
+				Set<PredecessorHolder> predecessors) {
+			empty.add(start);
+			return null;
+		}
 	}
 
 	/* --------------------------------------------------------- */

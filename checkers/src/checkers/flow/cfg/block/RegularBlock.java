@@ -29,5 +29,10 @@ public interface RegularBlock extends SingleSuccessorBlock {
 	 * @return The regular successor block.
 	 */
 	Block getRegularSuccessor();
+	
+	/**
+	 * Is this block empty (i.e., does it not contain any contents).
+	 */
+	boolean isEmpty();
 
 }
