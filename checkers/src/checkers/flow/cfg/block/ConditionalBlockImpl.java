@@ -27,6 +27,7 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 	 */
 	public void setThenSuccessor(BlockImpl b) {
 		thenSuccessor = b;
+		b.addPredecessor(this);
 	}
 
 	/**
@@ -34,6 +35,7 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 	 */
 	public void setElseSuccessor(BlockImpl b) {
 		elseSuccessor = b;
+		b.addPredecessor(this);
 	}
 
 	@Override

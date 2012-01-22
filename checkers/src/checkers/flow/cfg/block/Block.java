@@ -1,6 +1,7 @@
 package checkers.flow.cfg.block;
 
 
+
 /**
  * Represents a basic block in a control flow graph.
  * 
@@ -34,5 +35,5 @@ public interface Block {
 	 * @return The unique identifier of this block.
 	 */
 	long getId();
-
+	
 }

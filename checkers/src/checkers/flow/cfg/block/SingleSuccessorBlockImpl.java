@@ -28,6 +28,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 		// regular operation of the CFG to AST translation
 		assert this.successor == null || this.successor == successor : "cannot set successor twice";
 		this.successor = successor;
+		successor.addPredecessor(this);
 	}
 
 }
