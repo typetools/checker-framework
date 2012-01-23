@@ -361,7 +361,22 @@ public class CFGBuilder {
 	/* --------------------------------------------------------- */
 
 	/**
-	 * Class that performs phase three of the translation process.
+	 * Class that performs phase three of the translation process. In
+	 * particular, the following degenerated cases of basic blocks are removed:
+	 * 
+	 * <ol>
+	 * <li>Empty regular basic blocks: These blocks will be removed and their
+	 * predecessors linked directly to the successor.</li>
+	 * <li>Conditional basic blocks that have the same basic block as the 'then'
+	 * and 'else' successor: The conditional basic block will be removed in this
+	 * case.</li>
+	 * <li>Two consecutive, non-empty, regular basic blocks where the second
+	 * block has exactly one predecessor (namely the other of the two blocks):
+	 * In this case, the two blocks are merged.</li>
+	 * </ol>
+	 * 
+	 * Eliminating the second type of degenerate cases might introduce cases of
+	 * the third problem. These are also removed.
 	 */
 	protected static class CFGTranslationPhaseThree {
 
@@ -406,6 +421,19 @@ public class CFGBuilder {
 						for (PredecessorHolder p : predecessors) {
 							p.setSuccessor(succ);
 						}
+					}
+				}
+			}
+
+			// remove useless conditional blocks
+			for (Block cur : worklist) {
+				if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
+					ConditionalBlockImpl cb = (ConditionalBlockImpl) cur;
+					assert cb.getPredecessors().size() == 1;
+					if (cb.getThenSuccessor() == cb.getElseSuccessor()) {
+						BlockImpl pred = cb.getPredecessors().iterator().next();
+						PredecessorHolder predecessorHolder = getPredecessorHolder(pred, cb);
+						predecessorHolder.setSuccessor((BlockImpl) cb.getThenSuccessor());
 					}
 				}
 			}
@@ -480,50 +508,15 @@ public class CFGBuilder {
 					switch (pred.getType()) {
 					case SPECIAL_BLOCK:
 						// add pred correctly to predecessor list
-						SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
-						predecessors.add(singleSuccessorHolder(s));
+						predecessors.add(getPredecessorHolder(pred, cur));
 						break;
 					case CONDITIONAL_BLOCK:
 						// add pred correctly to predecessor list
-						final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
-						if (c.getThenSuccessor() == cur) {
-							predecessors.add(new PredecessorHolder() {
-								@Override
-								public void setSuccessor(BlockImpl b) {
-									c.setThenSuccessor(b);
-								}
-							});
-						} else {
-							assert c.getElseSuccessor() == cur;
-							predecessors.add(new PredecessorHolder() {
-								@Override
-								public void setSuccessor(BlockImpl b) {
-									c.setElseSuccessor(b);
-								}
-							});
-						}
+						predecessors.add(getPredecessorHolder(pred, cur));
 						break;
 					case EXCEPTION_BLOCK:
 						// add pred correctly to predecessor list
-						final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
-						if (e.getSuccessor() == cur) {
-							predecessors.add(singleSuccessorHolder(e));
-						} else {
-							Set<Entry<Class<? extends Throwable>, Block>> entrySet = e
-									.getExceptionalSuccessors().entrySet();
-							for (final Entry<Class<? extends Throwable>, Block> entry : entrySet) {
-								if (entry.getValue() == cur) {
-									predecessors.add(new PredecessorHolder() {
-										@Override
-										public void setSuccessor(BlockImpl b) {
-											e.addExceptionalSuccessor(b,
-													entry.getKey());
-										}
-									});
-									break;
-								}
-							}
-						}
+						predecessors.add(getPredecessorHolder(pred, cur));
 						break;
 					case REGULAR_BLOCK:
 						RegularBlockImpl r = (RegularBlockImpl) pred;
@@ -533,12 +526,70 @@ public class CFGBuilder {
 									predecessors);
 						} else {
 							// add pred correctly to predecessor list
-							predecessors.add(singleSuccessorHolder(r));
+							predecessors.add(getPredecessorHolder(pred, cur));
 						}
 						break;
 					}
 				}
 			}
+		}
+
+		/**
+		 * Return a predecessor holder that can be used to set the successor of
+		 * {@code pred} in the place where previously the edge pointed to
+		 * {@code cur}.
+		 */
+		protected static PredecessorHolder getPredecessorHolder(
+				final BlockImpl pred, BlockImpl cur) {
+			switch (pred.getType()) {
+			case SPECIAL_BLOCK:
+				SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
+				return singleSuccessorHolder(s);
+			case CONDITIONAL_BLOCK:
+				// add pred correctly to predecessor list
+				final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+				if (c.getThenSuccessor() == cur) {
+					return new PredecessorHolder() {
+						@Override
+						public void setSuccessor(BlockImpl b) {
+							c.setThenSuccessor(b);
+						}
+					};
+				} else {
+					assert c.getElseSuccessor() == cur;
+					return new PredecessorHolder() {
+						@Override
+						public void setSuccessor(BlockImpl b) {
+							c.setElseSuccessor(b);
+						}
+					};
+				}
+			case EXCEPTION_BLOCK:
+				// add pred correctly to predecessor list
+				final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+				if (e.getSuccessor() == cur) {
+					return singleSuccessorHolder(e);
+				} else {
+					Set<Entry<Class<? extends Throwable>, Block>> entrySet = e
+							.getExceptionalSuccessors().entrySet();
+					for (final Entry<Class<? extends Throwable>, Block> entry : entrySet) {
+						if (entry.getValue() == cur) {
+							return new PredecessorHolder() {
+								@Override
+								public void setSuccessor(BlockImpl b) {
+									e.addExceptionalSuccessor(b, entry.getKey());
+								}
+							};
+						}
+					}
+				}
+				assert false;
+				break;
+			case REGULAR_BLOCK:
+				RegularBlockImpl r = (RegularBlockImpl) pred;
+				return singleSuccessorHolder(r);
+			}
+			return null;
 		}
 
 		/**
@@ -588,8 +639,10 @@ public class CFGBuilder {
 		 * 
 		 * @param in
 		 *            The result of phase one.
-		 * @return A control flow graph that might still contain empty basic
-		 *         blocks.
+		 * @return A control flow graph that might still contain degenerate
+		 *         basic block (such as empty regular basic blocks or
+		 *         conditional blocks with the same block as 'then' and 'else'
+		 *         sucessor).
 		 */
 		public static ControlFlowGraph process(PhaseOneResult in) {
 
@@ -1117,9 +1170,8 @@ public class CFGBuilder {
 				conditionalMode = condMode;
 
 				if (conditionalMode) {
-					Node node = new ConditionalOrNode(tree, left, right,
-							true);
-					
+					Node node = new ConditionalOrNode(tree, left, right, true);
+
 					// node for true case
 					addLabelForNextNode(trueNodeL);
 					extendWithNode(node);
