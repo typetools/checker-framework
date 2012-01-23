@@ -151,12 +151,6 @@ public class CFGBuilder {
 	 * <li><em>EXCEPTION_NODE</em>. A wrapper for a {@link Node} which can throw
 	 * exceptions. It contains a label for every possible exception type the
 	 * node might throw.</li>
-	 * <li><em>CONDITIONAL_JUMP</em>. Marks that the previous extended node
-	 * (which is either of type <em>NODE</em> or <em>EXCEPTION_NODE</em>) is the
-	 * condition of a branch. Implicitly, the following extended node in the
-	 * sequence will be the jump target if the condition evaluates to
-	 * {@code true}. If it evaluates to {@code false}, then the control flow
-	 * continues at a specific label (stored in this extended node).</li>
 	 * <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.</li>
 	 * <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>. A conditional jump with two
 	 * targets for both the 'then' and 'else' branch.</li>
@@ -179,7 +173,7 @@ public class CFGBuilder {
 
 		/** Extended node types (description see above). */
 		public enum ExtendedNodeType {
-			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP, TWO_TARGET_CONDITIONAL_JUMP
+			NODE, EXCEPTION_NODE, UNCONDITIONAL_JUMP, TWO_TARGET_CONDITIONAL_JUMP
 		}
 
 		public ExtendedNodeType getType() {
@@ -279,33 +273,10 @@ public class CFGBuilder {
 	 */
 	protected static class ConditionalJump extends ExtendedNode {
 
-		protected Label falseSucc;
-
-		public ConditionalJump(Label falseSucc) {
-			super(ExtendedNodeType.CONDITIONAL_JUMP);
-			this.falseSucc = falseSucc;
-		}
-
-		@Override
-		public Label getLabel() {
-			return falseSucc;
-		}
-
-		@Override
-		public String toString() {
-			return "ConditionalMarker(" + getLabel() + ")";
-		}
-	}
-
-	/**
-	 * An extended node of type {@code TWO_TARGET_CONDITIONAL_JUMP}.
-	 */
-	protected static class TwoTargetConditionalJump extends ExtendedNode {
-
 		protected Label trueSucc;
 		protected Label falseSucc;
 
-		public TwoTargetConditionalJump(Label trueSucc, Label falseSucc) {
+		public ConditionalJump(Label trueSucc, Label falseSucc) {
 			super(ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP);
 			this.trueSucc = trueSucc;
 			this.falseSucc = falseSucc;
@@ -751,33 +722,8 @@ public class CFGBuilder {
 					block.addNode(node.getNode());
 					node.setBlock(block);
 					break;
-				case CONDITIONAL_JUMP: {
-					// no label is supposed to point to a conditional jump
-					// nodes, thus we do not need to set block for 'node'
-					assert block != null;
-					final ConditionalBlockImpl cb = new ConditionalBlockImpl();
-					block.setSuccessor(cb);
-					block = new RegularBlockImpl();
-					// use two anonymous SingleSuccessorBlockImpl that set the
-					// 'then' and 'else' successor of the conditional block
-					missingEdges.add(new Tuple<>(
-							new SingleSuccessorBlockImpl() {
-								@Override
-								public void setSuccessor(BlockImpl successor) {
-									cb.setThenSuccessor(successor);
-								}
-							}, i + 1));
-					missingEdges.add(new Tuple<>(
-							new SingleSuccessorBlockImpl() {
-								@Override
-								public void setSuccessor(BlockImpl successor) {
-									cb.setElseSuccessor(successor);
-								}
-							}, bindings.get(node.getLabel())));
-					break;
-				}
 				case TWO_TARGET_CONDITIONAL_JUMP: {
-					TwoTargetConditionalJump cj = (TwoTargetConditionalJump) node;
+					ConditionalJump cj = (ConditionalJump) node;
 					// no label is supposed to point to a conditional jump
 					// nodes, thus we do not need to set block for 'node'
 					assert block != null;
@@ -906,10 +852,8 @@ public class CFGBuilder {
 		}
 
 		protected String nodeToString(ExtendedNode n) {
-			if (n.getType() == ExtendedNodeType.CONDITIONAL_JUMP) {
-				return "ConditionalJump(" + resolveLabel(n.getLabel()) + ")";
-			} else if (n.getType() == ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP) {
-				TwoTargetConditionalJump t = (TwoTargetConditionalJump) n;
+			if (n.getType() == ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP) {
+				ConditionalJump t = (ConditionalJump) n;
 				return "TwoTargetConditionalJump("
 						+ resolveLabel(t.getThenLabel()) + ","
 						+ resolveLabel(t.getElseLabel()) + ")";
@@ -1279,7 +1223,7 @@ public class CFGBuilder {
 				EqualToNode node = new EqualToNode(tree, left, right);
 				extendWithNode(node);
 				if (conditionalMode) {
-					extendWithExtendedNode(new TwoTargetConditionalJump(
+					extendWithExtendedNode(new ConditionalJump(
 							oldThenTargetL, oldElseTargetL));
 				}
 				return node;
@@ -1395,7 +1339,7 @@ public class CFGBuilder {
 			LocalVariableNode node = new LocalVariableNode(tree);
 			extendWithNode(node);
 			if (conditionalMode) {
-				extendWithExtendedNode(new TwoTargetConditionalJump(
+				extendWithExtendedNode(new ConditionalJump(
 						thenTargetL, elseTargetL));
 			}
 			return node;
