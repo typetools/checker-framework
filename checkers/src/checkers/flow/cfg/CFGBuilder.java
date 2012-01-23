@@ -913,10 +913,24 @@ public class CFGBuilder {
 		 * determines control flow (e.g. for if-conditions, while loops, or
 		 * short-circuiting conditional expressions),
 		 * <code>conditionalMode</code> can be set to true.
+		 * 
+		 * <p>
+		 * 
+		 * Whenever {@code conditionalMode} is true, the two fields
+		 * {@code thenTargetL} and {@code elseTargetL} are used to indicate
+		 * where the control flow should jump to after the evaluation of a
+		 * boolean node.
 		 */
 		protected boolean conditionalMode;
 
+		/**
+		 * Label for the then branch. Description see above.
+		 */
 		protected Label thenTargetL;
+
+		/**
+		 * Label for the else branch. Description see above.
+		 */
 		protected Label elseTargetL;
 
 		/** Map from AST {@link Tree}s to {@link Node}s. */
