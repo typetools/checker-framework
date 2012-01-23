@@ -895,6 +895,11 @@ public class CFGBuilder {
 	 * However, for statements there is usually no single {@link Node} that is
 	 * created, and thus no node is returned (rather, null is returned).
 	 * 
+	 * <p>
+	 * 
+	 * Every visit node is assumed to add at least one extended node to the list
+	 * of nodes (which might only be a jump).
+	 * 
 	 */
 	protected static class CFGTranslationPhaseOne implements
 			TreeVisitor<Node, Void> {
