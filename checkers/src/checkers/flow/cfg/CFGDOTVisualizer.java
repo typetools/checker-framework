@@ -18,7 +18,6 @@ import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
-import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -204,11 +203,11 @@ public class CFGDOTVisualizer {
 		if (stores != null) {
 			Object store = Analysis.readFromStore(stores, bb);
 			StringBuilder sb2 = new StringBuilder();
-			
+
 			// split store representation to two lines
 			String s = store.toString().replace("}, else={", "}\\nelse={");
 			sb2.append(s.subSequence(1, s.length() - 1));
-			
+
 			// separator
 			sb2.append("\\n~~~~~~~~~\\n");
 			sb2.append(sb);
@@ -219,22 +218,7 @@ public class CFGDOTVisualizer {
 	}
 
 	protected static String visualizeNode(Node t) {
-		return t.toString() + "   [ " + visualizeType(t)
-				+ visualizeArguments(t) + " ]";
-	}
-
-	protected static String visualizeArguments(Node t) {
-		String arg = "";
-		if (t instanceof ConditionalOrNode) {
-			ConditionalOrNode ct = (ConditionalOrNode) t;
-			Boolean truthValue = ct.getTruthValue();
-			if (truthValue != null) {
-				arg = truthValue.toString();
-			} else {
-				arg = "top";
-			}
-		}
-		return arg.length() == 0 ? "" : "(" + arg + ")";
+		return t.toString() + "   [ " + visualizeType(t) + " ]";
 	}
 
 	protected static String visualizeType(Node t) {

@@ -1198,7 +1198,7 @@ public class CFGBuilder {
 				conditionalMode = condMode;
 
 				if (conditionalMode) {
-					Node node = new ConditionalOrNode(tree, left, right, true);
+					Node node = new ConditionalOrNode(tree, left, right);
 
 					// node for true case
 					addLabelForNextNode(trueNodeL);
@@ -1216,7 +1216,7 @@ public class CFGBuilder {
 					// one node for true/false
 					addLabelForNextNode(trueNodeL);
 					addLabelForNextNode(falseNodeL);
-					Node node = new ConditionalOrNode(tree, left, right, null);
+					Node node = new ConditionalOrNode(tree, left, right);
 					extendWithNode(node);
 					return node;
 				}
