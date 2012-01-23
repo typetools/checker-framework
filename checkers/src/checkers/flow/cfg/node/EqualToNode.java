@@ -3,7 +3,6 @@ package checkers.flow.cfg.node;
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -37,17 +36,9 @@ public class EqualToNode extends Node {
 		return rhs;
 	}
 
-	/**
-	 * Guaranteed to return the same tree as {@link getTree}, but with a more
-	 * specific type.
-	 */
-	public BinaryTree getBinaryTree() {
-		return tree;
-	}
-
 	@Override
-	public Tree getTree() {
-		return getBinaryTree();
+	public BinaryTree getTree() {
+		return tree;
 	}
 
 	@Override
