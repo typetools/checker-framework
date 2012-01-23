@@ -29,6 +29,7 @@ import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.ReturnNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
@@ -1247,6 +1248,20 @@ public class CFGBuilder {
 							oldElseTargetL));
 				}
 				return node;
+			}
+			
+			case PLUS: {
+				assert !conditionalMode;
+				// TODO: handle string concatenation
+				
+				// see JLS 15.18.2
+				
+				// TODO: unboxing and promotion in general
+				
+				Node left = tree.getLeftOperand().accept(this, p);
+				Node right = tree.getRightOperand().accept(this, p);
+				r = new NumericalAdditionNode(tree, left, right);
+				break;
 			}
 			}
 			assert r != null : "unexpected binary tree";
