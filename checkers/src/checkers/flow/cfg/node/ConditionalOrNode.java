@@ -22,16 +22,11 @@ public class ConditionalOrNode extends Node {
 	protected Node lhs;
 	protected Node rhs;
 
-	// TODO: is this actually needed?
-	protected Boolean truthValue;
-
-	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs,
-			Boolean truthValue) {
+	public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs) {
 		assert tree.getKind().equals(Kind.CONDITIONAL_OR);
 		this.tree = tree;
 		this.lhs = lhs;
 		this.rhs = rhs;
-		this.truthValue = truthValue;
 	}
 
 	public Node getLeftOperand() {
@@ -40,10 +35,6 @@ public class ConditionalOrNode extends Node {
 
 	public Node getRightOperand() {
 		return rhs;
-	}
-
-	public Boolean getTruthValue() {
-		return truthValue;
 	}
 
 	/**
@@ -78,7 +69,7 @@ public class ConditionalOrNode extends Node {
 		return getLeftOperand().equals(other.getLeftOperand())
 				&& getRightOperand().equals(other.getRightOperand());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
