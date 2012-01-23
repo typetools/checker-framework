@@ -5,10 +5,11 @@ import checkers.flow.util.HashCodeUtils;
 import com.sun.source.tree.ReturnTree;
 
 /**
- * A node for a local variable or a parameter:
+ * A node for a return statement:
  * 
  * <pre>
- *   <em>identifier</em>
+ *   return
+ *   return <em>expression</em>
  * </pre>
  * 
  * @author Stefan Heule
