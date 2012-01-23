@@ -21,10 +21,6 @@ public class BooleanLiteralNode extends ValueLiteralNode {
 		tree = t;
 	}
 
-	public LiteralTree getLiteralTree() {
-		return tree;
-	}
-
 	@Override
 	public Boolean getValue() {
 		return (Boolean) tree.getValue();
