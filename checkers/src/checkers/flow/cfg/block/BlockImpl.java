@@ -56,5 +56,9 @@ public abstract class BlockImpl implements Block {
 	public void addPredecessor(BlockImpl pred) {
 		predecessors.add(pred);
 	}
+	
+	public void removePredecessor(BlockImpl pred) {
+		predecessors.remove(pred);
+	}
 
 }

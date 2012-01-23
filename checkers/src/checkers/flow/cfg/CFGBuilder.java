@@ -1,7 +1,6 @@
 package checkers.flow.cfg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -386,6 +385,8 @@ public class CFGBuilder {
 		 */
 		protected interface PredecessorHolder {
 			void setSuccessor(BlockImpl b);
+
+			BlockImpl getBlock();
 		}
 
 		/**
@@ -397,17 +398,29 @@ public class CFGBuilder {
 		 *            {@code cfg} after the call to {@code process} any more.
 		 * @return The resulting control flow graph.
 		 */
-		@SuppressWarnings("unchecked")
 		public static ControlFlowGraph process(ControlFlowGraph cfg) {
 			Set<Block> worklist = cfg.getAllBlocks();
 			Set<Block> dontVisit = new HashSet<>();
+
+			// note: this method has to be careful when relinking basic blocks
+			// to not forget to adjust the predecessors, too
+			
+			// fix predecessor lists by removing any unreachable predecessors
+			for (Block c : worklist) {
+				BlockImpl cur = (BlockImpl)c;
+				for (BlockImpl pred : new HashSet<>(cur.getPredecessors())) {
+					if (!worklist.contains(pred)) {
+						cur.removePredecessor(pred);
+					}
+				}
+			}
 
 			// remove empty blocks
 			for (Block cur : worklist) {
 				if (dontVisit.contains(cur)) {
 					continue;
 				}
-
+				
 				if (cur.getType() == BlockType.REGULAR_BLOCK) {
 					RegularBlockImpl b = (RegularBlockImpl) cur;
 					if (b.isEmpty()) {
@@ -415,10 +428,14 @@ public class CFGBuilder {
 						Set<PredecessorHolder> predecessors = new HashSet<>();
 						BlockImpl succ = computeNeighborhoodOfEmptyBlock(b,
 								empty, predecessors);
-						dontVisit.addAll(empty);
-						dontVisit
-								.addAll((Collection<? extends Block>) predecessors);
+						for (RegularBlockImpl e : empty) {
+							succ.removePredecessor(e);
+							dontVisit.add(e);
+						}
 						for (PredecessorHolder p : predecessors) {
+							BlockImpl block = p.getBlock();
+							dontVisit.add(block);
+							succ.removePredecessor(block);
 							p.setSuccessor(succ);
 						}
 					}
@@ -426,14 +443,37 @@ public class CFGBuilder {
 			}
 
 			// remove useless conditional blocks
-			for (Block cur : worklist) {
+			worklist = cfg.getAllBlocks();
+			for (Block c : worklist) {
+				BlockImpl cur = (BlockImpl)c;
+
 				if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
 					ConditionalBlockImpl cb = (ConditionalBlockImpl) cur;
 					assert cb.getPredecessors().size() == 1;
 					if (cb.getThenSuccessor() == cb.getElseSuccessor()) {
 						BlockImpl pred = cb.getPredecessors().iterator().next();
-						PredecessorHolder predecessorHolder = getPredecessorHolder(pred, cb);
-						predecessorHolder.setSuccessor((BlockImpl) cb.getThenSuccessor());
+						PredecessorHolder predecessorHolder = getPredecessorHolder(
+								pred, cb);
+						BlockImpl succ = (BlockImpl) cb.getThenSuccessor();
+						succ.removePredecessor(cb);
+						predecessorHolder.setSuccessor(succ);
+					}
+				}
+			}
+
+			// merge consecutive basic blocks if possible
+			worklist = cfg.getAllBlocks();
+			for (Block cur : worklist) {
+				if (cur.getType() == BlockType.REGULAR_BLOCK) {
+					RegularBlockImpl b = (RegularBlockImpl) cur;
+					Block succ = b.getRegularSuccessor();
+					if (succ.getType() == BlockType.REGULAR_BLOCK) {
+						RegularBlockImpl rs = (RegularBlockImpl) succ;
+						if (rs.getPredecessors().size() == 1) {
+							b.setSuccessor(rs.getRegularSuccessor());
+							b.addNodes(rs.getContents());
+							rs.getRegularSuccessor().removePredecessor(rs);
+						}
 					}
 				}
 			}
@@ -537,14 +577,16 @@ public class CFGBuilder {
 		/**
 		 * Return a predecessor holder that can be used to set the successor of
 		 * {@code pred} in the place where previously the edge pointed to
-		 * {@code cur}.
+		 * {@code cur}. Addtionally, the predecessor holder also takes care of
+		 * unlinking (i.e., removing the {@code pred} from {@code cur's}
+		 * predecessors).
 		 */
 		protected static PredecessorHolder getPredecessorHolder(
-				final BlockImpl pred, BlockImpl cur) {
+				final BlockImpl pred, final BlockImpl cur) {
 			switch (pred.getType()) {
 			case SPECIAL_BLOCK:
 				SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
-				return singleSuccessorHolder(s);
+				return singleSuccessorHolder(s, cur);
 			case CONDITIONAL_BLOCK:
 				// add pred correctly to predecessor list
 				final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
@@ -553,6 +595,12 @@ public class CFGBuilder {
 						@Override
 						public void setSuccessor(BlockImpl b) {
 							c.setThenSuccessor(b);
+							cur.removePredecessor(pred);
+						}
+
+						@Override
+						public BlockImpl getBlock() {
+							return c;
 						}
 					};
 				} else {
@@ -561,6 +609,12 @@ public class CFGBuilder {
 						@Override
 						public void setSuccessor(BlockImpl b) {
 							c.setElseSuccessor(b);
+							cur.removePredecessor(pred);
+						}
+
+						@Override
+						public BlockImpl getBlock() {
+							return c;
 						}
 					};
 				}
@@ -568,7 +622,7 @@ public class CFGBuilder {
 				// add pred correctly to predecessor list
 				final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
 				if (e.getSuccessor() == cur) {
-					return singleSuccessorHolder(e);
+					return singleSuccessorHolder(e, cur);
 				} else {
 					Set<Entry<Class<? extends Throwable>, Block>> entrySet = e
 							.getExceptionalSuccessors().entrySet();
@@ -578,6 +632,12 @@ public class CFGBuilder {
 								@Override
 								public void setSuccessor(BlockImpl b) {
 									e.addExceptionalSuccessor(b, entry.getKey());
+									cur.removePredecessor(pred);
+								}
+
+								@Override
+								public BlockImpl getBlock() {
+									return e;
 								}
 							};
 						}
@@ -587,7 +647,7 @@ public class CFGBuilder {
 				break;
 			case REGULAR_BLOCK:
 				RegularBlockImpl r = (RegularBlockImpl) pred;
-				return singleSuccessorHolder(r);
+				return singleSuccessorHolder(r, cur);
 			}
 			return null;
 		}
@@ -597,11 +657,17 @@ public class CFGBuilder {
 		 *         single successor block {@code s}.
 		 */
 		protected static PredecessorHolder singleSuccessorHolder(
-				final SingleSuccessorBlockImpl s) {
+				final SingleSuccessorBlockImpl s, final BlockImpl old) {
 			return new PredecessorHolder() {
 				@Override
 				public void setSuccessor(BlockImpl b) {
 					s.setSuccessor(b);
+					old.removePredecessor(s);
+				}
+
+				@Override
+				public BlockImpl getBlock() {
+					return s;
 				}
 			};
 		}
