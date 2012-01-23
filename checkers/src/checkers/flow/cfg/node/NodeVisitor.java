@@ -24,4 +24,5 @@ public interface NodeVisitor<R, P> {
 	R visitConditionalOr(ConditionalOrNode n, P p);
 	R visitEqualTo(EqualToNode n, P p);
 	R visitReturn(ReturnNode n, P p);
+	R visitNumericalAddition(NumericalAdditionNode n, P p);
 }
