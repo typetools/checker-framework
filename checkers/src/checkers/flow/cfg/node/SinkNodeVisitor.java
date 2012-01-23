@@ -67,4 +67,9 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 		return visitNode(n, p);
 	};
 
+	@Override
+	public R visitNumericalAddition(NumericalAdditionNode n, P p) {
+		return visitNode(n, p);
+	}
+
 }
