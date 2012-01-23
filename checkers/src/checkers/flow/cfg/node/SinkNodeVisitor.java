@@ -14,7 +14,7 @@ package checkers.flow.cfg.node;
  *            Parameter type of the visitor.
  */
 public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
-	
+
 	abstract public R visitNode(Node n, P p);
 
 	@Override
@@ -56,10 +56,15 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	public R visitConditionalOr(ConditionalOrNode n, P p) {
 		return visitNode(n, p);
 	}
-	
+
 	@Override
 	public R visitEqualTo(EqualToNode n, P p) {
 		return visitNode(n, p);
 	}
+
+	@Override
+	public R visitReturn(ReturnNode n, P p) {
+		return visitNode(n, p);
+	};
 
 }
