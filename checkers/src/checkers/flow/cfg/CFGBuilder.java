@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
@@ -107,9 +108,11 @@ import com.sun.source.tree.WildcardTree;
  * <li><em>Phase two.</em> In this phase, the sequence of extended nodes is
  * translated to a graph of control flow blocks that contain nodes. The meta
  * elements from phase one are translated into the correct edges.</li>
- * <li><em>Phase three.</em> In phase two, some basic blocks that are generated
- * might be empty. This phase removes empty basic blocks while preserving the
- * control flow structure.</li>
+ * <li><em>Phase three.</em> The control flow graph generated in phase two can
+ * contain degenerate basic blocks such as empty regular basic blocks or
+ * conditional basic blocks that have the same block as both 'then' and 'else'
+ * successor. This phase removes these cases while preserving the control flow
+ * structure.</li>
  * </ol>
  * 
  * @author Stefan Heule
@@ -156,6 +159,8 @@ public class CFGBuilder {
 	 * {@code true}. If it evaluates to {@code false}, then the control flow
 	 * continues at a specific label (stored in this extended node).</li>
 	 * <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.</li>
+	 * <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>. A conditional jump with two
+	 * targets for both the 'then' and 'else' branch.</li>
 	 * </ul>
 	 */
 	protected static abstract class ExtendedNode {
@@ -175,7 +180,7 @@ public class CFGBuilder {
 
 		/** Extended node types (description see above). */
 		public enum ExtendedNodeType {
-			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP
+			NODE, EXCEPTION_NODE, CONDITIONAL_JUMP, UNCONDITIONAL_JUMP, TWO_TARGET_CONDITIONAL_JUMP
 		}
 
 		public ExtendedNodeType getType() {
@@ -290,6 +295,35 @@ public class CFGBuilder {
 		@Override
 		public String toString() {
 			return "ConditionalMarker(" + getLabel() + ")";
+		}
+	}
+
+	/**
+	 * An extended node of type {@code TWO_TARGET_CONDITIONAL_JUMP}.
+	 */
+	protected static class TwoTargetConditionalJump extends ExtendedNode {
+
+		protected Label trueSucc;
+		protected Label falseSucc;
+
+		public TwoTargetConditionalJump(Label trueSucc, Label falseSucc) {
+			super(ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP);
+			this.trueSucc = trueSucc;
+			this.falseSucc = falseSucc;
+		}
+
+		public Label getThenLabel() {
+			return trueSucc;
+		}
+
+		public Label getElseLabel() {
+			return falseSucc;
+		}
+
+		@Override
+		public String toString() {
+			return "TwoTargetConditionalJump(" + getThenLabel() + ","
+					+ getElseLabel() + ")";
 		}
 	}
 
@@ -598,8 +632,8 @@ public class CFGBuilder {
 					block.addNode(node.getNode());
 					node.setBlock(block);
 					break;
-				case CONDITIONAL_JUMP:
-					// no label is supposed to point to conditional marker
+				case CONDITIONAL_JUMP: {
+					// no label is supposed to point to a conditional jump
 					// nodes, thus we do not need to set block for 'node'
 					assert block != null;
 					final ConditionalBlockImpl cb = new ConditionalBlockImpl();
@@ -622,6 +656,33 @@ public class CFGBuilder {
 								}
 							}, bindings.get(node.getLabel())));
 					break;
+				}
+				case TWO_TARGET_CONDITIONAL_JUMP: {
+					TwoTargetConditionalJump cj = (TwoTargetConditionalJump) node;
+					// no label is supposed to point to a conditional jump
+					// nodes, thus we do not need to set block for 'node'
+					assert block != null;
+					final ConditionalBlockImpl cb = new ConditionalBlockImpl();
+					block.setSuccessor(cb);
+					block = new RegularBlockImpl();
+					// use two anonymous SingleSuccessorBlockImpl that set the
+					// 'then' and 'else' successor of the conditional block
+					missingEdges.add(new Tuple<>(
+							new SingleSuccessorBlockImpl() {
+								@Override
+								public void setSuccessor(BlockImpl successor) {
+									cb.setThenSuccessor(successor);
+								}
+							}, bindings.get(cj.getThenLabel())));
+					missingEdges.add(new Tuple<>(
+							new SingleSuccessorBlockImpl() {
+								@Override
+								public void setSuccessor(BlockImpl successor) {
+									cb.setElseSuccessor(successor);
+								}
+							}, bindings.get(cj.getElseLabel())));
+					break;
+				}
 				case UNCONDITIONAL_JUMP:
 					node.setBlock(block);
 					if (node.getLabel() == regularExitLabel) {
@@ -715,6 +776,39 @@ public class CFGBuilder {
 			this.leaders = leaders;
 		}
 
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			for (ExtendedNode n : nodeList) {
+				sb.append(nodeToString(n));
+				sb.append("\n");
+			}
+			return sb.toString();
+		}
+
+		protected String nodeToString(ExtendedNode n) {
+			if (n.getType() == ExtendedNodeType.CONDITIONAL_JUMP) {
+				return "ConditionalJump(" + resolveLabel(n.getLabel()) + ")";
+			} else if (n.getType() == ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP) {
+				TwoTargetConditionalJump t = (TwoTargetConditionalJump) n;
+				return "TwoTargetConditionalJump("
+						+ resolveLabel(t.getThenLabel()) + ","
+						+ resolveLabel(t.getElseLabel()) + ")";
+			} else if (n.getType() == ExtendedNodeType.UNCONDITIONAL_JUMP) {
+				return "UnconditionalJump(" + resolveLabel(n.getLabel()) + ")";
+			} else {
+				return n.toString();
+			}
+		}
+
+		private String resolveLabel(Label label) {
+			Integer index = bindings.get(label);
+			if (index == null) {
+				return "null";
+			}
+			return nodeToString(nodeList.get(index));
+		}
+
 	}
 
 	/**
@@ -754,9 +848,9 @@ public class CFGBuilder {
 		 * <code>conditionalMode</code> can be set to true.
 		 */
 		protected boolean conditionalMode;
-		
-		protected Label trueTarget;
-		protected Label falseTarget;
+
+		protected Label thenTargetL;
+		protected Label elseTargetL;
 
 		/** Map from AST {@link Tree}s to {@link Node}s. */
 		// TODO: fill this map with contents.
@@ -1001,32 +1095,42 @@ public class CFGBuilder {
 
 				boolean condMode = conditionalMode;
 				conditionalMode = true;
-				
-				Label oldTrueTarget = trueTarget;
-				Label oldFalseTarget = falseTarget;
-				Label myTrueTarget = new Label();
-				trueTarget = myTrueTarget;
-				Label myFalseTarget = new Label();
-				falseTarget = myFalseTarget;
+
+				// all necessary labels
+				Label rightStartL = new Label();
+				Label trueNodeL = new Label();
+				Label falseNodeL = new Label();
+				Label oldTrueTargetL = thenTargetL;
+				Label oldFalseTargetL = elseTargetL;
 
 				// left-hand side
-				Label leftFalse = new Label();
+				thenTargetL = trueNodeL;
+				elseTargetL = rightStartL;
 				Node left = tree.getLeftOperand().accept(this, p);
 
 				// right-hand side
-				Label rightFalse = new Label();
+				thenTargetL = trueNodeL;
+				elseTargetL = falseNodeL;
+				addLabelForNextNode(rightStartL);
 				Node right = tree.getRightOperand().accept(this, p);
 
 				conditionalMode = condMode;
 
-				if (conditionalMode) {
+				if (conditionalMode || true) {
 					// node for true case
+					addLabelForNextNode(trueNodeL);
 					Node trueNode = new ConditionalOrNode(tree, left, right,
 							true);
+					extendWithNode(trueNode);
+					extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
 
 					// node for false case
+					addLabelForNextNode(falseNodeL);
 					Node falseNode = new ConditionalOrNode(tree, left, right,
 							false);
+					extendWithNode(falseNode);
+					extendWithExtendedNode(new UnconditionalJump(
+							oldFalseTargetL));
 
 					return trueNode;
 				} else {
@@ -1165,7 +1269,12 @@ public class CFGBuilder {
 		public Node visitIdentifier(IdentifierTree tree, Void p) {
 			// TODO: these are not always local variables
 			LocalVariableNode node = new LocalVariableNode(tree);
-			return extendWithNode(node);
+			extendWithNode(node);
+			if (conditionalMode) {
+				extendWithExtendedNode(new TwoTargetConditionalJump(
+						thenTargetL, elseTargetL));
+			}
+			return node;
 		}
 
 		@Override
@@ -1175,15 +1284,20 @@ public class CFGBuilder {
 
 			// TODO exceptions
 
+			// all necessary labels
+			Label thenEntry = new Label();
+			Label elseEntry = new Label();
+			Label endIf = new Label();
+
 			// basic block for the condition
 			conditionalMode = true;
+			thenTargetL = thenEntry;
+			elseTargetL = elseEntry;
 			tree.getCondition().accept(this, null);
 			conditionalMode = false;
-			Label elseEntry = new Label();
-			extendWithExtendedNode(new ConditionalJump(elseEntry));
 
 			// then branch
-			Label endIf = new Label();
+			addLabelForNextNode(thenEntry);
 			StatementTree thenStatement = tree.getThenStatement();
 			thenStatement.accept(this, null);
 			extendWithExtendedNode(new UnconditionalJump(endIf));
