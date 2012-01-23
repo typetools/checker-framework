@@ -272,6 +272,14 @@ public class CFGBuilder {
 
 	/**
 	 * An extended node of type {@code CONDITIONAL_JUMP}.
+	 * 
+	 * <p>
+	 * 
+	 * <em>Important:</em> In the list of extended nodes, there should not be
+	 * any labels that point to a conditional jump. Furthermore, the node
+	 * directly ahead of any conditional jump has to be a
+	 * {@link NodeWithExceptionsHolder} or {@link NodeHolder}, and the node held
+	 * by that extended node is required to be of boolean type.
 	 */
 	protected static class ConditionalJump extends ExtendedNode {
 
@@ -1167,16 +1175,17 @@ public class CFGBuilder {
 			case PLUS_ASSIGNMENT: {
 				assert !conditionalMode;
 				// TODO: handle string concatenation
-				
+
 				// see JLS 15.26.2
-				
+
 				// TODO: unboxing and promotion in general
-				
+
 				// TODO: correct evaluation rules (e.g. arrays)
-				
+
 				Node target = tree.getVariable().accept(this, p);
 				Node value = tree.getExpression().accept(this, p);
-				NumericalAdditionNode plus = new NumericalAdditionNode(tree, target, value);
+				NumericalAdditionNode plus = new NumericalAdditionNode(tree,
+						target, value);
 				extendWithNode(plus);
 				r = new AssignmentNode(tree, target, plus);
 			}
@@ -1269,15 +1278,15 @@ public class CFGBuilder {
 				}
 				return node;
 			}
-			
+
 			case PLUS: {
 				assert !conditionalMode;
 				// TODO: handle string concatenation
-				
+
 				// see JLS 15.18.2
-				
+
 				// TODO: unboxing and promotion in general
-				
+
 				Node left = tree.getLeftOperand().accept(this, p);
 				Node right = tree.getRightOperand().accept(this, p);
 				r = new NumericalAdditionNode(tree, left, right);
