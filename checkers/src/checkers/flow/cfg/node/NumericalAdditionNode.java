@@ -2,7 +2,7 @@ package checkers.flow.cfg.node;
 
 import checkers.flow.util.HashCodeUtils;
 
-import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -17,12 +17,12 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class NumericalAdditionNode extends Node {
 
-	protected BinaryTree tree;
+	protected Tree tree;
 	protected Node left;
 	protected Node right;
 
-	public NumericalAdditionNode(BinaryTree tree, Node left, Node right) {
-		assert tree.getKind().equals(Kind.PLUS);
+	public NumericalAdditionNode(Tree tree, Node left, Node right) {
+		assert tree.getKind() == Kind.PLUS || tree.getKind() == Kind.PLUS_ASSIGNMENT;
 		this.tree = tree;
 		this.left = left;
 		this.right = right;
@@ -37,7 +37,7 @@ public class NumericalAdditionNode extends Node {
 	}
 
 	@Override
-	public BinaryTree getTree() {
+	public Tree getTree() {
 		return tree;
 	}
 
