@@ -29,6 +29,7 @@ import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ReturnNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
 
@@ -173,7 +174,7 @@ public class CFGBuilder {
 
 		/** Extended node types (description see above). */
 		public enum ExtendedNodeType {
-			NODE, EXCEPTION_NODE, UNCONDITIONAL_JUMP, TWO_TARGET_CONDITIONAL_JUMP
+			NODE, EXCEPTION_NODE, UNCONDITIONAL_JUMP, CONDITIONAL_JUMP
 		}
 
 		public ExtendedNodeType getType() {
@@ -277,7 +278,7 @@ public class CFGBuilder {
 		protected Label falseSucc;
 
 		public ConditionalJump(Label trueSucc, Label falseSucc) {
-			super(ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP);
+			super(ExtendedNodeType.CONDITIONAL_JUMP);
 			this.trueSucc = trueSucc;
 			this.falseSucc = falseSucc;
 		}
@@ -375,10 +376,10 @@ public class CFGBuilder {
 
 			// note: this method has to be careful when relinking basic blocks
 			// to not forget to adjust the predecessors, too
-			
+
 			// fix predecessor lists by removing any unreachable predecessors
 			for (Block c : worklist) {
-				BlockImpl cur = (BlockImpl)c;
+				BlockImpl cur = (BlockImpl) c;
 				for (BlockImpl pred : new HashSet<>(cur.getPredecessors())) {
 					if (!worklist.contains(pred)) {
 						cur.removePredecessor(pred);
@@ -391,7 +392,7 @@ public class CFGBuilder {
 				if (dontVisit.contains(cur)) {
 					continue;
 				}
-				
+
 				if (cur.getType() == BlockType.REGULAR_BLOCK) {
 					RegularBlockImpl b = (RegularBlockImpl) cur;
 					if (b.isEmpty()) {
@@ -416,7 +417,7 @@ public class CFGBuilder {
 			// remove useless conditional blocks
 			worklist = cfg.getAllBlocks();
 			for (Block c : worklist) {
-				BlockImpl cur = (BlockImpl)c;
+				BlockImpl cur = (BlockImpl) c;
 
 				if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
 					ConditionalBlockImpl cb = (ConditionalBlockImpl) cur;
@@ -722,7 +723,7 @@ public class CFGBuilder {
 					block.addNode(node.getNode());
 					node.setBlock(block);
 					break;
-				case TWO_TARGET_CONDITIONAL_JUMP: {
+				case CONDITIONAL_JUMP: {
 					ConditionalJump cj = (ConditionalJump) node;
 					// no label is supposed to point to a conditional jump
 					// nodes, thus we do not need to set block for 'node'
@@ -852,7 +853,7 @@ public class CFGBuilder {
 		}
 
 		protected String nodeToString(ExtendedNode n) {
-			if (n.getType() == ExtendedNodeType.TWO_TARGET_CONDITIONAL_JUMP) {
+			if (n.getType() == ExtendedNodeType.CONDITIONAL_JUMP) {
 				ConditionalJump t = (ConditionalJump) n;
 				return "TwoTargetConditionalJump("
 						+ resolveLabel(t.getThenLabel()) + ","
@@ -893,8 +894,6 @@ public class CFGBuilder {
 	 * 
 	 * However, for statements there is usually no single {@link Node} that is
 	 * created, and thus no node is returned (rather, null is returned).
-	 * 
-	 * @author Stefan Heule
 	 * 
 	 */
 	protected static class CFGTranslationPhaseOne implements
@@ -1223,8 +1222,8 @@ public class CFGBuilder {
 				EqualToNode node = new EqualToNode(tree, left, right);
 				extendWithNode(node);
 				if (conditionalMode) {
-					extendWithExtendedNode(new ConditionalJump(
-							oldThenTargetL, oldElseTargetL));
+					extendWithExtendedNode(new ConditionalJump(oldThenTargetL,
+							oldElseTargetL));
 				}
 				return node;
 			}
@@ -1339,8 +1338,8 @@ public class CFGBuilder {
 			LocalVariableNode node = new LocalVariableNode(tree);
 			extendWithNode(node);
 			if (conditionalMode) {
-				extendWithExtendedNode(new ConditionalJump(
-						thenTargetL, elseTargetL));
+				extendWithExtendedNode(new ConditionalJump(thenTargetL,
+						elseTargetL));
 			}
 			return node;
 		}
@@ -1448,8 +1447,15 @@ public class CFGBuilder {
 
 		@Override
 		public Node visitReturn(ReturnTree tree, Void p) {
-			assert false; // TODO Auto-generated method stub
-			return null;
+			ExpressionTree ret = tree.getExpression();
+			ReturnNode result = null;
+			if (ret != null) {
+				Node node = ret.accept(this, p);
+				result = new ReturnNode(tree, node);
+				extendWithNode(result);
+			}
+			extendWithExtendedNode(new UnconditionalJump(regularExitLabel));
+			return result;
 		}
 
 		@Override
