@@ -2,7 +2,6 @@ package checkers.flow.cfg.node;
 
 import checkers.flow.util.HashCodeUtils;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
@@ -32,17 +31,9 @@ public class VariableDeclarationNode extends Node {
 		return tree.getName().toString();
 	}
 
-	/**
-	 * Guaranteed to return the same tree as {@link getTree}, but with a more
-	 * specific type.
-	 */
-	public VariableTree getVariableTree() {
-		return tree;
-	}
-
 	@Override
-	public Tree getTree() {
-		return getVariableTree();
+	public VariableTree getTree() {
+		return tree;
 	}
 
 	@Override

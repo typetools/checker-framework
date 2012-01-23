@@ -3,7 +3,6 @@ package checkers.flow.cfg.node;
 
 import checkers.flow.util.HashCodeUtils;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
 /**
@@ -27,20 +26,13 @@ public abstract class ValueLiteralNode extends Node {
 	protected LiteralTree tree;
 	
 	/**
-	 * @return The literal tree.
-	 */
-	public LiteralTree getLiteralTree() {
-		return tree;
-	}
-	
-	/**
 	 * @return The value of the literal.
 	 */
 	abstract public Object getValue();
 
 	@Override
-	public Tree getTree() {
-		return getLiteralTree();
+	public LiteralTree getTree() {
+		return tree;
 	}
 	
 	@Override
