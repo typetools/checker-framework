@@ -1116,23 +1116,22 @@ public class CFGBuilder {
 
 				conditionalMode = condMode;
 
-				if (conditionalMode || true) {
+				if (conditionalMode) {
+					Node node = new ConditionalOrNode(tree, left, right,
+							true);
+					
 					// node for true case
 					addLabelForNextNode(trueNodeL);
-					Node trueNode = new ConditionalOrNode(tree, left, right,
-							true);
-					extendWithNode(trueNode);
+					extendWithNode(node);
 					extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
 
 					// node for false case
 					addLabelForNextNode(falseNodeL);
-					Node falseNode = new ConditionalOrNode(tree, left, right,
-							false);
-					extendWithNode(falseNode);
+					extendWithNode(node);
 					extendWithExtendedNode(new UnconditionalJump(
 							oldFalseTargetL));
 
-					return trueNode;
+					return node;
 				} else {
 					// one node for true/false
 					Node node = new ConditionalOrNode(tree, left, right, null);
@@ -1147,6 +1146,8 @@ public class CFGBuilder {
 
 				boolean cm = conditionalMode;
 				conditionalMode = false;
+				Label oldThenTargetL = thenTargetL;
+				Label oldElseTargetL = elseTargetL;
 
 				// left-hand side
 				Node left = tree.getLeftOperand().accept(this, p);
@@ -1158,7 +1159,12 @@ public class CFGBuilder {
 
 				// comparison
 				EqualToNode node = new EqualToNode(tree, left, right);
-				return extendWithNode(node);
+				extendWithNode(node);
+				if (conditionalMode) {
+					extendWithExtendedNode(new TwoTargetConditionalJump(
+							oldThenTargetL, oldElseTargetL));
+				}
+				return node;
 			}
 			}
 			assert r != null : "unexpected binary tree";
