@@ -64,12 +64,10 @@ public class ControlFlowGraph {
 	 * @return The list of all basic block in this control flow graph.
 	 */
 	public Set<Block> getAllBlocks() {
-		Set<Block> r = new HashSet<>();
 		Set<Block> visited = new HashSet<>();
 		Queue<Block> worklist = new LinkedList<>();
 		Block cur = entryBlock;
 		visited.add(entryBlock);
-		r.add(entryBlock);
 
 		// traverse the whole control flow graph
 		while (true) {
@@ -97,7 +95,6 @@ public class ControlFlowGraph {
 			for (Block b : succs) {
 				if (!visited.contains(b)) {
 					visited.add(b);
-					r.add(b);
 					worklist.add(b);
 				}
 			}
@@ -105,7 +102,7 @@ public class ControlFlowGraph {
 			cur = worklist.poll();
 		}
 
-		return r;
+		return visited;
 	}
 
 }
