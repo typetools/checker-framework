@@ -1214,6 +1214,8 @@ public class CFGBuilder {
 					return node;
 				} else {
 					// one node for true/false
+					addLabelForNextNode(trueNodeL);
+					addLabelForNextNode(falseNodeL);
 					Node node = new ConditionalOrNode(tree, left, right, null);
 					extendWithNode(node);
 					return node;
