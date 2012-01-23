@@ -3,6 +3,7 @@ package checkers.flow.cfg.node;
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
@@ -25,7 +26,8 @@ public class AssignmentNode extends Node {
 	protected Node rhs;
 
 	public AssignmentNode(Tree tree, Node target, Node expression) {
-		assert tree instanceof AssignmentTree || tree instanceof VariableTree;
+		assert tree instanceof AssignmentTree || tree instanceof VariableTree
+				|| tree instanceof CompoundAssignmentTree;
 		// TODO: also allow array assignments
 		assert target instanceof FieldAccessNode
 				|| target instanceof LocalVariableNode;
@@ -56,16 +58,17 @@ public class AssignmentNode extends Node {
 	public String toString() {
 		return getTarget() + " = " + getExpression();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof AssignmentNode)) {
 			return false;
 		}
 		AssignmentNode other = (AssignmentNode) obj;
-		return getTarget().equals(other.getTarget()) && getExpression().equals(other.getExpression());
+		return getTarget().equals(other.getTarget())
+				&& getExpression().equals(other.getExpression());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getTarget(), getExpression());

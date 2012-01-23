@@ -1162,7 +1162,27 @@ public class CFGBuilder {
 
 		@Override
 		public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-			assert false; // TODO Auto-generated method stub
+			Node r = null;
+			switch (tree.getKind()) {
+			case PLUS_ASSIGNMENT: {
+				assert !conditionalMode;
+				// TODO: handle string concatenation
+				
+				// see JLS 15.26.2
+				
+				// TODO: unboxing and promotion in general
+				
+				// TODO: correct evaluation rules (e.g. arrays)
+				
+				Node target = tree.getVariable().accept(this, p);
+				Node value = tree.getExpression().accept(this, p);
+				NumericalAdditionNode plus = new NumericalAdditionNode(tree, target, value);
+				extendWithNode(plus);
+				r = new AssignmentNode(tree, target, plus);
+			}
+			}
+			assert r != null : "unexpected compound assignment type";
+			extendWithNode(r);
 			return null;
 		}
 
