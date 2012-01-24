@@ -1,11 +1,14 @@
 package checkers.flow.cfg;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.element.Element;
 
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
@@ -27,6 +30,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -175,6 +179,12 @@ public class CFGBuilder {
 		// TODO: fill this map with contents.
 		protected IdentityHashMap<Tree, Node> treeLookupMap;
 
+                /**
+                 * Map from CFG {@link Element}s to {@link VariableDeclarationNode}s.
+                 * for local variables in one method.
+                 */
+                protected HashMap<Element, VariableDeclarationNode> varDeclMap;
+
 		/* --------------------------------------------------------- */
 		/* Translation (AST to CFG) */
 		/* --------------------------------------------------------- */
@@ -194,6 +204,9 @@ public class CFGBuilder {
 
 			// start with empty map
 			treeLookupMap = new IdentityHashMap<>();
+
+                        // fresh set of declarations for each method
+                        varDeclMap = new HashMap<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
@@ -897,7 +910,14 @@ public class CFGBuilder {
 		@Override
 		public Node visitIdentifier(IdentifierTree tree, Void p) {
 			// TODO: these are not always local variables
-			LocalVariableNode node = new LocalVariableNode(tree);
+                        // Connect local variable use to declaration via Element.
+                        VariableDeclarationNode decl = null;
+                        Element elt = TreeUtils.elementFromUse(tree);
+                        if (elt != null) {
+                            decl = varDeclMap.get(elt);
+                        }
+
+			LocalVariableNode node = new LocalVariableNode(tree, decl);
 			return extendWithNode(node);
 		}
 
@@ -1113,13 +1133,24 @@ public class CFGBuilder {
 			// see JLS 14.4
 
 			// local variable definition
-			extendWithNode(new VariableDeclarationNode(tree));
+                        VariableDeclarationNode decl = new VariableDeclarationNode(tree);
+			extendWithNode(decl);
+
+                        // Remember VariableDeclarations by Element, so we can
+                        // connect LocalVariable nodes to their declarations.
+                        // TODO: TreeUtils relies on non-public APIs.  If we
+                        // changed CFGHelper to a TreePathScanner, we could
+                        // use the supported Trees API instead.
+                        Element elt = TreeUtils.elementFromDeclaration(tree);
+                        if (elt != null) {
+                                varDeclMap.put(elt, decl);
+                        }
 
 			// initializer
 			Node node = null;
 			ExpressionTree initializer = tree.getInitializer();
 			if (initializer != null) {
-				node = translateAssignment(tree, new LocalVariableNode(tree),
+                                node = translateAssignment(tree, new LocalVariableNode(tree, decl),
 						initializer);
 			}
 

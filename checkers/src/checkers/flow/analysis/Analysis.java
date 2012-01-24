@@ -154,8 +154,13 @@ public class Analysis<A extends AbstractValue, S extends Store<S>, T extends Tra
 
 		List<LocalVariableNode> parameters = new ArrayList<>();
 		MethodTree tree = cfg.getTree();
+                // An alternative approach to handling method parameters is to
+                // create VariableDeclarationNodes in the EntryBlock and start
+                // with an initially empty Store.
+                // TODO: Remove this comment if we decide not to use this
+                // alternative.
 		for (VariableTree p : tree.getParameters()) {
-			LocalVariableNode var = new LocalVariableNode(p);
+                        LocalVariableNode var = new LocalVariableNode(p, null);
 			parameters.add(var);
 			// TODO: document that LocalVariableNode has no block that it
 			// belongs to
