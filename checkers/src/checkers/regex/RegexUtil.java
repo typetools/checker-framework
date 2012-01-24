@@ -20,8 +20,11 @@ import checkers.regex.quals.*;
  */
 public class RegexUtil {
 
-  private RegexUtil()
-  { throw new AssertionError("shouldn't be instantiated"); }
+  private RegexUtil() {
+    throw new AssertionError("shouldn't be instantiated");
+  }
+
+  // These methods should be kept in sync with those in plume.UtilMDE .
 
   /** 
    * Returns true if the argument is a syntactically valid regular
