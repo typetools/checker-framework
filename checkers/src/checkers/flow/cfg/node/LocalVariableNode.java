@@ -20,11 +20,15 @@ public class LocalVariableNode extends Node {
 
 	protected Tree tree;
 
-	public LocalVariableNode(Tree t) {
+        // Declaration of this variable, or null if not found during CFG construction.
+        protected VariableDeclarationNode decl;
+
+        public LocalVariableNode(Tree t, VariableDeclarationNode d) {
 		// IdentifierTree for normal uses of the local variable or parameter,
 		// and VariableTree for the translation of an initilizer block
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
+                decl = d;
 	}
 
 	public String getName() {
@@ -38,6 +42,10 @@ public class LocalVariableNode extends Node {
 	public Tree getTree() {
 		return tree;
 	}
+
+        public VariableDeclarationNode getDeclaration() {
+                return decl;
+        }
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
