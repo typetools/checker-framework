@@ -94,7 +94,7 @@ if (! RegexUtil.isRegex(regex)) {
    // or: System.out.println("Error parsing regex \"" + regex + "\": " + RegexUtil.regexError(regex));
 }
 // The following line suppresses a Regex Checker warning and is only necessary until the 
-// Regex Checker supports flow-sensitivity, after which time it can be removed from the code.a
+// Regex Checker supports flow-sensitivity, after which time it can be removed from the code.
 regex = RegexUtil.asRegex(regex);   // @SuppressWarnings("regex") // flow-sensitivity
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
