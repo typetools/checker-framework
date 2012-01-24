@@ -57,6 +57,14 @@ public abstract class QualifierHierarchy {
     public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
+     * Returns the set of all type qualifiers in this type qualifier
+     * hierarchy
+     *
+     * @return the set of type qualifiers represented in this hierarchy
+     */
+    public abstract Set<AnnotationMirror> getAnnotations();
+
+    /**
      * Returns the names of all type qualifiers in this type qualifier
      * hierarchy
      *

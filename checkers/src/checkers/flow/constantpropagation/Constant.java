@@ -2,7 +2,7 @@ package checkers.flow.constantpropagation;
 
 import checkers.flow.analysis.AbstractValue;
 
-public class Constant implements AbstractValue {
+public class Constant implements AbstractValue<Constant> {
 
 	/** What kind of abstract value is this? */
 	protected Type type;
@@ -49,9 +49,7 @@ public class Constant implements AbstractValue {
 	}
 
 	@Override
-	public Constant leastUpperBound(AbstractValue o) {
-		assert o instanceof Constant;
-		Constant other = (Constant) o;
+	public Constant leastUpperBound(Constant other) {
 		if (other.isBottom())
 			return this.copy();
 		if (this.isBottom())
