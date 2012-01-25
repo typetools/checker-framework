@@ -5,7 +5,7 @@ class AnonymousClass {
     class Bound<X extends @NonNull Object> {}
 
     void test() {
-        //:: error: (generic.argument.invalid)
+        //:: error: (type.argument.type.incompatible)
         new Bound<@Nullable String>() {
 
         };

@@ -712,11 +712,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     // I hope this is less confusing for users.
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             toptree,
-                            "argument.type.incompatible");
+                            "type.argument.type.incompatible");
                 } else {
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
-                            "generic.argument.invalid");
+                            "type.argument.type.incompatible");
                 }
             }
 
@@ -725,11 +725,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotations())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
                         // The type arguments were inferred and we mark the whole method.
-                        checker.report(Result.failure("argument.type.incompatible",
+                        checker.report(Result.failure("type.argument.type.incompatible",
                                 typearg, typeVar),
                                 toptree);
                     } else {
-                        checker.report(Result.failure("generic.argument.invalid",
+                        checker.report(Result.failure("type.argument.type.incompatible",
                                 typearg, typeVar),
                                 typeargTrees.get(typeargs.indexOf(typearg)));
                     }
