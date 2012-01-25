@@ -601,6 +601,97 @@ for conditional basic blocks.
 \constantpropagation{Simple}{Simple sequential program to illustrate constant propagation.}
 
 
+\section{Default Analysis}
+
+\subsection{Overview}
+
+The default flow-sensitive analysis works for the qualifier hierarchy of any checker defined in 
+the Checker Framework.  This generality is both a strength and a weakness because the 
+default analysis can
+always run but the facts it can deduce are limited.  The default analysis
+will be extensible so checkers can add logic specific to their own qualifiers.
+
+The default flow-sensitive analysis tracks type annotations though assignments to local 
+variables and thereby improves precision when the qualifiers on the right hand side of the
+assignment are more precise than those on the left hand side.
+
+The analysis relies on an \code{AnnotatedTypeFactory} to supply the flow-insensitive type 
+annotations on an AST \code{Tree} and it relies on a \code{QualifierHierarchy} to define the 
+subtype relationships 
+among annotations.  It enforces the invariant that flow-sensitive type annotations are always at 
+least as precise as flow-insensitive ones.
+
+\begin{workinprogress}
+The default analysis should, but does not yet, propagate types through AST expressions. 
+Consider an example where two variables declared as \code{Strings} are concatenated and the
+analysis determines that both are \code{@Regex Strings} at the concatenation.  The analysis 
+should determine that the result is a \code{@Regex String} too.  Notice that the need to propagate
+types through expressions is not specific to flow-sensitive analysis.  It should work the same way 
+when flow-insensitive inference determines that two \code{@Regex Strings} are 
+concatenated.  We should make sure that checker developers only have to specify
+type propagation rules once but get the benefit everywhere.
+\end{workinprogress}
+
+The default analysis uses a simple \code{Store} that maps \code{Nodes} to sets of 
+\code{AnnotationMirrors}. 
+The \code{Nodes} can be divided into two types.  \code{VariableDeclarationNodes} 
+represent mutable 
+values so their mappings can vary across the \code{Stores} at different program points.  All other 
+\code{Nodes} are immutable because they correspond to AST \code{Trees} with at most 
+one consumer. 
+We still explicitly represent such \code{Nodes}, but there is a potential space optimization to be
+had by leaving them out of the \code{Store} after processing their consumer.
+
+
+\subsection{Implementation}
+
+A few of the implementation details of the default analysis are worth discussing.
+
+Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
+annotations, we don't need to explicitly keep the annotations in the Store unless they are more
+precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
+information from the \code{Store} when it is present and defaults to the 
+\code{AnnotatedTypeFactory} when none is present.
+
+A potential optimization that is not yet implemented is to delete \code{Nodes} from the 
+\code{Store} after
+their last use.  As mentioned above, since the CFG derives from an AST and we never 
+transform it, \code{Nodes} that are not variable declarations don't need to be kept after processing 
+the \code{Node} 
+corresponding to their AST parent.
+
+Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
+\code{Transfer} interfaces, so the
+default analysis does also.  The current prototype makes those implementations inner
+classes within the \code{BaseTypeAnalysis} class, so there is just one (final) member field
+for the \code{QualifierHierarchy} and one for the \code{AnnotatedTypeFactory} that determine 
+which checker is providing the type information for the analysis.
+
+
+\subsection{Open Questions}
+
+\begin{workinprogress}
+So far, the default analysis only tracks assignments to local variables and not to member
+fields.  Because multiple threads could access a field concurrently, we can't treat fields
+simply as if they were local variables, but in certain cases we might be able to prove 
+they aren't accessed concurrently.  Should we worry about this?  It could be quite expensive 
+to prove single-threaded access to fields and the Java spec says that even final fields can be
+changed via reflection.  Perhaps this problem is just too hard.
+
+The \code{EqualTo} and \code{NotEqual Nodes} could potentially supply flow-sensitive
+information for 
+non-primitive types because they establish that two \code{Objects} are identical, which means their 
+types are identical.  For example, suppose that \code{s1} is a \code{String} and \code{s2} is 
+a \code{@Regex String}.  Then
+in the true successor of \code{if (s1 == s2)}, we know that \code{s1} is also a 
+\code{@Regex String}.  However, it 
+seems inconsistent to extract information from a comparison of objects with distinct types.  
+We would most likely issue an error for comparing a \code{String} to a \code{@Regex String}
+and expect the
+programmer to fix it, so this is a kind of information that may never appear in properly typed
+programs.
+\end{workinprogress}
+
 
 
 
