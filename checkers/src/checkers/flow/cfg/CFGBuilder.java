@@ -369,6 +369,9 @@ public class CFGBuilder {
 	 * <li>Two consecutive, non-empty, regular basic blocks where the second
 	 * block has exactly one predecessor (namely the other of the two blocks):
 	 * In this case, the two blocks are merged.</li>
+	 * <li>Some basic blocks might not be reachable from the entryBlock. These
+	 * basic blocks are removed, and the list of predecessors (in the
+	 * doubly-linked structure of basic blocks) are adapted correctly.</li>
 	 * </ol>
 	 * 
 	 * Eliminating the second type of degenerate cases might introduce cases of
@@ -574,7 +577,7 @@ public class CFGBuilder {
 		/**
 		 * Return a predecessor holder that can be used to set the successor of
 		 * {@code pred} in the place where previously the edge pointed to
-		 * {@code cur}. Addtionally, the predecessor holder also takes care of
+		 * {@code cur}. Additionally, the predecessor holder also takes care of
 		 * unlinking (i.e., removing the {@code pred} from {@code cur's}
 		 * predecessors).
 		 */
@@ -846,7 +849,8 @@ public class CFGBuilder {
 	/* --------------------------------------------------------- */
 
 	/**
-	 * A wrapper object to pass around the result of phase one.
+	 * A wrapper object to pass around the result of phase one. For a
+	 * documentation of the fields see {@link CFGTranslationPhaseOne}.
 	 */
 	protected static class PhaseOneResult {
 
@@ -922,8 +926,8 @@ public class CFGBuilder {
 	 * 
 	 * <p>
 	 * 
-	 * Every visit node is assumed to add at least one extended node to the list
-	 * of nodes (which might only be a jump).
+	 * Every {@code visit*} method is assumed to add at least one extended node
+	 * to the list of nodes (which might only be a jump).
 	 * 
 	 */
 	protected class CFGTranslationPhaseOne implements TreeVisitor<Node, Void> {
@@ -964,10 +968,13 @@ public class CFGBuilder {
 		/** The list of extended nodes. */
 		protected ArrayList<ExtendedNode> nodeList;
 
-		/** The bindings. */
+		/**
+		 * The bindings of labels to positions (i.e., indices) in the
+		 * {@code nodeList}.
+		 */
 		protected Map<Label, Integer> bindings;
 
-		/** The set of leaders. */
+		/** The set of leaders (represented as indices into {@code nodeList}). */
 		protected Set<Integer> leaders;
 
 		/**
@@ -993,6 +1000,11 @@ public class CFGBuilder {
 			t.getBody().accept(this, null);
 
 			// add marker to indicate that the next block will be the exit block
+			// Note: if there is a return statement earlier in the method (which
+			// is always the case for non-void methods), then this is not
+			// strictly necessary. However, it is also not a problem, as it will
+			// just generate a degenerated control graph case that will be
+			// removed in a later phase.
 			nodeList.add(new UnconditionalJump(regularExitLabel));
 
 			return new PhaseOneResult(t, treeLookupMap, nodeList, bindings,
@@ -1168,7 +1180,7 @@ public class CFGBuilder {
 		/**
 		 * Note 1: Requires <code>tree</code> to be a field access tree.
 		 * <p>
-		 * Node 2: Visits the receiver and adds all necessary blocks to the CFG.
+		 * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
 		 * 
 		 * @return The receiver of the field access.
 		 */
