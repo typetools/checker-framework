@@ -1086,10 +1086,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 if (tatypes == null)
                     return null;
 
-                assert tatypes.size() == typeargtree.getTypeArguments().size();
+                // May be zero for a "diamond" (inferred type args in constructor invocation).
+                int numTypeArgs = typeargtree.getTypeArguments().size();
+                if (numTypeArgs != 0) {
+                    assert tatypes.size() == numTypeArgs;
 
-                for (int i=0; i < tatypes.size(); ++i) {
-                    scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
+                    for (int i=0; i < tatypes.size(); ++i) {
+                        scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
+                    }
                 }
 
                 return null;
