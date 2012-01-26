@@ -128,9 +128,13 @@ public class CFGBuilder {
 	 * Build the control flow graph of a method.
 	 */
 	public static ControlFlowGraph build(MethodTree method) {
+		return new CFGBuilder().run(method);
+	}
+
+	protected ControlFlowGraph run(MethodTree method) {
 		PhaseOneResult phase1result = new CFGTranslationPhaseOne()
 				.process(method);
-		ControlFlowGraph phase2result = CFGTranslationPhaseTwo
+		ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
 				.process(phase1result);
 		ControlFlowGraph phase3result = CFGTranslationPhaseThree
 				.process(phase2result);
@@ -141,17 +145,17 @@ public class CFGBuilder {
 	 * Map from CFG {@link Element}s to {@link VariableDeclarationNode}s. for
 	 * local variables in one method.
 	 */
-	protected static HashMap<Element, VariableDeclarationNode> varDeclMap;
+	protected HashMap<Element, VariableDeclarationNode> varDeclMap;
 
 	/* --------------------------------------------------------- */
 	/* Extended Node Types and Labels */
 	/* --------------------------------------------------------- */
 
 	/** Special label to identify the exceptional exit. */
-	protected static Label exceptionalExitLabel = new Label();
+	protected final Label exceptionalExitLabel = new Label();
 
 	/** Special label to identify the regular exit. */
-	protected static Label regularExitLabel = new Label();
+	protected final Label regularExitLabel = new Label();
 
 	/**
 	 * An extended node can be one of several things (depending on its
@@ -688,7 +692,7 @@ public class CFGBuilder {
 	/**
 	 * Class that performs phase two of the translation process.
 	 */
-	protected static class CFGTranslationPhaseTwo {
+	protected class CFGTranslationPhaseTwo {
 
 		/**
 		 * Perform phase two of the translation.
@@ -700,7 +704,7 @@ public class CFGBuilder {
 		 *         conditional blocks with the same block as 'then' and 'else'
 		 *         sucessor).
 		 */
-		public static ControlFlowGraph process(PhaseOneResult in) {
+		public ControlFlowGraph process(PhaseOneResult in) {
 
 			Map<Label, Integer> bindings = in.bindings;
 			ArrayList<ExtendedNode> nodeList = in.nodeList;
@@ -919,7 +923,7 @@ public class CFGBuilder {
 	 * of nodes (which might only be a jump).
 	 * 
 	 */
-	protected static class CFGTranslationPhaseOne implements
+	protected class CFGTranslationPhaseOne implements
 			TreeVisitor<Node, Void> {
 
 		/**
