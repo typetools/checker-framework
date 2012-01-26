@@ -721,9 +721,8 @@ public class CFGBuilder {
 			// record missing edges that will be added later
 			Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
 
-			// missing exceptional edges (third type argument should really be
-			// Class<? extends Throwable>, but Java complains.
-			Set<Tuple<ExceptionBlockImpl, Integer, ?>> missingExceptionalEdges = new HashSet<>();
+			// missing exceptional edges
+			Set<Tuple<ExceptionBlockImpl, Integer, Class<? extends Throwable>>> missingExceptionalEdges = new HashSet<>();
 
 			// create start block
 			SpecialBlockImpl startBlock = new SpecialBlockImpl(
@@ -800,8 +799,9 @@ public class CFGBuilder {
 						// missingEdges.put(e, bindings.get(key))
 						Integer target = bindings.get(entry.getValue());
 						Class<? extends Throwable> cause = entry.getKey();
-						missingExceptionalEdges.add(new Tuple<>(e, target,
-								cause));
+						missingExceptionalEdges
+								.add(new Tuple<ExceptionBlockImpl, Integer, Class<? extends Throwable>>(
+										e, target, cause));
 					}
 					break;
 				}
@@ -923,8 +923,7 @@ public class CFGBuilder {
 	 * of nodes (which might only be a jump).
 	 * 
 	 */
-	protected class CFGTranslationPhaseOne implements
-			TreeVisitor<Node, Void> {
+	protected class CFGTranslationPhaseOne implements TreeVisitor<Node, Void> {
 
 		/**
 		 * The translation starts in regular mode, that is
