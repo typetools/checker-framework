@@ -6,7 +6,7 @@ package checkers.flow.analysis;
  * @author Stefan Heule
  * 
  */
-public interface AbstractValue {
+public interface AbstractValue<V extends AbstractValue<V>> {
 
 	/**
 	 * Compute the least upper bound of two stores.
@@ -23,5 +23,5 @@ public interface AbstractValue {
 	 * <li>Is commutative.</li>
 	 * </ul>
 	 */
-	AbstractValue leastUpperBound(AbstractValue other);
+	V leastUpperBound(V other);
 }
