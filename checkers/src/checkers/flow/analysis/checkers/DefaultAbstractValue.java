@@ -18,7 +18,8 @@ import checkers.util.AnnotationUtils;
  * @author Stefan Heule
  * 
  */
-public class DefaultAbstractValue implements AbstractValue {
+public class DefaultAbstractValue implements
+		AbstractValue<DefaultAbstractValue> {
 
 	/**
 	 * The qualifier hierarchy used to determine the least upper bound of two
@@ -50,9 +51,7 @@ public class DefaultAbstractValue implements AbstractValue {
 	}
 
 	@Override
-	public DefaultAbstractValue leastUpperBound(AbstractValue o) {
-		assert o instanceof DefaultAbstractValue;
-		DefaultAbstractValue other = (DefaultAbstractValue) o;
+	public DefaultAbstractValue leastUpperBound(DefaultAbstractValue other) {
 		Set<AnnotationMirror> lub = qualifierHierarchy.leastUpperBound(
 				annotations, other.getAnnotations());
 		return new DefaultAbstractValue(lub, qualifierHierarchy);

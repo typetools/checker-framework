@@ -3,7 +3,7 @@ package checkers.flow.analysis.checkers;
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Store;
 
-public class DefaultStore<A extends AbstractValue> implements Store<DefaultStore<A>> {
+public class DefaultStore<A extends AbstractValue<A>> implements Store<DefaultStore<A>> {
 
 	@Override
 	public DefaultStore<A> copy() {
