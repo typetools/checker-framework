@@ -22,7 +22,7 @@ public class GenericArgs {
     }
 
     public static void test2() {
-        //:: error: (generic.argument.invalid)
+        //:: error: (type.argument.type.incompatible)
         Object o = new X<Object>().value();
     }
 
@@ -31,7 +31,7 @@ public class GenericArgs {
     }
 
     void test4() {
-        //:: error: (generic.argument.invalid)
+        //:: error: (type.argument.type.incompatible)
         GenericArgs.<@Nullable Object>test3(null);
         //:: error: (argument.type.incompatible)
         GenericArgs.<@NonNull Object>test3(null);
