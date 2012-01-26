@@ -344,7 +344,10 @@ public class CFGBuilder {
 	}
 
 	/**
-	 * A label that can be used to refer to other extended nodes.
+	 * A label is used to refer to other extended nodes using a mapping from
+	 * labels to extended nodes. Labels are only used for the object equality,
+	 * but for abstraction reasons we use a separate class (instead of
+	 * {@link Object}).
 	 */
 	protected static class Label {
 	}
