@@ -1459,10 +1459,17 @@ public class AnnotatedTypeFactory {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
             throw new Error("buildIndexTypes called more than once");
         }
+
         Map<Element, AnnotatedTypeMirror> indexTypes
             = new HashMap<Element, AnnotatedTypeMirror>();
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
+
+        if (env.getOptions().containsKey("ignorestubs")) {
+            this.indexTypes = indexTypes;
+            this.indexDeclAnnos = indexDeclAnnos;
+            return;
+        }
 
         InputStream in = null;
         if (checkerClass != null)
@@ -1523,11 +1530,8 @@ public class AnnotatedTypeFactory {
 
         // First look in the stub files.
         String eltName = ElementUtils.getVerboseName(elt);
-        Set<AnnotationMirror> stubAnnos = null;
-        if (indexDeclAnnos!=null) {
-            // This might happen if parsing the stub file is not finished yet
-            stubAnnos = indexDeclAnnos.get(eltName);
-        }
+        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
                 if (sameAnnotation(am, aname)) {
