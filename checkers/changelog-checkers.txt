@@ -1,3 +1,30 @@
+Version 1.2.5, 26 Jan 2012
+
+Don't put classpath on the bootclasspath when invoking javac.  This
+prevents problems if, for example, android.jar is on the classpath.
+
+New -jsr308_imports ... and -Djsr308.imports=... command-line options, for
+specifying implicit imports from the command line.  This is needed by Maven.
+
+Regex Checker:
+  Support concatenation of PolyRegex strings.
+  Improve examples of use of RegexUtil methods.
+
+Signature Checker:
+  Add new @ClassGetName annotation, for a 4th string representation of a
+    class that is used by the JDK.  Add supporting annotations to make the
+    type hierarchy a complete lattice).
+  Add PolySignature annotation.
+
+Internal bug fixes:
+  Improve method type argument inference.
+  Handle type variables whose upper bound is a type variable.
+  Fix bug in least upper bound computation for anonymous classes.
+  Improve handling of annotations inherited from superclasses.
+  Fix design problem with Nullness Checker and primitive types.
+  Ensure that overriding methods respect pre- and postconditions.
+
+----------------------------------------------------------------------
 Version 1.2.4, 15 Dec 2011
 
 All checkers:
