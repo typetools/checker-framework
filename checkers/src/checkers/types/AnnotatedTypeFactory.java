@@ -1523,7 +1523,11 @@ public class AnnotatedTypeFactory {
 
         // First look in the stub files.
         String eltName = ElementUtils.getVerboseName(elt);
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        Set<AnnotationMirror> stubAnnos = null;
+        if (indexDeclAnnos!=null) {
+            // This might happen if parsing the stub file is not finished yet
+            stubAnnos = indexDeclAnnos.get(eltName);
+        }
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
                 if (sameAnnotation(am, aname)) {
