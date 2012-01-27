@@ -12,8 +12,8 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 
 /**
- * A simple checker used for testing the Checker Framework.  It treates the
- * {@code @Odd} annotation as a subtype-style qualifier with no special
+ * A simple checker used for testing the Checker Framework.  It treats the
+ * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with no special
  * semantics.
  *
  * <p>
@@ -21,7 +21,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
  * This checker should only be used for testing the framework.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Odd.class, Unqualified.class } )
+@TypeQualifiers( { Odd.class, Even.class, Unqualified.class } )
 public final class TestChecker extends BaseTypeChecker {
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
