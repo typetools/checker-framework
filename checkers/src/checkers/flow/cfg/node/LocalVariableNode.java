@@ -49,7 +49,7 @@ public class LocalVariableNode extends Node {
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitIdentifier(this, p);
+		return visitor.visitLocalVariable(this, p);
 	}
 
 	@Override

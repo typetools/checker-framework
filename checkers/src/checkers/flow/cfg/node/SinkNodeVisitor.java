@@ -23,7 +23,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	}
 
 	@Override
-	public R visitIdentifier(LocalVariableNode n, P p) {
+	public R visitLocalVariable(LocalVariableNode n, P p) {
 		return visitNode(n, p);
 	}
 
