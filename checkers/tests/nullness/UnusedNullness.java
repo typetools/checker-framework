@@ -13,13 +13,13 @@ public class UnusedNullness {
   @Unused(when=Prototype.class)
   public Object ppt;
 
-  protected UnusedNullness() @Prototype {
+  protected UnusedNullness(@Prototype UnusedNullness this) {
       // It should be legal to initialize an unused field to null in
       // a constructor with @Prototype receiver.
       this.ppt = null;
   }
 
-  protected void protometh() @Prototype {
+  protected void protometh(@Prototype UnusedNullness this) {
       // It should be legal to initialize the unused field to null in
       // a method with @Prototype receiver.
       this.ppt = null;

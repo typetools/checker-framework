@@ -45,7 +45,7 @@ public class DependentNull {
         indep = "m";
     }
 
-    void receiverProto() @Prototype {
+    void receiverProto(@Prototype DependentNull this) {
         dep = null;
         dep = "m";
 

@@ -118,7 +118,7 @@ public class TypeFromElement {
                     case METHOD_PARAMETER:
                     case METHOD_PARAMETER_GENERIC_OR_ARRAY:
                     case METHOD_RECEIVER:
-                    // TODO? case METHOD_RECEIVER_GENERIC_OR_ARRAY:
+                    case METHOD_RECEIVER_GENERIC_OR_ARRAY:
                     case LOCAL_VARIABLE:
                     case LOCAL_VARIABLE_GENERIC_OR_ARRAY:
                     case NEW:
@@ -157,6 +157,7 @@ public class TypeFromElement {
                         }
                         break;
                     case METHOD_RECEIVER:
+                    case METHOD_RECEIVER_GENERIC_OR_ARRAY:
                     case METHOD_RETURN:
                     case METHOD_RETURN_GENERIC_OR_ARRAY:
                     case THROWS:
@@ -248,7 +249,7 @@ public class TypeFromElement {
         addAnnotationsToElt(type, element.getAnnotationMirrors());
 
         VarSymbol symbol = (VarSymbol) element;
-        
+
         for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
 
             TypeAnnotationPosition pos = anno.position;
@@ -403,7 +404,7 @@ public class TypeFromElement {
 
             switch (pos.type) {
             case METHOD_RECEIVER:
-            //TODO: case METHOD_RECEIVER_GENERIC_OR_ARRAY:
+            case METHOD_RECEIVER_GENERIC_OR_ARRAY:
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 

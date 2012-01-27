@@ -13,7 +13,7 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName() @ReadOnly {
+    public String getName(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -21,7 +21,7 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getTime() @ReadOnly {
+    public long getTime(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -29,11 +29,11 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getSize() @ReadOnly {
+    public long getSize(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getCompressedSize() @ReadOnly {
+    public long getCompressedSize(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -45,7 +45,7 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getCrc() @ReadOnly {
+    public long getCrc(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -53,7 +53,7 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getMethod() @ReadOnly {
+    public int getMethod(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -61,7 +61,7 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public byte[] getExtra() @ReadOnly {
+    public byte[] getExtra(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -69,23 +69,23 @@ public class ZipEntry implements ZipConstants, Cloneable {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getComment() @ReadOnly {
+    public String getComment(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isDirectory() @ReadOnly {
+    public boolean isDirectory(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int hashCode() @ReadOnly {
+    public int hashCode(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object clone() @ReadOnly {
+    public Object clone(@ReadOnly ZipEntry this) {
         throw new RuntimeException("skeleton method");
     }
 }
