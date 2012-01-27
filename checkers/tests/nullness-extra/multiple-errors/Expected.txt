@@ -11,10 +11,7 @@ C3.java:4: error: cannot find symbol
                ^
   symbol:   class XXX
   location: class C3b
-error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
-error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
-error: AnnotatedTypeMirror.createType: input should type-check already! Found error type: XXX
 C4.java:3: error: dereference of possibly-null reference p
     p.toString();
     ^
-7 errors
+4 errors
