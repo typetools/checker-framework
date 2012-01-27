@@ -565,5 +565,16 @@ abstract class TypeFromTree extends
 
             return type;
         }
+
+        @Override
+        public AnnotatedTypeMirror visitUnionType(UnionTypeTree node,
+                AnnotatedTypeFactory f) {
+            AnnotatedTypeMirror type = f.type(node);
+
+            if (type.getKind() == TypeKind.TYPEVAR)
+                return forTypeVariable(type, f);
+
+            return type;
+        }
     }
 }
