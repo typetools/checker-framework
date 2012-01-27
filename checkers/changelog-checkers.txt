@@ -1,4 +1,4 @@
-Version 1.2.5, 26 Jan 2012
+Version 1.2.5, 27 Jan 2012
 
 Don't put classpath on the bootclasspath when invoking javac.  This
 prevents problems if, for example, android.jar is on the classpath.
@@ -23,6 +23,10 @@ Internal bug fixes:
   Improve handling of annotations inherited from superclasses.
   Fix design problem with Nullness Checker and primitive types.
   Ensure that overriding methods respect pre- and postconditions.
+  Correctly resolve references to an enclosing this.
+  Improve handling of Java source that contains compilation errors.
+  Add -Aignorestubs option to ignore loading stub files (jdk.astub and
+    files from the "stubs" option). 
 
 ----------------------------------------------------------------------
 Version 1.2.4, 15 Dec 2011
