@@ -15,7 +15,7 @@ import java.lang.annotation.*;
 import checkers.quals.TypeQualifier;
 
 /**
- * The field or method to which this annotation is applied can only be accessed
+ * The field (or other reference) to which this annotation is applied can only be accessed
  * when holding a particular lock, which may be a built-in (synchronization) lock,
  * or may be an explicit {@link java.util.concurrent.locks.Lock}.
  *
@@ -46,6 +46,8 @@ import checkers.quals.TypeQualifier;
  * <code>class-name.class</code> : The Class object for the specified class should be used as the lock object.
  * </li>
  * </ul>
+ *
+ * @see GuardedBy
  */
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
