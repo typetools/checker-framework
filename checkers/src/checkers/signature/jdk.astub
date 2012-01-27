@@ -1,17 +1,17 @@
-import checkers.signature.quals.BinaryName;
-import checkers.signature.quals.FullyQualifiedName;
+import checkers.signature.quals.*;
 
 package java.lang;
 
 class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedElement {
-    Class<?> forName(@BinaryName String className) throws ClassNotFoundException;
-    Class<?> forName(@BinaryName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
-    @BinaryName String getName();
-    @BinaryName String name;
-    @BinaryName String getName0();
+    Class<?> forName(@ClassGetName String className) throws ClassNotFoundException;
+    Class<?> forName(@ClassGetName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
+    @ClassGetName String getName();
+    @ClassGetName String name;
+    @ClassGetName String getName0();
     @FullyQualifiedName String getCanonicalName();
 }
 
+// Would BinaryNameForNonArray be more accurate for some of these methods?
 class ClassLoader {
     protected Class<?> loadClass(@BinaryName String name, boolean resolve) throws ClassNotFoundException;
     Class<?> loadClass(@BinaryName String name) throws ClassNotFoundException;
@@ -52,6 +52,10 @@ class Package implements AnnotatedElement {
 class StackTraceElement {
     public StackTraceElement(@FullyQualifiedName String declaringClass, String methodName, String fileName, int lineNumber);
     public @FullyQualifiedName String getClassName(); 
+}
+
+class String {
+    public @PolySignature String intern() @PolySignature;
 }
 
 class TypeNotPresentException extends RuntimeException {
@@ -238,8 +242,8 @@ public class MonitorInfo extends LockInfo {
 }
 
 public class LockInfo {
-    public LockInfo(@BinaryName String className, int identityHashCode);
-    public @BinaryName String getClassName();
+    public LockInfo(@ClassGetName String className, int identityHashCode);
+    public @ClassGetName String getClassName();
 }
 
 package java.util;
@@ -490,3 +494,32 @@ class ObjectStreamClass implements Serializable {
 }
 
 
+///////////////////////////////////////////////////////////////////////////
+// Non-JDK classes
+//
+
+package org.apache.bcel.generic;
+
+public class ClassGen { //  extends AccessFlags implements Cloneable {
+  public ClassGen(@BinaryName String class_name, @BinaryName String super_class_name, String file_name, int access_flags, String[] interfaces, ConstantPoolGen cp);
+  public ClassGen(@BinaryNameForNonArray String class_name, @BinaryNameForNonArray String super_class_name, String file_name, int access_flags, String[] interfaces);
+  public @BinaryNameForNonArray String getClassName();
+  public @BinaryNameForNonArray String getSuperclassName();
+  // can actually have '/' in place of '.' in name
+  public void setClassName(@BinaryNameForNonArray String name);
+  // can actually have '/' in place of '.' in name
+  public void setSuperclassName(@BinaryNameForNonArray String name);
+}
+
+
+public class ObjectType extends ReferenceType {
+  public @BinaryNameForNonArray String getClassName();
+}
+
+public abstract class Type implements java.io.Serializable {
+  public @BinaryName String toString();
+}
+
+public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
+  public @BinaryNameForNonArray String getClassName(ConstantPoolGen cpg);
+}

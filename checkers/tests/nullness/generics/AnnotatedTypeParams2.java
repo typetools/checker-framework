@@ -14,7 +14,7 @@ class OtherClass {
     }
 
     void testInvalidParam() {
-        //:: error: (generic.argument.invalid)
+        //:: error: (type.argument.type.incompatible)
         MyClass<@NonNull String> l;
     }
 

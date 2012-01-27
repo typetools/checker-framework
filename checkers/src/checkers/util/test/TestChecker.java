@@ -20,7 +20,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
  *
  * This checker should only be used for testing the framework.
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @TypeQualifiers( { Odd.class, Even.class, Unqualified.class } )
 public final class TestChecker extends BaseTypeChecker {
     @Override

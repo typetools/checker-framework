@@ -712,11 +712,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     // I hope this is less confusing for users.
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             toptree,
-                            "argument.type.incompatible");
+                            "type.argument.type.incompatible");
                 } else {
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
-                            "generic.argument.invalid");
+                            "type.argument.type.incompatible");
                 }
             }
 
@@ -725,11 +725,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotations())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
                         // The type arguments were inferred and we mark the whole method.
-                        checker.report(Result.failure("argument.type.incompatible",
+                        checker.report(Result.failure("type.argument.type.incompatible",
                                 typearg, typeVar),
                                 toptree);
                     } else {
-                        checker.report(Result.failure("generic.argument.invalid",
+                        checker.report(Result.failure("type.argument.type.incompatible",
                                 typearg, typeVar),
                                 typeargTrees.get(typeargs.indexOf(typearg)));
                     }
@@ -844,16 +844,28 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
         // Check the return value.
-        if ((overrider.getReturnType().getKind() != TypeKind.VOID)
-            && !checker.isSubtype(overrider.getReturnType(),
-                overridden.getReturnType())) {
-            checker.report(Result.failure("override.return.invalid",
-                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
-                    overrider.getReturnType().toString(),
-                    overridden.getReturnType().toString()),
-                    overriderTree.getReturnType());
-            // emit error message
-            result = false;
+        if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
+            boolean success = checker.isSubtype(overrider.getReturnType(),
+                overridden.getReturnType());
+            if (options.containsKey("showchecks")) {
+                long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
+                System.out.printf(
+                        " %s (line %3d):%n     overrider: %s %s (return type %s)%n   overridden: %s %s (return type %s)%n",
+                        (success ? "success: overriding return type is subtype of overridden" : "FAILURE: overriding return type is not subtype of overridden"),
+                        root.getLineMap().getLineNumber(valuePos),
+                        overriderMeth, overriderTyp, overrider.getReturnType().toString(),
+                        overriddenMeth, overriddenTyp, overridden.getReturnType().toString());
+            }
+            if (!success) {
+                checker.report(Result.failure("override.return.invalid",
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
+                        overrider.getReturnType().toString(),
+                        overridden.getReturnType().toString()),
+                        overriderTree.getReturnType());
+                // emit error message
+                result = false;
+            }
         }
 
         // Check parameter values. (FIXME varargs)
@@ -862,12 +874,22 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         List<AnnotatedTypeMirror> overriddenParams =
             overridden.getParameterTypes();
         for (int i = 0; i < overriderParams.size(); ++i) {
-            if (!checker.isSubtype(overriddenParams.get(i), overriderParams.get(i))) {
+            boolean success = checker.isSubtype(overriddenParams.get(i), overriderParams.get(i));
+            if (options.containsKey("showchecks")) {
+                long valuePos = positions.getStartPosition(root, overriderTree.getParameters().get(i));
+                System.out.printf(
+                        " %s (line %3d):%n     overrider: %s %s (parameter %d type %s)%n   overridden: %s %s (parameter %d type %s)%n",
+                        (success ? "success: overridden parameter type is subtype of overriding" : "FAILURE: overridden parameter type is not subtype of overriding"),
+                        root.getLineMap().getLineNumber(valuePos),
+                        overriderMeth, overriderTyp, i, overriderParams.get(i).toString(),
+                        overriddenMeth, overriddenTyp, i, overriddenParams.get(i).toString());
+            }
+            if (!success) {
                 checker.report(Result.failure("override.param.invalid",
-                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                        overriderMeth, overriderTyp,
+                        overriddenMeth, overriddenTyp,
                         overriderParams.get(i).toString(),
-                        overriddenParams.get(i).toString()
-                        ),
+                        overriddenParams.get(i).toString()),
                                overriderTree.getParameters().get(i));
                 // emit error message
                 result = false;
@@ -1064,10 +1086,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 if (tatypes == null)
                     return null;
 
-                assert tatypes.size() == typeargtree.getTypeArguments().size();
+                // May be zero for a "diamond" (inferred type args in constructor invocation).
+                int numTypeArgs = typeargtree.getTypeArguments().size();
+                if (numTypeArgs != 0) {
+                    assert tatypes.size() == numTypeArgs;
 
-                for (int i=0; i < tatypes.size(); ++i) {
-                    scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
+                    for (int i=0; i < tatypes.size(); ++i) {
+                        scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
+                    }
                 }
 
                 return null;

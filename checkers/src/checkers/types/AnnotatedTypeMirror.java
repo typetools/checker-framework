@@ -1364,8 +1364,8 @@ public abstract class AnnotatedTypeMirror {
             }
             if (actualType.getLowerBound() instanceof NullType &&
                     lowerBound!=null && upperBound!=null) {
-                Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
-                Set<AnnotationMirror> uAnnos = upperBound.getAnnotations();
+                Set<AnnotationMirror> lAnnos = lowerBound.getEffectiveAnnotations();
+                Set<AnnotationMirror> uAnnos = upperBound.getEffectiveAnnotations();
                 // System.out.printf("fixup: %s; low: %s; up: %s%n", this, lAnnos, uAnnos);
 
                 if (lAnnos.isEmpty()) {
@@ -1380,7 +1380,7 @@ public abstract class AnnotatedTypeMirror {
                         // How should this be handled? What is that factory doing?
                     }
                 } else if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
-                    // Nothing to do
+                    // Nothing to do if lAnnos is a subtype of uAnnos.
                 } else if (typeFactory.qualHierarchy.isSubtype(uAnnos, lAnnos)) {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);

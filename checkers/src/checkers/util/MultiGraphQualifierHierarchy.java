@@ -179,6 +179,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
 	@Override
 	public String toString() {
+	    // TODO: it would be easier to debug if the graph and map were sorted by the key.
+	    // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
 	    return "Supertypes Graph: " + supertypesGraph.toString() +
 	            "\nSupertypes Map: " + supertypesMap.toString() +
 	            "\nRoots: " + roots +
@@ -575,6 +577,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     && AnnotationUtils.areSameIgnoringValues(a1, other.a2))
                 return true;
             return false;
+        }
+
+        @Override
+        public String toString() {
+            return "AnnotationPair(" + a1 + ", " + a2 + ")";
         }
     }
 }

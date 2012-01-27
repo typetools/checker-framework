@@ -1,4 +1,4 @@
-import checkers.propkey.quals.PropertyKey;
+import checkers.propkey.quals.*;
 
 package java.util;
 

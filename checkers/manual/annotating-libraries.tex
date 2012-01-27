@@ -127,8 +127,12 @@ and then annotate it.  The rest of this section describes this approach.
 add the following import statement at the beginning of the file:
 
 \begin{Verbatim}
-  import checkers.interning.quals.Interned;
+  import checkers.interning.quals.*;
 \end{Verbatim}
+
+\noindent
+The stub file parser silently ignores any annotations that it cannot
+resolve to a type, so don't forget the import statement.
 
 \item
   Add annotations to the stub class.  For example, you might annotate

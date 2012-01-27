@@ -6,28 +6,39 @@ import java.util.regex.PatternSyntaxException;
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
 
+// This class should be kept in sync with plume.RegexUtil .
+
 /**
- * Utility methods for the Regex checker.
+ * Utility methods for regular expressions.
+ * <p>
  *
- * <b>Runtime Dependency</b>
+ * For an example of intended use, see section <a
+ * href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#regexutil-methods">Testing
+ * whether a string is a regular expression</a> in the Checker Framework
+ * manual.
+ * <p>
  *
- * Please note that using this class introduces a Runtime dependency.
- * This means that if you need to distribute (or link to) the Checker
+ * <b>Runtime Dependency</b>:
+ * Using this class introduces a runtime dependency.
+ * This means that you need to distribute (or link to) the Checker
  * Framework, along with your binaries.
- *
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
 public class RegexUtil {
 
-  private RegexUtil()
-  { throw new AssertionError("shouldn't be instantiated"); }
+  private RegexUtil() {
+    throw new AssertionError("Class RegexUtil shouldn't be instantiated");
+  }
+
+  // These methods should be kept in sync with those in plume.UtilMDE .
 
   /** 
    * Returns true if the argument is a syntactically valid regular
    * expression. 
    */
   @SuppressWarnings("regex")    // tests whether s is a regex
+  /*@Pure*/
   public static boolean isRegex(String s) {
     try {
       Pattern.compile(s);
@@ -43,6 +54,7 @@ public class RegexUtil {
    * not a regex.
    */
   @SuppressWarnings("regex")    // tests whether s is a regex
+  /*@Pure*/
   public static /*@Nullable*/ String regexError(String s) {
     try {
       Pattern.compile(s);
@@ -58,6 +70,7 @@ public class RegexUtil {
    * why the string is not a regex.
    */
   @SuppressWarnings("regex")    // tests whether s is a regex
+  /*@Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     try {
       Pattern.compile(s);
@@ -74,6 +87,7 @@ public class RegexUtil {
    * very rarely needed.
    */
   @SuppressWarnings("regex")    // suppresses warnings
+  /*@Pure*/
   public static /*@Regex*/ String asRegex(String s) {
     try {
       Pattern.compile(s);

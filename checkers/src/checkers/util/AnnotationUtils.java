@@ -1040,7 +1040,7 @@ public class AnnotationUtils {
     }
 
     /** Returns true if the given annotation has a @Inherited meta-annotation. */
-    public static boolean hasInheritiedMeta(AnnotationMirror anno) {
+    public static boolean hasInheritedMeta(AnnotationMirror anno) {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
     }
 }
