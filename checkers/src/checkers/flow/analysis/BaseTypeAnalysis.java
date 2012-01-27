@@ -307,7 +307,7 @@ public class BaseTypeAnalysis {
          */
         @Override
         public TransferResult<NodeInfo>
-            visitIdentifier(LocalVariableNode n, TransferInput<NodeInfo> in) {
+            visitLocalVariable(LocalVariableNode n, TransferInput<NodeInfo> in) {
             NodeInfo info = in.getRegularStore();
 
             VariableDeclarationNode decl = n.getDeclaration();
