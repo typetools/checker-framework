@@ -26,6 +26,15 @@ public class PolyRegexTests {
     @Regex String s = str.intern(); // error
   }
   
+  public void testToStringRegex(@Regex String str) {
+    @Regex String s = str.toString();
+  }
+
+  public void testToStringNonRegex(String str) {
+    //:: error: (assignment.type.incompatible)
+    @Regex String s = str.toString(); // error
+  }
+  
   public @PolyRegex String testPolyRegexConcat(@PolyRegex String s1, @PolyRegex String s2) {
     return s1 + s2;
   }
