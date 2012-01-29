@@ -1,6 +1,7 @@
 import checkers.javari.quals.*;
 
-class ArrayTest {         int @ReadOnly [] rmi;
+class ArrayTest {
+    int @ReadOnly [] rmi;
 
     @Mutable Object aMM @Mutable[];
     @Mutable Object aMTm[];
@@ -269,43 +270,72 @@ class ArrayTest {         int @ReadOnly [] rmi;
     void testARoZero() {
 
         // aRoM = ...
+        //:: error: (ro.element)
         aRoM[0] = aMM[0];
+        //:: error: (ro.element)
         aRoM[0] = aMTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoM[0] = aMRo[0];   // error
+        //:: error: (ro.element)
         aRoM[0] = aTmM[0];
+        //:: error: (ro.element)
         aRoM[0] = aTmTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoM[0] = aTmRo[0];  // error
+        //:: error: (ro.element)
         aRoM[0] = aRoM[0];
+        //:: error: (ro.element)
         aRoM[0] = aRoTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoM[0] = aRoRo[0];  // error
 
         // aRoTm = ...
+        //:: error: (ro.element)
         aRoTm[0] = aMM[0];
+        //:: error: (ro.element)
         aRoTm[0] = aMTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoTm[0] = aMRo[0];  // error
+        //:: error: (ro.element)
         aRoTm[0] = aTmM[0];
+        //:: error: (ro.element)
         aRoTm[0] = aTmTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoTm[0] = aTmRo[0]; // error
+        //:: error: (ro.element)
         aRoTm[0] = aRoM[0];
+        //:: error: (ro.element)
         aRoTm[0] = aRoTm[0];
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (ro.element)
         aRoTm[0] = aRoRo[0]; // error
 
         // aRoRo = ...
+        //:: error: (ro.element)
         aRoRo[0] = aMM[0];
+        //:: error: (ro.element)
         aRoRo[0] = aMTm[0];
+        //:: error: (ro.element)
         aRoRo[0] = aMRo[0];
+        //:: error: (ro.element)
         aRoRo[0] = aTmM[0];
+        //:: error: (ro.element)
         aRoRo[0] = aTmTm[0];
+        //:: error: (ro.element)
         aRoRo[0] = aTmRo[0];
+        //:: error: (ro.element)
         aRoRo[0] = aRoM[0];
+        //:: error: (ro.element)
         aRoRo[0] = aRoTm[0];
+        //:: error: (ro.element)
         aRoRo[0] = aRoRo[0];
 
     }
+
+    public void testARoAssignability(double @ReadOnly [] d) {
+        //:: error: (ro.element)
+        rmi[0] = 0;
+        //:: error: (ro.element)
+        aRoTm[0] = new Object();
+    }
+
 }
