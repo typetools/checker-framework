@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package checkers.flow.analysis.checkers;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +13,10 @@ import javax.lang.model.element.Element;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
+import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.ConditionalTransferResult;
+import checkers.flow.analysis.RegularTransferResult;
+import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
@@ -27,26 +31,26 @@ import checkers.types.QualifierHierarchy;
 import checkers.util.InternalUtils;
 
 /**
- * BaseTypeAnalysis characterizes a kind of abstract value that is
+ * DefaultTypeAnalysis characterizes a kind of abstract value that is
  * computed by the checker framework's default flow-sensitive analysis.
  * It is parameterized by a QualifierHierarchy, defining the relationship
  * among type annotations and an AnnotatedTypeFactory, providing the
  * static type annotations for AST Trees.
  *
- * The inner class BaseTypeAnalysis.Value represents a single
+ * The inner class DefaultTypeAnalysis.Value represents a single
  * abstract value computed by the checker framework's default
  * flow-sensitive analysis.  A Value is a set of type annotations
  * from the QualifierHierarchy.
  * 
- * The inner class BaseTypeAnalysis.NodeInfo represents the set
+ * The inner class DefaultTypeAnalysis.NodeInfo represents the set
  * of dataflow facts known at a program point, which is a mapping from
  * values, represented by CFG Nodes, to sets of type annotations,
- * represented by BaseTypeAnalysis.Values.  Since statically known
+ * represented by DefaultTypeAnalysis.Values.  Since statically known
  * annotations provided by the AnnotatedTypeFactory are upper bounds,
  * we avoid storing NodeInfos explicitly unless they are more precise
  * than the static annotations.
  *
- * The inner class BaseTypeAnalysis.Transfer is the transfer function
+ * The inner class DefaultTypeAnalysis.Transfer is the transfer function
  * mapping input dataflow facts to output facts.  For the default analysis,
  * it merely tracks type annotations through assignments to local variables.
  * Improvements in the precision of type annotations arise from assignments
@@ -55,7 +59,7 @@ import checkers.util.InternalUtils;
  * @author Charlie Garrett
  * 
  */
-public class BaseTypeAnalysis {
+public class DefaultTypeAnalysis {
     /**
      * The qualifier hierarchy for which to track annotations.
      */
@@ -72,7 +76,7 @@ public class BaseTypeAnalysis {
      */
     protected final Set<AnnotationMirror> legalAnnotations;
 
-    public BaseTypeAnalysis(QualifierHierarchy typeHierarchy,
+    public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
                              AnnotatedTypeFactory factory) {
         this.typeHierarchy = typeHierarchy;
         this.legalAnnotations = typeHierarchy.getAnnotations();
@@ -98,7 +102,7 @@ public class BaseTypeAnalysis {
         /**
          * Computes and returns the least upper bound of two sets
          * of type annotations.  The return value is always of type
-         * BaseTypeAnalysis.Value.
+         * DefaultTypeAnalysis.Value.
          */
         @Override
         public Value leastUpperBound(Value other) {
@@ -130,7 +134,7 @@ public class BaseTypeAnalysis {
     /**
      * Create a new dataflow value with the given type annotations,
      * which must belong to the QualifierHierarchy for which this
-     * BaseTypeAnalysis was created.
+     * DefaultTypeAnalysis was created.
      */
     public Value createValue(Set<AnnotationMirror> annotations)
             throws IllegalArgumentException {
