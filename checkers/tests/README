@@ -57,6 +57,9 @@ test and observing the failure.
 To indicate the expected failure, insert the line
   //:: (<error-message-key>)
 directly preceding the expected error line.
+If multiple errors are expected on a single line, duplicate everthing
+except the "//" comment characters, as in
+  //:: (<error-message-key1>) :: (<error-message-key2>)
 
 So the final test case would be:
 
