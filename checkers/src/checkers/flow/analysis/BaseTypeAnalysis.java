@@ -212,7 +212,7 @@ public class BaseTypeAnalysis {
             } else {
                 updatedVal = val;
             }
-            info.put(decl, val);
+            info.put(decl, updatedVal);
         }
 
         @Override
@@ -298,7 +298,11 @@ public class BaseTypeAnalysis {
         @Override
         public TransferResult<NodeInfo> visitNode(Node n,
                                                   TransferInput<NodeInfo> in) {
-            return new RegularTransferResult<NodeInfo>(in.getRegularStore());
+            if (in.containsTwoStores()) {
+                return new ConditionalTransferResult<NodeInfo>(in.getThenStore(), in.getElseStore());
+            } else {
+                return new RegularTransferResult<NodeInfo>(in.getRegularStore());
+            }
         }
 
         /**
