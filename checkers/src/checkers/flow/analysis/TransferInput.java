@@ -141,6 +141,21 @@ public class TransferInput<S extends Store<S>> {
 		return store.copy();
 	}
 
+	/**
+	 * @return {@code true} if and only if this transfer input contains two
+	 *         stores that are potentially not equal. Note that the result
+	 *         {@code true} does not imply that {@code getRegularStore} cannot
+	 *         be called (or vice versa for {@code false}). Rather, it indicates
+	 *         that {@code getThenStore} or {@code getElseStore} can be used to
+	 *         give more precise results. Otherwise, if the result is
+	 *         {@code false}, then all three methods {@code getRegularStore},
+	 *         {@code getThenStore}, and {@code getElseStore} return equivalent
+	 *         stores.
+	 */
+	public boolean containsTwoStores() {
+            return (thenStore != null && elseStore != null);
+        }
+
 	/** @return An exact copy of this store. */
 	public TransferInput<S> copy() {
 		return new TransferInput<S>(this);
