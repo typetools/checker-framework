@@ -323,7 +323,7 @@ public class DefaultTypeAnalysis {
         public /*@NonNull*/ TransferResult<NodeInfo> visitNode(Node n,
                                                                TransferInput<NodeInfo> in) {
             // TODO: Perform type propagation separately with a thenStore and an elseStore.
-            NodeInfo info = in.getRegularStore().copy();
+            NodeInfo info = in.getRegularStore();
 
             // The node should not be present in the NodeInfo at this point.
             // So flow insensitive information is the best we have and we can
@@ -360,7 +360,6 @@ public class DefaultTypeAnalysis {
 
             VariableDeclarationNode decl = n.getDeclaration();
             if (decl != null) {
-                info = info.copy();
                 info.setInformation(n, info.getInformation(decl));
             }
 
@@ -384,7 +383,6 @@ public class DefaultTypeAnalysis {
             // Skip assignments to arrays or fields.
             if (lhs instanceof LocalVariableNode) {
                 if (lhsValue.isSupertypeOf(rhsValue)) {
-                    info = info.copy();
                     info.setInformation(lhs, rhsValue);
                 }
             }
@@ -393,7 +391,6 @@ public class DefaultTypeAnalysis {
             // type as the RHS.
             Value assignValue = info.getInformation(n);
             if (assignValue.isSupertypeOf(rhsValue)) {
-                info = info.copy();
                 info.setInformation(n, rhsValue);
             }
 
