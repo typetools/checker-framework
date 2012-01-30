@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+
 import checkers.flow.cfg.block.Block;
 
 import com.sun.source.tree.Tree;
@@ -66,4 +68,9 @@ public abstract class Node {
 	 */
 	public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
+	/**
+	 * @return a collection containing all of the operand {@link Node}s
+	 *         of this {@link Node}.
+	 */
+	public abstract Collection<Node> getOperands();
 }

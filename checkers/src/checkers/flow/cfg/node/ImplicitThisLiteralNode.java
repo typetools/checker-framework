@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.sun.source.tree.Tree;
 
 /**
@@ -39,6 +42,11 @@ public class ImplicitThisLiteralNode extends Node {
 	@Override
 	public int hashCode() {
 		return 17; // constant value, same as in ExplicitThisLiteralNode
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		return Collections.emptyList();
 	}
 
 }

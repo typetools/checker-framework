@@ -1,7 +1,7 @@
-package checkers.flow.analysis;
+package checkers.flow.analysis.checkers;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +13,10 @@ import javax.lang.model.element.Element;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
+import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.ConditionalTransferResult;
+import checkers.flow.analysis.RegularTransferResult;
+import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
@@ -27,26 +31,26 @@ import checkers.types.QualifierHierarchy;
 import checkers.util.InternalUtils;
 
 /**
- * BaseTypeAnalysis characterizes a kind of abstract value that is
+ * DefaultTypeAnalysis characterizes a kind of abstract value that is
  * computed by the checker framework's default flow-sensitive analysis.
  * It is parameterized by a QualifierHierarchy, defining the relationship
  * among type annotations and an AnnotatedTypeFactory, providing the
  * static type annotations for AST Trees.
  *
- * The inner class BaseTypeAnalysis.Value represents a single
+ * The inner class DefaultTypeAnalysis.Value represents a single
  * abstract value computed by the checker framework's default
  * flow-sensitive analysis.  A Value is a set of type annotations
  * from the QualifierHierarchy.
  * 
- * The inner class BaseTypeAnalysis.NodeInfo represents the set
+ * The inner class DefaultTypeAnalysis.NodeInfo represents the set
  * of dataflow facts known at a program point, which is a mapping from
  * values, represented by CFG Nodes, to sets of type annotations,
- * represented by BaseTypeAnalysis.Values.  Since statically known
+ * represented by DefaultTypeAnalysis.Values.  Since statically known
  * annotations provided by the AnnotatedTypeFactory are upper bounds,
  * we avoid storing NodeInfos explicitly unless they are more precise
  * than the static annotations.
  *
- * The inner class BaseTypeAnalysis.Transfer is the transfer function
+ * The inner class DefaultTypeAnalysis.Transfer is the transfer function
  * mapping input dataflow facts to output facts.  For the default analysis,
  * it merely tracks type annotations through assignments to local variables.
  * Improvements in the precision of type annotations arise from assignments
@@ -55,7 +59,7 @@ import checkers.util.InternalUtils;
  * @author Charlie Garrett
  * 
  */
-public class BaseTypeAnalysis {
+public class DefaultTypeAnalysis {
     /**
      * The qualifier hierarchy for which to track annotations.
      */
@@ -72,8 +76,8 @@ public class BaseTypeAnalysis {
      */
     protected final Set<AnnotationMirror> legalAnnotations;
 
-    public BaseTypeAnalysis(QualifierHierarchy typeHierarchy,
-                             AnnotatedTypeFactory factory) {
+    public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
+                               AnnotatedTypeFactory factory) {
         this.typeHierarchy = typeHierarchy;
         this.legalAnnotations = typeHierarchy.getAnnotations();
         this.factory = factory;
@@ -98,10 +102,10 @@ public class BaseTypeAnalysis {
         /**
          * Computes and returns the least upper bound of two sets
          * of type annotations.  The return value is always of type
-         * BaseTypeAnalysis.Value.
+         * DefaultTypeAnalysis.Value.
          */
         @Override
-        public Value leastUpperBound(Value other) {
+        public /*@NonNull*/ Value leastUpperBound(Value other) {
             Set<AnnotationMirror> lub =
                 typeHierarchy.leastUpperBound(annotatedTypes,
                                               other.annotatedTypes);
@@ -123,16 +127,16 @@ public class BaseTypeAnalysis {
     /**
      * Create a new dataflow value with no type annotations.
      */
-    public Value createValue() {
+    public /*@NonNull*/ Value createValue() {
         return new Value();
     }
 
     /**
      * Create a new dataflow value with the given type annotations,
      * which must belong to the QualifierHierarchy for which this
-     * BaseTypeAnalysis was created.
+     * DefaultTypeAnalysis was created.
      */
-    public Value createValue(Set<AnnotationMirror> annotations)
+    public /*@NonNull*/ Value createValue(Set<AnnotationMirror> annotations)
             throws IllegalArgumentException {
         for (AnnotationMirror anno : annotations) {
             if (!legalAnnotations.contains(anno)) {
@@ -150,7 +154,7 @@ public class BaseTypeAnalysis {
      * corresponding Elements and the method returns null when no
      * type information is available.
      */
-    private Value flowInsensitiveValue(Node n) {
+    private /*@Nullable*/ Value flowInsensitiveValue(Node n) {
         Tree tree = n.getTree();
         if (tree == null) {
             return null;
@@ -170,12 +174,28 @@ public class BaseTypeAnalysis {
      * A store for the default analysis is a mapping from Nodes
      * to Values.  If no Value is explicitly stored for
      * a Node, we fall back on the statically known annotations.
+     *
+     * Two kinds of Nodes are tracked.  VariableDeclarationNodes
+     * represent mutable variables.  If we compute a more precise
+     * type annotation for a variable than its static annotation,
+     * then it is entered into the NodeInfo and stays there.
+     *
+     * Value producing Nodes represent immutable values computed by
+     * expressions.  Since we are processing a CFG that was originally
+     * an AST and we do no transformation, we know that expressions
+     * do not outlive their AST parents.  So even if we compute a
+     * more precise type annotation for a variable that its static
+     * annotation, we only store that information from the point where
+     * it becomes true to the point where the the value becomes dead
+     * (i.e. its AST parent).
+     *
+     * TODO: Extend NodeInfo to track class member fields like variables.
      */
     public class NodeInfo implements Store<NodeInfo> {
         private Map<Node, Value> info;
 
         private NodeInfo() {
-            info = new HashMap<Node, Value>();
+            info = new IdentityHashMap<Node, Value>();
         }
 
         private NodeInfo(Map<Node, Value> info) {
@@ -189,7 +209,7 @@ public class BaseTypeAnalysis {
          * Otherwise, if static information is available, that
          * is returned.  Otherwise, empty information is returned.
          */
-        public Value getInformation(Node decl) {
+        public /*@NonNull*/ Value getInformation(Node decl) {
             if (info.containsKey(decl)) {
                 return info.get(decl);
             } else {
@@ -212,16 +232,20 @@ public class BaseTypeAnalysis {
             } else {
                 updatedVal = val;
             }
-            info.put(decl, val);
+            info.put(decl, updatedVal);
+        }
+
+        public void removeInformation(Node decl) {
+            info.remove(decl);
         }
 
         @Override
-        public NodeInfo copy() {
-            return new NodeInfo(new HashMap<>(info));
+        public /*@NonNull*/ NodeInfo copy() {
+            return new NodeInfo(new IdentityHashMap<>(info));
         }
 
         @Override
-        public NodeInfo leastUpperBound(NodeInfo other) {
+        public /*@NonNull*/ NodeInfo leastUpperBound(NodeInfo other) {
             NodeInfo newInfo = copy();
 
             for (Entry<Node, Value> e : other.info.entrySet()) {
@@ -277,7 +301,7 @@ public class BaseTypeAnalysis {
          * their currently most refined type.
          */
         @Override
-        public NodeInfo initialStore(MethodTree tree,
+        public /*@NonNull*/ NodeInfo initialStore(MethodTree tree,
                                      List<LocalVariableNode> parameters) {
             NodeInfo info = new NodeInfo();
 
@@ -296,9 +320,33 @@ public class BaseTypeAnalysis {
          * in the case of conditional input information, merged.
          */
         @Override
-        public TransferResult<NodeInfo> visitNode(Node n,
-                                                  TransferInput<NodeInfo> in) {
-            return new RegularTransferResult<NodeInfo>(in.getRegularStore());
+        public /*@NonNull*/ TransferResult<NodeInfo> visitNode(Node n,
+                                                               TransferInput<NodeInfo> in) {
+            // TODO: Perform type propagation separately with a thenStore and an elseStore.
+            NodeInfo info = in.getRegularStore();
+
+            // The node should not be present in the NodeInfo at this point.
+            // So flow insensitive information is the best we have and we can
+            // set rather than merge the flow-sensitive information if it is
+            // more precise.
+            Value flowInsensitive = flowInsensitiveValue(n);
+
+            // TODO: Propagate types from operands to Node.
+            // Set<AnnotationMirror> nodeType = n.propagate(info);
+            // if (nodeType != null) {
+            //     Value value = createValue(nodeType);
+            //     if (flowInsensitive.isSupertypeOf(value)) {
+            //         info.setInformation(n, value);
+            //     }
+            // }
+
+            // Remove information about the operand Nodes because they are dead
+            // after this Node (their AST parent).
+            for (Node operand : n.getOperands()) {
+                info.removeInformation(operand);
+            }
+
+            return new RegularTransferResult<NodeInfo>(info);
         }
 
         /**
@@ -306,8 +354,8 @@ public class BaseTypeAnalysis {
          * precise information available for the declaration.
          */
         @Override
-        public TransferResult<NodeInfo>
-            visitIdentifier(LocalVariableNode n, TransferInput<NodeInfo> in) {
+        public /*@NonNull*/ TransferResult<NodeInfo>
+            visitLocalVariable(LocalVariableNode n, TransferInput<NodeInfo> in) {
             NodeInfo info = in.getRegularStore();
 
             VariableDeclarationNode decl = n.getDeclaration();
@@ -323,7 +371,7 @@ public class BaseTypeAnalysis {
          * on the LHS, if the RHS has more precise information available.
          */
         @Override
-        public TransferResult<NodeInfo>
+        public /*@NonNull*/ TransferResult<NodeInfo>
             visitAssignment(AssignmentNode n, TransferInput<NodeInfo> in) {
             Node lhs = n.getTarget();
             Node rhs = n.getExpression();
@@ -335,7 +383,6 @@ public class BaseTypeAnalysis {
             // Skip assignments to arrays or fields.
             if (lhs instanceof LocalVariableNode) {
                 if (lhsValue.isSupertypeOf(rhsValue)) {
-                    info = info.copy();
                     info.setInformation(lhs, rhsValue);
                 }
             }
@@ -344,7 +391,6 @@ public class BaseTypeAnalysis {
             // type as the RHS.
             Value assignValue = info.getInformation(n);
             if (assignValue.isSupertypeOf(rhsValue)) {
-                info = info.copy();
                 info.setInformation(n, rhsValue);
             }
 

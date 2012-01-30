@@ -1,5 +1,7 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
 
@@ -55,6 +57,11 @@ public abstract class ValueLiteralNode extends Node {
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getValue());
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		return Collections.emptyList();
 	}
 
 }

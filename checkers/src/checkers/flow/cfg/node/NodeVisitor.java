@@ -15,7 +15,7 @@ package checkers.flow.cfg.node;
  */
 public interface NodeVisitor<R, P> {
 	R visitAssignment(AssignmentNode n, P p);
-	R visitIdentifier(LocalVariableNode n, P p);
+	R visitLocalVariable(LocalVariableNode n, P p);
 	R visitVariableDeclaration(VariableDeclarationNode n, P p);
 	R visitFieldAccess(FieldAccessNode n, P p);
 	R visitIntegerLiteral(IntegerLiteralNode n, P p);

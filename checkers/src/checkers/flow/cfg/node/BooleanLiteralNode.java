@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
@@ -39,6 +42,11 @@ public class BooleanLiteralNode extends ValueLiteralNode {
 		}
 		// super method compares values
 		return super.equals(obj);
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		return Collections.emptyList();
 	}
 
 }
