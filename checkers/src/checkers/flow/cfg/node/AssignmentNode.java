@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.AssignmentTree;
@@ -72,6 +75,14 @@ public class AssignmentNode extends Node {
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getTarget(), getExpression());
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		LinkedList<Node> list = new LinkedList<Node>();
+		list.add(getTarget());
+		list.add(getExpression());
+		return list;
 	}
 
 }

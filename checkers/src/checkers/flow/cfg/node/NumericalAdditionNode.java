@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
@@ -64,6 +67,14 @@ public class NumericalAdditionNode extends Node {
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		LinkedList<Node> list = new LinkedList<Node>();
+		list.add(getLeftOperand());
+		list.add(getRightOperand());
+		return list;
 	}
 
 }
