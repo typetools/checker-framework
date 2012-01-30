@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import checkers.flow.util.ASTUtils;
 import checkers.flow.util.HashCodeUtils;
 
@@ -66,6 +69,11 @@ public class FieldAccessNode extends Node {
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getReceiver(), getFieldName());
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		return Collections.singletonList(receiver);
 	}
 
 }

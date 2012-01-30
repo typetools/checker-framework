@@ -1,7 +1,7 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,7 +77,7 @@ public class DefaultTypeAnalysis {
     protected final Set<AnnotationMirror> legalAnnotations;
 
     public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
-                             AnnotatedTypeFactory factory) {
+                               AnnotatedTypeFactory factory) {
         this.typeHierarchy = typeHierarchy;
         this.legalAnnotations = typeHierarchy.getAnnotations();
         this.factory = factory;
@@ -105,7 +105,7 @@ public class DefaultTypeAnalysis {
          * DefaultTypeAnalysis.Value.
          */
         @Override
-        public Value leastUpperBound(Value other) {
+        public /*@NonNull*/ Value leastUpperBound(Value other) {
             Set<AnnotationMirror> lub =
                 typeHierarchy.leastUpperBound(annotatedTypes,
                                               other.annotatedTypes);
@@ -127,7 +127,7 @@ public class DefaultTypeAnalysis {
     /**
      * Create a new dataflow value with no type annotations.
      */
-    public Value createValue() {
+    public /*@NonNull*/ Value createValue() {
         return new Value();
     }
 
@@ -136,7 +136,7 @@ public class DefaultTypeAnalysis {
      * which must belong to the QualifierHierarchy for which this
      * DefaultTypeAnalysis was created.
      */
-    public Value createValue(Set<AnnotationMirror> annotations)
+    public /*@NonNull*/ Value createValue(Set<AnnotationMirror> annotations)
             throws IllegalArgumentException {
         for (AnnotationMirror anno : annotations) {
             if (!legalAnnotations.contains(anno)) {
@@ -154,7 +154,7 @@ public class DefaultTypeAnalysis {
      * corresponding Elements and the method returns null when no
      * type information is available.
      */
-    private Value flowInsensitiveValue(Node n) {
+    private /*@Nullable*/ Value flowInsensitiveValue(Node n) {
         Tree tree = n.getTree();
         if (tree == null) {
             return null;
@@ -174,12 +174,28 @@ public class DefaultTypeAnalysis {
      * A store for the default analysis is a mapping from Nodes
      * to Values.  If no Value is explicitly stored for
      * a Node, we fall back on the statically known annotations.
+     *
+     * Two kinds of Nodes are tracked.  VariableDeclarationNodes
+     * represent mutable variables.  If we compute a more precise
+     * type annotation for a variable than its static annotation,
+     * then it is entered into the NodeInfo and stays there.
+     *
+     * Value producing Nodes represent immutable values computed by
+     * expressions.  Since we are processing a CFG that was originally
+     * an AST and we do no transformation, we know that expressions
+     * do not outlive their AST parents.  So even if we compute a
+     * more precise type annotation for a variable that its static
+     * annotation, we only store that information from the point where
+     * it becomes true to the point where the the value becomes dead
+     * (i.e. its AST parent).
+     *
+     * TODO: Extend NodeInfo to track class member fields like variables.
      */
     public class NodeInfo implements Store<NodeInfo> {
         private Map<Node, Value> info;
 
         private NodeInfo() {
-            info = new HashMap<Node, Value>();
+            info = new IdentityHashMap<Node, Value>();
         }
 
         private NodeInfo(Map<Node, Value> info) {
@@ -193,7 +209,7 @@ public class DefaultTypeAnalysis {
          * Otherwise, if static information is available, that
          * is returned.  Otherwise, empty information is returned.
          */
-        public Value getInformation(Node decl) {
+        public /*@NonNull*/ Value getInformation(Node decl) {
             if (info.containsKey(decl)) {
                 return info.get(decl);
             } else {
@@ -219,13 +235,17 @@ public class DefaultTypeAnalysis {
             info.put(decl, updatedVal);
         }
 
-        @Override
-        public NodeInfo copy() {
-            return new NodeInfo(new HashMap<>(info));
+        public void removeInformation(Node decl) {
+            info.remove(decl);
         }
 
         @Override
-        public NodeInfo leastUpperBound(NodeInfo other) {
+        public /*@NonNull*/ NodeInfo copy() {
+            return new NodeInfo(new IdentityHashMap<>(info));
+        }
+
+        @Override
+        public /*@NonNull*/ NodeInfo leastUpperBound(NodeInfo other) {
             NodeInfo newInfo = copy();
 
             for (Entry<Node, Value> e : other.info.entrySet()) {
@@ -281,7 +301,7 @@ public class DefaultTypeAnalysis {
          * their currently most refined type.
          */
         @Override
-        public NodeInfo initialStore(MethodTree tree,
+        public /*@NonNull*/ NodeInfo initialStore(MethodTree tree,
                                      List<LocalVariableNode> parameters) {
             NodeInfo info = new NodeInfo();
 
@@ -300,13 +320,33 @@ public class DefaultTypeAnalysis {
          * in the case of conditional input information, merged.
          */
         @Override
-        public TransferResult<NodeInfo> visitNode(Node n,
-                                                  TransferInput<NodeInfo> in) {
-            if (in.containsTwoStores()) {
-                return new ConditionalTransferResult<NodeInfo>(in.getThenStore(), in.getElseStore());
-            } else {
-                return new RegularTransferResult<NodeInfo>(in.getRegularStore());
+        public /*@NonNull*/ TransferResult<NodeInfo> visitNode(Node n,
+                                                               TransferInput<NodeInfo> in) {
+            // TODO: Perform type propagation separately with a thenStore and an elseStore.
+            NodeInfo info = in.getRegularStore().copy();
+
+            // The node should not be present in the NodeInfo at this point.
+            // So flow insensitive information is the best we have and we can
+            // set rather than merge the flow-sensitive information if it is
+            // more precise.
+            Value flowInsensitive = flowInsensitiveValue(n);
+
+            // TODO: Propagate types from operands to Node.
+            // Set<AnnotationMirror> nodeType = n.propagate(info);
+            // if (nodeType != null) {
+            //     Value value = createValue(nodeType);
+            //     if (flowInsensitive.isSupertypeOf(value)) {
+            //         info.setInformation(n, value);
+            //     }
+            // }
+
+            // Remove information about the operand Nodes because they are dead
+            // after this Node (their AST parent).
+            for (Node operand : n.getOperands()) {
+                info.removeInformation(operand);
             }
+
+            return new RegularTransferResult<NodeInfo>(info);
         }
 
         /**
@@ -314,12 +354,13 @@ public class DefaultTypeAnalysis {
          * precise information available for the declaration.
          */
         @Override
-        public TransferResult<NodeInfo>
+        public /*@NonNull*/ TransferResult<NodeInfo>
             visitLocalVariable(LocalVariableNode n, TransferInput<NodeInfo> in) {
             NodeInfo info = in.getRegularStore();
 
             VariableDeclarationNode decl = n.getDeclaration();
             if (decl != null) {
+                info = info.copy();
                 info.setInformation(n, info.getInformation(decl));
             }
 
@@ -331,7 +372,7 @@ public class DefaultTypeAnalysis {
          * on the LHS, if the RHS has more precise information available.
          */
         @Override
-        public TransferResult<NodeInfo>
+        public /*@NonNull*/ TransferResult<NodeInfo>
             visitAssignment(AssignmentNode n, TransferInput<NodeInfo> in) {
             Node lhs = n.getTarget();
             Node rhs = n.getExpression();

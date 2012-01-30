@@ -1,5 +1,8 @@
 package checkers.flow.cfg.node;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.ReturnTree;
@@ -62,6 +65,15 @@ public class ReturnNode extends Node {
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(result);
+	}
+
+	@Override
+	public Collection<Node> getOperands() {
+		if (result == null) {
+			return Collections.emptyList();
+		} else {
+			return Collections.singletonList(result);
+		}
 	}
 
 }
