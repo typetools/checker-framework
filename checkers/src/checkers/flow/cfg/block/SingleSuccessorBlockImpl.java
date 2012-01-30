@@ -1,7 +1,5 @@
 package checkers.flow.cfg.block;
 
-import checkers.nullness.quals.Nullable;
-
 /**
  * Implementation of a non-special basic block.
  * 
