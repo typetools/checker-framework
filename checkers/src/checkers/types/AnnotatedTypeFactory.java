@@ -1463,18 +1463,14 @@ public class AnnotatedTypeFactory {
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
 
-        if (env.getOptions().containsKey("ignorestubs")) {
-            this.indexTypes = indexTypes;
-            this.indexDeclAnnos = indexDeclAnnos;
-            return;
-        }
-
-        InputStream in = null;
-        if (checkerClass != null)
-            in = checkerClass.getResourceAsStream("jdk.astub");
-        if (in != null) {
-            StubParser stubParser = new StubParser("jdk.astub", in, this, env);
-            stubParser.parse(indexTypes, indexDeclAnnos);
+        if (!env.getOptions().containsKey("ignorejdkastub")) {
+            InputStream in = null;
+            if (checkerClass != null)
+                in = checkerClass.getResourceAsStream("jdk.astub");
+            if (in != null) {
+                StubParser stubParser = new StubParser("jdk.astub", in, this, env);
+                stubParser.parse(indexTypes, indexDeclAnnos);
+            }
         }
 
         String stubFiles = env.getOptions().get("stubs");

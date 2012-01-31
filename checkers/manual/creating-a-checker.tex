@@ -905,9 +905,10 @@ internal Checker Framework error messages
 qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
-\item \code{-Aignorestubs}: ignore stub files, i.e. the jdk.astub file in the checker
-directory and files passed through the \code{-Astubs} option. This is useful when
-compiling the source code that is described by the stub file.
+\item \code{-Aignorejdkastub}: ignore the jdk.astub file in the checker
+directory. Files passed through the \code{-Astubs} option are still processed. This is useful when
+compiling the source code that is described by the stub file and experimenting with an
+alternative stub file.
 
 \end{itemize}
 

@@ -761,7 +761,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("filenames");
         options.add("showchecks");
         options.add("stubs");
-        options.add("ignorestubs");
+        options.add("ignorejdkastub");
         options.add("nocheckjdk");
         options.add("warns");
         options.add("annotatedTypeParams");
