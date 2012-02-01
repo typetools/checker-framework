@@ -295,7 +295,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *  <li> passed arguments are subtypes of corresponding m parameters </li>
      *  <li> r is a subtype of m receiver type </li>
      *  <li> if m is generic, passed type arguments are subtypes
-     *      of m type variables <li>
+     *      of m type variables </li>
      * </ul>
      */
     @Override
