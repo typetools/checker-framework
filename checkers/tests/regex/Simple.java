@@ -47,4 +47,14 @@ public class Simple {
         @Regex String o3 = nonReg + reg;     // error
 
     }
+    
+    void testChar() {
+        @Regex char c1 = 'c';
+        @Regex Character c2 = 'c';
+        
+        //:: error: (assignment.type.incompatible)
+        @Regex char c3 = '(';   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex Character c4 = '(';   // error
+    }
 }
