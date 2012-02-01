@@ -19,7 +19,8 @@ import checkers.util.TreeUtils;
  *
  * <ol>
  *
- * <li value="1">a {@code String} literal that is a valid regular expression</li>
+ * <li value="1">a {@code String} or (@code char} literal that is a valid
+ * regular expression</li>
  *
  * <li value="2">a {@code String} concatenation tree of two valid regular
  * expression values.</li>
@@ -48,14 +49,18 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 1: valid regular expression String literal
+         * Case 1: valid regular expression String or char literal
          */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()
-                && tree.getKind() == Tree.Kind.STRING_LITERAL
-                && RegexUtil.isRegex((String)((LiteralTree)tree).getValue())) {
-                type.addAnnotation(Regex.class);
+            if (!type.isAnnotated()) {
+                boolean regexString = tree.getKind() == Tree.Kind.STRING_LITERAL
+                                      && RegexUtil.isRegex((String) tree.getValue());
+                boolean regexChar = tree.getKind() == Tree.Kind.CHAR_LITERAL
+                                    && RegexUtil.isRegex((Character) tree.getValue());
+                if (regexString || regexChar) {
+                    type.addAnnotation(Regex.class);
+                }
             }
             return super.visitLiteral(tree, type);
         }

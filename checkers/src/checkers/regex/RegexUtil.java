@@ -47,6 +47,16 @@ public class RegexUtil {
     }
     return true;
   }
+  
+  /** 
+   * Returns true if the argument is a syntactically valid regular
+   * expression. 
+   */
+  @SuppressWarnings("regex")    // RegexUtil
+  /*@Pure*/
+  public static boolean isRegex(char c) {
+    return isRegex(Character.toString(c));
+  }
 
   /**
    * Returns null if the argument is a syntactically valid regular
