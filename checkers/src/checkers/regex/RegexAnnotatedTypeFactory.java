@@ -22,13 +22,13 @@ import checkers.util.TreeUtils;
  * <li value="1">a {@code String} or (@code char} literal that is a valid
  * regular expression</li>
  *
- * <li value="2">a {@code String} concatenation tree of two valid regular
- * expression values.</li>
+ * <li value="2">concatenation tree of two valid regular expression values
+ * (either {@code String} or {@code char}.)</li>
  *
  * </ol>
  *
- * Also, adds {@link PolyRegex} to the type of concatenation of a Regex and a
- * PolyRegex {@code String} or two PolyRegex {@code String}s.
+ * Also, adds {@link PolyRegex} to the type of String/char concatenation of
+ * a Regex and a PolyRegex or two PolyRegexs.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
@@ -66,9 +66,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of two regular expression String literals,
-         * concatenation of two PolyRegex Strings and concatenation of a Regex
-         * and PolyRegex String.
+         * Case 2: concatenation of Regex or PolyRegex String/char literals
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
