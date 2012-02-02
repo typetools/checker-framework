@@ -57,4 +57,18 @@ public class Simple {
         //:: error: (assignment.type.incompatible)
         @Regex Character c4 = '(';   // error
     }
+    
+    void testCharConcatenation() {
+        @Regex String s1 = "rege" + 'x';
+        @Regex String s2 = 'r' + "egex";
+
+        //:: error: (assignment.type.incompatible)
+        @Regex String s4 = "rege" + '(';
+        //:: error: (assignment.type.incompatible)
+        @Regex String s5 = "reg(" + 'x';
+        //:: error: (assignment.type.incompatible)
+        @Regex String s6 = '(' + "egex";
+        //:: error: (assignment.type.incompatible)
+        @Regex String s7 = 'r' + "ege(";
+    }
 }
