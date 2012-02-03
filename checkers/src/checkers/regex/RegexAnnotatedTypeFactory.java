@@ -1,12 +1,19 @@
 package checkers.regex;
 
+import java.util.List;
+
+import javax.lang.model.type.TypeKind;
+
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Type.ArrayType;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror;
@@ -15,7 +22,7 @@ import checkers.types.TreeAnnotator;
 import checkers.util.TreeUtils;
 
 /**
- * Adds {@link Regex} to the type of tree, in two cases:
+ * Adds {@link Regex} to the type of tree, in the following cases:
  *
  * <ol>
  *
@@ -24,6 +31,9 @@ import checkers.util.TreeUtils;
  *
  * <li value="2">concatenation tree of two valid regular expression values
  * (either {@code String} or {@code char}.)</li>
+ * 
+ * <li value="3">initialization of a char array that when converted to a String
+ * is a valid regular expression.</li>
  *
  * </ol>
  *
@@ -88,6 +98,36 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(PolyRegex.class);
             }
             return super.visitBinary(tree, type);
+        }
+        
+        /**
+         * Case 3: a char array that as a String is a valid regular expression.
+         */
+        @Override
+        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+            boolean isCharArray = ((ArrayType) type.getUnderlyingType())
+                    .getComponentType().getKind() == TypeKind.CHAR;
+            if (isCharArray && tree.getInitializers() != null) {
+                List<? extends ExpressionTree> initializers = tree.getInitializers();
+                String charArray = "";
+                boolean allLiterals = true;
+                for (int i = 0; allLiterals && i < initializers.size(); i++) {
+                    ExpressionTree e = initializers.get(i);
+                    if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
+                        charArray += ((LiteralTree) e).getValue();
+                    } else if (getAnnotatedType(e).hasAnnotation(Regex.class)) {
+                        // if there's an @Regex char in the array then substitute
+                        // it with a .
+                        charArray += '.';
+                    } else {
+                        allLiterals = false;
+                    }
+                }
+                if (allLiterals && RegexUtil.isRegex(charArray)) {
+                    type.addAnnotation(Regex.class);
+                }
+            }
+            return super.visitNewArray(tree, type);
         }
     }
 }

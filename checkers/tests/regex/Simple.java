@@ -63,12 +63,23 @@ public class Simple {
         @Regex String s2 = 'r' + "egex";
 
         //:: error: (assignment.type.incompatible)
-        @Regex String s4 = "rege" + '(';
+        @Regex String s4 = "rege" + '(';   // error
         //:: error: (assignment.type.incompatible)
-        @Regex String s5 = "reg(" + 'x';
+        @Regex String s5 = "reg(" + 'x';   // error
         //:: error: (assignment.type.incompatible)
-        @Regex String s6 = '(' + "egex";
+        @Regex String s6 = '(' + "egex";   // error
         //:: error: (assignment.type.incompatible)
-        @Regex String s7 = 'r' + "ege(";
+        @Regex String s7 = 'r' + "ege(";   // error
+    }
+    
+    void testCharArrays(char c, @Regex char r) {
+        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
+        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
+        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
+        
+        //:: error: (assignment.type.incompatible)
+        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
+        //:: error: (assignment.type.incompatible)
+        char @Regex [] c5 = {c, '.', '*'};   // error
     }
 }
