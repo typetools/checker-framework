@@ -72,14 +72,17 @@ public class Simple {
         @Regex String s7 = 'r' + "ege(";   // error
     }
     
-    void testCharArrays(char c, @Regex char r) {
-        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
-        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
-        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
-        
-        //:: error: (assignment.type.incompatible)
-        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
-        //:: error: (assignment.type.incompatible)
-        char @Regex [] c5 = {c, '.', '*'};   // error
-    }
+    // This is not supported until the regex checker supports flow sensitivity.
+    // See the associated comment at
+    // checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
+//    void testCharArrays(char c, @Regex char r) {
+//        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
+//        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
+//        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
+//        
+//        //:: error: (assignment.type.incompatible)
+//        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
+//        //:: error: (assignment.type.incompatible)
+//        char @Regex [] c5 = {c, '.', '*'};   // error
+//    }
 }
