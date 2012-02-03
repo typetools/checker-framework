@@ -16,7 +16,7 @@ Regex Checker:
 Signature Checker:
   Add new @ClassGetName annotation, for a 4th string representation of a
     class that is used by the JDK.  Add supporting annotations to make the
-    type hierarchy a complete lattice).
+    type hierarchy a complete lattice.
   Add PolySignature annotation.
 
 Internal bug fixes:
