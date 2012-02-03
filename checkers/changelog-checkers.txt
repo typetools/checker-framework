@@ -6,8 +6,8 @@ prevents problems if, for example, android.jar is on the classpath.
 New -jsr308_imports ... and -Djsr308.imports=... command-line options, for
 specifying implicit imports from the command line.  This is needed by Maven.
 
-New -Aignorestubs options makes the checker not load stub files (jdk.astub
-and files from the "stubs" option).
+New -Aignorejdkastub option makes the checker not load the jdk.astub
+file. Files from the "stubs" option are still loaded.
 
 Regex Checker:
   Support concatenation of PolyRegex strings.
