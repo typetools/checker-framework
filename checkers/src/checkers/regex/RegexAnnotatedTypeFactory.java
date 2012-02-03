@@ -109,21 +109,21 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     .getComponentType().getKind() == TypeKind.CHAR;
             if (isCharArray && tree.getInitializers() != null) {
                 List<? extends ExpressionTree> initializers = tree.getInitializers();
-                String charArray = "";
+                StringBuilder charArray = new StringBuilder();
                 boolean allLiterals = true;
                 for (int i = 0; allLiterals && i < initializers.size(); i++) {
                     ExpressionTree e = initializers.get(i);
                     if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                        charArray += ((LiteralTree) e).getValue();
+                        charArray.append(((LiteralTree) e).getValue());
                     } else if (getAnnotatedType(e).hasAnnotation(Regex.class)) {
                         // if there's an @Regex char in the array then substitute
                         // it with a .
-                        charArray += '.';
+                        charArray.append('.');
                     } else {
                         allLiterals = false;
                     }
                 }
-                if (allLiterals && RegexUtil.isRegex(charArray)) {
+                if (allLiterals && RegexUtil.isRegex(charArray.toString())) {
                     type.addAnnotation(Regex.class);
                 }
             }
