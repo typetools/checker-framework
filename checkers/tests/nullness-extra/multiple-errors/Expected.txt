@@ -1,0 +1,17 @@
+C1.java:1: error: constructor does not initialize fields [o]
+public class C1 {
+       ^
+C2.java:2: error: incompatible types.
+  Object o = null;
+             ^
+  found   : null
+  required: @NonNull Object
+C3.java:4: error: cannot find symbol
+      void bad(XXX p) {
+               ^
+  symbol:   class XXX
+  location: class C3b
+C4.java:3: error: dereference of possibly-null reference p
+    p.toString();
+    ^
+4 errors
