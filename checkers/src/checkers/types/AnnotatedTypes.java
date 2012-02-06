@@ -779,7 +779,18 @@ public class AnnotatedTypes {
         public List<AnnotatedTypeMirror>
         visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
             if (p.getKind() == TypeKind.NULL) {
-                return Collections.singletonList(p);
+                if (type.getKind() == TypeKind.TYPEVAR) {
+                    Element elem = type.getUnderlyingType().asElement();
+                    if (elem.equals(typeToFind.getUnderlyingType().asElement())) {
+                        // If we pass null as argument, it only has an influence, if the declared
+                        // parameter type is the typeToFind type variable.
+                        // E.g. the declared type might not contain the type variable at all.
+                        // Also, if we have the parameter type "List<T>" and pass null, this should
+                        // not have an effect on the type of T.
+                        return Collections.singletonList(p);
+                    }
+                }
+                return Collections.emptyList();
             } else if (p.getKind() == TypeKind.WILDCARD) {
                 AnnotatedTypeMirror bound = ((AnnotatedWildcardType)p).getExtendsBound();
                 if (bound == null) return Collections.emptyList();
