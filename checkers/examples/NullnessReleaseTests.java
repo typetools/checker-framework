@@ -6,7 +6,7 @@ import java.util.*;
  * This version contains additional tests to ensure that a build
  * works correctly. 
  */
-public class NullnessExample {
+public class NullnessReleaseTests {
 
   public void example() {
     @NonNull String foo = "foo";
