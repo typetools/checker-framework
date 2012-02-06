@@ -5,8 +5,8 @@ import java.lang.annotation.*;
 /**
  * Indicates that when the method is invoked, the given locks must be held
  * by the caller.
- *
- * The possible values are explained in {@link GuardedBy} possible values.
+ * <p>
+ * The possible annotation parameter values are explained in {@link GuardedBy}.
  *
  * @see GuardedBy
  */

@@ -86,10 +86,19 @@ but you might do something similar for a different class and/or checker.
 
 \subsection{Creating a stub file\label{stub-creating}}
 
+
+\subsubsection{If you have access to the Java source code}
+
 Every Java file is a stub file.  If you have access to the Java file, then
-it is usually best to use the Java file as the stub file, without removing
+you can use the Java file as the stub file, without removing
 any of the parts that the stub file format permits you to.  Just add
 annotations to the signatures, leaving the method bodies unchanged.
+Optionally (but highly recommended!), run the type-checker to verify that
+your annotations are correct.  When you run the type-checker on your
+annotations, there should not be any stub file that also contains
+annotations for the class.  In particular, if you are type-checking the JDK
+itself, then you should use the \<-Aignorejdkastub> command-line option.
+
 This approach retains the original
 documentation and source code, making it easier for a programmer to
 double-check the annotations.  It also enables creation of diffs, easing
@@ -99,7 +108,10 @@ incorporate.
 
 The downside of this approach is that the stub files are larger.  This can
 slow down parsing.  Furthermore, a programmer must search the stub file
-for a given method rather than just skimming one or two pages of signatures.
+for a given method rather than just skimming a few pages of method signatures.
+
+
+\subsubsection{If you do not have access to the Java source code}
 
 If you do not have access to the library source code, then you can create a
 stub file from the class file (Section~\ref{stub-creating}),
