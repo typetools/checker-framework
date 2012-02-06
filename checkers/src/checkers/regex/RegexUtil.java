@@ -37,7 +37,7 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression. 
    */
-  @SuppressWarnings("regex")    // tests whether s is a regex
+  @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
   public static boolean isRegex(String s) {
     try {
@@ -47,13 +47,23 @@ public class RegexUtil {
     }
     return true;
   }
+  
+  /** 
+   * Returns true if the argument is a syntactically valid regular
+   * expression. 
+   */
+  @SuppressWarnings("regex")    // RegexUtil
+  /*@Pure*/
+  public static boolean isRegex(char c) {
+    return isRegex(Character.toString(c));
+  }
 
   /**
    * Returns null if the argument is a syntactically valid regular
    * expression. Otherwise returns a string describing why the string is
    * not a regex.
    */
-  @SuppressWarnings("regex")    // tests whether s is a regex
+  @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
   public static /*@Nullable*/ String regexError(String s) {
     try {
@@ -69,7 +79,7 @@ public class RegexUtil {
    * expression. Otherwise returns a PatternSyntaxException describing
    * why the string is not a regex.
    */
-  @SuppressWarnings("regex")    // tests whether s is a regex
+  @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     try {
@@ -86,7 +96,7 @@ public class RegexUtil {
    * Once the the Regex Checker supports flow-sensitivity, it should be
    * very rarely needed.
    */
-  @SuppressWarnings("regex")    // suppresses warnings
+  @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
   public static /*@Regex*/ String asRegex(String s) {
     try {

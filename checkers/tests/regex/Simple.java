@@ -47,4 +47,42 @@ public class Simple {
         @Regex String o3 = nonReg + reg;     // error
 
     }
+    
+    void testChar() {
+        @Regex char c1 = 'c';
+        @Regex Character c2 = 'c';
+        
+        //:: error: (assignment.type.incompatible)
+        @Regex char c3 = '(';   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex Character c4 = '(';   // error
+    }
+    
+    void testCharConcatenation() {
+        @Regex String s1 = "rege" + 'x';
+        @Regex String s2 = 'r' + "egex";
+
+        //:: error: (assignment.type.incompatible)
+        @Regex String s4 = "rege" + '(';   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex String s5 = "reg(" + 'x';   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex String s6 = '(' + "egex";   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex String s7 = 'r' + "ege(";   // error
+    }
+    
+    // This is not supported until the regex checker supports flow sensitivity.
+    // See the associated comment at
+    // checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
+//    void testCharArrays(char c, @Regex char r) {
+//        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
+//        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
+//        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
+//        
+//        //:: error: (assignment.type.incompatible)
+//        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
+//        //:: error: (assignment.type.incompatible)
+//        char @Regex [] c5 = {c, '.', '*'};   // error
+//    }
 }
