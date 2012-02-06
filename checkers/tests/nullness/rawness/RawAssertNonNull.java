@@ -11,7 +11,7 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f", "g"})
-        private void m() @Raw {
+        private void m(@Raw Test1 this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -27,7 +27,7 @@ class RawAssertNonNull {
 
         @AssertNonNullAfter({"f", "g"})
         //:: error: (assert.postcondition.not.satisfied)
-        private void m() @Raw {
+        private void m(@Raw Test1b this) {
             this.f = new Object();
         }
     }
@@ -42,7 +42,7 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f"})
-        private void m() @Raw {
+        private void m(@Raw Test1c this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -61,7 +61,7 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f"})
-        private void m() @Raw {
+        private void m(@Raw Test1d this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -76,7 +76,7 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f", "g"})
-        private void m(Global g) @Raw {
+        private void m(@Raw Test2 this, Global g) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
             g.nonpure();
@@ -97,7 +97,7 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f", "g"})
-        private void m() @Raw {
+        private void m(@Raw Test2b this) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
         }
@@ -115,12 +115,12 @@ class RawAssertNonNull {
         }
 
         @AssertNonNullAfter({"f", "g"})
-        private void m() @Raw {
+        private void m(@Raw Test2c this) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
         }
 
-        private void nonpure() @Raw {
+        private void nonpure(@Raw Test2c this) {
             //:: error: (assignment.type.incompatible)
             this.f = null;
         }

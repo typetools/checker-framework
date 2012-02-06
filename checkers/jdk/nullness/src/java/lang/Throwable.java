@@ -13,7 +13,7 @@ public class Throwable implements java.io.Serializable{
   public @Pure @Nullable String getMessage() { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable String getLocalizedMessage() { throw new RuntimeException("skeleton method"); }
   public @Nullable Throwable getCause() { throw new RuntimeException("skeleton method"); }
-  public synchronized @PolyRaw Throwable initCause(@Nullable Throwable a1) @PolyRaw { throw new RuntimeException("skeleton method"); }
+  public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
   public String toString() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace(java.io.PrintStream a1) { throw new RuntimeException("skeleton method"); }
