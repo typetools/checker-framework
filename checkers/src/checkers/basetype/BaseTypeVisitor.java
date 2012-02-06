@@ -1339,8 +1339,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @return true if checker should not test node
      */
     protected final boolean shouldSkipDefs(ClassTree node) {
-        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
-        String qualifiedName = atm.getUnderlyingType().toString();
+        String qualifiedName = InternalUtils.typeOf(node).toString();
         return checker.getShouldSkipDefs().matcher(qualifiedName).find();
     }
 
