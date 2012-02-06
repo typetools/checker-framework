@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 rm -rf checkers.zip
 wget -q http://types.cs.washington.edu/checker-framework/current/checkers.zip
@@ -21,13 +21,13 @@ function cfruntest() {
   if (($?)); then exit 6; fi
 
   $CHECKERS/binary/javac -processor checkers.nullness.NullnessChecker \
-      $CHECKERS/examples/NullnessExample.java 
+      $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 
   java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
       -jar $CHECKERS/binary/jsr308-all.jar \
       -processor checkers.nullness.NullnessChecker \
-      $CHECKERS/examples/NullnessExample.java 
+      $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 }
 
