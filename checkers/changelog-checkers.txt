@@ -1,3 +1,13 @@
+Version 1.2.5.1, 06 Feb 2012
+
+Nullness Checker:
+  Correct the annotations on ThreadLocal and InheritableThreadLocal.
+
+Internal bug fixes:
+  Expand release tests.
+  Compile release with JDK 6 to work on both JDK 6 and JDK 7.
+
+----------------------------------------------------------------------
 Version 1.2.5, 3 Feb 2012
 
 Don't put classpath on the bootclasspath when invoking javac.  This
