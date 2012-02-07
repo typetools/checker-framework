@@ -1,6 +1,9 @@
 import checkers.regex.quals.Regex;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
+import javax.swing.text.Segment;
 
 public class Simple {
 
@@ -72,9 +75,67 @@ public class Simple {
         @Regex String s7 = 'r' + "ege(";   // error
     }
     
-    // This is not supported until the regex checker supports flow sensitivity.
-    // See the associated comment at
-    // checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
+    class TestAllowedTypes {
+        @Regex CharSequence cs;
+        @Regex String s11;
+        @Regex StringBuilder sb;
+        @Regex Segment s21;
+        @Regex char c;
+
+        //:: error: (type.invalid)
+        @Regex Object o;   // error
+        //:: error: (type.invalid)
+        @Regex List<String> l;   // error
+        //:: error: (type.invalid)
+        ArrayList<@Regex Double> al;   // error
+        //:: error: (type.invalid)
+        @Regex int i;   // error
+        //:: error: (type.invalid)
+        @Regex boolean b;   // error
+    }
+    
+//    TODO: This is not supported until the checker supports getting explicit
+//    annotations from local variables (instead of just fields.)
+//    void testAllowedTypes() {
+//        @Regex CharSequence cs;
+//        @Regex String s11;
+//        @Regex StringBuilder sb;
+//        @Regex Segment s21;
+//        @Regex char c;
+//  
+//        //:: error: (type.invalid)
+//        @Regex Object o;   // error
+//        //:: error: (type.invalid)
+//        @Regex List<String> l;   // error
+//        //:: error: (type.invalid)
+//        ArrayList<@Regex Double> al;   // error
+//        //:: error: (type.invalid)
+//        @Regex int i;   // error
+//        //:: error: (type.invalid)
+//        @Regex boolean b;   // error
+//    }
+
+//    TODO: This is not supported until the framework can read explicit
+//    annotations from arrays.
+//    void testArrayAllowedTypes() {
+//        @Regex char[] ca1;
+//        char @Regex [] ca2;
+//        @Regex char @Regex [] ca3;
+//        @Regex String[] s1;
+//
+//        //:: error: (type.invalid)
+//        @Regex double[] da1;   // error
+//        //:: error: (type.invalid)
+//        double @Regex [] da2;   // error
+//        //:: error: (type.invalid)
+//        @Regex double @Regex [] da3;   // error
+//        //:: error: (type.invalid)
+//        String @Regex [] s2;    // error
+//    }
+    
+//    TODO: This is not supported until the regex checker supports flow
+//    sensitivity. See the associated comment at
+//    checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
 //    void testCharArrays(char c, @Regex char r) {
 //        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
 //        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
