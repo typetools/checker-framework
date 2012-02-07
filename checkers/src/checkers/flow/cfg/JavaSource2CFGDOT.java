@@ -141,8 +141,7 @@ public class JavaSource2CFGDOT {
 		if (analysis != null) {
 			analysis.performAnalysis(cfg);
 		}
-		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(),
-				analysis == null ? null : analysis.getStores());
+		String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(), analysis);
 
 		try {
 			FileWriter fstream = new FileWriter(outputFile + ".txt");
