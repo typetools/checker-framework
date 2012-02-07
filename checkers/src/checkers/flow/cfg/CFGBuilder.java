@@ -33,6 +33,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.ReturnNode;
+import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
 import checkers.util.TreeUtils;
@@ -1015,6 +1016,19 @@ public class CFGBuilder {
 		/* Nodes and Labels Management */
 		/* --------------------------------------------------------- */
 
+                /**
+                 * Add a node to the lookup map if it not already present.
+                 *
+                 * @param node
+                 *            The node to add to the lookup map.
+                 */
+                protected void addToLookupMap(Node node) {
+                    Tree tree = node.getTree();
+                    if (tree != null && !treeLookupMap.containsKey(tree)) {
+                        treeLookupMap.put(tree, node);
+                    }
+                }
+
 		/**
 		 * Extend the list of extended nodes with a node.
 		 * 
@@ -1023,6 +1037,8 @@ public class CFGBuilder {
 		 * @return The same node (for convenience).
 		 */
 		protected Node extendWithNode(Node node) {
+                    addToLookupMap(node);
+                    System.err.println("Extending with node: " + node.getClass());
 			extendWithExtendedNode(new NodeHolder(node));
 			return node;
 		}
@@ -1039,6 +1055,7 @@ public class CFGBuilder {
 		 */
 		protected Node extendWithNodeWithException(Node node,
 				Class<? extends Throwable> cause) {
+			addToLookupMap(node);
 			Set<Class<? extends Throwable>> causes = new HashSet<>();
 			causes.add(cause);
 			return extendWithNodeWithExceptions(node, causes);
@@ -1510,6 +1527,9 @@ public class CFGBuilder {
 				break;
 			case BOOLEAN_LITERAL:
 				r = new BooleanLiteralNode(tree);
+				break;
+			case STRING_LITERAL:
+				r = new StringLiteralNode(tree);
 				break;
 			}
 			assert r != null : "unexpected literal tree";
