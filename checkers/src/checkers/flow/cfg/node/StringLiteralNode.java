@@ -7,36 +7,36 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 
 /**
- * A node for an integer literal. For example:
+ * A node for an string literal. For example:
  * 
  * <pre>
- *   <em>42</em>
+ *   <em>"abc"</em>
  * </pre>
  * 
  * @author Stefan Heule
  * 
  */
-public class IntegerLiteralNode extends ValueLiteralNode {
+public class StringLiteralNode extends ValueLiteralNode {
 
-	public IntegerLiteralNode(LiteralTree t) {
-		assert t.getKind().equals(Tree.Kind.INT_LITERAL);
+	public StringLiteralNode(LiteralTree t) {
+		assert t.getKind().equals(Tree.Kind.STRING_LITERAL);
 		tree = t;
 	}
 
 	@Override
-	public Integer getValue() {
-		return (Integer) tree.getValue();
+	public String getValue() {
+		return (String) tree.getValue();
 	}
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitIntegerLiteral(this, p);
+		return visitor.visitStringLiteral(this, p);
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
-		// test that obj is a IntegerLiteralNode
-		if (obj == null || !(obj instanceof IntegerLiteralNode)) {
+		// test that obj is a StringLiteralNode
+		if (obj == null || !(obj instanceof StringLiteralNode)) {
 			return false;
 		}
 		// super method compares values

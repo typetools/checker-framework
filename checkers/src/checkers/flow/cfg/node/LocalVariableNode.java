@@ -79,4 +79,8 @@ public class LocalVariableNode extends Node {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }

@@ -77,4 +77,8 @@ public class EqualToNode extends Node {
 		return list;
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }

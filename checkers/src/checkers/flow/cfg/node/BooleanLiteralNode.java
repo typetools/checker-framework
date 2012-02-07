@@ -49,4 +49,8 @@ public class BooleanLiteralNode extends ValueLiteralNode {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }
