@@ -64,17 +64,10 @@ public class NullnessSubchecker extends BaseTypeChecker {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
              (type.getAnnotation(Primitive.class)==null &&
-             // Flow inference might implicitly add a NonNull, therefore
-             // check whether the Symbol contained a type annotation.
              // The element is null if the primitive type is an array component ->
              // always a reason to warn.
-             (type.getElement()==null ||
-             // TODO: will this not work if an explicit type qualifier from
-             // something other than the Nullness Checker is present?
-             // Probably.
-             // TODO: explicitly support looking up the declared
-             // qualifiers present on a type.
-             !((Symbol)type.getElement()).typeAnnotations.isEmpty() ))) {
+             (type.getElement() == null ||
+             !getExplicitAnnotations(type).isEmpty()))) {
             return false;
         }
         return super.isValidUse(type);
