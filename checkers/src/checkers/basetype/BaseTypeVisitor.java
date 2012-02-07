@@ -11,6 +11,9 @@ import javax.lang.model.type.TypeKind;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.flow.cfg.CFGBuilder;
+import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.analysis.checkers.DefaultTypeAnalysis;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.source.Result;
@@ -226,6 +229,25 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 annoTypes.asMemberOf(overriddenType, pair.getValue());
             checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
         }
+        
+        // **********************************************************************
+        // EXPERIMENTAL!  Construct a CFG and perform flow-sensitive analysis
+        // over it.
+        // **********************************************************************
+        if (options.containsKey("flow") && options.get("flow").equals("new")) {
+            System.err.println("Analyze method: " + node.getName());
+            ControlFlowGraph cfg = CFGBuilder.build(node);
+            DefaultTypeAnalysis analysis = new DefaultTypeAnalysis(checker.getQualifierHierarchy(),
+                                                                   atypeFactory);
+            analysis.performAnalysis(cfg);
+
+            if (options.containsKey("flowdotdir")) {
+                String dotfilename = options.get("flowdotdir") + "/" + node.getName() + ".dot";
+                System.err.println("Output to DOT file: " + dotfilename);
+                analysis.outputToDotFile(dotfilename);
+            }
+        }
+
         return super.visitMethod(node, p);
         } finally {
             visitorState.setMethodReceiver(preMRT);
