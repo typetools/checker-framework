@@ -1,5 +1,9 @@
 package checkers.flow.analysis.checkers;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -14,20 +18,26 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 import checkers.flow.analysis.AbstractValue;
+import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
+import checkers.flow.cfg.CFGDOTVisualizer;
+import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.SinkNodeVisitor;
+import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
+import checkers.types.TreeAnnotationPropagator;
+import checkers.types.TypeAnnotationProvider;
 import checkers.util.InternalUtils;
 
 /**
@@ -59,7 +69,9 @@ import checkers.util.InternalUtils;
  * @author Charlie Garrett
  * 
  */
-public class DefaultTypeAnalysis {
+public class DefaultTypeAnalysis
+    extends Analysis<DefaultTypeAnalysis.Value, DefaultTypeAnalysis.NodeInfo,
+            DefaultTypeAnalysis.Transfer> {
     /**
      * The qualifier hierarchy for which to track annotations.
      */
@@ -76,11 +88,30 @@ public class DefaultTypeAnalysis {
      */
     protected final Set<AnnotationMirror> legalAnnotations;
 
+    /**
+     * A tree annotation propagator allows propagation of types
+     * through AST trees.
+     */
+    protected final TreeAnnotationPropagator propagator;
+
+    /**
+     * Mapping from value-producing nodes to their abstract value.
+     * They are immutable in the same sense as static single
+     * assignment variables because they have a single defining
+     * expression.
+     * TODO: Move to superclass because this behavior is shared.
+     */
+    protected Map<Node, Value> immutableInfo;
+
     public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
                                AnnotatedTypeFactory factory) {
+        super(new Transfer());
         this.typeHierarchy = typeHierarchy;
         this.legalAnnotations = typeHierarchy.getAnnotations();
         this.factory = factory;
+        this.propagator = factory.getAnnotationPropagator();
+        this.transferFunction.setAnalysis(this);
+        this.immutableInfo = new IdentityHashMap<Node, Value>();
     }
 
 
@@ -89,14 +120,18 @@ public class DefaultTypeAnalysis {
      * of annotations from the QualifierHierarchy.
      */
     public class Value implements AbstractValue<Value> {
-        private Set<AnnotationMirror> annotatedTypes;
+        private Set<AnnotationMirror> annotations;
         
         private Value() {
-            annotatedTypes = new HashSet<AnnotationMirror>();
+            annotations = new HashSet<AnnotationMirror>();
         }
 
-        private Value(Set<AnnotationMirror> annotatedTypes) {
-            this.annotatedTypes = annotatedTypes;
+        private Value(Set<AnnotationMirror> annotations) {
+            this.annotations = annotations;
+        }
+
+        public /*@NonNull*/ Set<AnnotationMirror> getAnnotations() {
+            return annotations;
         }
 
         /**
@@ -107,8 +142,8 @@ public class DefaultTypeAnalysis {
         @Override
         public /*@NonNull*/ Value leastUpperBound(Value other) {
             Set<AnnotationMirror> lub =
-                typeHierarchy.leastUpperBound(annotatedTypes,
-                                              other.annotatedTypes);
+                typeHierarchy.leastUpperBound(annotations,
+                                              other.annotations);
             return new Value(lub);
         }
 
@@ -116,12 +151,10 @@ public class DefaultTypeAnalysis {
          * Return whether this Value is a proper supertype of the
          * argument Value.
          */
-        boolean isSupertypeOf(Value other) {
-            // QualifierHierarchy's isSubtype method is only true for
-            // proper subtypes.
-            return typeHierarchy.isSubtype(annotatedTypes,
-                                           other.annotatedTypes);
-        }
+        // boolean isSupertypeOf(Value other) {
+        //     return typeHierarchy.isSubtype(annotations,
+        //                                    other.annotations);
+        // }
     }
 
     /**
@@ -160,12 +193,7 @@ public class DefaultTypeAnalysis {
             return null;
         }
 
-        Element element = InternalUtils.symbol(tree);
-        if (element == null) {
-            return null;
-        }
-            
-        AnnotatedTypeMirror type = factory.getAnnotatedType(element);
+        AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
         return new Value(type.getAnnotations());
     }
 
@@ -175,31 +203,23 @@ public class DefaultTypeAnalysis {
      * to Values.  If no Value is explicitly stored for
      * a Node, we fall back on the statically known annotations.
      *
-     * Two kinds of Nodes are tracked.  VariableDeclarationNodes
-     * represent mutable variables.  If we compute a more precise
-     * type annotation for a variable than its static annotation,
-     * then it is entered into the NodeInfo and stays there.
-     *
-     * Value producing Nodes represent immutable values computed by
-     * expressions.  Since we are processing a CFG that was originally
-     * an AST and we do no transformation, we know that expressions
-     * do not outlive their AST parents.  So even if we compute a
-     * more precise type annotation for a variable that its static
-     * annotation, we only store that information from the point where
-     * it becomes true to the point where the the value becomes dead
-     * (i.e. its AST parent).
+     * Only Nodes representing mutable values, such as
+     * VariableDeclarationNodes are tracked.  If we compute a more
+     * precise type annotation for a variable than its static
+     * annotation, then it is entered into the NodeInfo and stays
+     * there.
      *
      * TODO: Extend NodeInfo to track class member fields like variables.
      */
     public class NodeInfo implements Store<NodeInfo> {
-        private Map<Node, Value> info;
+        private Map<Node, Value> mutableInfo;
 
         private NodeInfo() {
-            info = new IdentityHashMap<Node, Value>();
+            mutableInfo = new IdentityHashMap<Node, Value>();
         }
 
-        private NodeInfo(Map<Node, Value> info) {
-            this.info = info;
+        private NodeInfo(Map<Node, Value> mutableInfo) {
+            this.mutableInfo = mutableInfo;
         }
 
         /**
@@ -209,11 +229,13 @@ public class DefaultTypeAnalysis {
          * Otherwise, if static information is available, that
          * is returned.  Otherwise, empty information is returned.
          */
-        public /*@NonNull*/ Value getInformation(Node decl) {
-            if (info.containsKey(decl)) {
-                return info.get(decl);
+        public /*@NonNull*/ Value getInformation(Node n) {
+            if (mutableInfo.containsKey(n)) {
+                return mutableInfo.get(n);
+            } else if (immutableInfo.containsKey(n)) {
+                return immutableInfo.get(n);
             } else {
-                Value flowInsensitive = flowInsensitiveValue(decl);
+                Value flowInsensitive = flowInsensitiveValue(n);
                 if (flowInsensitive != null) {
                     return flowInsensitive;
                 }
@@ -221,34 +243,39 @@ public class DefaultTypeAnalysis {
             return createValue();
         }
 
-        public void setInformation(Node decl, Value val) {
-            info.put(decl, val);
-        }
-
-        public void mergeInformation(Node decl, Value val) {
-            Value updatedVal;
-            if (info.containsKey(decl)) {
-                updatedVal = info.get(decl).leastUpperBound(val);
-            } else {
-                updatedVal = val;
+        public void setInformation(Node n, Value val) {
+            if (n.hasResult()) {
+                immutableInfo.put(n, val);
+            } else if (n instanceof VariableDeclarationNode) {
+                mutableInfo.put(n, val);
             }
-            info.put(decl, updatedVal);
         }
 
-        public void removeInformation(Node decl) {
-            info.remove(decl);
+        public void mergeInformation(Node n, Value val) {
+            Value updatedVal = val;
+            if (n.hasResult()) {
+                if (immutableInfo.containsKey(n)) {
+                    updatedVal = immutableInfo.get(n).leastUpperBound(val);
+                }
+                immutableInfo.put(n, updatedVal);
+            } else if (n instanceof VariableDeclarationNode) {
+                if (mutableInfo.containsKey(n)) {
+                    updatedVal = mutableInfo.get(n).leastUpperBound(val);
+                }
+                mutableInfo.put(n, updatedVal);
+            }
         }
 
         @Override
         public /*@NonNull*/ NodeInfo copy() {
-            return new NodeInfo(new IdentityHashMap<>(info));
+            return new NodeInfo(new IdentityHashMap<>(mutableInfo));
         }
 
         @Override
         public /*@NonNull*/ NodeInfo leastUpperBound(NodeInfo other) {
             NodeInfo newInfo = copy();
 
-            for (Entry<Node, Value> e : other.info.entrySet()) {
+            for (Entry<Node, Value> e : other.mutableInfo.entrySet()) {
                 newInfo.mergeInformation(e.getKey(), e.getValue());
             }
 
@@ -263,10 +290,10 @@ public class DefaultTypeAnalysis {
          * equals predicate.
          */
         private boolean supersetOf(NodeInfo other) {
-            for (Entry<Node, Value> e : other.info.entrySet()) {
+            for (Entry<Node, Value> e : other.mutableInfo.entrySet()) {
                 Node key = e.getKey();
-                if (!info.containsKey(key) ||
-                    !info.get(key).equals(e.getValue())) {
+                if (!mutableInfo.containsKey(key) ||
+                    !mutableInfo.get(key).equals(e.getValue())) {
                     return false;
                 }
             }
@@ -282,6 +309,17 @@ public class DefaultTypeAnalysis {
                 return false;
             }
         }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder("NodeInfo (\\n");
+            for (Map.Entry<Node, Value> entry : mutableInfo.entrySet()) {
+                result.append(entry.getKey() + "->" +
+                              entry.getValue().getAnnotations() + "\\n");
+            }
+            result.append(")");
+            return result.toString();
+        }
     }
 
 
@@ -291,10 +329,16 @@ public class DefaultTypeAnalysis {
      * storing a Value and copying a NodeInfo unless the outflowing
      * information is more precise than the inflowing.
      */
-    public class Transfer
+    public static class Transfer
         extends SinkNodeVisitor<TransferResult<NodeInfo>,
                                 TransferInput<NodeInfo>>
         implements TransferFunction<NodeInfo> {
+
+        private /*@LazyNonNull*/ DefaultTypeAnalysis analysis;
+        
+        public void setAnalysis(DefaultTypeAnalysis analysis) {
+            this.analysis = analysis;
+        }
 
         /**
          * The initial store maps method formal parameters to
@@ -303,10 +347,10 @@ public class DefaultTypeAnalysis {
         @Override
         public /*@NonNull*/ NodeInfo initialStore(MethodTree tree,
                                      List<LocalVariableNode> parameters) {
-            NodeInfo info = new NodeInfo();
+            NodeInfo info = analysis.new NodeInfo();
 
             for (LocalVariableNode p : parameters) {
-                Value flowInsensitive = flowInsensitiveValue(p);
+                Value flowInsensitive = analysis.flowInsensitiveValue(p);
                 assert flowInsensitive != null :
                     "Missing initial type information for method parameter";
                 info.mergeInformation(p, flowInsensitive);
@@ -314,6 +358,10 @@ public class DefaultTypeAnalysis {
 
             return info;
         }
+
+        // TODO: We could use intermediate classes such as ExpressionNode and LiteralNode
+        // to refactor visitors.  Propagation is appropriate for expressions and flow
+        // insensitive annotations are appropriate for literals.
 
         /**
          * The default visitor returns the input information unchanged, or
@@ -325,27 +373,28 @@ public class DefaultTypeAnalysis {
             // TODO: Perform type propagation separately with a thenStore and an elseStore.
             NodeInfo info = in.getRegularStore();
 
-            // The node should not be present in the NodeInfo at this point.
-            // So flow insensitive information is the best we have and we can
-            // set rather than merge the flow-sensitive information if it is
-            // more precise.
-            Value flowInsensitive = flowInsensitiveValue(n);
+            if (n.hasResult()) {
+                Tree tree = n.getTree();
+                assert tree != null : "Node has a result, but no Tree";
 
-            // TODO: Propagate types from operands to Node.
-            // Set<AnnotationMirror> nodeType = n.propagate(info);
-            // if (nodeType != null) {
-            //     Value value = createValue(nodeType);
-            //     if (flowInsensitive.isSupertypeOf(value)) {
-            //         info.setInformation(n, value);
-            //     }
-            // }
-
-            // Remove information about the operand Nodes because they are dead
-            // after this Node (their AST parent).
-            for (Node operand : n.getOperands()) {
-                info.removeInformation(operand);
+                NodeInfoProvider provider = analysis.new NodeInfoProvider(info);
+                Set<AnnotationMirror> annotations = analysis.propagator.visit(tree, provider);
+                Value value = analysis.createValue(annotations);
+                // if (flowInsensitive.isSupertypeOf(value)) {
+                info.setInformation(n, value);
+                // }
             }
 
+            return new RegularTransferResult<NodeInfo>(info);
+        }
+
+        @Override
+        public /*@NonNull*/ TransferResult<NodeInfo> visitValueLiteral(ValueLiteralNode n,
+                                                                       TransferInput<NodeInfo> in) {
+            // Literal values always have their flow insensitive type.
+            NodeInfo info = in.getRegularStore();
+            Value flowInsensitive = analysis.flowInsensitiveValue(n);
+            info.setInformation(n, flowInsensitive);
             return new RegularTransferResult<NodeInfo>(info);
         }
 
@@ -382,19 +431,86 @@ public class DefaultTypeAnalysis {
 
             // Skip assignments to arrays or fields.
             if (lhs instanceof LocalVariableNode) {
-                if (lhsValue.isSupertypeOf(rhsValue)) {
-                    info.setInformation(lhs, rhsValue);
-                }
+                VariableDeclarationNode decl = ((LocalVariableNode)lhs).getDeclaration();
+                assert decl != null;
+                // if (lhsValue.isSupertypeOf(rhsValue)) {
+                info.setInformation(decl, rhsValue);
+                // }
             }
 
             // The AssignmentNode itself is a value with the same
             // type as the RHS.
             Value assignValue = info.getInformation(n);
-            if (assignValue.isSupertypeOf(rhsValue)) {
-                info.setInformation(n, rhsValue);
-            }
+            // if (assignValue.isSupertypeOf(rhsValue)) {
+            info.setInformation(n, rhsValue);
+            // }
 
             return new RegularTransferResult<NodeInfo>(info);
+        }
+    }
+
+
+    /**
+     * Map AST Trees to type annotations based on a NodeInfo store.
+     */
+    public class NodeInfoProvider implements TypeAnnotationProvider {
+        private NodeInfo info;
+
+        public NodeInfoProvider(NodeInfo info) {
+            this.info = info;
+        }
+
+        /**
+         * Given an AST Tree in the current CFG, return the most
+         * precise annotated type for the Node corresponding to
+         * that Tree.  Throws IllegalArgumentException if the Tree
+         * is not found in the current CFG.
+         *
+         * @param tree   an AST tree to be typed
+         *
+         * @return  the most precise annotated type of tree known
+         */
+        @Override
+        public /*@NonNull*/ Set<AnnotationMirror> getAnnotations(Tree tree)
+            throws IllegalArgumentException {
+            Node node = cfg.getNodeCorrespondingToTree(tree);
+            if (node == null) {
+                throw new IllegalArgumentException();
+            }
+            Value abstractValue = info.getInformation(node);
+            return abstractValue.getAnnotations();
+        }
+    }
+
+    /**
+     * Return a string description of the current type annotations for a value.
+     */
+    public String getInformationAsString(Node n) {
+        if (immutableInfo.containsKey(n)) {
+            return immutableInfo.get(n).getAnnotations() + ":FS";
+        } else {
+            Value value = flowInsensitiveValue(n);
+            if (value != null) {
+                return value.getAnnotations() + ":FI";
+            }
+            return "";
+        }
+    }
+
+    /**
+     * Print a DOT graph of the CFG and analysis info for inspection.
+     */
+    public void outputToDotFile(String outputFile) {
+        String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(), this);
+
+        try {
+            FileWriter fstream = new FileWriter(outputFile);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(s);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }
