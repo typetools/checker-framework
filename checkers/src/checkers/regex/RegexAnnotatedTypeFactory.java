@@ -2,6 +2,11 @@ package checkers.regex;
 
 import checkers.regex.quals.Regex;
 
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
@@ -11,6 +16,9 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
+import checkers.types.TreeAnnotationPropagator;
+import checkers.types.TypeAnnotationProvider;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 /**
@@ -73,6 +81,49 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(Regex.class);
             }
             return super.visitBinary(tree, type);
+        }
+    }
+
+    @Override
+    public TreeAnnotationPropagator createTreeAnnotationPropagator(RegexChecker checker) {
+        return new RegexTreeAnnotationPropagator(checker);
+    }
+
+    private class RegexTreeAnnotationPropagator extends TreeAnnotationPropagator {
+
+        public RegexTreeAnnotationPropagator(BaseTypeChecker checker) {
+            super(checker);
+        }
+
+        /**
+         * Case 1: valid regular expression String literal
+         */
+        @Override
+        public Set<AnnotationMirror> visitLiteral(LiteralTree tree,
+                                                  TypeAnnotationProvider provider) {
+            if (tree.getKind() == Tree.Kind.STRING_LITERAL
+                && RegexUtil.isRegex((String)((LiteralTree)tree).getValue())) {
+                return Collections.singleton(annotations.fromClass(Regex.class));
+            }
+            return Collections.<AnnotationMirror>emptySet();
+        }
+
+        /**
+         * Case 2: concatenation of two regular expression Strings literals
+         */
+        @Override
+        public Set<AnnotationMirror> visitBinary(BinaryTree tree,
+                                                 TypeAnnotationProvider provider) {
+            if (TreeUtils.isStringConcatenation(tree)) {
+                Set<AnnotationMirror> lAnnos = provider.getAnnotations(tree.getLeftOperand());
+                Set<AnnotationMirror> rAnnos = provider.getAnnotations(tree.getRightOperand());
+                AnnotationMirror regexAnno = annotations.fromClass(Regex.class);
+                if (AnnotationUtils.containsSame(lAnnos, regexAnno)
+                    && AnnotationUtils.containsSame(rAnnos, regexAnno)) {
+                    return Collections.singleton(regexAnno);
+                }
+            }
+            return Collections.<AnnotationMirror>emptySet();
         }
     }
 }
