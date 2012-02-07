@@ -29,7 +29,7 @@ import checkers.flow.cfg.node.Node;
 public class CFGDOTVisualizer {
 
 	public static String visualize(Block entry) {
-		return visualize(entry, null);
+            return visualize(entry, null);
 	}
 
 	/**
@@ -38,15 +38,22 @@ public class CFGDOTVisualizer {
 	 * 
 	 * @param entry
 	 *            The entry node of the control flow graph to be represented.
-	 * @param stores
-	 *            A map from all basic blocks (reachable from <code>entry</code>
-	 *            ) to the {@link Store} corresponding to the begining of that
-	 *            block. Can also be <code>null</code> to indicate that this
-	 *            information should not be output.
+         * @param analysis
+         *            An analysis containing information about the program represented
+         *            by the CFG.  The information includes {@link Store}s that are
+         *            valid at the beginning of basic blocks reachable from
+         *            <code>entry</code> and per-node information for value producing
+         *            {@link Node}s.  Can also be <code>null</code> to indicate that
+         *            this information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <S extends Store<S>> String visualize(Block entry, /* @Nullable */
-			Map<Block, TransferInput<S>> stores) {
+	public static <S extends Store<S>> String visualize(Block entry,
+                                                            /* @Nullable */ Analysis analysis) {
+		Map<Block, TransferInput<S>> stores = null;
+		if (analysis != null) {
+			stores = analysis.getStores();
+		}
+
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<>();
@@ -126,7 +133,7 @@ public class CFGDOTVisualizer {
 			} else if (v.getType() == BlockType.SPECIAL_BLOCK) {
 				sb1.append("shape=oval ");
 			}
-			sb1.append("label=\"" + visualizeContent(v, stores) + "\"];\n");
+			sb1.append("label=\"" + visualizeContent(v, stores, analysis) + "\"];\n");
 		}
 
 		sb1.append("\n");
@@ -149,7 +156,8 @@ public class CFGDOTVisualizer {
 																			 * @
 																			 * Nullable
 																			 */
-			Map<Block, TransferInput<S>> stores) {
+			Map<Block, TransferInput<S>> stores,
+                        /* @Nullable */ Analysis analysis) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -174,7 +182,7 @@ public class CFGDOTVisualizer {
 				sb.append("\\n");
 			}
 			notFirst = true;
-			sb.append(prepareString(visualizeNode(t)));
+			sb.append(prepareString(visualizeNode(t, analysis)));
 		}
 
 		// handle case where no contents are present
@@ -217,8 +225,9 @@ public class CFGDOTVisualizer {
 		return sb.toString();
 	}
 
-	protected static String visualizeNode(Node t) {
-		return t.toString() + "   [ " + visualizeType(t) + " ]";
+	protected static String visualizeNode(Node t, /* @Nullable */ Analysis analysis) {
+		return t.toString() + "   [ " + visualizeType(t) + " ]  " +
+			analysis.getInformationAsString(t);
 	}
 
 	protected static String visualizeType(Node t) {

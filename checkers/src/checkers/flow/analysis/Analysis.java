@@ -218,4 +218,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		return stores;
 	}
 
+	public String getInformationAsString(Node n) {
+		return "";
+	}
 }
