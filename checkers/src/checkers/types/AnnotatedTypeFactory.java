@@ -1552,4 +1552,12 @@ public class AnnotatedTypeFactory {
         return sameAnnotation(am, anno.getCanonicalName());
     }
 
+    /**
+     * Returns a type annotation propagator.  Overridden in BasicAnnotatedTypeFactory.
+     *
+     * @return  an annotation propagator for AST trees.
+     */
+    public TreeAnnotationPropagator getAnnotationPropagator() {
+        return null;
+    }
 }
