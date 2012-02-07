@@ -1037,8 +1037,7 @@ public class CFGBuilder {
 		 * @return The same node (for convenience).
 		 */
 		protected Node extendWithNode(Node node) {
-                    addToLookupMap(node);
-                    System.err.println("Extending with node: " + node.getClass());
+			addToLookupMap(node);
 			extendWithExtendedNode(new NodeHolder(node));
 			return node;
 		}
