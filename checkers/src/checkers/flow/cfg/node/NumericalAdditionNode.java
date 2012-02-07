@@ -77,4 +77,8 @@ public class NumericalAdditionNode extends Node {
 		return list;
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }

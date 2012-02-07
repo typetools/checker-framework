@@ -48,5 +48,4 @@ public class ImplicitThisLiteralNode extends Node {
 	public Collection<Node> getOperands() {
 		return Collections.emptyList();
 	}
-
 }

@@ -76,4 +76,8 @@ public class FieldAccessNode extends Node {
 		return Collections.singletonList(receiver);
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }
