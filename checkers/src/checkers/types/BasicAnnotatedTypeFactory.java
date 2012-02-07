@@ -48,6 +48,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     /** to annotate types based on the given un-annotated types */
     protected final TreeAnnotator treeAnnotator;
 
+    /** to propagate types through a tree */
+    protected final TreeAnnotationPropagator treeAnnotationPropagator;
+
     /** to handle any polymorphic types */
     protected final QualifierPolymorphism poly;
 
@@ -73,6 +76,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
+        this.treeAnnotationPropagator = createTreeAnnotationPropagator(checker);
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
         Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
@@ -134,6 +138,30 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
         return new TypeAnnotator(checker);
+    }
+
+    // **********************************************************************
+    // Factory method for a tree annotation propagator
+    // **********************************************************************
+
+    /**
+     * Returns a {@link TreeAnnotationPropagator} that propagates type annotations
+     * through a tree node.
+     *
+     * @return a tree annotation propagator
+     */
+    protected TreeAnnotationPropagator createTreeAnnotationPropagator(Checker checker) {
+        return new TreeAnnotationPropagator(checker);
+    }
+
+    /**
+     * Returns a tree annotation propagator.
+     *
+     * @return  an annotation propagator for AST trees.
+     */
+    @Override
+    public TreeAnnotationPropagator getAnnotationPropagator() {
+        return treeAnnotationPropagator;
     }
 
     /**
