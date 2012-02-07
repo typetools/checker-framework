@@ -94,15 +94,6 @@ public class DefaultTypeAnalysis
      */
     protected final TreeAnnotationPropagator propagator;
 
-    /**
-     * Mapping from value-producing nodes to their abstract value.
-     * They are immutable in the same sense as static single
-     * assignment variables because they have a single defining
-     * expression.
-     * TODO: Move to superclass because this behavior is shared.
-     */
-    protected Map<Node, Value> immutableInfo;
-
     public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
                                AnnotatedTypeFactory factory) {
         super(new Transfer());
@@ -111,7 +102,6 @@ public class DefaultTypeAnalysis
         this.factory = factory;
         this.propagator = factory.getAnnotationPropagator();
         this.transferFunction.setAnalysis(this);
-        this.immutableInfo = new IdentityHashMap<Node, Value>();
     }
 
 
@@ -232,8 +222,8 @@ public class DefaultTypeAnalysis
         public /*@NonNull*/ Value getInformation(Node n) {
             if (mutableInfo.containsKey(n)) {
                 return mutableInfo.get(n);
-            } else if (immutableInfo.containsKey(n)) {
-                return immutableInfo.get(n);
+            } else if (nodeInformation.containsKey(n)) {
+                return nodeInformation.get(n);
             } else {
                 Value flowInsensitive = flowInsensitiveValue(n);
                 if (flowInsensitive != null) {
@@ -245,7 +235,7 @@ public class DefaultTypeAnalysis
 
         public void setInformation(Node n, Value val) {
             if (n.hasResult()) {
-                immutableInfo.put(n, val);
+                nodeInformation.put(n, val);
             } else if (n instanceof VariableDeclarationNode) {
                 mutableInfo.put(n, val);
             }
@@ -254,10 +244,10 @@ public class DefaultTypeAnalysis
         public void mergeInformation(Node n, Value val) {
             Value updatedVal = val;
             if (n.hasResult()) {
-                if (immutableInfo.containsKey(n)) {
-                    updatedVal = immutableInfo.get(n).leastUpperBound(val);
+                if (nodeInformation.containsKey(n)) {
+                    updatedVal = nodeInformation.get(n).leastUpperBound(val);
                 }
-                immutableInfo.put(n, updatedVal);
+                nodeInformation.put(n, updatedVal);
             } else if (n instanceof VariableDeclarationNode) {
                 if (mutableInfo.containsKey(n)) {
                     updatedVal = mutableInfo.get(n).leastUpperBound(val);
@@ -486,8 +476,8 @@ public class DefaultTypeAnalysis
      * Return a string description of the current type annotations for a value.
      */
     public String getInformationAsString(Node n) {
-        if (immutableInfo.containsKey(n)) {
-            return immutableInfo.get(n).getAnnotations() + ":FS";
+        if (nodeInformation.containsKey(n)) {
+            return nodeInformation.get(n).getAnnotations() + ":FS";
         } else {
             Value value = flowInsensitiveValue(n);
             if (value != null) {

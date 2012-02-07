@@ -3,6 +3,7 @@ package checkers.flow.analysis;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -149,7 +150,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		this.cfg = cfg;
 		stores = new HashMap<>();
 		worklist = new ArrayDeque<>();
-		nodeInformation = new HashMap<>();
+		nodeInformation = new IdentityHashMap<>();
 		worklist.add(cfg.getEntryBlock());
 
 		List<LocalVariableNode> parameters = new ArrayList<>();
