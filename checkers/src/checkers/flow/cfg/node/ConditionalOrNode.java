@@ -77,4 +77,8 @@ public class ConditionalOrNode extends Node {
 		return list;
 	}
 
+	@Override
+	public boolean hasResult() {
+		return true;
+	}
 }

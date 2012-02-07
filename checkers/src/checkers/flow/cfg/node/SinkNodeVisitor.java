@@ -18,6 +18,11 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	abstract public R visitNode(Node n, P p);
 
 	@Override
+	public R visitValueLiteral(ValueLiteralNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
 	public R visitAssignment(AssignmentNode n, P p) {
 		return visitNode(n, p);
 	}
@@ -39,7 +44,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	@Override
 	public R visitIntegerLiteral(IntegerLiteralNode n, P p) {
-		return visitNode(n, p);
+		return visitValueLiteral(n, p);
 	}
 
 	@Override
@@ -49,7 +54,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	@Override
 	public R visitBooleanLiteral(BooleanLiteralNode n, P p) {
-		return visitNode(n, p);
+		return visitValueLiteral(n, p);
 	}
 
 	@Override
@@ -70,6 +75,11 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	@Override
 	public R visitNumericalAddition(NumericalAdditionNode n, P p) {
 		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitStringLiteral(StringLiteralNode n, P p) {
+		return visitValueLiteral(n, p);
 	}
 
 }
