@@ -18,6 +18,7 @@ that adds pluggable types to the Java type system.
 
 
 
+
 \section{The Control Flow Graph}
 \label{sec:cfg}
 
@@ -212,6 +213,8 @@ for all types.
         \midrule
         \code{StringConcatenate} &  & \\
         \midrule
+        \code{TernaryExpression} & & \\
+        \midrule
         \code{PrefixIncrement} &  & \\
         \code{PrefixDecrement} &  & \\
         \code{PostfixIncrement} &  & \\
@@ -266,6 +269,7 @@ the CFG, or special properties about individual nodes.
 
 
 \subsubsection{Program Structure}
+\label{sec:prog-structure}
 
 Java programs are structured using high-level programming constructs such as
 different variants of loops, if-then-else constructs, try-catch-finally blocks
@@ -349,30 +353,61 @@ but does not need to check if a method is declared as
 \code{synchronized}.
 
 
-\subsubsection{Compound Assignments}
-\label{sec:compound-assignment}
 
-Compound assignments (such as \code{x += 4}) are translated into the correct operation
-(e.g., addition) and an assignment. An example of this is shown in \autoref{fig:CFGCompound}.
-Note that the left-hand side of the compound expression only appears \emph{once} in the
-control flow graph, but is referred to \emph{twice}; once when it is first executed,
-and again as the target of the assignment. This models the execution of compound statements
-as specified in \jlsref{15.26.2} correctly, where the expression is evaluated only once, but
-its ``value'' used twice.
+\begin{new}
 
-\flow{Compound}{Control flow for a compound assignment.}
+\subsubsection{Desugaring of Statements and Expressions}
 
-\subsubsection{Prefix/Postfix Increments and Decrements}
+At first it may seem beneficial to desugar more advanced expressions such as compound
+assignments, or pre/post-increments or decrements into simpler nodes.  Indeed, this would
+have several advantages, including:
+\begin{itemize}
+    \item Less \code{Node} types, which leads to a simpler representation.
+    \item The visitor class for nodes is smaller, which simplifies the implementation
+    of the transfer function.
+\end{itemize}
+However, when the dataflow framework is used with the Checker Framework, there is a major
+disadvantage to this approach.  As described in \autoref{sec:flow-cf-interaction}, the
+checker-specific implementations on how to handle different AST tree nodes can be directly
+reused to implement the transfer function:  For a given node, we determine the corresponding
+AST tree node and ask the \code{AnnotatedTypeFactory} to determine its type.  However, this
+is only possible if a corresponding AST node is present.
 
-The postfix increment and decrement operation cannot easily be translated to a sequence of
-assignments and additions/subtractions as was possible with compound assignment (cf.\ \autoref{sec:compound-assignment}).
-The problem is that the \emph{old} value of the variable is returned, which cannot easily be modeled
-in the given framework. For this reason, the node types \code{PostfixIncrementNode} and
-\code{PostfixDecrementNode} are used.
+If we desugar, say, the compound assignment into a regular assignment and an string concatenation
+(or whatever operation is used), then no corresponding AST tree node is available.
+For this reason, we only minimally desugar the AST in the translation to
+CFG nodes.
 
-While the same translation as with compound assignments would be possible for
-prefix increment/decrement operations, we currently do not perform this translation for uniformity with
-the corresponding postfix operation.
+\begin{workinprogress}
+    Note that the regex checker does not have special behavior for the compound string
+    assignment, and thus there will be no benefit in the dataflow analysis.  However,
+    this is just an implementation weakness of this particular checker.
+\end{workinprogress}
+
+Note that desugaring control statements (such as loops or conditionals) as mentioned
+in \autoref{sec:prog-structure} is not problematic, as these are statements and thus do not
+have a type.  Therefore, the \code{AnnotatedTypeFactory} will not be used to determine
+the abstract value of such constructs.
+
+
+\end{new}
+
+
+\begin{new}
+\subsubsection{L- and R-Values}
+
+Certain nodes in the CFG represent \emph{l-values}, while other stand for \emph{r-values}.  The
+distinction between the two is important, as the only for r-values an abstract value needs to be
+produced.  For this reason, nodes are tagged as either being an l-value, or an r-value.  The transfer function
+is only applied by the framework for r-values, while l-values are typically ignored.  If for some
+reason, a particular dataflow analysis also needs to look at l-values, one could think about
+extending the framework with a second transfer function, that is used for r-values.
+
+\begin{workinprogress}
+    This is not yet implemented.
+\end{workinprogress}
+
+\end{new}
 
 
 
@@ -476,56 +511,76 @@ to approximate the runtime-behavior of different statements and expressions.
 
 So-called \emph{stores} are used to keep track of the current information the dataflow
 analysis has accumulated. Every store is associated with a particular point in the
-control flow graph, and all stores are managed by the framework. It maintains
-a single store for every basic block that represents the information available at the
-beginning of that block.
+control flow graph.
 
 The class \code{Analysis<S, T>} (parameterized by the type \code S of the store and the type \code T of the
 transfer function) performs the actual dataflow analysis. It requires the transfer function
 as an argument to the constructor. Then, the object provides a method to perform the dataflow
 analysis on a given control flow graph and methods to query the result of that dataflow analysis.
 
+
+
+
+\begin{new}
+
+\subsection{Concurrency}
+
+The dataflow framework can operate under the assumption that the code is only
+executed sequentially, or work in the general setting where concurrency is allowed.
+The difference between these two modes is the treatment of fields:  In the
+presence of concurrency, the dataflow analysis can in general not infer any type information
+of field based on local information.  Another thread might have already changed the value
+of that field before the next use, potentially changing its type.
+
 \begin{workinprogress}
-    The querying of information is not implemented yet but is expected to be straight-forward.
+    Currently, the Checker Framework does not support a mode for concurrency.  Once this
+    has been added, the dataflow framework will already provide support for this flag.
 \end{workinprogress}
 
+An exception to this are monotonic type properties, such as the \code{@LazyNonNull} annotation
+of the non-null type system.
+
+\begin{workinprogress}
+    It might be useful to think about an abstraction for monotonic types (such as \code{@LazyNonNull}).
+    I could see an annotation for the declaration of annotations that indicates this property, and the
+    dataflow framework can then use this information to automatically give better analysis results (even
+    in the presence of concurrency).  Potentially, the monotonicity construct could even be added
+    to the Checker Framework in general, such that an implementation does not have to do anything
+    to implement annotations like \code{@LazyNonNull}.
+\end{workinprogress}
+
+\end{new}
 
 
-
-\subsection{Answering Questions}
-
-After the flow analysis for a particular method has been computed, the resulting information
-which is maintained in various stores can be queried to answer questions. The implementor
-of the dataflow analysis can implement arbitrary queries and how to answer them
-given a store. Then, the framework will allow to issue those queries for
-any given AST node by looking up (or computing) the correct store and applying the query
-implementation.
-The store may first need to be computed, as the framework does not store all intermediate
-stores but rather only those for key positions as described in \todo{ref}.
-
-Examples of common questions include the following.
-\begin{itemize}
-    \item After execution of the AST node \code{exp}, what is the most
-    specific type that can be given to \code{exp} (as determined by the flow analysis).
-    \begin{workinprogress}
-    This operation has previously been supported by the \code{test} method
-    of the interface \code{Flow}.
-    \end{workinprogress}
-    \item Are all non-null fields of an object initialized to a non-null value
-    after a given AST node?
-\end{itemize}
-
-To support such queries, our framework builds a map from AST tree nodes (of type
-\code{com.sun.source.tree.Tree}) to CFG nodes. Furthermore, every node has a reference
-to the basic block it is part of. Thus, for a given AST tree node, the framework
-can determine the CFG node and thereby the CFG basic block, and compute the necessary store
-to answer the question.
 
 \subsection{Managing Intermediate Results of the Analysis}
+\label{sec:node-mapping}
+\label{sec:store-management}
 
-Every analysis has to implement the \code{Store} interface. A \emph{store} is
+\begin{new}
+Conceptually, the dataflow analysis computes an abstract value for every node\footnote{Certain
+dataflow analysis might choose not to produce an abstract value for every node.  For instance,
+a constant propagation analysis would only be concerned with nodes of a numerical type, and
+ignore other nodes.}.
+The transfer function (described in more detail in \autoref{sec:transfer-fnc}) produces these abstract
+values based on the abstract values computed earlier for sub-nodes.
+For instance, in a constant propagation analysis, the transfer function of addition would look at
+the abstract values for the left and right operand, and determine that the \code{AdditionNode}
+is a constant if and only if both operands are constant.
+
+The dataflow framework manages these abstract values that have been computed for nodes and
+makes them available to the transfer function.  To this end, a mapping called the
+\emph{node-value mapping} is used that maps \code{Node}s to their abstract values.
+The design of the framework consciously avoids storing the abstract value directly in
+nodes to remove any coupling between the control flow graph and a particular analysis.
+This allows the control flow graph to be constructed only once, and then reused for different
+dataflow analyses.
+
+\end{new}
+Besides the abstract value of every node,
+every analysis has to implement the \code{Store} interface. A \emph{store} is
 used to track the intermediate results of a dataflow analysis. For instance, the store
-could contain information about which expressions can be considered \code{@NonNull}.
+could contain information about which variables can be considered \code{@NonNull}.
 A store is required to provide the following operations:
 \begin{itemize}
 \item Least upper bound: Compute the least upper bound of two stores (e.g., at a merge-point
@@ -537,25 +592,74 @@ is most likely not sufficient.
 \end{itemize}
 The store is analysis-dependent, but the framework provides a default store implementation
 which can be reused.
-This default implementation keeps a map of \code{Node}'s to abstract values, and various means
-to interact and change these values (such as correctly handling aliasing, etc.).
 
-\begin{workinprogress}
-    This default store is not yet implemented, but a simpler approximation is used in the
-    constant propagation example (see below).
-\end{workinprogress}
+\begin{new}
+Every store is associated with a particular point in the control flow graph, and
+all stores are managed by the framework. It maintains
+a single store for every basic block that represents the information available at the
+beginning of that block.
+Note that it is only the stores that determine when the iteration of the dataflow analysis
+can terminate, and not the node-value mapping.  The node-value mapping is used solely for
+providing the abstract value of a sub-node to the transfer function of a particular node.
+\end{new}
+
+
+\subsection{Answering Questions}
+\begin{new}
+After the flow analysis for a particular method has been computed, there are two kinds of
+information that have been computed.  Firstly, the node-value mapping stores an abstract
+value for every node, and secondly, the information maintained in various stores is
+available.
+
+Two kinds of queries are possible to the dataflow analysis after the analysis is complete:
+\begin{enumerate}
+    \item For a given AST tree node, what is its abstract value?
+    \item For a given AST tree node, it is possible to ask an analysis-specific question
+    about the state right after this AST tree node. For instance, examples of questions
+    include:
+    \begin{itemize}
+        \item Which looks are currently held?
+        \item Are all fields of a given object initialized?
+    \end{itemize}
+\end{enumerate}
+
+The implementor
+of the dataflow analysis can implement arbitrary queries and how to answer them
+given a store. Then, the framework will allow to issue those queries for
+any given AST node by looking up (or computing) the correct store and applying the query
+implementation.
+The store may first need to be computed, as the framework does not store all intermediate
+stores but rather only those for key positions as described in \autoref{sec:store-management}.
+
+To support the both kinds of queries, our framework builds a map from AST tree nodes (of type
+\code{com.sun.source.tree.Tree}) to CFG nodes.  To answer questions of the first type it is
+then possible to to from the AST tree node to the CFG node and look up its abstract value in
+the node-value mapping.  To support questions of the second kind, every node has a reference
+to the basic block it is part of. Thus, for a given AST tree node, the framework
+can determine the CFG node and thereby the CFG basic block, and compute the necessary store
+to answer the question.
+
+\end{new}
+
 
 
 
 \subsection{Transfer Function}
+\label{sec:transfer-fnc}
 
 A transfer function has to provide the following:
 \begin{itemize}
 \item A method that returns the initial store to be used by the dataflow analysis, given
-the list of arguments (as \code{LocalVariableNode}'s) and the \code{MethodTree} (not expected to be used).
+the list of arguments (as \code{LocalVariableNode}'s) and the \code{MethodTree} (not expected to be used often).
 \item A transfer method for every \code{Node} type that takes a store, the node and produces
 an updated store. This is achieved by implementing the \code{NodeVisitor<S, S>} interface
 for the store type \code{S}.
+
+\begin{new}
+These transfer methods also get access to the abstract value of any sub-node of the node \code n
+under consideration.  This is not limited to immediate children, but the abstract value for any node contained
+in \code n can be queried.
+\end{new}
 \end{itemize}
 
 To allow the dataflow analysis to use different information (that is, different stores)
@@ -617,50 +721,96 @@ The default flow-sensitive analysis tracks type annotations though assignments t
 variables and thereby improves precision when the qualifiers on the right hand side of the
 assignment are more precise than those on the left hand side.
 
-The analysis relies on an \code{AnnotatedTypeFactory} to supply the flow-insensitive type 
-annotations on an AST \code{Tree} and it relies on a \code{QualifierHierarchy} to define the 
-subtype relationships 
-among annotations.  It enforces the invariant that flow-sensitive type annotations are always at 
-least as precise as flow-insensitive ones.
+\begin{new}
+\begin{workinprogress}
+    At a later point in time, we want to add tracking of type annotations of fields, and
+    potentially also of array expressions.  In general, both of these extensions need to be
+    rather conservative to be sound, but can still yield useful results in certain cases.
+    Furthermore, for monotonic annotations (such as \code{@LazyNonNull}), the analysis can be
+    fairly precise.
+\end{workinprogress}
+\end{new}
+
+
+\begin{new}
+
+\subsection{Interaction of the Checker Framework and the Dataflow Analysis}
+\label{sec:flow-cf-interaction}
+
+The \code{AnnotatedTypeFactory} of a checker already implements how different annotations
+need to be combined to determine the type of a larger expression.  For instance,
+the regex checker can determine that the string concatenation of two regular expression
+string (\code{@Regex}) are again a regular expression.
+
+The dataflow analysis will have to perform very similar operations for the transfer function
+for intermediary nodes.  To reuse the code in the \code{AnnotatedTypeFactory}, we
+use the following default implementation for all transfer methods, and let
+the dataflow framework interact with the factory in the following way.
+For a given node \code{n}, perform the following steps:
+\begin{enumerate}
+    \item Check whether the node has a corresponding AST tree node. If not, no information is
+    available and ``top'' has to be used as abstract value.
+    \item Otherwise, use this AST tree node and ask the \code{AnnotatedTypeFactory} about
+    the type of the tree node.  The factory will then use its checker-dependent logic
+    to compute this type.  Typical implementations will look at the type
+    of sub-trees and compute the overall type based on the information about these sub-trees.
+    
+    Note that the factory uses information provided by the flow analysis to determine
+    the type of sub-trees.  This information can simply be looked up in the node-value
+    mapping, as it asks about the abstract value of sub-nodes.
+\end{enumerate}
 
 \begin{workinprogress}
-The default analysis should, but does not yet, propagate types through AST expressions. 
-Consider an example where two variables declared as \code{Strings} are concatenated and the
-analysis determines that both are \code{@Regex Strings} at the concatenation.  The analysis 
-should determine that the result is a \code{@Regex String} too.  Notice that the need to propagate
-types through expressions is not specific to flow-sensitive analysis.  It should work the same way 
-when flow-insensitive inference determines that two \code{@Regex Strings} are 
-concatenated.  We should make sure that checker developers only have to specify
-type propagation rules once but get the benefit everywhere.
+    We only want the \code{AnnotatedTypeFactory} to use flow information for sub-trees of
+    the tree we currently are asking a question about.  How can we enforce this?
+    For instance, usually a call to \code{getAnnotatedType} for a local variable will ask flow
+    about the type of this local variable.  This is circular and needs to be avoided.
+    We need to be especially careful if old information from a previous iteration is present
+    in the node-value mapping.
+    
+    Should we have a flag in the dataflow framework, that it only returns information
+    about sub-nodes during the dataflow analysis?  How would we determine if a node is
+    a sub-node efficiently?
 \end{workinprogress}
 
-The default analysis uses a simple \code{Store} that maps \code{Nodes} to sets of 
-\code{AnnotationMirrors}. 
-The \code{Nodes} can be divided into two types.  \code{VariableDeclarationNodes} 
-represent mutable 
-values so their mappings can vary across the \code{Stores} at different program points.  All other 
-\code{Nodes} are immutable because they correspond to AST \code{Trees} with at most 
-one consumer. 
-We still explicitly represent such \code{Nodes}, but there is a potential space optimization to be
-had by leaving them out of the \code{Store} after processing their consumer.
+\begin{workinprogress}
+    Charlie suggested that we only store information about local variables in the store if
+    the type information is more precise than the ``flow-insensitive'' type.  This seems like
+    a very good idea, but how can we determine the flow-insenstitive type?  Most likely, if we
+    just naively use the \code{getAnnotatedType} method of the \code{AnnotatedTypeFactory}, the
+    factory would just ask the flow (which is circular).
+    
+    Should there be a flag in the \code{AnnotatedTypeFactory} that makes it possible to turn off
+    flow temporarily?
+\end{workinprogress}
+
+\end{new}
+
 
 
 \subsection{Implementation}
 
 A few of the implementation details of the default analysis are worth discussing.
 
-Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
-annotations, we don't need to explicitly keep the annotations in the Store unless they are more
-precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
-information from the \code{Store} when it is present and defaults to the 
-\code{AnnotatedTypeFactory} when none is present.
+%Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
+%annotations, we don't need to explicitly keep the annotations in the Store unless they are more
+%precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
+%information from the \code{Store} when it is present and defaults to the 
+%\code{AnnotatedTypeFactory} when none is present.
 
-A potential optimization that is not yet implemented is to delete \code{Nodes} from the 
-\code{Store} after
-their last use.  As mentioned above, since the CFG derives from an AST and we never 
-transform it, \code{Nodes} that are not variable declarations don't need to be kept after processing 
-the \code{Node} 
-corresponding to their AST parent.
+\begin{new}
+The nodes in the node-value mapping are used to provide the abstract value of sub-nodes
+that have already been computed.  For this reason, once an are done with a particular node,
+any of its sub-nodes can potentially be removed from the node-value mapping,
+leading to more efficient space use\footnote{One has to be very careful, for two reasons: (1)
+some nodes can appear as children of multiple other nodes, and (2) the transfer function of
+a node might not only look at its immediate children, but at any node it contains.  However,
+such an optimization does not seem impossible.}.
+However, after the last iteration, it seems beneficial to keep around all nodes in this mapping,
+such that querying the dataflow analysis later on will be more efficient.  As it is not
+possible to decide in advance, which is the last iteration, we keep all nodes in this mapping
+at any time.
+\end{new}
 
 Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
 \code{Transfer} interfaces, so the
@@ -673,13 +823,6 @@ which checker is providing the type information for the analysis.
 \subsection{Open Questions}
 
 \begin{workinprogress}
-So far, the default analysis only tracks assignments to local variables and not to member
-fields.  Because multiple threads could access a field concurrently, we can't treat fields
-simply as if they were local variables, but in certain cases we might be able to prove 
-they aren't accessed concurrently.  Should we worry about this?  It could be quite expensive 
-to prove single-threaded access to fields and the Java spec says that even final fields can be
-changed via reflection.  Perhaps this problem is just too hard.
-
 The \code{EqualTo} and \code{NotEqual Nodes} could potentially supply flow-sensitive
 information for 
 non-primitive types because they establish that two \code{Objects} are identical, which means their 
