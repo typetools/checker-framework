@@ -213,6 +213,8 @@ for all types.
         \midrule
         \code{StringConcatenate} &  & \\
         \midrule
+        \code{TernaryExpression} & & \\
+        \midrule
         \code{PrefixIncrement} &  & \\
         \code{PrefixDecrement} &  & \\
         \code{PostfixIncrement} &  & \\
@@ -267,6 +269,7 @@ the CFG, or special properties about individual nodes.
 
 
 \subsubsection{Program Structure}
+\label{sec:prog-structure}
 
 Java programs are structured using high-level programming constructs such as
 different variants of loops, if-then-else constructs, try-catch-finally blocks
@@ -379,6 +382,29 @@ CFG nodes.
     Note that the regex checker does not have special behavior for the compound string
     assignment, and thus there will be no benefit in the dataflow analysis.  However,
     this is just an implementation weakness of this particular checker.
+\end{workinprogress}
+
+Note that desugaring control statements (such as loops or conditionals) as mentioned
+in \autoref{sec:prog-structure} is not problematic, as these are statements and thus do not
+have a type.  Therefore, the \code{AnnotatedTypeFactory} will not be used to determine
+the abstract value of such constructs.
+
+
+\end{new}
+
+
+\begin{new}
+\subsubsection{L- and R-Values}
+
+Certain nodes in the CFG represent \emph{l-values}, while other stand for \emph{r-values}.  The
+distinction between the two is important, as the only for r-values an abstract value needs to be
+produced.  For this reason, nodes are tagged as either being an l-value, or an r-value.  The transfer function
+is only applied by the framework for r-values, while l-values are typically ignored.  If for some
+reason, a particular dataflow analysis also needs to look at l-values, one could think about
+extending the framework with a second transfer function, that is used for r-values.
+
+\begin{workinprogress}
+    This is not yet implemented.
 \end{workinprogress}
 
 \end{new}
