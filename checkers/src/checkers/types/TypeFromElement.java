@@ -598,7 +598,7 @@ public class TypeFromElement {
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType)type, location);
         } else {
-            throw new CheckerError("TypeFromElement.annotate(ATM): only declared types and arrays can have annotations; " +
+            throw new CheckerError("TypeFromElement.getLocationTypeATM: only declared types and arrays can have annotations with location; " +
                     "found type: " + type + " location: " + location);
         }
     }
