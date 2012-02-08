@@ -1,3 +1,45 @@
+Version 1.2.5.1, 06 Feb 2012
+
+Nullness Checker:
+  Correct the annotations on ThreadLocal and InheritableThreadLocal.
+
+Internal bug fixes:
+  Expand release tests.
+  Compile release with JDK 6 to work on both JDK 6 and JDK 7.
+
+----------------------------------------------------------------------
+Version 1.2.5, 3 Feb 2012
+
+Don't put classpath on the bootclasspath when invoking javac.  This
+prevents problems if, for example, android.jar is on the classpath.
+
+New -jsr308_imports ... and -Djsr308.imports=... command-line options, for
+specifying implicit imports from the command line.  This is needed by Maven.
+
+New -Aignorejdkastub option makes the checker not load the jdk.astub
+file. Files from the "stubs" option are still loaded.
+
+Regex Checker:
+  Support concatenation of PolyRegex strings.
+  Improve examples of use of RegexUtil methods.
+
+Signature Checker:
+  Add new @ClassGetName annotation, for a 4th string representation of a
+    class that is used by the JDK.  Add supporting annotations to make the
+    type hierarchy a complete lattice.
+  Add PolySignature annotation.
+
+Internal bug fixes:
+  Improve method type argument inference.
+  Handle type variables whose upper bound is a type variable.
+  Fix bug in least upper bound computation for anonymous classes.
+  Improve handling of annotations inherited from superclasses.
+  Fix design problem with Nullness Checker and primitive types.
+  Ensure that overriding methods respect pre- and postconditions.
+  Correctly resolve references to an enclosing this.
+  Improve handling of Java source that contains compilation errors.
+
+----------------------------------------------------------------------
 Version 1.2.4, 15 Dec 2011
 
 All checkers:

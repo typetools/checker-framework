@@ -64,46 +64,41 @@ public class NullnessSubchecker extends BaseTypeChecker {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
              (type.getAnnotation(Primitive.class)==null &&
-             // Flow inference might implicitly add a NonNull, therefore
-             // check whether the Symbol contained a type annotation.
              // The element is null if the primitive type is an array component ->
              // always a reason to warn.
              (type.getElement()==null ||
-             // TODO: will this not work if an explicit type qualifier from
-             // something other than the Nullness Checker is present?
-             // Probably.
-             // TODO: explicitly support looking up the declared
-             // qualifiers present on a type.
-             !((Symbol)type.getElement()).typeAnnotations.isEmpty() ))) {
+                     !type.getExplicitAnnotations().isEmpty()))) {
             return false;
         }
         return super.isValidUse(type);
     }
 
+    @Override
+    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+        // @Primitive and @NonNull are interchangeable
+        if (sub.getEffectiveAnnotations().contains(PRIMITIVE) &&
+                sup.getEffectiveAnnotations().contains(NONNULL)) {
+            return true;
+        }
+        return super.isSubtype(sub, sup);
+    }
+
     /*
+     * TODO: actually use the MultiGraphQH and incorporate rawness.
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        // TODO: actually use the MultiGraphQH.
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }*/
+    }
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new NullnessQualifierHierarchy((/*Multi*/GraphQualifierHierarchy)super.createQualifierHierarchy());
+        return new NullnessQualifierHierarchy((MultiGraphQualifierHierarchy)super.createQualifierHierarchy());
     }
-    
+
     private final class NullnessQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        public NullnessQualifierHierarchy(/*Multi*/GraphQualifierHierarchy hierarchy) {
+        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy hierarchy) {
             super(hierarchy);
         }
-
-        @Override
-        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
-            if ( AnnotationUtils.areSame(sub, PRIMITIVE) &&
-                    AnnotationUtils.areSame(sup, NONNULL) ) {
-                return true;
-            }
-            return super.isSubtype(sub, sup);
-        }
     }
+    */
 }

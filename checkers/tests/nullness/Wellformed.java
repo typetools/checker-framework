@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 
 class Wellformed {
-    //:: error: (type.invalid) :: error: (assignment.type.incompatible)
+    //:: error: (type.invalid)
     @NonNull @Nullable Object f = null;
 
     //:: error: (type.invalid)
@@ -42,8 +42,8 @@ class Wellformed {
     class Gen5c<S> extends Gen5a<@Nullable S> {}
 
     class Gen6a<T> {}
-    //:: error: (generic.argument.invalid)
+    //:: error: (type.argument.type.incompatible)
     class Gen6b<S> extends Gen6a<@Nullable Object> {}
-    //:: error: (generic.argument.invalid)
+    //:: error: (type.argument.type.incompatible)
     class Gen6c<S> extends Gen6a<@Nullable S> {}
 }

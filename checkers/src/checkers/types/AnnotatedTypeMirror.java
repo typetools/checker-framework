@@ -24,6 +24,8 @@ import checkers.nullness.quals.NonNull;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * Represents an annotated type in the Java programming language.
@@ -120,6 +122,10 @@ public abstract class AnnotatedTypeMirror {
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
     protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+
+    /** The explicitly written annotations on this type. */
+    // TODO: use this to cache the result once computed? For generic types?
+    // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
 
     private static int uidCounter = 0;
     public int uid;
@@ -319,6 +325,35 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> anno) {
         return getAnnotation(anno.getCanonicalName());
+    }
+
+    /**
+     * Returns the set of explicitly written annotations supported by this checker.
+     * This is useful to check the validity of annotations explicitly present on a type,
+     * as flow inference might add annotations that were not previously present.
+     *
+     * @return The set of explicitly written annotations supported by this checker.
+     */
+    public Set<AnnotationMirror> getExplicitAnnotations() {
+        // If the element is null then it's an array. (Or a type argument, etc.?)
+        if (this.element == null) {
+            // TODO: Add support in the framework to read explicit annotations
+            // from arrays (and type arguments, etc.?).
+            return AnnotationUtils.createAnnotationSet();
+        } else {
+            Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
+            List<TypeCompound> typeAnnotations = ((Symbol) this.element).typeAnnotations;
+            // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
+            Set<Name> validAnnotations = typeFactory.qualHierarchy.getTypeQualifiers();
+            for (TypeCompound explicitAnno : typeAnnotations) {
+                for (Name validAnno : validAnnotations) {
+                    if (explicitAnno.getAnnotationType().toString().equals(validAnno.toString())) {
+                        explicitAnnotations.add(explicitAnno);
+                    }
+                }
+            }
+            return explicitAnnotations;
+        }
     }
 
     /**
@@ -1364,8 +1399,8 @@ public abstract class AnnotatedTypeMirror {
             }
             if (actualType.getLowerBound() instanceof NullType &&
                     lowerBound!=null && upperBound!=null) {
-                Set<AnnotationMirror> lAnnos = lowerBound.getAnnotations();
-                Set<AnnotationMirror> uAnnos = upperBound.getAnnotations();
+                Set<AnnotationMirror> lAnnos = lowerBound.getEffectiveAnnotations();
+                Set<AnnotationMirror> uAnnos = upperBound.getEffectiveAnnotations();
                 // System.out.printf("fixup: %s; low: %s; up: %s%n", this, lAnnos, uAnnos);
 
                 if (lAnnos.isEmpty()) {
@@ -1380,7 +1415,7 @@ public abstract class AnnotatedTypeMirror {
                         // How should this be handled? What is that factory doing?
                     }
                 } else if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
-                    // Nothing to do
+                    // Nothing to do if lAnnos is a subtype of uAnnos.
                 } else if (typeFactory.qualHierarchy.isSubtype(uAnnos, lAnnos)) {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);
