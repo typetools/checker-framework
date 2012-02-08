@@ -8,7 +8,7 @@ package checkers.flow.cfg.node;
  * 
  * @param <R>
  *            Return type of the visitor. Use {@link Void} if the visitor does
- *            not have a return.
+ *            not have a return value.
  * @param <P>
  *            Parameter type of the visitor. Use {@link Void} if the visitor
  *            does not have a parameter.
