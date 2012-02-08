@@ -23,7 +23,7 @@ public class RegexChecker extends BaseTypeChecker {
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
         // Only allow annotations on Character and subtypes of CharSequence.
-        if (!getExplicitAnnotations(useType).isEmpty()) {
+        if (!useType.getExplicitAnnotations().isEmpty()) {
             TypeMirror charSequence = getTypeMirror("java.lang.CharSequence");
             TypeMirror character = getTypeMirror("java.lang.Character");
 
@@ -45,7 +45,7 @@ public class RegexChecker extends BaseTypeChecker {
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type) {
         // Only allow annotations on char.
-        if (!getExplicitAnnotations(type).isEmpty()) {
+        if (!type.getExplicitAnnotations().isEmpty()) {
             return type.getKind() == TypeKind.CHAR;
         } else {
             return super.isValidUse(type);

@@ -410,38 +410,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
         lintSet.add("flow:inferFromAsserts");
         return lintSet;
     }
-    
-    /**
-     * Returns the explicit, written annotations on type that are supported by
-     * this checker.
-     *
-     * @param type the type to get the written annotations from.
-     * @return A set of the written annotations supported by this checker.
-     */
-    public Set<AnnotationMirror> getExplicitAnnotations(AnnotatedTypeMirror type) {
-        // If the element is null then it's an array.
-        if (type.getElement() == null) {
-            // TODO: Add support in the framework to read explicit annotations
-            // from arrays.
-            return new HashSet<AnnotationMirror>();
-        } else {
-            Set<AnnotationMirror> explicitAnnotations =
-                new HashSet<AnnotationMirror>();
-            List<TypeCompound> typeAnnotations =
-                ((Symbol) type.getElement()).typeAnnotations;
-            Set<Class<? extends Annotation>> validAnnotations =
-                getSupportedTypeQualifiers();
-            for (TypeCompound explicitAnno : typeAnnotations) {
-                for (Class<? extends Annotation> validAnno : validAnnotations) {
-                    if (explicitAnno.getAnnotationType().toString()
-                            .equals(validAnno.getCanonicalName())) {
-                        explicitAnnotations.add(explicitAnno);
-                    }
-                }
-            }
-            return explicitAnnotations;
-        }
-    }
 
     /**
      * Invokes the constructor belonging to the class
