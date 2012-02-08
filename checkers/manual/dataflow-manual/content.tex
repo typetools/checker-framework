@@ -792,18 +792,25 @@ For a given node \code{n}, perform the following steps:
 
 A few of the implementation details of the default analysis are worth discussing.
 
-Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
-annotations, we don't need to explicitly keep the annotations in the Store unless they are more
-precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
-information from the \code{Store} when it is present and defaults to the 
-\code{AnnotatedTypeFactory} when none is present.
+%Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
+%annotations, we don't need to explicitly keep the annotations in the Store unless they are more
+%precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
+%information from the \code{Store} when it is present and defaults to the 
+%\code{AnnotatedTypeFactory} when none is present.
 
-A potential optimization that is not yet implemented is to delete \code{Nodes} from the 
-\code{Store} after
-their last use.  As mentioned above, since the CFG derives from an AST and we never 
-transform it, \code{Nodes} that are not variable declarations don't need to be kept after processing 
-the \code{Node} 
-corresponding to their AST parent.
+\begin{new}
+The nodes in the node-value mapping are used to provide the abstract value of sub-nodes
+that have already been computed.  For this reason, once an are done with a particular node,
+any of its sub-nodes can potentially be removed from the node-value mapping,
+leading to more efficient space use\footnote{One has to be very careful, for two reasons: (1)
+some nodes can appear as children of multiple other nodes, and (2) the transfer function of
+a node might not only look at its immediate children, but at any node it contains.  However,
+such an optimization does not seem impossible.}.
+However, after the last iteration, it seems beneficial to keep around all nodes in this mapping,
+such that querying the dataflow analysis later on will be more efficient.  As it is not
+possible to decide in advance, which is the last iteration, we keep all nodes in this mapping
+at any time.
+\end{new}
 
 Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
 \code{Transfer} interfaces, so the
