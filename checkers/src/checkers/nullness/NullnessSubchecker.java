@@ -66,8 +66,8 @@ public class NullnessSubchecker extends BaseTypeChecker {
              (type.getAnnotation(Primitive.class)==null &&
              // The element is null if the primitive type is an array component ->
              // always a reason to warn.
-             (type.getElement() == null ||
-             !getExplicitAnnotations(type).isEmpty()))) {
+             (type.getElement()==null ||
+                     !type.getExplicitAnnotations().isEmpty()))) {
             return false;
         }
         return super.isValidUse(type);
