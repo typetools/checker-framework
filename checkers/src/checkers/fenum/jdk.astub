@@ -1,10 +1,4 @@
-import checkers.fenum.quals.FenumTop;
-import checkers.fenum.quals.SwingCompassDirection;
-import checkers.fenum.quals.SwingHorizontalOrientation;
-import checkers.fenum.quals.SwingVerticalOrientation;
-import checkers.fenum.quals.SwingElementOrientation;
-import checkers.fenum.quals.SwingTextOrientation;
-
+import checkers.fenum.quals.*;
 
 package javax.swing;
 

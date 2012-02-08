@@ -20,7 +20,9 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
 \begin{figure}
 \includeimage{signature-types}{2.5cm}
 \caption{Partial type hierarchy for the Signature type system, showing
-  string representations of a Java type.}
+  string representations of a Java type.  Programmers only need to write
+  the boldfaced qualifiers, in the second row; qualifiers below those are
+  included to improve the internal handling of String literals.}
 \label{fig:signature-hierarchy}
 \end{figure}
 
@@ -31,6 +33,7 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
 \urldef{\jvmsfielddescriptorurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14152}
 \urldef{\jvmsinternalformurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14757}
 \urldef{\jvmsmethoddescriptorurl}{\url}{http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#7035}
+\urldef{\classgetnameurl}{\url}{http://docs.oracle.com/javase/7/docs/api/java/lang/Class.html#getName()}
 
 \begin{description}
 
@@ -51,12 +54,23 @@ Figure~\ref{fig:signature-hierarchy} shows how they are related.
   for example to refer to other types; it abbreviates primitives and
   arrays, and uses internal form (\ahref{\jvmsinternalformurl}{JVMS \S 4.2}) for class names.
 
+\item[\code{@\refclass{signature/quals}{ClassGetName}}]
+  The type representation used by the
+  \ahref{\classgetnameurl}{\<Class.getName()>}, \<Class.forName(String)>,
+  and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
+  is:  for any non-array type, the binary name; and for any array type, a
+  format like the {@link FieldDescriptor field descriptor}, but using
+  ``\<.>''~where the field descriptor uses ``\</>''.
+
 \item[\code{@\refclass{signature/quals}{SourceName}}]
   A source name is a string that is a valid fully qualified name \emph{and}
-  a valid binary name.  A programmer should never use this --- you should
+  a valid binary name.  A programmer should never or rarely use this --- you should
   know how you intend to use a given variable.  The checker infers it for
   literal strings such as \<"package.MyClass"> that are valid in both
   formats, and you might occasionally see it in an error message.
+  Likewise, you might see other types such as \<SourceNameForNonArray>,
+  \<BinaryNameForNonArray>, and \<FieldDescriptorForArray>, but you
+  generally should not use them either.
 
 \end{description}
 
@@ -65,6 +79,23 @@ names (JLS \S 6.2), qualified names (JLS \S 6.2), and canonical
 names (JLS \S 6.7).  The Signature Checker does not include annotations
 for these.
 
+Here are examples of the supported formats:
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} \\ \hline
+int &                   int &                    int &                     I \\
+int[][] &               int[][] &                [[I &                     [[I \\
+MyClass &               MyClass &                MyClass &                 LMyClass; \\
+MyClass[] &             MyClass[] &              [LMyClass; &              [LMyClass; \\
+java.lang.Integer &     java.lang.Integer &      java.lang.Integer &       Ljava/lang/Integer; \\
+java.lang.Integer[] &   java.lang.Integer[] &    [Ljava.lang.Integer; &    [Ljava/lang/Integer; \\
+package.Outer.Inner &   package.Outer\$Inner &   package.Outer\$Inner &   Lpackage/Outer\$Inner; \\
+package.Outer.Inner[] & package.Outer\$Inner[] & [Lpackage.Outer\$Inner; & [Lpackage/Outer\$Inner; \\
+\hline
+\end{tabular}
+\end{center}
 
 Java defines one format for the string representation of a method signature:
 

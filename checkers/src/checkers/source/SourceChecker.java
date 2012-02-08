@@ -27,6 +27,9 @@ import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacMessager;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 
 /**
  * An abstract annotation processor designed for implementing a
@@ -318,6 +321,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     // Output the warning about source level at most once.
     private boolean warnedAboutSourceLevel = false;
 
+    // The number of errors at the last exit of the type processor.
+    // At entry to the type processor we check whether the current error count is
+    // higher and then don't process the file, as it contains some Java errors.
+    private int errsOnLastExit = 0;
+
     /**
      * Type-check the code with Java specifications and then runs the Checker
      * Rule Checking visitor on the processed source.
@@ -346,6 +354,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
                                   "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
+        }
+
+        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Log log = Log.instance(context);
+        if (log.nerrors > this.errsOnLastExit) {
+            this.errsOnLastExit = log.nerrors;
+            return;
         }
 
         currentRoot = p.getCompilationUnit();
@@ -394,6 +409,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // occurred?
             // Calling visitor.getCurrentPath() gives null.
             throw err;
+        } finally {
+            // Also add possibly deferred diagnostics, which will get published back in
+            // AbstractTypeProcessor.
+            this.errsOnLastExit = log.nerrors + log.deferredDiagnostics.size();
         }
     }
 
@@ -742,6 +761,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("filenames");
         options.add("showchecks");
         options.add("stubs");
+        options.add("ignorejdkastub");
         options.add("nocheckjdk");
         options.add("warns");
         options.add("annotatedTypeParams");

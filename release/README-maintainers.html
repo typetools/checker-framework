@@ -69,7 +69,7 @@ cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.j
 
 # Incorporate basic changes into jsr308-langtools
 cd ~/research/types/jsr308-langtools
-hg fetch https://basic.jsr308-langtools.googlecode.com/hg/
+hg fetch https://code.google.com/p/basic.jsr308-langtools/
 cd make; unset jsr308_imports; ant -e -Dboot.java.home=$HOME/java/jdk -Dtarget.java.home=$HOME/java/jdk -Djtreg.home=$HOME/research/types/jtreg clean build-javac build-javap build-javadoc build-doclets javadoc-javac jtreg
 
 # Do not commit any changes to jsr308-langtools yet!
@@ -145,6 +145,12 @@ testing the release)</li>
 </pre>
 </li>
 
+<li>Make sure that JAVA_HOME is set to a JDK 6 and that JDK 6
+is first on the PATH.</li>
+
+<li>Directory /uns/lib/hevea doesn't exist on Fedora 15 machines.
+Use /projects/uns/F11/lib/hevea/ instead.</li>
+
 <li>If you have never made a release before or no longer have a
 prepared release directory, set up a release directory as follows:
 
@@ -164,10 +170,10 @@ prepared release directory, set up a release directory as follows:
 <li>
 <p>Check out the jsr308-langtools and checker-framework repositories:</p>
 <pre>
-    hg clone https://jsr308-langtools.googlecode.com/hg/ jsr308-langtools
-    hg clone https://checker-framework.googlecode.com/hg/ checker-framework
-    hg clone https://plume-lib.googlecode.com/hg/ plume-lib
-    hg clone https://annotation-tools.googlecode.com/hg/ annotation-tools
+    hg clone https://code.google.com/p/jsr308-langtools/ jsr308-langtools
+    hg clone https://code.google.com/p/checker-framework/ checker-framework
+    hg clone https://code.google.com/p/plume-lib/ plume-lib
+    hg clone https://code.google.com/p/annotation-tools/ annotation-tools
 </pre>
 </li>
 

@@ -87,6 +87,13 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
             if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
                 checker.report(Result.failure("ro.field"), varTree);
         }
+
+        if (varTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiver((ExpressionTree)varTree);
+            if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
+                checker.report(Result.failure("ro.element"), varTree);
+        }
+
     }
 
 

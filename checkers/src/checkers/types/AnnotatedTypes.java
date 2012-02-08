@@ -619,6 +619,7 @@ public class AnnotatedTypes {
         for (TypeParameterElement var : elt.getTypeParameters()) {
             // Find the un-annotated binding for the type variable
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) factory.getAnnotatedType(var);
+            AnnotatedTypeMirror returnTypeBase;
 
             AnnotatedTypeMirror argument =
                 inferTypeArgsUsingArgs(typeVar, returnType, methodType, expr);
@@ -629,11 +630,33 @@ public class AnnotatedTypes {
                 AnnotatedTypeMirror assigned =
                     assignedTo(TreePath.getPath(factory.root, expr));
                 if (assigned != null) {
-                    AnnotatedTypeMirror returnTypeBase = asSuper(methodType.getReturnType(), assigned);
+                    AnnotatedTypeMirror rettype = methodType.getReturnType();
+                    returnTypeBase = asSuper(rettype, assigned);
                     List<AnnotatedTypeMirror> lst =
                         new TypeResolutionFinder(typeVar).visit(returnTypeBase, assigned);
-                    if (lst != null && !lst.isEmpty())
+
+                    if (lst != null && !lst.isEmpty()) {
                         argument = lst.get(0);
+                    } else {
+                        if (rettype instanceof AnnotatedTypeVariable) {
+                            AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
+                            if (atvrettype.getUnderlyingType().asElement() == var) {
+                                // Special case if the return type is the type variable we are looking at
+                                if (!factory.qualHierarchy.isSubtype(assigned.getAnnotations(),
+                                        rettype.getEffectiveAnnotations())) {
+                                    // If the assignment context is not a subtype of the upper bound of the
+                                    // return type, take the type qualifiers from the upper bound.
+                                    // If the assignment type and bound type are incompatible, we'll get an
+                                    // error later. Most likely the assignment type is simply a supertype of
+                                    // the bound, e.g. because of the non-null except locals default.
+                                    assigned = deepCopy(assigned);
+                                    assigned.clearAnnotations();
+                                    assigned.addAnnotations(rettype.getEffectiveAnnotations());
+                                }
+                                argument = assigned;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -756,7 +779,18 @@ public class AnnotatedTypes {
         public List<AnnotatedTypeMirror>
         visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
             if (p.getKind() == TypeKind.NULL) {
-                return Collections.singletonList(p);
+                if (type.getKind() == TypeKind.TYPEVAR) {
+                    Element elem = type.getUnderlyingType().asElement();
+                    if (elem.equals(typeToFind.getUnderlyingType().asElement())) {
+                        // If we pass null as argument, it only has an influence, if the declared
+                        // parameter type is the typeToFind type variable.
+                        // E.g. the declared type might not contain the type variable at all.
+                        // Also, if we have the parameter type "List<T>" and pass null, this should
+                        // not have an effect on the type of T.
+                        return Collections.singletonList(p);
+                    }
+                }
+                return Collections.emptyList();
             } else if (p.getKind() == TypeKind.WILDCARD) {
                 AnnotatedTypeMirror bound = ((AnnotatedWildcardType)p).getExtendsBound();
                 if (bound == null) return Collections.emptyList();
@@ -921,9 +955,12 @@ public class AnnotatedTypes {
                         subtypes.add(sup);
                     }
                 }
+                if (subtypes.size() > 0) {
+                    adts.clearAnnotations();
+                }
 
                 addAnnotations(adts, subtypes.toArray(new AnnotatedTypeMirror[0]));
-                this.addAnnotations(lub, adts);
+                addAnnotations(lub, adts);
             }
         } else {
             List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
@@ -969,7 +1006,6 @@ public class AnnotatedTypes {
         // TODO: fix this
         boolean isFirst = true;
         // get rid of wildcards and type variables
-        // TODO: what about annotations on type variables?
         if (alub.getKind() == TypeKind.WILDCARD) {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
         }
@@ -986,16 +1022,16 @@ public class AnnotatedTypes {
             if (types[i].getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
-                    types[i] = wildcard.getExtendsBound();
+                    types[i] = wildcard.getEffectiveExtendsBound();
                 else if (wildcard.getSuperBound() != null)
-                    types[i] = wildcard.getSuperBound();
+                    types[i] = wildcard.getEffectiveSuperBound();
             }
             if (types[i].getKind() == TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types[i];
                 if (typevar.getUpperBound() != null)
-                    types[i] = typevar.getUpperBound();
+                    types[i] = typevar.getEffectiveUpperBound();
                 else if (typevar.getLowerBound() != null)
-                    types[i] = typevar.getLowerBound();
+                    types[i] = typevar.getEffectiveLowerBound();
             }
         }
 

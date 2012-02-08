@@ -64,7 +64,7 @@ class Methods {
       addNull2(new PriorityQueue2<@NonNull Object>());
    }
 
-   //:: error: (generic.argument.invalid)
+   //:: error: (type.argument.type.incompatible)
    static <@Nullable E> void addNull3(Collection2<E> l) {
       l.add(null);
    }

@@ -352,7 +352,7 @@ files that the checker reads.
 
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\ahref{\setAbsoluteDefaultsURL}{\<QualifierDefaults.setAbsoluteDefaults>}
+\ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness checker's implementation for an
 example.
@@ -570,7 +570,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{http://java.sun.com/javase/6/docs/jdk/api/javac/tree/index.html}{Tree
+\ahref{http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -904,6 +904,12 @@ internal Checker Framework error messages
 \item \code{-AprintAllQualifiers}: print all type qualifiers, including
 qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
+
+\item \code{-Aignorejdkastub}: ignore the jdk.astub file in the checker
+directory. Files passed through the \code{-Astubs} option are still processed. This is useful when
+compiling the source code that is described by the stub file and experimenting with an
+alternative stub file.
+
 \end{itemize}
 
 The following example demonstrates how these options are used:

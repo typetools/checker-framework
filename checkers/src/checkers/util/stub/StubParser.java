@@ -30,7 +30,7 @@ public class StubParser {
      * Whether to print warnings about types/members that were not found.
      * The warning is about whether a class/field in the stub file is not
      * found on the user's real classpath.  Since the stub file may contain
-     * packages that are not on the classpath, this can OK, so default to
+     * packages that are not on the classpath, this can be OK, so default to
      * false.
      */
     private static final boolean warnIfNotFound = false;
@@ -330,6 +330,7 @@ public class StubParser {
         else
             return null;
     }
+
     private void annotate(AnnotatedTypeMirror atype, Type typeDef) {
         if (atype.getKind() == TypeKind.ARRAY) {
             annotateAsArray((AnnotatedArrayType)atype, (ReferenceType)typeDef);
@@ -430,7 +431,7 @@ public class StubParser {
         }
     }
 
-    static Set<String> nestedClassWarnings = new HashSet<String>();
+    private final static Set<String> nestedClassWarnings = new HashSet<String>();
 
     private Map<Element, BodyDeclaration> getMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getName())
@@ -482,6 +483,7 @@ public class StubParser {
                 System.err.printf("  %s%n", superType);
         return null;
     }
+
     public ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         final String wantedMethodName = methodDecl.getName();
         final int wantedMethodParams =
