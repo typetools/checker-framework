@@ -141,10 +141,10 @@ public class DefaultTypeAnalysis
          * Return whether this Value is a proper supertype of the
          * argument Value.
          */
-        // boolean isSupertypeOf(Value other) {
-        //     return typeHierarchy.isSubtype(annotations,
-        //                                    other.annotations);
-        // }
+        boolean isSupertypeOf(Value other) {
+            return typeHierarchy.isSubtype(annotations,
+                                           other.annotations);
+        }
     }
 
     /**
@@ -170,12 +170,10 @@ public class DefaultTypeAnalysis
     }
 
     /**
-     * Returns the flow insensitive type annotations of a CFG
-     * Node, as computed by the checker and stored with the
-     * language model Element corresponding to the Tree
-     * corresponding to the Node.  Not all Nodes have
-     * corresponding Elements and the method returns null when no
-     * type information is available.
+     * Returns the flow insensitive type annotations of a CFG Node, as
+     * computed by the checker for the Tree corresponding to the Node.
+     * Not all Nodes have corresponding Trees and the method returns
+     * null when no type information is available.
      */
     private /*@Nullable*/ Value flowInsensitiveValue(Node n) {
         Tree tree = n.getTree();
@@ -187,7 +185,6 @@ public class DefaultTypeAnalysis
         return new Value(type.getAnnotations());
     }
 
-    
     /**
      * A store for the default analysis is a mapping from Nodes
      * to Values.  If no Value is explicitly stored for
@@ -233,11 +230,18 @@ public class DefaultTypeAnalysis
             return createValue();
         }
 
+        /**
+         * Only store information explicitly when it is more precise
+         * than the flow insensitive information.
+         */
         public void setInformation(Node n, Value val) {
-            if (n.hasResult()) {
-                nodeInformation.put(n, val);
-            } else if (n instanceof VariableDeclarationNode) {
-                mutableInfo.put(n, val);
+            Value flowInsensitive = flowInsensitiveValue(n);
+            if (flowInsensitive.isSupertypeOf(val)) {
+                if (n.hasResult()) {
+                    nodeInformation.put(n, val);
+                } else if (n instanceof VariableDeclarationNode) {
+                    mutableInfo.put(n, val);
+                }
             }
         }
 
@@ -370,9 +374,7 @@ public class DefaultTypeAnalysis
                 NodeInfoProvider provider = analysis.new NodeInfoProvider(info);
                 Set<AnnotationMirror> annotations = analysis.propagator.visit(tree, provider);
                 Value value = analysis.createValue(annotations);
-                // if (flowInsensitive.isSupertypeOf(value)) {
                 info.setInformation(n, value);
-                // }
             }
 
             return new RegularTransferResult<NodeInfo>(info);
@@ -384,6 +386,7 @@ public class DefaultTypeAnalysis
             // Literal values always have their flow insensitive type.
             NodeInfo info = in.getRegularStore();
             Value flowInsensitive = analysis.flowInsensitiveValue(n);
+            assert flowInsensitive != null : "No flow insensitive information for node";
             info.setInformation(n, flowInsensitive);
             return new RegularTransferResult<NodeInfo>(info);
         }
@@ -423,17 +426,12 @@ public class DefaultTypeAnalysis
             if (lhs instanceof LocalVariableNode) {
                 VariableDeclarationNode decl = ((LocalVariableNode)lhs).getDeclaration();
                 assert decl != null;
-                // if (lhsValue.isSupertypeOf(rhsValue)) {
                 info.setInformation(decl, rhsValue);
-                // }
             }
 
             // The AssignmentNode itself is a value with the same
             // type as the RHS.
-            Value assignValue = info.getInformation(n);
-            // if (assignValue.isSupertypeOf(rhsValue)) {
             info.setInformation(n, rhsValue);
-            // }
 
             return new RegularTransferResult<NodeInfo>(info);
         }
