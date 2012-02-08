@@ -55,10 +55,12 @@ import checkers.util.InternalUtils;
  * The inner class DefaultTypeAnalysis.NodeInfo represents the set
  * of dataflow facts known at a program point, which is a mapping from
  * values, represented by CFG Nodes, to sets of type annotations,
- * represented by DefaultTypeAnalysis.Values.  Since statically known
- * annotations provided by the AnnotatedTypeFactory are upper bounds,
- * we avoid storing NodeInfos explicitly unless they are more precise
- * than the static annotations.
+ * represented by DefaultTypeAnalysis.Values.
+ *
+ * TODO: Since statically known annotations provided by
+ * the AnnotatedTypeFactory are upper bounds, avoid storing
+ * NodeInfos explicitly unless they are more precise than the static
+ * annotations.
  *
  * The inner class DefaultTypeAnalysis.Transfer is the transfer function
  * mapping input dataflow facts to output facts.  For the default analysis,
@@ -138,10 +140,10 @@ public class DefaultTypeAnalysis
         }
 
         /**
-         * Return whether this Value is a proper supertype of the
+         * Return whether this Value is a proper subtype of the
          * argument Value.
          */
-        boolean isSupertypeOf(Value other) {
+        boolean isSubtypeOf(Value other) {
             return typeHierarchy.isSubtype(annotations,
                                            other.annotations);
         }
@@ -196,7 +198,8 @@ public class DefaultTypeAnalysis
      * annotation, then it is entered into the NodeInfo and stays
      * there.
      *
-     * TODO: Extend NodeInfo to track class member fields like variables.
+     * TODO: Extend NodeInfo to track class member fields in the
+     * same way as variables.
      */
     public class NodeInfo implements Store<NodeInfo> {
         private Map<Node, Value> mutableInfo;
@@ -231,22 +234,42 @@ public class DefaultTypeAnalysis
         }
 
         /**
-         * Only store information explicitly when it is more precise
-         * than the flow insensitive information.
+         * @return the argument Value or the flow insensitive
+         *         Value, whichever is more precise
+         */
+        private Value flowInsensitiveUpperBound(Node n, Value val) {
+            Value flowInsensitive = flowInsensitiveValue(n);
+            if ((val.getAnnotations().isEmpty() &&
+                 !flowInsensitive.getAnnotations().isEmpty()) ||
+                flowInsensitive.isSubtypeOf(val)) {
+                return flowInsensitive;
+            } else {
+                return val;
+            }
+        }
+
+        /**
+         * In the current version, we explicitly store either the flow
+         * sensitive information passed as an argument, or the flow
+         * insensitive information, whichever is more precise.
+         *
+         * TODO: Ensure that flow sensitive information is always at
+         * least as precise as flow insensitive information, so that
+         * we can avoid this overhead and even avoid the cost of
+         * explicitly storing information that is no better than flow
+         * insensitive.
          */
         public void setInformation(Node n, Value val) {
-            Value flowInsensitive = flowInsensitiveValue(n);
-            if (flowInsensitive.isSupertypeOf(val)) {
-                if (n.hasResult()) {
-                    nodeInformation.put(n, val);
-                } else if (n instanceof VariableDeclarationNode) {
-                    mutableInfo.put(n, val);
-                }
+            val = flowInsensitiveUpperBound(n, val);
+            if (n.hasResult()) {
+                nodeInformation.put(n, val);
+            } else if (n instanceof VariableDeclarationNode) {
+                mutableInfo.put(n, val);
             }
         }
 
         public void mergeInformation(Node n, Value val) {
-            Value updatedVal = val;
+            Value updatedVal = flowInsensitiveUpperBound(n, val);
             if (n.hasResult()) {
                 if (nodeInformation.containsKey(n)) {
                     updatedVal = nodeInformation.get(n).leastUpperBound(val);
@@ -319,9 +342,7 @@ public class DefaultTypeAnalysis
 
     /**
      * The default analysis transfer function propagates information
-     * through assignments to local variables.  It avoids explicitly
-     * storing a Value and copying a NodeInfo unless the outflowing
-     * information is more precise than the inflowing.
+     * through assignments to local variables.
      */
     public static class Transfer
         extends SinkNodeVisitor<TransferResult<NodeInfo>,
@@ -353,9 +374,8 @@ public class DefaultTypeAnalysis
             return info;
         }
 
-        // TODO: We could use intermediate classes such as ExpressionNode and LiteralNode
-        // to refactor visitors.  Propagation is appropriate for expressions and flow
-        // insensitive annotations are appropriate for literals.
+        // TODO: We could use an intermediate classes such as ExpressionNode
+        // to refactor visitors.  Propagation is appropriate for all expressions.
 
         /**
          * The default visitor returns the input information unchanged, or
