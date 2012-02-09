@@ -648,7 +648,7 @@ public class AnnotatedTypeFactory {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
                 assert classType != null;
                 for (AnnotationMirror anno : classType.getAnnotations()) {
-                    if (AnnotationUtils.hasInheritiedMeta(anno)) {
+                    if (AnnotationUtils.hasInheritedMeta(anno)) {
                         type.addAnnotation(anno);
                     }
                 }
