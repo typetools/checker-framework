@@ -2,6 +2,7 @@ import checkers.regex.quals.Regex;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.Segment;
 
@@ -131,6 +132,21 @@ public class Simple {
 
     public static String foo(@Regex String s) {
         return "non((";
+    }
+
+    void testGroupCount() {
+        @Regex(0) String s1 = "abc";
+        @Regex(1) String s2 = "(abc)";
+        @Regex(2) String s3 = "()(abc)";
+        @Regex(3) String s4 = "(abc())()";
+        @Regex(4) String s5 = "((((abc))))";
+
+        //:: error: (assignment.type.incompatible)
+        @Regex(2) String s6 = "nonregex(";    // error
+        //:: error: (assignment.type.incompatible)
+        @Regex(0) String s7 = "(abc)";    // error
+        //:: error: (assignment.type.incompatible)
+        @Regex(1) String s8 = "abc";    // error
     }
 
 //    TODO: This is not supported until the framework can read explicit
