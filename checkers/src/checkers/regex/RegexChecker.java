@@ -19,26 +19,32 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
  */
 @TypeQualifiers({ Regex.class, PolyRegex.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker {
-  
-    private TypeMirror charSequenceType;
-    private TypeMirror characterType;
-  
+
+    private TypeMirror[] legalReferenceTypes;
+
     @Override
     public void initChecker(ProcessingEnvironment env) {
         super.initChecker(env);
-        
-        this.charSequenceType = getTypeMirror("java.lang.CharSequence");
-        this.characterType = getTypeMirror("java.lang.Character");
+
+        legalReferenceTypes = new TypeMirror[] {
+            getTypeMirror("java.lang.CharSequence"),
+            getTypeMirror("java.lang.Character"),
+            getTypeMirror("java.util.regex.Pattern"),
+            getTypeMirror("java.util.regex.MatchResult") };
     }
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
-        // Only allow annotations on Character and subtypes of CharSequence.
+        // Only allow annotations on subtypes of the types in legalReferenceTypes.
         if (!useType.getExplicitAnnotations().isEmpty()) {
             Types typeUtils = env.getTypeUtils();
-            return typeUtils.isSubtype(declarationType.getUnderlyingType(), charSequenceType)
-                || typeUtils.isSubtype(declarationType.getUnderlyingType(), characterType);
+            for (TypeMirror type: legalReferenceTypes) {
+                if (typeUtils.isSubtype(declarationType.getUnderlyingType(), type)) {
+                    return true;
+                }
+            }
+            return false;
         } else {
             return super.isValidUse(declarationType, useType);
         }
@@ -53,7 +59,7 @@ public class RegexChecker extends BaseTypeChecker {
             return super.isValidUse(type);
         }
     }
-    
+
     /**
      * Gets a TypeMirror for the given class name.
      */
