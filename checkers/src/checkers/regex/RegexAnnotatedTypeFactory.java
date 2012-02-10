@@ -1,11 +1,14 @@
 package checkers.regex;
 
+import java.util.regex.Pattern;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
@@ -56,12 +59,20 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotated()) {
-                boolean regexString = tree.getKind() == Tree.Kind.STRING_LITERAL
-                                      && RegexUtil.isRegex((String) tree.getValue());
-                boolean regexChar = tree.getKind() == Tree.Kind.CHAR_LITERAL
-                                    && RegexUtil.isRegex((Character) tree.getValue());
-                if (regexString || regexChar) {
-                    type.addAnnotation(Regex.class);
+                String regex = null;
+                if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                    regex = (String) tree.getValue();
+                } else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
+                    regex = Character.toString((Character) tree.getValue());
+                }
+                if (regex != null) {
+                    if(RegexUtil.isRegex(regex)) {
+                        int groupCount = Pattern.compile(regex).matcher("").groupCount();
+                        AnnotationUtils.AnnotationBuilder builder =
+                            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+                        builder.setValue("value", groupCount);
+                        type.addAnnotation(builder.build());
+                    }
                 }
             }
             return super.visitLiteral(tree, type);
