@@ -10,6 +10,10 @@ import checkers.quals.*;
  * For char, char[], {@link Character} and subtypes of {@link CharSequence}
  * indicates a valid regular expression and holds the number of groups in
  * the regular expression.
+ * <p>
+ * For {@link java.util.regex.Pattern Pattern} and subtypes of
+ * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
+ * expression groups.
  */
 @Documented
 @TypeQualifier
