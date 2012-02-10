@@ -1,0 +1,114 @@
+package org.junit.runner;
+
+import java.util.Comparator;
+
+import org.junit.internal.requests.ClassRequest;
+import org.junit.internal.requests.ClassesRequest;
+import org.junit.internal.requests.ErrorReportingRequest;
+import org.junit.internal.requests.FilterRequest;
+import org.junit.internal.requests.SortingRequest;
+import org.junit.runner.manipulation.Filter;
+
+/**
+ * <p>A <code>Request</code> is an abstract description of tests to be run. Older versions of 
+ * JUnit did not need such a concept--tests to be run were described either by classes containing
+ * tests or a tree of {@link  org.junit.Test}s. However, we want to support filtering and sorting,
+ * so we need a more abstract specification than the tests themselves and a richer
+ * specification than just the classes.</p>
+ * 
+ * <p>The flow when JUnit runs tests is that a <code>Request</code> specifies some tests to be run ->
+ * a {@link org.junit.runner.Runner} is created for each class implied by the <code>Request</code> -> 
+ * the {@link org.junit.runner.Runner} returns a detailed {@link org.junit.runner.Description} 
+ * which is a tree structure of the tests to be run.</p>
+ */
+public abstract class Request {
+	/**
+	 * Create a <code>Request</code> that, when processed, will run a single test.
+	 * This is done by filtering out all other tests. This method is used to support rerunning
+	 * single tests.
+	 * @param clazz the class of the test
+	 * @param methodName the name of the test
+	 * @return a <code>Request</code> that will cause a single test be run
+	 */
+	public static Request method(Class<?> clazz, String methodName) {
+		Description method= Description.createTestDescription(clazz, methodName);
+		return Request.aClass(clazz).filterWith(method);
+	}
+
+	/**
+	 * Create a <code>Request</code> that, when processed, will run all the tests
+	 * in a class. The odd name is necessary because <code>class</code> is a reserved word.
+	 * @param clazz the class containing the tests
+	 * @return a <code>Request</code> that will cause all tests in the class to be run
+	 */
+	public static Request aClass(Class<?> clazz) {
+		return new ClassRequest(clazz);
+	}
+
+	/**
+	 * Create a <code>Request</code> that, when processed, will run all the tests
+	 * in a set of classes.
+	 * @param collectionName a name to identify this suite of tests
+	 * @param classes the classes containing the tests
+	 * @return a <code>Request</code> that will cause all tests in the classes to be run
+	 */
+	public static Request classes(String collectionName, Class<?>... classes) {
+		return new ClassesRequest(collectionName, classes);
+	}
+
+	public static Request errorReport(Class<?> klass, Throwable cause) {
+		return new ErrorReportingRequest(klass, cause);
+	}
+
+	/**
+	 * Returns a {@link Runner} for this Request
+	 * @return corresponding {@link Runner} for this Request
+	 */
+	public abstract Runner getRunner();
+
+	/**
+	 * Returns a Request that only contains those tests that should run when
+	 * <code>filter</code> is applied
+	 * @param filter The {@link Filter} to apply to this Request
+	 * @return the filtered Request
+	 */
+	public Request filterWith(Filter filter) {
+		return new FilterRequest(this, filter);
+	}
+
+	/**
+	 * Returns a Request that only runs contains tests whose {@link Description}
+	 * equals <code>desiredDescription</code>
+	 * @param desiredDescription {@link Description} of those tests that should be run
+	 * @return the filtered Request
+	 */
+	public Request filterWith(final Description desiredDescription) {
+		return filterWith(new Filter() {
+			@Override
+			public boolean shouldRun(Description description) {
+				// TODO: test for equality even if we have children?
+				if (description.isTest())
+					return desiredDescription.equals(description);
+				for (Description each : description.getChildren())
+					if (shouldRun(each))
+						return true;
+				return false;					
+			}
+
+			@Override
+			public String describe() {
+				return String.format("Method %s", desiredDescription.getDisplayName());
+			}
+		});
+	}
+
+	/**
+	 * Returns a Request whose Tests can be run in a certain order, defined by 
+	 * <code>comparator</code>
+	 * @param comparator definition of the order of the tests in this Request
+	 * @return a Request with ordered Tests
+	 */
+	public Request sortWith(Comparator<Description> comparator) {
+		return new SortingRequest(this, comparator);
+	}
+}

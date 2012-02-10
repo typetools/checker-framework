@@ -1,0 +1,133 @@
+\htmlhr
+\chapter{Regex checker for regular expression syntax\label{regex-checker}}
+
+The Regex Checker prevents, at compile-time, use of syntactically invalid
+regular expressions.
+
+A regular expression, or regex, is a pattern for matching certain strings
+of text.  In Java, a programmer writes a regular expression as a string.
+At run time, the string is ``compiled'' into an efficient internal form
+(\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
+text-matching.
+
+The syntax of regular expressions is complex, so it is easy to make a
+mistake.  It is also easy to accidentally use a regex feature from another
+language that is not supported by Java (see section ``Comparison to Perl
+5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
+Ordinarily, the programmer does not learn of these errors until run time.
+The Regex checker warns about these problems at compile time.
+
+To run the Regex Checker, supply the \code{-processor
+  checkers.regex.RegexChecker} command-line option to javac.
+
+
+\section{Regex annotations\label{regex-annotations}}
+
+These qualifiers make up the Regex type system:
+
+\begin{description}
+
+\item[\<@\refclass{regex/quals}{Regex}>]
+  indicates valid regular expression \code{String}s.
+
+\item[\<@\refclass{regex/quals}{PolyRegex}>]
+  indicates qualifier polymorphism. For a description of
+  \<@\refclass{regex/quals}{PolyRegex}>,
+  see Section~\ref{qualifier-polymorphism}.
+
+\end{description}
+
+\section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
+
+
+\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Regex checker adds
+implicit qualifiers, reducing the number of annotations that must appear
+in your code. The checker implicitly adds the \code{Regex} qualifier to
+any \code{String} literal that is a valid regex and to the \code{null}
+literal.
+
+
+\subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
+
+Sometimes, the Regex Checker cannot infer whether a particular expression
+is a regular expression --- and sometimes your code cannot either!  In
+these cases, you can use the \<isRegex> method to perform such a test, and
+other helper methods to provide useful error messages.  A
+common use is for user-provided regular expressions (such as ones passed
+on the command-line).
+Figure~\ref{fig:regex-util-example} gives an
+example of the intended use of the \code{RegexUtil} methods.
+
+\begin{description}
+
+\item[\refmethod{regex}{RegexUtil}{isRegex}{(java.lang.String)}]
+  returns \<true> if its argument is a valid regular expression.
+
+\item[\refmethod{regex}{RegexUtil}{regexError}{(java.lang.String)}]
+  returns a \<String> error message if its argument is not a valid regular
+  expression, or \<null> if its argument is a valid regular expression.
+
+\item[\refmethod{regex}{RegexUtil}{regexException}{(java.lang.String)}]
+  returns the
+  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{PatternSyntaxException}
+  that \sunjavadoc{java/util/regex/Pattern.html#compile(java.lang.String)}{Pattern.compile(String)}
+  throws when compiling an invalid regular expression.  It returns \<null>
+  if its argument is a valid regular expression.
+
+\end{description}
+
+A potential disadvantage of using these methods is that your code becomes
+dependent on the Checker Framework at run time as well as at compile time.
+You can avoid this by copying the implementation of these methods into
+your own code.
+
+\begin{figure}
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+String regex = getRegexFromUser();
+if (! RegexUtil.isRegex(regex)) {
+   throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
+   // or: System.out.println("Error parsing regex \"" + regex + "\": " + RegexUtil.regexError(regex));
+}
+// The following line suppresses a Regex Checker warning and is only necessary until the 
+// Regex Checker supports flow-sensitivity, after which time it can be removed from the code.
+regex = RegexUtil.asRegex(regex);   // @SuppressWarnings("regex") // flow-sensitivity
+Pattern p = Pattern.compile(regex);
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+\caption{Example use of \code{RegexUtil} methods.}
+\label{fig:regex-util-example}
+\end{figure}
+
+
+\subsection{Suppressing warnings}
+
+If you are positive that a particular string that is being used as a
+regular expression is syntactically valid, but the Regex Checker cannot
+conclude this and issues a warning about possible use of an invalid regular
+expression, then you can use the
+\refmethod{regex}{RegexUtil}{asRegex}{(java.lang.String)} method to suppress the
+warning.
+
+You can think of this method 
+is a cast:  it returns its argument unchanged, but with the type
+\code{@Regex String} if it is a valid regular expression.  It throws an
+Error if its argument is not a valid regular expression, but you should
+only use it when you are sure it will not throw an error.
+
+This method is
+mainly a workaround until the Regex Checker supports flow-sensitivity (see
+Section~\ref{type-refinement}) and should be used rarely once the Regex
+Checker supports flow-sensitivity.
+
+
+
+
+% LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
+% LocalWords:  regexException PatternSyntaxException
