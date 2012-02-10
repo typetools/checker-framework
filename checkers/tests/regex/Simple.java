@@ -82,6 +82,8 @@ public class Simple {
         @Regex StringBuilder sb;
         @Regex Segment s21;
         @Regex char c;
+        @Regex Pattern p;
+        @Regex Matcher m;
 
         //:: error: (type.invalid)
         @Regex Object o;   // error
