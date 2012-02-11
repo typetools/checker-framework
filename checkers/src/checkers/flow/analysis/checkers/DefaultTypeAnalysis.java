@@ -3,14 +3,15 @@ package checkers.flow.analysis.checkers;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
@@ -66,7 +67,7 @@ import com.sun.source.tree.Tree;
  */
 public class DefaultTypeAnalysis
 		extends
-		Analysis<DefaultTypeAnalysis.Value, DefaultTypeAnalysis.NodeInfo, DefaultTypeAnalysis.Transfer> {
+		Analysis<DefaultTypeAnalysis.Value, DefaultTypeAnalysis.CFStore, DefaultTypeAnalysis.Transfer> {
 	/**
 	 * The qualifier hierarchy for which to track annotations.
 	 */
@@ -182,119 +183,99 @@ public class DefaultTypeAnalysis
 	 * 
 	 * Only Nodes representing mutable values, such as VariableDeclarationNodes
 	 * are tracked. If we compute a more precise type annotation for a variable
-	 * than its static annotation, then it is entered into the NodeInfo and
-	 * stays there.
+	 * than its static annotation, then it is entered into the {@link CFStore}
+	 * and stays there.
 	 * 
-	 * TODO: Extend NodeInfo to track class member fields in the same way as
-	 * variables.
+	 * TODO: Extend {@link CFStore} to track class member fields in the same way
+	 * as variables.
 	 */
-	public class NodeInfo implements Store<NodeInfo> {
-		private Map<Node, Value> mutableInfo;
+	public class CFStore implements Store<CFStore> {
 
-		private NodeInfo() {
-			mutableInfo = new IdentityHashMap<Node, Value>();
+		/**
+		 * Information collected about local variables, which are identified by
+		 * the corresponding element.
+		 */
+		protected Map<Element, Value> localVariables;
+
+		public CFStore() {
+			localVariables = new HashMap<>();
 		}
 
-		private NodeInfo(Map<Node, Value> mutableInfo) {
-			this.mutableInfo = mutableInfo;
+		/** Copy constructor. */
+		protected CFStore(CFStore other) {
+			localVariables = new HashMap<>(other.localVariables);
 		}
 
 		/**
 		 * Returns the most precise dataflow information known for the argument
-		 * Node. If dataflow analysis has yielded more precise information, it
-		 * is returned. Otherwise, if static information is available, that is
-		 * returned. Otherwise, empty information is returned.
+		 * Node.
 		 */
 		public Value getInformation(Node n) {
-			if (mutableInfo.containsKey(n)) {
-				return mutableInfo.get(n);
-			} else if (nodeInformation.containsKey(n)) {
-				return nodeInformation.get(n);
-			} else {
-				Value flowInsensitive = flowInsensitiveValue(n);
-				if (flowInsensitive != null) {
-					return flowInsensitive;
-				}
+			if (n instanceof LocalVariableNode) {
+				Element el = ((LocalVariableNode) n).getElement();
+				assert localVariables.containsKey(el);
+				return localVariables.get(el);
 			}
-			return createValue();
+			// TODO: what do we want to do here?
+			throw new RuntimeException();
 		}
 
 		/**
-		 * @return the argument Value or the flow insensitive Value, whichever
-		 *         is more precise
+		 * Set information about a local variable in the store. Overwrites any
+		 * information that might have been available previously.
 		 */
-		private Value flowInsensitiveUpperBound(Node n, Value val) {
-			Value flowInsensitive = flowInsensitiveValue(n);
-			if ((val.getAnnotations().isEmpty() && !flowInsensitive
-					.getAnnotations().isEmpty())
-					|| flowInsensitive.isSubtypeOf(val)) {
-				return flowInsensitive;
-			} else {
-				return val;
-			}
+		public void setInformation(LocalVariableNode n, Value val) {
+			localVariables.put(n.getElement(), val);
 		}
 
 		/**
-		 * In the current version, we explicitly store either the flow sensitive
-		 * information passed as an argument, or the flow insensitive
-		 * information, whichever is more precise.
-		 * 
-		 * TODO: Ensure that flow sensitive information is always at least as
-		 * precise as flow insensitive information, so that we can avoid this
-		 * overhead and even avoid the cost of explicitly storing information
-		 * that is no better than flow insensitive.
+		 * Merge in information about a local variable in the store by taking
+		 * the least upper bound of the previous information and {@code val}.
+		 * Previous information needs to be available.
 		 */
-		public void setInformation(Node n, Value val) {
-			val = flowInsensitiveUpperBound(n, val);
-			if (n.hasResult()) {
-				nodeInformation.put(n, val);
-			} else if (n instanceof VariableDeclarationNode) {
-				mutableInfo.put(n, val);
-			}
-		}
-
-		public void mergeInformation(Node n, Value val) {
-			Value updatedVal = flowInsensitiveUpperBound(n, val);
-			if (n.hasResult()) {
-				if (nodeInformation.containsKey(n)) {
-					updatedVal = nodeInformation.get(n).leastUpperBound(val);
-				}
-				nodeInformation.put(n, updatedVal);
-			} else if (n instanceof VariableDeclarationNode) {
-				if (mutableInfo.containsKey(n)) {
-					updatedVal = mutableInfo.get(n).leastUpperBound(val);
-				}
-				mutableInfo.put(n, updatedVal);
-			}
+		public void mergeInformation(LocalVariableNode n, Value val) {
+			Element el = n.getElement();
+			assert localVariables.containsKey(el);
+			Value newVal = val.leastUpperBound(localVariables.get(el));
+			localVariables.put(el, newVal);
 		}
 
 		@Override
-		public NodeInfo copy() {
-			return new NodeInfo(new IdentityHashMap<>(mutableInfo));
+		public CFStore copy() {
+			return new CFStore(this);
 		}
 
 		@Override
-		public NodeInfo leastUpperBound(NodeInfo other) {
-			NodeInfo newInfo = copy();
+		public CFStore leastUpperBound(CFStore other) {
+			CFStore newStore = new CFStore();
 
-			for (Entry<Node, Value> e : other.mutableInfo.entrySet()) {
-				newInfo.mergeInformation(e.getKey(), e.getValue());
+			for (Entry<Element, Value> e : other.localVariables.entrySet()) {
+				// local variables that are only part of one store, but not the
+				// other are discarded. They are assumed to not be in scope any
+				// more.
+				Element el = e.getKey();
+				if (localVariables.containsKey(el)) {
+					Value otherVal = e.getValue();
+					Value thisVal = localVariables.get(el);
+					Value mergedVal = thisVal.leastUpperBound(otherVal);
+					newStore.localVariables.put(el, mergedVal);
+				}
 			}
 
-			return newInfo;
+			return newStore;
 		}
 
 		/**
-		 * Returns true iff this NodeInfo contains a superset of the map entries
-		 * of the argument NodeInfo. Note that we test the entry keys and values
-		 * by Java equality, not by any subtype relationship. This method is
-		 * used primarily to simplify the equals predicate.
+		 * Returns true iff this {@link CFStore} contains a superset of the map
+		 * entries of the argument {@link CFStore}. Note that we test the entry
+		 * keys and values by Java equality, not by any subtype relationship.
+		 * This method is used primarily to simplify the equals predicate.
 		 */
-		private boolean supersetOf(NodeInfo other) {
-			for (Entry<Node, Value> e : other.mutableInfo.entrySet()) {
-				Node key = e.getKey();
-				if (!mutableInfo.containsKey(key)
-						|| !mutableInfo.get(key).equals(e.getValue())) {
+		protected boolean supersetOf(CFStore other) {
+			for (Entry<Element, Value> e : other.localVariables.entrySet()) {
+				Element key = e.getKey();
+				if (!localVariables.containsKey(key)
+						|| !localVariables.get(key).equals(e.getValue())) {
 					return false;
 				}
 			}
@@ -303,8 +284,8 @@ public class DefaultTypeAnalysis
 
 		@Override
 		public boolean equals(Object o) {
-			if (o != null && o instanceof NodeInfo) {
-				NodeInfo other = (NodeInfo) o;
+			if (o != null && o instanceof CFStore) {
+				CFStore other = (CFStore) o;
 				return this.supersetOf(other) && other.supersetOf(this);
 			} else {
 				return false;
@@ -313,8 +294,8 @@ public class DefaultTypeAnalysis
 
 		@Override
 		public String toString() {
-			StringBuilder result = new StringBuilder("NodeInfo (\\n");
-			for (Map.Entry<Node, Value> entry : mutableInfo.entrySet()) {
+			StringBuilder result = new StringBuilder("CFStore (\\n");
+			for (Map.Entry<Element, Value> entry : localVariables.entrySet()) {
 				result.append(entry.getKey() + "->"
 						+ entry.getValue().getAnnotations() + "\\n");
 			}
@@ -328,8 +309,8 @@ public class DefaultTypeAnalysis
 	 * assignments to local variables.
 	 */
 	public static class Transfer extends
-			SinkNodeVisitor<TransferResult<NodeInfo>, TransferInput<NodeInfo>>
-			implements TransferFunction<NodeInfo> {
+			SinkNodeVisitor<TransferResult<CFStore>, TransferInput<CFStore>>
+			implements TransferFunction<CFStore> {
 
 		private/* @LazyNonNull */DefaultTypeAnalysis analysis;
 
@@ -342,9 +323,9 @@ public class DefaultTypeAnalysis
 		 * most refined type.
 		 */
 		@Override
-		public NodeInfo initialStore(MethodTree tree,
+		public CFStore initialStore(MethodTree tree,
 				List<LocalVariableNode> parameters) {
-			NodeInfo info = analysis.new NodeInfo();
+			CFStore info = analysis.new CFStore();
 
 			for (LocalVariableNode p : parameters) {
 				Value flowInsensitive = analysis.flowInsensitiveValue(p);
@@ -363,11 +344,11 @@ public class DefaultTypeAnalysis
 		 * the case of conditional input information, merged.
 		 */
 		@Override
-		public TransferResult<NodeInfo> visitNode(Node n,
-				TransferInput<NodeInfo> in) {
+		public TransferResult<CFStore> visitNode(Node n,
+				TransferInput<CFStore> in) {
 			// TODO: Perform type propagation separately with a thenStore and an
 			// elseStore.
-			NodeInfo info = in.getRegularStore();
+			CFStore info = in.getRegularStore();
 
 			if (n.hasResult()) {
 				Tree tree = n.getTree();
@@ -377,21 +358,19 @@ public class DefaultTypeAnalysis
 				Set<AnnotationMirror> annotations = analysis.propagator.visit(
 						tree, provider);
 				Value value = analysis.createValue(annotations);
-				info.setInformation(n, value);
 			}
 
-			return new RegularTransferResult<NodeInfo>(info);
+			return new RegularTransferResult<CFStore>(info);
 		}
 
 		@Override
-		public TransferResult<NodeInfo> visitValueLiteral(ValueLiteralNode n,
-				TransferInput<NodeInfo> in) {
+		public TransferResult<CFStore> visitValueLiteral(ValueLiteralNode n,
+				TransferInput<CFStore> in) {
 			// Literal values always have their flow insensitive type.
-			NodeInfo info = in.getRegularStore();
+			CFStore info = in.getRegularStore();
 			Value flowInsensitive = analysis.flowInsensitiveValue(n);
 			assert flowInsensitive != null : "No flow insensitive information for node";
-			info.setInformation(n, flowInsensitive);
-			return new RegularTransferResult<NodeInfo>(info);
+			return new RegularTransferResult<CFStore>(info);
 		}
 
 		/**
@@ -399,16 +378,16 @@ public class DefaultTypeAnalysis
 		 * precise information available for the declaration.
 		 */
 		@Override
-		public TransferResult<NodeInfo> visitLocalVariable(LocalVariableNode n,
-				TransferInput<NodeInfo> in) {
-			NodeInfo info = in.getRegularStore();
+		public TransferResult<CFStore> visitLocalVariable(LocalVariableNode n,
+				TransferInput<CFStore> in) {
+			CFStore info = in.getRegularStore();
 
 			VariableDeclarationNode decl = n.getDeclaration();
 			if (decl != null) {
 				info.setInformation(n, info.getInformation(decl));
 			}
 
-			return new RegularTransferResult<NodeInfo>(info);
+			return new RegularTransferResult<CFStore>(info);
 		}
 
 		/**
@@ -416,27 +395,25 @@ public class DefaultTypeAnalysis
 		 * LHS, if the RHS has more precise information available.
 		 */
 		@Override
-		public TransferResult<NodeInfo> visitAssignment(AssignmentNode n,
-				TransferInput<NodeInfo> in) {
+		public TransferResult<CFStore> visitAssignment(AssignmentNode n,
+				TransferInput<CFStore> in) {
 			Node lhs = n.getTarget();
 			Node rhs = n.getExpression();
 
-			NodeInfo info = in.getRegularStore();
+			CFStore info = in.getRegularStore();
 			Value rhsValue = info.getInformation(rhs);
 
 			// Skip assignments to arrays or fields.
 			if (lhs instanceof LocalVariableNode) {
-				VariableDeclarationNode decl = ((LocalVariableNode) lhs)
-						.getDeclaration();
-				assert decl != null;
-				info.setInformation(decl, rhsValue);
+				LocalVariableNode var = (LocalVariableNode) lhs;
+				info.setInformation(var, rhsValue);
 			}
 
 			// The AssignmentNode itself is a value with the same
 			// type as the RHS.
-			info.setInformation(n, rhsValue);
+			// TODO
 
-			return new RegularTransferResult<NodeInfo>(info);
+			return new RegularTransferResult<CFStore>(info);
 		}
 	}
 
@@ -444,9 +421,9 @@ public class DefaultTypeAnalysis
 	 * Map AST Trees to type annotations based on a NodeInfo store.
 	 */
 	public class NodeInfoProvider implements TypeAnnotationProvider {
-		private NodeInfo info;
+		private CFStore info;
 
-		public NodeInfoProvider(NodeInfo info) {
+		public NodeInfoProvider(CFStore info) {
 			this.info = info;
 		}
 
