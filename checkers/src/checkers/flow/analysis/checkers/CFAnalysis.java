@@ -61,11 +61,12 @@ import com.sun.source.tree.Tree;
  * more precise static type than their LHS.
  * 
  * @author Charlie Garrett
+ * @author Stefan Heule
  * 
  */
-public class DefaultTypeAnalysis
+public class CFAnalysis
 		extends
-		Analysis<DefaultTypeAnalysis.Value, DefaultTypeAnalysis.CFStore, DefaultTypeAnalysis.Transfer> {
+		Analysis<CFAnalysis.CFValue, CFAnalysis.CFStore, CFAnalysis.CFTransfer> {
 	/**
 	 * The qualifier hierarchy for which to track annotations.
 	 */
@@ -87,9 +88,9 @@ public class DefaultTypeAnalysis
 	 */
 	protected final TreeAnnotationPropagator propagator;
 
-	public DefaultTypeAnalysis(QualifierHierarchy typeHierarchy,
+	public CFAnalysis(QualifierHierarchy typeHierarchy,
 			AnnotatedTypeFactory factory) {
-		super(new Transfer());
+		super(new CFTransfer());
 		this.typeHierarchy = typeHierarchy;
 		this.legalAnnotations = typeHierarchy.getAnnotations();
 		this.factory = factory;
@@ -101,14 +102,14 @@ public class DefaultTypeAnalysis
 	 * An abstact value for the default analysis is a set of annotations from
 	 * the QualifierHierarchy.
 	 */
-	public class Value implements AbstractValue<Value> {
+	public class CFValue implements AbstractValue<CFValue> {
 		private Set<AnnotationMirror> annotations;
 
-		private Value() {
+		private CFValue() {
 			annotations = new HashSet<AnnotationMirror>();
 		}
 
-		private Value(Set<AnnotationMirror> annotations) {
+		private CFValue(Set<AnnotationMirror> annotations) {
 			this.annotations = annotations;
 		}
 
@@ -122,16 +123,16 @@ public class DefaultTypeAnalysis
 		 * DefaultTypeAnalysis.Value.
 		 */
 		@Override
-		public Value leastUpperBound(Value other) {
+		public CFValue leastUpperBound(CFValue other) {
 			Set<AnnotationMirror> lub = typeHierarchy.leastUpperBound(
 					annotations, other.annotations);
-			return new Value(lub);
+			return new CFValue(lub);
 		}
 
 		/**
 		 * Return whether this Value is a proper subtype of the argument Value.
 		 */
-		boolean isSubtypeOf(Value other) {
+		boolean isSubtypeOf(CFValue other) {
 			return typeHierarchy.isSubtype(annotations, other.annotations);
 		}
 	}
@@ -139,8 +140,8 @@ public class DefaultTypeAnalysis
 	/**
 	 * Create a new dataflow value with no type annotations.
 	 */
-	public Value createValue() {
-		return new Value();
+	public CFValue createValue() {
+		return new CFValue();
 	}
 
 	/**
@@ -148,14 +149,14 @@ public class DefaultTypeAnalysis
 	 * belong to the QualifierHierarchy for which this DefaultTypeAnalysis was
 	 * created.
 	 */
-	public Value createValue(Set<AnnotationMirror> annotations)
+	public CFValue createValue(Set<AnnotationMirror> annotations)
 			throws IllegalArgumentException {
 		for (AnnotationMirror anno : annotations) {
 			if (!legalAnnotations.contains(anno)) {
 				throw new IllegalArgumentException();
 			}
 		}
-		return new Value(annotations);
+		return new CFValue(annotations);
 	}
 
 	/**
@@ -164,14 +165,14 @@ public class DefaultTypeAnalysis
 	 * corresponding Trees and the method returns null when no type information
 	 * is available.
 	 */
-	private/* @Nullable */Value flowInsensitiveValue(Node n) {
+	private/* @Nullable */CFValue flowInsensitiveValue(Node n) {
 		Tree tree = n.getTree();
 		if (tree == null) {
 			return null;
 		}
 
 		AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
-		return new Value(type.getAnnotations());
+		return new CFValue(type.getAnnotations());
 	}
 
 	/**
@@ -193,7 +194,7 @@ public class DefaultTypeAnalysis
 		 * Information collected about local variables, which are identified by
 		 * the corresponding element.
 		 */
-		protected Map<Element, Value> localVariableValues;
+		protected Map<Element, CFValue> localVariableValues;
 
 		public CFStore() {
 			localVariableValues = new HashMap<>();
@@ -207,7 +208,7 @@ public class DefaultTypeAnalysis
 		/**
 		 * Current abstract value of a local variable.
 		 */
-		public Value getValue(LocalVariableNode n) {
+		public CFValue getValue(LocalVariableNode n) {
 			Element el = n.getElement();
 			assert localVariableValues.containsKey(el);
 			return localVariableValues.get(el);
@@ -217,7 +218,7 @@ public class DefaultTypeAnalysis
 		 * Set the abstract value of a local variable in the store. Overwrites
 		 * any value that might have been available previously.
 		 */
-		public void setValue(LocalVariableNode n, Value val) {
+		public void setValue(LocalVariableNode n, CFValue val) {
 			localVariableValues.put(n.getElement(), val);
 		}
 
@@ -226,10 +227,10 @@ public class DefaultTypeAnalysis
 		 * the least upper bound of the previous value and {@code val}. Previous
 		 * information needs to be available.
 		 */
-		public void mergeValue(LocalVariableNode n, Value val) {
+		public void mergeValue(LocalVariableNode n, CFValue val) {
 			Element el = n.getElement();
 			assert localVariableValues.containsKey(el);
-			Value newVal = val.leastUpperBound(localVariableValues.get(el));
+			CFValue newVal = val.leastUpperBound(localVariableValues.get(el));
 			localVariableValues.put(el, newVal);
 		}
 
@@ -242,15 +243,15 @@ public class DefaultTypeAnalysis
 		public CFStore leastUpperBound(CFStore other) {
 			CFStore newStore = new CFStore();
 
-			for (Entry<Element, Value> e : other.localVariableValues.entrySet()) {
+			for (Entry<Element, CFValue> e : other.localVariableValues.entrySet()) {
 				// local variables that are only part of one store, but not the
 				// other are discarded. They are assumed to not be in scope any
 				// more.
 				Element el = e.getKey();
 				if (localVariableValues.containsKey(el)) {
-					Value otherVal = e.getValue();
-					Value thisVal = localVariableValues.get(el);
-					Value mergedVal = thisVal.leastUpperBound(otherVal);
+					CFValue otherVal = e.getValue();
+					CFValue thisVal = localVariableValues.get(el);
+					CFValue mergedVal = thisVal.leastUpperBound(otherVal);
 					newStore.localVariableValues.put(el, mergedVal);
 				}
 			}
@@ -265,7 +266,7 @@ public class DefaultTypeAnalysis
 		 * This method is used primarily to simplify the equals predicate.
 		 */
 		protected boolean supersetOf(CFStore other) {
-			for (Entry<Element, Value> e : other.localVariableValues.entrySet()) {
+			for (Entry<Element, CFValue> e : other.localVariableValues.entrySet()) {
 				Element key = e.getKey();
 				if (!localVariableValues.containsKey(key)
 						|| !localVariableValues.get(key).equals(e.getValue())) {
@@ -288,7 +289,7 @@ public class DefaultTypeAnalysis
 		@Override
 		public String toString() {
 			StringBuilder result = new StringBuilder("CFStore (\\n");
-			for (Map.Entry<Element, Value> entry : localVariableValues
+			for (Map.Entry<Element, CFValue> entry : localVariableValues
 					.entrySet()) {
 				result.append(entry.getKey() + "->"
 						+ entry.getValue().getAnnotations() + "\\n");
@@ -302,14 +303,14 @@ public class DefaultTypeAnalysis
 	 * The default analysis transfer function propagates information through
 	 * assignments to local variables.
 	 */
-	public static class Transfer
+	public static class CFTransfer
 			extends
-			AbstractNodeVisitor<TransferResult<Value, CFStore>, TransferInput<Value, CFStore>>
-			implements TransferFunction<Value, CFStore> {
+			AbstractNodeVisitor<TransferResult<CFValue, CFStore>, TransferInput<CFValue, CFStore>>
+			implements TransferFunction<CFValue, CFStore> {
 
-		private/* @LazyNonNull */DefaultTypeAnalysis analysis;
+		private/* @LazyNonNull */CFAnalysis analysis;
 
-		public void setAnalysis(DefaultTypeAnalysis analysis) {
+		public void setAnalysis(CFAnalysis analysis) {
 			this.analysis = analysis;
 		}
 
@@ -323,7 +324,7 @@ public class DefaultTypeAnalysis
 			CFStore info = analysis.new CFStore();
 
 			for (LocalVariableNode p : parameters) {
-				Value flowInsensitive = analysis.flowInsensitiveValue(p);
+				CFValue flowInsensitive = analysis.flowInsensitiveValue(p);
 				assert flowInsensitive != null : "Missing initial type information for method parameter";
 				info.mergeValue(p, flowInsensitive);
 			}
@@ -339,12 +340,12 @@ public class DefaultTypeAnalysis
 		 * the case of conditional input information, merged.
 		 */
 		@Override
-		public TransferResult<Value, CFStore> visitNode(Node n,
-				TransferInput<Value, CFStore> in) {
+		public TransferResult<CFValue, CFStore> visitNode(Node n,
+				TransferInput<CFValue, CFStore> in) {
 			// TODO: Perform type propagation separately with a thenStore and an
 			// elseStore.
 			CFStore info = in.getRegularStore();
-			Value value = null;
+			CFValue value = null;
 
 			if (n.hasResult()) {
 				Tree tree = n.getTree();
@@ -364,10 +365,10 @@ public class DefaultTypeAnalysis
 		 * precise information available for the declaration.
 		 */
 		@Override
-		public TransferResult<Value, CFStore> visitLocalVariable(
-				LocalVariableNode n, TransferInput<Value, CFStore> in) {
+		public TransferResult<CFValue, CFStore> visitLocalVariable(
+				LocalVariableNode n, TransferInput<CFValue, CFStore> in) {
 			CFStore store = in.getRegularStore();
-			Value value = store.getValue(n);
+			CFValue value = store.getValue(n);
 			return new RegularTransferResult<>(value, store);
 		}
 
@@ -376,13 +377,13 @@ public class DefaultTypeAnalysis
 		 * LHS, if the RHS has more precise information available.
 		 */
 		@Override
-		public TransferResult<Value, CFStore> visitAssignment(AssignmentNode n,
-				TransferInput<Value, CFStore> in) {
+		public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode n,
+				TransferInput<CFValue, CFStore> in) {
 			Node lhs = n.getTarget();
 			Node rhs = n.getExpression();
 
 			CFStore info = in.getRegularStore();
-			Value rhsValue = in.getValueOfSubNode(rhs);
+			CFValue rhsValue = in.getValueOfSubNode(rhs);
 
 			// assignment to a local variable
 			if (lhs instanceof LocalVariableNode) {
