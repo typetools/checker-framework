@@ -122,7 +122,7 @@ public class DefaultTypeAnalysis
             this.annotations = annotations;
         }
 
-        public /*@NonNull*/ Set<AnnotationMirror> getAnnotations() {
+        public Set<AnnotationMirror> getAnnotations() {
             return annotations;
         }
 
@@ -132,7 +132,7 @@ public class DefaultTypeAnalysis
          * DefaultTypeAnalysis.Value.
          */
         @Override
-        public /*@NonNull*/ Value leastUpperBound(Value other) {
+        public Value leastUpperBound(Value other) {
             Set<AnnotationMirror> lub =
                 typeHierarchy.leastUpperBound(annotations,
                                               other.annotations);
@@ -152,7 +152,7 @@ public class DefaultTypeAnalysis
     /**
      * Create a new dataflow value with no type annotations.
      */
-    public /*@NonNull*/ Value createValue() {
+    public Value createValue() {
         return new Value();
     }
 
@@ -161,7 +161,7 @@ public class DefaultTypeAnalysis
      * which must belong to the QualifierHierarchy for which this
      * DefaultTypeAnalysis was created.
      */
-    public /*@NonNull*/ Value createValue(Set<AnnotationMirror> annotations)
+    public Value createValue(Set<AnnotationMirror> annotations)
             throws IllegalArgumentException {
         for (AnnotationMirror anno : annotations) {
             if (!legalAnnotations.contains(anno)) {
@@ -219,7 +219,7 @@ public class DefaultTypeAnalysis
          * Otherwise, if static information is available, that
          * is returned.  Otherwise, empty information is returned.
          */
-        public /*@NonNull*/ Value getInformation(Node n) {
+        public Value getInformation(Node n) {
             if (mutableInfo.containsKey(n)) {
                 return mutableInfo.get(n);
             } else if (nodeInformation.containsKey(n)) {
@@ -284,12 +284,12 @@ public class DefaultTypeAnalysis
         }
 
         @Override
-        public /*@NonNull*/ NodeInfo copy() {
+        public NodeInfo copy() {
             return new NodeInfo(new IdentityHashMap<>(mutableInfo));
         }
 
         @Override
-        public /*@NonNull*/ NodeInfo leastUpperBound(NodeInfo other) {
+        public NodeInfo leastUpperBound(NodeInfo other) {
             NodeInfo newInfo = copy();
 
             for (Entry<Node, Value> e : other.mutableInfo.entrySet()) {
@@ -360,7 +360,7 @@ public class DefaultTypeAnalysis
          * their currently most refined type.
          */
         @Override
-        public /*@NonNull*/ NodeInfo initialStore(MethodTree tree,
+        public NodeInfo initialStore(MethodTree tree,
                                      List<LocalVariableNode> parameters) {
             NodeInfo info = analysis.new NodeInfo();
 
@@ -382,7 +382,7 @@ public class DefaultTypeAnalysis
          * in the case of conditional input information, merged.
          */
         @Override
-        public /*@NonNull*/ TransferResult<NodeInfo> visitNode(Node n,
+        public TransferResult<NodeInfo> visitNode(Node n,
                                                                TransferInput<NodeInfo> in) {
             // TODO: Perform type propagation separately with a thenStore and an elseStore.
             NodeInfo info = in.getRegularStore();
@@ -401,7 +401,7 @@ public class DefaultTypeAnalysis
         }
 
         @Override
-        public /*@NonNull*/ TransferResult<NodeInfo> visitValueLiteral(ValueLiteralNode n,
+        public TransferResult<NodeInfo> visitValueLiteral(ValueLiteralNode n,
                                                                        TransferInput<NodeInfo> in) {
             // Literal values always have their flow insensitive type.
             NodeInfo info = in.getRegularStore();
@@ -416,7 +416,7 @@ public class DefaultTypeAnalysis
          * precise information available for the declaration.
          */
         @Override
-        public /*@NonNull*/ TransferResult<NodeInfo>
+        public TransferResult<NodeInfo>
             visitLocalVariable(LocalVariableNode n, TransferInput<NodeInfo> in) {
             NodeInfo info = in.getRegularStore();
 
@@ -433,7 +433,7 @@ public class DefaultTypeAnalysis
          * on the LHS, if the RHS has more precise information available.
          */
         @Override
-        public /*@NonNull*/ TransferResult<NodeInfo>
+        public TransferResult<NodeInfo>
             visitAssignment(AssignmentNode n, TransferInput<NodeInfo> in) {
             Node lhs = n.getTarget();
             Node rhs = n.getExpression();
@@ -479,7 +479,7 @@ public class DefaultTypeAnalysis
          * @return  the most precise annotated type of tree known
          */
         @Override
-        public /*@NonNull*/ Set<AnnotationMirror> getAnnotations(Tree tree)
+        public Set<AnnotationMirror> getAnnotations(Tree tree)
             throws IllegalArgumentException {
             Node node = cfg.getNodeCorrespondingToTree(tree);
             if (node == null) {
