@@ -203,7 +203,7 @@ public class CFGDOTVisualizer {
 
 		// visualize store if necessary
 		if (analysis != null) {
-			TransferInput<S> store = Analysis.readFromStore(
+			TransferInput<A, S> store = Analysis.readFromStore(
 					analysis.getStores(), bb);
 			StringBuilder sb2 = new StringBuilder();
 
