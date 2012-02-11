@@ -125,7 +125,7 @@ public class JavaSource2CFGDOT {
 	 *            Analysis to perform befor the visualization (or
 	 *            <code>null</code> if no analysis is to be performed).
 	 */
-	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> void generateDOTofCFG(
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
 			String inputFile, String outputFile, String method, String clas,
 			boolean pdf, /* @Nullable */Analysis<A, S, T> analysis) {
 		String fileName = (new File(inputFile)).getName();

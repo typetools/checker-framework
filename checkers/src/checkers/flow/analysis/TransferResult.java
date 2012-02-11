@@ -18,7 +18,7 @@ import java.util.Map;
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
-abstract public class TransferResult<S extends Store<S>> {
+abstract public class TransferResult<A extends AbstractValue<A>, S extends Store<S>> {
 
 	/**
 	 * The stores in case the basic block throws an exception (or {@code null}
@@ -27,6 +27,16 @@ abstract public class TransferResult<S extends Store<S>> {
 	 * in-store will be used.
 	 */
 	protected/* @Nullable */Map<Class<? extends Throwable>, S> exceptionalStores;
+
+	/**
+	 * The abstract value of the {@link Node} associated with this
+	 * {@link TransferResult}, or {@code null} if no value has been produced.
+	 */
+	protected/* @Nullable */A resultValue;
+	
+	public TransferResult(/* @Nullable */A resultValue) {
+		this.resultValue = resultValue;
+	}
 
 	/**
 	 * @return The regular result store produced if no exception is thrown by

@@ -13,8 +13,8 @@ import java.util.Map;
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
-public class ConditionalTransferResult<S extends Store<S>> extends
-		TransferResult<S> {
+public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Store<S>> extends
+		TransferResult<A, S> {
 
 	/** The 'then' result store. */
 	protected S thenStore;
@@ -40,7 +40,8 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 * allowed to be used anywhere outside of this class (including use through
 	 * aliases). Complete control over the objects is transfered to this class.
 	 */
-	public ConditionalTransferResult(S thenStore, S elseStore) {
+	public ConditionalTransferResult(A value, S thenStore, S elseStore) {
+		super(value);
 		this.thenStore = thenStore;
 		this.elseStore = elseStore;
 	}
@@ -65,8 +66,9 @@ public class ConditionalTransferResult<S extends Store<S>> extends
 	 * this class (including use through aliases). Complete control over the
 	 * objects is transfered to this class.
 	 */
-	public ConditionalTransferResult(S thenStore, S elseStore,
+	public ConditionalTransferResult(A value, S thenStore, S elseStore,
 			Map<Class<? extends Throwable>, S> exceptionalStores) {
+		super(value);
 		this.exceptionalStores = exceptionalStores;
 		this.thenStore = thenStore;
 		this.elseStore = elseStore;

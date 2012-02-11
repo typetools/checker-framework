@@ -21,7 +21,7 @@ import checkers.flow.cfg.node.Node;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
-public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> {
+public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
 
 	/** The transfer function for regular nodes. */
 	protected T transferFunction;
@@ -68,7 +68,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				// apply transfer function to contents
 				TransferInput<S> storeBefore = getStoreBefore(rb);
 				TransferInput<S> store = storeBefore.copy();
-				TransferResult<S> transferResult = null;
+				TransferResult<A, S> transferResult = null;
 				for (Node n : rb.getContents()) {
 					transferResult = n.accept(transferFunction, store);
 					store = new TransferInput<>(transferResult);
@@ -89,7 +89,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				TransferInput<S> storeBefore = getStoreBefore(eb);
 				TransferInput<S> store = storeBefore.copy();
 				Node node = eb.getNode();
-				TransferResult<S> transferResult = node.accept(transferFunction, store);;
+				TransferResult<A, S> transferResult = node.accept(transferFunction, store);;
 
 				// propagate store to successor
 				Block succ = eb.getSuccessor();

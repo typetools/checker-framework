@@ -12,8 +12,8 @@ import java.util.Map;
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
-public class RegularTransferResult<S extends Store<S>> extends
-		TransferResult<S> {
+public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S>>
+		extends TransferResult<A, S> {
 
 	/** The regular result store. */
 	protected S store;
@@ -36,7 +36,8 @@ public class RegularTransferResult<S extends Store<S>> extends
 	 * outside of this class (including use through aliases). Complete control
 	 * over the object is transfered to this class.
 	 */
-	public RegularTransferResult(S resultStore) {
+	public RegularTransferResult(A value, S resultStore) {
+		super(value);
 		store = resultStore;
 	}
 
@@ -60,8 +61,9 @@ public class RegularTransferResult<S extends Store<S>> extends
 	 * this class (including use through aliases). Complete control over the
 	 * objects is transfered to this class.
 	 */
-	public RegularTransferResult(S resultStore,
+	public RegularTransferResult(A value, S resultStore,
 			Map<Class<? extends Throwable>, S> exceptionalStores) {
+		super(value);
 		this.store = resultStore;
 		this.exceptionalStores = exceptionalStores;
 	}
