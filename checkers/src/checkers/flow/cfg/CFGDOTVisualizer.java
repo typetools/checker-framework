@@ -3,7 +3,6 @@ package checkers.flow.cfg;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -51,11 +50,6 @@ public class CFGDOTVisualizer {
 	 */
 	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualize(Block entry,
                                                             /* @Nullable */ Analysis<A, S, T> analysis) {
-		Map<Block, TransferInput<S>> stores = null;
-		if (analysis != null) {
-			stores = analysis.getStores();
-		}
-
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<>();
@@ -135,7 +129,7 @@ public class CFGDOTVisualizer {
 			} else if (v.getType() == BlockType.SPECIAL_BLOCK) {
 				sb1.append("shape=oval ");
 			}
-			sb1.append("label=\"" + visualizeContent(v, stores, analysis) + "\"];\n");
+			sb1.append("label=\"" + visualizeContent(v, analysis) + "\"];\n");
 		}
 
 		sb1.append("\n");
@@ -154,12 +148,8 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <S extends Store<S>> String visualizeContent(Block bb, /*
-																			 * @
-																			 * Nullable
-																			 */
-			Map<Block, TransferInput<S>> stores,
-                        /* @Nullable */ Analysis<?, ?, ?> analysis) {
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeContent(Block bb,
+                        /* @Nullable */ Analysis<A, S, T> analysis) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -210,8 +200,8 @@ public class CFGDOTVisualizer {
 		}
 
 		// visualize store if necessary
-		if (stores != null) {
-			Object store = Analysis.readFromStore(stores, bb);
+		if (analysis != null) {
+			TransferInput<S> store = Analysis.readFromStore(analysis.getStores(), bb);
 			StringBuilder sb2 = new StringBuilder();
 
 			// split store representation to two lines
@@ -227,7 +217,7 @@ public class CFGDOTVisualizer {
 		return sb.toString();
 	}
 
-	protected static String visualizeNode(Node t, /* @Nullable */ Analysis<?, ?, ?> analysis) {
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeNode(Node t, /* @Nullable */ Analysis<A, S, T> analysis) {
 		return t.toString() + "   [ " + visualizeType(t) + " ]  " +
 			analysis.getInformationAsString(t);
 	}
