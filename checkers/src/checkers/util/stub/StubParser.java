@@ -50,7 +50,7 @@ public class StubParser {
      * (This may be a problem in the unlikely occurrence that a
      * type-checker supports two annotations with the same simple name.)
      */ 
-    final Map<String, AnnotationMirror> supportedAnnotations;
+    private final Map<String, AnnotationMirror> supportedAnnotations;
 
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
@@ -63,6 +63,9 @@ public class StubParser {
         this.annoUtils = AnnotationUtils.getInstance(env);
         this.elements = env.getElementUtils();
         supportedAnnotations = getSupportedAnnotations();
+        if (supportedAnnotations.isEmpty()) {
+            stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
+        }
     }
 
     /** All annotations defined in the package.  Keys are simple names. */
@@ -130,10 +133,11 @@ public class StubParser {
     private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         theCompilationUnit = cu;
         final String packageName;
-        if (cu.getPackage() == null)
+        if (cu.getPackage() == null) {
             packageName = null;
-        else
+        } else {
             packageName = cu.getPackage().getName().toString();
+        }
         if (cu.getTypes() != null) {
             for (TypeDeclaration typeDecl : cu.getTypes())
                 parse(typeDecl, packageName, atypes, declAnnos);
