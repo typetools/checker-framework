@@ -37,6 +37,13 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
 	public TransferResult(/* @Nullable */A resultValue) {
 		this.resultValue = resultValue;
 	}
+	
+	/**
+	 * @return The abstract value produced by the transfer function.
+	 */
+	public A getResultValue() {
+		return resultValue;
+	}
 
 	/**
 	 * @return The regular result store produced if no exception is thrown by

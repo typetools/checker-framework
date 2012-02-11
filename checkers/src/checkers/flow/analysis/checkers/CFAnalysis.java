@@ -25,7 +25,9 @@ import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 
 import com.sun.source.tree.MethodTree;
@@ -61,8 +63,7 @@ import com.sun.source.tree.Tree;
  * @author Stefan Heule
  * 
  */
-public class CFAnalysis
-		extends
+public class CFAnalysis extends
 		Analysis<CFAnalysis.CFValue, CFAnalysis.CFStore, CFAnalysis.CFTransfer> {
 	/**
 	 * The qualifier hierarchy for which to track annotations.
@@ -124,6 +125,11 @@ public class CFAnalysis
 		 */
 		boolean isSubtypeOf(CFValue other) {
 			return typeHierarchy.isSubtype(annotations, other.annotations);
+		}
+		
+		@Override
+		public String toString() {
+			return annotations.toString();
 		}
 	}
 
@@ -193,6 +199,7 @@ public class CFAnalysis
 		 * any value that might have been available previously.
 		 */
 		public void setValue(LocalVariableNode n, CFValue val) {
+			assert val != null;
 			localVariableValues.put(n.getElement(), val);
 		}
 
@@ -217,7 +224,8 @@ public class CFAnalysis
 		public CFStore leastUpperBound(CFStore other) {
 			CFStore newStore = new CFStore();
 
-			for (Entry<Element, CFValue> e : other.localVariableValues.entrySet()) {
+			for (Entry<Element, CFValue> e : other.localVariableValues
+					.entrySet()) {
 				// local variables that are only part of one store, but not the
 				// other are discarded. They are assumed to not be in scope any
 				// more.
@@ -240,7 +248,8 @@ public class CFAnalysis
 		 * This method is used primarily to simplify the equals predicate.
 		 */
 		protected boolean supersetOf(CFStore other) {
-			for (Entry<Element, CFValue> e : other.localVariableValues.entrySet()) {
+			for (Entry<Element, CFValue> e : other.localVariableValues
+					.entrySet()) {
 				Element key = e.getKey();
 				if (!localVariableValues.containsKey(key)
 						|| !localVariableValues.get(key).equals(e.getValue())) {
@@ -299,8 +308,9 @@ public class CFAnalysis
 
 			for (LocalVariableNode p : parameters) {
 				CFValue flowInsensitive = null; // TODO
-				assert flowInsensitive != null : "Missing initial type information for method parameter";
-				info.mergeValue(p, flowInsensitive);
+				// assert flowInsensitive != null :
+				// "Missing initial type information for method parameter";
+				// info.mergeValue(p, flowInsensitive);
 			}
 
 			return info;
@@ -326,7 +336,7 @@ public class CFAnalysis
 				assert tree != null : "Node has a result, but no Tree";
 
 				Set<AnnotationMirror> annotations = null; // TODO
-				value = analysis.createValue(annotations);
+				value = null;// analysis.createValue(annotations);
 			}
 
 			return new RegularTransferResult<>(value, info);
@@ -344,23 +354,36 @@ public class CFAnalysis
 			return new RegularTransferResult<>(value, store);
 		}
 
+		@Override
+		public TransferResult<CFValue, CFStore> visitStringLiteral(
+				StringLiteralNode n, TransferInput<CFValue, CFStore> p) {
+			AnnotatedTypeMirror type = analysis.factory.getAnnotatedType(n
+					.getTree());
+			CFValue value = analysis.new CFValue(type.getAnnotations());
+			return new RegularTransferResult<CFAnalysis.CFValue, CFAnalysis.CFStore>(
+					value,
+					p.getRegularStore());
+		}
+
 		/**
 		 * Propagate information from the assignment's RHS to a variable on the
 		 * LHS, if the RHS has more precise information available.
 		 */
 		@Override
-		public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode n,
-				TransferInput<CFValue, CFStore> in) {
+		public TransferResult<CFValue, CFStore> visitAssignment(
+				AssignmentNode n, TransferInput<CFValue, CFStore> in) {
 			Node lhs = n.getTarget();
 			Node rhs = n.getExpression();
 
 			CFStore info = in.getRegularStore();
 			CFValue rhsValue = in.getValueOfSubNode(rhs);
 
-			// assignment to a local variable
-			if (lhs instanceof LocalVariableNode) {
-				LocalVariableNode var = (LocalVariableNode) lhs;
-				info.setValue(var, rhsValue);
+			if (rhsValue != null) {
+				// assignment to a local variable
+				if (lhs instanceof LocalVariableNode) {
+					LocalVariableNode var = (LocalVariableNode) lhs;
+					info.setValue(var, rhsValue);
+				}
 			}
 
 			return new RegularTransferResult<>(rhsValue, info);

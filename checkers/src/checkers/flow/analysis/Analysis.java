@@ -71,6 +71,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				TransferResult<A, S> transferResult = null;
 				for (Node n : rb.getContents()) {
 					transferResult = n.accept(transferFunction, store);
+					A val = transferResult.getResultValue();
+					if (val != null) {
+						nodeValues.put(n, val);
+					}
 					store = new TransferInput<>(nodeValues, transferResult);
 				}
 				// loop will run at least one, making transferResult non-null
@@ -91,7 +95,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				Node node = eb.getNode();
 				TransferResult<A, S> transferResult = node.accept(
 						transferFunction, store);
-				;
+				A val = transferResult.getResultValue();
+				if (val != null) {
+					nodeValues.put(node, val);
+				}
 
 				// propagate store to successor
 				Block succ = eb.getSuccessor();
@@ -99,7 +106,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 					addStoreBefore(succ, store);
 				}
 
-				// propagate store to exceptional sucessors
+				// propagate store to exceptional successors
 				for (Entry<Class<? extends Throwable>, Block> e : eb
 						.getExceptionalSuccessors().entrySet()) {
 					Block exceptionSucc = e.getValue();
