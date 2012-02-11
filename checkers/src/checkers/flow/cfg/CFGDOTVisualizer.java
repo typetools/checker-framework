@@ -48,7 +48,7 @@ public class CFGDOTVisualizer {
 	 *            indicate that this information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualize(
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualize(
 			Block entry,
 			/* @Nullable */Analysis<A, S, T> analysis) {
 		StringBuilder sb1 = new StringBuilder();
@@ -149,7 +149,7 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeContent(
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeContent(
 			Block bb,
 			/* @Nullable */Analysis<A, S, T> analysis) {
 		StringBuilder sb = new StringBuilder();
@@ -220,7 +220,7 @@ public class CFGDOTVisualizer {
 		return sb.toString();
 	}
 
-	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeNode(
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeNode(
 			Node t, /* @Nullable */Analysis<A, S, T> analysis) {
 		return t.toString() + "   [ " + visualizeType(t) + " ]  "
 				+ analysis.getInformationAsString(t);
