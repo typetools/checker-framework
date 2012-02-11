@@ -57,7 +57,7 @@ public class TransferInput<S extends Store<S>> {
 	 * be stored internally and are not allowed to be used elsewhere. Full
 	 * control of them is transfered to this object.
 	 */
-	public TransferInput(TransferResult<S> to) {
+	public <A extends AbstractValue<A>> TransferInput(TransferResult<A, S> to) {
 		if (to.containsTwoStores()) {
 			thenStore = to.getThenStore();
 			elseStore = to.getElseStore();

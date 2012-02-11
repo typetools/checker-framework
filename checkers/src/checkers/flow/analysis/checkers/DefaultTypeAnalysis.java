@@ -207,17 +207,12 @@ public class DefaultTypeAnalysis
 		}
 
 		/**
-		 * Returns the most precise dataflow information known for the argument
-		 * Node.
+		 * Current information about a local variable.
 		 */
-		public Value getInformation(Node n) {
-			if (n instanceof LocalVariableNode) {
-				Element el = ((LocalVariableNode) n).getElement();
-				assert localVariables.containsKey(el);
-				return localVariables.get(el);
-			}
-			// TODO: what do we want to do here?
-			throw new RuntimeException();
+		public Value getInformation(LocalVariableNode n) {
+			Element el = n.getElement();
+			assert localVariables.containsKey(el);
+			return localVariables.get(el);
 		}
 
 		/**
@@ -308,9 +303,10 @@ public class DefaultTypeAnalysis
 	 * The default analysis transfer function propagates information through
 	 * assignments to local variables.
 	 */
-	public static class Transfer extends
-			SinkNodeVisitor<TransferResult<CFStore>, TransferInput<CFStore>>
-			implements TransferFunction<CFStore> {
+	public static class Transfer
+			extends
+			SinkNodeVisitor<TransferResult<Value, CFStore>, TransferInput<CFStore>>
+			implements TransferFunction<Value, CFStore> {
 
 		private/* @LazyNonNull */DefaultTypeAnalysis analysis;
 
@@ -344,11 +340,12 @@ public class DefaultTypeAnalysis
 		 * the case of conditional input information, merged.
 		 */
 		@Override
-		public TransferResult<CFStore> visitNode(Node n,
+		public TransferResult<Value, CFStore> visitNode(Node n,
 				TransferInput<CFStore> in) {
 			// TODO: Perform type propagation separately with a thenStore and an
 			// elseStore.
 			CFStore info = in.getRegularStore();
+			Value value = null;
 
 			if (n.hasResult()) {
 				Tree tree = n.getTree();
@@ -357,20 +354,10 @@ public class DefaultTypeAnalysis
 				NodeInfoProvider provider = analysis.new NodeInfoProvider(info);
 				Set<AnnotationMirror> annotations = analysis.propagator.visit(
 						tree, provider);
-				Value value = analysis.createValue(annotations);
+				value = analysis.createValue(annotations);
 			}
 
-			return new RegularTransferResult<CFStore>(info);
-		}
-
-		@Override
-		public TransferResult<CFStore> visitValueLiteral(ValueLiteralNode n,
-				TransferInput<CFStore> in) {
-			// Literal values always have their flow insensitive type.
-			CFStore info = in.getRegularStore();
-			Value flowInsensitive = analysis.flowInsensitiveValue(n);
-			assert flowInsensitive != null : "No flow insensitive information for node";
-			return new RegularTransferResult<CFStore>(info);
+			return new RegularTransferResult<>(value, info);
 		}
 
 		/**
@@ -378,16 +365,11 @@ public class DefaultTypeAnalysis
 		 * precise information available for the declaration.
 		 */
 		@Override
-		public TransferResult<CFStore> visitLocalVariable(LocalVariableNode n,
-				TransferInput<CFStore> in) {
+		public TransferResult<Value, CFStore> visitLocalVariable(
+				LocalVariableNode n, TransferInput<CFStore> in) {
 			CFStore info = in.getRegularStore();
-
-			VariableDeclarationNode decl = n.getDeclaration();
-			if (decl != null) {
-				info.setInformation(n, info.getInformation(decl));
-			}
-
-			return new RegularTransferResult<CFStore>(info);
+			Value value = info.getInformation(n);
+			return new RegularTransferResult<>(value, info);
 		}
 
 		/**
@@ -395,25 +377,21 @@ public class DefaultTypeAnalysis
 		 * LHS, if the RHS has more precise information available.
 		 */
 		@Override
-		public TransferResult<CFStore> visitAssignment(AssignmentNode n,
+		public TransferResult<Value, CFStore> visitAssignment(AssignmentNode n,
 				TransferInput<CFStore> in) {
 			Node lhs = n.getTarget();
 			Node rhs = n.getExpression();
 
 			CFStore info = in.getRegularStore();
-			Value rhsValue = info.getInformation(rhs);
+			Value rhsValue = null;// info.getInformation(rhs); // TODO
 
-			// Skip assignments to arrays or fields.
+			// assignment to a local variable
 			if (lhs instanceof LocalVariableNode) {
 				LocalVariableNode var = (LocalVariableNode) lhs;
 				info.setInformation(var, rhsValue);
 			}
 
-			// The AssignmentNode itself is a value with the same
-			// type as the RHS.
-			// TODO
-
-			return new RegularTransferResult<CFStore>(info);
+			return new RegularTransferResult<>(rhsValue, info);
 		}
 	}
 
@@ -444,8 +422,7 @@ public class DefaultTypeAnalysis
 			if (node == null) {
 				throw new IllegalArgumentException();
 			}
-			Value abstractValue = info.getInformation(node);
-			return abstractValue.getAnnotations();
+			return null;
 		}
 	}
 
