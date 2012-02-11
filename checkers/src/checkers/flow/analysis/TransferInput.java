@@ -1,5 +1,7 @@
 package checkers.flow.analysis;
 
+import java.util.Map;
+
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -16,7 +18,7 @@ import checkers.flow.cfg.node.Node;
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
-public class TransferInput<S extends Store<S>> {
+public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
 	/**
 	 * The regular result store (or {@code null} if none is present). The
@@ -49,15 +51,27 @@ public class TransferInput<S extends Store<S>> {
 	protected/* @Nullable */S elseStore;
 
 	/**
-	 * Create a {@link TransferInput}, given a {@link TransferResult}.
+	 * Mapping from nodes to abstract values (provided by the analysis).
+	 */
+	protected Map<Node, A> nodeValues;
+
+	/**
+	 * Create a {@link TransferInput}, given a {@link TransferResult} and a
+	 * node-value mapping.
 	 * 
 	 * <p>
 	 * 
 	 * <em>Aliasing</em>: The stores returned by any methods of {@code to} will
 	 * be stored internally and are not allowed to be used elsewhere. Full
 	 * control of them is transfered to this object.
+	 * 
+	 * <p>
+	 * 
+	 * The node-value mapping {@code nodeValues} is provided by the analysis and
+	 * is only read from within this {@link TranferInput}.
 	 */
-	public <A extends AbstractValue<A>> TransferInput(TransferResult<A, S> to) {
+	public TransferInput(Map<Node, A> nodeValues, TransferResult<A, S> to) {
+		this.nodeValues = nodeValues;
 		if (to.containsTwoStores()) {
 			thenStore = to.getThenStore();
 			elseStore = to.getElseStore();
@@ -67,20 +81,27 @@ public class TransferInput<S extends Store<S>> {
 	}
 
 	/**
-	 * Create a {@link TransferInput}, given a store.
+	 * Create a {@link TransferInput}, given a store and a node-value mapping.
 	 * 
 	 * <p>
 	 * 
 	 * <em>Aliasing</em>: The store {@code s} will be stored internally and is
-	 * not allowed to be used elsewhere. Full control of them is transfered to
-	 * this object.
+	 * not allowed to be used elsewhere. Full control over {@code s} is
+	 * transfered to this object.
+	 * 
+	 * <p>
+	 * 
+	 * The node-value mapping {@code nodeValues} is provided by the analysis and
+	 * is only read from within this {@link TranferInput}.
 	 */
-	public TransferInput(S s) {
+	public TransferInput(Map<Node, A> nodeValues, S s) {
+		this.nodeValues = nodeValues;
 		store = s;
 	}
 
 	/**
-	 * Create a {@link TransferInput}, given two stores.
+	 * Create a {@link TransferInput}, given two stores and a node-value
+	 * mapping.
 	 * 
 	 * <p>
 	 * 
@@ -88,7 +109,8 @@ public class TransferInput<S extends Store<S>> {
 	 * stored internally and are not allowed to be used elsewhere. Full control
 	 * of them is transfered to this object.
 	 */
-	public TransferInput(S s1, S s2) {
+	public TransferInput(Map<Node, A> nodeValues, S s1, S s2) {
+		this.nodeValues = nodeValues;
 		thenStore = s1;
 		elseStore = s2;
 	}
@@ -96,7 +118,8 @@ public class TransferInput<S extends Store<S>> {
 	/**
 	 * Copy constructor.
 	 */
-	protected TransferInput(TransferInput<S> from) {
+	protected TransferInput(TransferInput<A, S> from) {
+		this.nodeValues = from.nodeValues;
 		if (from.store == null) {
 			thenStore = from.thenStore.copy();
 			elseStore = from.elseStore.copy();
@@ -153,12 +176,12 @@ public class TransferInput<S extends Store<S>> {
 	 *         stores.
 	 */
 	public boolean containsTwoStores() {
-            return (thenStore != null && elseStore != null);
-        }
+		return (thenStore != null && elseStore != null);
+	}
 
 	/** @return An exact copy of this store. */
-	public TransferInput<S> copy() {
-		return new TransferInput<S>(this);
+	public TransferInput<A, S> copy() {
+		return new TransferInput<>(this);
 	}
 
 	/**
@@ -169,28 +192,28 @@ public class TransferInput<S extends Store<S>> {
 	 * <em>Important</em>: This method must fulfill the same contract as
 	 * {@code leastUpperBound} of {@link Store}.
 	 */
-	public TransferInput<S> leastUpperBound(TransferInput<S> other) {
+	public TransferInput<A, S> leastUpperBound(TransferInput<A, S> other) {
 		if (store == null) {
 			S newThenStore = thenStore.leastUpperBound(other.getThenStore());
 			S newElseStore = elseStore.leastUpperBound(other.getElseStore());
-			return new TransferInput<>(newThenStore, newElseStore);
+			return new TransferInput<>(nodeValues, newThenStore, newElseStore);
 		} else {
 			if (other.store == null) {
 				// make sure we do not lose precision and keep two stores if at
 				// least one of the two TransferInput's has two stores.
 				return other.leastUpperBound(this);
 			}
-			return new TransferInput<>(store.leastUpperBound(other
+			return new TransferInput<>(nodeValues, store.leastUpperBound(other
 					.getRegularStore()));
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		if (store == null) {
-			return "[then="+thenStore+", else="+elseStore+"]";
+			return "[then=" + thenStore + ", else=" + elseStore + "]";
 		} else {
-			return "["+store+"]";
+			return "[" + store + "]";
 		}
 	}
 

@@ -33,7 +33,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 * The stores before every basic blocks (assumed to be 'no information' if
 	 * not present).
 	 */
-	protected Map<Block, TransferInput<S>> stores;
+	protected Map<Block, TransferInput<A, S>> stores;
 
 	/** The worklist used for the fix-point iteration. */
 	protected Queue<Block> worklist;
@@ -66,12 +66,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				RegularBlock rb = (RegularBlock) b;
 
 				// apply transfer function to contents
-				TransferInput<S> storeBefore = getStoreBefore(rb);
-				TransferInput<S> store = storeBefore.copy();
+				TransferInput<A, S> storeBefore = getStoreBefore(rb);
+				TransferInput<A, S> store = storeBefore.copy();
 				TransferResult<A, S> transferResult = null;
 				for (Node n : rb.getContents()) {
 					transferResult = n.accept(transferFunction, store);
-					store = new TransferInput<>(transferResult);
+					store = new TransferInput<>(nodeValues, transferResult);
 				}
 				// loop will run at least one, making transferResult non-null
 
@@ -86,8 +86,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				ExceptionBlock eb = (ExceptionBlock) b;
 
 				// apply transfer function to content
-				TransferInput<S> storeBefore = getStoreBefore(eb);
-				TransferInput<S> store = storeBefore.copy();
+				TransferInput<A, S> storeBefore = getStoreBefore(eb);
+				TransferInput<A, S> store = storeBefore.copy();
 				Node node = eb.getNode();
 				TransferResult<A, S> transferResult = node.accept(
 						transferFunction, store);
@@ -108,7 +108,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 							.getExceptionalStore(cause);
 					if (exceptionalStore != null) {
 						addStoreBefore(exceptionSucc, new TransferInput<>(
-								exceptionalStore));
+								nodeValues, exceptionalStore));
 					} else {
 						addStoreBefore(exceptionSucc, storeBefore.copy());
 					}
@@ -120,16 +120,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				ConditionalBlock cb = (ConditionalBlock) b;
 
 				// get store before
-				TransferInput<S> storeBefore = getStoreBefore(cb);
-				TransferInput<S> store = storeBefore.copy();
+				TransferInput<A, S> storeBefore = getStoreBefore(cb);
+				TransferInput<A, S> store = storeBefore.copy();
 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
 				addStoreBefore(thenSucc,
-						new TransferInput<>(store.getThenStore()));
+						new TransferInput<>(nodeValues, store.getThenStore()));
 				addStoreBefore(elseSucc,
-						new TransferInput<>(store.getElseStore()));
+						new TransferInput<>(nodeValues, store.getElseStore()));
 				break;
 			}
 
@@ -172,10 +172,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 			// TODO: document that LocalVariableNode has no block that it
 			// belongs to
 		}
-		stores.put(
-				cfg.getEntryBlock(),
-				new TransferInput<>(transferFunction.initialStore(tree,
-						parameters)));
+		stores.put(cfg.getEntryBlock(), new TransferInput<>(nodeValues,
+				transferFunction.initialStore(tree, parameters)));
 	}
 
 	/**
@@ -193,9 +191,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 * Add a store before the basic block <code>b</code> by merging with the
 	 * existing store for that location.
 	 */
-	protected void addStoreBefore(Block b, TransferInput<S> s) {
-		TransferInput<S> storeBefore = getStoreBefore(b);
-		TransferInput<S> newStoreBefore;
+	protected void addStoreBefore(Block b, TransferInput<A, S> s) {
+		TransferInput<A, S> storeBefore = getStoreBefore(b);
+		TransferInput<A, S> newStoreBefore;
 		if (storeBefore == null) {
 			newStoreBefore = s;
 		} else {
@@ -211,7 +209,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 * @return The store corresponding to the location right before the basic
 	 *         block <code>b</code>.
 	 */
-	protected/* @Nullable */TransferInput<S> getStoreBefore(Block b) {
+	protected/* @Nullable */TransferInput<A, S> getStoreBefore(Block b) {
 		return readFromStore(stores, b);
 	}
 
@@ -223,7 +221,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		return stores.get(b);
 	}
 
-	public Map<Block, TransferInput<S>> getStores() {
+	public Map<Block, TransferInput<A, S>> getStores() {
 		return stores;
 	}
 
