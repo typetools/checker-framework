@@ -30,7 +30,7 @@ import checkers.flow.cfg.node.Node;
 public class CFGDOTVisualizer {
 
 	public static String visualize(Block entry) {
-            return visualize(entry, null);
+		return visualize(entry, null);
 	}
 
 	/**
@@ -39,17 +39,18 @@ public class CFGDOTVisualizer {
 	 * 
 	 * @param entry
 	 *            The entry node of the control flow graph to be represented.
-         * @param analysis
-         *            An analysis containing information about the program represented
-         *            by the CFG.  The information includes {@link Store}s that are
-         *            valid at the beginning of basic blocks reachable from
-         *            <code>entry</code> and per-node information for value producing
-         *            {@link Node}s.  Can also be <code>null</code> to indicate that
-         *            this information should not be output.
+	 * @param analysis
+	 *            An analysis containing information about the program
+	 *            represented by the CFG. The information includes {@link Store}
+	 *            s that are valid at the beginning of basic blocks reachable
+	 *            from <code>entry</code> and per-node information for value
+	 *            producing {@link Node}s. Can also be <code>null</code> to
+	 *            indicate that this information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualize(Block entry,
-                                                            /* @Nullable */ Analysis<A, S, T> analysis) {
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualize(
+			Block entry,
+			/* @Nullable */Analysis<A, S, T> analysis) {
 		StringBuilder sb1 = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		Set<Block> visited = new HashSet<>();
@@ -148,8 +149,9 @@ public class CFGDOTVisualizer {
 	 *            Basic block to visualize.
 	 * @return String representation.
 	 */
-	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeContent(Block bb,
-                        /* @Nullable */ Analysis<A, S, T> analysis) {
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeContent(
+			Block bb,
+			/* @Nullable */Analysis<A, S, T> analysis) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -201,7 +203,8 @@ public class CFGDOTVisualizer {
 
 		// visualize store if necessary
 		if (analysis != null) {
-			TransferInput<S> store = Analysis.readFromStore(analysis.getStores(), bb);
+			TransferInput<S> store = Analysis.readFromStore(
+					analysis.getStores(), bb);
 			StringBuilder sb2 = new StringBuilder();
 
 			// split store representation to two lines
@@ -217,9 +220,10 @@ public class CFGDOTVisualizer {
 		return sb.toString();
 	}
 
-	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeNode(Node t, /* @Nullable */ Analysis<A, S, T> analysis) {
-		return t.toString() + "   [ " + visualizeType(t) + " ]  " +
-			analysis.getInformationAsString(t);
+	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualizeNode(
+			Node t, /* @Nullable */Analysis<A, S, T> analysis) {
+		return t.toString() + "   [ " + visualizeType(t) + " ]  "
+				+ analysis.getInformationAsString(t);
 	}
 
 	protected static String visualizeType(Node t) {
