@@ -129,6 +129,19 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	}
 
 	/**
+	 * @return The abstract value of {@link Node} {@code n}, which is required
+	 *         to be a 'sub-node' (that is, a direct or indirect child) of the
+	 *         node this transfer input is associated with. Furthermore,
+	 *         {@code n} cannot be a l-value node. Returns {@code null} if no
+	 *         value if available.
+	 */
+	public/* @Nullable */A getValueOfSubNode(Node n) {
+		// TODO: check that n is a subnode.
+		// TODO: check l-value
+		return nodeValues.get(n);
+	}
+
+	/**
 	 * @return The regular result store produced if no exception is thrown by
 	 *         the {@link Node} corresponding to this transfer function result.
 	 */
