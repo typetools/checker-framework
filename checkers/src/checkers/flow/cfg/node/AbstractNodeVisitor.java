@@ -1,10 +1,16 @@
 package checkers.flow.cfg.node;
 
 /**
- * A visitor that calls its abstract method <code>visitNode</code> for all
- * {@link Node}s. This is useful to implement a visitor that performs the same
- * operation (e.g., nothing) for most {@link Node}s and only has special
- * behavior for a few.
+ * A default implementation of the node visitor interface. The class introduces
+ * several 'summary' methods, that can be overridden to change the behavior of
+ * several related visit methods at once. An example is the
+ * {@code visitValueLiteral} method, that is called for every
+ * {@link ValueLiteralNode}.
+ * 
+ * <p>
+ * 
+ * This is useful to implement a visitor that performs the same operation (e.g.,
+ * nothing) for most {@link Node}s and only has special behavior for a few.
  * 
  * @author Stefan Heule
  * 
@@ -13,11 +19,10 @@ package checkers.flow.cfg.node;
  * @param <P>
  *            Parameter type of the visitor.
  */
-public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
+public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	abstract public R visitNode(Node n, P p);
 
-	@Override
 	public R visitValueLiteral(ValueLiteralNode n, P p) {
 		return visitNode(n, p);
 	}

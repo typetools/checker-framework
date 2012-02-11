@@ -12,14 +12,14 @@ import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.SinkNodeVisitor;
+import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.constantpropagation.Constant.Type;
 
 import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
 		extends
-		SinkNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
+		AbstractNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
 		implements TransferFunction<Constant, ConstantPropagationStore> {
 
 	@Override

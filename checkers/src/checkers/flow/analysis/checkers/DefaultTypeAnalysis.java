@@ -24,7 +24,7 @@ import checkers.flow.cfg.CFGDOTVisualizer;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.SinkNodeVisitor;
+import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
@@ -304,7 +304,7 @@ public class DefaultTypeAnalysis
 	 */
 	public static class Transfer
 			extends
-			SinkNodeVisitor<TransferResult<Value, CFStore>, TransferInput<Value, CFStore>>
+			AbstractNodeVisitor<TransferResult<Value, CFStore>, TransferInput<Value, CFStore>>
 			implements TransferFunction<Value, CFStore> {
 
 		private/* @LazyNonNull */DefaultTypeAnalysis analysis;
