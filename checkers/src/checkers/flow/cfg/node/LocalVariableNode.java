@@ -23,15 +23,16 @@ public class LocalVariableNode extends Node {
 
 	protected Tree tree;
 
-        // Declaration of this variable, or null if not found during CFG construction.
-        protected VariableDeclarationNode decl;
+	// Declaration of this variable, or null if not found during CFG
+	// construction.
+	protected VariableDeclarationNode decl;
 
-        public LocalVariableNode(Tree t, VariableDeclarationNode d) {
+	public LocalVariableNode(Tree t, VariableDeclarationNode d) {
 		// IdentifierTree for normal uses of the local variable or parameter,
 		// and VariableTree for the translation of an initilizer block
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
-                decl = d;
+		decl = d;
 	}
 
 	public String getName() {
@@ -46,9 +47,9 @@ public class LocalVariableNode extends Node {
 		return tree;
 	}
 
-        public VariableDeclarationNode getDeclaration() {
-                return decl;
-        }
+	public VariableDeclarationNode getDeclaration() {
+		return decl;
+	}
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
@@ -59,7 +60,7 @@ public class LocalVariableNode extends Node {
 	public String toString() {
 		return getName().toString();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof LocalVariableNode)) {
@@ -68,7 +69,7 @@ public class LocalVariableNode extends Node {
 		LocalVariableNode other = (LocalVariableNode) obj;
 		return getName().equals(other.getName());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getName());
