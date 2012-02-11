@@ -21,15 +21,12 @@ import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.CFGDOTVisualizer;
+import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
-import checkers.types.TreeAnnotationPropagator;
-import checkers.types.TypeAnnotationProvider;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -82,19 +79,12 @@ public class CFAnalysis
 	 */
 	protected final Set<AnnotationMirror> legalAnnotations;
 
-	/**
-	 * A tree annotation propagator allows propagation of types through AST
-	 * trees.
-	 */
-	protected final TreeAnnotationPropagator propagator;
-
 	public CFAnalysis(QualifierHierarchy typeHierarchy,
 			AnnotatedTypeFactory factory) {
 		super(new CFTransfer());
 		this.typeHierarchy = typeHierarchy;
 		this.legalAnnotations = typeHierarchy.getAnnotations();
 		this.factory = factory;
-		this.propagator = factory.getAnnotationPropagator();
 		this.transferFunction.setAnalysis(this);
 	}
 
@@ -157,22 +147,6 @@ public class CFAnalysis
 			}
 		}
 		return new CFValue(annotations);
-	}
-
-	/**
-	 * Returns the flow insensitive type annotations of a CFG Node, as computed
-	 * by the checker for the Tree corresponding to the Node. Not all Nodes have
-	 * corresponding Trees and the method returns null when no type information
-	 * is available.
-	 */
-	private/* @Nullable */CFValue flowInsensitiveValue(Node n) {
-		Tree tree = n.getTree();
-		if (tree == null) {
-			return null;
-		}
-
-		AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
-		return new CFValue(type.getAnnotations());
 	}
 
 	/**
@@ -324,7 +298,7 @@ public class CFAnalysis
 			CFStore info = analysis.new CFStore();
 
 			for (LocalVariableNode p : parameters) {
-				CFValue flowInsensitive = analysis.flowInsensitiveValue(p);
+				CFValue flowInsensitive = null; // TODO
 				assert flowInsensitive != null : "Missing initial type information for method parameter";
 				info.mergeValue(p, flowInsensitive);
 			}
@@ -351,9 +325,7 @@ public class CFAnalysis
 				Tree tree = n.getTree();
 				assert tree != null : "Node has a result, but no Tree";
 
-				NodeInfoProvider provider = analysis.new NodeInfoProvider(info);
-				Set<AnnotationMirror> annotations = analysis.propagator.visit(
-						tree, provider);
+				Set<AnnotationMirror> annotations = null; // TODO
 				value = analysis.createValue(annotations);
 			}
 
@@ -392,37 +364,6 @@ public class CFAnalysis
 			}
 
 			return new RegularTransferResult<>(rhsValue, info);
-		}
-	}
-
-	/**
-	 * Map AST Trees to type annotations based on a NodeInfo store.
-	 */
-	public class NodeInfoProvider implements TypeAnnotationProvider {
-		private CFStore info;
-
-		public NodeInfoProvider(CFStore info) {
-			this.info = info;
-		}
-
-		/**
-		 * Given an AST Tree in the current CFG, return the most precise
-		 * annotated type for the Node corresponding to that Tree. Throws
-		 * IllegalArgumentException if the Tree is not found in the current CFG.
-		 * 
-		 * @param tree
-		 *            an AST tree to be typed
-		 * 
-		 * @return the most precise annotated type of tree known
-		 */
-		@Override
-		public Set<AnnotationMirror> getAnnotations(Tree tree)
-				throws IllegalArgumentException {
-			Node node = cfg.getNodeCorrespondingToTree(tree);
-			if (node == null) {
-				throw new IllegalArgumentException();
-			}
-			return null;
 		}
 	}
 
