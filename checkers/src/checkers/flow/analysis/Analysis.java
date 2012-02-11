@@ -35,11 +35,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 */
 	protected Map<Block, TransferInput<S>> stores;
 
-	/** The worklist used for the fixpoint iteration. */
+	/** The worklist used for the fix-point iteration. */
 	protected Queue<Block> worklist;
 
 	/** Abstract values of nodes. */
-	protected Map<Node, A> nodeInformation;
+	protected Map<Node, A> nodeValues;
 
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
@@ -156,7 +156,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		this.cfg = cfg;
 		stores = new HashMap<>();
 		worklist = new ArrayDeque<>();
-		nodeInformation = new IdentityHashMap<>();
+		nodeValues = new IdentityHashMap<>();
 		worklist.add(cfg.getEntryBlock());
 
 		List<LocalVariableNode> parameters = new ArrayList<>();
@@ -234,6 +234,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 *         this node.
 	 */
 	public/* @Nullable */A getValue(Node n) {
-		return nodeInformation.get(n);
+		return nodeValues.get(n);
 	}
 }

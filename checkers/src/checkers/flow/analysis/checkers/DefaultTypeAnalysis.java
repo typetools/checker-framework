@@ -195,44 +195,44 @@ public class DefaultTypeAnalysis
 		 * Information collected about local variables, which are identified by
 		 * the corresponding element.
 		 */
-		protected Map<Element, Value> localVariables;
+		protected Map<Element, Value> localVariableValues;
 
 		public CFStore() {
-			localVariables = new HashMap<>();
+			localVariableValues = new HashMap<>();
 		}
 
 		/** Copy constructor. */
 		protected CFStore(CFStore other) {
-			localVariables = new HashMap<>(other.localVariables);
+			localVariableValues = new HashMap<>(other.localVariableValues);
 		}
 
 		/**
-		 * Current information about a local variable.
+		 * Current abstract value of a local variable.
 		 */
-		public Value getInformation(LocalVariableNode n) {
+		public Value getValue(LocalVariableNode n) {
 			Element el = n.getElement();
-			assert localVariables.containsKey(el);
-			return localVariables.get(el);
+			assert localVariableValues.containsKey(el);
+			return localVariableValues.get(el);
 		}
 
 		/**
-		 * Set information about a local variable in the store. Overwrites any
-		 * information that might have been available previously.
+		 * Set the abstract value of a local variable in the store. Overwrites any
+		 * value that might have been available previously.
 		 */
-		public void setInformation(LocalVariableNode n, Value val) {
-			localVariables.put(n.getElement(), val);
+		public void setValue(LocalVariableNode n, Value val) {
+			localVariableValues.put(n.getElement(), val);
 		}
 
 		/**
-		 * Merge in information about a local variable in the store by taking
-		 * the least upper bound of the previous information and {@code val}.
-		 * Previous information needs to be available.
+		 * Merge in an abstract value of a local variable in the store by taking
+		 * the least upper bound of the previous value and {@code val}. Previous
+		 * information needs to be available.
 		 */
-		public void mergeInformation(LocalVariableNode n, Value val) {
+		public void mergeValue(LocalVariableNode n, Value val) {
 			Element el = n.getElement();
-			assert localVariables.containsKey(el);
-			Value newVal = val.leastUpperBound(localVariables.get(el));
-			localVariables.put(el, newVal);
+			assert localVariableValues.containsKey(el);
+			Value newVal = val.leastUpperBound(localVariableValues.get(el));
+			localVariableValues.put(el, newVal);
 		}
 
 		@Override
@@ -244,16 +244,16 @@ public class DefaultTypeAnalysis
 		public CFStore leastUpperBound(CFStore other) {
 			CFStore newStore = new CFStore();
 
-			for (Entry<Element, Value> e : other.localVariables.entrySet()) {
+			for (Entry<Element, Value> e : other.localVariableValues.entrySet()) {
 				// local variables that are only part of one store, but not the
 				// other are discarded. They are assumed to not be in scope any
 				// more.
 				Element el = e.getKey();
-				if (localVariables.containsKey(el)) {
+				if (localVariableValues.containsKey(el)) {
 					Value otherVal = e.getValue();
-					Value thisVal = localVariables.get(el);
+					Value thisVal = localVariableValues.get(el);
 					Value mergedVal = thisVal.leastUpperBound(otherVal);
-					newStore.localVariables.put(el, mergedVal);
+					newStore.localVariableValues.put(el, mergedVal);
 				}
 			}
 
@@ -267,10 +267,10 @@ public class DefaultTypeAnalysis
 		 * This method is used primarily to simplify the equals predicate.
 		 */
 		protected boolean supersetOf(CFStore other) {
-			for (Entry<Element, Value> e : other.localVariables.entrySet()) {
+			for (Entry<Element, Value> e : other.localVariableValues.entrySet()) {
 				Element key = e.getKey();
-				if (!localVariables.containsKey(key)
-						|| !localVariables.get(key).equals(e.getValue())) {
+				if (!localVariableValues.containsKey(key)
+						|| !localVariableValues.get(key).equals(e.getValue())) {
 					return false;
 				}
 			}
@@ -290,7 +290,7 @@ public class DefaultTypeAnalysis
 		@Override
 		public String toString() {
 			StringBuilder result = new StringBuilder("CFStore (\\n");
-			for (Map.Entry<Element, Value> entry : localVariables.entrySet()) {
+			for (Map.Entry<Element, Value> entry : localVariableValues.entrySet()) {
 				result.append(entry.getKey() + "->"
 						+ entry.getValue().getAnnotations() + "\\n");
 			}
@@ -326,7 +326,7 @@ public class DefaultTypeAnalysis
 			for (LocalVariableNode p : parameters) {
 				Value flowInsensitive = analysis.flowInsensitiveValue(p);
 				assert flowInsensitive != null : "Missing initial type information for method parameter";
-				info.mergeInformation(p, flowInsensitive);
+				info.mergeValue(p, flowInsensitive);
 			}
 
 			return info;
@@ -368,7 +368,7 @@ public class DefaultTypeAnalysis
 		public TransferResult<Value, CFStore> visitLocalVariable(
 				LocalVariableNode n, TransferInput<CFStore> in) {
 			CFStore info = in.getRegularStore();
-			Value value = info.getInformation(n);
+			Value value = info.getValue(n);
 			return new RegularTransferResult<>(value, info);
 		}
 
@@ -388,7 +388,7 @@ public class DefaultTypeAnalysis
 			// assignment to a local variable
 			if (lhs instanceof LocalVariableNode) {
 				LocalVariableNode var = (LocalVariableNode) lhs;
-				info.setInformation(var, rhsValue);
+				info.setValue(var, rhsValue);
 			}
 
 			return new RegularTransferResult<>(rhsValue, info);
