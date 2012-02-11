@@ -167,7 +167,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		// TODO: Remove this comment if we decide not to use this
 		// alternative.
 		for (VariableTree p : tree.getParameters()) {
-			LocalVariableNode var = new LocalVariableNode(p, null);
+			LocalVariableNode var = new LocalVariableNode(p);
 			parameters.add(var);
 			// TODO: document that LocalVariableNode has no block that it
 			// belongs to

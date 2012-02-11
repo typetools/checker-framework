@@ -12,8 +12,6 @@ import java.util.Set;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import checkers.flow.cfg.block.Block;
-import javax.lang.model.element.Element;
-
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
 import checkers.flow.cfg.block.ConditionalBlockImpl;
@@ -36,7 +34,6 @@ import checkers.flow.cfg.node.ReturnNode;
 import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ASTUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -141,12 +138,6 @@ public class CFGBuilder {
 				.process(phase2result);
 		return phase3result;
 	}
-
-	/**
-	 * Map from CFG {@link Element}s to {@link VariableDeclarationNode}s. for
-	 * local variables in one method.
-	 */
-	protected HashMap<Element, VariableDeclarationNode> varDeclMap;
 
 	/* --------------------------------------------------------- */
 	/* Extended Node Types and Labels */
@@ -995,7 +986,6 @@ public class CFGBuilder {
 			nodeList = new ArrayList<>();
 			bindings = new HashMap<>();
 			leaders = new HashSet<>();
-			varDeclMap = new HashMap<>();
 
 			// traverse AST of the method body
 			t.getBody().accept(this, null);
@@ -1444,14 +1434,7 @@ public class CFGBuilder {
 		@Override
 		public Node visitIdentifier(IdentifierTree tree, Void p) {
 			// TODO: these are not always local variables
-			// Connect local variable use to declaration via Element.
-			VariableDeclarationNode decl = null;
-			Element elt = TreeUtils.elementFromUse(tree);
-			if (elt != null) {
-				decl = varDeclMap.get(elt);
-			}
-
-			LocalVariableNode node = new LocalVariableNode(tree, decl);
+			LocalVariableNode node = new LocalVariableNode(tree);
 			extendWithNode(node);
 			if (conditionalMode) {
 				extendWithExtendedNode(new ConditionalJump(thenTargetL,
@@ -1687,22 +1670,11 @@ public class CFGBuilder {
 			VariableDeclarationNode decl = new VariableDeclarationNode(tree);
 			extendWithNode(decl);
 
-			// Remember VariableDeclarations by Element, so we can
-			// connect LocalVariable nodes to their declarations.
-			// TODO: TreeUtils relies on non-public APIs. If we
-			// changed CFGHelper to a TreePathScanner, we could
-			// use the supported Trees API instead.
-			Element elt = TreeUtils.elementFromDeclaration(tree);
-			if (elt != null) {
-				varDeclMap.put(elt, decl);
-			}
-
 			// initializer
 			Node node = null;
 			ExpressionTree initializer = tree.getInitializer();
 			if (initializer != null) {
-				node = translateAssignment(tree, new LocalVariableNode(tree,
-						decl), initializer);
+				node = translateAssignment(tree, new LocalVariableNode(tree), initializer);
 			}
 
 			return node;

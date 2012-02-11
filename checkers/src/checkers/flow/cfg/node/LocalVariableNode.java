@@ -27,17 +27,12 @@ public class LocalVariableNode extends Node {
 
 	protected Tree tree;
 
-	// Declaration of this variable, or null if not found during CFG
-	// construction.
-	protected VariableDeclarationNode decl;
-
-	public LocalVariableNode(Tree t, VariableDeclarationNode d) {
+	public LocalVariableNode(Tree t) {
 		// IdentifierTree for normal uses of the local variable or parameter,
 		// and VariableTree for the translation of an initilizer block
 		assert t != null;
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
-		decl = d;
 	}
 
 	public Element getElement() {
@@ -61,10 +56,6 @@ public class LocalVariableNode extends Node {
 	@Override
 	public Tree getTree() {
 		return tree;
-	}
-
-	public VariableDeclarationNode getDeclaration() {
-		return decl;
 	}
 
 	@Override
