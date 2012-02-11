@@ -8,8 +8,10 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
+import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
@@ -47,8 +49,8 @@ public class CFGDOTVisualizer {
          *            this information should not be output.
 	 * @return String representation of the graph in the DOT language.
 	 */
-	public static <S extends Store<S>> String visualize(Block entry,
-                                                            /* @Nullable */ Analysis analysis) {
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> String visualize(Block entry,
+                                                            /* @Nullable */ Analysis<A, S, T> analysis) {
 		Map<Block, TransferInput<S>> stores = null;
 		if (analysis != null) {
 			stores = analysis.getStores();
@@ -157,7 +159,7 @@ public class CFGDOTVisualizer {
 																			 * Nullable
 																			 */
 			Map<Block, TransferInput<S>> stores,
-                        /* @Nullable */ Analysis analysis) {
+                        /* @Nullable */ Analysis<?, ?, ?> analysis) {
 		StringBuilder sb = new StringBuilder();
 
 		// loop over contents
@@ -225,7 +227,7 @@ public class CFGDOTVisualizer {
 		return sb.toString();
 	}
 
-	protected static String visualizeNode(Node t, /* @Nullable */ Analysis analysis) {
+	protected static String visualizeNode(Node t, /* @Nullable */ Analysis<?, ?, ?> analysis) {
 		return t.toString() + "   [ " + visualizeType(t) + " ]  " +
 			analysis.getInformationAsString(t);
 	}
