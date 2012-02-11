@@ -3,8 +3,8 @@ package checkers.flow.constantpropagation;
 import java.util.List;
 
 import checkers.flow.analysis.ConditionalTransferResult;
-import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.RegularTransferResult;
+import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AssignmentNode;
@@ -19,7 +19,7 @@ import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
 		extends
-		SinkNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<ConstantPropagationStore>>
+		SinkNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
 		implements TransferFunction<Constant, ConstantPropagationStore> {
 
 	@Override
@@ -37,13 +37,14 @@ public class ConstantPropagationTransfer
 
 	@Override
 	public TransferResult<Constant, ConstantPropagationStore> visitNode(Node n,
-			TransferInput<ConstantPropagationStore> p) {
+			TransferInput<Constant, ConstantPropagationStore> p) {
 		return new RegularTransferResult<>(null, p.getRegularStore());
 	}
 
 	@Override
 	public TransferResult<Constant, ConstantPropagationStore> visitAssignment(
-			AssignmentNode n, TransferInput<ConstantPropagationStore> pi) {
+			AssignmentNode n,
+			TransferInput<Constant, ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
 		Node target = n.getTarget();
 		Constant info = null;
@@ -57,16 +58,17 @@ public class ConstantPropagationTransfer
 
 	@Override
 	public TransferResult<Constant, ConstantPropagationStore> visitIntegerLiteral(
-			IntegerLiteralNode n, TransferInput<ConstantPropagationStore> pi) {
+			IntegerLiteralNode n,
+			TransferInput<Constant, ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
 		Constant c = new Constant(n.getValue());
 		p.setInformation(n, c);
 		return new RegularTransferResult<>(c, p);
 	}
-	
+
 	@Override
-	public TransferResult<Constant, ConstantPropagationStore> visitEqualTo(EqualToNode n,
-			TransferInput<ConstantPropagationStore> pi) {
+	public TransferResult<Constant, ConstantPropagationStore> visitEqualTo(
+			EqualToNode n, TransferInput<Constant, ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
 		ConstantPropagationStore old = p.copy();
 		Node left = n.getLeftOperand();

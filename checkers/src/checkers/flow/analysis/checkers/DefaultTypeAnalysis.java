@@ -25,8 +25,6 @@ import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.SinkNodeVisitor;
-import checkers.flow.cfg.node.ValueLiteralNode;
-import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
@@ -216,8 +214,8 @@ public class DefaultTypeAnalysis
 		}
 
 		/**
-		 * Set the abstract value of a local variable in the store. Overwrites any
-		 * value that might have been available previously.
+		 * Set the abstract value of a local variable in the store. Overwrites
+		 * any value that might have been available previously.
 		 */
 		public void setValue(LocalVariableNode n, Value val) {
 			localVariableValues.put(n.getElement(), val);
@@ -290,7 +288,8 @@ public class DefaultTypeAnalysis
 		@Override
 		public String toString() {
 			StringBuilder result = new StringBuilder("CFStore (\\n");
-			for (Map.Entry<Element, Value> entry : localVariableValues.entrySet()) {
+			for (Map.Entry<Element, Value> entry : localVariableValues
+					.entrySet()) {
 				result.append(entry.getKey() + "->"
 						+ entry.getValue().getAnnotations() + "\\n");
 			}
@@ -305,7 +304,7 @@ public class DefaultTypeAnalysis
 	 */
 	public static class Transfer
 			extends
-			SinkNodeVisitor<TransferResult<Value, CFStore>, TransferInput<CFStore>>
+			SinkNodeVisitor<TransferResult<Value, CFStore>, TransferInput<Value, CFStore>>
 			implements TransferFunction<Value, CFStore> {
 
 		private/* @LazyNonNull */DefaultTypeAnalysis analysis;
@@ -341,7 +340,7 @@ public class DefaultTypeAnalysis
 		 */
 		@Override
 		public TransferResult<Value, CFStore> visitNode(Node n,
-				TransferInput<CFStore> in) {
+				TransferInput<Value, CFStore> in) {
 			// TODO: Perform type propagation separately with a thenStore and an
 			// elseStore.
 			CFStore info = in.getRegularStore();
@@ -366,7 +365,7 @@ public class DefaultTypeAnalysis
 		 */
 		@Override
 		public TransferResult<Value, CFStore> visitLocalVariable(
-				LocalVariableNode n, TransferInput<CFStore> in) {
+				LocalVariableNode n, TransferInput<Value, CFStore> in) {
 			CFStore info = in.getRegularStore();
 			Value value = info.getValue(n);
 			return new RegularTransferResult<>(value, info);
@@ -378,7 +377,7 @@ public class DefaultTypeAnalysis
 		 */
 		@Override
 		public TransferResult<Value, CFStore> visitAssignment(AssignmentNode n,
-				TransferInput<CFStore> in) {
+				TransferInput<Value, CFStore> in) {
 			Node lhs = n.getTarget();
 			Node rhs = n.getExpression();
 
