@@ -366,9 +366,9 @@ public class DefaultTypeAnalysis
 		@Override
 		public TransferResult<Value, CFStore> visitLocalVariable(
 				LocalVariableNode n, TransferInput<Value, CFStore> in) {
-			CFStore info = in.getRegularStore();
-			Value value = info.getValue(n);
-			return new RegularTransferResult<>(value, info);
+			CFStore store = in.getRegularStore();
+			Value value = store.getValue(n);
+			return new RegularTransferResult<>(value, store);
 		}
 
 		/**
@@ -382,7 +382,7 @@ public class DefaultTypeAnalysis
 			Node rhs = n.getExpression();
 
 			CFStore info = in.getRegularStore();
-			Value rhsValue = null;// info.getInformation(rhs); // TODO
+			Value rhsValue = in.getValueOfSubNode(rhs);
 
 			// assignment to a local variable
 			if (lhs instanceof LocalVariableNode) {
