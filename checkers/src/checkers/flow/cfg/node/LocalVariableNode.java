@@ -3,7 +3,10 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.element.Element;
+
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -30,9 +33,21 @@ public class LocalVariableNode extends Node {
 	public LocalVariableNode(Tree t, VariableDeclarationNode d) {
 		// IdentifierTree for normal uses of the local variable or parameter,
 		// and VariableTree for the translation of an initilizer block
+		assert t != null;
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
 		decl = d;
+	}
+
+	public Element getElement() {
+		Element el;
+		if (tree instanceof IdentifierTree) {
+			el = TreeUtils.elementFromUse((IdentifierTree) tree);
+		} else {
+			assert tree instanceof VariableTree;
+			el = TreeUtils.elementFromDeclaration((VariableTree) tree);
+		}
+		return el;
 	}
 
 	public String getName() {
