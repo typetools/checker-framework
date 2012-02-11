@@ -22,6 +22,7 @@ import com.sun.source.tree.VariableTree;
  * @author Stefan Heule
  * 
  */
+// TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
 	protected Tree tree;
