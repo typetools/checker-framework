@@ -63,6 +63,13 @@ checkers/manual/figures/*.png
 checkers/manual/figures/signature-types-with-canonicalname.dia
 checkers/manual/*.png
 
+# dataflow manual
+checkers/manual/dataflow-manual/dataflow.aux
+checkers/manual/dataflow-manual/dataflow.dvi
+checkers/manual/dataflow-manual/dataflow.log
+checkers/manual/dataflow-manual/dataflow.out
+checkers/manual/dataflow-manual/dataflow.pdf
+
 checkers/tests/nullness-extra/*.class
 checkers/tests/nullness-extra/multiple-errors/*.class
 checkers/tests/nullness-extra/multiple-errors/Out.txt
