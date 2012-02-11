@@ -130,7 +130,9 @@ public class CFGDOTVisualizer {
 			} else if (v.getType() == BlockType.SPECIAL_BLOCK) {
 				sb1.append("shape=oval ");
 			}
-			sb1.append("label=\"" + visualizeContent(v, analysis) + "\"];\n");
+			sb1.append("label=\""
+					+ visualizeContent(v, analysis).replace("\\n", "\\l")
+					+ "\",];\n");
 		}
 
 		sb1.append("\n");
@@ -180,7 +182,9 @@ public class CFGDOTVisualizer {
 		}
 
 		// handle case where no contents are present
+		boolean centered = false;
 		if (sb.length() == 0) {
+			centered = true;
 			if (bb.getType() == BlockType.SPECIAL_BLOCK) {
 				SpecialBlock sbb = (SpecialBlock) bb;
 				switch (sbb.getSpecialType()) {
@@ -217,7 +221,7 @@ public class CFGDOTVisualizer {
 			sb = sb2;
 		}
 
-		return sb.toString();
+		return sb.toString() + (centered ? "" : "\\n");
 	}
 
 	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeNode(
@@ -225,7 +229,7 @@ public class CFGDOTVisualizer {
 		A value = analysis.getValue(t);
 		String valueInfo = "";
 		if (value != null) {
-			valueInfo = " [" + value.toString() + "]";
+			valueInfo = "    > " + value.toString();
 		}
 		return t.toString() + "   [ " + visualizeType(t) + " ]" + valueInfo;
 	}
