@@ -3,7 +3,6 @@ package checkers.flow.analysis.checkers;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -12,21 +11,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
-import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.CFGDOTVisualizer;
-import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
@@ -38,7 +31,9 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotationPropagator;
 import checkers.types.TypeAnnotationProvider;
-import checkers.util.InternalUtils;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 
 /**
  * DefaultTypeAnalysis characterizes a kind of abstract value that is computed
@@ -427,7 +422,6 @@ public class DefaultTypeAnalysis
 			Node rhs = n.getExpression();
 
 			NodeInfo info = in.getRegularStore();
-			Value lhsValue = info.getInformation(lhs);
 			Value rhsValue = info.getInformation(rhs);
 
 			// Skip assignments to arrays or fields.
