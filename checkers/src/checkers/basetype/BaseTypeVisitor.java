@@ -244,7 +244,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (options.containsKey("flowdotdir")) {
                 String dotfilename = options.get("flowdotdir") + "/" + node.getName() + ".dot";
                 // make path safe for Windows
-                dotfilename = dotfilename.replace("<", "-").replace(">", "-");
+                dotfilename = dotfilename.replace("<", ".").replace(">", ".");
                 System.err.println("Output to DOT file: " + dotfilename);
                 analysis.outputToDotFile(dotfilename);
             }
