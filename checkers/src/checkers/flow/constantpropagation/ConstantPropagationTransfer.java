@@ -19,8 +19,8 @@ import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
 		extends
-		SinkNodeVisitor<TransferResult<ConstantPropagationStore>, TransferInput<ConstantPropagationStore>>
-		implements TransferFunction<ConstantPropagationStore> {
+		SinkNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<ConstantPropagationStore>>
+		implements TransferFunction<Constant, ConstantPropagationStore> {
 
 	@Override
 	public ConstantPropagationStore initialStore(MethodTree tree,
@@ -36,33 +36,36 @@ public class ConstantPropagationTransfer
 	}
 
 	@Override
-	public TransferResult<ConstantPropagationStore> visitNode(Node n,
+	public TransferResult<Constant, ConstantPropagationStore> visitNode(Node n,
 			TransferInput<ConstantPropagationStore> p) {
-		return new RegularTransferResult<>(p.getRegularStore());
+		return new RegularTransferResult<>(null, p.getRegularStore());
 	}
 
 	@Override
-	public TransferResult<ConstantPropagationStore> visitAssignment(
+	public TransferResult<Constant, ConstantPropagationStore> visitAssignment(
 			AssignmentNode n, TransferInput<ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
 		Node target = n.getTarget();
+		Constant info = null;
 		if (target instanceof LocalVariableNode) {
 			LocalVariableNode t = (LocalVariableNode) target;
-			p.setInformation(t, p.getInformation(n.getExpression()));
+			info = p.getInformation(n.getExpression());
+			p.setInformation(t, info);
 		}
-		return new RegularTransferResult<>(p);
+		return new RegularTransferResult<>(info, p);
 	}
 
 	@Override
-	public TransferResult<ConstantPropagationStore> visitIntegerLiteral(
+	public TransferResult<Constant, ConstantPropagationStore> visitIntegerLiteral(
 			IntegerLiteralNode n, TransferInput<ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
-		p.setInformation(n, new Constant(n.getValue()));
-		return new RegularTransferResult<>(p);
+		Constant c = new Constant(n.getValue());
+		p.setInformation(n, c);
+		return new RegularTransferResult<>(c, p);
 	}
 	
 	@Override
-	public TransferResult<ConstantPropagationStore> visitEqualTo(EqualToNode n,
+	public TransferResult<Constant, ConstantPropagationStore> visitEqualTo(EqualToNode n,
 			TransferInput<ConstantPropagationStore> pi) {
 		ConstantPropagationStore p = pi.getRegularStore();
 		ConstantPropagationStore old = p.copy();
@@ -70,7 +73,7 @@ public class ConstantPropagationTransfer
 		Node right = n.getRightOperand();
 		process(p, left, right);
 		process(p, right, left);
-		return new ConditionalTransferResult<ConstantPropagationStore>(p, old);
+		return new ConditionalTransferResult<>(null, p, old);
 	}
 
 	protected void process(ConstantPropagationStore p, Node a, Node b) {
