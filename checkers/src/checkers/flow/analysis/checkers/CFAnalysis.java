@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,6 +13,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
@@ -29,6 +32,7 @@ import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -126,10 +130,21 @@ public class CFAnalysis extends
 		boolean isSubtypeOf(CFValue other) {
 			return typeHierarchy.isSubtype(annotations, other.annotations);
 		}
-		
+
+		/**
+		 * @return The string representation as a comma-separated list of simple
+		 *         annotation names.
+		 */
 		@Override
 		public String toString() {
-			return annotations.toString();
+			List<String> l = new LinkedList<>();
+			for (AnnotationMirror a : annotations) {
+				DeclaredType annoType = a.getAnnotationType();
+				TypeElement elm = (TypeElement) annoType.asElement();
+				l.add(elm.getSimpleName().toString());
+			}
+			String s = l.toString();
+			return s.substring(1, s.length() - 1);
 		}
 	}
 
@@ -274,8 +289,8 @@ public class CFAnalysis extends
 			StringBuilder result = new StringBuilder("CFStore (\\n");
 			for (Map.Entry<Element, CFValue> entry : localVariableValues
 					.entrySet()) {
-				result.append(entry.getKey() + "->"
-						+ entry.getValue().getAnnotations() + "\\n");
+				result.append("  " + entry.getKey() + " > " + entry.getValue()
+						+ "\\n");
 			}
 			result.append(")");
 			return result.toString();
@@ -361,8 +376,7 @@ public class CFAnalysis extends
 					.getTree());
 			CFValue value = analysis.new CFValue(type.getAnnotations());
 			return new RegularTransferResult<CFAnalysis.CFValue, CFAnalysis.CFStore>(
-					value,
-					p.getRegularStore());
+					value, p.getRegularStore());
 		}
 
 		/**
