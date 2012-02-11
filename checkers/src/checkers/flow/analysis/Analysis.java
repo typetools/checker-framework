@@ -81,7 +81,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				addStoreBefore(succ, store);
 				break;
 			}
-			
+
 			case EXCEPTION_BLOCK: {
 				ExceptionBlock eb = (ExceptionBlock) b;
 
@@ -89,22 +89,26 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				TransferInput<S> storeBefore = getStoreBefore(eb);
 				TransferInput<S> store = storeBefore.copy();
 				Node node = eb.getNode();
-				TransferResult<A, S> transferResult = node.accept(transferFunction, store);;
+				TransferResult<A, S> transferResult = node.accept(
+						transferFunction, store);
+				;
 
 				// propagate store to successor
 				Block succ = eb.getSuccessor();
 				if (succ != null) {
 					addStoreBefore(succ, store);
 				}
-				
+
 				// propagate store to exceptional sucessors
 				for (Entry<Class<? extends Throwable>, Block> e : eb
 						.getExceptionalSuccessors().entrySet()) {
 					Block exceptionSucc = e.getValue();
 					Class<? extends Throwable> cause = e.getKey();
-					S exceptionalStore = transferResult.getExceptionalStore(cause);
+					S exceptionalStore = transferResult
+							.getExceptionalStore(cause);
 					if (exceptionalStore != null) {
-						addStoreBefore(exceptionSucc, new TransferInput<>(exceptionalStore));
+						addStoreBefore(exceptionSucc, new TransferInput<>(
+								exceptionalStore));
 					} else {
 						addStoreBefore(exceptionSucc, storeBefore.copy());
 					}
@@ -122,8 +126,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
-				addStoreBefore(thenSucc, new TransferInput<>(store.getThenStore()));
-				addStoreBefore(elseSucc, new TransferInput<>(store.getElseStore()));
+				addStoreBefore(thenSucc,
+						new TransferInput<>(store.getThenStore()));
+				addStoreBefore(elseSucc,
+						new TransferInput<>(store.getElseStore()));
 				break;
 			}
 
@@ -155,19 +161,21 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
 		List<LocalVariableNode> parameters = new ArrayList<>();
 		MethodTree tree = cfg.getTree();
-                // An alternative approach to handling method parameters is to
-                // create VariableDeclarationNodes in the EntryBlock and start
-                // with an initially empty Store.
-                // TODO: Remove this comment if we decide not to use this
-                // alternative.
+		// An alternative approach to handling method parameters is to
+		// create VariableDeclarationNodes in the EntryBlock and start
+		// with an initially empty Store.
+		// TODO: Remove this comment if we decide not to use this
+		// alternative.
 		for (VariableTree p : tree.getParameters()) {
-                        LocalVariableNode var = new LocalVariableNode(p, null);
+			LocalVariableNode var = new LocalVariableNode(p, null);
 			parameters.add(var);
 			// TODO: document that LocalVariableNode has no block that it
 			// belongs to
 		}
-		stores.put(cfg.getEntryBlock(),
-				new TransferInput<>(transferFunction.initialStore(tree, parameters)));
+		stores.put(
+				cfg.getEntryBlock(),
+				new TransferInput<>(transferFunction.initialStore(tree,
+						parameters)));
 	}
 
 	/**
@@ -219,7 +227,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 		return stores;
 	}
 
-	public String getInformationAsString(Node n) {
-		return "";
+	/**
+	 * @return The abstract value for {@link Node} {@code n}, or {@code null} if
+	 *         no information is available. Note that if the analysis has not
+	 *         finished yet, this value might not represent the final value for
+	 *         this node.
+	 */
+	public/* @Nullable */A getValue(Node n) {
+		return nodeInformation.get(n);
 	}
 }

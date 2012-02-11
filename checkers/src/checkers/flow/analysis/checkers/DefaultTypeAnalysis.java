@@ -427,21 +427,6 @@ public class DefaultTypeAnalysis
 	}
 
 	/**
-	 * Return a string description of the current type annotations for a value.
-	 */
-	public String getInformationAsString(Node n) {
-		if (nodeInformation.containsKey(n)) {
-			return nodeInformation.get(n).getAnnotations() + ":FS";
-		} else {
-			Value value = flowInsensitiveValue(n);
-			if (value != null) {
-				return value.getAnnotations() + ":FI";
-			}
-			return "";
-		}
-	}
-
-	/**
 	 * Print a DOT graph of the CFG and analysis info for inspection.
 	 */
 	public void outputToDotFile(String outputFile) {
