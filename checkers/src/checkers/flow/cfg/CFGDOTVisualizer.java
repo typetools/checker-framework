@@ -222,8 +222,12 @@ public class CFGDOTVisualizer {
 
 	protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeNode(
 			Node t, /* @Nullable */Analysis<A, S, T> analysis) {
-		return t.toString() + "   [ " + visualizeType(t) + " ]  "
-				+ analysis.getInformationAsString(t);
+		A value = analysis.getValue(t);
+		String valueInfo = "";
+		if (value != null) {
+			valueInfo = " [" + value.toString() + "]";
+		}
+		return t.toString() + "   [ " + visualizeType(t) + " ]" + valueInfo;
 	}
 
 	protected static String visualizeType(Node t) {
