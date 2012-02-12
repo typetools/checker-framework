@@ -36,7 +36,7 @@ public class StringLiteralNode extends ValueLiteralNode {
 	@Override
 	public boolean equals(Object obj) {
 		// test that obj is a StringLiteralNode
-		if (obj == null || !(obj instanceof StringLiteralNode)) {
+		if (!(obj instanceof StringLiteralNode)) {
 			return false;
 		}
 		// super method compares values
