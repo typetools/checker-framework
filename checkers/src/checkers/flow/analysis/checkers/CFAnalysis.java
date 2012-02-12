@@ -70,28 +70,6 @@ public class CFAnalysis extends
 	}
 
 	/**
-	 * Create a new dataflow value with no type annotations.
-	 */
-	public CFValue createValue() {
-		return new CFValue(this);
-	}
-
-	/**
-	 * Create a new dataflow value with the given type annotations, which must
-	 * belong to the QualifierHierarchy for which this DefaultTypeAnalysis was
-	 * created.
-	 */
-	public CFValue createValue(Set<AnnotationMirror> annotations)
-			throws IllegalArgumentException {
-		for (AnnotationMirror anno : annotations) {
-			if (!legalAnnotations.contains(anno)) {
-				throw new IllegalArgumentException();
-			}
-		}
-		return new CFValue(this, annotations);
-	}
-
-	/**
 	 * Print a DOT graph of the CFG and analysis info for inspection.
 	 */
 	public void outputToDotFile(String outputFile) {
