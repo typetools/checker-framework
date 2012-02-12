@@ -35,11 +35,11 @@ esac
 ## Checker Framework checkers root directory
 cfroot=$mydir/..
 
-## jsr308-langtools root directory
-jsr308root=$cfroot/../../jsr308-langtools
-
 ## javaparser root directory
 javaparserroot=$cfroot/../javaparser
+
+## jsr308-langtools root directory
+jsr308root=$cfroot/../../jsr308-langtools
 
 
 # By default, put the jar file and its dependencies on the bootclasspath.
