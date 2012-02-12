@@ -12,7 +12,7 @@ import javax.lang.model.type.DeclaredType;
 import checkers.flow.analysis.AbstractValue;
 
 /**
- * An abstact value for the default analysis is a set of annotations from the
+ * An abstract value for the default analysis is a set of annotations from the
  * QualifierHierarchy.
  */
 public class CFValue implements AbstractValue<CFValue> {
@@ -22,15 +22,15 @@ public class CFValue implements AbstractValue<CFValue> {
 	 */
 	protected final CFAnalysis analysis;
 	
-	
-	private Set<AnnotationMirror> annotations;
+	/** The annotation corresponding to this abstract value. */
+	protected Set<AnnotationMirror> annotations;
 
-	CFValue(CFAnalysis analysis) {
+	public CFValue(CFAnalysis analysis) {
 		this.analysis = analysis;
 		annotations = new HashSet<AnnotationMirror>();
 	}
 
-	CFValue(CFAnalysis analysis, Set<AnnotationMirror> annotations) {
+	public CFValue(CFAnalysis analysis, Set<AnnotationMirror> annotations) {
 		this.analysis = analysis;
 		this.annotations = annotations;
 	}
