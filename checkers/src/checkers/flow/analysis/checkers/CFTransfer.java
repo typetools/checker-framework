@@ -19,6 +19,9 @@ import com.sun.source.tree.Tree;
 /**
  * The default analysis transfer function propagates information through
  * assignments to local variables.
+ * 
+ * @author Charlie Garrett
+ * @author Stefan Heule
  */
 public class CFTransfer
 		extends
