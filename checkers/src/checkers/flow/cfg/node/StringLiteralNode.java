@@ -49,11 +49,6 @@ public class StringLiteralNode extends ValueLiteralNode {
 	}
 
 	@Override
-	public boolean hasResult() {
-		return true;
-	}
-
-	@Override
 	public String toString() {
 		return "\"" + super.toString() + "\"";
 	}
