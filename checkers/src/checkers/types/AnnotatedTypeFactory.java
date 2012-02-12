@@ -216,7 +216,6 @@ public class AnnotatedTypeFactory {
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
-        annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
@@ -666,10 +665,9 @@ public class AnnotatedTypeFactory {
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
-                if (!type.isAnnotated() && 
-                        !type.getUpperBound().isAnnotated() &&
+                if (!type.isAnnotated() &&
                         tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
-                        TypeFromElement.annotate(type, tpelt);
+                   TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);
@@ -710,7 +708,7 @@ public class AnnotatedTypeFactory {
         	// this might happen.
             return null;
         }
-
+        
         TypeElement typeElt = ElementUtils.enclosingClass(element);
         if (typeElt == null) {
             throw new AssertionError("enclosingClass()==null for element: " + element);
@@ -775,6 +773,7 @@ public class AnnotatedTypeFactory {
     }
 
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
+
         Element enclosingElt = getMostInnerClassOrMethod(tree);
 
         while (enclosingElt != null) {
@@ -789,7 +788,7 @@ public class AnnotatedTypeFactory {
             } else
             if (enclosingElt instanceof TypeElement) {
                 if (isSubtype((TypeElement)enclosingElt, element))
-                    return (AnnotatedDeclaredType) getAnnotatedType(enclosingElt);
+                    return getAnnotatedType(element);
             }
             enclosingElt = enclosingElt.getEnclosingElement();
         }
@@ -817,6 +816,7 @@ public class AnnotatedTypeFactory {
      * @return  the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiver(ExpressionTree expression) {
+
         if (!(expression.getKind() == Tree.Kind.METHOD_INVOCATION
                 || expression.getKind() == Tree.Kind.MEMBER_SELECT
                 || expression.getKind() == Tree.Kind.IDENTIFIER
@@ -888,8 +888,8 @@ public class AnnotatedTypeFactory {
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
-        AnnotatedTypeMirror receiverType = getReceiver(tree);
-        AnnotatedExecutableType methodType = atypes.asMemberOf(receiverType, methodElt);
+        AnnotatedTypeMirror type = getReceiver(tree);
+        AnnotatedExecutableType methodType = atypes.asMemberOf(type, methodElt);
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
@@ -1457,20 +1457,17 @@ public class AnnotatedTypeFactory {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
             throw new Error("buildIndexTypes called more than once");
         }
-
         Map<Element, AnnotatedTypeMirror> indexTypes
             = new HashMap<Element, AnnotatedTypeMirror>();
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
 
-        if (!env.getOptions().containsKey("ignorejdkastub")) {
-            InputStream in = null;
-            if (checkerClass != null)
-                in = checkerClass.getResourceAsStream("jdk.astub");
-            if (in != null) {
-                StubParser stubParser = new StubParser("jdk.astub", in, this, env);
-                stubParser.parse(indexTypes, indexDeclAnnos);
-            }
+        InputStream in = null;
+        if (checkerClass != null)
+            in = checkerClass.getResourceAsStream("jdk.astub");
+        if (in != null) {
+            StubParser stubParser = new StubParser("jdk.astub", in, this, env);
+            stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
         String stubFiles = env.getOptions().get("stubs");
@@ -1525,7 +1522,6 @@ public class AnnotatedTypeFactory {
         // First look in the stub files.
         String eltName = ElementUtils.getVerboseName(elt);
         Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
                 if (sameAnnotation(am, aname)) {
