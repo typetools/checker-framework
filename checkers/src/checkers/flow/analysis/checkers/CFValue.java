@@ -10,18 +10,23 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
 import checkers.flow.analysis.AbstractValue;
+import checkers.flow.util.HashCodeUtils;
+import checkers.util.AnnotationUtils;
 
 /**
- * An abstract value for the default analysis is a set of annotations from the
- * QualifierHierarchy.
+ * An implementation of an abstract value used by the default dataflow analysis.
+ * Contains a set of annotations.
+ * 
+ * @author Stefan Heule
+ * 
  */
 public class CFValue implements AbstractValue<CFValue> {
-	
+
 	/**
 	 * The analysis class this store belongs to.
 	 */
 	protected final CFAnalysis analysis;
-	
+
 	/** The annotation corresponding to this abstract value. */
 	protected Set<AnnotationMirror> annotations;
 
@@ -35,6 +40,7 @@ public class CFValue implements AbstractValue<CFValue> {
 		this.annotations = annotations;
 	}
 
+	/** @return The annotations this abstract value stands for. */
 	public Set<AnnotationMirror> getAnnotations() {
 		return annotations;
 	}
@@ -54,8 +60,23 @@ public class CFValue implements AbstractValue<CFValue> {
 	/**
 	 * Return whether this Value is a proper subtype of the argument Value.
 	 */
-	boolean isSubtypeOf(CFValue other) {
+	public boolean isSubtypeOf(CFValue other) {
 		return analysis.typeHierarchy.isSubtype(annotations, other.annotations);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof CFValue)) {
+			return false;
+		}
+		CFValue other = (CFValue) obj;
+		return AnnotationUtils
+				.areSame(getAnnotations(), other.getAnnotations());
+	}
+
+	@Override
+	public int hashCode() {
+		return HashCodeUtils.hash(annotations);
 	}
 
 	/**
