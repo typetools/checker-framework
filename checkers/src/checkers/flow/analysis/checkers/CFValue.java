@@ -14,8 +14,8 @@ import checkers.flow.util.HashCodeUtils;
 import checkers.util.AnnotationUtils;
 
 /**
- * An implementation of an abstract value used by the default dataflow analysis.
- * Contains a set of annotations.
+ * An implementation of an abstract value used by the Checker Framework dataflow
+ * analysis. Contains a set of annotations.
  * 
  * @author Stefan Heule
  * 

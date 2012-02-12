@@ -17,8 +17,11 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
- * The default analysis transfer function propagates information through
- * assignments to local variables.
+ * The default analysis transfer function for the Checker Framework propagates
+ * information through assignments and uses the {@link AnnotatedTypeFactory} to
+ * provide checker-specific logic how to combine types (e.g., what is the type
+ * of a string concatenation, given the types of the two operands) and as an
+ * abstraction function (e.g., determine the annotations on literals)..
  * 
  * @author Charlie Garrett
  * @author Stefan Heule
@@ -89,6 +92,7 @@ public class CFTransfer
 			LocalVariableNode n, TransferInput<CFValue, CFStore> in) {
 		CFStore store = in.getRegularStore();
 		CFValue value = store.getValue(n);
+		// TODO: handle value == null (go to factory?)
 		return new RegularTransferResult<>(value, store);
 	}
 
