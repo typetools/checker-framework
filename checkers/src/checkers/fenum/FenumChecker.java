@@ -80,6 +80,10 @@ public class FenumChecker extends BaseTypeChecker {
         qualSet.add(FenumUnqualified.class);
         qualSet.add(Bottom.class);
 
+        // Also call super. This way a subclass can use the
+        // @TypeQualifiers annotation again.
+        qualSet.addAll(super.createSupportedTypeQualifiers());
+
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
         return Collections.unmodifiableSet(qualSet);
