@@ -16,6 +16,10 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
+import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFAnalysis.CFValue;
+import checkers.flow.cfg.CFGBuilder;
+import checkers.flow.cfg.ControlFlowGraph;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -26,6 +30,7 @@ import checkers.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -168,24 +173,35 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     // Indicate whether flow has performed the analysis or not
-    boolean scanned = false;
-    boolean finishedScanning = false;
+    protected boolean finishedScanning = false;
+    protected CFAnalysis analysis = null;
+    
+	@Override
+	public void computeFlow(MethodTree node) {
+		if (useFlow) {
+			// Apply flow-sensitive qualifier inference.
+			ControlFlowGraph cfg = CFGBuilder.build(node);
+			analysis = new CFAnalysis(checker.getQualifierHierarchy(), this);
+			analysis.performAnalysis(cfg);
+
+			super.fromTreeCache.clear();
+			finishedScanning = true;
+		}
+	}
+	
+	@Override
+	public void endFlow(MethodTree node) {
+		analysis = null;
+	}
+    
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
-        if (useFlow && !scanned) {
-            // Perform the flow analysis at the first invocation of
-            // annotateImplicit.  note that flow may call .getAnnotatedType
-            // so scanned is set to true before flow.scan
-            scanned = true;
-            // Apply flow-sensitive qualifier inference.
-            flow.scan(root);
-            super.fromTreeCache.clear();
-            finishedScanning = true;
-        }
         treeAnnotator.visit(tree, type);
-        if (useFlow) {
-            final AnnotationMirror inferred = flow.test(tree);
+        if (useFlow && analysis != null) {
+            CFValue as = analysis.getValue(tree);
+            // TODO: handle inference of more than one qualifier
+			final AnnotationMirror inferred = as != null ? as.getAnnotations().iterator().next() : null;
             if (inferred != null) {
                 if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations().iterator().next())) {
                     /* TODO:
