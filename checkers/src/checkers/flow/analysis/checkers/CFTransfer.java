@@ -28,7 +28,7 @@ public class CFTransfer
 	/**
 	 * The analysis class this store belongs to.
 	 */
-	private/* @LazyNonNull */CFAnalysis analysis;
+	protected/* @LazyNonNull */CFAnalysis analysis;
 
 	public void setAnalysis(CFAnalysis analysis) {
 		this.analysis = analysis;
