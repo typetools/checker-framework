@@ -74,8 +74,4 @@ public abstract class Node {
 	 */
 	public abstract Collection<Node> getOperands();
 
-    /**
-     * @return true iff this {@link Node} produces a result value
-     */
-    public boolean hasResult() { return false; }
 }

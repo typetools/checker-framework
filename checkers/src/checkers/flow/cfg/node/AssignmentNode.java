@@ -84,9 +84,4 @@ public class AssignmentNode extends Node {
 		list.add(getExpression());
 		return list;
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }
