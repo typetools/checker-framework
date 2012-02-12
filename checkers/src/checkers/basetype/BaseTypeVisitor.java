@@ -13,7 +13,7 @@ import javax.tools.Diagnostic.Kind;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
-import checkers.flow.analysis.checkers.DefaultTypeAnalysis;
+import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.source.Result;
@@ -237,14 +237,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (options.containsKey("flow") && options.get("flow").equals("new")) {
             System.err.println("Analyze method: " + node.getName());
             ControlFlowGraph cfg = CFGBuilder.build(node);
-            DefaultTypeAnalysis analysis = new DefaultTypeAnalysis(checker.getQualifierHierarchy(),
+            CFAnalysis analysis = new CFAnalysis(checker.getQualifierHierarchy(),
                                                                    atypeFactory);
             analysis.performAnalysis(cfg);
 
             if (options.containsKey("flowdotdir")) {
                 String dotfilename = options.get("flowdotdir") + "/" + node.getName() + ".dot";
                 // make path safe for Windows
-                dotfilename = dotfilename.replace("<", "-").replace(">", "-");
+                dotfilename = dotfilename.replace("<", ".").replace(">", ".");
                 System.err.println("Output to DOT file: " + dotfilename);
                 analysis.outputToDotFile(dotfilename);
             }

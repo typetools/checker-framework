@@ -1,33 +1,17 @@
 package checkers.regex;
 
-import java.util.List;
-
-import javax.lang.model.type.TypeKind;
-
+import checkers.basetype.BaseTypeChecker;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
-
-import java.util.Collections;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Type.ArrayType;
-
-import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
-import checkers.types.TreeAnnotationPropagator;
-import checkers.types.TypeAnnotationProvider;
-import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
@@ -40,8 +24,8 @@ import checkers.util.TreeUtils;
  * <li value="2">concatenation tree of two valid regular expression values
  * (either {@code String} or {@code char}.)</li>
  * 
- * <li value="3">initialization of a char array that when converted to a String
- * is a valid regular expression.</li>
+ * <!--<li value="3">initialization of a char array that when converted to a String
+ * is a valid regular expression.</li>-->
  *
  * </ol>
  *
@@ -92,12 +76,12 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 && TreeUtils.isStringConcatenation(tree)) {
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
-                
+
                 boolean lExprRE = lExpr.hasAnnotation(Regex.class);
                 boolean rExprRE = rExpr.hasAnnotation(Regex.class);
                 boolean lExprPoly = lExpr.hasAnnotation(PolyRegex.class);
                 boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
-                
+
                 if (lExprRE && rExprRE)
                     type.addAnnotation(Regex.class);
                 else if (lExprPoly && rExprPoly
@@ -107,15 +91,15 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             }
             return super.visitBinary(tree, type);
         }
-        
-        // This won't work correctly until flow sensitivity is supported by the
-        // the regex checker. For example:
-        //
-        // char @Regex [] arr = {'r', 'e'};
-        // arr[0] = '('; // type is still "char @Regex []", but this is no longer correct
-        //
-        // There are associated tests in tests/regex/Simple.java:testCharArrays
-        // that can be uncommented when this is uncommented.
+
+//         This won't work correctly until flow sensitivity is supported by the
+//         the regex checker. For example:
+//
+//         char @Regex [] arr = {'r', 'e'};
+//         arr[0] = '('; // type is still "char @Regex []", but this is no longer correct
+//
+//         There are associated tests in tests/regex/Simple.java:testCharArrays
+//         that can be uncommented when this is uncommented.
 //        /**
 //         * Case 3: a char array that as a String is a valid regular expression.
 //         */
@@ -145,48 +129,5 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 //            }
 //            return super.visitNewArray(tree, type);
 //        }
-    }
-
-    @Override
-    public TreeAnnotationPropagator createTreeAnnotationPropagator(RegexChecker checker) {
-        return new RegexTreeAnnotationPropagator(checker);
-    }
-
-    private class RegexTreeAnnotationPropagator extends TreeAnnotationPropagator {
-
-        public RegexTreeAnnotationPropagator(BaseTypeChecker checker) {
-            super(checker);
-        }
-
-        /**
-         * Case 1: valid regular expression String literal
-         */
-        @Override
-        public Set<AnnotationMirror> visitLiteral(LiteralTree tree,
-                                                  TypeAnnotationProvider provider) {
-            if (tree.getKind() == Tree.Kind.STRING_LITERAL
-                && RegexUtil.isRegex((String)((LiteralTree)tree).getValue())) {
-                return Collections.singleton(annotations.fromClass(Regex.class));
-            }
-            return Collections.<AnnotationMirror>emptySet();
-        }
-
-        /**
-         * Case 2: concatenation of two regular expression Strings literals
-         */
-        @Override
-        public Set<AnnotationMirror> visitBinary(BinaryTree tree,
-                                                 TypeAnnotationProvider provider) {
-            if (TreeUtils.isStringConcatenation(tree)) {
-                Set<AnnotationMirror> lAnnos = provider.getAnnotations(tree.getLeftOperand());
-                Set<AnnotationMirror> rAnnos = provider.getAnnotations(tree.getRightOperand());
-                AnnotationMirror regexAnno = annotations.fromClass(Regex.class);
-                if (AnnotationUtils.containsSame(lAnnos, regexAnno)
-                    && AnnotationUtils.containsSame(rAnnos, regexAnno)) {
-                    return Collections.singleton(regexAnno);
-                }
-            }
-            return Collections.<AnnotationMirror>emptySet();
-        }
     }
 }
