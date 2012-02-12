@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Map.Entry;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.tools.JavaFileManager;
@@ -125,12 +126,18 @@ public class JavaSource2CFGDOT {
 	 *            Analysis to perform befor the visualization (or
 	 *            <code>null</code> if no analysis is to be performed).
 	 */
-	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<S>> void generateDOTofCFG(
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
 			String inputFile, String outputFile, String method, String clas,
 			boolean pdf, /* @Nullable */Analysis<A, S, T> analysis) {
+		MethodTree m = getMethodTree(inputFile, method, clas);
+		generateDOTofCFG(inputFile, outputFile, method, clas, pdf, analysis, m);
+	}
+
+	public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
+			String inputFile, String outputFile, String method, String clas,
+			boolean pdf, /* @Nullable */Analysis<A, S, T> analysis, MethodTree m) {
 		String fileName = (new File(inputFile)).getName();
 		System.out.println("Working on " + fileName + "...");
-		MethodTree m = getMethodTree(inputFile, method, clas);
 
 		if (m == null) {
 			printError("Method not found.");
@@ -175,16 +182,28 @@ public class JavaSource2CFGDOT {
 	}
 
 	/**
-	 * Get the AST of a specific method in a specific class in a specific file
-	 * (or null if no such method exists).
+	 * @return The AST of a specific method in a specific class in a specific
+	 *         file (or null if no such method exists).
 	 */
 	public static/* @Nullable */MethodTree getMethodTree(String file,
 			final String method, String clas) {
-		final Holder<MethodTree> m = new Holder<MethodTree>();
+		return getMethodTreeAndCompilationUnit(file, method, clas).getKey();
+	}
+
+	/**
+	 * @return The AST of a specific method in a specific class as well as the
+	 *         {@link CompilationUnitTree} in a specific file (or null they do
+	 *         not exist).
+	 */
+	public static Entry</* @Nullable */MethodTree, /* @Nullable */CompilationUnitTree> getMethodTreeAndCompilationUnit(
+			String file, final String method, String clas) {
+		final Holder<MethodTree> m = new Holder<>();
+		final Holder<CompilationUnitTree> c = new Holder<>();
 		SourceChecker sourceChecker = new SourceChecker() {
 			@Override
 			protected SourceVisitor<?, ?> createSourceVisitor(
 					CompilationUnitTree root) {
+				c.value = root;
 				return new SourceVisitor<Void, Void>(this, root) {
 					@Override
 					public Void visitMethod(MethodTree node, Void p) {
@@ -229,7 +248,22 @@ public class JavaSource2CFGDOT {
 		} finally {
 			System.setErr(err);
 		}
-		return m.value;
+		return new Entry<MethodTree, CompilationUnitTree>() {
+			@Override
+			public CompilationUnitTree setValue(CompilationUnitTree value) {
+				return null;
+			}
+
+			@Override
+			public CompilationUnitTree getValue() {
+				return c.value;
+			}
+
+			@Override
+			public MethodTree getKey() {
+				return m.value;
+			}
+		};
 	}
 
 }

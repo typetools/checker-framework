@@ -15,7 +15,6 @@ package checkers.flow.cfg.node;
  */
 public interface NodeVisitor<R, P> {
 	// Literals
-	R visitValueLiteral(ValueLiteralNode n, P p);
 	R visitByteLiteral(ByteLiteralNode n, P p);
 	R visitShortLiteral(ShortLiteralNode n, P p);
 	R visitIntegerLiteral(IntegerLiteralNode n, P p);
@@ -26,15 +25,6 @@ public interface NodeVisitor<R, P> {
         R visitCharacterLiteral(CharacterLiteralNode n, P p);
         R visitStringLiteral(StringLiteralNode n, P p);
         R visitNullLiteral(NullLiteralNode n, P p);
-
-	R visitAssignment(AssignmentNode n, P p);
-	R visitLocalVariable(LocalVariableNode n, P p);
-	R visitVariableDeclaration(VariableDeclarationNode n, P p);
-	R visitFieldAccess(FieldAccessNode n, P p);
-	R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
-	R visitExplicitThis(ExplicitThisNode n, P p);
-	R visitSuper(SuperNode n, P p);
-	R visitReturn(ReturnNode n, P p);
 
 	// Unary operations
 	R visitNumericalMinus(NumericalMinusNode n, P p);
@@ -81,5 +71,14 @@ public interface NodeVisitor<R, P> {
 	R visitGreaterThanOrEqual(GreaterThanOrEqualNode n, P p);
 	R visitEqualTo(EqualToNode n, P p);
 	R visitNotEqual(NotEqualNode n, P p);
+
+	R visitAssignment(AssignmentNode n, P p);
+	R visitLocalVariable(LocalVariableNode n, P p);
+	R visitVariableDeclaration(VariableDeclarationNode n, P p);
+	R visitFieldAccess(FieldAccessNode n, P p);
+	R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
+	R visitExplicitThis(ExplicitThisNode n, P p);
+	R visitSuper(SuperNode n, P p);
+	R visitReturn(ReturnNode n, P p);
 
 }
