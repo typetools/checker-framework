@@ -14,7 +14,7 @@ import checkers.types.QualifierHierarchy;
 
 /**
  * {@link CFAnalysis} is an extensible dataflow analysis for the Checker
- * Framework that tracks the annotations using a flow-senstitive analsysis. It
+ * Framework that tracks the annotations using a flow-sensitive analysis. It
  * uses an {@link AnnotatedTypeFactory} to provide checker-specific logic how to
  * combine types (e.g., what is the type of a string concatenation, given the
  * types of the two operands) and as an abstraction function (e.g., determine
