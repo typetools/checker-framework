@@ -22,6 +22,20 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
+/**
+ * An implementation of an iterative algorithm to solve a dataflow problem,
+ * given a control flow graph and a transfer function.
+ * 
+ * @author Stefan Heule
+ * 
+ * @param <A>
+ *            The abstract value type to be tracked by the analysis.
+ * @param <S>
+ *            The store type used in the analsysis.
+ * @param <T>
+ *            The transfer function type that is used to approximated runtime
+ *            behavior.
+ */
 public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
 
 	/** The transfer function for regular nodes. */
@@ -242,7 +256,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	public/* @Nullable */A getValue(Node n) {
 		return nodeValues.get(n);
 	}
-	
+
 	/**
 	 * @return The abstract value for {@link Tree} {@code t}, or {@code null} if
 	 *         no information is available. Note that if the analysis has not

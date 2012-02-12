@@ -10,14 +10,8 @@ import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.LocalVariableNode;
 
 /**
- * A store for the default analysis is a mapping from Nodes to Values. If no
- * Value is explicitly stored for a Node, we fall back on the statically known
- * annotations.
- * 
- * Only Nodes representing mutable values, such as VariableDeclarationNodes are
- * tracked. If we compute a more precise type annotation for a variable than its
- * static annotation, then it is entered into the {@link CFStore} and stays
- * there.
+ * A store for the checker framework analysis tracks the annotations of memory
+ * locations such as local variables and fields.
  * 
  * TODO: Extend {@link CFStore} to track class member fields in the same way as
  * variables.
@@ -31,7 +25,7 @@ public class CFStore implements Store<CFStore> {
 	 * The analysis class this store belongs to.
 	 */
 	protected final CFAnalysis analysis;
-	
+
 	/**
 	 * Information collected about local variables, which are identified by the
 	 * corresponding element.
