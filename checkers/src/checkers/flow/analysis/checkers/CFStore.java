@@ -21,6 +21,9 @@ import checkers.flow.cfg.node.LocalVariableNode;
  * 
  * TODO: Extend {@link CFStore} to track class member fields in the same way as
  * variables.
+ * 
+ * @author Charlie Garrett
+ * @author Stefan Heule
  */
 public class CFStore implements Store<CFStore> {
 
