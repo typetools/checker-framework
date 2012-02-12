@@ -48,6 +48,18 @@ public class CFAnalysis extends Analysis<CFValue, CFStore, CFTransfer> {
 		this.factory = factory;
 		this.transferFunction.setAnalysis(this);
 	}
+	
+	public QualifierHierarchy getTypeHierarchy() {
+		return typeHierarchy;
+	}
+
+	public AnnotatedTypeFactory getFactory() {
+		return factory;
+	}
+
+	public Set<AnnotationMirror> getLegalAnnotations() {
+		return legalAnnotations;
+	}
 
 	/**
 	 * Print a DOT graph of the CFG and analysis info for inspection.
