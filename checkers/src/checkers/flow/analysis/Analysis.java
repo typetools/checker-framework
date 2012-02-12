@@ -19,6 +19,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
@@ -240,5 +241,15 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 */
 	public/* @Nullable */A getValue(Node n) {
 		return nodeValues.get(n);
+	}
+	
+	/**
+	 * @return The abstract value for {@link Tree} {@code t}, or {@code null} if
+	 *         no information is available. Note that if the analysis has not
+	 *         finished yet, this value might not represent the final value for
+	 *         this node.
+	 */
+	public/* @Nullable */A getValue(Tree t) {
+		return nodeValues.get(cfg.getNodeCorrespondingToTree(t));
 	}
 }
