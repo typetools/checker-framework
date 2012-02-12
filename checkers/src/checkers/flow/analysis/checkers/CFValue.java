@@ -1,6 +1,5 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -30,14 +29,22 @@ public class CFValue implements AbstractValue<CFValue> {
 	/** The annotation corresponding to this abstract value. */
 	protected Set<AnnotationMirror> annotations;
 
-	public CFValue(CFAnalysis analysis) {
-		this.analysis = analysis;
-		annotations = new HashSet<AnnotationMirror>();
-	}
-
 	public CFValue(CFAnalysis analysis, Set<AnnotationMirror> annotations) {
 		this.analysis = analysis;
+		assert areValidAnnotations(annotations);
 		this.annotations = annotations;
+	}
+
+	/**
+	 * Are the annotations {@code annotations} valid for the given analysis?
+	 */
+	protected boolean areValidAnnotations(Set<AnnotationMirror> annotations) {
+		for (AnnotationMirror a : annotations) {
+			if (!AnnotationUtils.containsSame(analysis.legalAnnotations, a)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** @return The annotations this abstract value stands for. */
