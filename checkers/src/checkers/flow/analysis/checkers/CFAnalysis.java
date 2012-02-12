@@ -32,7 +32,6 @@ import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -201,11 +200,11 @@ public class CFAnalysis extends
 		}
 
 		/**
-		 * Current abstract value of a local variable.
+		 * @return Current abstract value of a local variable, or {@code null}
+		 *         if no information is available.
 		 */
-		public CFValue getValue(LocalVariableNode n) {
+		public/* @Nullable */CFValue getValue(LocalVariableNode n) {
 			Element el = n.getElement();
-			assert localVariableValues.containsKey(el);
 			return localVariableValues.get(el);
 		}
 
@@ -346,12 +345,11 @@ public class CFAnalysis extends
 			CFStore info = in.getRegularStore();
 			CFValue value = null;
 
-			if (n.hasResult()) {
-				Tree tree = n.getTree();
-				assert tree != null : "Node has a result, but no Tree";
-
-				Set<AnnotationMirror> annotations = null; // TODO
-				value = null;// analysis.createValue(annotations);
+			Tree tree = n.getTree();
+			if (tree != null) {
+				AnnotatedTypeMirror at = analysis.factory
+						.getAnnotatedType(tree);
+				value = analysis.new CFValue(at.getAnnotations());
 			}
 
 			return new RegularTransferResult<>(value, info);
