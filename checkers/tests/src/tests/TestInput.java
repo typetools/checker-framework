@@ -7,15 +7,15 @@ import java.io.*;
 
 public class TestInput {
 
-    public boolean debug = false;
+    private static final boolean debug = false;
 
-    private JavaCompiler compiler;
+    private final JavaCompiler compiler;
 
-    private StandardJavaFileManager fileManager;
+    private final StandardJavaFileManager fileManager;
 
-    private Iterable<? extends JavaFileObject> files;
-    private Iterable<String> processors;
-    private List<String> options;
+    private final Iterable<? extends JavaFileObject> files;
+    private final Iterable<String> processors;
+    private final List<String> options;
 
     private static final String OUTDIR = System.getProperty("tests.outputDir",
             "tests" + File.separator + "build" + File.separator + "testclasses");
