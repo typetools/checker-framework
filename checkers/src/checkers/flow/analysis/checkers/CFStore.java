@@ -35,14 +35,14 @@ public class CFStore implements Store<CFStore> {
 	 */
 	protected Map<Element, CFValue> localVariableValues;
 
-	public CFStore(CFAnalysis cfAnalysis) {
-		analysis = cfAnalysis;
+	public CFStore(CFAnalysis analysis) {
+		this.analysis = analysis;
 		localVariableValues = new HashMap<>();
 	}
 
 	/** Copy constructor. */
-	protected CFStore(CFAnalysis cfAnalysis, CFStore other) {
-		analysis = cfAnalysis;
+	protected CFStore(CFAnalysis analysis, CFStore other) {
+		this.analysis = analysis;
 		localVariableValues = new HashMap<>(other.localVariableValues);
 	}
 
