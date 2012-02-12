@@ -32,7 +32,7 @@ public class StringLiteralNode extends ValueLiteralNode {
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
 		return visitor.visitStringLiteral(this, p);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		// test that obj is a StringLiteralNode
@@ -51,5 +51,10 @@ public class StringLiteralNode extends ValueLiteralNode {
 	@Override
 	public boolean hasResult() {
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "\"" + super.toString() + "\"";
 	}
 }

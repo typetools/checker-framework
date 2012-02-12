@@ -115,6 +115,24 @@ public class Simple {
 //        @Regex boolean b;   // error
 //    }
 
+    void testPatternLiteral() {
+        Pattern.compile("non(", Pattern.LITERAL);
+        Pattern.compile(foo("regex"), Pattern.LITERAL);
+
+        //:: error: (argument.type.incompatible)
+        Pattern.compile(foo("regex("), Pattern.LITERAL);    // error
+        //:: error: (argument.type.incompatible)
+        Pattern.compile("non(");    // error
+        //:: error: (argument.type.incompatible)
+        Pattern.compile(foo("regex"));    // error
+        //:: error: (argument.type.incompatible)
+        Pattern.compile("non(", Pattern.CASE_INSENSITIVE);    // error
+    }
+
+    public static String foo(@Regex String s) {
+        return "non((";
+    }
+
 //    TODO: This is not supported until the framework can read explicit
 //    annotations from arrays.
 //    void testArrayAllowedTypes() {

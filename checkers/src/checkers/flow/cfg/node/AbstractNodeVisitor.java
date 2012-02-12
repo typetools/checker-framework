@@ -1,10 +1,16 @@
 package checkers.flow.cfg.node;
 
 /**
- * A visitor that calls its abstract method <code>visitNode</code> for all
- * {@link Node}s. This is useful to implement a visitor that performs the same
- * operation (e.g., nothing) for most {@link Node}s and only has special
- * behavior for a few.
+ * A default implementation of the node visitor interface. The class introduces
+ * several 'summary' methods, that can be overridden to change the behavior of
+ * several related visit methods at once. An example is the
+ * {@code visitValueLiteral} method, that is called for every
+ * {@link ValueLiteralNode}.
+ * 
+ * <p>
+ * 
+ * This is useful to implement a visitor that performs the same operation (e.g.,
+ * nothing) for most {@link Node}s and only has special behavior for a few.
  * 
  * @author Stefan Heule
  * 
@@ -13,16 +19,15 @@ package checkers.flow.cfg.node;
  * @param <P>
  *            Parameter type of the visitor.
  */
-public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
+public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	abstract public R visitNode(Node n, P p);
 
-        // Literals
-	@Override
 	public R visitValueLiteral(ValueLiteralNode n, P p) {
 		return visitNode(n, p);
 	}
 
+        // Literals
 	@Override
 	public R visitByteLiteral(ByteLiteralNode n, P p) {
 		return visitValueLiteral(n, p);
@@ -74,48 +79,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	}
 
 
-	@Override
-	public R visitAssignment(AssignmentNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitLocalVariable(LocalVariableNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitVariableDeclaration(VariableDeclarationNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitFieldAccess(FieldAccessNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitExplicitThis(ExplicitThisNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitSuper(SuperNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
-	public R visitReturn(ReturnNode n, P p) {
-		return visitNode(n, p);
-	};
-
-
-	// Unary operations
+        // Unary operations
 	@Override
 	public R visitNumericalMinus(NumericalMinusNode n, P p) {
 		return visitNode(n, p);
@@ -132,7 +96,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	}
 
 
-	// Binary operations
+        // Binary operations
 	@Override
 	public R visitConditionalOr(ConditionalOrNode n, P p) {
 		return visitNode(n, p);
@@ -209,7 +173,7 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	}
 
 
-	// Compound assignments
+        // Compound assignments
 	@Override
 	public R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p) {
 		return visitNode(n, p);
@@ -311,5 +275,46 @@ public abstract class SinkNodeVisitor<R, P> implements NodeVisitor<R, P> {
 	public R visitNotEqual(NotEqualNode n, P p) {
 		return visitNode(n, p);
 	}
+
+
+	@Override
+	public R visitAssignment(AssignmentNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitLocalVariable(LocalVariableNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitVariableDeclaration(VariableDeclarationNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitFieldAccess(FieldAccessNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitExplicitThis(ExplicitThisNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitSuper(SuperNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitReturn(ReturnNode n, P p) {
+		return visitNode(n, p);
+	};
 
 }

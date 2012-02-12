@@ -1,5 +1,6 @@
 package checkers.regex;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -18,28 +19,29 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
  */
 @TypeQualifiers({ Regex.class, PolyRegex.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker {
+  
+    private TypeMirror charSequenceType;
+    private TypeMirror characterType;
+  
+    @Override
+    public void initChecker(ProcessingEnvironment env) {
+        super.initChecker(env);
+        
+        this.charSequenceType = getTypeMirror("java.lang.CharSequence");
+        this.characterType = getTypeMirror("java.lang.Character");
+    }
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
         // Only allow annotations on Character and subtypes of CharSequence.
         if (!useType.getExplicitAnnotations().isEmpty()) {
-            TypeMirror charSequence = getTypeMirror("java.lang.CharSequence");
-            TypeMirror character = getTypeMirror("java.lang.Character");
-
             Types typeUtils = env.getTypeUtils();
-            return typeUtils.isSubtype(declarationType.getUnderlyingType(), charSequence)
-                || typeUtils.isSubtype(declarationType.getUnderlyingType(), character);
+            return typeUtils.isSubtype(declarationType.getUnderlyingType(), charSequenceType)
+                || typeUtils.isSubtype(declarationType.getUnderlyingType(), characterType);
         } else {
             return super.isValidUse(declarationType, useType);
         }
-    }
-
-    /**
-     * Gets a TypeMirror for the given class name.
-     */
-    private TypeMirror getTypeMirror(String className) {
-        return env.getElementUtils().getTypeElement(className).asType();
     }
 
     @Override
@@ -50,5 +52,12 @@ public class RegexChecker extends BaseTypeChecker {
         } else {
             return super.isValidUse(type);
         }
+    }
+    
+    /**
+     * Gets a TypeMirror for the given class name.
+     */
+    private TypeMirror getTypeMirror(String className) {
+        return env.getElementUtils().getTypeElement(className).asType();
     }
 }
