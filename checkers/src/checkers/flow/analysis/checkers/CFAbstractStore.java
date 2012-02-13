@@ -362,6 +362,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 				return false;
 			}
 		}
+		for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
+			FieldAccess key = e.getKey();
+			if (!fieldValues.containsKey(key)
+					|| !fieldValues.get(key).equals(e.getValue())) {
+				return false;
+			}
+		}
 		return true;
 	}
 
