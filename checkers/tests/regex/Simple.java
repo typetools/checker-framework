@@ -142,13 +142,20 @@ public class Simple {
         @Regex(2) String s3 = "()(abc)";
         @Regex(3) String s4 = "(abc())()";
         @Regex(4) String s5 = "((((abc))))";
+        
+        @Regex(0) String s7 = "(abc)";
+        @Regex String s9 = "()()(())";
+        @Regex(2) String s10 = "()()(())";
+        @Regex(3) String s11 = "()()(())";
 
         //:: error: (assignment.type.incompatible)
         @Regex(2) String s6 = "nonregex(";    // error
         //:: error: (assignment.type.incompatible)
-        @Regex(0) String s7 = "(abc)";    // error
-        //:: error: (assignment.type.incompatible)
         @Regex(1) String s8 = "abc";    // error
+        //:: error: (assignment.type.incompatible)
+        @Regex(3) String s12 = "()()";    // error
+        //:: error: (assignment.type.incompatible)
+        @Regex(4) String s13 = "(())()";    // error
     }
 
 //    TODO: This is not supported until the framework can read explicit
