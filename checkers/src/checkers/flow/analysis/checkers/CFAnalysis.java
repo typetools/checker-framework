@@ -28,7 +28,7 @@ public class CFAnalysis extends Analysis<CFValue, CFStore, CFTransfer> {
 	/**
 	 * The qualifier hierarchy for which to track annotations.
 	 */
-	protected final QualifierHierarchy typeHierarchy;
+	protected final QualifierHierarchy qualifierHierarchy;
 
 	/**
 	 * A type factory that can provide static type annotations for AST Trees.
@@ -40,17 +40,17 @@ public class CFAnalysis extends Analysis<CFValue, CFStore, CFTransfer> {
 	 */
 	protected final Set<AnnotationMirror> legalAnnotations;
 
-	public CFAnalysis(QualifierHierarchy typeHierarchy,
+	public CFAnalysis(QualifierHierarchy qualifierHierarchy,
 			AnnotatedTypeFactory factory) {
 		super(new CFTransfer());
-		this.typeHierarchy = typeHierarchy;
-		this.legalAnnotations = typeHierarchy.getAnnotations();
+		this.qualifierHierarchy = qualifierHierarchy;
+		this.legalAnnotations = qualifierHierarchy.getAnnotations();
 		this.factory = factory;
 		this.transferFunction.setAnalysis(this);
 	}
 	
 	public QualifierHierarchy getTypeHierarchy() {
-		return typeHierarchy;
+		return qualifierHierarchy;
 	}
 
 	public AnnotatedTypeFactory getFactory() {

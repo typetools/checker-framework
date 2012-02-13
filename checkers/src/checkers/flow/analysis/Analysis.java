@@ -90,7 +90,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 					if (val != null) {
 						nodeValues.put(n, val);
 					}
-					store = new TransferInput<>(nodeValues, transferResult);
+					store = new TransferInput<>(n, nodeValues, transferResult);
 				}
 				// loop will run at least one, making transferResult non-null
 
@@ -129,7 +129,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 					S exceptionalStore = transferResult
 							.getExceptionalStore(cause);
 					if (exceptionalStore != null) {
-						addStoreBefore(exceptionSucc, new TransferInput<>(
+						addStoreBefore(exceptionSucc, new TransferInput<>(node,
 								nodeValues, exceptionalStore));
 					} else {
 						addStoreBefore(exceptionSucc, storeBefore.copy());
@@ -149,9 +149,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
 				addStoreBefore(thenSucc,
-						new TransferInput<>(nodeValues, store.getThenStore()));
+						new TransferInput<>(null, nodeValues, store.getThenStore()));
 				addStoreBefore(elseSucc,
-						new TransferInput<>(nodeValues, store.getElseStore()));
+						new TransferInput<>(null, nodeValues, store.getElseStore()));
 				break;
 			}
 
@@ -194,7 +194,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 			// TODO: document that LocalVariableNode has no block that it
 			// belongs to
 		}
-		stores.put(cfg.getEntryBlock(), new TransferInput<>(nodeValues,
+		stores.put(cfg.getEntryBlock(), new TransferInput<>(null, nodeValues,
 				transferFunction.initialStore(tree, parameters)));
 	}
 

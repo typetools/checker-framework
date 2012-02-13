@@ -59,7 +59,7 @@ public class CFValue implements AbstractValue<CFValue> {
 	 */
 	@Override
 	public CFValue leastUpperBound(CFValue other) {
-		Set<AnnotationMirror> lub = analysis.typeHierarchy.leastUpperBound(
+		Set<AnnotationMirror> lub = analysis.qualifierHierarchy.leastUpperBound(
 				annotations, other.annotations);
 		return new CFValue(analysis, lub);
 	}
@@ -68,7 +68,7 @@ public class CFValue implements AbstractValue<CFValue> {
 	 * Return whether this Value is a proper subtype of the argument Value.
 	 */
 	public boolean isSubtypeOf(CFValue other) {
-		return analysis.typeHierarchy.isSubtype(annotations, other.annotations);
+		return analysis.qualifierHierarchy.isSubtype(annotations, other.annotations);
 	}
 
 	@Override
