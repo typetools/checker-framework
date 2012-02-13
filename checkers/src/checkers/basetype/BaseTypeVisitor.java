@@ -13,6 +13,7 @@ import javax.tools.Diagnostic.Kind;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
