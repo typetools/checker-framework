@@ -1,6 +1,7 @@
 package checkers.flow.cfg.node;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 import checkers.flow.cfg.block.Block;
 
@@ -69,9 +70,27 @@ public abstract class Node {
 	public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
 	/**
-	 * @return a collection containing all of the operand {@link Node}s
-	 *         of this {@link Node}.
+	 * @return A collection containing all of the operand {@link Node}s of this
+	 *         {@link Node}.
 	 */
 	public abstract Collection<Node> getOperands();
+
+	/**
+	 * @return A collection containing all of the operand {@link Node}s of this
+	 *         {@link Node}, as well as (transitively) the operands of its
+	 *         operands.
+	 */
+	public Collection<Node> getTransitiveOperands() {
+		Collection<Node> operands = new HashSet<>(getOperands());
+		Collection<Node> transitiveOperands = new HashSet<>(getOperands());
+		while (!operands.isEmpty()) {
+			Node next = operands.iterator().next();
+			transitiveOperands.add(next);
+			for (Node o : next.getOperands()) {
+				operands.addAll(o.getOperands());
+			}
+		}
+		return transitiveOperands;
+	}
 
 }
