@@ -9,7 +9,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node for the bitwise and compound assignment:
+ * A node for the bitwise or logical (single bit) and
+ * compound assignment:
  * 
  * <pre>
  *   <em>variable</em> &= <em>expression</em>

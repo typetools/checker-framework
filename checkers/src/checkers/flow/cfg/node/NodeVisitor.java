@@ -32,7 +32,6 @@ public interface NodeVisitor<R, P> {
 	R visitBitwiseComplement(BitwiseComplementNode n, P p);
 
 	// Binary operations
-	R visitConditionalOr(ConditionalOrNode n, P p);
 	R visitStringConcatenate(StringConcatenateNode n, P p);
 	R visitNumericalAddition(NumericalAdditionNode n, P p);
 	R visitNumericalSubtraction(NumericalSubtractionNode n, P p);
@@ -47,6 +46,12 @@ public interface NodeVisitor<R, P> {
 	R visitBitwiseAnd(BitwiseAndNode n, P p);
 	R visitBitwiseOr(BitwiseOrNode n, P p);
 	R visitBitwiseXor(BitwiseXorNode n, P p);
+
+        // Increment and decrement operations
+	R visitPrefixIncrement(PrefixIncrementNode n, P p);
+	R visitPrefixDecrement(PrefixDecrementNode n, P p);
+	R visitPostfixIncrement(PostfixIncrementNode n, P p);
+	R visitPostfixDecrement(PostfixDecrementNode n, P p);
 
 	// Compound assignments
 	R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
@@ -72,6 +77,12 @@ public interface NodeVisitor<R, P> {
 	R visitEqualTo(EqualToNode n, P p);
 	R visitNotEqual(NotEqualNode n, P p);
 
+        // Conditional operations
+	R visitConditionalAnd(ConditionalAndNode n, P p);
+	R visitConditionalOr(ConditionalOrNode n, P p);
+	R visitConditionalNot(ConditionalNotNode n, P p);
+	R visitTernaryExpression(TernaryExpressionNode n, P p);
+        
 	R visitAssignment(AssignmentNode n, P p);
 	R visitLocalVariable(LocalVariableNode n, P p);
 	R visitVariableDeclaration(VariableDeclarationNode n, P p);
