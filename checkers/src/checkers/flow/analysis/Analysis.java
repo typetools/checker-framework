@@ -58,9 +58,21 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
-	 * flow graph, given a single transfer function.
+	 * flow graph. The transfer function is set later using
+	 * {@code setTransferFunction}.
+	 */
+	public Analysis() {
+	}
+
+	/**
+	 * Construct an object that can perform a dataflow analysis over a control
+	 * flow graph, given a transfer function.
 	 */
 	public Analysis(T transfer) {
+		this.transferFunction = transfer;
+	}
+
+	public void setTransferFunction(T transfer) {
 		this.transferFunction = transfer;
 	}
 

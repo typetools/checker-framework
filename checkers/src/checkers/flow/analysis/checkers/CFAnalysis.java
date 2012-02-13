@@ -20,6 +20,12 @@ import checkers.types.QualifierHierarchy;
  * types of the two operands) and as an abstraction function (e.g., determine
  * the annotations on literals).
  * 
+ * <p>
+ * 
+ * The purpose of this class is mainly to make it easy for the transfer function
+ * and the stores to access the {@link AnnoatedTypeFactory}, the qualifier
+ * hierarchy, etc.
+ * 
  * @author Charlie Garrett
  * @author Stefan Heule
  * 
@@ -40,15 +46,20 @@ public class CFAnalysis extends Analysis<CFValue, CFStore, CFTransfer> {
 	 */
 	protected final Set<AnnotationMirror> legalAnnotations;
 
-	public CFAnalysis(QualifierHierarchy qualifierHierarchy,
-			AnnotatedTypeFactory factory) {
-		super(new CFTransfer());
-		this.qualifierHierarchy = qualifierHierarchy;
+	public CFAnalysis(AnnotatedTypeFactory factory) {
+		this.qualifierHierarchy = factory.getQualifierHierarchy();
 		this.legalAnnotations = qualifierHierarchy.getAnnotations();
 		this.factory = factory;
-		this.transferFunction.setAnalysis(this);
+		this.transferFunction = createTransferFunction();
 	}
-	
+
+	/**
+	 * @return The transfer function to be used by the analysis.
+	 */
+	protected CFTransfer createTransferFunction() {
+		return new CFTransfer(this);
+	}
+
 	public QualifierHierarchy getTypeHierarchy() {
 		return qualifierHierarchy;
 	}

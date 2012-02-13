@@ -239,8 +239,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (options.containsKey("flow") && options.get("flow").equals("new")) {
             System.err.println("Analyze method: " + node.getName());
             ControlFlowGraph cfg = CFGBuilder.build(node);
-            CFAnalysis analysis = new CFAnalysis(checker.getQualifierHierarchy(),
-                                                                   atypeFactory);
+            CFAnalysis analysis = new CFAnalysis(atypeFactory);
             analysis.performAnalysis(cfg);
 
             if (options.containsKey("flowdotdir")) {
