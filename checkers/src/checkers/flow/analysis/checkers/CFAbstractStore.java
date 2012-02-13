@@ -167,7 +167,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		} else {
 			receiver = new Unkown();
 		}
-		return new FieldAccess(receiver, null);
+		return new FieldAccess(receiver, node.getElement());
 	}
 
 	/**
@@ -228,6 +228,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		fieldValues = newFieldValues;
 	}
 
+	/**
+	 * Can the objects {@code a} and {@code b} be aliases? Returns a
+	 * conservative answer (i.e., returns {@code true} if not enough information
+	 * is available to determine aliasing).
+	 */
 	protected boolean canAlias(Receiver a, Receiver b) {
 		// TODO more accurate (at least include type information)
 		return true;
