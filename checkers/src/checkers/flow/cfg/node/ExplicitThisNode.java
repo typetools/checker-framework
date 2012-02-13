@@ -65,9 +65,4 @@ public class ExplicitThisNode extends Node {
 	public Collection<Node> getOperands() {
 		return Collections.emptyList();
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }

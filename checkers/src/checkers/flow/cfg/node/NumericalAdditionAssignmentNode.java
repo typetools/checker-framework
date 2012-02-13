@@ -77,9 +77,4 @@ public class NumericalAdditionAssignmentNode extends Node {
 		list.add(getRightOperand());
 		return list;
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }

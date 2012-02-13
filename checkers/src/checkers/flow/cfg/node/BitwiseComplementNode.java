@@ -67,9 +67,4 @@ public class BitwiseComplementNode extends Node {
 	public Collection<Node> getOperands() {
 		return Collections.singletonList(getOperand());
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }

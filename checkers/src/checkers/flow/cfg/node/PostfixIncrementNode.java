@@ -67,9 +67,4 @@ public class PostfixIncrementNode extends Node {
 	public Collection<Node> getOperands() {
 		return Collections.singletonList(getOperand());
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }

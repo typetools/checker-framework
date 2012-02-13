@@ -48,9 +48,4 @@ public class NullLiteralNode extends ValueLiteralNode {
 	public Collection<Node> getOperands() {
 		return Collections.emptyList();
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }
