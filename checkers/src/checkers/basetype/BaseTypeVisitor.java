@@ -195,7 +195,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-
+        
+    	atypeFactory.computeFlow(node);
+    	
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node);
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
@@ -254,6 +256,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         } finally {
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
+            atypeFactory.endFlow(node);
         }
     }
 

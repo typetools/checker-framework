@@ -36,7 +36,7 @@ public class IntegerLiteralNode extends ValueLiteralNode {
 	@Override
 	public boolean equals(Object obj) {
 		// test that obj is a IntegerLiteralNode
-		if (obj == null || !(obj instanceof IntegerLiteralNode)) {
+		if (!(obj instanceof IntegerLiteralNode)) {
 			return false;
 		}
 		// super method compares values
@@ -46,10 +46,5 @@ public class IntegerLiteralNode extends ValueLiteralNode {
 	@Override
 	public Collection<Node> getOperands() {
 		return Collections.emptyList();
-	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
 	}
 }
