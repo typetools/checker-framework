@@ -9,7 +9,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node for the bitwise xor operation:
+ * A node for the bitwise or logical (single bit) xor operation:
  * 
  * <pre>
  *   <em>expression</em> ^ <em>expression</em>
