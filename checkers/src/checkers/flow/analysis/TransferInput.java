@@ -24,7 +24,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	/**
 	 * The corresponding node.
 	 */
-	protected final Node node;
+	protected Node node;
 
 	/**
 	 * The regular result store (or {@code null} if none is present). The
