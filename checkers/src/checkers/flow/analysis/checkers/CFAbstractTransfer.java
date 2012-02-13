@@ -8,6 +8,7 @@ import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.StringLiteralNode;
@@ -116,13 +117,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 		S info = in.getRegularStore();
 		V rhsValue = in.getValueOfSubNode(rhs);
 
-		if (rhsValue != null) {
-			// assignment to a local variable
-			if (lhs instanceof LocalVariableNode) {
-				LocalVariableNode var = (LocalVariableNode) lhs;
-				info.updateForAssignemnt(var, rhsValue);
-			}
+		// assignment to a local variable
+		if (lhs instanceof LocalVariableNode) {
+			LocalVariableNode var = (LocalVariableNode) lhs;
+			info.updateForAssignemnt(var, rhsValue);
 		}
+		
+		// assignment to field
+		else if (lhs instanceof FieldAccessNode) {
+			FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
+			info.updateForAssignemnt(fieldAccess, rhsValue);
+		}
+		
+		// TODO: other assignments
 
 		return new RegularTransferResult<>(rhsValue, info);
 	}
