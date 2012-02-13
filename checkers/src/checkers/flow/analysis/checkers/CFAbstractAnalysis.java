@@ -22,15 +22,17 @@ import checkers.types.QualifierHierarchy;
  * 
  * <p>
  * 
- * The purpose of this class is mainly to make it easy for the transfer function
- * and the stores to access the {@link AnnoatedTypeFactory}, the qualifier
- * hierarchy, etc.
+ * The purpose of this class is twofold: Firstly, it serves as factory for
+ * abstract values, stores and the transfer function. Furthermore, it makes it
+ * easy for the transfer function and the stores to access the
+ * {@link AnnoatedTypeFactory}, the qualifier hierarchy, etc.
  * 
  * @author Charlie Garrett
  * @author Stefan Heule
  * 
  */
-public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>> extends Analysis<V, S, T> {
+public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>>
+		extends Analysis<V, S, T> {
 	/**
 	 * The qualifier hierarchy for which to track annotations.
 	 */
@@ -57,17 +59,17 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 	 * @return The transfer function to be used by the analysis.
 	 */
 	protected abstract T createTransferFunction();
-	
+
 	/**
 	 * @return An empty store of the appropriate type.
 	 */
 	protected abstract S createEmptyStore();
-	
+
 	/**
 	 * @return An identical copy of the store {@code s}.
 	 */
 	protected abstract S createCopiedStore(S s);
-	
+
 	/**
 	 * @return An abstract value containing the annotations {@code annotations}.
 	 */
