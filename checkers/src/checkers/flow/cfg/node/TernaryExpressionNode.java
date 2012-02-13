@@ -88,9 +88,4 @@ public class TernaryExpressionNode extends Node {
 		list.add(getElseOperand());
 		return list;
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }

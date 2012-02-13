@@ -49,9 +49,4 @@ public class FloatLiteralNode extends ValueLiteralNode {
 	public Collection<Node> getOperands() {
 		return Collections.emptyList();
 	}
-
-	@Override
-	public boolean hasResult() {
-		return true;
-	}
 }
