@@ -479,6 +479,14 @@ public class AnnotatedTypeFactory {
     // implicit annotations
     // **********************************************************************
 
+    public void computeFlow(MethodTree node) {
+        // Pass
+    }
+    
+    public void endFlow(MethodTree node) {
+        // Pass
+    }
+
     /**
      * Adds implicit annotations to a type obtained from a {@link Tree}. By
      * default, this method does nothing. Subclasses should use this method to
