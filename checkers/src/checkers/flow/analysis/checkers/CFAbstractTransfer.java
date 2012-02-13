@@ -120,7 +120,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 			// assignment to a local variable
 			if (lhs instanceof LocalVariableNode) {
 				LocalVariableNode var = (LocalVariableNode) lhs;
-				info.setValue(var, rhsValue);
+				info.updateForAssignemnt(var, rhsValue);
 			}
 		}
 
