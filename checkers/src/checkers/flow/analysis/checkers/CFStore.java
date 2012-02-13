@@ -8,7 +8,7 @@ public class CFStore extends CFAbstractStore<CFValue, CFStore> {
 
 	public CFStore(CFAbstractAnalysis<CFValue, CFStore, ?> analysis,
 			CFAbstractStore<CFValue, CFStore> other) {
-		super(analysis, other);
+		super(other);
 	}
 
 }
