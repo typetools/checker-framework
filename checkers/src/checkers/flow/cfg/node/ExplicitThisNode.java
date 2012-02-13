@@ -19,6 +19,7 @@ import com.sun.source.tree.Tree;
  * @author Charlie Garrett
  * 
  */
+// TODO: rename to ExplicitThisLiteralNode
 public class ExplicitThisNode extends Node {
 
 	protected Tree tree;
