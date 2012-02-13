@@ -5,67 +5,66 @@ import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node for the bitwise or logical (single bit) xor
- * compound assignment:
+ * A node for a conditional and expression:
  * 
  * <pre>
- *   <em>variable</em> ^= <em>expression</em>
+ *   <em>expression</em> && <em>expression</em>
  * </pre>
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
  * 
  */
-public class BitwiseXorAssignmentNode extends Node {
+public class ConditionalAndNode extends Node {
 
-	protected Tree tree;
-	protected Node left;
-	protected Node right;
+	protected BinaryTree tree;
+	protected Node lhs;
+	protected Node rhs;
 
-	public BitwiseXorAssignmentNode(Tree tree, Node left, Node right) {
-		assert tree.getKind() == Kind.XOR_ASSIGNMENT;
+	public ConditionalAndNode(BinaryTree tree, Node lhs, Node rhs) {
+		assert tree.getKind().equals(Kind.CONDITIONAL_AND);
 		this.tree = tree;
-		this.left = left;
-		this.right = right;
+		this.lhs = lhs;
+		this.rhs = rhs;
 	}
 
 	public Node getLeftOperand() {
-		return left;
+		return lhs;
 	}
 
 	public Node getRightOperand() {
-		return right;
+		return rhs;
 	}
 
 	@Override
-	public Tree getTree() {
+	public BinaryTree getTree() {
 		return tree;
 	}
 
 	@Override
 	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitBitwiseXorAssignment(this, p);
+		return visitor.visitConditionalAnd(this, p);
 	}
 
 	@Override
 	public String toString() {
-		return "(" + getLeftOperand() + " ^= " + getRightOperand() + ")";
+		return "(" + getLeftOperand() + " && " + getRightOperand() + ")";
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof BitwiseXorAssignmentNode)) {
+		if (obj == null || !(obj instanceof ConditionalAndNode)) {
 			return false;
 		}
-		BitwiseXorAssignmentNode other = (BitwiseXorAssignmentNode) obj;
+		ConditionalAndNode other = (ConditionalAndNode) obj;
 		return getLeftOperand().equals(other.getLeftOperand())
 				&& getRightOperand().equals(other.getRightOperand());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());

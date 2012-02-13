@@ -98,11 +98,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
         // Binary operations
 	@Override
-	public R visitConditionalOr(ConditionalOrNode n, P p) {
-		return visitNode(n, p);
-	}
-
-	@Override
 	public R visitStringConcatenate(StringConcatenateNode n, P p) {
 		return visitNode(n, p);
 	}
@@ -169,6 +164,28 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	@Override
 	public R visitBitwiseXor(BitwiseXorNode n, P p) {
+		return visitNode(n, p);
+	}
+
+
+        // Increment and decrement operations
+	@Override
+	public R visitPrefixIncrement(PrefixIncrementNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitPrefixDecrement(PrefixDecrementNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitPostfixIncrement(PostfixIncrementNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitPostfixDecrement(PostfixDecrementNode n, P p) {
 		return visitNode(n, p);
 	}
 
@@ -273,6 +290,28 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
 	@Override
 	public R visitNotEqual(NotEqualNode n, P p) {
+		return visitNode(n, p);
+	}
+
+
+        // Conditional operations
+	@Override
+	public R visitConditionalAnd(ConditionalAndNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitConditionalOr(ConditionalOrNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitConditionalNot(ConditionalNotNode n, P p) {
+		return visitNode(n, p);
+	}
+
+	@Override
+	public R visitTernaryExpression(TernaryExpressionNode n, P p) {
 		return visitNode(n, p);
 	}
 
