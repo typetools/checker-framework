@@ -32,6 +32,12 @@ public abstract class Node {
 	 * above).
 	 */
 	protected/* @Nullable */Block block;
+	
+	/**
+	 * Is this node an l-value?
+	 */
+	// TODO: make sure the CFGBuilder sets this field correctly
+	protected boolean lvalue;
 
 	/**
 	 * @return The basic block this node belongs to (or {@code null} if it
@@ -68,6 +74,17 @@ public abstract class Node {
 	 *            The parameter for this operation.
 	 */
 	public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
+	
+	public boolean isLValue() {
+		return lvalue;
+	}
+	
+	/**
+	 * Make this node an l-value.
+	 */
+	public void setLValue() {
+		lvalue = true;
+	}
 
 	/**
 	 * @return A collection containing all of the operand {@link Node}s of this

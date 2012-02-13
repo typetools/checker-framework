@@ -1006,18 +1006,18 @@ public class CFGBuilder {
 		/* Nodes and Labels Management */
 		/* --------------------------------------------------------- */
 
-                /**
-                 * Add a node to the lookup map if it not already present.
-                 *
-                 * @param node
-                 *            The node to add to the lookup map.
-                 */
-                protected void addToLookupMap(Node node) {
-                    Tree tree = node.getTree();
-                    if (tree != null && !treeLookupMap.containsKey(tree)) {
-                        treeLookupMap.put(tree, node);
-                    }
-                }
+		/**
+		 * Add a node to the lookup map if it not already present.
+		 * 
+		 * @param node
+		 *            The node to add to the lookup map.
+		 */
+		protected void addToLookupMap(Node node) {
+			Tree tree = node.getTree();
+			if (tree != null && !treeLookupMap.containsKey(tree)) {
+				treeLookupMap.put(tree, node);
+			}
+		}
 
 		/**
 		 * Extend the list of extended nodes with a node.
@@ -1175,8 +1175,8 @@ public class CFGBuilder {
 				ExpressionTree rhs) {
 			assert tree instanceof AssignmentTree
 					|| tree instanceof VariableTree;
-			Node expression;
-			expression = rhs.accept(this, null);
+			target.setLValue();
+			Node expression = rhs.accept(this, null);
 			AssignmentNode assignmentNode = new AssignmentNode(tree, target,
 					expression);
 			extendWithNode(assignmentNode);
@@ -1674,7 +1674,8 @@ public class CFGBuilder {
 			Node node = null;
 			ExpressionTree initializer = tree.getInitializer();
 			if (initializer != null) {
-				node = translateAssignment(tree, new LocalVariableNode(tree), initializer);
+				node = translateAssignment(tree, new LocalVariableNode(tree),
+						initializer);
 			}
 
 			return node;
