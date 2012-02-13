@@ -14,8 +14,6 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.HashCodeUtils;
 
-import com.sun.org.apache.bcel.internal.classfile.Unknown;
-
 /**
  * A store for the checker framework analysis tracks the annotations of memory
  * locations such as local variables and fields.
@@ -77,7 +75,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public int hashCode() {
 			return HashCodeUtils.hash(0);
 		}
-		
+
 		@Override
 		public String toString() {
 			return "this";
@@ -94,7 +92,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public int hashCode() {
 			return HashCodeUtils.hash(1);
 		}
-		
+
 		@Override
 		public String toString() {
 			return "?";
@@ -121,7 +119,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public int hashCode() {
 			return HashCodeUtils.hash(element);
 		}
-		
+
 		@Override
 		public String toString() {
 			return element.toString();
