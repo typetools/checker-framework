@@ -192,8 +192,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
 	/**
 	 * Remove any information in {@code fieldValues} that might not be true any
-	 * more after the fact that {@code fieldAccess} has abstract value
-	 * {@code val} will be added. This includes the following steps:
+	 * more after {@code fieldAccess} has been assigned a new value (with the
+	 * abstract value {@code val}). This includes the following steps:
 	 * <ol>
 	 * <li value="1">Update the abstract value of other field accesses where the
 	 * field is equal, and the receiver might alias the receiver of
@@ -201,7 +201,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * field accesses to at least {@code val} (or the old value, if that was
 	 * less precise).</li>
 	 * <li value="2">Remove any abstract values for field accesses where
-	 * {@code fieldAccess} appear anywhere in the receiver.</li>
+	 * {@code fieldAccess} is the same, or appear anywhere in the receiver.</li>
 	 * </ol>
 	 */
 	protected void removeConflicting(FieldAccess fieldAccess, V val) {
@@ -220,6 +220,28 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 					newFieldValues.put(otherFieldAccess,
 							val.leastUpperBound(otherVal));
 				}
+			}
+		}
+		fieldValues = newFieldValues;
+	}
+
+	/**
+	 * Remove any information in {@code fieldValues} that might not be true any
+	 * more after {@code localVar} has been assigned a new value. This includes
+	 * the following steps:
+	 * <ol>
+	 * <li value="1">Remove any abstract values for field accesses where
+	 * {@code localVar} appear anywhere in the receiver.</li>
+	 * </ol>
+	 */
+	protected void removeConflicting(LocalVariableNode localVar) {
+		Map<FieldAccess, V> newFieldValues = new HashMap<>();
+		LocalVariable var = new LocalVariable(localVar.getElement());
+		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
+			FieldAccess otherFieldAccess = e.getKey();
+			// case 1:
+			if (otherFieldAccess.contains(var)) {
+				continue;
 			}
 		}
 		fieldValues = newFieldValues;
@@ -252,8 +274,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * Set the abstract value of a local variable in the store. Overwrites any
 	 * value that might have been available previously.
 	 */
-	public void setValue(LocalVariableNode n, V val) {
+	public void updateForAssignemnt(LocalVariableNode n, V val) {
 		assert val != null;
+		removeConflicting(n);
 		localVariableValues.put(n.getElement(), val);
 	}
 
