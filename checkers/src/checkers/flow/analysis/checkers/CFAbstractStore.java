@@ -205,7 +205,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 *            The abstract value of the value assigned to {@code n} (or
 	 *            {@code null} if the abstract value is not known).
 	 */
-	public void updateForAssignemnt(FieldAccessNode n, /* @Nullable */V val) {
+	public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
 		assert val != null;
 		FieldAccess fieldAccess = internalReprOf(n);
 		removeConflicting(fieldAccess, val);
@@ -310,7 +310,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 *            The abstract value of the value assigned to {@code n} (or
 	 *            {@code null} if the abstract value is not known).
 	 */
-	public void updateForAssignemnt(LocalVariableNode n, /* @Nullable */V val) {
+	public void updateForAssignment(LocalVariableNode n, /* @Nullable */V val) {
 		removeConflicting(n);
 		if (n != null) {
 			localVariableValues.put(n.getElement(), val);
