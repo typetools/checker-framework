@@ -180,12 +180,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * Update the information in the store by considering a field assignment
 	 * with target {@code n}, where the right hand side has the abstract value
 	 * {@code val}.
+	 * 
+	 * @param val
+	 *            The abstract value of the value assigned to {@code n} (or
+	 *            {@code null} if the abstract value is not known).
 	 */
-	public void updateForAssignemnt(FieldAccessNode n, V val) {
+	public void updateForAssignemnt(FieldAccessNode n, /* @Nullable */V val) {
 		assert val != null;
 		FieldAccess fieldAccess = internalReprOf(n);
 		removeConflicting(fieldAccess, val);
-		if (!fieldAccess.containsUnknown()) {
+		if (!fieldAccess.containsUnknown() && val != null) {
 			fieldValues.put(fieldAccess, val);
 		}
 	}
@@ -203,8 +207,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * <li value="2">Remove any abstract values for field accesses where
 	 * {@code fieldAccess} is the same, or appear anywhere in the receiver.</li>
 	 * </ol>
+	 * 
+	 * @param val
+	 *            The abstract value of the value assigned to {@code n} (or
+	 *            {@code null} if the abstract value is not known).
 	 */
-	protected void removeConflicting(FieldAccess fieldAccess, V val) {
+	protected void removeConflicting(FieldAccess fieldAccess, /* @Nullable */V val) {
 		Map<FieldAccess, V> newFieldValues = new HashMap<>();
 		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
 			FieldAccess otherFieldAccess = e.getKey();
@@ -217,8 +225,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
 				if (canAlias(fieldAccess.getReceiver(),
 						otherFieldAccess.getReceiver())) {
-					newFieldValues.put(otherFieldAccess,
-							val.leastUpperBound(otherVal));
+					if (val != null) {
+						newFieldValues.put(otherFieldAccess,
+								val.leastUpperBound(otherVal));
+					} else {
+						continue; // remove information completely
+					}
 				}
 			}
 		}
@@ -273,11 +285,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	/**
 	 * Set the abstract value of a local variable in the store. Overwrites any
 	 * value that might have been available previously.
+	 * 
+	 * @param val
+	 *            The abstract value of the value assigned to {@code n} (or
+	 *            {@code null} if the abstract value is not known).
 	 */
-	public void updateForAssignemnt(LocalVariableNode n, V val) {
-		assert val != null;
+	public void updateForAssignemnt(LocalVariableNode n, /* @Nullable */V val) {
 		removeConflicting(n);
-		localVariableValues.put(n.getElement(), val);
+		if (n != null) {
+			localVariableValues.put(n.getElement(), val);
+		}
 	}
 
 	/* --------------------------------------------------------- */
@@ -342,7 +359,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder("CFStore (\\n");
-		for (Map.Entry<Element, V> entry : localVariableValues.entrySet()) {
+		for (Entry<Element, V> entry : localVariableValues.entrySet()) {
+			result.append("  " + entry.getKey() + " > " + entry.getValue()
+					+ "\\n");
+		}
+		for (Entry<FieldAccess, V> entry : fieldValues.entrySet()) {
 			result.append("  " + entry.getKey() + " > " + entry.getValue()
 					+ "\\n");
 		}
