@@ -20,9 +20,6 @@ import com.sun.org.apache.bcel.internal.classfile.Unknown;
  * A store for the checker framework analysis tracks the annotations of memory
  * locations such as local variables and fields.
  * 
- * TODO: Extend {@link CFAbstractStore} to track class member fields in the same
- * way as variables.
- * 
  * @author Charlie Garrett
  * @author Stefan Heule
  */

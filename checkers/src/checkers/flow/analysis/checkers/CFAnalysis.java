@@ -6,6 +6,12 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.types.AnnotatedTypeFactory;
 
+/**
+ * The default dataflow analysis used in the Checker Framework.
+ * 
+ * @author Stefan Heule
+ * 
+ */
 public class CFAnalysis extends
 		CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 

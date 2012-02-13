@@ -1,5 +1,11 @@
 package checkers.flow.analysis.checkers;
 
+/**
+ * The default transfer function used in the Checker Framework.
+ * 
+ * @author Stefan Heule
+ * 
+ */
 public class CFTransfer extends
 		CFAbstractTransfer<CFValue, CFStore, CFTransfer> {
 
