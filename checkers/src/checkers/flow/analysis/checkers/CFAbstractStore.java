@@ -60,6 +60,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public boolean contains(Receiver other) {
 			return super.contains(other) || receiver.contains(other);
 		}
+
+		@Override
+		public String toString() {
+			return receiver + "." + field;
+		}
 	}
 
 	public static class ThisReference extends Receiver {
@@ -72,6 +77,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public int hashCode() {
 			return HashCodeUtils.hash(0);
 		}
+		
+		@Override
+		public String toString() {
+			return "this";
+		}
 	}
 
 	public static class Unkown extends Receiver {
@@ -83,6 +93,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		@Override
 		public int hashCode() {
 			return HashCodeUtils.hash(1);
+		}
+		
+		@Override
+		public String toString() {
+			return "?";
 		}
 	}
 
@@ -105,6 +120,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		@Override
 		public int hashCode() {
 			return HashCodeUtils.hash(element);
+		}
+		
+		@Override
+		public String toString() {
+			return element.toString();
 		}
 	}
 
