@@ -6,7 +6,8 @@ import checkers.flow.cfg.node.Node;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer
- * functions of a {@link TransferFunction}.
+ * functions of a {@link TransferFunction}. It also contains a reference to the
+ * node for which the transfer function will be applied.
  * 
  * <p>
  * 
@@ -21,6 +22,11 @@ import checkers.flow.cfg.node.Node;
 public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
 	/**
+	 * The corresponding node.
+	 */
+	protected final Node node;
+
+	/**
 	 * The regular result store (or {@code null} if none is present). The
 	 * following invariant is maintained:
 	 * 
@@ -28,7 +34,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * store == null <==> thenStore != null && elseStore != null
 	 * </pre>
 	 */
-	protected/* @Nullable */S store;
+	protected final/* @Nullable */S store;
 
 	/**
 	 * The 'then' result store (or {@code null} if none is present). The
@@ -38,7 +44,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * store == null <==> thenStore != null && elseStore != null
 	 * </pre>
 	 */
-	protected/* @Nullable */S thenStore;
+	protected final/* @Nullable */S thenStore;
 
 	/**
 	 * The 'else' result store (or {@code null} if none is present). The
@@ -48,12 +54,12 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * store == null <==> thenStore != null && elseStore != null
 	 * </pre>
 	 */
-	protected/* @Nullable */S elseStore;
+	protected final/* @Nullable */S elseStore;
 
 	/**
 	 * Mapping from nodes to abstract values (provided by the analysis).
 	 */
-	protected Map<Node, A> nodeValues;
+	protected final Map<Node, A> nodeValues;
 
 	/**
 	 * Create a {@link TransferInput}, given a {@link TransferResult} and a
@@ -70,13 +76,16 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * The node-value mapping {@code nodeValues} is provided by the analysis and
 	 * is only read from within this {@link TranferInput}.
 	 */
-	public TransferInput(Map<Node, A> nodeValues, TransferResult<A, S> to) {
+	public TransferInput(Node n, Map<Node, A> nodeValues, TransferResult<A, S> to) {
+		node = n;
 		this.nodeValues = nodeValues;
 		if (to.containsTwoStores()) {
 			thenStore = to.getThenStore();
 			elseStore = to.getElseStore();
+			store = null;
 		} else {
 			store = to.getRegularStore();
+			thenStore = elseStore = null;
 		}
 	}
 
@@ -94,9 +103,11 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * The node-value mapping {@code nodeValues} is provided by the analysis and
 	 * is only read from within this {@link TranferInput}.
 	 */
-	public TransferInput(Map<Node, A> nodeValues, S s) {
+	public TransferInput(Node n, Map<Node, A> nodeValues, S s) {
+		node = n;
 		this.nodeValues = nodeValues;
 		store = s;
+		thenStore = elseStore = null;
 	}
 
 	/**
@@ -109,22 +120,27 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * stored internally and are not allowed to be used elsewhere. Full control
 	 * of them is transfered to this object.
 	 */
-	public TransferInput(Map<Node, A> nodeValues, S s1, S s2) {
+	public TransferInput(Node n, Map<Node, A> nodeValues, S s1, S s2) {
+		node = n;
 		this.nodeValues = nodeValues;
 		thenStore = s1;
 		elseStore = s2;
+		store = null;
 	}
 
 	/**
 	 * Copy constructor.
 	 */
 	protected TransferInput(TransferInput<A, S> from) {
+		this.node = from.node;
 		this.nodeValues = from.nodeValues;
 		if (from.store == null) {
 			thenStore = from.thenStore.copy();
 			elseStore = from.elseStore.copy();
+			store = null;
 		} else {
 			store = from.store.copy();
+			thenStore = elseStore = null;
 		}
 	}
 
@@ -206,17 +222,18 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 	 * {@code leastUpperBound} of {@link Store}.
 	 */
 	public TransferInput<A, S> leastUpperBound(TransferInput<A, S> other) {
+		assert node == other.node;
 		if (store == null) {
 			S newThenStore = thenStore.leastUpperBound(other.getThenStore());
 			S newElseStore = elseStore.leastUpperBound(other.getElseStore());
-			return new TransferInput<>(nodeValues, newThenStore, newElseStore);
+			return new TransferInput<>(node, nodeValues, newThenStore, newElseStore);
 		} else {
 			if (other.store == null) {
 				// make sure we do not lose precision and keep two stores if at
 				// least one of the two TransferInput's has two stores.
 				return other.leastUpperBound(this);
 			}
-			return new TransferInput<>(nodeValues, store.leastUpperBound(other
+			return new TransferInput<>(node, nodeValues, store.leastUpperBound(other
 					.getRegularStore()));
 		}
 	}
