@@ -148,10 +148,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				// propagate store to successor
 				Block thenSucc = cb.getThenSuccessor();
 				Block elseSucc = cb.getElseSuccessor();
-				addStoreBefore(thenSucc,
-						new TransferInput<>(null, nodeValues, store.getThenStore()));
-				addStoreBefore(elseSucc,
-						new TransferInput<>(null, nodeValues, store.getElseStore()));
+				addStoreBefore(thenSucc, new TransferInput<>(null, nodeValues,
+						store.getThenStore()));
+				addStoreBefore(elseSucc, new TransferInput<>(null, nodeValues,
+						store.getElseStore()));
 				break;
 			}
 
