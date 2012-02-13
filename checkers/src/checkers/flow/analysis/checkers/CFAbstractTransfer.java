@@ -11,6 +11,7 @@ import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.MethodTree;

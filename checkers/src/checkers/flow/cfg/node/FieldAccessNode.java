@@ -3,9 +3,14 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.element.Element;
+
 import checkers.flow.util.ASTUtils;
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.TreeUtils;
 
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -31,6 +36,14 @@ public class FieldAccessNode extends Node {
 		this.tree = tree;
 		this.receiver = receiver;
 		this.field = ASTUtils.getFieldName(tree);
+	}
+
+	public Element getElement() {
+		if (tree instanceof MemberSelectTree) {
+			return TreeUtils.elementFromUse((MemberSelectTree) tree);
+		}
+		assert tree instanceof IdentifierTree;
+		return TreeUtils.elementFromUse((IdentifierTree) tree);
 	}
 
 	public Node getReceiver() {
