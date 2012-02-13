@@ -97,6 +97,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				TransferInput<A, S> store = storeBefore.copy();
 				TransferResult<A, S> transferResult = null;
 				for (Node n : rb.getContents()) {
+					store.node = n;
 					transferResult = n.accept(transferFunction, store);
 					A val = transferResult.getResultValue();
 					if (val != null) {
@@ -120,6 +121,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 				TransferInput<A, S> storeBefore = getStoreBefore(eb);
 				TransferInput<A, S> store = storeBefore.copy();
 				Node node = eb.getNode();
+				store.node = node;
 				TransferResult<A, S> transferResult = node.accept(
 						transferFunction, store);
 				A val = transferResult.getResultValue();
