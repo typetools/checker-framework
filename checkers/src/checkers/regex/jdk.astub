@@ -3,7 +3,7 @@ import checkers.regex.quals.*;
 package java.util.regex;
 
 class Pattern {
-    Pattern compile(@Regex String regex);
+    @Regex Pattern compile(@Regex String regex);
     Pattern compile(@Regex String regex, int flags);
     boolean matches(@Regex String regex, CharSequence input);
     public static @Regex String quote(String s);

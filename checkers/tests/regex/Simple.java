@@ -157,6 +157,17 @@ public class Simple {
         //:: error: (assignment.type.incompatible)
         @Regex(4) String s13 = "(())()";    // error
     }
+    
+    void testPatternCompileGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
+        @Regex(5) Pattern p1 = Pattern.compile(r5);
+        @Regex Pattern p2 = Pattern.compile(r5);
+        @Regex Pattern p3 = Pattern.compile(r);
+        
+        //:: error: (assignment.type.incompatible)
+        @Regex(6) Pattern p4 = Pattern.compile(r5);   // error
+        //:: error: (assignment.type.incompatible)
+        @Regex(6) Pattern p5 = Pattern.compile(r3);   // error
+    }
 
 //    TODO: This is not supported until the framework can read explicit
 //    annotations from arrays.
