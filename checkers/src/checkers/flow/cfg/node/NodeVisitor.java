@@ -91,5 +91,10 @@ public interface NodeVisitor<R, P> {
 	R visitExplicitThis(ExplicitThisNode n, P p);
 	R visitSuper(SuperNode n, P p);
 	R visitReturn(ReturnNode n, P p);
+	R visitStringConversion(StringConversionNode n, P p);
+	R visitBoxing(BoxingNode n, P p);
+	R visitUnboxing(UnboxingNode n, P p);
+	R visitNarrowingConversion(NarrowingConversionNode n, P p);
+	R visitWideningConversion(WideningConversionNode n, P p);
 
 }

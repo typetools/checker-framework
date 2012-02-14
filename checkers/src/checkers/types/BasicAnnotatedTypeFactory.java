@@ -182,7 +182,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 	public void computeFlow(MethodTree node) {
 		if (useFlow) {
 			// Apply flow-sensitive qualifier inference.
-			ControlFlowGraph cfg = CFGBuilder.build(node);
+			ControlFlowGraph cfg = CFGBuilder.build(env, node);
 			analysis = new CFAnalysis(this);
 			analysis.performAnalysis(cfg);
 
