@@ -42,13 +42,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		 *   "x.f".containsAliasOf("y.g") == false
 		 *   "x.f".containsAliasOf("a") == true // unless information about "x != a" is available
 		 *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
-		 *   "a".containsAliasOf("?") == true // ? is Unknown, and a can be anything
 		 * </pre>
 		 */
 		public boolean containsAliasOf(CFAbstractStore<?, ?> store,
 				Receiver other) {
-			return this.equals(other) || store.canAlias(this, other)
-					|| other instanceof Unkown;
+			return this.equals(other) || store.canAlias(this, other);
 		}
 	}
 
