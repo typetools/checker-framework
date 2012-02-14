@@ -120,13 +120,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 		// assignment to a local variable
 		if (lhs instanceof LocalVariableNode) {
 			LocalVariableNode var = (LocalVariableNode) lhs;
-			info.updateForAssignemnt(var, rhsValue);
+			info.updateForAssignment(var, rhsValue);
 		}
 		
 		// assignment to field
 		else if (lhs instanceof FieldAccessNode) {
 			FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
-			info.updateForAssignemnt(fieldAccess, rhsValue);
+			info.updateForAssignment(fieldAccess, rhsValue);
 		}
 		
 		// TODO: other assignments
