@@ -107,7 +107,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		}
 	}
 
-	public static class Unkown extends Receiver {
+	public static class Unknown extends Receiver {
 		@Override
 		public boolean equals(Object obj) {
 			return obj == this;
@@ -231,7 +231,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			LocalVariableNode lv = (LocalVariableNode) receiverNode;
 			receiver = new LocalVariable(lv.getElement());
 		} else {
-			receiver = new Unkown();
+			receiver = new Unknown();
 		}
 		return new FieldAccess(receiver, node.getElement());
 	}
@@ -274,7 +274,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * </ol>
 	 */
 	public void updateForUnknownAssignment(Node n) {
-		Unkown unknown = new Unkown();
+		Unknown unknown = new Unknown();
 		Map<FieldAccess, V> newFieldValues = new HashMap<>();
 		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
 			FieldAccess otherFieldAccess = e.getKey();
