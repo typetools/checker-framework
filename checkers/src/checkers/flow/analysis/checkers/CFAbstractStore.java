@@ -112,12 +112,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	public static class Unkown extends Receiver {
 		@Override
 		public boolean equals(Object obj) {
-			return obj != null && obj instanceof Unkown;
+			return obj == this;
 		}
 
 		@Override
 		public int hashCode() {
-			return HashCodeUtils.hash(1);
+			return System.identityHashCode(this);
 		}
 
 		@Override
@@ -403,7 +403,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 				newStore.localVariableValues.put(el, mergedVal);
 			}
 		}
-
 		for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
 			// information about fields that are only part of one store, but not
 			// the other are discarded, as one store implicitly contains 'top'
