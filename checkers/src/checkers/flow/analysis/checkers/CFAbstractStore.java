@@ -25,15 +25,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		implements Store<S> {
 
 	public static abstract class Receiver {
-		public boolean containsUnknown() {
-			return contains(new Unkown());
-		}
+		public abstract boolean containsUnknown();
 
 		/**
-		 * Does {@code other} appear anywhere in this receiver?
+		 * Returns true if and only if {@code other} appear anywhere in this
+		 * receiver or an expression appears in this receiver such that
+		 * {@code other} might alias this expression.
+		 * 
+		 * <p>
+		 * 
+		 * Informal examples include:
+		 * 
+		 * <pre>
+		 *   "a".containsAliasOf("a") == true
+		 *   "x.f".containsAliasOf("x.f") == true
+		 *   "x.f".containsAliasOf("y.g") == false
+		 *   "x.f".containsAliasOf("a") == true // unless information about "x != a" is available
+		 *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
+		 *   "a".containsAliasOf("?") == true // ? is Unknown, and a can be anything
+		 * </pre>
 		 */
-		public boolean contains(Receiver other) {
-			return this.equals(other);
+		public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+				Receiver other) {
+			return this.equals(other) || store.canAlias(this, other)
+					|| other instanceof Unkown;
 		}
 	}
 
@@ -55,13 +70,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		}
 
 		@Override
-		public boolean contains(Receiver other) {
-			return super.contains(other) || receiver.contains(other);
+		public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+				Receiver other) {
+			return super.containsAliasOf(store, other)
+					|| receiver.containsAliasOf(store, other);
 		}
 
 		@Override
 		public String toString() {
 			return receiver + "." + field;
+		}
+
+		@Override
+		public boolean containsUnknown() {
+			return receiver.containsUnknown();
 		}
 	}
 
@@ -80,22 +102,38 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public String toString() {
 			return "this";
 		}
+
+		@Override
+		public boolean containsUnknown() {
+			return false;
+		}
 	}
 
 	public static class Unkown extends Receiver {
 		@Override
 		public boolean equals(Object obj) {
-			return obj != null && obj instanceof Unkown;
+			return obj == this;
 		}
 
 		@Override
 		public int hashCode() {
-			return HashCodeUtils.hash(1);
+			return System.identityHashCode(this);
 		}
 
 		@Override
 		public String toString() {
 			return "?";
+		}
+
+		@Override
+		public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+				Receiver other) {
+			return true;
+		}
+
+		@Override
+		public boolean containsUnknown() {
+			return true;
 		}
 	}
 
@@ -124,10 +162,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		public String toString() {
 			return element.toString();
 		}
+
+		@Override
+		public boolean containsUnknown() {
+			return false;
+		}
 	}
 
 	// TODO: add pure method calls later
 	public static class PureMethodCall extends Receiver {
+
+		@Override
+		public boolean containsUnknown() {
+			return false; // TODO: correct implementation
+		}
 	}
 
 	/**
@@ -163,6 +211,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	/* --------------------------------------------------------- */
 	/* Handling of fields */
 	/* --------------------------------------------------------- */
+
+	// TODO: add MethodCallNode as parameter
+	public void updateForMethodCall() {
+
+	}
 
 	/**
 	 * @return The internal representation (as {@link FieldAccess}) of a
@@ -215,15 +268,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	/**
 	 * Remove any information in {@code fieldValues} that might not be true any
 	 * more after {@code fieldAccess} has been assigned a new value (with the
-	 * abstract value {@code val}). This includes the following steps:
+	 * abstract value {@code val}). This includes the following steps (assume
+	 * that {@code fieldAccess} is of the form <em>a.f</em> for some <em>a</em>.
+	 * 
 	 * <ol>
-	 * <li value="1">Update the abstract value of other field accesses where the
-	 * field is equal, and the receiver might alias the receiver of
-	 * {@code fieldAccess}. This update will raise the abstract value for such
-	 * field accesses to at least {@code val} (or the old value, if that was
-	 * less precise).</li>
-	 * <li value="2">Remove any abstract values for field accesses where
-	 * {@code fieldAccess} is the same, or appear anywhere in the receiver.</li>
+	 * <li value="1">Update the abstract value of other field accesses
+	 * <em>b.g</em> where the field is equal (that is, <em>f=g</em>), and the
+	 * receiver <em>b</em> might alias the receiver of {@code fieldAccess},
+	 * <em>a</em>. This update will raise the abstract value for such field
+	 * accesses to at least {@code val} (or the old value, if that was less
+	 * precise).</li>
+	 * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
+	 * where {@code fieldAccess} is the same (i.e., <em>a=b</em> and
+	 * <em>f=g</em>), or where {@code fieldAccess} might alias any expression in
+	 * the receiver <em>b</em>.</li>
 	 * </ol>
 	 * 
 	 * @param val
@@ -236,7 +294,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			FieldAccess otherFieldAccess = e.getKey();
 			V otherVal = e.getValue();
 			// case 2:
-			if (otherFieldAccess.contains(fieldAccess)) {
+			if (otherFieldAccess.getReceiver().containsAliasOf(this,
+					fieldAccess)
+					|| otherFieldAccess.equals(fieldAccess)) {
 				continue; // remove information completely
 			}
 			// case 1:
@@ -259,9 +319,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * Remove any information in {@code fieldValues} that might not be true any
 	 * more after {@code localVar} has been assigned a new value. This includes
 	 * the following steps:
+	 * 
 	 * <ol>
-	 * <li value="1">Remove any abstract values for field accesses where
-	 * {@code localVar} appear anywhere in the receiver.</li>
+	 * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
+	 * where {@code localVar} might alias any expression in the receiver
+	 * <em>b</em>.</li>
 	 * </ol>
 	 */
 	protected void removeConflicting(LocalVariableNode localVar) {
@@ -270,7 +332,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
 			FieldAccess otherFieldAccess = e.getKey();
 			// case 1:
-			if (otherFieldAccess.contains(var)) {
+			if (otherFieldAccess.containsAliasOf(this, var)) {
 				continue;
 			}
 		}
@@ -331,14 +393,26 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
 		for (Entry<Element, V> e : other.localVariableValues.entrySet()) {
 			// local variables that are only part of one store, but not the
-			// other are discarded. They are assumed to not be in scope any
-			// more.
+			// other are discarded, as one of store implicitly contains 'top'
+			// for that variable.
 			Element el = e.getKey();
 			if (localVariableValues.containsKey(el)) {
 				V otherVal = e.getValue();
 				V thisVal = localVariableValues.get(el);
 				V mergedVal = thisVal.leastUpperBound(otherVal);
 				newStore.localVariableValues.put(el, mergedVal);
+			}
+		}
+		for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
+			// information about fields that are only part of one store, but not
+			// the other are discarded, as one store implicitly contains 'top'
+			// for that field.
+			FieldAccess el = e.getKey();
+			if (fieldValues.containsKey(el)) {
+				V otherVal = e.getValue();
+				V thisVal = fieldValues.get(el);
+				V mergedVal = thisVal.leastUpperBound(otherVal);
+				newStore.fieldValues.put(el, mergedVal);
 			}
 		}
 
