@@ -10,6 +10,12 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
@@ -22,18 +28,26 @@ import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
+import checkers.flow.cfg.node.BoxingNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.ReturnNode;
+import checkers.flow.cfg.node.StringConcatenateNode;
+import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.cfg.node.UnboxingNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
+import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.flow.util.ASTUtils;
+import checkers.util.InternalUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -125,13 +139,13 @@ public class CFGBuilder {
 	/**
 	 * Build the control flow graph of a method.
 	 */
-	public static ControlFlowGraph build(MethodTree method) {
-		return new CFGBuilder().run(method);
+	public static ControlFlowGraph build(ProcessingEnvironment env, MethodTree method) {
+		return new CFGBuilder().run(env, method);
 	}
 
-	protected ControlFlowGraph run(MethodTree method) {
+	protected ControlFlowGraph run(ProcessingEnvironment env, MethodTree method) {
 		PhaseOneResult phase1result = new CFGTranslationPhaseOne()
-				.process(method);
+				.process(env, method);
 		ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
 				.process(phase1result);
 		ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -925,6 +939,11 @@ public class CFGBuilder {
 	protected class CFGTranslationPhaseOne implements TreeVisitor<Node, Void> {
 
 		/**
+		 * Annotation processing environment which contains type utilities.
+		 */
+		protected ProcessingEnvironment env;
+
+		/**
 		 * The translation starts in regular mode, that is
 		 * <code>conditionalMode</code> is false. In this case, no conditional
 		 * jump nodes are generated.
@@ -972,11 +991,14 @@ public class CFGBuilder {
 		/**
 		 * Performs the actual work of phase one.
 		 * 
+                 * @param env
+                 *            annotation processing environment containing type utilities
 		 * @param t
 		 *            A method (identified by its AST element).
 		 * @return The result of phase one.
 		 */
-		public PhaseOneResult process(MethodTree t) {
+		public PhaseOneResult process(ProcessingEnvironment env, MethodTree t) {
+			this.env = env;
 
 			// start in regular mode
 			conditionalMode = false;
@@ -1314,16 +1336,50 @@ public class CFGBuilder {
 			}
 
 			case PLUS: {
+				// see JLS 15.8.1
 				assert !conditionalMode;
-				// TODO: handle string concatenation
-
-				// see JLS 15.18.2
-
-				// TODO: unboxing and promotion in general
+				Types types = env.getTypeUtils();
+				TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
+				TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
 
 				Node left = tree.getLeftOperand().accept(this, p);
 				Node right = tree.getRightOperand().accept(this, p);
-				r = new NumericalAdditionNode(tree, left, right);
+
+				if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
+					// For string conversion, see JLS 5.1.11
+					if (!TypesUtils.isString(leftType)) {
+						left = new StringConversionNode(left);
+					}
+					if (!TypesUtils.isString(rightType)) {
+						right = new StringConversionNode(right);
+					}
+					r = new StringConcatenateNode(tree, left, right);
+				} else {
+					// For binary numeric promotion, see JLS 5.6.2
+					if (TypesUtils.isBoxedPrimitive(leftType)) {
+						left = new UnboxingNode(left);
+						leftType = types.unboxedType(leftType);
+					}
+					if (TypesUtils.isBoxedPrimitive(rightType)) {
+						right = new UnboxingNode(right);
+						rightType = types.unboxedType(rightType);
+					}
+
+					// Widen operands to a common numeric type, if necessary.
+					TypeKind wideKind = TypesUtils.widenedNumericType(leftType, rightType);
+					TypeMirror wideType = types.getPrimitiveType(wideKind);
+					if (!types.isSameType(leftType, wideType)) {
+						left = new WideningConversionNode(left, wideType);
+					}
+					if (!types.isSameType(rightType, wideType)) {
+						right = new WideningConversionNode(right, wideType);
+					}
+
+					// TODO: Decide whether to deal with floating-point value set
+					// conversion.
+
+					r = new NumericalAdditionNode(tree, left, right);
+				}
 				break;
 			}
 			}
