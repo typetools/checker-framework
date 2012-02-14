@@ -123,10 +123,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 			info.updateForAssignment(var, rhsValue);
 		}
 		
-		// assignment to field
+		// assignment to a field
 		else if (lhs instanceof FieldAccessNode) {
 			FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
 			info.updateForAssignment(fieldAccess, rhsValue);
+		}
+		
+		else {
+			info.updateForUnknownAssignment(lhs);
 		}
 		
 		// TODO: other assignments
