@@ -210,9 +210,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	/* Handling of fields */
 	/* --------------------------------------------------------- */
 
-	// TODO: add MethodCallNode as parameter
+	// TODO: add MethodCallNode as parameter and check for pure-ity
 	public void updateForMethodCall() {
-
+		fieldValues = new HashMap<>();
 	}
 
 	/**
@@ -261,6 +261,31 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		if (!fieldAccess.containsUnknown() && val != null) {
 			fieldValues.put(fieldAccess, val);
 		}
+	}
+
+	/**
+	 * Update the information in the store by considering an assignment with
+	 * target {@code n}, where the target is neither a local variable nor a
+	 * field access. This includes the following steps:
+	 * 
+	 * <ol>
+	 * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
+	 * where {@code n} might alias any expression in the receiver <em>b</em>.</li>
+	 * </ol>
+	 */
+	public void updateForUnknownAssignment(Node n) {
+		Unkown unknown = new Unkown();
+		Map<FieldAccess, V> newFieldValues = new HashMap<>();
+		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
+			FieldAccess otherFieldAccess = e.getKey();
+			V otherVal = e.getValue();
+			// case 1:
+			if (otherFieldAccess.getReceiver().containsAliasOf(this, unknown)) {
+				continue; // remove information completely
+			}
+			newFieldValues.put(otherFieldAccess, otherVal);
+		}
+		fieldValues = newFieldValues;
 	}
 
 	/**
