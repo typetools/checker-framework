@@ -820,6 +820,147 @@ programs.
 
 
 
+\begin{new}
+
+\subsection{The Checker-Framework Store and Dealing with Aliasing}
+
+The dataflow framework provides a default implementation of a store with the
+class \code{CFAbstractStore}, which is used (as \code{CFStore}) as the
+default store if a checker does not provide its own implementation.
+This implementation of a store tracks the following information:
+\begin{itemize}
+	\item Abstract values of local variables.
+	\item Abstract values of fields where the receiver is an access sequence
+	compose of the following:
+	\begin{itemize}
+	\item Field access.
+	\item Local variable.
+	\item Self reference (i.e., \code{this}).
+	\item Pure method call.
+	\end{itemize}
+\end{itemize}
+
+The most challenging part is ensuring that the information about
+field accesses is kept up to date in the face of incomplete aliasing
+information.  In particular, at method calls and assignments care needs to be
+taken about which information is still valid afterwards.
+
+\subsubsection{Internal Representation}
+
+To keep track of the abstract values of fields, we use our own representation
+(that is different from the \code{Node} type introduced earlier).  This
+data type is defined inductively as follows:
+
+\begin{bnfgrammar}
+    \production{\nonterminal{FieldAccess}}
+        {\nonterminal{Receiver} \nonterminal{Field}}
+    \production{\nonterminal{Receiver}}
+        {\nonterminal{SelfReference}}
+    \altline{\nonterminal{LocalVariable}}
+    \altline{\nonterminal{FieldAccess}}
+    \altline{\nonterminal{PureMethodCall}}
+    \altline{\nonterminal{Unknown}}
+    \production{\nonterminal{PureMethodCall}}
+        {\nonterminal{Receiver} \literal{.} \nonterminal{Method}
+            \literal{(} \nonterminal{Receiver}$^{,*}$ \literal{)}}
+\end{bnfgrammar}
+
+where \nonterminal{Field} is a Java field (identified by its \code{Element}),
+\nonterminal{SelfReference} is the self reference in Java (i.e., \code{this})
+and \nonterminal{LocalVariable} is used to refer to local variables (again
+identified by their \code{Element}).
+\nonterminal{PureMethodCall} is a Java method call of a \textit{pure} method
+(as defined in the Checker Framework), with a receiver and zero or more
+arguments.  Finally, \nonterminal{Unknown} is used to represent any other
+Java expressions that might appear.  It is only used to determine which
+information needs to be removed (e.g., after an assignment), but no field
+access that contains \nonterminal{Unknown} is stored in the mapping to
+abstract values.  For instance, \nonterminal{Unknown} could stand for
+a non-pure method call, an array access or a ternary expression.
+
+The store maintains a mapping from field access (as defined above) to
+abstract values, and in the following we describe the operations that
+keep this mapping up-to-date.
+
+\subsubsection{Updating Information in the Store}
+
+\newcommand{\alias}{\operatorname{might\_alias}}
+
+In the following, let $o$ be any receiver, $x$ a local variable, $f$ a
+field and $m$ a pure method.  Furthermore, we assume to have access to
+a predicate $\alias(o_1,o_2)$ that returns true if and only
+if~$o_1$ might alias~$o_2$.
+
+\paragraph{At Field Assignments}
+For a field update of the form $o_1.f_1 = e$ for some expression $e$, the
+dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
+Then, the following steps need to be taken in order to correctly update
+the information in the store.
+\begin{enumerate}
+    \item For every field access $o_2.f_2$, remove its information if
+    the two field $f_1$ and $f_2$ are the same, and either of the following
+    condition holds:
+    \begin{itemize}
+        \item $o_1$ and $o_2$ are (syntactically) the same.  In this case, the
+        new abstract value will be added in the second step.
+        \item $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+        alias $o_1.f$ as determined by the $\alias$
+        predicate (this includes the case where $o_2$ and $o_1.f$ might be
+        aliases).  Note that the ``contains'' notion for pure method calls
+        includes both the receiver as well as the arguments.
+    \end{itemize}
+    \item Add the fact that $o_1.f$ now has the abstract value $e_\text{val}$
+    to the mapping.
+\end{enumerate}
+
+
+\paragraph{At Local Variable Assignments}
+
+For an local variable assignment of the for $x = e$ for some expression $e$,
+the dataflow analysis first determines the abstract value $e_\text{val}$ for
+$e$. Then, the following steps need to be taken in order to correctly update
+the information in the store.
+\begin{enumerate}
+    \item For every field access $o_2.f_2$, remove its information if
+    $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+    alias $x$ as determined by the $\alias$
+    predicate.
+    \item Add the fact that $x$ now has the abstract value $e_\text{val}$
+    to the mapping for local variables.
+\end{enumerate}
+
+\paragraph{At Other Assignments}
+
+For any other assignment of the for $z = e$ for some expression $e$ and some
+assignment target $z$ (which is not a field or local variable),
+the dataflow analysis first determines the abstract value $e_\text{val}$ for
+$e$. Then, the following steps need to be taken in order to correctly update
+the information in the store.
+\begin{enumerate}
+    \item For every field access $o_2.f_2$, remove its information if
+    $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+    alias $z$ as determined by the $\alias$ predicate.
+\end{enumerate}
+
+
+\paragraph{At Non-Pure Method Calls}
+
+A non-pure method call might modify the value of any field arbitrarily.
+Therefore, at a method call, any information about fields is lost.
+
+
+\paragraph{Alias Information}
+The Checker Framework does not include an aliasing analysis, which could
+provide precise aliasing information.  For this reason, we implement the
+predicate $\alias$ as follows:
+\[ \alias(o_1,o_2) :=
+\left(\operatorname{type}(o_1) <: \operatorname{type}(o_2)
+\;\;\text{or}\;\;
+\operatorname{type}(o_2) <: \operatorname{type}(o_1) \right) \]
+where $\operatorname{type}(o)$ determines the Java type of a reference $o$
+and $<:$ denotes standard Java subtyping.
+
+\end{new}
 
 
 
