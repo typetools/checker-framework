@@ -878,7 +878,7 @@ access that contains \nonterminal{Unknown} is stored in the mapping to
 abstract values.  For instance, \nonterminal{Unknown} could stand for
 a non-pure method call, an array access or a ternary expression.
 
-The store maintains a mapping from field access (as defined above) to
+The store maintains a mapping from field accesses (as defined above) to
 abstract values, and in the following we describe the operations that
 keep this mapping up-to-date.
 
@@ -886,7 +886,8 @@ keep this mapping up-to-date.
 
 \newcommand{\alias}{\operatorname{might\_alias}}
 
-In the following, let $o$ be any receiver, $x$ a local variable, $f$ a
+In the following, let $o$ be any \nonterminal{Receiver},
+$x$ a local variable, $f$ a
 field and $m$ a pure method.  Furthermore, we assume to have access to
 a predicate $\alias(o_1,o_2)$ that returns true if and only
 if~$o_1$ might alias~$o_2$.
@@ -916,7 +917,7 @@ the information in the store.
 
 \paragraph{At Local Variable Assignments}
 
-For an local variable assignment of the for $x = e$ for some expression $e$,
+For a local variable assignment of the for $x = e$ for some expression $e$,
 the dataflow analysis first determines the abstract value $e_\text{val}$ for
 $e$. Then, the following steps need to be taken in order to correctly update
 the information in the store.
