@@ -131,6 +131,7 @@ public final class TypesUtils {
         switch (type.getKind()) {
         case BOOLEAN:
         case BYTE:
+        case CHAR:
         case DOUBLE:
         case FLOAT:
         case INT:
@@ -163,6 +164,7 @@ public final class TypesUtils {
     public static boolean isNumeric(TypeMirror type) {
         switch (type.getKind()) {
         case BYTE:
+        case CHAR:
         case DOUBLE:
         case FLOAT:
         case INT:
