@@ -212,6 +212,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	/* Handling of fields */
 	/* --------------------------------------------------------- */
 
+	// TODO: add MethodCallNode as parameter
+	public void updateForMethodCall() {
+
+	}
+
 	/**
 	 * @return The internal representation (as {@link FieldAccess}) of a
 	 *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
@@ -388,14 +393,27 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
 		for (Entry<Element, V> e : other.localVariableValues.entrySet()) {
 			// local variables that are only part of one store, but not the
-			// other are discarded. They are assumed to not be in scope any
-			// more.
+			// other are discarded, as one of store implicitly contains 'top'
+			// for that variable.
 			Element el = e.getKey();
 			if (localVariableValues.containsKey(el)) {
 				V otherVal = e.getValue();
 				V thisVal = localVariableValues.get(el);
 				V mergedVal = thisVal.leastUpperBound(otherVal);
 				newStore.localVariableValues.put(el, mergedVal);
+			}
+		}
+
+		for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
+			// information about fields that are only part of one store, but not
+			// the other are discarded, as one store implicitly contains 'top'
+			// for that field.
+			FieldAccess el = e.getKey();
+			if (fieldValues.containsKey(el)) {
+				V otherVal = e.getValue();
+				V thisVal = fieldValues.get(el);
+				V mergedVal = thisVal.leastUpperBound(otherVal);
+				newStore.fieldValues.put(el, mergedVal);
 			}
 		}
 
