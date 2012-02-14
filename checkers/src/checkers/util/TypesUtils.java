@@ -121,4 +121,89 @@ public final class TypesUtils {
         }
         return false;
     }
+
+    /**
+     * Returns true iff the argument is a primitive type.
+     *
+     * @return  whether the argument is a primitive type
+     */
+    public static boolean isPrimitive(TypeMirror type) {
+        switch (type.getKind()) {
+        case BOOLEAN:
+        case BYTE:
+        case DOUBLE:
+        case FLOAT:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true iff the arguments are both the same primitive types.
+     *
+     * @return  whether the arguments are the same primitive types
+     */
+    public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
+        if (!isPrimitive(left) || !isPrimitive(right)) {
+            return false;
+        }
+
+        return (left.getKind() == right.getKind());
+    }
+
+    /**
+     * Returns true iff the argument is a primitive numeric type.
+     *
+     * @return  whether the argument is a primitive numeric type
+     */
+    public static boolean isNumeric(TypeMirror type) {
+        switch (type.getKind()) {
+        case BYTE:
+        case DOUBLE:
+        case FLOAT:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns the widened numeric type for an arithmetic operation
+     * performed on a value of the left type and the right type.
+     * Defined in JLS 5.6.2.  We return a {@link TypeKind} because
+     * creating a {@link TypeMirror} requires a {@link Types} object
+     * from the {@link ProcessingEnvironment}.
+     *
+     * @return  the result of widening numeric conversion, or NONE when
+     *          the conversion cannot be performed
+     */
+    public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
+        if (!isNumeric(left) || !isNumeric(right)) {
+            return TypeKind.NONE;
+        }
+
+        TypeKind leftKind = left.getKind();
+        TypeKind rightKind = right.getKind();
+
+        if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (leftKind == TypeKind.FLOAT || rightKind == TypeKind.FLOAT) {
+            return TypeKind.FLOAT;
+        }
+
+        if (leftKind == TypeKind.LONG || rightKind == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
 }
