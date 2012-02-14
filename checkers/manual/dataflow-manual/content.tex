@@ -354,7 +354,6 @@ but does not need to check if a method is declared as
 
 
 
-\begin{new}
 
 \subsubsection{Desugaring of Statements and Expressions}
 
@@ -390,10 +389,8 @@ have a type.  Therefore, the \code{AnnotatedTypeFactory} will not be used to det
 the abstract value of such constructs.
 
 
-\end{new}
 
 
-\begin{new}
 \subsubsection{L- and R-Values}
 
 Certain nodes in the CFG represent \emph{l-values}, while other stand for \emph{r-values}.  The
@@ -407,7 +404,6 @@ extending the framework with a second transfer function, that is used for r-valu
     This is not yet implemented.
 \end{workinprogress}
 
-\end{new}
 
 
 
@@ -521,7 +517,6 @@ analysis on a given control flow graph and methods to query the result of that d
 
 
 
-\begin{new}
 
 \subsection{Concurrency}
 
@@ -549,7 +544,6 @@ of the non-null type system.
     to implement annotations like \code{@LazyNonNull}.
 \end{workinprogress}
 
-\end{new}
 
 
 
@@ -557,7 +551,6 @@ of the non-null type system.
 \label{sec:node-mapping}
 \label{sec:store-management}
 
-\begin{new}
 Conceptually, the dataflow analysis computes an abstract value for every node\footnote{Certain
 dataflow analysis might choose not to produce an abstract value for every node.  For instance,
 a constant propagation analysis would only be concerned with nodes of a numerical type, and
@@ -576,7 +569,6 @@ nodes to remove any coupling between the control flow graph and a particular ana
 This allows the control flow graph to be constructed only once, and then reused for different
 dataflow analyses.
 
-\end{new}
 Besides the abstract value of every node,
 every analysis has to implement the \code{Store} interface. A \emph{store} is
 used to track the intermediate results of a dataflow analysis. For instance, the store
@@ -593,7 +585,6 @@ is most likely not sufficient.
 The store is analysis-dependent, but the framework provides a default store implementation
 which can be reused.
 
-\begin{new}
 Every store is associated with a particular point in the control flow graph, and
 all stores are managed by the framework. It maintains
 a single store for every basic block that represents the information available at the
@@ -601,11 +592,9 @@ beginning of that block.
 Note that it is only the stores that determine when the iteration of the dataflow analysis
 can terminate, and not the node-value mapping.  The node-value mapping is used solely for
 providing the abstract value of a sub-node to the transfer function of a particular node.
-\end{new}
 
 
 \subsection{Answering Questions}
-\begin{new}
 After the flow analysis for a particular method has been computed, there are two kinds of
 information that have been computed.  Firstly, the node-value mapping stores an abstract
 value for every node, and secondly, the information maintained in various stores is
@@ -639,7 +628,6 @@ to the basic block it is part of. Thus, for a given AST tree node, the framework
 can determine the CFG node and thereby the CFG basic block, and compute the necessary store
 to answer the question.
 
-\end{new}
 
 
 
@@ -655,11 +643,9 @@ the list of arguments (as \code{LocalVariableNode}'s) and the \code{MethodTree} 
 an updated store. This is achieved by implementing the \code{NodeVisitor<S, S>} interface
 for the store type \code{S}.
 
-\begin{new}
 These transfer methods also get access to the abstract value of any sub-node of the node \code n
 under consideration.  This is not limited to immediate children, but the abstract value for any node contained
 in \code n can be queried.
-\end{new}
 \end{itemize}
 
 To allow the dataflow analysis to use different information (that is, different stores)
@@ -721,7 +707,6 @@ The default flow-sensitive analysis tracks type annotations though assignments t
 variables and thereby improves precision when the qualifiers on the right hand side of the
 assignment are more precise than those on the left hand side.
 
-\begin{new}
 \begin{workinprogress}
     At a later point in time, we want to add tracking of type annotations of fields, and
     potentially also of array expressions.  In general, both of these extensions need to be
@@ -729,10 +714,8 @@ assignment are more precise than those on the left hand side.
     Furthermore, for monotonic annotations (such as \code{@LazyNonNull}), the analysis can be
     fairly precise.
 \end{workinprogress}
-\end{new}
 
 
-\begin{new}
 
 \subsection{Interaction of the Checker Framework and the Dataflow Analysis}
 \label{sec:flow-cf-interaction}
@@ -784,7 +767,6 @@ For a given node \code{n}, perform the following steps:
     flow temporarily?
 \end{workinprogress}
 
-\end{new}
 
 
 
@@ -798,7 +780,6 @@ A few of the implementation details of the default analysis are worth discussing
 %information from the \code{Store} when it is present and defaults to the 
 %\code{AnnotatedTypeFactory} when none is present.
 
-\begin{new}
 The nodes in the node-value mapping are used to provide the abstract value of sub-nodes
 that have already been computed.  For this reason, once an are done with a particular node,
 any of its sub-nodes can potentially be removed from the node-value mapping,
@@ -810,7 +791,6 @@ However, after the last iteration, it seems beneficial to keep around all nodes 
 such that querying the dataflow analysis later on will be more efficient.  As it is not
 possible to decide in advance, which is the last iteration, we keep all nodes in this mapping
 at any time.
-\end{new}
 
 Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
 \code{Transfer} interfaces, so the
