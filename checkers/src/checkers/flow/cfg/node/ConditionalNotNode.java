@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
@@ -27,6 +28,7 @@ public class ConditionalNotNode extends Node {
 	public ConditionalNotNode(BinaryTree tree, Node operand) {
 		assert tree.getKind().equals(Kind.LOGICAL_COMPLEMENT);
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.operand = operand;
 	}
 

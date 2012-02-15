@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -28,6 +29,7 @@ public class BitwiseOrNode extends Node {
 	public BitwiseOrNode(Tree tree, Node left, Node right) {
 		assert tree.getKind() == Kind.OR;
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.left = left;
 		this.right = right;
 	}

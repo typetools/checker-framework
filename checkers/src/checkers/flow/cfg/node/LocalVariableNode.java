@@ -6,6 +6,7 @@ import java.util.Collections;
 import javax.lang.model.element.Element;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
@@ -33,6 +34,7 @@ public class LocalVariableNode extends Node {
 		assert t != null;
 		assert t instanceof IdentifierTree || t instanceof VariableTree;
 		tree = t;
+		type = InternalUtils.typeOf(tree);
 	}
 
 	public Element getElement() {

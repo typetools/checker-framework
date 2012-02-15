@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.VariableTree;
 
@@ -24,10 +25,11 @@ public class VariableDeclarationNode extends Node {
 
 	protected VariableTree tree;
 
-	// TODO: make type and modifier accessible
+	// TODO: make modifier accessible
 
 	public VariableDeclarationNode(VariableTree t) {
 		tree = t;
+		type = InternalUtils.typeOf(tree);
 	}
 
 	public String getName() {

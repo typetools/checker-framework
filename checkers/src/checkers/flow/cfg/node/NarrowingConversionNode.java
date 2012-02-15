@@ -27,7 +27,6 @@ import com.sun.source.tree.Tree.Kind;
 public class NarrowingConversionNode extends Node {
 
 	protected Node operand;
-	protected TypeMirror type;
 
 	public NarrowingConversionNode(Node operand, TypeMirror type) {
 		assert TypesUtils.isPrimitive(type) :
@@ -56,7 +55,7 @@ public class NarrowingConversionNode extends Node {
 
 	@Override
 	public String toString() {
-		return "NarrowingConversion(" + getOperand() + ")";
+		return "NarrowingConversion(" + getOperand() + ", " + type + ")";
 	}
 
 	@Override
