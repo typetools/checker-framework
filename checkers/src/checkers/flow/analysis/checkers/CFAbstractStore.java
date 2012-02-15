@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.ExplicitThisNode;
@@ -26,11 +27,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		implements Store<S> {
 
 	public static abstract class Receiver {
-		// type == null ==> Unknown
-		public final/* @Nullable */TypeMirror type;
+		// type == null ==> class is Unknown
+		protected final/* @Nullable */TypeMirror type;
 
-		public Receiver(TypeMirror type) {
+		public Receiver(/* @Nullable */TypeMirror type) {
 			this.type = type;
+		}
+
+		public/* @Nullable */TypeMirror getType() {
+			return type;
 		}
 
 		public abstract boolean containsUnknown();
@@ -390,8 +395,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 * is available to determine aliasing).
 	 */
 	protected boolean canAlias(Receiver a, Receiver b) {
-		// TODO more accurate (at least include type information)
-		return true;
+		TypeMirror tb = b.getType();
+		TypeMirror ta = a.getType();
+		Types types = analysis.getTypes();
+		return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
 	}
 
 	/* --------------------------------------------------------- */
