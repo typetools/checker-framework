@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
@@ -28,6 +29,7 @@ public class ConditionalAndNode extends Node {
 	public ConditionalAndNode(BinaryTree tree, Node lhs, Node rhs) {
 		assert tree.getKind().equals(Kind.CONDITIONAL_AND);
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}

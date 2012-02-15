@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -28,6 +29,7 @@ public class ExplicitThisNode extends Node {
 		assert t instanceof IdentifierTree &&
 			((IdentifierTree)t).getName().equals("this");
 		tree = t;
+		type = InternalUtils.typeOf(tree);
 	}
 
 	@Override

@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
@@ -33,8 +35,13 @@ public class StringConversionNode extends Node {
 
 	protected Node operand;
 
-	public StringConversionNode(Node operand) {
+	// TODO: The type of a string conversion should be a final
+	// TypeMirror representing java.lang.String.  Currently we require
+	// the caller to pass in a TypeMirror instead of creating one
+	// through the javax.lang.model.type.Types interface.
+	public StringConversionNode(Node operand, TypeMirror type) {
 		this.operand = operand;
+		this.type = type;
 	}
 
 	public Node getOperand() {

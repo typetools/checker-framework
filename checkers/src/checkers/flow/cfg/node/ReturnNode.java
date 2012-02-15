@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.ReturnTree;
 
@@ -25,6 +26,7 @@ public class ReturnNode extends Node {
 
 	public ReturnNode(ReturnTree t, /* @Nullable */Node result) {
 		tree = t;
+		type = InternalUtils.typeOf(tree);
 		this.result = result;
 	}
 	

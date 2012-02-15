@@ -11,8 +11,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -1218,7 +1216,8 @@ public class CFGBuilder {
 				MemberSelectTree mtree = (MemberSelectTree) tree;
 				return mtree.getExpression().accept(this, null);
 			} else {
-				Node node = new ImplicitThisLiteralNode();
+				// TODO: Decide how to specify the method's enclosing class.
+				Node node = new ImplicitThisLiteralNode(null /*replace with class type*/);
 				extendWithNode(node);
 				return node;
 			}
@@ -1339,40 +1338,35 @@ public class CFGBuilder {
 				// see JLS 15.8.1
 				assert !conditionalMode;
 				Types types = env.getTypeUtils();
-				TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
-				TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
 
 				Node left = tree.getLeftOperand().accept(this, p);
 				Node right = tree.getRightOperand().accept(this, p);
 
-				if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
+				TypeMirror exprType = InternalUtils.typeOf(tree);
+
+				if (TypesUtils.isString(exprType)) {
 					// For string conversion, see JLS 5.1.11
-					if (!TypesUtils.isString(leftType)) {
-						left = new StringConversionNode(left);
+					if (!TypesUtils.isString(left.getType())) {
+						left = new StringConversionNode(left, exprType);
 					}
-					if (!TypesUtils.isString(rightType)) {
-						right = new StringConversionNode(right);
+					if (!TypesUtils.isString(right.getType())) {
+						right = new StringConversionNode(right, exprType);
 					}
 					r = new StringConcatenateNode(tree, left, right);
 				} else {
 					// For binary numeric promotion, see JLS 5.6.2
-					if (TypesUtils.isBoxedPrimitive(leftType)) {
-						left = new UnboxingNode(left);
-						leftType = types.unboxedType(leftType);
+					if (TypesUtils.isBoxedPrimitive(left.getType())) {
+						left = new UnboxingNode(left, types.unboxedType(left.getType()));
 					}
-					if (TypesUtils.isBoxedPrimitive(rightType)) {
-						right = new UnboxingNode(right);
-						rightType = types.unboxedType(rightType);
+					if (TypesUtils.isBoxedPrimitive(right.getType())) {
+						right = new UnboxingNode(right, types.unboxedType(right.getType()));
 					}
 
-					// Widen operands to a common numeric type, if necessary.
-					TypeKind wideKind = TypesUtils.widenedNumericType(leftType, rightType);
-					TypeMirror wideType = types.getPrimitiveType(wideKind);
-					if (!types.isSameType(leftType, wideType)) {
-						left = new WideningConversionNode(left, wideType);
+					if (!types.isSameType(left.getType(), exprType)) {
+						left = new WideningConversionNode(left, exprType);
 					}
-					if (!types.isSameType(rightType, wideType)) {
-						right = new WideningConversionNode(right, wideType);
+					if (!types.isSameType(right.getType(), exprType)) {
+						right = new WideningConversionNode(right, exprType);
 					}
 
 					// TODO: Decide whether to deal with floating-point value set

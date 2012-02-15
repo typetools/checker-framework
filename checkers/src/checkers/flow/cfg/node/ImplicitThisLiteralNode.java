@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeMirror;
+
 import com.sun.source.tree.Tree;
 
 /**
@@ -13,7 +15,8 @@ import com.sun.source.tree.Tree;
  */
 public class ImplicitThisLiteralNode extends Node {
 
-	public ImplicitThisLiteralNode() {
+	public ImplicitThisLiteralNode(TypeMirror type) {
+		this.type = type;
 	}
 
 	@Override
