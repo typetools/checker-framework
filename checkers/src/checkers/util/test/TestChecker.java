@@ -12,7 +12,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 
 /**
- * A simple checker used for testing the Checker Framework.  It treates the
+ * A simple checker used for testing the Checker Framework.  It treats the
  * {@code @Odd} annotation as a subtype-style qualifier with no special
  * semantics.
  *
