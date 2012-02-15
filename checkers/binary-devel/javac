@@ -35,6 +35,9 @@ esac
 ## Checker Framework checkers root directory
 cfroot=$mydir/..
 
+## javaparser root directory
+javaparserroot=$cfroot/../javaparser
+
 ## jsr308-langtools root directory
 jsr308root=$cfroot/../../jsr308-langtools
 
@@ -55,7 +58,7 @@ if [ "$LANGTOOLS_USE_BOOTCLASSPATH" != "no" ]; then
    cp=`unzip -c "$cfroot/binary/jsr308-all.jar" META-INF/MANIFEST.MF |
        grep "Class-Path:" |
        sed -e 's|\r||' -e 's|Class-Path: *||' -e 's|\([a-z]*\.jar\) *|'"$mylib"'/\1:|g'`
-   bcp="$cfroot/build:$jsr308root/build/classes:$cfroot/binary/jdk.jar:$cfroot/binary/jsr308-all.jar":$cp
+   bcp="$cfroot/build:$jsr308root/build/classes:$javaparserroot/build:$cfroot/binary/jdk.jar:$cfroot/binary/jsr308-all.jar":$cp
 fi
 
 # tools currently assumes that assertions are enabled in the launcher
