@@ -82,10 +82,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 if (regex != null) {
                     if(RegexUtil.isRegex(regex)) {
                         int groupCount = Pattern.compile(regex).matcher("").groupCount();
-                        AnnotationUtils.AnnotationBuilder builder =
-                            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
-                        builder.setValue("value", groupCount);
-                        type.addAnnotation(builder.build());
+                        type.addAnnotation(createRegexAnnotation(groupCount));
                     }
                 }
             }
@@ -126,22 +123,36 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
                 AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
-                // If group count value is null then there's no Regex annotation
-                // on the parameter so set the group count to 0. This would happen
-                // if a non-regex string is passed to Pattern.compile but warnings
-                // are suppressed.
-                int groupCount = groupCountValue == null ? 0 : (Integer) groupCountValue.getValue();
-                
-                AnnotationUtils.AnnotationBuilder builder =
-                    new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
-                builder.setValue("value", groupCount);
+                int groupCount = getGroupCount(anno);
                 // Remove current @Regex annotation...
                 type.removeAnnotation(Regex.class);
-                // ...and add a new one with the correct value.
-                type.addAnnotation(builder.build());
+                // ...and add a new one with the correct group count value.
+                type.addAnnotation(createRegexAnnotation(groupCount));
             }
             return super.visitMethodInvocation(tree, type);
+        }
+
+        /**
+         * Returns the group count value of the given annotation or 0 if
+         * there's a problem getting the group count value.
+         */
+        private int getGroupCount(AnnotationMirror anno) {
+            AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
+            // If group count value is null then there's no Regex annotation
+            // on the parameter so set the group count to 0. This would happen
+            // if a non-regex string is passed to Pattern.compile but warnings
+            // are suppressed.
+            return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
+        }
+
+        /**
+         * Returns a new Regex annotation with the given group count.
+         */
+        private AnnotationMirror createRegexAnnotation(int groupCount) {
+            AnnotationUtils.AnnotationBuilder builder =
+                new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+            builder.setValue("value", groupCount);
+            return builder.build();
         }
 
 //         This won't work correctly until flow sensitivity is supported by the
