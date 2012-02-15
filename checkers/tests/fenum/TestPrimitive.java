@@ -28,9 +28,6 @@ class FenumUser {
     //:: error: (assignment.type.incompatible)
     state1 = t.BCONST1;
 
-    //:: error: (assignment.type.incompatible)
-    int x = t.ACONST1;
-
     if( t.ACONST1 < t.ACONST2  ) {
       // ok
     }
