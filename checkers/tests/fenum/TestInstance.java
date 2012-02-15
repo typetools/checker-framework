@@ -23,7 +23,6 @@ class FenumUser {
 
     state1 = t.ACONST2;
     state1 = t.ACONST3;
-    state1 = null;
 
     //:: error: (assignment.type.incompatible)
     state1 = t.BCONST1;
@@ -36,9 +35,6 @@ class FenumUser {
     // sanity check: unqualified instantiation and call work.
     Object o = new Object();
     o.hashCode();
-
-    //:: error: (assignment.type.incompatible)
-    o = t.ACONST1;
 
     if( t.ACONST1 == t.ACONST2  ) {
     }

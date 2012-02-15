@@ -72,16 +72,16 @@ public class GenKillBits<K> {
   }
 
   /**
-   * Sets the bit (gen) for the key at the specified index.
+   * Sets the bit (gen) for the key at the specified index. Adds the key if it
+   * does not already exist.
    *
    * @param key the key for which the bit should be set
    * @param index the index at which to set the bit
-   * @throws IllegalArgumentException if the key is not one of the keys for
-   *         this group
    */
   public void set(K key, int index) {
-    if (!bitsets.containsKey(key))
-      throw new IllegalArgumentException();
+    if (!bitsets.containsKey(key)) {
+      bitsets.put(key, new BitSet());
+    }
     bitsets.get(key).set(index);
   }
 
@@ -90,17 +90,16 @@ public class GenKillBits<K> {
    *
    * @param key
    * @param index
-   * @return the value of the bit for the key at the index
-   * @throws IllegalArgumentException if the key is not one of the keys for
-   *         this group
+   * @return the value of the bit for the key at the index or false if the key
+   *         does not exist.
    */
   public boolean get(K key, int index) {
     // System.err.println("Valid in get: " + key + " idx: " + index);
     valid();
 
-    if (!bitsets.containsKey(key))
-      throw new IllegalArgumentException();
-    return bitsets.get(key).get(index);
+    if (bitsets.containsKey(key))
+      return bitsets.get(key).get(index);
+    return false;
   }
 
   public boolean contains(K key) {
@@ -108,17 +107,15 @@ public class GenKillBits<K> {
   }
 
   /**
-   * Clears the bit (kill) for the key at the specified index.
+   * Clears the bit (kill) for the key at the specified index. Does nothing if
+   * the key does not exist.
    *
    * @param key the key for which the bit should be set
    * @param index the index at which to set the bit
-   * @throws IllegalArgumentException if the key is not one of the keys for
-   *         this group
    */
   public void clear(K key, int index) {
-    if (!bitsets.containsKey(key))
-      throw new IllegalArgumentException();
-    bitsets.get(key).clear(index);
+    if (bitsets.containsKey(key))
+      bitsets.get(key).clear(index);
   }
 
   @Override

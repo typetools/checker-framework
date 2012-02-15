@@ -1,16 +1,23 @@
 package checkers.regex;
 
+import java.util.regex.Pattern;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -24,7 +31,10 @@ import com.sun.source.tree.Tree;
  * <li value="2">concatenation tree of two valid regular expression values
  * (either {@code String} or {@code char}.)</li>
  * 
- * <!--<li value="3">initialization of a char array that when converted to a String
+ * <li value="3">for calls to Pattern.compile changes the group count value
+ * of the return type to be the same as the parameter.</li>
+ * 
+ * <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
  *
  * </ol>
@@ -33,10 +43,16 @@ import com.sun.source.tree.Tree;
  * a Regex and a PolyRegex or two PolyRegexs.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
+  
+    private final ExecutableElement patternCompile;
+    private final ExecutableElement regexValue;
 
     public RegexAnnotatedTypeFactory(RegexChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+
+        patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
+        regexValue = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, env);
     }
 
     @Override
@@ -56,12 +72,20 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotated()) {
-                boolean regexString = tree.getKind() == Tree.Kind.STRING_LITERAL
-                                      && RegexUtil.isRegex((String) tree.getValue());
-                boolean regexChar = tree.getKind() == Tree.Kind.CHAR_LITERAL
-                                    && RegexUtil.isRegex((Character) tree.getValue());
-                if (regexString || regexChar) {
-                    type.addAnnotation(Regex.class);
+                String regex = null;
+                if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                    regex = (String) tree.getValue();
+                } else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
+                    regex = Character.toString((Character) tree.getValue());
+                }
+                if (regex != null) {
+                    if(RegexUtil.isRegex(regex)) {
+                        int groupCount = Pattern.compile(regex).matcher("").groupCount();
+                        AnnotationUtils.AnnotationBuilder builder =
+                            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+                        builder.setValue("value", groupCount);
+                        type.addAnnotation(builder.build());
+                    }
                 }
             }
             return super.visitLiteral(tree, type);
@@ -92,6 +116,28 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             return super.visitBinary(tree, type);
         }
 
+        /**
+         * Case 3: For a call to Pattern.compile, add an annotation to the
+         * return type that has the same group count value as the parameter.
+         */
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+            // TODO: Also get this to work with 2 argument Pattern.compile. How should we handle Pattern.LITERAL flag?
+            if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
+                AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
+                int groupCount = (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue).getValue();
+                
+                AnnotationUtils.AnnotationBuilder builder =
+                    new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+                builder.setValue("value", groupCount);
+                // Remove current @Regex annotation...
+                type.removeAnnotation(Regex.class);
+                // ...and add a new one with the correct value.
+                type.addAnnotation(builder.build());
+            }
+            return super.visitMethodInvocation(tree, type);
+        }
+
 //         This won't work correctly until flow sensitivity is supported by the
 //         the regex checker. For example:
 //
@@ -101,7 +147,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 //         There are associated tests in tests/regex/Simple.java:testCharArrays
 //         that can be uncommented when this is uncommented.
 //        /**
-//         * Case 3: a char array that as a String is a valid regular expression.
+//         * Case 4: a char array that as a String is a valid regular expression.
 //         */
 //        @Override
 //        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
