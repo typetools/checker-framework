@@ -104,9 +104,14 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 boolean lExprPoly = lExpr.hasAnnotation(PolyRegex.class);
                 boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
 
-                if (lExprRE && rExprRE)
-                    type.addAnnotation(Regex.class);
-                else if (lExprPoly && rExprPoly
+                if (lExprRE && rExprRE) {
+                    int lGroupCount = getGroupCount(lExpr.getAnnotation(Regex.class));
+                    int rGroupCount = getGroupCount(rExpr.getAnnotation(Regex.class));
+                    // Remove current @Regex annotation...
+                    type.removeAnnotation(Regex.class);
+                    // ...and add a new one with the correct group count value.
+                    type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
+                } else if (lExprPoly && rExprPoly
                         || lExprPoly && rExprRE
                         || lExprRE && rExprPoly)
                     type.addAnnotation(PolyRegex.class);

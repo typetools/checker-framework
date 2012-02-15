@@ -40,4 +40,17 @@ public class GroupCounts {
         @SuppressWarnings("regex:argument.type.incompatible")
         Pattern p6 = Pattern.compile("(" + r + ")");
     }
+
+    void testConcatenationGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
+        @Regex(0) String s1 = r + r;
+        @Regex(3) String s2 = r + r3;
+        @Regex(8) String s3 = r3 + r5;
+
+        //:: error: (assignment.type.incompatible)
+        @Regex(1) String s4 = r + r;
+        //:: error: (assignment.type.incompatible)
+        @Regex(4) String s5 = r + r3;
+        //:: error: (assignment.type.incompatible)
+        @Regex(9) String s6 = r3 + r5;
+    }
 }
