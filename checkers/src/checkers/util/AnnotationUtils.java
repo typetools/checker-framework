@@ -586,6 +586,22 @@ public class AnnotationUtils {
         return false;
     }
 
+    /**
+     * Checks that the collection contains the annotation ignoring values.
+     * Using Collection.contains does not always work, because it
+     * does not use areSameIgnoringValues for comparison.
+     *
+     * @return true iff c contains anno, according to areSameIgnoringValues.
+     */
+    public static boolean containsSameIgnoringValues(Collection<AnnotationMirror> c, AnnotationMirror anno) {
+        for(AnnotationMirror an : c) {
+            if(AnnotationUtils.areSameIgnoringValues(an, anno)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING
     = new Comparator<AnnotationMirror>() {
         @Override
