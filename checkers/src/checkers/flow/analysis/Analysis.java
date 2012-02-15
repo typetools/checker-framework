@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Types;
+
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
@@ -43,6 +46,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
 	/** The control flow graph to perform the analysis on. */
 	protected ControlFlowGraph cfg;
+	
+	/** The associated processing environment */
+	protected final ProcessingEnvironment env;
+	
+	/** Instance of the types utility. */
+	protected final Types types;
 
 	/**
 	 * The stores before every basic blocks (assumed to be 'no information' if
@@ -61,19 +70,26 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 	 * flow graph. The transfer function is set later using
 	 * {@code setTransferFunction}.
 	 */
-	public Analysis() {
+	public Analysis(ProcessingEnvironment env) {
+		this.env = env;
+		types = env.getTypeUtils();
 	}
 
 	/**
 	 * Construct an object that can perform a dataflow analysis over a control
 	 * flow graph, given a transfer function.
 	 */
-	public Analysis(T transfer) {
+	public Analysis(ProcessingEnvironment env, T transfer) {
+		this(env);
 		this.transferFunction = transfer;
 	}
 
 	public void setTransferFunction(T transfer) {
 		this.transferFunction = transfer;
+	}
+	
+	public Types getTypes() {
+		return types;
 	}
 
 	/**
