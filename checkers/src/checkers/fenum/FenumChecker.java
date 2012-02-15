@@ -14,7 +14,6 @@ import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
-import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
@@ -36,12 +35,9 @@ import checkers.basetype.BaseTypeChecker;
  * </li>
  * </ul>
  *
- * TODO: document flowinference lint option.
- *
  * @author wmdietl
  */
 @SupportedOptions( { "quals" } )
-@SupportedLintOptions( { "flowinference" } )
 public class FenumChecker extends BaseTypeChecker {
     protected AnnotationMirror BOTTOM;
 
