@@ -70,10 +70,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			return field;
 		}
 
-		public FieldAccess(Receiver receiver, Element field, TypeMirror type) {
-			super(type);
+		public FieldAccess(Receiver receiver, FieldAccessNode node) {
+			super(node.getType());
 			this.receiver = receiver;
-			this.field = field;
+			this.field = node.getElement();
 		}
 
 		@Override
@@ -155,9 +155,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	public static class LocalVariable extends Receiver {
 		protected Element element;
 
-		public LocalVariable(Element element, TypeMirror type) {
-			super(type);
-			this.element = element;
+		public LocalVariable(LocalVariableNode localVar) {
+			super(localVar.getType());
+			this.element = localVar.getElement();
 		}
 
 		@Override
@@ -251,11 +251,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			receiver = new ThisReference(receiverNode.getType());
 		} else if (receiverNode instanceof LocalVariableNode) {
 			LocalVariableNode lv = (LocalVariableNode) receiverNode;
-			receiver = new LocalVariable(lv.getElement(), lv.getType());
+			receiver = new LocalVariable(lv);
 		} else {
 			receiver = new Unknown();
 		}
-		return new FieldAccess(receiver, node.getElement(), node.getType());
+		return new FieldAccess(receiver, node);
 	}
 
 	/**
@@ -373,7 +373,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 */
 	protected void removeConflicting(LocalVariableNode localVar) {
 		Map<FieldAccess, V> newFieldValues = new HashMap<>();
-		LocalVariable var = new LocalVariable(localVar.getElement(), localVar.getType());
+		LocalVariable var = new LocalVariable(localVar);
 		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
 			FieldAccess otherFieldAccess = e.getKey();
 			// case 1:
