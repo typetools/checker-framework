@@ -3,6 +3,7 @@ package checkers.regex;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
@@ -122,10 +123,15 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            // TODO: Also get this to work with 2 argument Pattern.compile. How should we handle Pattern.LITERAL flag?
+            // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
                 AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                int groupCount = (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue).getValue();
+                AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
+                // If group count value is null then there's no Regex annotation
+                // on the parameter so set the group count to 0. This would happen
+                // if a non-regex string is passed to Pattern.compile but warnings
+                // are suppressed.
+                int groupCount = groupCountValue == null ? 0 : (Integer) groupCountValue.getValue();
                 
                 AnnotationUtils.AnnotationBuilder builder =
                     new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
