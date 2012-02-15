@@ -126,13 +126,12 @@ public class GenKillBits<K> {
   /**
    * Merges each gen-kill set in outarg1 with the one corresponding to the
    * same key in {@code arg2} via boolean "and" on each bit. Modifies outarg1's
-   * gen-kill set.
+   * gen-kill set. If arg2 is missing a key in outarg1 then an empty set is
+   * added to arg2 for the key.
    * TODO: lub
    *
    * @param outarg1 the group to modify
    * @param arg2 the group to "and" with
-   * @throws IllegalArgumentException if the other group is missing a key from
-   *         this group
    */
   public static void andlub(GenKillBits<AnnotationMirror> outarg1,
                             GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
@@ -154,7 +153,7 @@ public class GenKillBits<K> {
     for (int var = 0; var < length; ++var) {
       for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
         if (!arg2.bitsets.containsKey(key1))
-          throw new IllegalArgumentException();
+          arg2.bitsets.put(key1, new BitSet());
         BitSet lhs = outarg1.bitsets.get(key1);
         boolean notfound = true;
 
@@ -183,13 +182,12 @@ public class GenKillBits<K> {
   /**
    * Merges each gen-kill set outarg1 with the one corresponding to the
    * same key in {@code arg2} via boolean "or" on each bit. Modifies outarg1
-   * gen-kill set.
+   * gen-kill set. If arg2 is missing a key in outarg1 then an empty set is
+   * added to arg2 for the key.
    * TODO: lub.
    *
    * @param outarg1 the group to modify
    * @param arg2 the group to "or" with
-   * @throws IllegalArgumentException if the other group is missing a key from
-   *         this group
    */
   public static void orlub(GenKillBits<AnnotationMirror> outarg1,
                            GenKillBits<AnnotationMirror> arg2, QualifierHierarchy annoRelations) {
@@ -201,7 +199,7 @@ public class GenKillBits<K> {
 
     for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
       if (!arg2.bitsets.containsKey(key1))
-        throw new IllegalArgumentException();
+        arg2.bitsets.put(key1, new BitSet());
 
       for(AnnotationMirror key2 : arg2.bitsets.keySet()) {
         BitSet lhs = outarg1.bitsets.get(key1);
