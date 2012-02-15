@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.ExplicitThisNode;
@@ -25,6 +26,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 		implements Store<S> {
 
 	public static abstract class Receiver {
+		// type == null ==> Unknown
+		public final/* @Nullable */TypeMirror type;
+
+		public Receiver(TypeMirror type) {
+			this.type = type;
+		}
+
 		public abstract boolean containsUnknown();
 
 		/**
@@ -62,7 +70,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			return field;
 		}
 
-		public FieldAccess(Receiver receiver, Element field) {
+		public FieldAccess(Receiver receiver, Element field, TypeMirror type) {
+			super(type);
 			this.receiver = receiver;
 			this.field = field;
 		}
@@ -86,6 +95,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	}
 
 	public static class ThisReference extends Receiver {
+		public ThisReference(TypeMirror type) {
+			super(type);
+		}
+
 		@Override
 		public boolean equals(Object obj) {
 			return obj != null && obj instanceof ThisReference;
@@ -108,6 +121,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	}
 
 	public static class Unknown extends Receiver {
+		public Unknown() {
+			super(null);
+		}
+
 		@Override
 		public boolean equals(Object obj) {
 			return obj == this;
@@ -138,7 +155,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	public static class LocalVariable extends Receiver {
 		protected Element element;
 
-		public LocalVariable(Element element) {
+		public LocalVariable(Element element, TypeMirror type) {
+			super(type);
 			this.element = element;
 		}
 
@@ -169,6 +187,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
 	// TODO: add pure method calls later
 	public static class PureMethodCall extends Receiver {
+
+		public PureMethodCall(TypeMirror type) {
+			super(type);
+		}
 
 		@Override
 		public boolean containsUnknown() {
@@ -226,14 +248,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 			receiver = internalReprOf((FieldAccessNode) receiverNode);
 		} else if (receiverNode instanceof ImplicitThisLiteralNode
 				|| receiverNode instanceof ExplicitThisNode) {
-			receiver = new ThisReference();
+			receiver = new ThisReference(receiverNode.getType());
 		} else if (receiverNode instanceof LocalVariableNode) {
 			LocalVariableNode lv = (LocalVariableNode) receiverNode;
-			receiver = new LocalVariable(lv.getElement());
+			receiver = new LocalVariable(lv.getElement(), lv.getType());
 		} else {
 			receiver = new Unknown();
 		}
-		return new FieldAccess(receiver, node.getElement());
+		return new FieldAccess(receiver, node.getElement(), node.getType());
 	}
 
 	/**
@@ -351,7 +373,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 	 */
 	protected void removeConflicting(LocalVariableNode localVar) {
 		Map<FieldAccess, V> newFieldValues = new HashMap<>();
-		LocalVariable var = new LocalVariable(localVar.getElement());
+		LocalVariable var = new LocalVariable(localVar.getElement(), localVar.getType());
 		for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
 			FieldAccess otherFieldAccess = e.getKey();
 			// case 1:
