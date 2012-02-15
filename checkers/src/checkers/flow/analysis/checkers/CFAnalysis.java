@@ -2,6 +2,7 @@ package checkers.flow.analysis.checkers;
 
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.types.AnnotatedTypeFactory;
@@ -15,8 +16,8 @@ import checkers.types.AnnotatedTypeFactory;
 public class CFAnalysis extends
 		CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-	public CFAnalysis(AnnotatedTypeFactory factory) {
-		super(factory);
+	public CFAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env) {
+		super(factory, env);
 	}
 
 	@Override

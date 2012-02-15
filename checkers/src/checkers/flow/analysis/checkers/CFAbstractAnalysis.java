@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.flow.analysis.Analysis;
@@ -48,7 +49,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 	 */
 	protected final Set<AnnotationMirror> legalAnnotations;
 
-	public CFAbstractAnalysis(AnnotatedTypeFactory factory) {
+	public CFAbstractAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env) {
+		super(env);
 		this.qualifierHierarchy = factory.getQualifierHierarchy();
 		this.legalAnnotations = qualifierHierarchy.getAnnotations();
 		this.factory = factory;
