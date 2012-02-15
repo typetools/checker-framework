@@ -167,6 +167,11 @@ public class Simple {
         @Regex(6) Pattern p4 = Pattern.compile(r5);   // error
         //:: error: (assignment.type.incompatible)
         @Regex(6) Pattern p5 = Pattern.compile(r3);   // error
+        
+        // Make sure Pattern.compile still works when passed an @Unqualified String
+        // that's actually a regex, with the warning suppressed.
+        @SuppressWarnings("regex:argument.type.incompatible")
+        Pattern p6 = Pattern.compile("(" + r + ")");
     }
 
 //    TODO: This is not supported until the framework can read explicit
