@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.HashSet;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.cfg.block.Block;
 
 import com.sun.source.tree.Tree;
@@ -20,6 +22,11 @@ import com.sun.source.tree.Tree;
  * block instanceof RegularBlock ==> block.getContents().contains(this)
  * block instanceof ExceptionBlock ==> block.getNode() == this
  * block == null <==> "This object represents a parameter of the method."
+ * </pre>
+ *
+ * <pre>
+ * type != null
+ * tree != null ==> node.getType() == InternalUtils.typeOf(node.getTree())
  * </pre>
  * 
  * @author Stefan Heule
@@ -40,6 +47,13 @@ public abstract class Node {
 	protected boolean lvalue;
 
 	/**
+	 * The type of this node.  For {@link Node}s with {@link Tree}s, this
+         * type is the type of the {@link Tree}.  Otherwise, it is the type is
+         * set by the {@link CFGBuilder}.
+	 */
+	protected TypeMirror type;
+
+	/**
 	 * @return The basic block this node belongs to (or {@code null} if it
 	 *         represents the parameter of a method).
 	 */
@@ -53,13 +67,23 @@ public abstract class Node {
 	}
 
 	/**
-	 * Returns the {@link Tree} in the abstract synatx tree, or
+	 * Returns the {@link Tree} in the abstract syntax tree, or
 	 * <code>null</code> if no corresponding tree exists. For instance, this is
 	 * the case for an {@link ImplicitThisLiteralNode}.
 	 * 
 	 * @return The corresponding {@link Tree} or <code>null</code>.
 	 */
 	abstract public/* @Nullable */Tree getTree();
+
+	/**
+	 * Returns a {@link TypeMirror} representing the type of a {@link Node}
+	 * A {@link Node} will always have a type even when it has no {@link Tree}.
+	 * 
+	 * @return A {@link TypeMirror} representing the type of this {@link Node}.
+	 */
+	public TypeMirror getType() {
+		return type;
+	}
 
 	/**
 	 * Accept method of the visitor pattern

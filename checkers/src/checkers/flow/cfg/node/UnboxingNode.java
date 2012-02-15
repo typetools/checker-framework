@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
@@ -27,8 +29,9 @@ public class UnboxingNode extends Node {
 
 	protected Node operand;
 
-	public UnboxingNode(Node operand) {
+	public UnboxingNode(Node operand, TypeMirror type) {
 		this.operand = operand;
+		this.type = type;
 	}
 
 	public Node getOperand() {
@@ -47,7 +50,7 @@ public class UnboxingNode extends Node {
 
 	@Override
 	public String toString() {
-		return "Unboxing(" + getOperand() + ")";
+		return "Unboxing(" + getOperand() + ", " + type + ")";
 	}
 
 	@Override

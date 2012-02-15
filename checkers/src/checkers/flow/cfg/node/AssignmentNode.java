@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -35,6 +36,7 @@ public class AssignmentNode extends Node {
 		assert target instanceof FieldAccessNode
 				|| target instanceof LocalVariableNode;
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.lhs = target;
 		this.rhs = expression;
 	}

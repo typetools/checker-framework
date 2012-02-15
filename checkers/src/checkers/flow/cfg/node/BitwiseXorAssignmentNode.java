@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -29,6 +30,7 @@ public class BitwiseXorAssignmentNode extends Node {
 	public BitwiseXorAssignmentNode(Tree tree, Node left, Node right) {
 		assert tree.getKind() == Kind.XOR_ASSIGNMENT;
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.left = left;
 		this.right = right;
 	}

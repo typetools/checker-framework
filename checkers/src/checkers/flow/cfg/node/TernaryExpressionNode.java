@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
@@ -30,6 +31,7 @@ public class TernaryExpressionNode extends Node {
                                      Node thenOperand, Node elseOperand) {
 		assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.condition = condition;
 		this.thenOperand = thenOperand;
 		this.elseOperand = elseOperand;

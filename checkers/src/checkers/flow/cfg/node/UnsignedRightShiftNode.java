@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -29,6 +30,7 @@ public class UnsignedRightShiftNode extends Node {
 	public UnsignedRightShiftNode(Tree tree, Node left, Node right) {
 		assert tree.getKind() == Kind.UNSIGNED_RIGHT_SHIFT;
 		this.tree = tree;
+		this.type = InternalUtils.typeOf(tree);
 		this.left = left;
 		this.right = right;
 	}
