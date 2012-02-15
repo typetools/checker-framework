@@ -380,18 +380,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 if (processingEnv.getOptions().containsKey("printErrorStack")) {
                     if (ce.cause!=null) {
                         msg += "\nException: " +
-                                // TODO: format nicer
-                                ce.cause.toString() + ": " + Arrays.toString(ce.cause.getStackTrace());
+                                ce.cause.toString() + ": " + formatStackTrace(ce.cause.getStackTrace());
                         if (ce.cause.getCause()!=null) {
                             msg += "\nUnderlying Exception: " +
-                                    // TODO: format nicer
                                     (ce.cause.getCause().toString() + ": " +
-                                            Arrays.toString(ce.cause.getCause().getStackTrace()));
+                                            formatStackTrace(ce.cause.getCause().getStackTrace()));
                             if (ce.cause.getCause().getCause()!=null) {
                                 msg += "\nUnderlying Exception: " +
-                                        // TODO: format nicer
                                         (ce.cause.getCause().getCause().toString() + ": " +
-                                                Arrays.toString(ce.cause.getCause().getCause().getStackTrace()));
+                                                formatStackTrace(ce.cause.getCause().getCause().getStackTrace()));
                             }
                         }
                     }
@@ -414,6 +411,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors + log.deferredDiagnostics.size();
         }
+    }
+
+    /**
+     * Format a list of {@link StackTraceElement}s to be printed out as an error
+     * message.
+     */
+    protected String formatStackTrace(StackTraceElement[] stackTrace) {
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement ste : stackTrace) {
+            if (!first) {
+                sb.append("\n");
+            }
+            first = false;
+            sb.append(ste.toString());
+        }
+        return sb.toString();
     }
 
     // Uses private fields, need to rewrite.
