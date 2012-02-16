@@ -20,19 +20,19 @@ import checkers.flow.cfg.node.Node;
  */
 public interface RegularBlock extends SingleSuccessorBlock {
 
-	/**
-	 * @return The unmodifiable sequence of {@link Node}s.
-	 */
-	List<Node> getContents();
+    /**
+     * @return The unmodifiable sequence of {@link Node}s.
+     */
+    List<Node> getContents();
 
-	/**
-	 * @return The regular successor block.
-	 */
-	Block getRegularSuccessor();
-	
-	/**
-	 * Is this block empty (i.e., does it not contain any contents).
-	 */
-	boolean isEmpty();
+    /**
+     * @return The regular successor block.
+     */
+    Block getRegularSuccessor();
+
+    /**
+     * Is this block empty (i.e., does it not contain any contents).
+     */
+    boolean isEmpty();
 
 }

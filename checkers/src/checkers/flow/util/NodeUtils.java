@@ -16,29 +16,29 @@ import com.sun.tools.javac.tree.JCTree;
  */
 public class NodeUtils {
 
-	/**
-	 * @return true iff <code>node</code> corresponds to a boolean typed
-	 *         expression (either the primitive type <code>boolean</code>, or
-	 *         class type {@link java.lang.Boolean})
-	 */
-	public static boolean isBooleanTypeNode(Node node) {
+    /**
+     * @return true iff <code>node</code> corresponds to a boolean typed
+     *         expression (either the primitive type <code>boolean</code>, or
+     *         class type {@link java.lang.Boolean})
+     */
+    public static boolean isBooleanTypeNode(Node node) {
 
-		if (node instanceof ConditionalOrNode) {
-			return true;
-		}
+        if (node instanceof ConditionalOrNode) {
+            return true;
+        }
 
-		// not all nodes have an associated tree, but those are all not of a
-		// boolean type.
-		Tree tree = node.getTree();
-		if (tree == null) {
-			return false;
-		}
-		
-		Type type = ((JCTree) tree).type;
-		if (TypesUtils.isBooleanType(type)) {
-			return true;
-		}
+        // not all nodes have an associated tree, but those are all not of a
+        // boolean type.
+        Tree tree = node.getTree();
+        if (tree == null) {
+            return false;
+        }
 
-		return false;
-	}
+        Type type = ((JCTree) tree).type;
+        if (TypesUtils.isBooleanType(type)) {
+            return true;
+        }
+
+        return false;
+    }
 }

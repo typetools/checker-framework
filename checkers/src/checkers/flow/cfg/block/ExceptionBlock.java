@@ -22,14 +22,14 @@ import checkers.flow.cfg.node.Node;
  */
 public interface ExceptionBlock extends SingleSuccessorBlock {
 
-	/**
-	 * @return The node of this block.
-	 */
-	Node getNode();
+    /**
+     * @return The node of this block.
+     */
+    Node getNode();
 
-	/**
-	 * @return The list of exceptional successor blocks as an unmodifiable map.
-	 */
-	Map<Class<? extends Throwable>, Block> getExceptionalSuccessors();
+    /**
+     * @return The list of exceptional successor blocks as an unmodifiable map.
+     */
+    Map<Class<? extends Throwable>, Block> getExceptionalSuccessors();
 
 }

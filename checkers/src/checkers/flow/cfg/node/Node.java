@@ -23,7 +23,7 @@ import com.sun.source.tree.Tree;
  * block instanceof ExceptionBlock ==> block.getNode() == this
  * block == null <==> "This object represents a parameter of the method."
  * </pre>
- *
+ * 
  * <pre>
  * type != null
  * tree != null ==> node.getType() == InternalUtils.typeOf(node.getTree())
@@ -34,104 +34,104 @@ import com.sun.source.tree.Tree;
  */
 public abstract class Node {
 
-	/**
-	 * The basic block this node belongs to (see invariant about this field
-	 * above).
-	 */
-	protected/* @Nullable */Block block;
-	
-	/**
-	 * Is this node an l-value?
-	 */
-	// TODO: make sure the CFGBuilder sets this field correctly
-	protected boolean lvalue;
+    /**
+     * The basic block this node belongs to (see invariant about this field
+     * above).
+     */
+    protected/* @Nullable */Block block;
 
-	/**
-	 * The type of this node.  For {@link Node}s with {@link Tree}s, this
-         * type is the type of the {@link Tree}.  Otherwise, it is the type is
-         * set by the {@link CFGBuilder}.
-	 */
-	protected TypeMirror type;
+    /**
+     * Is this node an l-value?
+     */
+    // TODO: make sure the CFGBuilder sets this field correctly
+    protected boolean lvalue;
 
-	/**
-	 * @return The basic block this node belongs to (or {@code null} if it
-	 *         represents the parameter of a method).
-	 */
-	public/* @Nullable */Block getBlock() {
-		return block;
-	}
+    /**
+     * The type of this node. For {@link Node}s with {@link Tree}s, this type is
+     * the type of the {@link Tree}. Otherwise, it is the type is set by the
+     * {@link CFGBuilder}.
+     */
+    protected TypeMirror type;
 
-	/** Set the basic block this node belongs to. */
-	public void setBlock(Block b) {
-		block = b;
-	}
+    /**
+     * @return The basic block this node belongs to (or {@code null} if it
+     *         represents the parameter of a method).
+     */
+    public/* @Nullable */Block getBlock() {
+        return block;
+    }
 
-	/**
-	 * Returns the {@link Tree} in the abstract syntax tree, or
-	 * <code>null</code> if no corresponding tree exists. For instance, this is
-	 * the case for an {@link ImplicitThisLiteralNode}.
-	 * 
-	 * @return The corresponding {@link Tree} or <code>null</code>.
-	 */
-	abstract public/* @Nullable */Tree getTree();
+    /** Set the basic block this node belongs to. */
+    public void setBlock(Block b) {
+        block = b;
+    }
 
-	/**
-	 * Returns a {@link TypeMirror} representing the type of a {@link Node}
-	 * A {@link Node} will always have a type even when it has no {@link Tree}.
-	 * 
-	 * @return A {@link TypeMirror} representing the type of this {@link Node}.
-	 */
-	public TypeMirror getType() {
-		return type;
-	}
+    /**
+     * Returns the {@link Tree} in the abstract syntax tree, or
+     * <code>null</code> if no corresponding tree exists. For instance, this is
+     * the case for an {@link ImplicitThisLiteralNode}.
+     * 
+     * @return The corresponding {@link Tree} or <code>null</code>.
+     */
+    abstract public/* @Nullable */Tree getTree();
 
-	/**
-	 * Accept method of the visitor pattern
-	 * 
-	 * @param <R>
-	 *            Result type of the operation.
-	 * @param <P>
-	 *            Parameter type.
-	 * @param visitor
-	 *            The visitor to be applied to this node.
-	 * @param p
-	 *            The parameter for this operation.
-	 */
-	public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
-	
-	public boolean isLValue() {
-		return lvalue;
-	}
-	
-	/**
-	 * Make this node an l-value.
-	 */
-	public void setLValue() {
-		lvalue = true;
-	}
+    /**
+     * Returns a {@link TypeMirror} representing the type of a {@link Node} A
+     * {@link Node} will always have a type even when it has no {@link Tree}.
+     * 
+     * @return A {@link TypeMirror} representing the type of this {@link Node}.
+     */
+    public TypeMirror getType() {
+        return type;
+    }
 
-	/**
-	 * @return A collection containing all of the operand {@link Node}s of this
-	 *         {@link Node}.
-	 */
-	public abstract Collection<Node> getOperands();
+    /**
+     * Accept method of the visitor pattern
+     * 
+     * @param <R>
+     *            Result type of the operation.
+     * @param <P>
+     *            Parameter type.
+     * @param visitor
+     *            The visitor to be applied to this node.
+     * @param p
+     *            The parameter for this operation.
+     */
+    public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
-	/**
-	 * @return A collection containing all of the operand {@link Node}s of this
-	 *         {@link Node}, as well as (transitively) the operands of its
-	 *         operands.
-	 */
-	public Collection<Node> getTransitiveOperands() {
-		Collection<Node> operands = new HashSet<>(getOperands());
-		Collection<Node> transitiveOperands = new HashSet<>(getOperands());
-		while (!operands.isEmpty()) {
-			Node next = operands.iterator().next();
-			transitiveOperands.add(next);
-			for (Node o : next.getOperands()) {
-				operands.addAll(o.getOperands());
-			}
-		}
-		return transitiveOperands;
-	}
+    public boolean isLValue() {
+        return lvalue;
+    }
+
+    /**
+     * Make this node an l-value.
+     */
+    public void setLValue() {
+        lvalue = true;
+    }
+
+    /**
+     * @return A collection containing all of the operand {@link Node}s of this
+     *         {@link Node}.
+     */
+    public abstract Collection<Node> getOperands();
+
+    /**
+     * @return A collection containing all of the operand {@link Node}s of this
+     *         {@link Node}, as well as (transitively) the operands of its
+     *         operands.
+     */
+    public Collection<Node> getTransitiveOperands() {
+        Collection<Node> operands = new HashSet<>(getOperands());
+        Collection<Node> transitiveOperands = new HashSet<>(getOperands());
+        while (!operands.isEmpty()) {
+            Node next = operands.iterator().next();
+            transitiveOperands.add(next);
+            for (Node o : next.getOperands()) {
+                operands.addAll(o.getOperands());
+            }
+        }
+        return transitiveOperands;
+    }
 
 }

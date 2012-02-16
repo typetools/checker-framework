@@ -10,8 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node for bitwise right shift operations with
- * sign extension:
+ * A node for bitwise right shift operations with sign extension:
  * 
  * <pre>
  *   <em>expression</em> >> <em>expression</em>
@@ -23,61 +22,61 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class SignedRightShiftNode extends Node {
 
-	protected Tree tree;
-	protected Node left;
-	protected Node right;
+    protected Tree tree;
+    protected Node left;
+    protected Node right;
 
-	public SignedRightShiftNode(Tree tree, Node left, Node right) {
-		assert tree.getKind() == Kind.RIGHT_SHIFT;
-		this.tree = tree;
-		this.type = InternalUtils.typeOf(tree);
-		this.left = left;
-		this.right = right;
-	}
+    public SignedRightShiftNode(Tree tree, Node left, Node right) {
+        assert tree.getKind() == Kind.RIGHT_SHIFT;
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.left = left;
+        this.right = right;
+    }
 
-	public Node getLeftOperand() {
-		return left;
-	}
+    public Node getLeftOperand() {
+        return left;
+    }
 
-	public Node getRightOperand() {
-		return right;
-	}
+    public Node getRightOperand() {
+        return right;
+    }
 
-	@Override
-	public Tree getTree() {
-		return tree;
-	}
+    @Override
+    public Tree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitSignedRightShift(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitSignedRightShift(this, p);
+    }
 
-	@Override
-	public String toString() {
-		return "(" + getLeftOperand() + " >> " + getRightOperand() + ")";
-	}
+    @Override
+    public String toString() {
+        return "(" + getLeftOperand() + " >> " + getRightOperand() + ")";
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof SignedRightShiftNode)) {
-			return false;
-		}
-		SignedRightShiftNode other = (SignedRightShiftNode) obj;
-		return getLeftOperand().equals(other.getLeftOperand())
-				&& getRightOperand().equals(other.getRightOperand());
-	}
-	
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof SignedRightShiftNode)) {
+            return false;
+        }
+        SignedRightShiftNode other = (SignedRightShiftNode) obj;
+        return getLeftOperand().equals(other.getLeftOperand())
+                && getRightOperand().equals(other.getRightOperand());
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		LinkedList<Node> list = new LinkedList<Node>();
-		list.add(getLeftOperand());
-		list.add(getRightOperand());
-		return list;
-	}
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        LinkedList<Node> list = new LinkedList<Node>();
+        list.add(getLeftOperand());
+        list.add(getRightOperand());
+        return list;
+    }
 }

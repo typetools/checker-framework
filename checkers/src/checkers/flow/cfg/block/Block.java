@@ -1,7 +1,5 @@
 package checkers.flow.cfg.block;
 
-
-
 /**
  * Represents a basic block in a control flow graph.
  * 
@@ -10,30 +8,30 @@ package checkers.flow.cfg.block;
  */
 public interface Block {
 
-	/** The types of basic blocks */
-	public static enum BlockType {
+    /** The types of basic blocks */
+    public static enum BlockType {
 
-		/** A regular basic block. */
-		REGULAR_BLOCK,
+        /** A regular basic block. */
+        REGULAR_BLOCK,
 
-		/** A conditional basic block. */
-		CONDITIONAL_BLOCK,
+        /** A conditional basic block. */
+        CONDITIONAL_BLOCK,
 
-		/** A special basic block. */
-		SPECIAL_BLOCK,
-		
-		/** A basic block that can throw an exception. */
-		EXCEPTION_BLOCK,
-	}
+        /** A special basic block. */
+        SPECIAL_BLOCK,
 
-	/**
-	 * @return The type of this basic block.
-	 */
-	BlockType getType();
+        /** A basic block that can throw an exception. */
+        EXCEPTION_BLOCK,
+    }
 
-	/**
-	 * @return The unique identifier of this block.
-	 */
-	long getId();
-	
+    /**
+     * @return The type of this basic block.
+     */
+    BlockType getType();
+
+    /**
+     * @return The unique identifier of this block.
+     */
+    long getId();
+
 }
