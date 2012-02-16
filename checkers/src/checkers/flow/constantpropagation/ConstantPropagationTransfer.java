@@ -18,71 +18,71 @@ import checkers.flow.constantpropagation.Constant.Type;
 import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
-		extends
-		AbstractNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
-		implements TransferFunction<Constant, ConstantPropagationStore> {
+        extends
+        AbstractNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
+        implements TransferFunction<Constant, ConstantPropagationStore> {
 
-	@Override
-	public ConstantPropagationStore initialStore(MethodTree tree,
-			List<LocalVariableNode> parameters) {
-		ConstantPropagationStore store = new ConstantPropagationStore();
+    @Override
+    public ConstantPropagationStore initialStore(MethodTree tree,
+            List<LocalVariableNode> parameters) {
+        ConstantPropagationStore store = new ConstantPropagationStore();
 
-		// we have no information about parameters
-		for (LocalVariableNode p : parameters) {
-			store.mergeInformation(p, new Constant(Type.TOP));
-		}
+        // we have no information about parameters
+        for (LocalVariableNode p : parameters) {
+            store.mergeInformation(p, new Constant(Type.TOP));
+        }
 
-		return store;
-	}
+        return store;
+    }
 
-	@Override
-	public TransferResult<Constant, ConstantPropagationStore> visitNode(Node n,
-			TransferInput<Constant, ConstantPropagationStore> p) {
-		return new RegularTransferResult<>(null, p.getRegularStore());
-	}
+    @Override
+    public TransferResult<Constant, ConstantPropagationStore> visitNode(Node n,
+            TransferInput<Constant, ConstantPropagationStore> p) {
+        return new RegularTransferResult<>(null, p.getRegularStore());
+    }
 
-	@Override
-	public TransferResult<Constant, ConstantPropagationStore> visitAssignment(
-			AssignmentNode n,
-			TransferInput<Constant, ConstantPropagationStore> pi) {
-		ConstantPropagationStore p = pi.getRegularStore();
-		Node target = n.getTarget();
-		Constant info = null;
-		if (target instanceof LocalVariableNode) {
-			LocalVariableNode t = (LocalVariableNode) target;
-			info = p.getInformation(n.getExpression());
-			p.setInformation(t, info);
-		}
-		return new RegularTransferResult<>(info, p);
-	}
+    @Override
+    public TransferResult<Constant, ConstantPropagationStore> visitAssignment(
+            AssignmentNode n,
+            TransferInput<Constant, ConstantPropagationStore> pi) {
+        ConstantPropagationStore p = pi.getRegularStore();
+        Node target = n.getTarget();
+        Constant info = null;
+        if (target instanceof LocalVariableNode) {
+            LocalVariableNode t = (LocalVariableNode) target;
+            info = p.getInformation(n.getExpression());
+            p.setInformation(t, info);
+        }
+        return new RegularTransferResult<>(info, p);
+    }
 
-	@Override
-	public TransferResult<Constant, ConstantPropagationStore> visitIntegerLiteral(
-			IntegerLiteralNode n,
-			TransferInput<Constant, ConstantPropagationStore> pi) {
-		ConstantPropagationStore p = pi.getRegularStore();
-		Constant c = new Constant(n.getValue());
-		p.setInformation(n, c);
-		return new RegularTransferResult<>(c, p);
-	}
+    @Override
+    public TransferResult<Constant, ConstantPropagationStore> visitIntegerLiteral(
+            IntegerLiteralNode n,
+            TransferInput<Constant, ConstantPropagationStore> pi) {
+        ConstantPropagationStore p = pi.getRegularStore();
+        Constant c = new Constant(n.getValue());
+        p.setInformation(n, c);
+        return new RegularTransferResult<>(c, p);
+    }
 
-	@Override
-	public TransferResult<Constant, ConstantPropagationStore> visitEqualTo(
-			EqualToNode n, TransferInput<Constant, ConstantPropagationStore> pi) {
-		ConstantPropagationStore p = pi.getRegularStore();
-		ConstantPropagationStore old = p.copy();
-		Node left = n.getLeftOperand();
-		Node right = n.getRightOperand();
-		process(p, left, right);
-		process(p, right, left);
-		return new ConditionalTransferResult<>(null, p, old);
-	}
+    @Override
+    public TransferResult<Constant, ConstantPropagationStore> visitEqualTo(
+            EqualToNode n, TransferInput<Constant, ConstantPropagationStore> pi) {
+        ConstantPropagationStore p = pi.getRegularStore();
+        ConstantPropagationStore old = p.copy();
+        Node left = n.getLeftOperand();
+        Node right = n.getRightOperand();
+        process(p, left, right);
+        process(p, right, left);
+        return new ConditionalTransferResult<>(null, p, old);
+    }
 
-	protected void process(ConstantPropagationStore p, Node a, Node b) {
-		Constant val = p.getInformation(a);
-		if (b instanceof LocalVariableNode && val.isConstant()) {
-			p.setInformation(b, val);
-		}
-	}
+    protected void process(ConstantPropagationStore p, Node a, Node b) {
+        Constant val = p.getInformation(a);
+        if (b instanceof LocalVariableNode && val.isConstant()) {
+            p.setInformation(b, val);
+        }
+    }
 
 }

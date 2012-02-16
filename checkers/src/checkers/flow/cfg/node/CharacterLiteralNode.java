@@ -10,8 +10,8 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a character literal. For example:
- *
-  * <pre>
+ * 
+ * <pre>
  *   <em>'a'</em>
  *   <em>'\t'</em>
  *   <em>'\u03a9'</em>
@@ -23,34 +23,34 @@ import com.sun.source.tree.Tree;
  */
 public class CharacterLiteralNode extends ValueLiteralNode {
 
-	public CharacterLiteralNode(LiteralTree t) {
-		assert t.getKind().equals(Tree.Kind.CHAR_LITERAL);
-		tree = t;
-		type = InternalUtils.typeOf(tree);
-	}
+    public CharacterLiteralNode(LiteralTree t) {
+        assert t.getKind().equals(Tree.Kind.CHAR_LITERAL);
+        tree = t;
+        type = InternalUtils.typeOf(tree);
+    }
 
-	@Override
-	public Character getValue() {
-		return (Character) tree.getValue();
-	}
+    @Override
+    public Character getValue() {
+        return (Character) tree.getValue();
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitCharacterLiteral(this, p);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		// test that obj is a CharacterLiteralNode
-		if (obj == null || !(obj instanceof CharacterLiteralNode)) {
-			return false;
-		}
-		// super method compares values
-		return super.equals(obj);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitCharacterLiteral(this, p);
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.emptyList();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        // test that obj is a CharacterLiteralNode
+        if (obj == null || !(obj instanceof CharacterLiteralNode)) {
+            return false;
+        }
+        // super method compares values
+        return super.equals(obj);
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.emptyList();
+    }
 }

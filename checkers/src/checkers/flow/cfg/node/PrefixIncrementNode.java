@@ -22,51 +22,51 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class PrefixIncrementNode extends Node {
 
-	protected Tree tree;
-	protected Node operand;
+    protected Tree tree;
+    protected Node operand;
 
-	public PrefixIncrementNode(Tree tree, Node operand) {
-		assert tree.getKind() == Kind.PREFIX_INCREMENT;
-		this.tree = tree;
-		this.type = InternalUtils.typeOf(tree);
-		this.operand = operand;
-	}
+    public PrefixIncrementNode(Tree tree, Node operand) {
+        assert tree.getKind() == Kind.PREFIX_INCREMENT;
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.operand = operand;
+    }
 
-	public Node getOperand() {
-		return operand;
-	}
+    public Node getOperand() {
+        return operand;
+    }
 
-	@Override
-	public Tree getTree() {
-		return tree;
-	}
+    @Override
+    public Tree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitPrefixIncrement(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitPrefixIncrement(this, p);
+    }
 
-	@Override
-	public String toString() {
-		return "(++" + getOperand() + ")";
-	}
+    @Override
+    public String toString() {
+        return "(++" + getOperand() + ")";
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof PrefixIncrementNode)) {
-			return false;
-		}
-		PrefixIncrementNode other = (PrefixIncrementNode) obj;
-		return getOperand().equals(other.getOperand());
-	}
-	
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getOperand());
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof PrefixIncrementNode)) {
+            return false;
+        }
+        PrefixIncrementNode other = (PrefixIncrementNode) obj;
+        return getOperand().equals(other.getOperand());
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.singletonList(getOperand());
-	}
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getOperand());
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.singletonList(getOperand());
+    }
 }

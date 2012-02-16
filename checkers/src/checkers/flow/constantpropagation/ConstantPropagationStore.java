@@ -10,137 +10,139 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.constantpropagation.Constant.Type;
 
-public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
+public class ConstantPropagationStore implements
+        Store<ConstantPropagationStore> {
 
-	/** Information about variables gathered so far. */
-	Map<Node, Constant> contents;
+    /** Information about variables gathered so far. */
+    Map<Node, Constant> contents;
 
-	public ConstantPropagationStore() {
-		contents = new HashMap<>();
-	}
+    public ConstantPropagationStore() {
+        contents = new HashMap<>();
+    }
 
-	protected ConstantPropagationStore(Map<Node, Constant> contents) {
-		this.contents = contents;
-	}
-	
-	public Constant getInformation(Node n) {
-		if (contents.containsKey(n)) {
-			return contents.get(n);
-		}
-		return new Constant(Type.TOP);
-	}
+    protected ConstantPropagationStore(Map<Node, Constant> contents) {
+        this.contents = contents;
+    }
 
-	public void mergeInformation(Node n, Constant val) {
-		Constant value;
-		if (contents.containsKey(n)) {
-			value = val.leastUpperBound(contents.get(n));
-		} else {
-			value = val;
-		}
-		// TODO: remove (only two nodes supported atm)
-		assert n instanceof IntegerLiteralNode
-				|| n instanceof LocalVariableNode;
-		contents.put(n, value);
-	}
+    public Constant getInformation(Node n) {
+        if (contents.containsKey(n)) {
+            return contents.get(n);
+        }
+        return new Constant(Type.TOP);
+    }
 
-	public void setInformation(Node n, Constant val) {
-		// TODO: remove (only two nodes supported atm)
-		assert n instanceof IntegerLiteralNode
-				|| n instanceof LocalVariableNode;
-		contents.put(n, val);
-	}
+    public void mergeInformation(Node n, Constant val) {
+        Constant value;
+        if (contents.containsKey(n)) {
+            value = val.leastUpperBound(contents.get(n));
+        } else {
+            value = val;
+        }
+        // TODO: remove (only two nodes supported atm)
+        assert n instanceof IntegerLiteralNode
+                || n instanceof LocalVariableNode;
+        contents.put(n, value);
+    }
 
-	@Override
-	public ConstantPropagationStore copy() {
-		return new ConstantPropagationStore(new HashMap<>(contents));
-	}
+    public void setInformation(Node n, Constant val) {
+        // TODO: remove (only two nodes supported atm)
+        assert n instanceof IntegerLiteralNode
+                || n instanceof LocalVariableNode;
+        contents.put(n, val);
+    }
 
-	@Override
-	public ConstantPropagationStore leastUpperBound(ConstantPropagationStore other) {
-		Map<Node, Constant> newContents = new HashMap<>();
+    @Override
+    public ConstantPropagationStore copy() {
+        return new ConstantPropagationStore(new HashMap<>(contents));
+    }
 
-		// go through all of the information of the other class
-		for (Entry<Node, Constant> e : other.contents.entrySet()) {
-			Node n = e.getKey();
-			Constant otherVal = e.getValue();
-			if (contents.containsKey(n)) {
-				// merge if both contain information about a variable
-				newContents.put(n, otherVal.leastUpperBound(contents.get(n)));
-			} else {
-				// add new information
-				newContents.put(n, otherVal);
-			}
-		}
+    @Override
+    public ConstantPropagationStore leastUpperBound(
+            ConstantPropagationStore other) {
+        Map<Node, Constant> newContents = new HashMap<>();
 
-		for (Entry<Node, Constant> e : contents.entrySet()) {
-			Node n = e.getKey();
-			Constant thisVal = e.getValue();
-			if (!other.contents.containsKey(n)) {
-				// add new information
-				newContents.put(n, thisVal);
-			}
-		}
+        // go through all of the information of the other class
+        for (Entry<Node, Constant> e : other.contents.entrySet()) {
+            Node n = e.getKey();
+            Constant otherVal = e.getValue();
+            if (contents.containsKey(n)) {
+                // merge if both contain information about a variable
+                newContents.put(n, otherVal.leastUpperBound(contents.get(n)));
+            } else {
+                // add new information
+                newContents.put(n, otherVal);
+            }
+        }
 
-		return new ConstantPropagationStore(newContents);
-	}
+        for (Entry<Node, Constant> e : contents.entrySet()) {
+            Node n = e.getKey();
+            Constant thisVal = e.getValue();
+            if (!other.contents.containsKey(n)) {
+                // add new information
+                newContents.put(n, thisVal);
+            }
+        }
 
-	@Override
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		if (!(o instanceof ConstantPropagationStore))
-			return false;
-		ConstantPropagationStore other = (ConstantPropagationStore) o;
-		// go through all of the information of the other object
-		for (Entry<Node, Constant> e : other.contents.entrySet()) {
-			Node n = e.getKey();
-			Constant otherVal = e.getValue();
-			if (otherVal.isBottom())
-				continue; // no information
-			if (contents.containsKey(n)) {
-				if (!otherVal.equals(contents.get(n))) {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		}
-		// go through all of the information of the this object
-		for (Entry<Node, Constant> e : contents.entrySet()) {
-			Node n = e.getKey();
-			Constant thisVal = e.getValue();
-			if (thisVal.isBottom())
-				continue; // no information
-			if (other.contents.containsKey(n)) {
-				continue;
-			} else {
-				return false;
-			}
-		}
-		return true;
-	}
+        return new ConstantPropagationStore(newContents);
+    }
 
-	@Override
-	public int hashCode() {
-		int s = 0;
-		for (Entry<Node, Constant> e : contents.entrySet()) {
-			if (!e.getValue().isBottom()) {
-				s += e.hashCode();
-			}
-		}
-		return s;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o == null)
+            return false;
+        if (!(o instanceof ConstantPropagationStore))
+            return false;
+        ConstantPropagationStore other = (ConstantPropagationStore) o;
+        // go through all of the information of the other object
+        for (Entry<Node, Constant> e : other.contents.entrySet()) {
+            Node n = e.getKey();
+            Constant otherVal = e.getValue();
+            if (otherVal.isBottom())
+                continue; // no information
+            if (contents.containsKey(n)) {
+                if (!otherVal.equals(contents.get(n))) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        // go through all of the information of the this object
+        for (Entry<Node, Constant> e : contents.entrySet()) {
+            Node n = e.getKey();
+            Constant thisVal = e.getValue();
+            if (thisVal.isBottom())
+                continue; // no information
+            if (other.contents.containsKey(n)) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		// only output local variable information
-		Map<Node, Constant> smallerContents = new HashMap<>();
-		for (Entry<Node, Constant> e : contents.entrySet()) {
-			if (e.getKey() instanceof LocalVariableNode) {
-				smallerContents.put(e.getKey(), e.getValue());
-			}
-		}
-		return smallerContents.toString();
-	}
+    @Override
+    public int hashCode() {
+        int s = 0;
+        for (Entry<Node, Constant> e : contents.entrySet()) {
+            if (!e.getValue().isBottom()) {
+                s += e.hashCode();
+            }
+        }
+        return s;
+    }
+
+    @Override
+    public String toString() {
+        // only output local variable information
+        Map<Node, Constant> smallerContents = new HashMap<>();
+        for (Entry<Node, Constant> e : contents.entrySet()) {
+            if (e.getKey() instanceof LocalVariableNode) {
+                smallerContents.put(e.getKey(), e.getValue());
+            }
+        }
+        return smallerContents.toString();
+    }
 
 }

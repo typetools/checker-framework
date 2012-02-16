@@ -20,39 +20,39 @@ import com.sun.source.tree.LiteralTree;
  */
 public class StringLiteralNode extends ValueLiteralNode {
 
-	public StringLiteralNode(LiteralTree t) {
-		assert t.getKind().equals(Tree.Kind.STRING_LITERAL);
-		tree = t;
-		type = InternalUtils.typeOf(tree);
-	}
+    public StringLiteralNode(LiteralTree t) {
+        assert t.getKind().equals(Tree.Kind.STRING_LITERAL);
+        tree = t;
+        type = InternalUtils.typeOf(tree);
+    }
 
-	@Override
-	public String getValue() {
-		return (String) tree.getValue();
-	}
+    @Override
+    public String getValue() {
+        return (String) tree.getValue();
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitStringLiteral(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitStringLiteral(this, p);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		// test that obj is a StringLiteralNode
-		if (!(obj instanceof StringLiteralNode)) {
-			return false;
-		}
-		// super method compares values
-		return super.equals(obj);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        // test that obj is a StringLiteralNode
+        if (!(obj instanceof StringLiteralNode)) {
+            return false;
+        }
+        // super method compares values
+        return super.equals(obj);
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.emptyList();
-	}
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public String toString() {
-		return "\"" + super.toString() + "\"";
-	}
+    @Override
+    public String toString() {
+        return "\"" + super.toString() + "\"";
+    }
 }

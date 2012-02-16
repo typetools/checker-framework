@@ -22,49 +22,49 @@ import com.sun.source.tree.Tree;
  */
 public class SuperNode extends Node {
 
-	protected Tree tree;
+    protected Tree tree;
 
-	public SuperNode(Tree t) {
-		assert t instanceof IdentifierTree &&
-			((IdentifierTree)t).getName().equals("super");
-		tree = t;
-		type = InternalUtils.typeOf(tree);
-	}
+    public SuperNode(Tree t) {
+        assert t instanceof IdentifierTree
+                && ((IdentifierTree) t).getName().equals("super");
+        tree = t;
+        type = InternalUtils.typeOf(tree);
+    }
 
-	@Override
-	public Tree getTree() {
-		return tree;
-	}
+    @Override
+    public Tree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitSuper(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitSuper(this, p);
+    }
 
-	public String getName() {
-		return "super";
-	}
+    public String getName() {
+        return "super";
+    }
 
-	@Override
-	public String toString() {
-		return getName();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof SuperNode)) {
-			return false;
-		}
-		return true;
-	}
-	
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getName());
-	}
+    @Override
+    public String toString() {
+        return getName();
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.emptyList();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof SuperNode)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getName());
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.emptyList();
+    }
 }
