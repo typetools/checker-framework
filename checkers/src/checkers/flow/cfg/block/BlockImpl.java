@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * Base class of the {@link Block} implementation hierarchy.
  * 
@@ -13,52 +12,52 @@ import java.util.Set;
  */
 public abstract class BlockImpl implements Block {
 
-	/** A unique ID for this node. */
-	protected long id = BlockImpl.uniqueID();
+    /** A unique ID for this node. */
+    protected long id = BlockImpl.uniqueID();
 
-	/** The last ID that has already been used. */
-	protected static long lastId = 0;
+    /** The last ID that has already been used. */
+    protected static long lastId = 0;
 
-	/** The type of this basic block. */
-	protected BlockType type;
-	
-	/** The set of predecessors. */
-	protected Set<BlockImpl> predecessors;
+    /** The type of this basic block. */
+    protected BlockType type;
 
-	/**
-	 * @return A fresh identifier.
-	 */
-	private static long uniqueID() {
-		return lastId++;
-	}
+    /** The set of predecessors. */
+    protected Set<BlockImpl> predecessors;
 
-	public BlockImpl() {
-		predecessors = new HashSet<>();
-	}
+    /**
+     * @return A fresh identifier.
+     */
+    private static long uniqueID() {
+        return lastId++;
+    }
 
-	@Override
-	public long getId() {
-		return id;
-	}
+    public BlockImpl() {
+        predecessors = new HashSet<>();
+    }
 
-	@Override
-	public BlockType getType() {
-		return type;
-	}
-	
-	/**
-	 * @return The list of predecessors of this basic block.
-	 */
-	public Set<BlockImpl> getPredecessors() {
-		return Collections.unmodifiableSet(predecessors);
-	}
-	
-	public void addPredecessor(BlockImpl pred) {
-		predecessors.add(pred);
-	}
-	
-	public void removePredecessor(BlockImpl pred) {
-		predecessors.remove(pred);
-	}
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public BlockType getType() {
+        return type;
+    }
+
+    /**
+     * @return The list of predecessors of this basic block.
+     */
+    public Set<BlockImpl> getPredecessors() {
+        return Collections.unmodifiableSet(predecessors);
+    }
+
+    public void addPredecessor(BlockImpl pred) {
+        predecessors.add(pred);
+    }
+
+    public void removePredecessor(BlockImpl pred) {
+        predecessors.remove(pred);
+    }
 
 }

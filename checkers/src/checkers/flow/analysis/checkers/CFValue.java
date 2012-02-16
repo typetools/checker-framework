@@ -12,9 +12,9 @@ import javax.lang.model.element.AnnotationMirror;
  */
 public class CFValue extends CFAbstractValue<CFValue> {
 
-	public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
-			Set<AnnotationMirror> annotations) {
-		super(analysis, annotations);
-	}
+    public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
+            Set<AnnotationMirror> annotations) {
+        super(analysis, annotations);
+    }
 
 }

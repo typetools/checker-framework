@@ -23,49 +23,49 @@ import com.sun.source.tree.Tree;
 // TODO: rename to ExplicitThisLiteralNode
 public class ExplicitThisNode extends Node {
 
-	protected Tree tree;
+    protected Tree tree;
 
-	public ExplicitThisNode(Tree t) {
-		assert t instanceof IdentifierTree &&
-			((IdentifierTree)t).getName().equals("this");
-		tree = t;
-		type = InternalUtils.typeOf(tree);
-	}
+    public ExplicitThisNode(Tree t) {
+        assert t instanceof IdentifierTree
+                && ((IdentifierTree) t).getName().equals("this");
+        tree = t;
+        type = InternalUtils.typeOf(tree);
+    }
 
-	@Override
-	public Tree getTree() {
-		return tree;
-	}
+    @Override
+    public Tree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitExplicitThis(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitExplicitThis(this, p);
+    }
 
-	public String getName() {
-		return "this";
-	}
+    public String getName() {
+        return "this";
+    }
 
-	@Override
-	public String toString() {
-		return getName();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof ExplicitThisNode)) {
-			return false;
-		}
-		return true;
-	}
-	
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getName());
-	}
+    @Override
+    public String toString() {
+        return getName();
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.emptyList();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof ExplicitThisNode)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getName());
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.emptyList();
+    }
 }

@@ -8,10 +8,10 @@ package checkers.flow.cfg.block;
  */
 public interface SingleSuccessorBlock extends Block {
 
-	/**
-	 * @return The non-exceptional successor block, or {@code null} if there is
-	 *         no successor.
-	 */
-	/* @Nullable */Block getSuccessor();
+    /**
+     * @return The non-exceptional successor block, or {@code null} if there is
+     *         no successor.
+     */
+    /* @Nullable */Block getSuccessor();
 
 }

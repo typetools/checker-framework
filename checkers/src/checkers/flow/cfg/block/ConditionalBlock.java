@@ -11,14 +11,14 @@ import checkers.flow.cfg.node.Node;
  */
 public interface ConditionalBlock extends Block {
 
-	/**
-	 * @return The entry block of the then branch.
-	 */
-	Block getThenSuccessor();
+    /**
+     * @return The entry block of the then branch.
+     */
+    Block getThenSuccessor();
 
-	/**
-	 * @return The entry block of the else branch.
-	 */
-	Block getElseSuccessor();
+    /**
+     * @return The entry block of the else branch.
+     */
+    Block getElseSuccessor();
 
 }

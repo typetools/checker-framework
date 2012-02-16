@@ -34,9 +34,9 @@ import com.sun.source.tree.MethodTree;
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
-public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>> extends
-		NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> {
+public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>>
+        extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> {
 
-	/** @return The initial store to be used by the dataflow analysis. */
-	S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
+    /** @return The initial store to be used by the dataflow analysis. */
+    S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
 }

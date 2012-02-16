@@ -13,22 +13,22 @@ package checkers.flow.cfg.block;
  */
 public interface SpecialBlock extends SingleSuccessorBlock {
 
-	/** The types of special basic blocks */
-	public static enum SpecialBlockType {
+    /** The types of special basic blocks */
+    public static enum SpecialBlockType {
 
-		/** The entry block of a method */
-		ENTRY,
+        /** The entry block of a method */
+        ENTRY,
 
-		/** The exit block of a method */
-		EXIT,
+        /** The exit block of a method */
+        EXIT,
 
-		/** A special exit block of a method for exceptional termination */
-		EXCEPTIONAL_EXIT,
-	}
+        /** A special exit block of a method for exceptional termination */
+        EXCEPTIONAL_EXIT,
+    }
 
-	/**
-	 * @return The type of this special basic block.
-	 */
-	SpecialBlockType getSpecialType();
+    /**
+     * @return The type of this special basic block.
+     */
+    SpecialBlockType getSpecialType();
 
 }

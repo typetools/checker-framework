@@ -22,72 +22,72 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class TernaryExpressionNode extends Node {
 
-	protected BinaryTree tree;
-	protected Node condition;
-	protected Node thenOperand;
-	protected Node elseOperand;
+    protected BinaryTree tree;
+    protected Node condition;
+    protected Node thenOperand;
+    protected Node elseOperand;
 
-	public TernaryExpressionNode(BinaryTree tree, Node condition,
-                                     Node thenOperand, Node elseOperand) {
-		assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
-		this.tree = tree;
-		this.type = InternalUtils.typeOf(tree);
-		this.condition = condition;
-		this.thenOperand = thenOperand;
-		this.elseOperand = elseOperand;
-	}
+    public TernaryExpressionNode(BinaryTree tree, Node condition,
+            Node thenOperand, Node elseOperand) {
+        assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.condition = condition;
+        this.thenOperand = thenOperand;
+        this.elseOperand = elseOperand;
+    }
 
-	public Node getConditionOperand() {
-		return condition;
-	}
+    public Node getConditionOperand() {
+        return condition;
+    }
 
-	public Node getThenOperand() {
-		return thenOperand;
-	}
+    public Node getThenOperand() {
+        return thenOperand;
+    }
 
-	public Node getElseOperand() {
-		return elseOperand;
-	}
+    public Node getElseOperand() {
+        return elseOperand;
+    }
 
-	@Override
-	public BinaryTree getTree() {
-		return tree;
-	}
+    @Override
+    public BinaryTree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitTernaryExpression(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitTernaryExpression(this, p);
+    }
 
-	@Override
-	public String toString() {
-		return "(" + getConditionOperand() + " ? " + getThenOperand() +
-			" : " + getElseOperand() + ")";
-	}
+    @Override
+    public String toString() {
+        return "(" + getConditionOperand() + " ? " + getThenOperand() + " : "
+                + getElseOperand() + ")";
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof TernaryExpressionNode)) {
-			return false;
-		}
-		TernaryExpressionNode other = (TernaryExpressionNode) obj;
-		return getConditionOperand().equals(other.getConditionOperand())
-				&& getThenOperand().equals(other.getThenOperand())
-				&& getElseOperand().equals(other.getElseOperand());
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TernaryExpressionNode)) {
+            return false;
+        }
+        TernaryExpressionNode other = (TernaryExpressionNode) obj;
+        return getConditionOperand().equals(other.getConditionOperand())
+                && getThenOperand().equals(other.getThenOperand())
+                && getElseOperand().equals(other.getElseOperand());
+    }
 
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getConditionOperand(), getThenOperand(),
-			getElseOperand());
-	}
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getConditionOperand(), getThenOperand(),
+                getElseOperand());
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		LinkedList<Node> list = new LinkedList<Node>();
-		list.add(getConditionOperand());
-		list.add(getThenOperand());
-		list.add(getElseOperand());
-		return list;
-	}
+    @Override
+    public Collection<Node> getOperands() {
+        LinkedList<Node> list = new LinkedList<Node>();
+        list.add(getConditionOperand());
+        list.add(getThenOperand());
+        list.add(getElseOperand());
+        return list;
+    }
 }

@@ -21,34 +21,34 @@ import com.sun.source.tree.Tree;
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 
-	public BooleanLiteralNode(LiteralTree t) {
-		assert t.getKind().equals(Tree.Kind.BOOLEAN_LITERAL);
-		tree = t;
-		type = InternalUtils.typeOf(tree);
-	}
+    public BooleanLiteralNode(LiteralTree t) {
+        assert t.getKind().equals(Tree.Kind.BOOLEAN_LITERAL);
+        tree = t;
+        type = InternalUtils.typeOf(tree);
+    }
 
-	@Override
-	public Boolean getValue() {
-		return (Boolean) tree.getValue();
-	}
+    @Override
+    public Boolean getValue() {
+        return (Boolean) tree.getValue();
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitBooleanLiteral(this, p);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		// test that obj is a BooleanLiteralNode
-		if (!(obj instanceof BooleanLiteralNode)) {
-			return false;
-		}
-		// super method compares values
-		return super.equals(obj);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitBooleanLiteral(this, p);
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.emptyList();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        // test that obj is a BooleanLiteralNode
+        if (!(obj instanceof BooleanLiteralNode)) {
+            return false;
+        }
+        // super method compares values
+        return super.equals(obj);
+    }
+
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.emptyList();
+    }
 }

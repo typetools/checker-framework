@@ -26,68 +26,68 @@ import com.sun.source.tree.Tree;
  */
 public class FieldAccessNode extends Node {
 
-	protected Tree tree;
-	protected String field;
-	protected Node receiver;
+    protected Tree tree;
+    protected String field;
+    protected Node receiver;
 
-	// TODO: add method to get modifiers (static, access level, ..)
+    // TODO: add method to get modifiers (static, access level, ..)
 
-	public FieldAccessNode(Tree tree, Node receiver) {
-		assert ASTUtils.isFieldAccess(tree);
-		this.tree = tree;
-		this.type = InternalUtils.typeOf(tree);
-		this.receiver = receiver;
-		this.field = ASTUtils.getFieldName(tree);
-	}
+    public FieldAccessNode(Tree tree, Node receiver) {
+        assert ASTUtils.isFieldAccess(tree);
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.receiver = receiver;
+        this.field = ASTUtils.getFieldName(tree);
+    }
 
-	public Element getElement() {
-		if (tree instanceof MemberSelectTree) {
-			return TreeUtils.elementFromUse((MemberSelectTree) tree);
-		}
-		assert tree instanceof IdentifierTree;
-		return TreeUtils.elementFromUse((IdentifierTree) tree);
-	}
+    public Element getElement() {
+        if (tree instanceof MemberSelectTree) {
+            return TreeUtils.elementFromUse((MemberSelectTree) tree);
+        }
+        assert tree instanceof IdentifierTree;
+        return TreeUtils.elementFromUse((IdentifierTree) tree);
+    }
 
-	public Node getReceiver() {
-		return receiver;
-	}
+    public Node getReceiver() {
+        return receiver;
+    }
 
-	public String getFieldName() {
-		return field;
-	}
+    public String getFieldName() {
+        return field;
+    }
 
-	@Override
-	public Tree getTree() {
-		return tree;
-	}
+    @Override
+    public Tree getTree() {
+        return tree;
+    }
 
-	@Override
-	public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-		return visitor.visitFieldAccess(this, p);
-	}
+    @Override
+    public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
+        return visitor.visitFieldAccess(this, p);
+    }
 
-	@Override
-	public String toString() {
-		return getReceiver() + "." + field;
-	}
+    @Override
+    public String toString() {
+        return getReceiver() + "." + field;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof FieldAccessNode)) {
-			return false;
-		}
-		FieldAccessNode other = (FieldAccessNode) obj;
-		return getReceiver().equals(other.getReceiver())
-				&& getFieldName().equals(other.getFieldName());
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof FieldAccessNode)) {
+            return false;
+        }
+        FieldAccessNode other = (FieldAccessNode) obj;
+        return getReceiver().equals(other.getReceiver())
+                && getFieldName().equals(other.getFieldName());
+    }
 
-	@Override
-	public int hashCode() {
-		return HashCodeUtils.hash(getReceiver(), getFieldName());
-	}
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(getReceiver(), getFieldName());
+    }
 
-	@Override
-	public Collection<Node> getOperands() {
-		return Collections.singletonList(receiver);
-	}
+    @Override
+    public Collection<Node> getOperands() {
+        return Collections.singletonList(receiver);
+    }
 }
