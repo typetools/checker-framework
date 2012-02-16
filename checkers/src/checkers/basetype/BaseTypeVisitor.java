@@ -96,8 +96,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /** For storing visitor state**/
     protected final VisitorState visitorState;
 
-    protected final AnnotatedTypeFactory plainFactory;
-
     /**
      * @param checker the typechecker associated with this visitor (for
      *        callbacks to {@link BaseTypeChecker#isSubtype})
@@ -114,7 +112,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         this.annoTypes =
             new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
         this.visitorState = atypeFactory.getVisitorState();
-        this.plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
     }
 
     // **********************************************************************
@@ -1007,7 +1004,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (elem == null || !elem.getKind().isField())
             return;
 
-        AnnotatedTypeMirror receiver = plainFactory.getReceiver(tree);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(tree);
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);

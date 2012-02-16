@@ -14,7 +14,6 @@ import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
-import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
@@ -36,12 +35,9 @@ import checkers.basetype.BaseTypeChecker;
  * </li>
  * </ul>
  *
- * TODO: document flowinference lint option.
- *
  * @author wmdietl
  */
 @SupportedOptions( { "quals" } )
-@SupportedLintOptions( { "flowinference" } )
 public class FenumChecker extends BaseTypeChecker {
     protected AnnotationMirror BOTTOM;
 
@@ -79,6 +75,10 @@ public class FenumChecker extends BaseTypeChecker {
         qualSet.add(Fenum.class);
         qualSet.add(FenumUnqualified.class);
         qualSet.add(Bottom.class);
+
+        // Also call super. This way a subclass can use the
+        // @TypeQualifiers annotation again.
+        qualSet.addAll(super.createSupportedTypeQualifiers());
 
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
