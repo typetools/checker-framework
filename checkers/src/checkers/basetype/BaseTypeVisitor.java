@@ -1,9 +1,6 @@
 package checkers.basetype;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -12,6 +9,7 @@ import javax.tools.Diagnostic.Kind;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.NullnessChecker;
+import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
@@ -29,6 +27,8 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -448,6 +448,78 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         return super.visitReturn(node, p);
     }
+
+    /** Ensure that the annotation arguments comply to their declarations.
+     * This needs some special casing, as annotation arguments form special trees.
+     */
+    @Override
+    public Void visitAnnotation(AnnotationTree node, Void p) {
+        List<? extends ExpressionTree> args = node.getArguments();
+        if (args.isEmpty()) {
+            // Nothing to do if there are no annotation arguments.
+            return null;
+        }
+
+        Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
+        if (anno.toString().equals(DefaultQualifier.class.getName()) ||
+                anno.toString().equals(SuppressWarnings.class.getName())) {
+            // Skip these two annotations, as we don't care about the string
+            // arguments to them.
+            return null;
+        }
+
+        // Mapping from argument simple name to its annotated type.
+        Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<String, AnnotatedTypeMirror>();
+        for (Element encl : anno.getEnclosedElements()) {
+            AnnotatedExecutableType exeatm = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(encl);
+            AnnotatedTypeMirror retty = exeatm.getReturnType();
+            annoTypes.put(encl.getSimpleName().toString(), retty);
+        }
+
+        for (ExpressionTree arg : args) {
+            AssignmentTree at = (AssignmentTree) arg;
+            // Ensure that we never ask for the annotated type of an annotation, because
+            // we don't have a type for annotations.
+            if (at.getExpression().getKind() == Tree.Kind.ANNOTATION) {
+                visitAnnotation((AnnotationTree)at.getExpression(), p);
+                continue;
+            }
+            if (at.getExpression().getKind() == Tree.Kind.NEW_ARRAY) {
+                NewArrayTree nat = (NewArrayTree) at.getExpression();
+                boolean isAnno = false;
+                for (ExpressionTree init : nat.getInitializers()) {
+                    if (init.getKind() == Tree.Kind.ANNOTATION) {
+                        visitAnnotation((AnnotationTree)init, p);
+                        isAnno = true;
+                    }
+                }
+                if (isAnno) {
+                    continue;
+                }
+            }
+
+            AnnotatedTypeMirror expected = annoTypes.get(at.getVariable().toString());
+            AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
+            if (expected.getKind()!=TypeKind.ARRAY) {
+                // Expected is not an array -> direct comparison.
+                commonAssignmentCheck(expected, actual, at.getExpression(),
+                        "annotation.type.incompatible");
+            } else {
+                if (actual.getKind()==TypeKind.ARRAY) {
+                    // Both actual and expected are arrays.
+                    commonAssignmentCheck(expected, actual, at.getExpression(),
+                            "annotation.type.incompatible");
+                } else {
+                    // The declaration is an array type, but just a single element is given.
+                    commonAssignmentCheck(((AnnotatedArrayType)expected).getComponentType(),
+                            actual, at.getExpression(),
+                            "annotation.type.incompatible");
+                }
+            }
+        }
+        return null;
+    }
+
 
     // **********************************************************************
     // Check for illegal re-assignment
@@ -1347,13 +1419,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     // **********************************************************************
     // Overriding to avoid visit part of the tree
     // **********************************************************************
-
-
-    @Override
-    public Void visitAnnotation(AnnotationTree node, Void p) {
-        // Skip checking inside annotations.
-        return null;
-    }
 
     /**
      * Override Compilation Unit so we won't visit package names or imports
