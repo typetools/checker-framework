@@ -260,7 +260,7 @@ public class SwingTest {
 
   @SwingVerticalOrientation Object testDefaulting0() {
     @checkers.quals.DefaultQualifier("SwingVerticalOrientation")
-      Object o = new String();
-      return o;
+    Object o = new String();
+    return o;
   }
 }

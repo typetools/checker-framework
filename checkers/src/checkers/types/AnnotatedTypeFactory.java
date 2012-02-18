@@ -260,10 +260,12 @@ public class AnnotatedTypeFactory {
             case ENUM:
             case INTERFACE:
             case ANNOTATION_TYPE:
-                type = fromClass((ClassTree)tree); break;
+                type = fromClass((ClassTree)tree);
+                break;
             case METHOD:
             case VARIABLE:
-                type = fromMember(tree); break;
+                type = fromMember(tree);
+                break;
             default:
                 if (tree instanceof ExpressionTree) {
                     type = fromExpression((ExpressionTree)tree);
