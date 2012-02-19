@@ -140,6 +140,25 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
                 flowState.annos.clear(annotation, idx);
             }
         }
+
+        Set<AnnotationMirror> remainder = AnnotationUtils.createAnnotationSet();
+        // Find all of the annotations in typeAnnos that are not included in flowState.annotations.
+        for (AnnotationMirror anno : typeAnnos) {
+            if (!AnnotationUtils.containsSame(this.flowState.annotations, anno)) {
+                remainder.add(anno);
+            }
+        }
+
+        for (AnnotationMirror anno : remainder) {
+            // If this annotation is the same as a supported annotation but with a different value
+            // then add it to the supported annotations. This is to support annotations with
+            // values.
+            if (AnnotationUtils.containsSameIgnoringValues(this.flowState.annotations, anno)) {
+                this.flowState.annotations.add(anno);
+                this.flowState.annos.set(anno, idx);
+            }
+        }
+
         // just to make sure everything worked correctly
         flowState.annos.valid();
 

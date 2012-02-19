@@ -12,7 +12,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Odd.class, Unqualified.class } )
+@TypeQualifiers( { Value.class, Odd.class, Unqualified.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
