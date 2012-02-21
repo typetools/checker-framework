@@ -212,6 +212,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             LocalVariable other = (LocalVariable) obj;
             return other.element.equals(element);
         }
+        
+        public Element getElement() {
+            return element;
+        }
 
         @Override
         public int hashCode() {
@@ -226,6 +230,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         @Override
         public boolean containsUnknown() {
             return false;
+        }
+        
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof LocalVariable)) {
+                return false;
+            }
+            LocalVariable l = (LocalVariable) other;
+            return l.getElement().equals(getElement());
+        }
+
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other);
         }
     }
 
