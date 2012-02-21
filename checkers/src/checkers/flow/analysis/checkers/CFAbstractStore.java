@@ -425,6 +425,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
                 continue;
             }
+            newFieldValues.put(otherFieldAccess, e.getValue());
         }
         fieldValues = newFieldValues;
     }
@@ -464,7 +465,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(LocalVariableNode n, /* @Nullable */V val) {
         removeConflicting(n);
-        if (n != null) {
+        if (val != null) {
             localVariableValues.put(n.getElement(), val);
         }
     }
