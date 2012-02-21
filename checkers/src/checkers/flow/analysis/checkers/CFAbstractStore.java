@@ -41,6 +41,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         public abstract boolean containsUnknown();
 
         /**
+         * @return True if and only if the two receiver are syntactically
+         *         identical.
+         */
+        public boolean syntacticEquals(Receiver other) {
+            return other == this;
+        }
+
+        /**
+         * @return True if and only if this receiver contains a receiver that is
+         *         syntactically equal to {@code other}.
+         */
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other);
+        }
+
+        /**
          * Returns true if and only if {@code other} appear anywhere in this
          * receiver or an expression appears in this receiver such that
          * {@code other} might alias this expression.
@@ -89,6 +105,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other) || receiver.containsSyntacticEqualReceiver(other);
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof FieldAccess)) {
+                return false;
+            }
+            FieldAccess fa = (FieldAccess) other;
+            return super.syntacticEquals(other)
+                    || fa.getField().equals(getField())
+                    && fa.getReceiver().syntacticEquals(getReceiver());
+        }
+
+        @Override
         public String toString() {
             return receiver + "." + field;
         }
@@ -123,6 +155,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         public boolean containsUnknown() {
             return false;
         }
+        
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return other instanceof ThisReference;
+        }
     }
 
     public static class Unknown extends Receiver {
@@ -155,6 +192,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         public boolean containsUnknown() {
             return true;
         }
+        
+        
     }
 
     public static class LocalVariable extends Receiver {
@@ -383,7 +422,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FieldAccess otherFieldAccess = e.getKey();
             // case 1:
-            if (otherFieldAccess.containsAliasOf(this, var)) {
+            if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
                 continue;
             }
         }
