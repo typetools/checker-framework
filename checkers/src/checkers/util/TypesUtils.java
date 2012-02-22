@@ -177,6 +177,39 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns true iff the argument is an integral type.
+     *
+     * @return  whether the argument is an integral type
+     */
+    public static boolean isIntegral(TypeMirror type) {
+        switch (type.getKind()) {
+        case BYTE:
+        case CHAR:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true iff the argument is a floating point type.
+     *
+     * @return  whether the argument is a floating point type
+     */
+    public static boolean isFloating(TypeMirror type) {
+        switch (type.getKind()) {
+        case DOUBLE:
+        case FLOAT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
      * Returns the widened numeric type for an arithmetic operation
      * performed on a value of the left type and the right type.
      * Defined in JLS 5.6.2.  We return a {@link TypeKind} because

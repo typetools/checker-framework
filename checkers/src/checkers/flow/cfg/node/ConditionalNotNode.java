@@ -6,7 +6,7 @@ import java.util.Collections;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -22,10 +22,10 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class ConditionalNotNode extends Node {
 
-    protected BinaryTree tree;
+    protected UnaryTree tree;
     protected Node operand;
 
-    public ConditionalNotNode(BinaryTree tree, Node operand) {
+    public ConditionalNotNode(UnaryTree tree, Node operand) {
         assert tree.getKind().equals(Kind.LOGICAL_COMPLEMENT);
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
@@ -37,7 +37,7 @@ public class ConditionalNotNode extends Node {
     }
 
     @Override
-    public BinaryTree getTree() {
+    public UnaryTree getTree() {
         return tree;
     }
 
