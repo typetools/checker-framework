@@ -158,6 +158,10 @@ public interface NodeVisitor<R, P> {
 
     R visitWideningConversion(WideningConversionNode n, P p);
 
+    R visitInstanceOf(InstanceOfNode n, P p);
+
+    R visitTypeCast(TypeCastNode n, P p);
+
     // Statements
     R visitAssert(AssertNode n, P p);
 }
