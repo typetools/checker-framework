@@ -172,14 +172,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     public static class Unknown extends Receiver {
-<<<<<<< local
-        // TODO: Supply a TypeMirror for unknown receivers.
-        public Unknown() {
-            super(null);
-=======
         public Unknown(TypeMirror type) {
             super(type);
->>>>>>> other
         }
 
         @Override
@@ -457,11 +451,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
                 continue;
             }
-<<<<<<< local
-            // TODO: Need to put entry in newFieldValues!
-=======
             newFieldValues.put(otherFieldAccess, e.getValue());
->>>>>>> other
         }
         fieldValues = newFieldValues;
     }
