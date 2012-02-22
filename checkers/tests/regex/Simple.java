@@ -51,6 +51,24 @@ public class Simple {
         @Regex String o3 = nonReg + reg;     // error
     }
 
+    @Regex String regex = "()";
+    String nonRegex = "()";
+
+    void testCompoundConcatenation() {
+        takesRegex(regex);
+        //:: error: (assignment.type.incompatible)
+        regex += ")";    // error
+        takesRegex(regex);
+
+        nonRegex = "()";
+        takesRegex(nonRegex);
+        nonRegex += ")";
+        //:: error: (argument.type.incompatible)
+        takesRegex(nonRegex);    // error
+    }
+
+    void takesRegex(@Regex String s) {}
+
     void testChar() {
         @Regex char c1 = 'c';
         @Regex Character c2 = 'c';
@@ -115,6 +133,13 @@ public class Simple {
 //        @Regex int i;   // error
 //        //:: error: (type.invalid)
 //        @Regex boolean b;   // error
+//
+//        @Regex String regex = "a";
+//        //:: error: (argument.type.incompatible)
+//        regex += "(";
+//
+//        String nonRegex = "a";
+//        nonRegex += "(";
 //    }
 
     void testPatternLiteral() {

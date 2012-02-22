@@ -4,9 +4,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.regex.quals.Regex;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -20,6 +24,8 @@ import com.sun.source.tree.Tree.Kind;
  * <ol>
  * <li value="1">Allows any String to be passed to Pattern.compile if the
  *    Pattern.LITERAL flag is passed.</li>
+ * <li value="2">Checks compound String concatenation to ensure correct usage
+ *    of Regex Strings.</li>
  * </ol>
  * 
  * @see RegexChecker
@@ -60,5 +66,21 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
             }
         }
         return super.visitMethodInvocation(node, p);
+    }
+
+    /**
+     * Case 2: Check String compound concatenation for valid Regex use.
+     */
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        if (TreeUtils.isStringCompoundConcatenation(node)) {
+            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
+            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
+            
+            if (lhs.hasExplicitAnnotation(Regex.class) && !rhs.hasAnnotation(Regex.class)) {
+                checker.report(Result.failure("assignment.type.incompatible", rhs.toString(), lhs.toString()), node.getExpression());
+            }
+        }
+        return super.visitCompoundAssignment(node, p);
     }
 }
