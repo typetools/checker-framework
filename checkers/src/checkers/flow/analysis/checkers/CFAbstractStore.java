@@ -126,6 +126,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     public static class Unknown extends Receiver {
+        // TODO: Supply a TypeMirror for unknown receivers.
         public Unknown() {
             super(null);
         }
@@ -386,6 +387,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (otherFieldAccess.containsAliasOf(this, var)) {
                 continue;
             }
+            // TODO: Need to put entry in newFieldValues!
         }
         fieldValues = newFieldValues;
     }

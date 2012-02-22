@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -25,26 +26,67 @@ import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.BitwiseAndNode;
+import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
+import checkers.flow.cfg.node.BitwiseComplementNode;
+import checkers.flow.cfg.node.BitwiseOrNode;
+import checkers.flow.cfg.node.BitwiseOrAssignmentNode;
+import checkers.flow.cfg.node.BitwiseXorNode;
+import checkers.flow.cfg.node.BitwiseXorAssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.BoxingNode;
+import checkers.flow.cfg.node.ConditionalAndNode;
+import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
+import checkers.flow.cfg.node.FloatingDivisionNode;
+import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
+import checkers.flow.cfg.node.FloatingRemainderNode;
+import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
+import checkers.flow.cfg.node.GreaterThanNode;
+import checkers.flow.cfg.node.GreaterThanOrEqualNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
+import checkers.flow.cfg.node.IntegerDivisionNode;
+import checkers.flow.cfg.node.IntegerDivisionAssignmentNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
+import checkers.flow.cfg.node.IntegerRemainderNode;
+import checkers.flow.cfg.node.IntegerRemainderAssignmentNode;
+import checkers.flow.cfg.node.LeftShiftNode;
+import checkers.flow.cfg.node.LeftShiftAssignmentNode;
+import checkers.flow.cfg.node.LessThanNode;
+import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.NumericalAdditionNode;
+import checkers.flow.cfg.node.NumericalAdditionAssignmentNode;
+import checkers.flow.cfg.node.NumericalMinusNode;
+import checkers.flow.cfg.node.NumericalMultiplicationNode;
+import checkers.flow.cfg.node.NumericalMultiplicationAssignmentNode;
+import checkers.flow.cfg.node.NumericalPlusNode;
+import checkers.flow.cfg.node.NumericalSubtractionNode;
+import checkers.flow.cfg.node.NumericalSubtractionAssignmentNode;
+import checkers.flow.cfg.node.PostfixDecrementNode;
+import checkers.flow.cfg.node.PostfixIncrementNode;
+import checkers.flow.cfg.node.PrefixDecrementNode;
+import checkers.flow.cfg.node.PrefixIncrementNode;
 import checkers.flow.cfg.node.ReturnNode;
+import checkers.flow.cfg.node.SignedRightShiftNode;
+import checkers.flow.cfg.node.SignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.StringConcatenateNode;
+import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.cfg.node.UnboxingNode;
+import checkers.flow.cfg.node.UnsignedRightShiftNode;
+import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.flow.util.ASTUtils;
 import checkers.util.InternalUtils;
+import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -93,7 +135,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -102,6 +143,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePathScanner;
 
 /**
  * Builds the control flow graph of a Java method (represented by its abstract
@@ -923,7 +965,7 @@ public class CFGBuilder {
      * 
      * <p>
      * 
-     * The return type of this visitor is {@link Node}. For expressions, the
+     * The return type of this scanner is {@link Node}. For expressions, the
      * corresponding node is returned to allow linking between different nodes.
      * 
      * However, for statements there is usually no single {@link Node} that is
@@ -935,12 +977,14 @@ public class CFGBuilder {
      * to the list of nodes (which might only be a jump).
      * 
      */
-    protected class CFGTranslationPhaseOne implements TreeVisitor<Node, Void> {
+    protected class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         /**
-         * Annotation processing environment which contains type utilities.
+         * Annotation processing environment and its associated
+         * type utilities.
          */
         protected ProcessingEnvironment env;
+        protected Types types;
 
         /**
          * The translation starts in regular mode, that is
@@ -999,6 +1043,7 @@ public class CFGBuilder {
          */
         public PhaseOneResult process(ProcessingEnvironment env, MethodTree t) {
             this.env = env;
+            types = env.getTypeUtils();
 
             // start in regular mode
             conditionalMode = false;
@@ -1116,6 +1161,111 @@ public class CFGBuilder {
         }
 
         /* --------------------------------------------------------- */
+        /* Utility Methods */
+        /* --------------------------------------------------------- */
+
+        /**
+         * Convert the input node to String type, if it isn't already.
+         *
+         * @param node an input node
+         * @param stringType representation of the String type
+         * @return a Node with the value promoted to String,
+         *         which may be the input node
+         */
+        protected Node stringConversion(Node node, TypeMirror stringType) {
+            // For string conversion, see JLS 5.1.11
+            assert TypesUtils.isString(stringType);
+            if (!TypesUtils.isString(node.getType())) {
+                node = new StringConversionNode(node, stringType);
+                extendWithNode(node);
+            }
+            return node;
+        }
+
+        /**
+         * Perform unary numeric promotion on the input node.
+         *
+         * @param node a node producing a value of numeric primitive
+         *             or boxed type
+         * @return a Node with the value promoted to the int, long
+         *         float or double, which may be the input node
+         */
+        protected Node unaryNumericPromotion(Node node) {
+            // For unary numeric promotion, see JLS 5.6.1
+            if (TypesUtils.isBoxedPrimitive(node.getType())) {
+                node = new UnboxingNode(node,
+                                        types.unboxedType(node.getType()));
+                extendWithNode(node);
+            }
+
+            switch (node.getType().getKind()) {
+            case BYTE:
+            case CHAR:
+            case SHORT: {
+                TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
+                node = new WideningConversionNode(node, intType);
+                extendWithNode(node);
+                break;
+            }
+            }
+
+            return node;
+        }
+
+        /**
+         * Perform binary numeric promotion on the input node to
+         * make it match the expression type.
+         *
+         * @param node a node producing a value of numeric primitive
+         *             or boxed type
+         * @param exprType the type to promote the value to
+         * @return a Node with the value promoted to the exprType,
+         *         which may be the input node
+         */
+        protected Node binaryNumericPromotion(Node node,
+                                              TypeMirror exprType) {
+            // For binary numeric promotion, see JLS 5.6.2
+            if (TypesUtils.isBoxedPrimitive(node.getType())) {
+                node = new UnboxingNode(node,
+                                        types.unboxedType(node.getType()));
+                extendWithNode(node);
+            }
+            if (!types.isSameType(node.getType(), exprType)) {
+                node = new WideningConversionNode(node, exprType);
+                extendWithNode(node);
+            }
+            return node;
+        }
+
+        /**
+         * Perform narrowing and boxing conversion on the input node to
+         * make it match the destination type.
+         *
+         * @param node a node producing a value of numeric primitive type
+         * @param destType the type to narrow the value to
+         * @return a Node with the value narrowed and boxed to the exprType,
+         *         which may be the input node
+         */
+        protected Node narrow(Node node, TypeMirror destType) {
+            // For narrowing conversion, see JLS 5.1.3
+            // For boxing conversion, see JLS 5.1.7
+            boolean isBoxed = TypesUtils.isBoxedPrimitive(destType);
+            TypeMirror unboxedType = types.unboxedType(destType);
+
+            if (types.isSubtype(unboxedType, node.getType()) &&
+                !types.isSameType(unboxedType, node.getType())) {
+                node = new NarrowingConversionNode(node, unboxedType);
+                extendWithNode(node);
+            }
+
+            if (isBoxed) {
+                node = new BoxingNode(node, destType);
+                extendWithNode(node);
+            }
+            return node;
+        }
+
+        /* --------------------------------------------------------- */
         /* Visitor Methods */
         /* --------------------------------------------------------- */
 
@@ -1156,7 +1306,8 @@ public class CFGBuilder {
             // case 1: field access
             if (ASTUtils.isFieldAccess(variable)) {
                 // visit receiver
-                Node receiver = getReceiver(variable);
+                Node receiver = getReceiver(variable,
+                                            TreeUtils.enclosingClass(getCurrentPath()));
 
                 // visit expression
                 expression = tree.getExpression().accept(this, p);
@@ -1210,19 +1361,18 @@ public class CFGBuilder {
          * <p>
          * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          * 
+         * @param tree the field access tree containing the receiver
+         * @param classTree the ClassTree enclosing the field access
          * @return The receiver of the field access.
          */
-        private Node getReceiver(Tree tree) {
+        private Node getReceiver(Tree tree, ClassTree classTree) {
             assert ASTUtils.isFieldAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return mtree.getExpression().accept(this, null);
             } else {
-                // TODO: Decide how to specify the method's enclosing class.
-                Node node = new ImplicitThisLiteralNode(null /*
-                                                              * replace with
-                                                              * class type
-                                                              */);
+                TypeMirror classType = InternalUtils.typeOf(classTree);
+                Node node = new ImplicitThisLiteralNode(classType);
                 extendWithNode(node);
                 return node;
             }
@@ -1230,25 +1380,144 @@ public class CFGBuilder {
 
         @Override
         public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+            // According the JLS 15.26.2, E1 op= E2 is equivalent to
+            // E1 = (T) ((E1) op (E2)), where T is the type of E1,
+            // except that E1 is evaluated only once.
+            //
+            // We do not separate compound assignments into separate
+            // operation and assignment nodes.  For example, += is not
+            // split into a + followed by an =.  We do perform
+            // promotions of operands to compound assignments,
+            // though. So our representation of E1 op= E2 will be:
+            //
+            //            ... nodes for E1 ...
+            //        N1: optional promotion of E1
+            //            ... nodes for E2 ...
+            //        N2: optional promotion of E2
+            //            op= N1 N2
+            //
+            // This has several consequences.  First, the variable
+            // being assigned to may not be the immediate left operand
+            // of op=.  If promotion or conversion happens, the
+            // variable will have to be extracted from those nodes.
+            // Second, the type cast (T) will not be explicitly
+            // represented.  The transfer function for op= will need
+            // to account for that possible type cast.
+
+            // TODO: correct evaluation rules (e.g. arrays)
+
+            assert !conditionalMode;
             Node r = null;
-            switch (tree.getKind()) {
+            Tree.Kind kind = tree.getKind();
+            switch (kind) {
+            case DIVIDE_ASSIGNMENT:
+            case MULTIPLY_ASSIGNMENT:
+            case REMAINDER_ASSIGNMENT: {
+                // see JLS 15.17 and 15.26.2
+                Node target = tree.getVariable().accept(this, p);
+                Node value = tree.getExpression().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                target = binaryNumericPromotion(target, exprType);
+                value = binaryNumericPromotion(value, exprType);
+
+                if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
+                    r = new NumericalMultiplicationAssignmentNode(tree, target, value);
+                } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
+                    if (TypesUtils.isIntegral(exprType)) {
+                        r = new IntegerDivisionAssignmentNode(tree, target, value);
+                    } else {
+                        r = new FloatingDivisionAssignmentNode(tree, target, value);
+                    }
+                } else {
+                    if (TypesUtils.isIntegral(exprType)) {
+                        r = new IntegerRemainderAssignmentNode(tree, target, value);
+                    } else {
+                        r = new FloatingRemainderAssignmentNode(tree, target, value);
+                    }
+                }
+                break;
+            }
+
+            case MINUS_ASSIGNMENT:
             case PLUS_ASSIGNMENT: {
-                assert !conditionalMode;
-                // TODO: handle string concatenation
-
-                // see JLS 15.26.2
-
-                // TODO: unboxing and promotion in general
-
-                // TODO: correct evaluation rules (e.g. arrays)
+                // see JLS 15.18 and 15.26.2
 
                 Node target = tree.getVariable().accept(this, p);
                 Node value = tree.getExpression().accept(this, p);
-                NumericalAdditionNode plus = new NumericalAdditionNode(tree,
-                        target, value);
-                extendWithNode(plus);
-                r = new AssignmentNode(tree, target, plus);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                if (TypesUtils.isString(exprType)) {
+                    assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
+                    target = stringConversion(target, exprType);
+                    value = stringConversion(value, exprType);
+                    r = new StringConcatenateAssignmentNode(tree, target, value);
+                } else {
+                    target = binaryNumericPromotion(target, exprType);
+                    value = binaryNumericPromotion(value, exprType);
+
+                    if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
+                        r = new NumericalAdditionAssignmentNode(tree, target, value);
+                    } else {
+                        r = new NumericalSubtractionAssignmentNode(tree, target, value);
+                    }
+                }
+                break;
             }
+
+            case LEFT_SHIFT_ASSIGNMENT:
+            case RIGHT_SHIFT_ASSIGNMENT:
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: {
+                // see JLS 15.19 and 15.26.2
+                Node target = tree.getVariable().accept(this, p);
+                Node value = tree.getExpression().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                target = unaryNumericPromotion(target);
+                value = unaryNumericPromotion(value);
+
+                if (kind == Tree.Kind.LEFT_SHIFT_ASSIGNMENT) {
+                    r = new LeftShiftAssignmentNode(tree, target, value);
+                } else if (kind == Tree.Kind.RIGHT_SHIFT_ASSIGNMENT) {
+                    r = new SignedRightShiftAssignmentNode(tree, target, value);
+                } else {
+                    r = new UnsignedRightShiftAssignmentNode(tree, target, value);
+                }
+                break;
+            }
+
+            case AND_ASSIGNMENT:
+            case OR_ASSIGNMENT:
+            case XOR_ASSIGNMENT:
+                // see JLS 15.22
+                Node target = tree.getVariable().accept(this, p);
+                Node value = tree.getExpression().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                if (TypesUtils.isNumeric(exprType)) {
+                    target = binaryNumericPromotion(target, exprType);
+                    value = binaryNumericPromotion(value, exprType);
+                } else if (TypesUtils.isBooleanType(exprType)) {
+                    if (TypesUtils.isBoxedPrimitive(target.getType())) {
+                        target = new UnboxingNode(target, exprType);
+                    }
+                    if (TypesUtils.isBoxedPrimitive(value.getType())) {
+                        value = new UnboxingNode(value, exprType);
+                    }
+                }
+
+                if (kind == Tree.Kind.AND_ASSIGNMENT) {
+                    r = new BitwiseAndAssignmentNode(tree, target, value);
+                } else if (kind == Tree.Kind.OR_ASSIGNMENT) {
+                    r = new BitwiseOrAssignmentNode(tree, target, value);
+                } else {
+                    r = new BitwiseXorAssignmentNode(tree, target, value);
+                }
+                break;
             }
             assert r != null : "unexpected compound assignment type";
             extendWithNode(r);
@@ -1257,9 +1526,278 @@ public class CFGBuilder {
 
         @Override
         public Node visitBinary(BinaryTree tree, Void p) {
-            // TODO: remaining binary node types
             Node r = null;
-            switch (tree.getKind()) {
+            Tree.Kind kind = tree.getKind();
+            switch (kind) {
+            case DIVIDE:
+            case MULTIPLY:
+            case REMAINDER: {
+                // see JLS 15.17
+                assert !conditionalMode;
+                
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                left = binaryNumericPromotion(left, exprType);
+                right = binaryNumericPromotion(right, exprType);
+
+                if (kind == Tree.Kind.MULTIPLY) {
+                    r = new NumericalMultiplicationNode(tree, left, right);
+                } else if (kind == Tree.Kind.DIVIDE) {
+                    if (TypesUtils.isIntegral(exprType)) {
+                        r = new IntegerDivisionNode(tree, left, right);
+                    } else {
+                        r = new FloatingDivisionNode(tree, left, right);
+                    }
+                } else {
+                    if (TypesUtils.isIntegral(exprType)) {
+                        r = new IntegerRemainderNode(tree, left, right);
+                    } else {
+                        r = new FloatingRemainderNode(tree, left, right);
+                    }
+                }
+                break;
+            }
+
+            case MINUS:
+            case PLUS: {
+                // see JLS 15.18
+                assert !conditionalMode;
+
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                if (TypesUtils.isString(exprType)) {
+                    assert (kind == Tree.Kind.PLUS);
+                    left = stringConversion(left, exprType);
+                    right = stringConversion(right, exprType);
+                    r = new StringConcatenateNode(tree, left, right);
+                } else {
+                    left = binaryNumericPromotion(left, exprType);
+                    right = binaryNumericPromotion(right, exprType);
+
+                    // TODO: Decide whether to deal with floating-point value
+                    // set
+                    // conversion.
+                    if (kind == Tree.Kind.PLUS) {
+                        r = new NumericalAdditionNode(tree, left, right);
+                    } else {
+                        r = new NumericalSubtractionNode(tree, left, right);
+                    }
+                }
+                break;
+            }
+
+            case LEFT_SHIFT:
+            case RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT: {
+                // see JLS 15.19
+                assert !conditionalMode;
+
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                left = unaryNumericPromotion(left);
+                right = unaryNumericPromotion(right);
+
+                if (kind == Tree.Kind.LEFT_SHIFT) {
+                    r = new LeftShiftNode(tree, left, right);
+                } else if (kind == Tree.Kind.RIGHT_SHIFT) {
+                    r = new SignedRightShiftNode(tree, left, right);
+                } else {
+                    r = new UnsignedRightShiftNode(tree, left, right);
+                }
+                break;
+            }
+
+            case GREATER_THAN:
+            case GREATER_THAN_EQUAL:
+            case LESS_THAN:
+            case LESS_THAN_EQUAL: {
+                // see JLS 15.20.1
+                assert !conditionalMode;
+                
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                left = binaryNumericPromotion(left, exprType);
+                right = binaryNumericPromotion(right, exprType);
+
+                if (kind == Tree.Kind.GREATER_THAN) {
+                    r = new GreaterThanNode(tree, left, right);
+                } else if (kind == Tree.Kind.GREATER_THAN_EQUAL) {
+                    r = new GreaterThanOrEqualNode(tree, left, right);
+                } else if (kind == Tree.Kind.LESS_THAN) {
+                    r = new LessThanNode(tree, left, right);
+                } else {
+                    r = new LessThanOrEqualNode(tree, left, right);
+                }
+                
+                break;
+            }
+
+            case EQUAL_TO: {
+
+                // see JLS 15.21
+
+                boolean cm = conditionalMode;
+                conditionalMode = false;
+                Label oldThenTargetL = thenTargetL;
+                Label oldElseTargetL = elseTargetL;
+
+                // left-hand side
+                Node left = tree.getLeftOperand().accept(this, p);
+
+                // right-hand side
+                Node right = tree.getRightOperand().accept(this, p);
+
+                conditionalMode = cm;
+
+                // comparison
+                EqualToNode node = new EqualToNode(tree, left, right);
+                extendWithNode(node);
+                if (conditionalMode) {
+                    extendWithExtendedNode(new ConditionalJump(oldThenTargetL,
+                            oldElseTargetL));
+                }
+                return node;
+            }
+
+            case NOT_EQUAL_TO: {
+                // see JLS 15.21
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                // TODO: Perform the same conversions for EQUAL_TO.
+                TypeMirror leftType = left.getType();
+                TypeMirror rightType = right.getType();
+
+                boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
+                boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
+                boolean isLeftBoxedNumeric = isLeftBoxed &&
+                    TypesUtils.isNumeric(types.unboxedType(leftType));
+                boolean isLeftBoxedBoolean = isLeftBoxed &&
+                    TypesUtils.isBooleanType(leftType);
+
+                boolean isRightNumeric = TypesUtils.isNumeric(rightType);
+                boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
+                boolean isRightBoxedNumeric = isRightBoxed &&
+                    TypesUtils.isNumeric(types.unboxedType(rightType));
+                boolean isRightBoxedBoolean = isRightBoxed &&
+                    TypesUtils.isBooleanType(rightType);
+
+                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric) ||
+                    isLeftBoxedNumeric && isRightNumeric) {
+                    TypeMirror leftUnboxedType =
+                        isLeftBoxedNumeric ? types.unboxedType(leftType) : leftType;
+                    TypeMirror rightUnboxedType =
+                        isRightBoxedNumeric ? types.unboxedType(rightType) : rightType;
+                    TypeKind widened =
+                        TypesUtils.widenedNumericType(leftUnboxedType, rightUnboxedType);
+                    TypeMirror commonType = types.getPrimitiveType(widened);
+                    left = binaryNumericPromotion(left, commonType);
+                    right = binaryNumericPromotion(right, commonType);
+                } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
+                    left = new UnboxingNode(left, types.unboxedType(left.getType()));
+                } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
+                    right = new UnboxingNode(right, types.unboxedType(right.getType()));
+                }
+
+                r = new NotEqualNode(tree, left, right);
+                break;
+            }
+
+            case AND:
+            case OR:
+            case XOR: {
+                // see JLS 15.22
+                assert !conditionalMode;
+                Node left = tree.getLeftOperand().accept(this, p);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                if (TypesUtils.isNumeric(exprType)) {
+                    left = binaryNumericPromotion(left, exprType);
+                    right = binaryNumericPromotion(right, exprType);
+                } else if (TypesUtils.isBooleanType(exprType)) {
+                    if (TypesUtils.isBoxedPrimitive(left.getType())) {
+                        left = new UnboxingNode(left, exprType);
+                    }
+                    if (TypesUtils.isBoxedPrimitive(right.getType())) {
+                        right = new UnboxingNode(right, exprType);
+                    }
+                }
+
+                if (kind == Tree.Kind.AND) {
+                    r = new BitwiseAndNode(tree, left, right);
+                } else if (kind == Tree.Kind.OR) {
+                    r = new BitwiseOrNode(tree, left, right);
+                } else {
+                    r = new BitwiseXorNode(tree, left, right);
+                }
+                break;
+            }
+
+            case CONDITIONAL_AND: {
+                // see JLS 15.23
+
+                boolean condMode = conditionalMode;
+                conditionalMode = true;
+
+                // all necessary labels
+                Label rightStartL = new Label();
+                Label trueNodeL = new Label();
+                Label falseNodeL = new Label();
+                Label oldTrueTargetL = thenTargetL;
+                Label oldFalseTargetL = elseTargetL;
+
+                // left-hand side
+                thenTargetL = rightStartL;
+                elseTargetL = falseNodeL;
+                Node left = tree.getLeftOperand().accept(this, p);
+
+                // right-hand side
+                thenTargetL = trueNodeL;
+                elseTargetL = falseNodeL;
+                addLabelForNextNode(rightStartL);
+                Node right = tree.getRightOperand().accept(this, p);
+
+                conditionalMode = condMode;
+
+                if (conditionalMode) {
+                    Node node = new ConditionalAndNode(tree, left, right);
+
+                    // node for true case
+                    addLabelForNextNode(trueNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
+
+                    // node for false case
+                    addLabelForNextNode(falseNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(
+                            oldFalseTargetL));
+
+                    return node;
+                } else {
+                    // one node for true/false
+                    addLabelForNextNode(trueNodeL);
+                    addLabelForNextNode(falseNodeL);
+                    Node node = new ConditionalAndNode(tree, left, right);
+                    extendWithNode(node);
+                    return node;
+                }
+            }
+
             case CONDITIONAL_OR: {
 
                 // see JLS 15.24
@@ -1310,79 +1848,6 @@ public class CFGBuilder {
                     extendWithNode(node);
                     return node;
                 }
-            }
-
-            case EQUAL_TO: {
-
-                // see JLS 15.21
-
-                boolean cm = conditionalMode;
-                conditionalMode = false;
-                Label oldThenTargetL = thenTargetL;
-                Label oldElseTargetL = elseTargetL;
-
-                // left-hand side
-                Node left = tree.getLeftOperand().accept(this, p);
-
-                // right-hand side
-                Node right = tree.getRightOperand().accept(this, p);
-
-                conditionalMode = cm;
-
-                // comparison
-                EqualToNode node = new EqualToNode(tree, left, right);
-                extendWithNode(node);
-                if (conditionalMode) {
-                    extendWithExtendedNode(new ConditionalJump(oldThenTargetL,
-                            oldElseTargetL));
-                }
-                return node;
-            }
-
-            case PLUS: {
-                // see JLS 15.8.1
-                assert !conditionalMode;
-                Types types = env.getTypeUtils();
-
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
-
-                TypeMirror exprType = InternalUtils.typeOf(tree);
-
-                if (TypesUtils.isString(exprType)) {
-                    // For string conversion, see JLS 5.1.11
-                    if (!TypesUtils.isString(left.getType())) {
-                        left = new StringConversionNode(left, exprType);
-                    }
-                    if (!TypesUtils.isString(right.getType())) {
-                        right = new StringConversionNode(right, exprType);
-                    }
-                    r = new StringConcatenateNode(tree, left, right);
-                } else {
-                    // For binary numeric promotion, see JLS 5.6.2
-                    if (TypesUtils.isBoxedPrimitive(left.getType())) {
-                        left = new UnboxingNode(left, types.unboxedType(left
-                                .getType()));
-                    }
-                    if (TypesUtils.isBoxedPrimitive(right.getType())) {
-                        right = new UnboxingNode(right, types.unboxedType(right
-                                .getType()));
-                    }
-
-                    if (!types.isSameType(left.getType(), exprType)) {
-                        left = new WideningConversionNode(left, exprType);
-                    }
-                    if (!types.isSameType(right.getType(), exprType)) {
-                        right = new WideningConversionNode(right, exprType);
-                    }
-
-                    // TODO: Decide whether to deal with floating-point value
-                    // set
-                    // conversion.
-
-                    r = new NumericalAdditionNode(tree, left, right);
-                }
-                break;
             }
             }
             assert r != null : "unexpected binary tree";
@@ -1624,10 +2089,10 @@ public class CFGBuilder {
             return null;
         }
 
-        protected Node translateFieldAccess(Tree tree) {
+        protected Node translateFieldAccess(Tree tree, ClassTree classTree) {
             assert ASTUtils.isFieldAccess(tree);
             // visit receiver
-            Node receiver = getReceiver(tree);
+            Node receiver = getReceiver(tree, classTree);
 
             // visit field access (throws null-pointer exception)
             // TODO: exception
@@ -1715,8 +2180,61 @@ public class CFGBuilder {
 
         @Override
         public Node visitUnary(UnaryTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            Node expr = tree.getExpression().accept(this, p);
+
+            Tree.Kind kind = tree.getKind();
+            switch (kind) {
+            case BITWISE_COMPLEMENT:
+            case POSTFIX_DECREMENT:
+            case POSTFIX_INCREMENT:
+            case PREFIX_DECREMENT:
+            case PREFIX_INCREMENT:
+            case UNARY_MINUS:
+            case UNARY_PLUS: {
+                // see JLS 15.14 and 15.15
+                expr = unaryNumericPromotion(expr);
+
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+
+                switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    return new BitwiseComplementNode(tree, expr);
+                case POSTFIX_DECREMENT: {
+                    Node node = new PostfixDecrementNode(tree, expr);
+                    return narrow(node, exprType);
+                }
+                case POSTFIX_INCREMENT: {
+                    Node node = new PostfixIncrementNode(tree, expr);
+                    return narrow(node, exprType); 
+                }
+                case PREFIX_DECREMENT: {
+                    Node node = new PrefixDecrementNode(tree, expr);
+                    return narrow(node, exprType);
+                }
+                case PREFIX_INCREMENT: {
+                    Node node = new PrefixIncrementNode(tree, expr);
+                    return narrow(node, exprType);
+                }
+                case UNARY_MINUS:
+                    return new NumericalMinusNode(tree, expr);
+                case UNARY_PLUS:
+                    return new NumericalPlusNode(tree, expr);
+                }
+            }
+
+            case LOGICAL_COMPLEMENT: {
+                // see JLS 15.15.6
+                if (TypesUtils.isBoxedPrimitive(expr.getType())) {
+                    expr = new UnboxingNode(expr,
+                                            types.unboxedType(expr.getType()));
+                }
+                return new ConditionalNotNode(tree, expr);
+            }
+
+            default:
+                assert false : "Unknown kind of unary expression";
+                return null;
+            }
         }
 
         @Override
