@@ -27,18 +27,33 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         implements Store<S> {
 
     public static abstract class Receiver {
-        // type == null ==> class is Unknown
-        protected final/* @Nullable */TypeMirror type;
+        protected final TypeMirror type;
 
-        public Receiver(/* @Nullable */TypeMirror type) {
+        public Receiver(TypeMirror type) {
             this.type = type;
         }
 
-        public/* @Nullable */TypeMirror getType() {
+        public TypeMirror getType() {
             return type;
         }
 
         public abstract boolean containsUnknown();
+
+        /**
+         * @return True if and only if the two receiver are syntactically
+         *         identical.
+         */
+        public boolean syntacticEquals(Receiver other) {
+            return other == this;
+        }
+
+        /**
+         * @return True if and only if this receiver contains a receiver that is
+         *         syntactically equal to {@code other}.
+         */
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other);
+        }
 
         /**
          * Returns true if and only if {@code other} appear anywhere in this
@@ -80,12 +95,38 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             this.receiver = receiver;
             this.field = node.getElement();
         }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof FieldAccess)) {
+                return false;
+            }
+            FieldAccess fa = (FieldAccess) obj;
+            return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
+        }
 
         @Override
         public boolean containsAliasOf(CFAbstractStore<?, ?> store,
                 Receiver other) {
             return super.containsAliasOf(store, other)
                     || receiver.containsAliasOf(store, other);
+        }
+
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other)
+                    || receiver.containsSyntacticEqualReceiver(other);
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof FieldAccess)) {
+                return false;
+            }
+            FieldAccess fa = (FieldAccess) other;
+            return super.syntacticEquals(other)
+                    || fa.getField().equals(getField())
+                    && fa.getReceiver().syntacticEquals(getReceiver());
         }
 
         @Override
@@ -123,12 +164,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         public boolean containsUnknown() {
             return false;
         }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return other instanceof ThisReference;
+        }
     }
 
     public static class Unknown extends Receiver {
+<<<<<<< local
         // TODO: Supply a TypeMirror for unknown receivers.
         public Unknown() {
             super(null);
+=======
+        public Unknown(TypeMirror type) {
+            super(type);
+>>>>>>> other
         }
 
         @Override
@@ -156,6 +207,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         public boolean containsUnknown() {
             return true;
         }
+
     }
 
     public static class LocalVariable extends Receiver {
@@ -175,6 +227,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return other.element.equals(element);
         }
 
+        public Element getElement() {
+            return element;
+        }
+
         @Override
         public int hashCode() {
             return HashCodeUtils.hash(element);
@@ -188,6 +244,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         @Override
         public boolean containsUnknown() {
             return false;
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof LocalVariable)) {
+                return false;
+            }
+            LocalVariable l = (LocalVariable) other;
+            return l.getElement().equals(getElement());
+        }
+
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other);
         }
     }
 
@@ -259,7 +329,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
             receiver = new LocalVariable(lv);
         } else {
-            receiver = new Unknown();
+            receiver = new Unknown(receiverNode.getType());
         }
         return new FieldAccess(receiver, node);
     }
@@ -302,7 +372,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * </ol>
      */
     public void updateForUnknownAssignment(Node n) {
-        Unknown unknown = new Unknown();
+        Unknown unknown = new Unknown(n.getType());
         Map<FieldAccess, V> newFieldValues = new HashMap<>();
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FieldAccess otherFieldAccess = e.getKey();
@@ -384,10 +454,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FieldAccess otherFieldAccess = e.getKey();
             // case 1:
-            if (otherFieldAccess.containsAliasOf(this, var)) {
+            if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
                 continue;
             }
+<<<<<<< local
             // TODO: Need to put entry in newFieldValues!
+=======
+            newFieldValues.put(otherFieldAccess, e.getValue());
+>>>>>>> other
         }
         fieldValues = newFieldValues;
     }
@@ -427,7 +501,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(LocalVariableNode n, /* @Nullable */V val) {
         removeConflicting(n);
-        if (n != null) {
+        if (val != null) {
             localVariableValues.put(n.getElement(), val);
         }
     }
