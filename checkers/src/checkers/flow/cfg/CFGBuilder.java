@@ -48,6 +48,7 @@ import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
 import checkers.flow.cfg.node.GreaterThanNode;
 import checkers.flow.cfg.node.GreaterThanOrEqualNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
+import checkers.flow.cfg.node.InstanceOfNode;
 import checkers.flow.cfg.node.IntegerDivisionNode;
 import checkers.flow.cfg.node.IntegerDivisionAssignmentNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
@@ -80,6 +81,7 @@ import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
 import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
@@ -2161,8 +2163,12 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            assert !conditionalMode;
+            
+            Node operand = tree.getExpression().accept(this, p);
+            TypeMirror type = InternalUtils.typeOf(tree.getType());
+
+            return extendWithNode(new TypeCastNode(tree, operand, type));
         }
 
         @Override
@@ -2179,8 +2185,23 @@ public class CFGBuilder {
 
         @Override
         public Node visitInstanceOf(InstanceOfTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            boolean outerConditionalMode = conditionalMode;
+            conditionalMode = false;
+            Label outerThenTargetL = thenTargetL;
+            Label outerElseTargetL = elseTargetL;
+
+            Node operand = tree.getExpression().accept(this, p);
+            TypeMirror refType = InternalUtils.typeOf(tree.getType());
+
+            conditionalMode = outerConditionalMode;
+
+            InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
+            extendWithNode(node);
+            if (conditionalMode) {
+                extendWithExtendedNode(new ConditionalJump(outerThenTargetL,
+                        outerElseTargetL));
+            }
+            return node;
         }
 
         @Override
