@@ -25,6 +25,7 @@ import checkers.flow.cfg.block.RegularBlockImpl;
 import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
+import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BitwiseAndNode;
 import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
@@ -1165,6 +1166,23 @@ public class CFGBuilder {
         /* --------------------------------------------------------- */
 
         /**
+         * If the input node is a boxed type, unbox it, otherwise
+         * leave it alone.
+         *
+         * @param node in input node
+         * @return a Node representing the unboxed version of the
+         *         input, which may simply be the input node
+         */
+        protected Node unbox(Node node) {
+            if (TypesUtils.isBoxedPrimitive(node.getType())) {
+                node = new UnboxingNode(node,
+                                        types.unboxedType(node.getType()));
+                extendWithNode(node);
+            }
+            return node;
+        }
+
+        /**
          * Convert the input node to String type, if it isn't already.
          *
          * @param node an input node
@@ -1192,11 +1210,7 @@ public class CFGBuilder {
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1
-            if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                node = new UnboxingNode(node,
-                                        types.unboxedType(node.getType()));
-                extendWithNode(node);
-            }
+            node = unbox(node);
 
             switch (node.getType().getKind()) {
             case BYTE:
@@ -1225,11 +1239,8 @@ public class CFGBuilder {
         protected Node binaryNumericPromotion(Node node,
                                               TypeMirror exprType) {
             // For binary numeric promotion, see JLS 5.6.2
-            if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                node = new UnboxingNode(node,
-                                        types.unboxedType(node.getType()));
-                extendWithNode(node);
-            }
+            node = unbox(node);
+
             if (!types.isSameType(node.getType(), exprType)) {
                 node = new WideningConversionNode(node, exprType);
                 extendWithNode(node);
@@ -1289,8 +1300,10 @@ public class CFGBuilder {
 
         @Override
         public Node visitAssert(AssertTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            Node condition = unbox(tree.getCondition().accept(this, p));
+            Node detail = tree.getDetail().accept(this, p);
+
+            return new AssertNode(tree, condition, detail);
         }
 
         @Override
@@ -1502,12 +1515,8 @@ public class CFGBuilder {
                     target = binaryNumericPromotion(target, exprType);
                     value = binaryNumericPromotion(value, exprType);
                 } else if (TypesUtils.isBooleanType(exprType)) {
-                    if (TypesUtils.isBoxedPrimitive(target.getType())) {
-                        target = new UnboxingNode(target, exprType);
-                    }
-                    if (TypesUtils.isBoxedPrimitive(value.getType())) {
-                        value = new UnboxingNode(value, exprType);
-                    }
+                    target = unbox(target);
+                    value = unbox(value);
                 }
 
                 if (kind == Tree.Kind.AND_ASSIGNMENT) {
@@ -1706,9 +1715,9 @@ public class CFGBuilder {
                     left = binaryNumericPromotion(left, commonType);
                     right = binaryNumericPromotion(right, commonType);
                 } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
-                    left = new UnboxingNode(left, types.unboxedType(left.getType()));
+                    left = unbox(left);
                 } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
-                    right = new UnboxingNode(right, types.unboxedType(right.getType()));
+                    right = unbox(right);
                 }
 
                 r = new NotEqualNode(tree, left, right);
@@ -1729,12 +1738,8 @@ public class CFGBuilder {
                     left = binaryNumericPromotion(left, exprType);
                     right = binaryNumericPromotion(right, exprType);
                 } else if (TypesUtils.isBooleanType(exprType)) {
-                    if (TypesUtils.isBoxedPrimitive(left.getType())) {
-                        left = new UnboxingNode(left, exprType);
-                    }
-                    if (TypesUtils.isBoxedPrimitive(right.getType())) {
-                        right = new UnboxingNode(right, exprType);
-                    }
+                    left = unbox(left);
+                    right = unbox(right);
                 }
 
                 if (kind == Tree.Kind.AND) {
@@ -2224,11 +2229,7 @@ public class CFGBuilder {
 
             case LOGICAL_COMPLEMENT: {
                 // see JLS 15.15.6
-                if (TypesUtils.isBoxedPrimitive(expr.getType())) {
-                    expr = new UnboxingNode(expr,
-                                            types.unboxedType(expr.getType()));
-                }
-                return new ConditionalNotNode(tree, expr);
+                return new ConditionalNotNode(tree, unbox(expr));
             }
 
             default:
