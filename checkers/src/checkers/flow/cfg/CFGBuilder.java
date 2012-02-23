@@ -36,15 +36,18 @@ import checkers.flow.cfg.node.BitwiseXorNode;
 import checkers.flow.cfg.node.BitwiseXorAssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.BoxingNode;
+import checkers.flow.cfg.node.CharacterLiteralNode;
 import checkers.flow.cfg.node.ConditionalAndNode;
 import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
+import checkers.flow.cfg.node.DoubleLiteralNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.FloatingDivisionNode;
 import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
 import checkers.flow.cfg.node.FloatingRemainderNode;
 import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
+import checkers.flow.cfg.node.FloatLiteralNode;
 import checkers.flow.cfg.node.GreaterThanNode;
 import checkers.flow.cfg.node.GreaterThanOrEqualNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
@@ -59,9 +62,11 @@ import checkers.flow.cfg.node.LeftShiftAssignmentNode;
 import checkers.flow.cfg.node.LessThanNode;
 import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.LongLiteralNode;
 import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
+import checkers.flow.cfg.node.NullLiteralNode;
 import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.NumericalAdditionAssignmentNode;
 import checkers.flow.cfg.node.NumericalMinusNode;
@@ -1908,7 +1913,25 @@ public class CFGBuilder {
 
         @Override
         public Node visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert !conditionalMode;
+
+            Label loopEntry = new Label();
+            Label loopExit = new Label();
+
+            // Loop body
+            addLabelForNextNode(loopEntry);
+            tree.getStatement().accept(this, p);
+
+            // Condition
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
+            unbox(tree.getCondition().accept(this, p));
+            conditionalMode = false;
+
+            // Loop exit
+            addLabelForNextNode(loopExit);
+
             return null;
         }
 
@@ -1932,32 +1955,40 @@ public class CFGBuilder {
 
         @Override
         public Node visitForLoop(ForLoopTree tree, Void p) {
-            /*
-             * BasicBlockImplementation initBlock = new
-             * BasicBlockImplementation(); ConditionalBasicBlockImplementation
-             * conditionBlock = new ConditionalBasicBlockImplementation();
-             * BasicBlockImplementation afterBlock = new
-             * BasicBlockImplementation(); BasicBlockImplementation
-             * loopBodyBlock = new BasicBlockImplementation();
-             * 
-             * initBlock.addStatements(tree.getInitializer());
-             * 
-             * conditionBlock.setCondition(tree.getCondition());
-             * 
-             * // visit the initialization statements for (StatementTree t :
-             * tree.getInitializer()) { t.accept(this, null); }
-             * 
-             * currentBlock.addSuccessor(conditionBlock);
-             * conditionBlock.setThenSuccessor(loopBodyBlock);
-             * conditionBlock.setElseSuccessor(afterBlock);
-             * 
-             * currentBlock = loopBodyBlock; tree.getStatement().accept(this,
-             * null); for (StatementTree t : tree.getUpdate()) { t.accept(this,
-             * null); } currentBlock.addSuccessor(conditionBlock);
-             * 
-             * currentBlock = afterBlock;
-             */
-            assert false; // TODO Auto-generated method stub
+            assert !conditionalMode;
+
+            Label conditionStart = new Label();
+            Label loopEntry = new Label();
+            Label loopExit = new Label();
+
+            // Initializer
+            for (StatementTree init : tree.getInitializer()) {
+                init.accept(this, p);
+            }
+
+            // Condition
+            // TODO: Find out how an empty condition is represented.
+            addLabelForNextNode(conditionStart);
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
+            unbox(tree.getCondition().accept(this, p));
+            conditionalMode = false;
+
+            // Loop body
+            addLabelForNextNode(loopEntry);
+            tree.getStatement().accept(this, p);
+
+            // Update
+            for (ExpressionStatementTree update : tree.getUpdate()) {
+                update.accept(this, p);
+            }
+
+            extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+            // Loop exit
+            addLabelForNextNode(loopExit);
+
             return null;
         }
 
@@ -2031,14 +2062,28 @@ public class CFGBuilder {
 
         @Override
         public Node visitLiteral(LiteralTree tree, Void p) {
-            // TODO: remaining literals
             Node r = null;
             switch (tree.getKind()) {
+            case BOOLEAN_LITERAL:
+                r = new BooleanLiteralNode(tree);
+                break;
+            case CHAR_LITERAL:
+                r = new CharacterLiteralNode(tree);
+                break;
+            case DOUBLE_LITERAL:
+                r = new DoubleLiteralNode(tree);
+                break;
+            case FLOAT_LITERAL:
+                r = new FloatLiteralNode(tree);
+                break;
             case INT_LITERAL:
                 r = new IntegerLiteralNode(tree);
                 break;
-            case BOOLEAN_LITERAL:
-                r = new BooleanLiteralNode(tree);
+            case LONG_LITERAL:
+                r = new LongLiteralNode(tree);
+                break;
+            case NULL_LITERAL:
+                r = new NullLiteralNode(tree);
                 break;
             case STRING_LITERAL:
                 r = new StringLiteralNode(tree);
@@ -2281,7 +2326,28 @@ public class CFGBuilder {
 
         @Override
         public Node visitWhileLoop(WhileLoopTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert !conditionalMode;
+
+            Label conditionStart = new Label();
+            Label loopEntry = new Label();
+            Label loopExit = new Label();
+
+            // Condition
+            addLabelForNextNode(conditionStart);
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
+            unbox(tree.getCondition().accept(this, p));
+            conditionalMode = false;
+
+            // Loop body
+            addLabelForNextNode(loopEntry);
+            tree.getStatement().accept(this, p);
+            extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+            // Loop exit
+            addLabelForNextNode(loopExit);
+            
             return null;
         }
 
