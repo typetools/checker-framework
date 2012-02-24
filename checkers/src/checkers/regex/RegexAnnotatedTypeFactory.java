@@ -16,6 +16,7 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -114,6 +115,24 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(PolyRegex.class);
             }
             return super.visitBinary(tree, type);
+        }
+
+        /**
+         * Case 2: Also handle compound String concatenation.
+         */
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            if (TreeUtils.isStringCompoundConcatenation(node)) {
+                AnnotatedTypeMirror rhs = getAnnotatedType(node.getExpression());
+                AnnotatedTypeMirror lhs = getAnnotatedType(node.getVariable());
+                if (lhs.hasAnnotation(Regex.class) && rhs.hasAnnotation(Regex.class)) {
+                    int lCount = checker.getGroupCount(lhs.getAnnotation(Regex.class));
+                    int rCount = checker.getGroupCount(rhs.getAnnotation(Regex.class));
+                    type.removeAnnotation(Regex.class);
+                    type.addAnnotation(createRegexAnnotation(lCount + rCount));
+                }
+            }
+            return super.visitCompoundAssignment(node, type);
         }
 
         /**
