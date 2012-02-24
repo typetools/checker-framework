@@ -2,6 +2,7 @@ package checkers.regex;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -114,5 +115,18 @@ public class RegexChecker extends BaseTypeChecker {
         private int getRegexValue(AnnotationMirror anno) {
             return (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue).getValue();
         }
+    }
+    
+    /**
+     * Returns the group count value of the given annotation or 0 if
+     * there's a problem getting the group count value.
+     */
+    public int getGroupCount(AnnotationMirror anno) {
+        AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
+        // If group count value is null then there's no Regex annotation
+        // on the parameter so set the group count to 0. This would happen
+        // if a non-regex string is passed to Pattern.compile but warnings
+        // are suppressed.
+        return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
     }
 }
