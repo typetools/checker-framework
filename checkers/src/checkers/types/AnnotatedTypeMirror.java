@@ -386,6 +386,26 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Determines whether this type contains the given annotation
+     * explicitly written at declaration. This method considers the
+     * annotation's values, that is, if the type is
+     * "@A("s") @B(3) Object" a call with "@A("t") or "@A" will
+     * return false, whereas a call with "@B(3)" will return true.
+     *
+     * In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}
+     * this method also compares annotation values.
+     * 
+     * @param a the annotation to check for
+     * @return true iff the annotation {@code a} is explicitly written
+     * on the type
+     * 
+     * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasExplicitAnnotation(AnnotationMirror a) {
+        return AnnotationUtils.containsSame(getExplicitAnnotations(), a);
+    }
+
+    /**
      * Determines whether this type contains an annotation with the same
      * annotation type as a particular annotation. This method does not
      * consider an annotation's values, that is,
@@ -413,6 +433,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * A version of hasAnnotationRelaxed that only considers annotations that
+     * are explicitly written on the type.
+     * 
+     * @see #hasAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
+        return getExplicitAnnotations().contains(a);
+    }
+
+    /**
      * Determines whether this type contains an annotation with the same
      * annotation type as a particular annotation. This method does not
      * consider an annotation's values.
@@ -425,6 +455,19 @@ public abstract class AnnotatedTypeMirror {
         return getAnnotation(a) != null;
     }
     // TODO: do we need an "effective" version of the above hasAnnotation?
+
+    /**
+     * Determines whether this type contains an explictly written annotation
+     * with the same annotation type as a particular annotation. This method
+     * does not consider an annotation's values.
+     *
+     * @param a the class of annotation to check for
+     * @return true iff the type contains an explicitly written annotation
+     * with the same type as the annotation given by {@code a}
+     */
+    public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
+        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), getAnnotation(a));
+    }
 
     /**
      * Adds an annotation to this type. If the annotation does not have the
