@@ -3,7 +3,6 @@ package checkers.regex;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
@@ -29,7 +28,7 @@ import com.sun.source.tree.Tree;
  * <li value="1">a {@code String} or (@code char} literal that is a valid
  * regular expression</li>
  *
- * <li value="2">concatenation tree of two valid regular expression values
+ * <li value="2">concatenation of two valid regular expression values
  * (either {@code String} or {@code char}.)</li>
  * 
  * <li value="3">for calls to Pattern.compile changes the group count value
@@ -44,16 +43,14 @@ import com.sun.source.tree.Tree;
  * a Regex and a PolyRegex or two PolyRegexs.
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
-  
+
     private final ExecutableElement patternCompile;
-    private final ExecutableElement regexValue;
 
     public RegexAnnotatedTypeFactory(RegexChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
-        regexValue = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, env);
     }
 
     @Override
@@ -105,8 +102,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
 
                 if (lExprRE && rExprRE) {
-                    int lGroupCount = getGroupCount(lExpr.getAnnotation(Regex.class));
-                    int rGroupCount = getGroupCount(rExpr.getAnnotation(Regex.class));
+                    int lGroupCount = checker.getGroupCount(lExpr.getAnnotation(Regex.class));
+                    int rGroupCount = checker.getGroupCount(rExpr.getAnnotation(Regex.class));
                     // Remove current @Regex annotation...
                     type.removeAnnotation(Regex.class);
                     // ...and add a new one with the correct group count value.
@@ -128,26 +125,13 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
                 AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                int groupCount = getGroupCount(anno);
+                int groupCount = checker.getGroupCount(anno);
                 // Remove current @Regex annotation...
                 type.removeAnnotation(Regex.class);
                 // ...and add a new one with the correct group count value.
                 type.addAnnotation(createRegexAnnotation(groupCount));
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /**
-         * Returns the group count value of the given annotation or 0 if
-         * there's a problem getting the group count value.
-         */
-        private int getGroupCount(AnnotationMirror anno) {
-            AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
-            // If group count value is null then there's no Regex annotation
-            // on the parameter so set the group count to 0. This would happen
-            // if a non-regex string is passed to Pattern.compile but warnings
-            // are suppressed.
-            return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
         }
 
         /**
