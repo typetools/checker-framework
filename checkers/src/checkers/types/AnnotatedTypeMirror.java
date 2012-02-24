@@ -251,19 +251,19 @@ public abstract class AnnotatedTypeMirror {
             // TODO: try to remove
             return null;
         }
-    	AnnotationMirror aliased = p;
-    	if (!typeFactory.isSupportedQualifier(aliased)) {
-    		aliased = typeFactory.aliasedAnnotation(p);
-    	}
-    	if (typeFactory.isSupportedQualifier(aliased)) {
-    		AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
-    		for(AnnotationMirror anno : annotations) {
-    			if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
-    				return anno;
-    			}
-    		}
-    	}
-    	return null;
+        AnnotationMirror aliased = p;
+        if (!typeFactory.isSupportedQualifier(aliased)) {
+            aliased = typeFactory.aliasedAnnotation(p);
+        }
+        if (typeFactory.isSupportedQualifier(aliased)) {
+            AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
+            for(AnnotationMirror anno : annotations) {
+                if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
+                    return anno;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -372,7 +372,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-    	return AnnotationUtils.containsSame(getAnnotations(), a);
+        return AnnotationUtils.containsSame(getAnnotations(), a);
     }
 
     /**
@@ -382,7 +382,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotation(AnnotationMirror a) {
-    	return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
     }
 
     /**
@@ -522,9 +522,9 @@ public abstract class AnnotatedTypeMirror {
         // Going from the AnnotationMirror to its name and then calling
         // getAnnotation ensures that we get the canonical AnnotationMirror that can be
         // removed.
-    	// TODO: however, this also means that if we are annotated with "@I(1)" and
-    	// remove "@I(2)" it will be removed. Is this what we want?
-    	// It's currently necessary for the IGJ and Lock Checkers.
+        // TODO: however, this also means that if we are annotated with "@I(1)" and
+        // remove "@I(2)" it will be removed. Is this what we want?
+        // It's currently necessary for the IGJ and Lock Checkers.
         return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
     }
 
