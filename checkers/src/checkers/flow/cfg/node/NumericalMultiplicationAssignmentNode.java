@@ -55,7 +55,7 @@ public class NumericalMultiplicationAssignmentNode extends Node {
 
     @Override
     public String toString() {
-        return "(" + getLeftOperand() + " * " + getRightOperand() + ")";
+        return "(" + getLeftOperand() + " *= " + getRightOperand() + ")";
     }
 
     @Override
