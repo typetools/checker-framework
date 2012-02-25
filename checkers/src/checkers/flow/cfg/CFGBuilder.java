@@ -1183,7 +1183,7 @@ public class CFGBuilder {
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
                 node = new UnboxingNode(node,
-                                        types.unboxedType(node.getType()));
+                        types.unboxedType(node.getType()));
                 extendWithNode(node);
             }
             return node;
@@ -1244,7 +1244,7 @@ public class CFGBuilder {
          *         which may be the input node
          */
         protected Node binaryNumericPromotion(Node node,
-                                              TypeMirror exprType) {
+                TypeMirror exprType) {
             // For binary numeric promotion, see JLS 5.6.2
             node = unbox(node);
 
@@ -1271,7 +1271,7 @@ public class CFGBuilder {
             TypeMirror unboxedType = types.unboxedType(destType);
 
             if (types.isSubtype(unboxedType, node.getType()) &&
-                !types.isSameType(unboxedType, node.getType())) {
+                    !types.isSameType(unboxedType, node.getType())) {
                 node = new NarrowingConversionNode(node, unboxedType);
                 extendWithNode(node);
             }
@@ -1550,7 +1550,7 @@ public class CFGBuilder {
             case REMAINDER: {
                 // see JLS 15.17
                 assert !conditionalMode;
-                
+
                 Node left = tree.getLeftOperand().accept(this, p);
                 Node right = tree.getRightOperand().accept(this, p);
 
@@ -1638,7 +1638,7 @@ public class CFGBuilder {
             case LESS_THAN_EQUAL: {
                 // see JLS 15.20.1
                 assert !conditionalMode;
-                
+
                 Node left = tree.getLeftOperand().accept(this, p);
                 Node right = tree.getRightOperand().accept(this, p);
 
@@ -1656,7 +1656,7 @@ public class CFGBuilder {
                 } else {
                     r = new LessThanOrEqualNode(tree, left, right);
                 }
-                
+
                 break;
             }
 
@@ -1699,19 +1699,19 @@ public class CFGBuilder {
                 boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
                 boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
                 boolean isLeftBoxedNumeric = isLeftBoxed &&
-                    TypesUtils.isNumeric(types.unboxedType(leftType));
+                TypesUtils.isNumeric(types.unboxedType(leftType));
                 boolean isLeftBoxedBoolean = isLeftBoxed &&
-                    TypesUtils.isBooleanType(leftType);
+                TypesUtils.isBooleanType(leftType);
 
                 boolean isRightNumeric = TypesUtils.isNumeric(rightType);
                 boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
                 boolean isRightBoxedNumeric = isRightBoxed &&
-                    TypesUtils.isNumeric(types.unboxedType(rightType));
+                TypesUtils.isNumeric(types.unboxedType(rightType));
                 boolean isRightBoxedBoolean = isRightBoxed &&
-                    TypesUtils.isBooleanType(rightType);
+                TypesUtils.isBooleanType(rightType);
 
                 if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric) ||
-                    isLeftBoxedNumeric && isRightNumeric) {
+                        isLeftBoxedNumeric && isRightNumeric) {
                     TypeMirror leftUnboxedType =
                         isLeftBoxedNumeric ? types.unboxedType(leftType) : leftType;
                     TypeMirror rightUnboxedType =
@@ -2300,7 +2300,7 @@ public class CFGBuilder {
 
             default:
                 assert false : "Unknown kind of unary expression";
-                return null;
+            return null;
             }
         }
 
@@ -2347,7 +2347,7 @@ public class CFGBuilder {
 
             // Loop exit
             addLabelForNextNode(loopExit);
-            
+
             return null;
         }
 
