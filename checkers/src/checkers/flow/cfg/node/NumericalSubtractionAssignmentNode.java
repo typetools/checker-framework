@@ -54,7 +54,7 @@ public class NumericalSubtractionAssignmentNode extends Node {
 
     @Override
     public String toString() {
-        return "(" + getLeftOperand() + " - " + getRightOperand() + ")";
+        return "(" + getLeftOperand() + " -= " + getRightOperand() + ")";
     }
 
     @Override
