@@ -192,14 +192,24 @@ public class AnnotatedTypeFactory {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Should cache? disable for better debugging */
+    /** Should results be cached? Disable for better debugging. */
     private final static boolean SHOULD_CACHE = true;
 
-    /** Various Caches **/
-    /** Size of LRU cache **/
-    private final static int CACHE_SIZE = 50;
+    /** Size of LRU cache. */
+    private final static int CACHE_SIZE = 200;
+
+    /** Mapping from a Tree to its annotated type; implicits have been applied. */
     private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+
+    /** Mapping from a Tree to its annotated type; before implicits are applied,
+     * just what the programmer wrote. */
+    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
+
+    /** Mapping from an Element to its annotated type; before implicits are applied,
+     * just what the programmer wrote. */
     private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+
+    /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /**
@@ -368,8 +378,6 @@ public class AnnotatedTypeFactory {
             fromTreeWithVisitor(TypeFromTree.TypeFromClassINSTANCE, tree);
         return result;
     }
-
-    protected Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
 
     /**
      * Determines the annotated type of a variable or method declaration.
