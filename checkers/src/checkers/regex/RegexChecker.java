@@ -13,18 +13,20 @@ import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
+import checkers.regex.quals.RegexBottom;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.TreeUtils;
 
 /**
  * A type-checker plug-in for the {@link Regex} qualifier that finds
  * syntactically invalid regular expressions.
  */
-@TypeQualifiers({ Regex.class, PolyRegex.class, Unqualified.class })
+@TypeQualifiers({ Regex.class, PolyRegex.class, RegexBottom.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX;
@@ -83,6 +85,11 @@ public class RegexChecker extends BaseTypeChecker {
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new RegexQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+    }
+    
+    @Override
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+      return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
     }
 
     /**
