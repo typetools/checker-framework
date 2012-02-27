@@ -4,9 +4,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
@@ -51,28 +49,32 @@ public class RegexChecker extends BaseTypeChecker {
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
-        // Only allow annotations on subtypes of the types in legalReferenceTypes.
+        // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
+        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
+        // that supports local variables, array types and parameterized types.
+        /*// Only allow annotations on subtypes of the types in legalReferenceTypes.
         if (!useType.getExplicitAnnotations().isEmpty()) {
             Types typeUtils = env.getTypeUtils();
-            for (TypeMirror type: legalReferenceTypes) {
+            for (TypeMirror type : legalReferenceTypes) {
                 if (typeUtils.isSubtype(declarationType.getUnderlyingType(), type)) {
                     return true;
                 }
             }
             return false;
-        } else {
-            return super.isValidUse(declarationType, useType);
-        }
+        }*/
+        return super.isValidUse(declarationType, useType);
     }
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type) {
-        // Only allow annotations on char.
+        // TODO: only allow Regex and PolyRegex annotations on chars.
+        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
+        // that supports local variables and array types.
+        /*// Only allow annotations on char.
         if (!type.getExplicitAnnotations().isEmpty()) {
             return type.getKind() == TypeKind.CHAR;
-        } else {
-            return super.isValidUse(type);
-        }
+        }*/
+        return super.isValidUse(type);
     }
 
     /**
