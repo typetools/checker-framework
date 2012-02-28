@@ -196,7 +196,7 @@ public class AnnotatedTypeFactory {
     private final static boolean SHOULD_CACHE = true;
 
     /** Size of LRU cache. */
-    private final static int CACHE_SIZE = 200;
+    private final static int CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
     private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);

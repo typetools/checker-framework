@@ -49,19 +49,36 @@ public class Simple {
         @Regex String o2 = nonReg + "sdf";     // error
         //:: error: (assignment.type.incompatible)
         @Regex String o3 = nonReg + reg;     // error
-
     }
-    
+
+    @Regex String regex = "()";
+    String nonRegex = "()";
+
+    void testCompoundConcatenation() {
+        takesRegex(regex);
+        //:: error: (assignment.type.incompatible)
+        regex += ")";    // error
+        takesRegex(regex);
+
+        nonRegex = "()";
+        takesRegex(nonRegex);
+        nonRegex += ")";
+        //:: error: (argument.type.incompatible)
+        takesRegex(nonRegex);    // error
+    }
+
+    void takesRegex(@Regex String s) {}
+
     void testChar() {
         @Regex char c1 = 'c';
         @Regex Character c2 = 'c';
-        
+
         //:: error: (assignment.type.incompatible)
         @Regex char c3 = '(';   // error
         //:: error: (assignment.type.incompatible)
         @Regex Character c4 = '(';   // error
     }
-    
+
     void testCharConcatenation() {
         @Regex String s1 = "rege" + 'x';
         @Regex String s2 = 'r' + "egex";
@@ -75,37 +92,17 @@ public class Simple {
         //:: error: (assignment.type.incompatible)
         @Regex String s7 = 'r' + "ege(";   // error
     }
-    
-    class TestAllowedTypes {
-        @Regex CharSequence cs;
-        @Regex String s11;
-        @Regex StringBuilder sb;
-        @Regex Segment s21;
-        @Regex char c;
-        @Regex Pattern p;
-        @Regex Matcher m;
 
-        //:: error: (type.invalid)
-        @Regex Object o;   // error
-        //:: error: (type.invalid)
-        @Regex List<String> l;   // error
-        //:: error: (type.invalid)
-        ArrayList<@Regex Double> al;   // error
-        //:: error: (type.invalid)
-        @Regex int i;   // error
-        //:: error: (type.invalid)
-        @Regex boolean b;   // error
-    }
-    
-//    TODO: This is not supported until the checker supports getting explicit
-//    annotations from local variables (instead of just fields.)
-//    void testAllowedTypes() {
+//    TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
+//    class TestAllowedTypes {
 //        @Regex CharSequence cs;
 //        @Regex String s11;
 //        @Regex StringBuilder sb;
 //        @Regex Segment s21;
 //        @Regex char c;
-//  
+//        @Regex Pattern p;
+//        @Regex Matcher m;
+//
 //        //:: error: (type.invalid)
 //        @Regex Object o;   // error
 //        //:: error: (type.invalid)
@@ -116,6 +113,34 @@ public class Simple {
 //        @Regex int i;   // error
 //        //:: error: (type.invalid)
 //        @Regex boolean b;   // error
+//    }
+
+//    TODO: This is not supported until the checker supports getting explicit
+//    annotations from local variables (instead of just fields.)
+//    void testAllowedTypes() {
+//        @Regex CharSequence cs;
+//        @Regex String s11;
+//        @Regex StringBuilder sb;
+//        @Regex Segment s21;
+//        @Regex char c;
+//
+//        //:: error: (type.invalid)
+//        @Regex Object o;   // error
+//        //:: error: (type.invalid)
+//        @Regex List<String> l;   // error
+//        //:: error: (type.invalid)
+//        ArrayList<@Regex Double> al;   // error
+//        //:: error: (type.invalid)
+//        @Regex int i;   // error
+//        //:: error: (type.invalid)
+//        @Regex boolean b;   // error
+//
+//        @Regex String regex = "a";
+//        //:: error: (argument.type.incompatible)
+//        regex += "(";
+//
+//        String nonRegex = "a";
+//        nonRegex += "(";
 //    }
 
     void testPatternLiteral() {
@@ -136,44 +161,6 @@ public class Simple {
         return "non((";
     }
 
-    void testGroupCount() {
-        @Regex(0) String s1 = "abc";
-        @Regex(1) String s2 = "(abc)";
-        @Regex(2) String s3 = "()(abc)";
-        @Regex(3) String s4 = "(abc())()";
-        @Regex(4) String s5 = "((((abc))))";
-        
-        @Regex(0) String s7 = "(abc)";
-        @Regex String s9 = "()()(())";
-        @Regex(2) String s10 = "()()(())";
-        @Regex(3) String s11 = "()()(())";
-
-        //:: error: (assignment.type.incompatible)
-        @Regex(2) String s6 = "nonregex(";    // error
-        //:: error: (assignment.type.incompatible)
-        @Regex(1) String s8 = "abc";    // error
-        //:: error: (assignment.type.incompatible)
-        @Regex(3) String s12 = "()()";    // error
-        //:: error: (assignment.type.incompatible)
-        @Regex(4) String s13 = "(())()";    // error
-    }
-    
-    void testPatternCompileGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
-        @Regex(5) Pattern p1 = Pattern.compile(r5);
-        @Regex Pattern p2 = Pattern.compile(r5);
-        @Regex Pattern p3 = Pattern.compile(r);
-        
-        //:: error: (assignment.type.incompatible)
-        @Regex(6) Pattern p4 = Pattern.compile(r5);   // error
-        //:: error: (assignment.type.incompatible)
-        @Regex(6) Pattern p5 = Pattern.compile(r3);   // error
-        
-        // Make sure Pattern.compile still works when passed an @Unqualified String
-        // that's actually a regex, with the warning suppressed.
-        @SuppressWarnings("regex:argument.type.incompatible")
-        Pattern p6 = Pattern.compile("(" + r + ")");
-    }
-
 //    TODO: This is not supported until the framework can read explicit
 //    annotations from arrays.
 //    void testArrayAllowedTypes() {
@@ -191,7 +178,7 @@ public class Simple {
 //        //:: error: (type.invalid)
 //        String @Regex [] s2;    // error
 //    }
-    
+
 //    TODO: This is not supported until the regex checker supports flow
 //    sensitivity. See the associated comment at
 //    checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
@@ -199,7 +186,7 @@ public class Simple {
 //        char @Regex [] c1 = {'r', 'e', 'g', 'e', 'x'};
 //        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
 //        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
-//        
+//
 //        //:: error: (assignment.type.incompatible)
 //        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
 //        //:: error: (assignment.type.incompatible)

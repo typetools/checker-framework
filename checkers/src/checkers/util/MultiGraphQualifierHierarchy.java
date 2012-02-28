@@ -264,8 +264,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-        if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-            return AnnotationUtils.areSame(a1, a2) ? a1 : getRootAnnotation(a1);
+        if (isSubtype(a1, a2)) {
+            return a2;
+        } else if (isSubtype(a2, a1)) {
+            return a1;
+        } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+            return getRootAnnotation(a1);
         }
         if (lubs == null) {
             lubs = calculateLubs();
