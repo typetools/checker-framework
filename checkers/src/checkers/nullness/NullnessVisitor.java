@@ -102,13 +102,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     /** Case 5: Check for synchronizing locks */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
-
-        // checkForNullability(node.getExpression(), "locking.nullable");
-        // raw is sufficient
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-        if (type.hasEffectiveAnnotation(NULLABLE))
-            checker.report(Result.failure("locking.nullable", node), node);
-
+        checkForNullability(node.getExpression(), "locking.nullable");
         return super.visitSynchronized(node, p);
     }
 
@@ -137,6 +131,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         } finally {
             isInAssert = beforeAssert;
         }
+    }
+
+    @Override
+    public Void visitSwitch(SwitchTree node, Void p) {
+        checkForNullability(node.getExpression(), "switching.nullable");
+        return super.visitSwitch(node, p);
     }
 
     protected void checkForRedundantTests(BinaryTree node) {
