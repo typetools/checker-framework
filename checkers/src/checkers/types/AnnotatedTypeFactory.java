@@ -197,7 +197,7 @@ public class AnnotatedTypeFactory {
 
     /** Various Caches **/
     /** Size of LRU cache **/
-    private final static int CACHE_SIZE = 50;
+    private final static int CACHE_SIZE = 300;
     private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
     private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
