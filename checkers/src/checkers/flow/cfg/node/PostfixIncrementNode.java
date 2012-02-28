@@ -16,6 +16,10 @@ import com.sun.source.tree.Tree.Kind;
  *   ++<em>expression</em>
  * </pre>
  * 
+ * NOTE: If widening of the operand and narrowing of the result
+ * are required, they are separate Nodes, so the increment takes
+ * place at the type of the operand.
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
  * 
@@ -28,7 +32,7 @@ public class PostfixIncrementNode extends Node {
     public PostfixIncrementNode(Tree tree, Node operand) {
         assert tree.getKind() == Kind.POSTFIX_INCREMENT;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
+        this.type = operand.getType();
         this.operand = operand;
     }
 

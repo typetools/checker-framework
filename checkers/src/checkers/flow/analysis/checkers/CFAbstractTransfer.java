@@ -7,6 +7,7 @@ import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
+import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -136,5 +137,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // TODO: other assignments
 
         return new RegularTransferResult<>(rhsValue, info);
+    }
+
+    /**
+     * An assert produces no value and since it may be disabled, it has no
+     * effect on the store.
+     */
+    @Override
+    public TransferResult<V, S> visitAssert(AssertNode n, TransferInput<V, S> in) {
+        // TODO: Perform type propagation separately with a thenStore and an
+        // elseStore.
+        return new RegularTransferResult<>(null, in.getRegularStore());
     }
 }
