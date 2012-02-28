@@ -146,6 +146,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1586,6 +1587,7 @@ public class CFGBuilder {
                         r = new FloatingDivisionAssignmentNode(tree, target, value);
                     }
                 } else {
+                    assert kind == Kind.REMAINDER_ASSIGNMENT;
                     if (TypesUtils.isIntegral(exprType)) {
                         r = new IntegerRemainderAssignmentNode(tree, target, value);
                     } else {
@@ -1616,6 +1618,7 @@ public class CFGBuilder {
                     if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
                         r = new NumericalAdditionAssignmentNode(tree, target, value);
                     } else {
+                        assert kind == Kind.MINUS_ASSIGNMENT;
                         r = new NumericalSubtractionAssignmentNode(tree, target, value);
                     }
                 }
@@ -1629,8 +1632,6 @@ public class CFGBuilder {
                 Node target = tree.getVariable().accept(this, p);
                 Node value = tree.getExpression().accept(this, p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
-
                 target = unaryNumericPromotion(target);
                 value = unaryNumericPromotion(value);
 
@@ -1639,6 +1640,7 @@ public class CFGBuilder {
                 } else if (kind == Tree.Kind.RIGHT_SHIFT_ASSIGNMENT) {
                     r = new SignedRightShiftAssignmentNode(tree, target, value);
                 } else {
+                    assert kind == Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
                     r = new UnsignedRightShiftAssignmentNode(tree, target, value);
                 }
                 break;
@@ -1666,6 +1668,7 @@ public class CFGBuilder {
                 } else if (kind == Tree.Kind.OR_ASSIGNMENT) {
                     r = new BitwiseOrAssignmentNode(tree, target, value);
                 } else {
+                    assert kind == Kind.XOR_ASSIGNMENT;
                     r = new BitwiseXorAssignmentNode(tree, target, value);
                 }
                 break;
@@ -1703,6 +1706,7 @@ public class CFGBuilder {
                         r = new FloatingDivisionNode(tree, left, right);
                     }
                 } else {
+                    assert kind == Kind.REMAINDER;
                     if (TypesUtils.isIntegral(exprType)) {
                         r = new IntegerRemainderNode(tree, left, right);
                     } else {
@@ -1732,11 +1736,11 @@ public class CFGBuilder {
                     right = binaryNumericPromotion(right, exprType);
 
                     // TODO: Decide whether to deal with floating-point value
-                    // set
-                    // conversion.
+                    // set conversion.
                     if (kind == Tree.Kind.PLUS) {
                         r = new NumericalAdditionNode(tree, left, right);
                     } else {
+                        assert kind == Kind.MINUS;
                         r = new NumericalSubtractionNode(tree, left, right);
                     }
                 }
@@ -1752,8 +1756,6 @@ public class CFGBuilder {
                 Node left = tree.getLeftOperand().accept(this, p);
                 Node right = tree.getRightOperand().accept(this, p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
-
                 left = unaryNumericPromotion(left);
                 right = unaryNumericPromotion(right);
 
@@ -1762,6 +1764,7 @@ public class CFGBuilder {
                 } else if (kind == Tree.Kind.RIGHT_SHIFT) {
                     r = new SignedRightShiftNode(tree, left, right);
                 } else {
+                    assert kind == Kind.UNSIGNED_RIGHT_SHIFT;
                     r = new UnsignedRightShiftNode(tree, left, right);
                 }
                 break;
@@ -1789,6 +1792,7 @@ public class CFGBuilder {
                 } else if (kind == Tree.Kind.LESS_THAN) {
                     r = new LessThanNode(tree, left, right);
                 } else {
+                    assert kind == Tree.Kind.LESS_THAN_EQUAL;
                     r = new LessThanOrEqualNode(tree, left, right);
                 }
 
@@ -1889,6 +1893,7 @@ public class CFGBuilder {
                 } else if (kind == Tree.Kind.OR) {
                     r = new BitwiseOrNode(tree, left, right);
                 } else {
+                    assert kind == Kind.XOR;
                     r = new BitwiseXorNode(tree, left, right);
                 }
                 break;
@@ -2260,6 +2265,7 @@ public class CFGBuilder {
         @Override
         public Node visitReturn(ReturnTree tree, Void p) {
             ExpressionTree ret = tree.getExpression();
+            // TODO: also have a return-node if nothing is returned
             ReturnNode result = null;
             if (ret != null) {
                 Node node = ret.accept(this, p);
@@ -2274,18 +2280,6 @@ public class CFGBuilder {
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
             assert false; // TODO Auto-generated method stub
             return null;
-        }
-
-        protected Node translateFieldAccess(Tree tree, ClassTree classTree) {
-            assert ASTUtils.isFieldAccess(tree);
-            // visit receiver
-            Node receiver = getReceiver(tree, classTree);
-
-            // visit field access (throws null-pointer exception)
-            // TODO: exception
-            FieldAccessNode access = new FieldAccessNode(tree, receiver);
-            extendWithNode(access);
-            return access;
         }
 
         @Override
@@ -2403,28 +2397,28 @@ public class CFGBuilder {
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
                 switch (kind) {
-                case BITWISE_COMPLEMENT:
-                    return extendWithNode(new BitwiseComplementNode(tree, expr));
-                case POSTFIX_DECREMENT: {
-                    Node node = extendWithNode(new PostfixDecrementNode(tree, expr));
-                    return narrowAndBox(node, exprType);
-                }
-                case POSTFIX_INCREMENT: {
-                    Node node = extendWithNode(new PostfixIncrementNode(tree, expr));
-                    return narrowAndBox(node, exprType);
-                }
-                case PREFIX_DECREMENT: {
-                    Node node = extendWithNode(new PrefixDecrementNode(tree, expr));
-                    return narrowAndBox(node, exprType);
-                }
-                case PREFIX_INCREMENT: {
-                    Node node = extendWithNode(new PrefixIncrementNode(tree, expr));
-                    return narrowAndBox(node, exprType);
-                }
-                case UNARY_MINUS:
-                    return extendWithNode(new NumericalMinusNode(tree, expr));
-                case UNARY_PLUS:
-                    return extendWithNode(new NumericalPlusNode(tree, expr));
+                    case BITWISE_COMPLEMENT:
+                        return extendWithNode(new BitwiseComplementNode(tree, expr));
+                    case POSTFIX_DECREMENT: {
+                        Node node = extendWithNode(new PostfixDecrementNode(tree, expr));
+                        return narrowAndBox(node, exprType);
+                    }
+                    case POSTFIX_INCREMENT: {
+                        Node node = extendWithNode(new PostfixIncrementNode(tree, expr));
+                        return narrowAndBox(node, exprType);
+                    }
+                    case PREFIX_DECREMENT: {
+                        Node node = extendWithNode(new PrefixDecrementNode(tree, expr));
+                        return narrowAndBox(node, exprType);
+                    }
+                    case PREFIX_INCREMENT: {
+                        Node node = extendWithNode(new PrefixIncrementNode(tree, expr));
+                        return narrowAndBox(node, exprType);
+                    }
+                    case UNARY_MINUS:
+                        return extendWithNode(new NumericalMinusNode(tree, expr));
+                    case UNARY_PLUS:
+                        return extendWithNode(new NumericalPlusNode(tree, expr));
                 }
             }
 
