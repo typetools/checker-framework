@@ -151,7 +151,12 @@ public class GenKillBits<K> {
     }
 
     for (int var = 0; var < length; ++var) {
-      for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
+      // Make a clone of the keySet so we can add new keys to outarg1.bitsets
+      // if needed without a ConcurrentModificationException. This is important
+      // for annotations with values, where the lub we get is an annotation that
+      // we haven't seen yet.
+      Set<AnnotationMirror> arg1KeySet = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+      for (AnnotationMirror key1 : arg1KeySet) {
         if (!arg2.bitsets.containsKey(key1))
           arg2.bitsets.put(key1, new BitSet());
         BitSet lhs = outarg1.bitsets.get(key1);
@@ -161,10 +166,9 @@ public class GenKillBits<K> {
           BitSet rhs = arg2.bitsets.get(key2);
 
           if (lhs.get(var) && rhs.get(var)) {
-            AnnotationMirror lub = annoRelations.leastUpperBound(
-                                                                 key1, key2);
+            AnnotationMirror lub = annoRelations.leastUpperBound(key1, key2);
             lhs.clear(var);
-            outarg1.bitsets.get(lub).set(var);
+            outarg1.set(lub, var);
             notfound = false;
           }
         }
