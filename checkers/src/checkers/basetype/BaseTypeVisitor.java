@@ -5,6 +5,7 @@ import java.util.*;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -467,7 +468,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         // Mapping from argument simple name to its annotated type.
         Map<String, AnnotatedTypeMirror> annoTypes = new HashMap<String, AnnotatedTypeMirror>();
-        for (Element encl : anno.getEnclosedElements()) {
+        for (Element encl : ElementFilter.methodsIn(anno.getEnclosedElements())) {
             AnnotatedExecutableType exeatm = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(encl);
             AnnotatedTypeMirror retty = exeatm.getReturnType();
             annoTypes.put(encl.getSimpleName().toString(), retty);
