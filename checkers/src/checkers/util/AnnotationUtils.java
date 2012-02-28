@@ -515,18 +515,17 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 are the same annotation
      */
     public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
-
         if (a1 != null && a2 != null) {
             if (!annotationName(a1).equals(annotationName(a2))) {
                 return false;
             }
-            
+
             Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 = getElementValuesWithDefaults(a1);
             Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 = getElementValuesWithDefaults(a2);
             
             return elval1.toString().equals(elval2.toString());
         }
-        
+
         // only true, iff both are null
         return a1 == a2;
     }
