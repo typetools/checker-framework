@@ -1,5 +1,7 @@
 package checkers.regex;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -17,23 +19,28 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
  *
  * <ol>
  *
- * <li value="1">a {@code String} or (@code char} literal that is a valid
+ * <li value="1">a {@code String} or {@code char} literal that is a valid
  * regular expression</li>
  *
  * <li value="2">concatenation of two valid regular expression values
  * (either {@code String} or {@code char}.)</li>
  * 
  * <li value="3">for calls to Pattern.compile changes the group count value
- * of the return type to be the same as the parameter.</li>
+ * of the return type to be the same as the parameter. For calls to the asRegex
+ * methods of the classes in asRegexClasses these asRegex methods will return a
+ * {@code @Regex String} with the same group count as the second argument to the
+ * call to asRegex.</li>
  * 
  * <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
@@ -45,13 +52,47 @@ import com.sun.source.tree.Tree;
  */
 public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
 
+    /**
+     * The Pattern.compile method.
+     * 
+     * @see java.util.regex.Pattern#compile(String)
+     */
     private final ExecutableElement patternCompile;
+
+    /**
+     * Class names that contain an {@code asRegex(String, int)} method. These
+     * asRegex methods will return a {@code @Regex String} with the same group
+     * count as the second parameter to the asRegex call.
+     * 
+     * @see RegexUtil#asRegex(String, int)
+     */
+    private final String[] asRegexClasses = new String[] {
+            "checkers.regex.RegexUtil", "plume.RegexUtil", "daikon.util.RegexUtil" };
+
+    /**
+     * A list of all of the ExecutableElements for the class names in
+     * asRegexClasses.
+     * 
+     * @see #asRegexClasses
+     * @see RegexUtil#asRegex(String, int)
+     */
+    private final List<ExecutableElement> asRegexes;
 
     public RegexAnnotatedTypeFactory(RegexChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
+        asRegexes = new ArrayList<ExecutableElement>();
+        for (String clazz : asRegexClasses) {
+            try {
+                asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, env));
+            } catch (Exception e) {
+                // The class couldn't be loaded so it must not be on the
+                // classpath, just skip it.
+                continue;
+            }
+        }
     }
 
     @Override
@@ -138,6 +179,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         /**
          * Case 3: For a call to Pattern.compile, add an annotation to the
          * return type that has the same group count value as the parameter.
+         * For calls to {@code asRegex(String, int)} change the return type to
+         * have the same group count as the value of the second argument.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
@@ -149,8 +192,29 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 type.removeAnnotation(Regex.class);
                 // ...and add a new one with the correct group count value.
                 type.addAnnotation(createRegexAnnotation(groupCount));
+            } else if (isAsRegex(tree)) {
+                ExpressionTree groupArg = tree.getArguments().get(1);
+                if (groupArg.getKind() == Kind.INT_LITERAL) {
+                    LiteralTree literal = (LiteralTree) groupArg;
+                    int paramGroups = (Integer) literal.getValue();
+                    type.removeAnnotation(Regex.class);
+                    type.addAnnotation(createRegexAnnotation(paramGroups));
+                }
             }
             return super.visitMethodInvocation(tree, type);
+        }
+
+        /**
+         * Returns true if the given MethodInvocationTree represents a call to
+         * an asRegex method in one of the classes in asRegexClasses. 
+         */
+        private boolean isAsRegex(MethodInvocationTree tree) {
+            for (ExecutableElement asRegex : asRegexes) {
+                if (TreeUtils.isMethodInvocation(tree, asRegex, env)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**

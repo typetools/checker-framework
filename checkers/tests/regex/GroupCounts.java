@@ -1,5 +1,6 @@
 import java.util.regex.Pattern;
 
+import checkers.regex.RegexUtil;
 import checkers.regex.quals.Regex;
 
 public class GroupCounts {
@@ -69,5 +70,15 @@ public class GroupCounts {
         @Regex(4) String test4 = s1;
         //:: error: (assignment.type.incompatible)
         @Regex(5) String test45 = s1;
-  }
+    }
+
+    void testAsRegexGroupCounts(String s) {
+        @Regex String test1 = RegexUtil.asRegex(s);
+        //:: error: (assignment.type.incompatible)
+        @Regex(1) String test2 = RegexUtil.asRegex(s);
+
+        @Regex(3) String test3 = RegexUtil.asRegex(s, 3);
+        //:: error: (assignment.type.incompatible)
+        @Regex(4) String test4 = RegexUtil.asRegex(s, 3);
+    }
 }
