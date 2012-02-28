@@ -1,3 +1,4 @@
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import checkers.regex.RegexUtil;
@@ -80,5 +81,34 @@ public class GroupCounts {
         @Regex(3) String test3 = RegexUtil.asRegex(s, 3);
         //:: error: (assignment.type.incompatible)
         @Regex(4) String test4 = RegexUtil.asRegex(s, 3);
+    }
+
+    void testMatcherGroupCounts(@Regex Matcher m0, @Regex(1) Matcher m1, @Regex(4) Matcher m4, int n) {
+        m0.end(0);
+        m0.group(0);
+        m0.start(0);
+
+        //:: error: (group.count.invalid)
+        m0.end(1);
+        //:: error: (group.count.invalid)
+        m0.group(1);
+        //:: error: (group.count.invalid)
+        m0.start(1);
+
+        m1.start(0);
+        m1.start(1);
+
+        //:: error: (group.count.invalid)
+        m1.start(2);
+
+        m4.start(0);
+        m4.start(2);
+        m4.start(4);
+
+        //:: error: (group.count.invalid)
+        m4.start(5);
+
+        //:: warning: (group.count.unknown)
+        m0.start(n);
     }
 }
