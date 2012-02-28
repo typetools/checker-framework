@@ -1296,7 +1296,7 @@ public class CFGBuilder {
             "widening must be applied to primitive types";
             if (types.isSubtype(node.getType(), destType) &&
                 !types.isSameType(node.getType(), destType)) {
-                node = new NarrowingConversionNode(node, destType);
+                node = new WideningConversionNode(node, destType);
                 extendWithNode(node);
             }
 
@@ -1443,7 +1443,7 @@ public class CFGBuilder {
             Node condition = unbox(tree.getCondition().accept(this, p));
             Node detail = tree.getDetail().accept(this, p);
 
-            return new AssertNode(tree, condition, detail);
+            return extendWithNode(new AssertNode(tree, condition, detail));
         }
 
         @Override
@@ -1780,10 +1780,23 @@ public class CFGBuilder {
                 Node left = tree.getLeftOperand().accept(this, p);
                 Node right = tree.getRightOperand().accept(this, p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
+                TypeMirror leftType = left.getType();
+                if (TypesUtils.isBoxedPrimitive(leftType)) {
+                    leftType = types.unboxedType(leftType);
+                }
 
-                left = binaryNumericPromotion(left, exprType);
-                right = binaryNumericPromotion(right, exprType);
+                TypeMirror rightType = right.getType();
+                if (TypesUtils.isBoxedPrimitive(rightType)) {
+                    rightType = types.unboxedType(rightType);
+                }
+
+                TypeKind widenedTypeKind =
+                    TypesUtils.widenedNumericType(leftType, rightType);
+                TypeMirror widenedType =
+                    types.getPrimitiveType(widenedTypeKind);
+
+                left = binaryNumericPromotion(left, widenedType);
+                right = binaryNumericPromotion(right, widenedType);
 
                 if (kind == Tree.Kind.GREATER_THAN) {
                     r = new GreaterThanNode(tree, left, right);

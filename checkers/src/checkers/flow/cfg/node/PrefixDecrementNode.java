@@ -16,6 +16,10 @@ import com.sun.source.tree.Tree.Kind;
  *   --<em>expression</em>
  * </pre>
  * 
+ * NOTE: If widening of the operand and narrowing of the result
+ * are required, they are separate Nodes, so the decrement takes
+ * place at the type of the operand.
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
  * 
@@ -28,7 +32,7 @@ public class PrefixDecrementNode extends Node {
     public PrefixDecrementNode(Tree tree, Node operand) {
         assert tree.getKind() == Kind.PREFIX_DECREMENT;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
+        this.type = operand.getType();
         this.operand = operand;
     }
 
