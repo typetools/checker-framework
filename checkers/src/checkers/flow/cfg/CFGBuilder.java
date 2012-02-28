@@ -11,6 +11,9 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -1173,6 +1176,27 @@ public class CFGBuilder {
         /* --------------------------------------------------------- */
 
         /**
+         * If the input node is an unboxed primitive type, box it,
+         * otherwise leave it alone.
+         *
+         * @param node in input node
+         * @return a Node representing the boxed version of the
+         *         input, which may simply be the input node
+         */
+        protected Node box(Node node) {
+            // For boxing conversion, see JLS 5.1.7
+            if (TypesUtils.isPrimitive(node.getType())) {
+                PrimitiveType primitive =
+                    types.getPrimitiveType(node.getType().getKind());
+                TypeMirror boxedType =
+                    types.getDeclaredType(types.boxedClass(primitive));
+                node = new BoxingNode(node, boxedType);
+                extendWithNode(node);
+            }
+            return node;
+        }
+
+        /**
          * If the input node is a boxed type, unbox it, otherwise
          * leave it alone.
          *
@@ -1256,30 +1280,138 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform narrowing and boxing conversion on the input node to
+         * Perform widening primitive conversion on the input node to
          * make it match the destination type.
          *
          * @param node a node producing a value of numeric primitive type
+         * @param destType the type to widen the value to
+         * @return a Node with the value widened to the exprType, which
+         *         may be the input node
+         */
+        protected Node widen(Node node, TypeMirror destType) {
+            // For widening conversion, see JLS 5.1.2
+            assert TypesUtils.isPrimitive(node.getType()) &&
+                TypesUtils.isPrimitive(destType) :
+            "widening must be applied to primitive types";
+            if (types.isSubtype(node.getType(), destType) &&
+                !types.isSameType(node.getType(), destType)) {
+                node = new NarrowingConversionNode(node, destType);
+                extendWithNode(node);
+            }
+
+            return node;
+        }
+
+        /**
+         * Perform narrowing conversion on the input node to make it
+         * match the destination type.
+         *
+         * @param node a node producing a value of numeric primitive type
          * @param destType the type to narrow the value to
-         * @return a Node with the value narrowed and boxed to the exprType,
+         * @return a Node with the value narrowed to the exprType,
          *         which may be the input node
          */
         protected Node narrow(Node node, TypeMirror destType) {
             // For narrowing conversion, see JLS 5.1.3
-            // For boxing conversion, see JLS 5.1.7
-            boolean isBoxed = TypesUtils.isBoxedPrimitive(destType);
-            TypeMirror unboxedType = types.unboxedType(destType);
-
-            if (types.isSubtype(unboxedType, node.getType()) &&
-                    !types.isSameType(unboxedType, node.getType())) {
-                node = new NarrowingConversionNode(node, unboxedType);
+            assert TypesUtils.isPrimitive(node.getType()) &&
+                TypesUtils.isPrimitive(destType) :
+            "narrowing must be applied to primitive types";
+            if (types.isSubtype(destType, node.getType()) &&
+                    !types.isSameType(destType, node.getType())) {
+                node = new NarrowingConversionNode(node, destType);
                 extendWithNode(node);
             }
 
-            if (isBoxed) {
-                node = new BoxingNode(node, destType);
-                extendWithNode(node);
+            return node;
+        }
+
+        /**
+         * Perform narrowing conversion and optionally boxing conversion
+         * on the input node to make it match the destination type.
+         *
+         * @param node a node producing a value of numeric primitive type
+         * @param destType the type to narrow the value to (possibly boxed)
+         * @return a Node with the value narrowed and boxed to the destType,
+         *         which may be the input node
+         */
+        protected Node narrowAndBox(Node node, TypeMirror destType) {
+            if (TypesUtils.isBoxedPrimitive(destType)) {
+                return box(narrow(node, types.unboxedType(destType)));
+            } else {
+                return narrow(node, destType);
             }
+        }
+
+        /**
+         * Perform assignment conversion so that it can be assigned to
+         * a variable of the given type.
+         *
+         * @param node a Node producing a value
+         * @prarm varType the type of a variable
+         * @return a Node with the value converted to the type of the
+         *         variable, which may be the input node itself
+         */
+        protected Node assignConvert(Node node, TypeMirror varType) {
+            // For assignment conversion, see JLS 5.2
+
+            // Check for identical types or "identity conversion"
+            TypeMirror nodeType = node.getType();
+            boolean isSameType = types.isSameType(nodeType, varType);
+            if (isSameType) {
+                return node;
+            }
+            
+            boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
+            boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+            boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
+            boolean isRightReference = nodeType instanceof ReferenceType;
+            boolean isLeftPrimitive = TypesUtils.isPrimitive(nodeType);
+            boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+            boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
+            boolean isLeftReference = varType instanceof ReferenceType;
+            boolean isSubtype = types.isSubtype(nodeType, varType);
+
+            if (isRightNumeric && isLeftNumeric && isSubtype) {
+                node = widen(node, varType);
+                nodeType = node.getType();
+            } else if (isRightReference && isLeftReference && isSubtype) {
+                // widening reference conversion is a no-op, but if it
+                // applies, then later conversions do not.
+            } else if (isRightNumeric && isLeftBoxed) {
+                node = box(node);
+                nodeType = node.getType();
+            } else if (isRightBoxed && isLeftNumeric) {
+                node = unbox(node);
+                nodeType = node.getType();
+
+                if (types.isSubtype(nodeType, varType) &&
+                    !types.isSameType(nodeType, varType)) {
+                    node = widen(node, varType);
+                    nodeType = node.getType();
+                }
+            }
+
+            // Unchecked conversion of raw types
+            boolean isRightRaw = (nodeType instanceof DeclaredType) &&
+                ((DeclaredType) nodeType).getTypeArguments().isEmpty();
+            if (isRightRaw) {
+                // TODO: if checkers need to know about unchecked conversions
+                // add a Node class for them.  Otherwise, we can omit this
+                // case.
+            }
+
+            // Allow narrowing conversions
+            if (isLeftNumeric) {
+                node = narrow(node, varType);
+                nodeType = node.getType();
+            } else if (isLeftBoxed) {
+                node = narrowAndBox(node, varType);
+                nodeType = node.getType();
+            }
+
+            // TODO: if checkers need to know about null references of
+            // a particular type, add logic for them here.
+
             return node;
         }
 
@@ -1322,6 +1454,7 @@ public class CFGBuilder {
 
             Node expression;
             ExpressionTree variable = tree.getVariable();
+            TypeMirror varType = InternalUtils.typeOf(variable);
 
             // case 1: field access
             if (ASTUtils.isFieldAccess(variable)) {
@@ -1331,6 +1464,7 @@ public class CFGBuilder {
 
                 // visit expression
                 expression = tree.getExpression().accept(this, p);
+                expression = assignConvert(expression, varType);
 
                 // visit field access (throws null-pointer exception)
                 FieldAccessNode target = new FieldAccessNode(variable, receiver);
@@ -1370,6 +1504,7 @@ public class CFGBuilder {
                     || tree instanceof VariableTree;
             target.setLValue();
             Node expression = rhs.accept(this, null);
+            expression = assignConvert(expression, target.getType());
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
                     expression);
             extendWithNode(assignmentNode);
@@ -2269,33 +2404,33 @@ public class CFGBuilder {
 
                 switch (kind) {
                 case BITWISE_COMPLEMENT:
-                    return new BitwiseComplementNode(tree, expr);
+                    return extendWithNode(new BitwiseComplementNode(tree, expr));
                 case POSTFIX_DECREMENT: {
-                    Node node = new PostfixDecrementNode(tree, expr);
-                    return narrow(node, exprType);
+                    Node node = extendWithNode(new PostfixDecrementNode(tree, expr));
+                    return narrowAndBox(node, exprType);
                 }
                 case POSTFIX_INCREMENT: {
-                    Node node = new PostfixIncrementNode(tree, expr);
-                    return narrow(node, exprType); 
+                    Node node = extendWithNode(new PostfixIncrementNode(tree, expr));
+                    return narrowAndBox(node, exprType);
                 }
                 case PREFIX_DECREMENT: {
-                    Node node = new PrefixDecrementNode(tree, expr);
-                    return narrow(node, exprType);
+                    Node node = extendWithNode(new PrefixDecrementNode(tree, expr));
+                    return narrowAndBox(node, exprType);
                 }
                 case PREFIX_INCREMENT: {
-                    Node node = new PrefixIncrementNode(tree, expr);
-                    return narrow(node, exprType);
+                    Node node = extendWithNode(new PrefixIncrementNode(tree, expr));
+                    return narrowAndBox(node, exprType);
                 }
                 case UNARY_MINUS:
-                    return new NumericalMinusNode(tree, expr);
+                    return extendWithNode(new NumericalMinusNode(tree, expr));
                 case UNARY_PLUS:
-                    return new NumericalPlusNode(tree, expr);
+                    return extendWithNode(new NumericalPlusNode(tree, expr));
                 }
             }
 
             case LOGICAL_COMPLEMENT: {
                 // see JLS 15.15.6
-                return new ConditionalNotNode(tree, unbox(expr));
+                return extendWithNode(new ConditionalNotNode(tree, unbox(expr)));
             }
 
             default:
