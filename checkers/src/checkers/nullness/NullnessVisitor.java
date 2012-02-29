@@ -121,6 +121,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitConditionalExpression(node, p);
+    }
+
+    @Override
     public Void visitIf(IfTree node, Void p) {
         checkForNullability(node.getCondition(), "condition.nullable");
         boolean beforeAssert = isInAssert;
