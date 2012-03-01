@@ -1,8 +1,10 @@
 package checkers.flow.cfg;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -103,6 +105,13 @@ public class ControlFlowGraph {
         }
 
         return visited;
+    }
+
+    /**
+     * @return The tree-lookup map.
+     */
+    public Map<Tree, Node> getTreeLookup() {
+        return Collections.unmodifiableMap(treeLookup);
     }
 
 }

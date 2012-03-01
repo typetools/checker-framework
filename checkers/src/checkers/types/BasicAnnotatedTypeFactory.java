@@ -16,6 +16,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
+import checkers.flow.analysis.AnalysisResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.analysis.checkers.CFAnalysis;
@@ -30,6 +31,7 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -174,34 +176,64 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
     }
 
-    // Indicate whether flow has performed the analysis or not
+    /** Did the dataflow analysis over the compilation unit finish yet? */
     protected boolean finishedScanning = false;
-    protected CFAnalysis analysis = null;
-    
-	@Override
-	public void computeFlow(MethodTree node) {
-		if (useFlow) {
-			// Apply flow-sensitive qualifier inference.
-			ControlFlowGraph cfg = CFGBuilder.build(env, node);
-			analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
-			analysis.performAnalysis(cfg);
-
-			super.fromTreeCache.clear();
-			finishedScanning = true;
-		}
-	}
+    /** Did the dataflow analysis over the compilation unit start yet? */
+    protected boolean scanned = false;
+    /**
+     * The result of the flow analysis. Invariant:
+     * <pre>
+     *  finishedScanning ==> flowResult != null
+     * </pre>
+     */
+    protected AnalysisResult<CFValue> flowResult = null;
 	
-	@Override
-	public void endFlow(MethodTree node) {
-		analysis = null;
-	}
-    
+    /**
+     * Perform a dataflow analysis over the whole compilation unit.
+     */
+	protected void performFlowAnalysis() {
+        scanned = true;
+        flowResult = new AnalysisResult<>();
+        for (Tree t : root.getTypeDecls()) {
+            assert t instanceof ClassTree;
+            ClassTree ct = (ClassTree) t;
+            for (Tree m : ct.getMembers()) {
+                switch (m.getKind()) {
+                case METHOD:
+                    MethodTree mt = (MethodTree) m;
+                    ControlFlowGraph cfg = CFGBuilder.build(env, mt);
+                    CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+                    analysis.performAnalysis(cfg);
+                    AnalysisResult<CFValue> result = analysis.getResult();
+                    flowResult.combine(result);
+                    break;
+                case VARIABLE:
+                    // TODO: handle initializers
+                    break;
+                default:
+                    System.err.println("Unexpected member: "+m.getKind());
+                    assert false;
+                    break;
+                }
+            }
+        }
+        /*ControlFlowGraph cfg = CFGBuilder.build(env, node);
+        analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+        analysis.performAnalysis(cfg);
+
+        super.fromTreeCache.clear();*/
+        finishedScanning = true;
+    }
+	
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
+        if (useFlow && !scanned) {
+            performFlowAnalysis();
+        }
         treeAnnotator.visit(tree, type);
-        if (useFlow && analysis != null) {
-            CFValue as = analysis.getValue(tree);
+        if (useFlow) {
+            CFValue as = flowResult.getValue(tree);
             // TODO: handle inference of more than one qualifier
 			final AnnotationMirror inferred = as != null ? as.getAnnotations().iterator().next() : null;
             if (inferred != null) {
