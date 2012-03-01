@@ -23,6 +23,8 @@ import checkers.flow.util.HashCodeUtils;
  * @author Charlie Garrett
  * @author Stefan Heule
  */
+// TODO: this class should be split into parts that are reusable generally, and
+// parts specific to the checker framework
 public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
         implements Store<S> {
 
