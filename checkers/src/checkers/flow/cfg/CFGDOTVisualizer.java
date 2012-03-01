@@ -207,8 +207,7 @@ public class CFGDOTVisualizer {
 
         // visualize store if necessary
         if (analysis != null) {
-            TransferInput<A, S> store = Analysis.readFromStore(
-                    analysis.getStores(), bb);
+            TransferInput<A, S> store = analysis.getStore(bb);
             StringBuilder sb2 = new StringBuilder();
 
             // split store representation to two lines
