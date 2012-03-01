@@ -1,7 +1,5 @@
 package checkers.flow.analysis;
 
-import java.util.Map;
-
 import checkers.flow.cfg.node.Node;
 
 /**
