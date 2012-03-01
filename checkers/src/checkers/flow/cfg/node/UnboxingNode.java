@@ -27,9 +27,11 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class UnboxingNode extends Node {
 
+    protected Tree tree;
     protected Node operand;
 
-    public UnboxingNode(Node operand, TypeMirror type) {
+    public UnboxingNode(Tree tree, Node operand, TypeMirror type) {
+        this.tree = tree;
         this.operand = operand;
         this.type = type;
     }
@@ -40,7 +42,7 @@ public class UnboxingNode extends Node {
 
     @Override
     public Tree getTree() {
-        return null;
+        return tree;
     }
 
     @Override

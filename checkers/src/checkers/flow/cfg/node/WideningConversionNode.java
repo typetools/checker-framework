@@ -25,10 +25,12 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class WideningConversionNode extends Node {
 
+    protected Tree tree;
     protected Node operand;
 
-    public WideningConversionNode(Node operand, TypeMirror type) {
+    public WideningConversionNode(Tree tree, Node operand, TypeMirror type) {
         assert TypesUtils.isPrimitive(type) : "non-primitive type in widening conversion";
+        this.tree = tree;
         this.operand = operand;
         this.type = type;
     }
@@ -43,7 +45,7 @@ public class WideningConversionNode extends Node {
 
     @Override
     public Tree getTree() {
-        return null;
+        return tree;
     }
 
     @Override
