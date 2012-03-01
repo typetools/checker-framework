@@ -351,4 +351,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public/* @Nullable */A getValue(Tree t) {
         return getValue(cfg.getNodeCorrespondingToTree(t));
     }
+    
+    public AnalysisResult<A> getResult() {
+        assert !isRunning;
+        return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
+    }
 }
