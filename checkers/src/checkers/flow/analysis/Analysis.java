@@ -285,6 +285,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         this node.
      */
     public/* @Nullable */A getValue(Node n) {
+        // TODO: assert that analysis is done
         return nodeValues.get(n);
     }
 
