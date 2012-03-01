@@ -42,7 +42,7 @@ import com.sun.source.tree.VariableTree;
 public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
 
     /** Is the analysis currently running? */
-    protected boolean analysisRunning = false;
+    protected boolean isRunning = false;
 
     /** The transfer function for regular nodes. */
     protected T transferFunction;
@@ -67,6 +67,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /** Abstract values of nodes. */
     protected Map<Node, A> nodeValues;
+
+    /**
+     * The node that is currently handeled in the analysis (if it is running).
+     * The following invariant holds:
+     * 
+     * <pre>
+     *   !isRunning ==> (currentNode == null)
+     * </pre>
+     */
+    protected Node currentNode;
 
     /**
      * Construct an object that can perform a dataflow analysis over a control
@@ -102,8 +112,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * @param cfg
      */
     public void performAnalysis(ControlFlowGraph cfg) {
-        assert analysisRunning == false;
-        analysisRunning = true;
+        assert isRunning == false;
+        isRunning = true;
 
         init(cfg);
 
@@ -119,13 +129,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 TransferInput<A, S> store = storeBefore.copy();
                 TransferResult<A, S> transferResult = null;
                 for (Node n : rb.getContents()) {
-                    store.node = n;
-                    transferResult = n.accept(transferFunction, store);
+                    transferResult = callTransferFunction(n, store);
                     A val = transferResult.getResultValue();
                     if (val != null) {
                         nodeValues.put(n, val);
                     }
-                    store = new TransferInput<>(n, nodeValues, transferResult);
+                    store = new TransferInput<>(n, this, transferResult);
                 }
                 // loop will run at least one, making transferResult non-null
 
@@ -143,9 +152,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 TransferInput<A, S> storeBefore = getStoreBefore(eb);
                 TransferInput<A, S> store = storeBefore.copy();
                 Node node = eb.getNode();
-                store.node = node;
-                TransferResult<A, S> transferResult = node.accept(
-                        transferFunction, store);
+                TransferResult<A, S> transferResult = callTransferFunction(
+                        node, store);
                 A val = transferResult.getResultValue();
                 if (val != null) {
                     nodeValues.put(node, val);
@@ -166,7 +174,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                             .getExceptionalStore(cause);
                     if (exceptionalStore != null) {
                         addStoreBefore(exceptionSucc, new TransferInput<>(node,
-                                nodeValues, exceptionalStore));
+                                this, exceptionalStore));
                     } else {
                         addStoreBefore(exceptionSucc, storeBefore.copy());
                     }
@@ -184,10 +192,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successor
                 Block thenSucc = cb.getThenSuccessor();
                 Block elseSucc = cb.getElseSuccessor();
-                addStoreBefore(thenSucc, new TransferInput<>(null, nodeValues,
-                        store.getThenStore()));
-                addStoreBefore(elseSucc, new TransferInput<>(null, nodeValues,
-                        store.getElseStore()));
+                addStoreBefore(thenSucc,
+                        new TransferInput<>(null, this, store.getThenStore()));
+                addStoreBefore(elseSucc,
+                        new TransferInput<>(null, this, store.getElseStore()));
                 break;
             }
 
@@ -208,8 +216,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             }
         }
 
-        assert analysisRunning == true;
-        analysisRunning = false;
+        assert isRunning == true;
+        isRunning = false;
+    }
+
+    /**
+     * Call the transfer function for node {@code node}, and set that node as
+     * current node first.
+     */
+    protected TransferResult<A, S> callTransferFunction(Node node,
+            TransferInput<A, S> store) {
+        store.node = node;
+        currentNode = node;
+        TransferResult<A, S> transferResult = node.accept(transferFunction,
+                store);
+        currentNode = null;
+        return transferResult;
     }
 
     /** Initialize the analysis with a new control flow graph. */
@@ -233,7 +255,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             // TODO: document that LocalVariableNode has no block that it
             // belongs to
         }
-        stores.put(cfg.getEntryBlock(), new TransferInput<>(null, nodeValues,
+        stores.put(cfg.getEntryBlock(), new TransferInput<>(null, this,
                 transferFunction.initialStore(tree, parameters)));
     }
 
@@ -285,7 +307,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /** Is the analysis currently running? */
     public boolean isRunning() {
-        return analysisRunning;
+        return isRunning;
     }
 
     /**
@@ -303,7 +325,20 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         this node.
      */
     public/* @Nullable */A getValue(Node n) {
-        // TODO: assert that analysis is done
+        if (isRunning) {
+            // we do not yet have a dataflow fact about the current node
+            if (currentNode == n) {
+                return null;
+            }
+            // check that 'n' is a subnode of 'node'. Check immediate operands
+            // first for efficiency.
+            assert currentNode != null;
+            assert currentNode != n
+                    && (currentNode.getOperands().contains(n) || currentNode
+                            .getTransitiveOperands().contains(n));
+            assert !n.isLValue();
+            return nodeValues.get(n);
+        }
         return nodeValues.get(n);
     }
 
@@ -314,6 +349,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         this node.
      */
     public/* @Nullable */A getValue(Tree t) {
-        return nodeValues.get(cfg.getNodeCorrespondingToTree(t));
+        return getValue(cfg.getNodeCorrespondingToTree(t));
     }
 }

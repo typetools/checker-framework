@@ -57,9 +57,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     protected final/* @Nullable */S elseStore;
 
     /**
-     * Mapping from nodes to abstract values (provided by the analysis).
+     * The corresponding analysis class to get intermediate flow results.
      */
-    protected final Map<Node, A> nodeValues;
+    protected final Analysis<A, S, ?> analysis;
 
     /**
      * Create a {@link TransferInput}, given a {@link TransferResult} and a
@@ -76,10 +76,10 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The node-value mapping {@code nodeValues} is provided by the analysis and
      * is only read from within this {@link TranferInput}.
      */
-    public TransferInput(Node n, Map<Node, A> nodeValues,
+    public TransferInput(Node n, Analysis<A, S, ?> analysis,
             TransferResult<A, S> to) {
         node = n;
-        this.nodeValues = nodeValues;
+        this.analysis = analysis;
         if (to.containsTwoStores()) {
             thenStore = to.getThenStore();
             elseStore = to.getElseStore();
@@ -104,9 +104,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The node-value mapping {@code nodeValues} is provided by the analysis and
      * is only read from within this {@link TranferInput}.
      */
-    public TransferInput(Node n, Map<Node, A> nodeValues, S s) {
+    public TransferInput(Node n, Analysis<A, S, ?> analysis, S s) {
         node = n;
-        this.nodeValues = nodeValues;
+        this.analysis = analysis;
         store = s;
         thenStore = elseStore = null;
     }
@@ -121,9 +121,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * stored internally and are not allowed to be used elsewhere. Full control
      * of them is transfered to this object.
      */
-    public TransferInput(Node n, Map<Node, A> nodeValues, S s1, S s2) {
+    public TransferInput(Node n, Analysis<A, S, ?> analysis, S s1, S s2) {
         node = n;
-        this.nodeValues = nodeValues;
+        this.analysis = analysis;
         thenStore = s1;
         elseStore = s2;
         store = null;
@@ -134,7 +134,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      */
     protected TransferInput(TransferInput<A, S> from) {
         this.node = from.node;
-        this.nodeValues = from.nodeValues;
+        this.analysis = from.analysis;
         if (from.store == null) {
             thenStore = from.thenStore.copy();
             elseStore = from.elseStore.copy();
@@ -153,13 +153,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      *         value if available.
      */
     public/* @Nullable */A getValueOfSubNode(Node n) {
-        // check that 'n' is a subnode of 'node'. Check immediate operands first
-        // for efficiency.
-        assert node != n
-                && (node.getOperands().contains(n) || node
-                        .getTransitiveOperands().contains(n));
-        assert !n.isLValue();
-        return nodeValues.get(n);
+        return analysis.getValue(n);
     }
 
     /**
@@ -231,7 +225,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         if (store == null) {
             S newThenStore = thenStore.leastUpperBound(other.getThenStore());
             S newElseStore = elseStore.leastUpperBound(other.getElseStore());
-            return new TransferInput<>(node, nodeValues, newThenStore,
+            return new TransferInput<>(node, analysis, newThenStore,
                     newElseStore);
         } else {
             if (other.store == null) {
@@ -239,7 +233,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
                 // least one of the two TransferInput's has two stores.
                 return other.leastUpperBound(this);
             }
-            return new TransferInput<>(node, nodeValues,
+            return new TransferInput<>(node, analysis,
                     store.leastUpperBound(other.getRegularStore()));
         }
     }
