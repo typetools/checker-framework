@@ -1109,9 +1109,8 @@ public class CFGBuilder {
          */
         protected void replaceInLookupMap(Node node) {
             Tree tree = node.getTree();
-            if (tree != null && treeLookupMap.containsKey(tree)) {
-                treeLookupMap.put(tree, node);
-            }
+            assert tree != null && treeLookupMap.containsKey(tree);
+            treeLookupMap.put(tree, node);
         }
 
         /**
