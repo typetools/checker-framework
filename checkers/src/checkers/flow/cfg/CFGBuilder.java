@@ -1099,6 +1099,22 @@ public class CFGBuilder {
         }
 
         /**
+         * Replace a node in the lookup map.  The node should refer
+         * to a Tree and that Tree should already be in the lookup
+         * map.  This method is used to update the Tree-Node mapping
+         * with conversion nodes.
+         * 
+         * @param node
+         *            The node to add to the lookup map.
+         */
+        protected void replaceInLookupMap(Node node) {
+            Tree tree = node.getTree();
+            if (tree != null && treeLookupMap.containsKey(tree)) {
+                treeLookupMap.put(tree, node);
+            }
+        }
+
+        /**
          * Extend the list of extended nodes with a node.
          * 
          * @param node
@@ -1191,7 +1207,8 @@ public class CFGBuilder {
                     types.getPrimitiveType(node.getType().getKind());
                 TypeMirror boxedType =
                     types.getDeclaredType(types.boxedClass(primitive));
-                node = new BoxingNode(node, boxedType);
+                node = new BoxingNode(node.getTree(), node, boxedType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
             return node;
@@ -1207,8 +1224,10 @@ public class CFGBuilder {
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                node = new UnboxingNode(node,
+                node = new UnboxingNode(node.getTree(),
+                        node,
                         types.unboxedType(node.getType()));
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
             return node;
@@ -1226,7 +1245,10 @@ public class CFGBuilder {
             // For string conversion, see JLS 5.1.11
             assert TypesUtils.isString(stringType);
             if (!TypesUtils.isString(node.getType())) {
-                node = new StringConversionNode(node, stringType);
+                node = new StringConversionNode(node.getTree(),
+                        node,
+                        stringType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
             return node;
@@ -1249,7 +1271,8 @@ public class CFGBuilder {
             case CHAR:
             case SHORT: {
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
-                node = new WideningConversionNode(node, intType);
+                node = new WideningConversionNode(node.getTree(), node, intType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
                 break;
             }
@@ -1274,7 +1297,10 @@ public class CFGBuilder {
             node = unbox(node);
 
             if (!types.isSameType(node.getType(), exprType)) {
-                node = new WideningConversionNode(node, exprType);
+                node = new WideningConversionNode(node.getTree(),
+                        node,
+                        exprType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
             return node;
@@ -1296,7 +1322,10 @@ public class CFGBuilder {
             "widening must be applied to primitive types";
             if (types.isSubtype(node.getType(), destType) &&
                 !types.isSameType(node.getType(), destType)) {
-                node = new WideningConversionNode(node, destType);
+                node = new WideningConversionNode(node.getTree(),
+                        node,
+                        destType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
 
@@ -1319,7 +1348,10 @@ public class CFGBuilder {
             "narrowing must be applied to primitive types";
             if (types.isSubtype(destType, node.getType()) &&
                     !types.isSameType(destType, node.getType())) {
-                node = new NarrowingConversionNode(node, destType);
+                node = new NarrowingConversionNode(node.getTree(),
+                        node,
+                        destType);
+                replaceInLookupMap(node);
                 extendWithNode(node);
             }
 
