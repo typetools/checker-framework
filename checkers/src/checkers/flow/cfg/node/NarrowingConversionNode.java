@@ -25,10 +25,12 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class NarrowingConversionNode extends Node {
 
+    protected Tree tree;
     protected Node operand;
 
-    public NarrowingConversionNode(Node operand, TypeMirror type) {
+    public NarrowingConversionNode(Tree tree, Node operand, TypeMirror type) {
         assert TypesUtils.isPrimitive(type) : "non-primitive type in narrowing conversion";
+        this.tree = tree;
         this.operand = operand;
         this.type = type;
     }
@@ -43,7 +45,7 @@ public class NarrowingConversionNode extends Node {
 
     @Override
     public Tree getTree() {
-        return null;
+        return tree;
     }
 
     @Override

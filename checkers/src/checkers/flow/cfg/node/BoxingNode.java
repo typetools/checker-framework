@@ -28,9 +28,11 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class BoxingNode extends Node {
 
+    protected Tree tree;
     protected Node operand;
 
-    public BoxingNode(Node operand, TypeMirror type) {
+    public BoxingNode(Tree tree, Node operand, TypeMirror type) {
+        this.tree = tree;
         this.operand = operand;
         this.type = type;
     }
@@ -41,7 +43,7 @@ public class BoxingNode extends Node {
 
     @Override
     public Tree getTree() {
-        return null;
+        return tree;
     }
 
     @Override
