@@ -41,6 +41,9 @@ import com.sun.source.tree.VariableTree;
  */
 public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
 
+    /** Is the analysis currently running? */
+    protected boolean analysisRunning = false;
+
     /** The transfer function for regular nodes. */
     protected T transferFunction;
 
@@ -99,6 +102,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * @param cfg
      */
     public void performAnalysis(ControlFlowGraph cfg) {
+        assert analysisRunning == false;
+        analysisRunning = true;
+
         init(cfg);
 
         while (!worklist.isEmpty()) {
@@ -201,6 +207,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 break;
             }
         }
+
+        assert analysisRunning == true;
+        analysisRunning = false;
     }
 
     /** Initialize the analysis with a new control flow graph. */
@@ -269,13 +278,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Read the {@link Store} for a particular basic block from a map of stores
      * (or {@code null} if none exists yet).
      */
-    public static <S> /* @Nullable */S readFromStore(Map<Block, S> stores,
+    protected static <S> /* @Nullable */S readFromStore(Map<Block, S> stores,
             Block b) {
         return stores.get(b);
     }
 
-    public Map<Block, TransferInput<A, S>> getStores() {
-        return stores;
+    /** Is the analysis currently running? */
+    public boolean isRunning() {
+        return analysisRunning;
+    }
+
+    /**
+     * Read the {@link Store} for a particular basic block (or {@code null} if
+     * none exists yet).
+     */
+    public/* @Nullable */TransferInput<A, S> getStore(Block b) {
+        return readFromStore(stores, b);
     }
 
     /**
