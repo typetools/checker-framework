@@ -1027,6 +1027,24 @@ public class CFGBuilder {
          */
         protected Label elseTargetL;
 
+        /**
+         * Label for the control flow destination of a break statement,
+         * or null if there is no valid destination.
+         */
+        protected Label breakTargetL;
+
+        /**
+         * Label for the control flow destination of a continue statement,
+         * or null if there is no valid destination.
+         */
+        protected Label continueTargetL;
+
+        /**
+         * Node yielding the value for the lexically enclosing switch
+         * statement, or null if there is no such statement.
+         */
+        protected Node switchExpr;
+
         /** Map from AST {@link Tree}s to {@link Node}s. */
         // TODO: fill this map with contents.
         protected IdentityHashMap<Tree, Node> treeLookupMap;
@@ -2060,13 +2078,40 @@ public class CFGBuilder {
 
         @Override
         public Node visitBreak(BreakTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert !conditionalMode;
+
+            assert breakTargetL != null : "no target for break statement";
+
+            extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+
             return null;
         }
 
         @Override
         public Node visitCase(CaseTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert !conditionalMode;
+            assert switchExpr != null : "no switch expression in case";
+
+            Tree exprTree = tree.getExpression();
+            if (exprTree != null) {
+                // a case with a constant expression
+                Label thisBlockL = new Label();
+                Label nextCaseL = new Label();
+
+                Node expr = exprTree.accept(this, null);
+                EqualToNode test = new EqualToNode(null, switchExpr, expr);
+                extendWithExtendedNode(new ConditionalJump(thisBlockL, nextCaseL));
+                addLabelForNextNode(thisBlockL);
+                for (StatementTree stmt : tree.getStatements()) {
+                    stmt.accept(this, null);
+                }
+                addLabelForNextNode(nextCaseL);
+            } else {
+                // the default case
+                for (StatementTree stmt : tree.getStatements()) {
+                    stmt.accept(this, null);
+                }
+            }
             return null;
         }
 
@@ -2333,7 +2378,20 @@ public class CFGBuilder {
 
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            switchExpr = unbox(tree.getExpression().accept(this, null));
+
+            Label oldBreakTargetL = breakTargetL;
+            breakTargetL = new Label();
+
+            for (CaseTree caseTree : tree.getCases()) {
+                caseTree.accept(this, null);
+            }
+
+            addLabelForNextNode(breakTargetL);
+
+            // TODO: maintain a stack of break target labels, among others
+            breakTargetL = oldBreakTargetL;
+
             return null;
         }
 
