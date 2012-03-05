@@ -6,6 +6,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -46,7 +47,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE, RAW;
+    private final AnnotationMirror NONNULL, PRIMITIVE, RAW;
     private final TypeMirror stringType;
 
     /**
@@ -58,7 +59,6 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
         NONNULL = checker.NONNULL;
-        NULLABLE = checker.NULLABLE;
         PRIMITIVE = checker.PRIMITIVE;
         RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
@@ -102,13 +102,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     /** Case 5: Check for synchronizing locks */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
-
-        // checkForNullability(node.getExpression(), "locking.nullable");
-        // raw is sufficient
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node.getExpression());
-        if (type.hasEffectiveAnnotation(NULLABLE))
-            checker.report(Result.failure("locking.nullable", node), node);
-
+        checkForNullability(node.getExpression(), "locking.nullable");
         return super.visitSynchronized(node, p);
     }
 
@@ -127,7 +121,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitConditionalExpression(node, p);
+    }
+
+    @Override
     public Void visitIf(IfTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
         boolean beforeAssert = isInAssert;
         try {
             isInAssert =
@@ -137,6 +138,34 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         } finally {
             isInAssert = beforeAssert;
         }
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitDoWhileLoop(node, p);
+    }
+
+    @Override
+    public Void visitWhileLoop(WhileLoopTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitWhileLoop(node, p);
+    }
+
+    // Nothing needed for EnhancedForLoop, no boolean get's unboxed there.
+    @Override
+    public Void visitForLoop(ForLoopTree node, Void p) {
+        if (node.getCondition()!=null) {
+            // Condition is null e.g. in "for (;;) {...}"
+            checkForNullability(node.getCondition(), "condition.nullable");
+        }
+        return super.visitForLoop(node, p);
+    }
+
+    @Override
+    public Void visitSwitch(SwitchTree node, Void p) {
+        checkForNullability(node.getExpression(), "switching.nullable");
+        return super.visitSwitch(node, p);
     }
 
     protected void checkForRedundantTests(BinaryTree node) {
@@ -169,7 +198,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         final ExpressionTree leftOp = node.getLeftOperand();
         final ExpressionTree rightOp = node.getRightOperand();
 
-        if (isUnboxingOperation(node)) {
+        if (isUnboxingOperation(types, stringType, node)) {
             checkForNullability(leftOp, "unboxing.of.nullable");
             checkForNullability(rightOp, "unboxing.of.nullable");
         }
@@ -190,7 +219,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         // ignore String concatenation
-        if (!isString(node)) {
+        if (!isString(types, stringType, node)) {
             checkForNullability(node.getVariable(), "unboxing.of.nullable");
             checkForNullability(node.getExpression(), "unboxing.of.nullable");
         }
@@ -428,7 +457,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = ((NullnessAnnotatedTypeFactory)atypeFactory).rawnessFactory.methodFromUse(node);
             AnnotatedExecutableType invokedMethod = mfuPair.first;
-            List<AnnotatedTypeMirror> typeargs = mfuPair.second;
+            // List<AnnotatedTypeMirror> typeargs = mfuPair.second;
             if (! invokedMethod.getReceiverType().hasAnnotation(RAW)) {
                 if (nonInitializedFields != null) {
                     if (! nonInitializedFields.first.isEmpty()) {
@@ -596,18 +625,18 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     /////////////// Utility methods //////////////////////////////
 
     /** @return true if binary operation could cause an unboxing operation */
-    private final boolean isUnboxingOperation(BinaryTree tree) {
+    public static final boolean isUnboxingOperation(Types types, TypeMirror stringType, BinaryTree tree) {
         if (tree.getKind() == Tree.Kind.EQUAL_TO
                 || tree.getKind() == Tree.Kind.NOT_EQUAL_TO)
             return isPrimitive(tree.getLeftOperand()) != isPrimitive(tree.getRightOperand());
         else
-            return !isString(tree);
+            return !isString(types, stringType, tree);
     }
 
     /**
      * @return true if the type of the tree is a super of String
      * */
-    private final boolean isString(ExpressionTree tree) {
+    public static final boolean isString(Types types, TypeMirror stringType, ExpressionTree tree) {
         TypeMirror type = InternalUtils.typeOf(tree);
         return types.isAssignable(stringType, type);
     }
@@ -615,7 +644,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     /**
      * @return true if the type of the tree is a primitive
      */
-    private final boolean isPrimitive(ExpressionTree tree) {
+    public static final boolean isPrimitive(ExpressionTree tree) {
         return InternalUtils.typeOf(tree).getKind().isPrimitive();
     }
 
