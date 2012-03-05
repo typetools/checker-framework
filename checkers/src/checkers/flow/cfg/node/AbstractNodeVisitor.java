@@ -398,4 +398,10 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     public R visitAssert(AssertNode n, P p) {
         return visitNode(n, p);
     }
+
+    // Cases
+    @Override
+    public R visitCase(CaseNode n, P p) {
+        return visitNode(n, p);
+    }
 }
