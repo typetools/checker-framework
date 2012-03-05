@@ -8,7 +8,6 @@ class TestSwitch {
     @SuppressWarnings("fenum:assignment.type.incompatible")
     @Fenum("TEST") final int annotated2 = 6;
 
-      
     int plain = 9; // FenumUnqualified
 
     switch(plain) {
@@ -23,13 +22,13 @@ class TestSwitch {
     case 2:
     default:
     }
-    
+
     switch(annotated) {
     //:: error: (switch.type.incompatible)
     case 45:
     default:
     }
-    
+
     // annotated working
     switch(annotated) {
     case annotated2:
