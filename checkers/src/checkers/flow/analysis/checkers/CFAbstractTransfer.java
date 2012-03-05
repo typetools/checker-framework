@@ -9,6 +9,7 @@ import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
@@ -147,6 +148,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitAssert(AssertNode n, TransferInput<V, S> in) {
         // TODO: Perform type propagation separately with a thenStore and an
         // elseStore.
+        return new RegularTransferResult<>(null, in.getRegularStore());
+    }
+
+    /**
+     * A case produces no value, but it may imply some facts about the
+     * argument to the switch statement.
+     */
+    @Override
+    public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
         return new RegularTransferResult<>(null, in.getRegularStore());
     }
 }

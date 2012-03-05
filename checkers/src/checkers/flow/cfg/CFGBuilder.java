@@ -39,6 +39,7 @@ import checkers.flow.cfg.node.BitwiseXorNode;
 import checkers.flow.cfg.node.BitwiseXorAssignmentNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.BoxingNode;
+import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.CharacterLiteralNode;
 import checkers.flow.cfg.node.ConditionalAndNode;
 import checkers.flow.cfg.node.ConditionalNotNode;
@@ -2099,7 +2100,7 @@ public class CFGBuilder {
                 Label nextCaseL = new Label();
 
                 Node expr = exprTree.accept(this, null);
-                EqualToNode test = new EqualToNode(null, switchExpr, expr);
+                CaseNode test = new CaseNode(tree, switchExpr, expr);
                 extendWithExtendedNode(new ConditionalJump(thisBlockL, nextCaseL));
                 addLabelForNextNode(thisBlockL);
                 for (StatementTree stmt : tree.getStatements()) {
@@ -2147,19 +2148,28 @@ public class CFGBuilder {
             Label loopEntry = new Label();
             Label loopExit = new Label();
 
+            Label oldBreakTargetL = breakTargetL;
+            breakTargetL = loopExit;
+
             // Loop body
             addLabelForNextNode(loopEntry);
-            tree.getStatement().accept(this, p);
+            if (tree.getStatement() != null) {
+                tree.getStatement().accept(this, p);
+            }
 
             // Condition
             conditionalMode = true;
             thenTargetL = loopEntry;
             elseTargetL = loopExit;
-            unbox(tree.getCondition().accept(this, p));
+            if (tree.getCondition() != null) {
+                unbox(tree.getCondition().accept(this, p));
+            }
             conditionalMode = false;
 
             // Loop exit
             addLabelForNextNode(loopExit);
+
+            breakTargetL = oldBreakTargetL;
 
             return null;
         }
@@ -2190,6 +2200,9 @@ public class CFGBuilder {
             Label loopEntry = new Label();
             Label loopExit = new Label();
 
+            Label oldBreakTargetL = breakTargetL;
+            breakTargetL = loopExit;
+
             // Initializer
             for (StatementTree init : tree.getInitializer()) {
                 init.accept(this, p);
@@ -2201,12 +2214,16 @@ public class CFGBuilder {
             conditionalMode = true;
             thenTargetL = loopEntry;
             elseTargetL = loopExit;
-            unbox(tree.getCondition().accept(this, p));
+            if (tree.getCondition() != null) {
+                unbox(tree.getCondition().accept(this, p));
+            }
             conditionalMode = false;
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            tree.getStatement().accept(this, p);
+            if (tree.getStatement() != null) {
+                tree.getStatement().accept(this, p);
+            }
 
             // Update
             for (ExpressionStatementTree update : tree.getUpdate()) {
@@ -2218,6 +2235,8 @@ public class CFGBuilder {
             // Loop exit
             addLabelForNextNode(loopExit);
 
+            breakTargetL = oldBreakTargetL;
+            
             return null;
         }
 
@@ -2563,21 +2582,30 @@ public class CFGBuilder {
             Label loopEntry = new Label();
             Label loopExit = new Label();
 
+            Label oldBreakTargetL = breakTargetL;
+            breakTargetL = loopExit;
+
             // Condition
             addLabelForNextNode(conditionStart);
             conditionalMode = true;
             thenTargetL = loopEntry;
             elseTargetL = loopExit;
-            unbox(tree.getCondition().accept(this, p));
+            if (tree.getCondition() != null) {
+                unbox(tree.getCondition().accept(this, p));
+            }
             conditionalMode = false;
 
             // Loop body
             addLabelForNextNode(loopEntry);
-            tree.getStatement().accept(this, p);
+            if (tree.getStatement() != null) {
+                tree.getStatement().accept(this, p);
+            }
             extendWithExtendedNode(new UnconditionalJump(conditionStart));
 
             // Loop exit
             addLabelForNextNode(loopExit);
+
+            breakTargetL = oldBreakTargetL;
 
             return null;
         }
