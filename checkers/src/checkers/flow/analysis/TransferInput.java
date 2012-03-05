@@ -237,6 +237,25 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (o != null && o instanceof TransferInput) {
+            @SuppressWarnings("unchecked")
+            TransferInput other = (TransferInput) o;
+            if (containsTwoStores()) {
+                if (other.containsTwoStores()) {
+                    return getThenStore().equals(other.getThenStore()) &&
+                        getElseStore().equals(other.getElseStore());
+                }
+            } else {
+                if (!other.containsTwoStores()) {
+                    return getRegularStore().equals(other.getRegularStore());
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         if (store == null) {
             return "[then=" + thenStore + ", else=" + elseStore + "]";
