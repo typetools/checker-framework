@@ -13,10 +13,12 @@ import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.util.ASTUtils;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -62,6 +64,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     // TODO: We could use an intermediate classes such as ExpressionNode
     // to refactor visitors. Propagation is appropriate for all expressions.
+    
+    
 
     /**
      * The default visitor returns the input information unchanged, or in the
@@ -71,13 +75,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
         // TODO: Perform type propagation separately with a thenStore and an
         // elseStore.
+        
         S info = in.getRegularStore();
         V value = null;
 
         Tree tree = n.getTree();
-        if (tree != null) {
-            AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
-            value = analysis.createAbstractValue(at.getAnnotations());
+        if (ASTUtils.canHaveTypeAnnotation(tree)) {
+            if (tree != null) {
+                AnnotatedTypeMirror at = analysis.factory
+                        .getAnnotatedType(tree);
+                value = analysis.createAbstractValue(at.getAnnotations());
+            }
         }
 
         return new RegularTransferResult<>(value, info);
