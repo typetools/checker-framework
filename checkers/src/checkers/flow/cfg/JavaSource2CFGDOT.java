@@ -129,13 +129,14 @@ public class JavaSource2CFGDOT {
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
             String inputFile, String outputFile, String method, String clas,
             boolean pdf, /* @Nullable */Analysis<A, S, T> analysis) {
-        MethodTree m = getMethodTree(inputFile, method, clas);
-        generateDOTofCFG(inputFile, outputFile, method, clas, pdf, analysis, m);
+        Entry<MethodTree, CompilationUnitTree> m = getMethodTreeAndCompilationUnit(inputFile, method, clas);
+        generateDOTofCFG(inputFile, outputFile, method, clas, pdf, analysis, m.getKey(), m.getValue());
     }
 
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
             String inputFile, String outputFile, String method, String clas,
-            boolean pdf, /* @Nullable */Analysis<A, S, T> analysis, MethodTree m) {
+            boolean pdf, /* @Nullable */Analysis<A, S, T> analysis, MethodTree m,
+            CompilationUnitTree r) {
         String fileName = (new File(inputFile)).getName();
         System.out.println("Working on " + fileName + "...");
 
@@ -149,7 +150,7 @@ public class JavaSource2CFGDOT {
         // require a ProcessingEnvironment in place of the null argument below.
         // Can
         // we supply an environment for this example?
-        ControlFlowGraph cfg = CFGBuilder.build(null, m);
+        ControlFlowGraph cfg = CFGBuilder.build(r, null, m);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
         }
