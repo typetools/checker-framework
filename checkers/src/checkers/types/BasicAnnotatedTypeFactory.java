@@ -201,7 +201,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 switch (m.getKind()) {
                 case METHOD:
                     MethodTree mt = (MethodTree) m;
-                    ControlFlowGraph cfg = CFGBuilder.build(env, mt);
+                    ControlFlowGraph cfg = CFGBuilder.build(root, env, mt);
                     CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
                     analysis.performAnalysis(cfg);
                     AnalysisResult<CFValue> result = analysis.getResult();
