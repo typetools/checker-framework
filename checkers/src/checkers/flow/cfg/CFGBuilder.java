@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
@@ -156,7 +157,9 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * Builds the control flow graph of a Java method (represented by its abstract
@@ -192,13 +195,17 @@ public class CFGBuilder {
     /**
      * Build the control flow graph of a method.
      */
-    public static ControlFlowGraph build(ProcessingEnvironment env,
+    public static ControlFlowGraph build(CompilationUnitTree root,
+            ProcessingEnvironment env,
             MethodTree method) {
-        return new CFGBuilder().run(env, method);
+        return new CFGBuilder().run(root, env, method);
     }
 
-    protected ControlFlowGraph run(ProcessingEnvironment env, MethodTree method) {
-        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(env,
+    protected ControlFlowGraph run(CompilationUnitTree root, 
+            ProcessingEnvironment env,
+            MethodTree method) {
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(root,
+                env,
                 method);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
@@ -994,22 +1001,37 @@ public class CFGBuilder {
 
         /**
          * Annotation processing environment and its associated
-         * type utilities.
+         * type and tree utilities.
          */
         protected ProcessingEnvironment env;
         protected Types types;
+        protected Trees trees;
 
         /**
-         * Label for the control flow destination of a break statement,
-         * or null if there is no valid destination.
+         * Current {@link Label} to which a break statement with no label
+         * should jump, or null if there is no valid destination.
          */
-        protected Label breakTargetL;
+        protected/* @Nullable */Label breakTargetL;
 
         /**
-         * Label for the control flow destination of a continue statement,
-         * or null if there is no valid destination.
+         * Map from AST label Names to CFG {@link Label}s for breaks.
+         * Each labeled statement creates two CFG {@link Label}s, one
+         * for break and one for continue.
          */
-        protected Label continueTargetL;
+        protected HashMap<Name, Label> breakLabels;
+
+        /**
+         * Current {@link Label} to which a continue statement with no label
+         * should jump, or null if there is no valid destination.
+         */
+        protected/* @Nullable */Label continueTargetL;
+
+        /**
+         * Map from AST label Names to CFG {@link Label}s for continues.
+         * Each labeled statement creates two CFG {@link Label}s, one
+         * for break and one for continue.
+         */
+        protected HashMap<Name, Label> continueLabels;
 
         /**
          * Node yielding the value for the lexically enclosing switch
@@ -1018,7 +1040,6 @@ public class CFGBuilder {
         protected Node switchExpr;
 
         /** Map from AST {@link Tree}s to {@link Node}s. */
-        // TODO: fill this map with contents.
         protected IdentityHashMap<Tree, Node> treeLookupMap;
 
         /** The list of extended nodes. */
@@ -1036,6 +1057,8 @@ public class CFGBuilder {
         /**
          * Performs the actual work of phase one.
          * 
+         * @param root
+         *            compilation unit tree containing the method
          * @param env
          *            annotation processing environment containing type
          *            utilities
@@ -1043,18 +1066,24 @@ public class CFGBuilder {
          *            A method (identified by its AST element).
          * @return The result of phase one.
          */
-        public PhaseOneResult process(ProcessingEnvironment env, MethodTree t) {
+        public PhaseOneResult process(CompilationUnitTree root,
+                ProcessingEnvironment env,
+                MethodTree t) {
             this.env = env;
             types = env.getTypeUtils();
+            trees = Trees.instance(env);
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
+            breakLabels = new HashMap<>();
+            continueLabels = new HashMap<>();
 
             // traverse AST of the method body
-            t.getBody().accept(this, null);
+            TreePath bodyPath = trees.getPath(root, t.getBody());
+            scan(bodyPath, null);
 
             // add marker to indicate that the next block will be the exit block
             // Note: if there is a return statement earlier in the method (which
@@ -1434,6 +1463,20 @@ public class CFGBuilder {
             return node;
         }
 
+        /**
+         * Returns the label {@link Name} of the leaf in the argument path,
+         * or null if the leaf is not a labeled statement.
+         */
+        protected/* @Nullable */Name getLabel(TreePath path) {
+            if (path.getParentPath() != null) {
+                Tree parent = path.getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.LABELED_STATEMENT) {
+                    return ((LabeledStatementTree) parent).getLabel();
+                }
+            }
+            return null;
+        }
+
         /* --------------------------------------------------------- */
         /* Visitor Methods */
         /* --------------------------------------------------------- */
@@ -1458,8 +1501,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitAssert(AssertTree tree, Void p) {
-            Node condition = unbox(tree.getCondition().accept(this, p));
-            Node detail = tree.getDetail().accept(this, p);
+            Node condition = unbox(scan(tree.getCondition(), p));
+            Node detail = scan(tree.getDetail(), p);
 
             return extendWithNode(new AssertNode(tree, condition, detail));
         }
@@ -1480,7 +1523,7 @@ public class CFGBuilder {
                                             TreeUtils.enclosingClass(getCurrentPath()));
 
                 // visit expression
-                expression = tree.getExpression().accept(this, p);
+                expression = scan(tree.getExpression(), p);
                 expression = assignConvert(expression, varType);
 
                 // visit field access (throws null-pointer exception)
@@ -1507,7 +1550,7 @@ public class CFGBuilder {
 
             // case 3: other cases
             else {
-                Node target = variable.accept(this, p);
+                Node target = scan(variable, p);
                 target.setLValue();
 
                 expression = translateAssignment(tree, target,
@@ -1524,7 +1567,7 @@ public class CFGBuilder {
             assert tree instanceof AssignmentTree
                     || tree instanceof VariableTree;
             target.setLValue();
-            Node expression = rhs.accept(this, null);
+            Node expression = scan(rhs, null);
             expression = assignConvert(expression, target.getType());
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
                     expression);
@@ -1545,7 +1588,7 @@ public class CFGBuilder {
             assert ASTUtils.isFieldAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
-                return mtree.getExpression().accept(this, null);
+                return scan(mtree.getExpression(), null);
             } else {
                 TypeMirror classType = InternalUtils.typeOf(classTree);
                 Node node = new ImplicitThisLiteralNode(classType);
@@ -1589,8 +1632,8 @@ public class CFGBuilder {
             case MULTIPLY_ASSIGNMENT:
             case REMAINDER_ASSIGNMENT: {
                 // see JLS 15.17 and 15.26.2
-                Node target = tree.getVariable().accept(this, p);
-                Node value = tree.getExpression().accept(this, p);
+                Node target = scan(tree.getVariable(), p);
+                Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1620,8 +1663,8 @@ public class CFGBuilder {
             case PLUS_ASSIGNMENT: {
                 // see JLS 15.18 and 15.26.2
 
-                Node target = tree.getVariable().accept(this, p);
-                Node value = tree.getExpression().accept(this, p);
+                Node target = scan(tree.getVariable(), p);
+                Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1648,8 +1691,8 @@ public class CFGBuilder {
             case RIGHT_SHIFT_ASSIGNMENT:
             case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: {
                 // see JLS 15.19 and 15.26.2
-                Node target = tree.getVariable().accept(this, p);
-                Node value = tree.getExpression().accept(this, p);
+                Node target = scan(tree.getVariable(), p);
+                Node value = scan(tree.getExpression(), p);
 
                 target = unaryNumericPromotion(target);
                 value = unaryNumericPromotion(value);
@@ -1669,8 +1712,8 @@ public class CFGBuilder {
             case OR_ASSIGNMENT:
             case XOR_ASSIGNMENT:
                 // see JLS 15.22
-                Node target = tree.getVariable().accept(this, p);
-                Node value = tree.getExpression().accept(this, p);
+                Node target = scan(tree.getVariable(), p);
+                Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1706,8 +1749,8 @@ public class CFGBuilder {
             case MULTIPLY:
             case REMAINDER: {
                 // see JLS 15.17
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1736,8 +1779,8 @@ public class CFGBuilder {
             case MINUS:
             case PLUS: {
                 // see JLS 15.18
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1766,8 +1809,8 @@ public class CFGBuilder {
             case RIGHT_SHIFT:
             case UNSIGNED_RIGHT_SHIFT: {
                 // see JLS 15.19
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 left = unaryNumericPromotion(left);
                 right = unaryNumericPromotion(right);
@@ -1788,8 +1831,8 @@ public class CFGBuilder {
             case LESS_THAN:
             case LESS_THAN_EQUAL: {
                 // see JLS 15.20.1
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror leftType = left.getType();
                 if (TypesUtils.isBoxedPrimitive(leftType)) {
@@ -1826,8 +1869,8 @@ public class CFGBuilder {
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 // TODO: Perform the same conversions for EQUAL_TO.
                 TypeMirror leftType = left.getType();
@@ -1876,8 +1919,8 @@ public class CFGBuilder {
             case OR:
             case XOR: {
                 // see JLS 15.22
-                Node left = tree.getLeftOperand().accept(this, p);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
@@ -1908,13 +1951,13 @@ public class CFGBuilder {
                 Label mergeL = new Label();
 
                 // left-hand side
-                Node left = tree.getLeftOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
 
                 extendWithExtendedNode(new ConditionalJump(rightStartL, mergeL));
 
                 // right-hand side
                 addLabelForNextNode(rightStartL);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 addLabelForNextNode(mergeL);
                 Node node = new ConditionalAndNode(tree, left, right);
@@ -1931,13 +1974,13 @@ public class CFGBuilder {
                 Label mergeL = new Label();
 
                 // left-hand side
-                Node left = tree.getLeftOperand().accept(this, p);
+                Node left = scan(tree.getLeftOperand(), p);
 
                 extendWithExtendedNode(new ConditionalJump(mergeL, rightStartL));
 
                 // right-hand side
                 addLabelForNextNode(rightStartL);
-                Node right = tree.getRightOperand().accept(this, p);
+                Node right = scan(tree.getRightOperand(), p);
 
                 addLabelForNextNode(mergeL);
                 Node node = new ConditionalOrNode(tree, left, right);
@@ -1952,16 +1995,24 @@ public class CFGBuilder {
         @Override
         public Node visitBlock(BlockTree tree, Void p) {
             for (StatementTree n : tree.getStatements()) {
-                n.accept(this, null);
+                scan(n, null);
             }
             return null;
         }
 
         @Override
         public Node visitBreak(BreakTree tree, Void p) {
-            assert breakTargetL != null : "no target for break statement";
+            Name label = tree.getLabel();
+            if (label == null) {
+                assert breakTargetL != null : "no target for break statement";
 
-            extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+                extendWithExtendedNode(new UnconditionalJump(breakTargetL));
+            } else {
+                assert breakLabels.containsKey(label);
+
+                extendWithExtendedNode(
+                    new UnconditionalJump(breakLabels.get(label)));
+            }
 
             return null;
         }
@@ -1976,19 +2027,19 @@ public class CFGBuilder {
                 Label thisBlockL = new Label();
                 Label nextCaseL = new Label();
 
-                Node expr = exprTree.accept(this, null);
+                Node expr = scan(exprTree, p);
                 CaseNode test = new CaseNode(tree, switchExpr, expr);
                 extendWithNode(test);
                 extendWithExtendedNode(new ConditionalJump(thisBlockL, nextCaseL));
                 addLabelForNextNode(thisBlockL);
                 for (StatementTree stmt : tree.getStatements()) {
-                    stmt.accept(this, null);
+                    scan(stmt, p);
                 }
                 addLabelForNextNode(nextCaseL);
             } else {
                 // the default case
                 for (StatementTree stmt : tree.getStatements()) {
-                    stmt.accept(this, null);
+                    scan(stmt, p);
                 }
             }
             return null;
@@ -2015,18 +2066,37 @@ public class CFGBuilder {
 
         @Override
         public Node visitContinue(ContinueTree tree, Void p) {
-            assert continueTargetL != null : "no target for continue statement";
+            Name label = tree.getLabel();
+            if (label == null) {
+                assert continueTargetL != null : "no target for continue statement";
 
-            extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+                extendWithExtendedNode(new UnconditionalJump(continueTargetL));
+            } else {
+                assert continueLabels.containsKey(label);
+
+                extendWithExtendedNode(
+                    new UnconditionalJump(continueLabels.get(label)));
+            }
 
             return null;
         }
 
         @Override
         public Node visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
-            Label conditionStart = new Label();
+            Name parentLabel = getLabel(getCurrentPath());
+
             Label loopEntry = new Label();
             Label loopExit = new Label();
+
+            // If the loop is a labeled statement, then its continue
+            // target is identical for continues with no label and
+            // continues with the loop's label.
+            Label conditionStart;
+            if (parentLabel != null) {
+                conditionStart = continueLabels.get(parentLabel);
+            } else {
+                conditionStart = new Label();
+            }
 
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = loopExit;
@@ -2037,13 +2107,13 @@ public class CFGBuilder {
             // Loop body
             addLabelForNextNode(loopEntry);
             if (tree.getStatement() != null) {
-                tree.getStatement().accept(this, p);
+                scan(tree.getStatement(), p);
             }
 
             // Condition
             addLabelForNextNode(conditionStart);
             if (tree.getCondition() != null) {
-                unbox(tree.getCondition().accept(this, p));
+                unbox(scan(tree.getCondition(), p));
                 extendWithExtendedNode(new ConditionalJump(loopEntry,
                     loopExit));
             }
@@ -2066,7 +2136,7 @@ public class CFGBuilder {
         @Override
         public Node visitExpressionStatement(ExpressionStatementTree tree,
                 Void p) {
-            return tree.getExpression().accept(this, p);
+            return scan(tree.getExpression(), p);
         }
 
         @Override
@@ -2077,10 +2147,21 @@ public class CFGBuilder {
 
         @Override
         public Node visitForLoop(ForLoopTree tree, Void p) {
+            Name parentLabel = getLabel(getCurrentPath());
+
             Label conditionStart = new Label();
             Label loopEntry = new Label();
-            Label updateStart = new Label();
             Label loopExit = new Label();
+
+            // If the loop is a labeled statement, then its continue
+            // target is identical for continues with no label and
+            // continues with the loop's label.
+            Label updateStart;
+            if (parentLabel != null) {
+                updateStart = continueLabels.get(parentLabel);
+            } else {
+                updateStart = new Label();
+            }
 
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = loopExit;
@@ -2090,14 +2171,13 @@ public class CFGBuilder {
 
             // Initializer
             for (StatementTree init : tree.getInitializer()) {
-                init.accept(this, p);
+                scan(init, p);
             }
 
             // Condition
-            // TODO: Find out how an empty condition is represented.
             addLabelForNextNode(conditionStart);
             if (tree.getCondition() != null) {
-                unbox(tree.getCondition().accept(this, p));
+                unbox(scan(tree.getCondition(), p));
                 extendWithExtendedNode(new ConditionalJump(loopEntry,
                     loopExit));
             }
@@ -2105,13 +2185,13 @@ public class CFGBuilder {
             // Loop body
             addLabelForNextNode(loopEntry);
             if (tree.getStatement() != null) {
-                tree.getStatement().accept(this, p);
+                scan(tree.getStatement(), p);
             }
 
             // Update
             addLabelForNextNode(updateStart);
             for (ExpressionStatementTree update : tree.getUpdate()) {
-                update.accept(this, p);
+                scan(update, p);
             }
 
             extendWithExtendedNode(new UnconditionalJump(conditionStart));
@@ -2143,21 +2223,21 @@ public class CFGBuilder {
             Label endIf = new Label();
 
             // basic block for the condition
-            tree.getCondition().accept(this, null);
+            scan(tree.getCondition(), p);
 
             extendWithExtendedNode(new ConditionalJump(thenEntry, elseEntry));
 
             // then branch
             addLabelForNextNode(thenEntry);
             StatementTree thenStatement = tree.getThenStatement();
-            thenStatement.accept(this, null);
+            scan(thenStatement, p);
             extendWithExtendedNode(new UnconditionalJump(endIf));
 
             // else branch
             addLabelForNextNode(elseEntry);
             StatementTree elseStatement = tree.getElseStatement();
             if (elseStatement != null) {
-                elseStatement.accept(this, null);
+                scan(elseStatement, p);
             }
 
             // label the end of the if statement
@@ -2180,7 +2260,25 @@ public class CFGBuilder {
 
         @Override
         public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            // This method can set the break target after generating all Nodes
+            // in the contained statement, but it can't set the continue target,
+            // which may be in the middle of a sequence of nodes.  Labeled loops
+            // must look up and use the continue Labels.
+            Label breakL = new Label();
+            Label continueL = new Label();
+
+            Name labelName = tree.getLabel();
+
+            breakLabels.put(labelName, breakL);
+            continueLabels.put(labelName, continueL);
+
+            scan(tree.getStatement(), p);
+
+            addLabelForNextNode(breakL);
+
+            breakLabels.remove(labelName);
+            continueLabels.remove(labelName);
+
             return null;
         }
 
@@ -2243,7 +2341,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitParenthesized(ParenthesizedTree tree, Void p) {
-            return tree.getExpression().accept(this, p);
+            return scan(tree.getExpression(), p);
         }
 
         @Override
@@ -2252,7 +2350,7 @@ public class CFGBuilder {
             // TODO: also have a return-node if nothing is returned
             ReturnNode result = null;
             if (ret != null) {
-                Node node = ret.accept(this, p);
+                Node node = scan(ret, p);
                 result = new ReturnNode(tree, node);
                 extendWithNode(result);
             }
@@ -2273,13 +2371,13 @@ public class CFGBuilder {
 
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
-            switchExpr = unbox(tree.getExpression().accept(this, null));
+            switchExpr = unbox(scan(tree.getExpression(), p));
 
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = new Label();
 
             for (CaseTree caseTree : tree.getCases()) {
-                caseTree.accept(this, null);
+                scan(caseTree, p);
             }
 
             addLabelForNextNode(breakTargetL);
@@ -2334,7 +2432,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
-            Node operand = tree.getExpression().accept(this, p);
+            Node operand = scan(tree.getExpression(), p);
             TypeMirror type = InternalUtils.typeOf(tree.getType());
 
             return extendWithNode(new TypeCastNode(tree, operand, type));
@@ -2354,7 +2452,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitInstanceOf(InstanceOfTree tree, Void p) {
-            Node operand = tree.getExpression().accept(this, p);
+            Node operand = scan(tree.getExpression(), p);
             TypeMirror refType = InternalUtils.typeOf(tree.getType());
 
             InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
@@ -2364,7 +2462,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitUnary(UnaryTree tree, Void p) {
-            Node expr = tree.getExpression().accept(this, p);
+            Node expr = scan(tree.getExpression(), p);
 
             Tree.Kind kind = tree.getKind();
             switch (kind) {
@@ -2439,9 +2537,20 @@ public class CFGBuilder {
 
         @Override
         public Node visitWhileLoop(WhileLoopTree tree, Void p) {
-            Label conditionStart = new Label();
+            Name parentLabel = getLabel(getCurrentPath());
+
             Label loopEntry = new Label();
             Label loopExit = new Label();
+
+            // If the loop is a labeled statement, then its continue
+            // target is identical for continues with no label and
+            // continues with the loop's label.
+            Label conditionStart;
+            if (parentLabel != null) {
+                conditionStart = continueLabels.get(parentLabel);
+            } else {
+                conditionStart = new Label();
+            }
 
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = loopExit;
@@ -2452,7 +2561,7 @@ public class CFGBuilder {
             // Condition
             addLabelForNextNode(conditionStart);
             if (tree.getCondition() != null) {
-                unbox(tree.getCondition().accept(this, p));
+                unbox(scan(tree.getCondition(), p));
                 extendWithExtendedNode(new ConditionalJump(loopEntry,
                     loopExit));
             }
@@ -2460,7 +2569,7 @@ public class CFGBuilder {
             // Loop body
             addLabelForNextNode(loopEntry);
             if (tree.getStatement() != null) {
-                tree.getStatement().accept(this, p);
+                scan(tree.getStatement(), p);
             }
             extendWithExtendedNode(new UnconditionalJump(conditionStart));
 
