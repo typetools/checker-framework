@@ -68,7 +68,11 @@ public class FieldAccessNode extends Node {
 
     @Override
     public String toString() {
-        return getReceiver() + "." + field;
+        if (lvalue) {
+            return getReceiver() + "." + field + " (lval)";
+        } else {
+            return getReceiver() + "." + field;
+        }
     }
 
     @Override
