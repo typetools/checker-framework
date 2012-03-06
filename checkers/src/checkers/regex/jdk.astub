@@ -6,6 +6,7 @@ class Pattern {
     @Regex Pattern compile(@Regex String regex);
     Pattern compile(@Regex String regex, int flags);
     boolean matches(@Regex String regex, CharSequence input);
+    @PolyRegex Matcher matcher(CharSequence input) @PolyRegex;
     public static @Regex String quote(String s);
 }
 

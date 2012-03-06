@@ -7,7 +7,14 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.JCTree;
 
+/**
+ * A utility class for common operations on {@link Tree}s.
+ * 
+ * @author Stefan Heule
+ * 
+ */
 public class ASTUtils {
     /**
      * Determine whether <code>tree</code> is a field access expressions, such
@@ -53,5 +60,13 @@ public class ASTUtils {
             IdentifierTree itree = (IdentifierTree) tree;
             return itree.getName().toString();
         }
+    }
+
+    /**
+     * @return {@code true} if and only if {@code tree} can have a type
+     *         annotation.
+     */
+    public static boolean canHaveTypeAnnotation(Tree tree) {
+        return ((JCTree) tree).type != null;
     }
 }

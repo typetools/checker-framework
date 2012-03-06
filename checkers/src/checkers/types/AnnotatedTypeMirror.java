@@ -251,19 +251,19 @@ public abstract class AnnotatedTypeMirror {
             // TODO: try to remove
             return null;
         }
-    	AnnotationMirror aliased = p;
-    	if (!typeFactory.isSupportedQualifier(aliased)) {
-    		aliased = typeFactory.aliasedAnnotation(p);
-    	}
-    	if (typeFactory.isSupportedQualifier(aliased)) {
-    		AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
-    		for(AnnotationMirror anno : annotations) {
-    			if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
-    				return anno;
-    			}
-    		}
-    	}
-    	return null;
+        AnnotationMirror aliased = p;
+        if (!typeFactory.isSupportedQualifier(aliased)) {
+            aliased = typeFactory.aliasedAnnotation(p);
+        }
+        if (typeFactory.isSupportedQualifier(aliased)) {
+            AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
+            for(AnnotationMirror anno : annotations) {
+                if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
+                    return anno;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -372,7 +372,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-    	return AnnotationUtils.containsSame(getAnnotations(), a);
+        return AnnotationUtils.containsSame(getAnnotations(), a);
     }
 
     /**
@@ -382,7 +382,27 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotation(AnnotationMirror a) {
-    	return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
+    }
+
+    /**
+     * Determines whether this type contains the given annotation
+     * explicitly written at declaration. This method considers the
+     * annotation's values, that is, if the type is
+     * "@A("s") @B(3) Object" a call with "@A("t") or "@A" will
+     * return false, whereas a call with "@B(3)" will return true.
+     *
+     * In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}
+     * this method also compares annotation values.
+     * 
+     * @param a the annotation to check for
+     * @return true iff the annotation {@code a} is explicitly written
+     * on the type
+     * 
+     * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasExplicitAnnotation(AnnotationMirror a) {
+        return AnnotationUtils.containsSame(getExplicitAnnotations(), a);
     }
 
     /**
@@ -413,6 +433,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * A version of hasAnnotationRelaxed that only considers annotations that
+     * are explicitly written on the type.
+     * 
+     * @see #hasAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
+        return getExplicitAnnotations().contains(a);
+    }
+
+    /**
      * Determines whether this type contains an annotation with the same
      * annotation type as a particular annotation. This method does not
      * consider an annotation's values.
@@ -425,6 +455,19 @@ public abstract class AnnotatedTypeMirror {
         return getAnnotation(a) != null;
     }
     // TODO: do we need an "effective" version of the above hasAnnotation?
+
+    /**
+     * Determines whether this type contains an explictly written annotation
+     * with the same annotation type as a particular annotation. This method
+     * does not consider an annotation's values.
+     *
+     * @param a the class of annotation to check for
+     * @return true iff the type contains an explicitly written annotation
+     * with the same type as the annotation given by {@code a}
+     */
+    public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
+        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), getAnnotation(a));
+    }
 
     /**
      * Adds an annotation to this type. If the annotation does not have the
@@ -479,9 +522,9 @@ public abstract class AnnotatedTypeMirror {
         // Going from the AnnotationMirror to its name and then calling
         // getAnnotation ensures that we get the canonical AnnotationMirror that can be
         // removed.
-    	// TODO: however, this also means that if we are annotated with "@I(1)" and
-    	// remove "@I(2)" it will be removed. Is this what we want?
-    	// It's currently necessary for the IGJ and Lock Checkers.
+        // TODO: however, this also means that if we are annotated with "@I(1)" and
+        // remove "@I(2)" it will be removed. Is this what we want?
+        // It's currently necessary for the IGJ and Lock Checkers.
         return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
     }
 
