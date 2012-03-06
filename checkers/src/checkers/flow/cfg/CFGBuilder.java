@@ -1485,6 +1485,8 @@ public class CFGBuilder {
 
                 // visit field access (throws null-pointer exception)
                 FieldAccessNode target = new FieldAccessNode(variable, receiver);
+                target.setLValue();
+
                 // TODO: static field access does not throw exception
                 boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
                 // TODO: explicit this access does not throw exception
@@ -1506,6 +1508,8 @@ public class CFGBuilder {
             // case 3: other cases
             else {
                 Node target = variable.accept(this, p);
+                target.setLValue();
+
                 expression = translateAssignment(tree, target,
                         tree.getExpression());
             }

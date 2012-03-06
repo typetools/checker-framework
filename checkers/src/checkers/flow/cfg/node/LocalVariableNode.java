@@ -67,7 +67,11 @@ public class LocalVariableNode extends Node {
 
     @Override
     public String toString() {
-        return getName().toString();
+        if (lvalue) {
+            return getName().toString() + " (lval)";
+        } else {
+            return getName().toString();
+        }
     }
 
     @Override
