@@ -65,8 +65,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     // TODO: We could use an intermediate classes such as ExpressionNode
     // to refactor visitors. Propagation is appropriate for all expressions.
-    
-    
 
     /**
      * The default visitor returns the input information unchanged, or in the
@@ -76,13 +74,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
         // TODO: Perform type propagation separately with a thenStore and an
         // elseStore.
-        
+
         S info = in.getRegularStore();
         V value = null;
 
         Tree tree = n.getTree();
-        if (ASTUtils.canHaveTypeAnnotation(tree)) {
-            if (tree != null) {
+        if (tree != null) {
+            if (ASTUtils.canHaveTypeAnnotation(tree)) {
                 AnnotatedTypeMirror at = analysis.factory
                         .getAnnotatedType(tree);
                 value = analysis.createAbstractValue(at.getAnnotations());
@@ -160,8 +158,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * A case produces no value, but it may imply some facts about the
-     * argument to the switch statement.
+     * A case produces no value, but it may imply some facts about the argument
+     * to the switch statement.
      */
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
