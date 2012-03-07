@@ -2239,8 +2239,14 @@ public class CFGBuilder {
 
         @Override
         public Node visitIdentifier(IdentifierTree tree, Void p) {
-            // TODO: these are not always local variables
-            LocalVariableNode node = new LocalVariableNode(tree);
+            Node node;
+            if (ASTUtils.isFieldAccess(tree)) {
+                Node receiver = getReceiver(tree,
+                        TreeUtils.enclosingClass(getCurrentPath()));
+                node = new FieldAccessNode(tree, receiver);
+            } else {
+                node = new LocalVariableNode(tree);
+            }
             extendWithNode(node);
             return node;
         }
