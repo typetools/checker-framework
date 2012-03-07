@@ -411,12 +411,38 @@ public class CFGBuilder {
     }
 
     /**
-     * A label is used to refer to other extended nodes using a mapping from
-     * labels to extended nodes. Labels are only used for the object equality,
-     * but for abstraction reasons we use a separate class (instead of
-     * {@link Object}).
+     * A label is used to refer to other extended nodes using a
+     * mapping from labels to extended nodes. Labels get their names
+     * either from labeled statements in the source code or from
+     * internally generated unique names.
      */
     protected static class Label {
+        private static int uid = 0;
+
+        protected String name;
+
+        public Label(String name) {
+            this.name = name;
+        }
+
+        public Label() {
+            this.name = uniqueName();
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        /**
+         * Return a new unique label name that cannot be confused with
+         * a Java source code label.
+         *
+         * @return a new unique label name
+         */
+        private String uniqueName() {
+            return "%L" + uid++;
+        }
     }
 
     /* --------------------------------------------------------- */
@@ -844,6 +870,11 @@ public class CFGBuilder {
                     break;
                 }
                 case UNCONDITIONAL_JUMP:
+                    if (leaders.contains(i)) {
+                        RegularBlockImpl b = new RegularBlockImpl();
+                        block.setSuccessor(b);
+                        block = b;
+                    }
                     node.setBlock(block);
                     if (node.getLabel() == regularExitLabel) {
                         block.setSuccessor(regularExitBlock);
@@ -2264,10 +2295,10 @@ public class CFGBuilder {
             // in the contained statement, but it can't set the continue target,
             // which may be in the middle of a sequence of nodes.  Labeled loops
             // must look up and use the continue Labels.
-            Label breakL = new Label();
-            Label continueL = new Label();
-
             Name labelName = tree.getLabel();
+
+            Label breakL = new Label(labelName + "_break");
+            Label continueL = new Label(labelName + "_continue");
 
             breakLabels.put(labelName, breakL);
             continueLabels.put(labelName, continueL);
