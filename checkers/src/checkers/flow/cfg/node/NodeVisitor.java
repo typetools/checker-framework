@@ -167,4 +167,7 @@ public interface NodeVisitor<R, P> {
 
     // Cases
     R visitCase(CaseNode n, P p);
+
+    // Method invocations
+    R visitMethodInvocation(MethodInvocationNode n, P p);
 }

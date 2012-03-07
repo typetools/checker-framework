@@ -404,4 +404,10 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     public R visitCase(CaseNode n, P p) {
         return visitNode(n, p);
     }
+
+    // Method invocations
+    @Override
+    public R visitMethodInvocation(MethodInvocationNode n, P p) {
+        return visitNode(n, p);
+    }
 }
