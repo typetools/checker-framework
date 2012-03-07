@@ -43,8 +43,7 @@ public abstract class Node {
     /**
      * Is this node an l-value?
      */
-    // TODO: make sure the CFGBuilder sets this field correctly
-    protected boolean lvalue;
+    protected boolean lvalue = false;
 
     /**
      * The type of this node. For {@link Node}s with {@link Tree}s, this type is
