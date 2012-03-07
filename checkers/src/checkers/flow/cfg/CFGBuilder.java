@@ -5,13 +5,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
@@ -68,6 +71,7 @@ import checkers.flow.cfg.node.LessThanNode;
 import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.LongLiteralNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
@@ -1422,16 +1426,21 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform assignment conversion so that it can be assigned to
-         * a variable of the given type.
+         * Assignment conversion and method invocation conversion are
+         * almost identical, except that assignment conversion allows
+         * narrowing.  We factor out the common logic here.
          *
          * @param node a Node producing a value
-         * @prarm varType the type of a variable
+         * @param varType the type of a variable
+         * @param allowNarrowing whether to allow narrowing (for assignment
+         *         conversion) or not (for method invocation conversion)
          * @return a Node with the value converted to the type of the
          *         variable, which may be the input node itself
          */
-        protected Node assignConvert(Node node, TypeMirror varType) {
+        protected Node commonConvert(Node node, TypeMirror varType,
+                boolean allowNarrowing) {
             // For assignment conversion, see JLS 5.2
+            // For method invocation conversion, see JLS 5.3
 
             // Check for identical types or "identity conversion"
             TypeMirror nodeType = node.getType();
@@ -1479,19 +1488,47 @@ public class CFGBuilder {
                 // case.
             }
 
-            // Allow narrowing conversions
-            if (isLeftNumeric) {
-                node = narrow(node, varType);
-                nodeType = node.getType();
-            } else if (isLeftBoxed) {
-                node = narrowAndBox(node, varType);
-                nodeType = node.getType();
+            if (allowNarrowing) {
+                // Allow narrowing conversions
+                if (isLeftNumeric) {
+                    node = narrow(node, varType);
+                    nodeType = node.getType();
+                } else if (isLeftBoxed) {
+                    node = narrowAndBox(node, varType);
+                    nodeType = node.getType();
+                }
             }
 
             // TODO: if checkers need to know about null references of
             // a particular type, add logic for them here.
 
             return node;
+        }
+
+        /**
+         * Perform assignment conversion so that it can be assigned to
+         * a variable of the given type.
+         *
+         * @param node a Node producing a value
+         * @param varType the type of a variable
+         * @return a Node with the value converted to the type of the
+         *         variable, which may be the input node itself
+         */
+        protected Node assignConvert(Node node, TypeMirror varType) {
+            return commonConvert(node, varType, true);
+        }
+
+        /**
+         * Perform method invocation conversion so that the node
+         * can be passed as a formal parameter of the given type.
+         *
+         * @param node a Node producing a value
+         * @param formalType the type of a formal parameter
+         * @return a Node with the value converted to the type of the
+         *         formal, which may be the input node itself
+         */
+        protected Node methodInvocationConvert(Node node, TypeMirror formalType) {
+            return commonConvert(node, formalType, false);
         }
 
         /**
@@ -1526,8 +1563,71 @@ public class CFGBuilder {
 
         @Override
         public Node visitMethodInvocation(MethodInvocationTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+
+            // see JLS 15.12.4
+
+            // First, compute the receiver, if any (15.12.4.1)
+            // Second, evaluate the actual arguments, left to right and
+            // possibly some arguments are stored into an array for variable
+            // argumnents calls (15.12.4.2)
+            // Third, test the receiver, if any, for nullness (15.12.4.4)
+            // Fourth, convert the arguments to the type of the formal
+            // parameters (15.12.4.5)
+            // Fifth, if the method is synchronized, lock the receiving
+            // object or class (15.12.4.5)
+
+            ExecutableElement method = TreeUtils.elementFromUse(tree);
+
+            Node target;
+            Tree methodSelect = tree.getMethodSelect();
+            if (ASTUtils.isFieldAccess(methodSelect)) {
+                Node receiver = getReceiver(methodSelect,
+                     TreeUtils.enclosingClass(getCurrentPath()));
+
+                target = new FieldAccessNode(methodSelect, receiver);
+            } else {
+                target = scan(methodSelect, p);
+            }
+
+            List<? extends ExpressionTree> actualExprs = tree.getArguments();
+            List<? extends VariableElement> formals = method.getParameters();
+
+            ArrayList<Node> actualNodes = new ArrayList<Node>();
+
+            for (ExpressionTree actual : actualExprs) {
+                actualNodes.add(scan(actual, p));
+            }
+
+            if (method.isVarArgs()) {
+                // Create a new array argument if the actuals outnumber
+                // the formals, or if the last actual is not assignable
+                // to the last formal.
+                int lastArgIndex = formals.size() - 1;
+                TypeMirror lastParamType = formals.get(lastArgIndex).asType();
+                TypeMirror actualType =
+                    InternalUtils.typeOf(actualExprs.get(lastArgIndex));
+                if (actualExprs.size() > formals.size() ||
+                    !types.isAssignable(actualType, lastParamType)) {
+                    // TODO: finish this when we have array creation nodes.
+                    // Node lastArgument = new ArrayCreation();
+                    // actualNodes.removeRange(lastArgIndex, actualNodes.size());
+                    // actualNodes.add(lastArgument);
+                }
+            }
+
+            // TODO: handle null pointer exception for receiver
+
+            // Convert arguments
+            ArrayList<Node> convertedNodes = new ArrayList<Node>();
+            for (int i = 0; i < formals.size(); i++) {
+                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
+                    formals.get(i).asType()));
+            }
+
+            // TODO: lock the receiver for synchronized methods
+
+            Node node = new MethodInvocationNode(tree, target, convertedNodes);
+            return extendWithNode(node);
         }
 
         @Override
@@ -1903,7 +2003,6 @@ public class CFGBuilder {
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
-                // TODO: Perform the same conversions for EQUAL_TO.
                 TypeMirror leftType = left.getType();
                 TypeMirror rightType = right.getType();
 
