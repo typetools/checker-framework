@@ -1440,11 +1440,9 @@ public class CFGBuilder {
                 return node;
             }
             
-            boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
             boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
             boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
             boolean isRightReference = nodeType instanceof ReferenceType;
-            boolean isLeftPrimitive = TypesUtils.isPrimitive(nodeType);
             boolean isLeftNumeric = TypesUtils.isNumeric(varType);
             boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
             boolean isLeftReference = varType instanceof ReferenceType;
