@@ -1,6 +1,9 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
@@ -13,7 +16,6 @@ import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.util.ASTUtils;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -90,9 +92,21 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return new RegularTransferResult<>(value, info);
     }
 
+    @Override
+    public TransferResult<V, S> visitFieldAccess(FieldAccessNode n,
+            TransferInput<V, S> p) {
+        S store = p.getRegularStore();
+        V value = store.getValue(n);
+        if (value == null) {
+            Set<AnnotationMirror> annotations = analysis.factory.fromElement(n
+                    .getElement()).getAnnotations();
+            value = analysis.createAbstractValue(annotations);
+        }
+        return new RegularTransferResult<>(value, store);
+    }
+
     /**
-     * Map local variable uses to their declarations and extract the most
-     * precise information available for the declaration.
+     * Use the most specific type information available according to the store.
      */
     @Override
     public TransferResult<V, S> visitLocalVariable(LocalVariableNode n,
@@ -103,25 +117,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return new RegularTransferResult<>(value, store);
     }
 
-    @Override
-    public TransferResult<V, S> visitStringLiteral(StringLiteralNode n,
-            TransferInput<V, S> p) {
-        AnnotatedTypeMirror type = analysis.factory.getAnnotatedType(n
-                .getTree());
-        V value = analysis.createAbstractValue(type.getAnnotations());
-        return new RegularTransferResult<>(value, p.getRegularStore());
-    }
-
     /**
-     * Propagate information from the assignment's RHS to a variable on the LHS,
-     * if the RHS has more precise information available.
+     * Determine abstract value of right-hand side and update the store
+     * accordingly to the assignment.
      */
     @Override
     public TransferResult<V, S> visitAssignment(AssignmentNode n,
             TransferInput<V, S> in) {
         Node lhs = n.getTarget();
         Node rhs = n.getExpression();
-        
+
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
 

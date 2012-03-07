@@ -74,9 +74,11 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     protected abstract S createCopiedStore(S s);
 
     /**
-     * @return An abstract value containing the annotations {@code annotations}.
+     * @return An abstract value containing the valid subset of annotations of
+     *         {@code annotations} (or {@code null} if that set is empty).
      */
-    protected abstract V createAbstractValue(Set<AnnotationMirror> annotations);
+    protected abstract/* @Nullable */V createAbstractValue(
+            Set<AnnotationMirror> annotations);
 
     public QualifierHierarchy getTypeHierarchy() {
         return qualifierHierarchy;
