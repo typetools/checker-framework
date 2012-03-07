@@ -226,6 +226,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected TransferResult<A, S> callTransferFunction(Node node,
             TransferInput<A, S> store) {
+        if (node.isLValue()) {
+            // TODO: should the default behavior be to return either a regular
+            // transfer result or a conditional transfer result (depending on
+            // store.hasTwoStores()), or is the following correct?
+            return new RegularTransferResult<A, S>(null,
+                    store.getRegularStore());
+        }
         store.node = node;
         currentNode = node;
         TransferResult<A, S> transferResult = node.accept(transferFunction,
@@ -351,7 +358,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public/* @Nullable */A getValue(Tree t) {
         return getValue(cfg.getNodeCorrespondingToTree(t));
     }
-    
+
     public AnalysisResult<A> getResult() {
         assert !isRunning;
         return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
