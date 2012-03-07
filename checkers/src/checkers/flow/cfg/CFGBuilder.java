@@ -1941,6 +1941,7 @@ public class CFGBuilder {
                 if (kind == Tree.Kind.EQUAL_TO) {
                     r = new EqualToNode(tree, left, right);
                 } else {
+                    assert kind == Kind.NOT_EQUAL_TO;
                     r = new NotEqualNode(tree, left, right);
                 }
                 break;
