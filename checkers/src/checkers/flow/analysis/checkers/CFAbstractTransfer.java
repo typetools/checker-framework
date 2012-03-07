@@ -19,7 +19,6 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -78,6 +77,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S info = in.getRegularStore();
         V value = null;
 
+        // TODO: handle implicit/explicit this and go to correct factory method
         Tree tree = n.getTree();
         if (tree != null) {
             if (ASTUtils.canHaveTypeAnnotation(tree)) {
@@ -121,7 +121,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TransferInput<V, S> in) {
         Node lhs = n.getTarget();
         Node rhs = n.getExpression();
-
+        
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
 
