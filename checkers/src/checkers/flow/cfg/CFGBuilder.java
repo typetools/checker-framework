@@ -31,13 +31,13 @@ import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
-import checkers.flow.cfg.node.BitwiseAndNode;
 import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
+import checkers.flow.cfg.node.BitwiseAndNode;
 import checkers.flow.cfg.node.BitwiseComplementNode;
-import checkers.flow.cfg.node.BitwiseOrNode;
 import checkers.flow.cfg.node.BitwiseOrAssignmentNode;
-import checkers.flow.cfg.node.BitwiseXorNode;
+import checkers.flow.cfg.node.BitwiseOrNode;
 import checkers.flow.cfg.node.BitwiseXorAssignmentNode;
+import checkers.flow.cfg.node.BitwiseXorNode;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.BoxingNode;
 import checkers.flow.cfg.node.CaseNode;
@@ -48,22 +48,22 @@ import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.DoubleLiteralNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.FloatingDivisionNode;
-import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
-import checkers.flow.cfg.node.FloatingRemainderNode;
-import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
 import checkers.flow.cfg.node.FloatLiteralNode;
+import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
+import checkers.flow.cfg.node.FloatingDivisionNode;
+import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
+import checkers.flow.cfg.node.FloatingRemainderNode;
 import checkers.flow.cfg.node.GreaterThanNode;
 import checkers.flow.cfg.node.GreaterThanOrEqualNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.InstanceOfNode;
-import checkers.flow.cfg.node.IntegerDivisionNode;
 import checkers.flow.cfg.node.IntegerDivisionAssignmentNode;
+import checkers.flow.cfg.node.IntegerDivisionNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.IntegerRemainderNode;
 import checkers.flow.cfg.node.IntegerRemainderAssignmentNode;
-import checkers.flow.cfg.node.LeftShiftNode;
+import checkers.flow.cfg.node.IntegerRemainderNode;
 import checkers.flow.cfg.node.LeftShiftAssignmentNode;
+import checkers.flow.cfg.node.LeftShiftNode;
 import checkers.flow.cfg.node.LessThanNode;
 import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -72,32 +72,31 @@ import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.NullLiteralNode;
-import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.NumericalAdditionAssignmentNode;
+import checkers.flow.cfg.node.NumericalAdditionNode;
 import checkers.flow.cfg.node.NumericalMinusNode;
-import checkers.flow.cfg.node.NumericalMultiplicationNode;
 import checkers.flow.cfg.node.NumericalMultiplicationAssignmentNode;
+import checkers.flow.cfg.node.NumericalMultiplicationNode;
 import checkers.flow.cfg.node.NumericalPlusNode;
-import checkers.flow.cfg.node.NumericalSubtractionNode;
 import checkers.flow.cfg.node.NumericalSubtractionAssignmentNode;
+import checkers.flow.cfg.node.NumericalSubtractionNode;
 import checkers.flow.cfg.node.PostfixDecrementNode;
 import checkers.flow.cfg.node.PostfixIncrementNode;
 import checkers.flow.cfg.node.PrefixDecrementNode;
 import checkers.flow.cfg.node.PrefixIncrementNode;
 import checkers.flow.cfg.node.ReturnNode;
-import checkers.flow.cfg.node.SignedRightShiftNode;
 import checkers.flow.cfg.node.SignedRightShiftAssignmentNode;
-import checkers.flow.cfg.node.StringConcatenateNode;
+import checkers.flow.cfg.node.SignedRightShiftNode;
 import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
+import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
-import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
+import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
-import checkers.flow.util.ASTUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
@@ -1546,7 +1545,7 @@ public class CFGBuilder {
             TypeMirror varType = InternalUtils.typeOf(variable);
 
             // case 1: field access
-            if (ASTUtils.isFieldAccess(variable)) {
+            if (TreeUtils.isFieldAccess(variable)) {
                 // visit receiver
                 Node receiver = getReceiver(variable,
                                             TreeUtils.enclosingClass(getCurrentPath()));
@@ -1614,7 +1613,7 @@ public class CFGBuilder {
          * @return The receiver of the field access.
          */
         private Node getReceiver(Tree tree, ClassTree classTree) {
-            assert ASTUtils.isFieldAccess(tree);
+            assert TreeUtils.isFieldAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
@@ -2238,7 +2237,7 @@ public class CFGBuilder {
         @Override
         public Node visitIdentifier(IdentifierTree tree, Void p) {
             Node node;
-            if (ASTUtils.isFieldAccess(tree)) {
+            if (TreeUtils.isFieldAccess(tree)) {
                 Node receiver = getReceiver(tree,
                         TreeUtils.enclosingClass(getCurrentPath()));
                 node = new FieldAccessNode(tree, receiver);

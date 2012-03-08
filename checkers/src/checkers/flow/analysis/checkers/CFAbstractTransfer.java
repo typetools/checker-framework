@@ -16,9 +16,9 @@ import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.util.ASTUtils;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -82,7 +82,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // TODO: handle implicit/explicit this and go to correct factory method
         Tree tree = n.getTree();
         if (tree != null) {
-            if (ASTUtils.canHaveTypeAnnotation(tree)) {
+            if (TreeUtils.canHaveTypeAnnotation(tree)) {
                 AnnotatedTypeMirror at = analysis.factory
                         .getAnnotatedType(tree);
                 value = analysis.createAbstractValue(at.getAnnotations());
