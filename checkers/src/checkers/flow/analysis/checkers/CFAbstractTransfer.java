@@ -64,9 +64,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return info;
     }
 
-    // TODO: We could use an intermediate classes such as ExpressionNode
-    // to refactor visitors. Propagation is appropriate for all expressions.
-
     /**
      * The default visitor returns the input information unchanged, or in the
      * case of conditional input information, merged.
