@@ -651,15 +651,21 @@ public final class TreeUtils {
     }
     
     /**
-     * Returns true if the given tree represents an access of the given VariableElement.
+     * Returns true if and only if the given {@code tree} represents a field
+     * access of the given {@link VariableElement}.
      */
-    public static boolean isFieldAccess(Tree tree, VariableElement var, ProcessingEnvironment env) {
-        if (!(tree instanceof MemberSelectTree)) {
+    public static boolean isSpecificFieldAccess(Tree tree, VariableElement var) {
+        if (tree instanceof MemberSelectTree) {
+            MemberSelectTree memSel = (MemberSelectTree) tree;
+            Element field = TreeUtils.elementFromUse(memSel);
+            return field.equals(var);
+        } else if (tree instanceof IdentifierTree) {
+            IdentifierTree idTree = (IdentifierTree) tree;
+            Element field = TreeUtils.elementFromUse(idTree);
+            return field.equals(var);
+        } else {
             return false;
         }
-        MemberSelectTree memSel = (MemberSelectTree) tree;
-        Element field = TreeUtils.elementFromUse(memSel);
-        return field.equals(var);
     }
     
     /**
