@@ -95,8 +95,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S store = p.getRegularStore();
         V value = store.getValue(n);
         if (value == null) {
-            Set<AnnotationMirror> annotations = analysis.factory.fromElement(n
-                    .getElement()).getAnnotations();
+            Set<AnnotationMirror> annotations = analysis.factory
+                    .getAnnotatedType(n.getTree()).getAnnotations();
             value = analysis.createAbstractValue(annotations);
         }
         return new RegularTransferResult<>(value, store);
