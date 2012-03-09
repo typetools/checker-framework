@@ -1,9 +1,6 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
 
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
@@ -47,6 +44,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
+     * @return The abstract value of a non-leaf tree {@code tree}, as computed
+     *         by the {@link AnnotatedTypeFactory}.
+     */
+    protected V getValueFromFactory(Tree tree) {
+        analysis.setCurrentTree(tree);
+        AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
+        analysis.setCurrentTree(null);
+        return analysis.createAbstractValue(at.getAnnotations());
+    }
+
+    /**
      * The initial store maps method formal parameters to their currently most
      * refined type.
      */
@@ -80,9 +88,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                AnnotatedTypeMirror at = analysis.factory
-                        .getAnnotatedType(tree);
-                value = analysis.createAbstractValue(at.getAnnotations());
+                value = getValueFromFactory(tree);
             }
         }
 
@@ -95,9 +101,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S store = p.getRegularStore();
         V value = store.getValue(n);
         if (value == null) {
-            Set<AnnotationMirror> annotations = analysis.factory
-                    .getAnnotatedType(n.getTree()).getAnnotations();
-            value = analysis.createAbstractValue(annotations);
+            Tree tree = n.getTree();
+            assert tree != null;
+            value = getValueFromFactory(tree);
         }
         return new RegularTransferResult<>(value, store);
     }
@@ -110,7 +116,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TransferInput<V, S> in) {
         S store = in.getRegularStore();
         V value = store.getValue(n);
-        // TODO: handle value == null (go to factory?)
         return new RegularTransferResult<>(value, store);
     }
 
