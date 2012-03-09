@@ -933,7 +933,7 @@ public class AnnotatedTypes {
 
     /**
      * Annotate the lub type as if it is the least upper bound of the rest of
-     * the types.  This is a useful method for the finding conditional expression
+     * the types.  This is a useful method for finding conditional expression
      * types.
      *
      * All the types need to be subtypes of lub.
@@ -1002,6 +1002,10 @@ public class AnnotatedTypes {
     private void addAnnotationsImpl(AnnotatedTypeMirror alub,
             Set<TypeMirror> visited,
             AnnotatedTypeMirror ...types) {
+        // System.out.println("AnnotatedTypes.addAnnotationsImpl: alub: " + alub +
+        //        "\n   visited: " + visited +
+        //        "\n   types: " + Arrays.toString(types));
+
         // types may contain a null in the context of unchecked cast
         // TODO: fix this
         boolean isFirst = true;
@@ -1062,8 +1066,15 @@ public class AnnotatedTypes {
                 AnnotatedTypeMirror adtArg = adt.getTypeArguments().get(i);
                 List<AnnotatedTypeMirror> dTypesArg = new ArrayList<AnnotatedTypeMirror>();
                 for (int j = 0; j < types.length; ++j) {
-                    if (types[j].getKind() != TypeKind.NULL) {
-                        dTypesArg.add(((AnnotatedDeclaredType)types[j]).getTypeArguments().get(i));
+                    if (types[j].getKind() == TypeKind.DECLARED) {
+                        AnnotatedDeclaredType adtypej = (AnnotatedDeclaredType) types[j];
+                        if (adtypej.getTypeArguments().size() == adt.getTypeArguments().size()) {
+                            dTypesArg.add(adtypej.getTypeArguments().get(i));
+                        } else {
+                            // TODO: actually not just the number of type arguments should match, but
+                            // the base types should be equal. See test case framework/GenericTest1
+                            // for when this test fails.
+                        }
                     }
                 }
                 addAnnotationsImpl(adtArg, visited, dTypesArg.toArray(new AnnotatedTypeMirror[0]));
