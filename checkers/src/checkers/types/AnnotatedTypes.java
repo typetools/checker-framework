@@ -591,7 +591,7 @@ public class AnnotatedTypes {
     // TODO: Note that this implementation is buggy as it only infers arguments
     // that make it to the return type.  So it would fail for invocations to
     // <T> void test(T arg1, T arg2)
-    // in such cases, T is infered to be '? extends T.upperBound'
+    // in such cases, T is inferred to be '? extends T.upperBound'
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
     inferTypeArguments(ExpressionTree expr) {
         //
@@ -617,8 +617,13 @@ public class AnnotatedTypes {
         }
 
         // Find the un-annotated type
+        // TODO: WMD thinks it would be better to (also?) determine the assignment context,
+        // instead of just the defaulted return type. For an example, see
+        // nullness/generics/MethodTypeVars6.java where an annotation on a type variable
+        // gets ignored.
         AnnotatedTypeMirror returnType = factory.type(expr);
         factory.annotateImplicit(expr, returnType);
+
         AnnotatedExecutableType methodType;
 
         if (expr instanceof MethodInvocationTree) {
