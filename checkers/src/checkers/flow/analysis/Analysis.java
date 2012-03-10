@@ -69,7 +69,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected Map<Node, A> nodeValues;
 
     /**
-     * The node that is currently handeled in the analysis (if it is running).
+     * The node that is currently handled in the analysis (if it is running).
      * The following invariant holds:
      * 
      * <pre>
@@ -77,6 +77,21 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * </pre>
      */
     protected Node currentNode;
+
+    /**
+     * The tree that is currently being looked at. The transfer function can set
+     * this tree to make sure that calls to {@code getValue} will not return
+     * information for this given tree.
+     */
+    protected Tree currentTree;
+
+    public Tree getCurrentTree() {
+        return currentTree;
+    }
+
+    public void setCurrentTree(Tree currentTree) {
+        this.currentTree = currentTree;
+    }
 
     /**
      * Construct an object that can perform a dataflow analysis over a control
@@ -226,6 +241,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected TransferResult<A, S> callTransferFunction(Node node,
             TransferInput<A, S> store) {
+        if (node.isLValue()) {
+            // TODO: should the default behavior be to return either a regular
+            // transfer result or a conditional transfer result (depending on
+            // store.hasTwoStores()), or is the following correct?
+            return new RegularTransferResult<A, S>(null,
+                    store.getRegularStore());
+        }
         store.node = node;
         currentNode = node;
         TransferResult<A, S> transferResult = node.accept(transferFunction,
@@ -327,7 +349,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public/* @Nullable */A getValue(Node n) {
         if (isRunning) {
             // we do not yet have a dataflow fact about the current node
-            if (currentNode == n) {
+            if (currentNode == n
+                    || (currentTree != null && currentTree == n.getTree())) {
                 return null;
             }
             // check that 'n' is a subnode of 'node'. Check immediate operands
@@ -349,9 +372,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         this node.
      */
     public/* @Nullable */A getValue(Tree t) {
+        // we do not yet have a dataflow fact about the current node
+        if (t == currentTree) {
+            return null;
+        }
         return getValue(cfg.getNodeCorrespondingToTree(t));
     }
-    
+
     public AnalysisResult<A> getResult() {
         assert !isRunning;
         return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
