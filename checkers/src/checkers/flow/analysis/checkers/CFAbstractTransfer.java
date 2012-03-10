@@ -13,13 +13,11 @@ import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.StringLiteralNode;
-import checkers.flow.util.ASTUtils;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -46,6 +44,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
+     * @return The abstract value of a non-leaf tree {@code tree}, as computed
+     *         by the {@link AnnotatedTypeFactory}.
+     */
+    protected V getValueFromFactory(Tree tree) {
+        analysis.setCurrentTree(tree);
+        AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
+        analysis.setCurrentTree(null);
+        return analysis.createAbstractValue(at.getAnnotations());
+    }
+
+    /**
      * The initial store maps method formal parameters to their currently most
      * refined type.
      */
@@ -63,11 +72,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return info;
     }
 
-    // TODO: We could use an intermediate classes such as ExpressionNode
-    // to refactor visitors. Propagation is appropriate for all expressions.
-    
-    
-
     /**
      * The default visitor returns the input information unchanged, or in the
      * case of conditional input information, merged.
@@ -76,47 +80,48 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
         // TODO: Perform type propagation separately with a thenStore and an
         // elseStore.
-        
+
         S info = in.getRegularStore();
         V value = null;
 
+        // TODO: handle implicit/explicit this and go to correct factory method
         Tree tree = n.getTree();
-        if (ASTUtils.canHaveTypeAnnotation(tree)) {
-            if (tree != null) {
-                AnnotatedTypeMirror at = analysis.factory
-                        .getAnnotatedType(tree);
-                value = analysis.createAbstractValue(at.getAnnotations());
+        if (tree != null) {
+            if (TreeUtils.canHaveTypeAnnotation(tree)) {
+                value = getValueFromFactory(tree);
             }
         }
 
         return new RegularTransferResult<>(value, info);
     }
 
+    @Override
+    public TransferResult<V, S> visitFieldAccess(FieldAccessNode n,
+            TransferInput<V, S> p) {
+        S store = p.getRegularStore();
+        V value = store.getValue(n);
+        if (value == null) {
+            Tree tree = n.getTree();
+            assert tree != null;
+            value = getValueFromFactory(tree);
+        }
+        return new RegularTransferResult<>(value, store);
+    }
+
     /**
-     * Map local variable uses to their declarations and extract the most
-     * precise information available for the declaration.
+     * Use the most specific type information available according to the store.
      */
     @Override
     public TransferResult<V, S> visitLocalVariable(LocalVariableNode n,
             TransferInput<V, S> in) {
         S store = in.getRegularStore();
         V value = store.getValue(n);
-        // TODO: handle value == null (go to factory?)
         return new RegularTransferResult<>(value, store);
     }
 
-    @Override
-    public TransferResult<V, S> visitStringLiteral(StringLiteralNode n,
-            TransferInput<V, S> p) {
-        AnnotatedTypeMirror type = analysis.factory.getAnnotatedType(n
-                .getTree());
-        V value = analysis.createAbstractValue(type.getAnnotations());
-        return new RegularTransferResult<>(value, p.getRegularStore());
-    }
-
     /**
-     * Propagate information from the assignment's RHS to a variable on the LHS,
-     * if the RHS has more precise information available.
+     * Determine abstract value of right-hand side and update the store
+     * accordingly to the assignment.
      */
     @Override
     public TransferResult<V, S> visitAssignment(AssignmentNode n,
@@ -160,8 +165,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * A case produces no value, but it may imply some facts about the
-     * argument to the switch statement.
+     * A case produces no value, but it may imply some facts about the argument
+     * to the switch statement.
      */
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
