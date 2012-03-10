@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
-import checkers.flow.util.ASTUtils;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -33,11 +32,11 @@ public class FieldAccessNode extends Node {
     // TODO: add method to get modifiers (static, access level, ..)
 
     public FieldAccessNode(Tree tree, Node receiver) {
-        assert ASTUtils.isFieldAccess(tree);
+        assert TreeUtils.isFieldAccess(tree);
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
         this.receiver = receiver;
-        this.field = ASTUtils.getFieldName(tree);
+        this.field = TreeUtils.getFieldName(tree);
     }
 
     public Element getElement() {

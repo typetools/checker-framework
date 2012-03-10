@@ -1,11 +1,13 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.AnnotationUtils;
 
 /**
  * The default dataflow analysis used in the Checker Framework.
@@ -37,7 +39,16 @@ public class CFAnalysis extends
 
     @Override
     protected CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
-        return new CFValue(this, annotations);
+        Set<AnnotationMirror> as = new HashSet<>();
+        for (AnnotationMirror a : annotations) {
+            if (AnnotationUtils.containsSame(legalAnnotations, a)) {
+                as.add(a);
+            }
+        }
+        if (as.size() == 0) {
+            return null;
+        }
+        return new CFValue(this, as);
     }
 
 }
