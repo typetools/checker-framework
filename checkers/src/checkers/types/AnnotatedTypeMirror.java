@@ -1457,6 +1457,9 @@ public abstract class AnnotatedTypeMirror {
                         // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                         // How should this be handled? What is that factory doing?
                     }
+                } else if (uAnnos.isEmpty()) {
+                    // TODO: The subtype tests below fail with empty annotations.
+                    // Is there anything better to do here?
                 } else if (typeFactory.qualHierarchy.isSubtype(lAnnos, uAnnos)) {
                     // Nothing to do if lAnnos is a subtype of uAnnos.
                 } else if (typeFactory.qualHierarchy.isSubtype(uAnnos, lAnnos)) {
@@ -1914,8 +1917,12 @@ public abstract class AnnotatedTypeMirror {
             if (extendsBound == null) {
                 // lazy init
                 TypeMirror superType = actualType.getExtendsBound();
-                if (superType == null)
-                    superType = env.getElementUtils().getTypeElement("java.lang.Object").asType();
+                if (superType == null) {
+                    // Take the upper bound of the type variable the wildcard is bound to.
+                    com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) actualType;
+                    com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext();
+                    superType = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
+                }
                 setExtendsBound(createType(superType, env, typeFactory));
             }
             return this.extendsBound;
