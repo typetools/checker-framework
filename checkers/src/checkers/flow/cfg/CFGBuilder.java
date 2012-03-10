@@ -1043,6 +1043,35 @@ public class CFGBuilder {
         protected Trees trees;
 
         /**
+         * The translation starts in regular mode, that is
+         * <code>conditionalMode</code> is false. In this case, no conditional
+         * jump nodes are generated.
+         * 
+         * To correctly model control flow when the evaluation of an expression
+         * determines control flow (e.g. for if-conditions, while loops, or
+         * short-circuiting conditional expressions),
+         * <code>conditionalMode</code> can be set to true.
+         * 
+         * <p>
+         * 
+         * Whenever {@code conditionalMode} is true, the two fields
+         * {@code thenTargetL} and {@code elseTargetL} are used to indicate
+         * where the control flow should jump to after the evaluation of a
+         * boolean node.
+         */
+        protected boolean conditionalMode;
+
+        /**
+         * Label for the then branch. Description see above.
+         */
+        protected Label thenTargetL;
+
+        /**
+         * Label for the else branch. Description see above.
+         */
+        protected Label elseTargetL;
+
+        /**
          * Current {@link Label} to which a break statement with no label
          * should jump, or null if there is no valid destination.
          */
@@ -1107,6 +1136,9 @@ public class CFGBuilder {
             this.env = env;
             types = env.getTypeUtils();
             trees = Trees.instance(env);
+
+            // start in regular mode
+            conditionalMode = false;
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
@@ -1626,6 +1658,9 @@ public class CFGBuilder {
 
             // TODO: lock the receiver for synchronized methods
 
+            // TODO: emit a conditional jump for boolean methods when
+            // conditionalMode is true
+
             Node node = new MethodInvocationNode(tree, target, convertedNodes);
             return extendWithNode(node);
         }
@@ -1642,6 +1677,8 @@ public class CFGBuilder {
         public Node visitAssignment(AssignmentTree tree, Void p) {
 
             // see JLS 15.26.1
+
+            assert !conditionalMode;
 
             Node expression;
             ExpressionTree variable = tree.getVariable();
@@ -1756,6 +1793,7 @@ public class CFGBuilder {
 
             // TODO: correct evaluation rules (e.g. arrays)
 
+            assert !conditionalMode;
             Node r = null;
             Tree.Kind kind = tree.getKind();
             switch (kind) {
@@ -1880,6 +1918,8 @@ public class CFGBuilder {
             case MULTIPLY:
             case REMAINDER: {
                 // see JLS 15.17
+                assert !conditionalMode;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
@@ -1910,6 +1950,8 @@ public class CFGBuilder {
             case MINUS:
             case PLUS: {
                 // see JLS 15.18
+                assert !conditionalMode;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
@@ -1940,6 +1982,8 @@ public class CFGBuilder {
             case RIGHT_SHIFT:
             case UNSIGNED_RIGHT_SHIFT: {
                 // see JLS 15.19
+                assert !conditionalMode;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
@@ -1962,6 +2006,13 @@ public class CFGBuilder {
             case LESS_THAN:
             case LESS_THAN_EQUAL: {
                 // see JLS 15.20.1
+                ConditionalJump cjump = null;
+                if (conditionalMode) {
+                    cjump = new ConditionalJump(thenTargetL, elseTargetL);
+                }
+                boolean outerConditionalMode = conditionalMode;
+                conditionalMode = false;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
@@ -1983,23 +2034,38 @@ public class CFGBuilder {
                 left = binaryNumericPromotion(left, widenedType);
                 right = binaryNumericPromotion(right, widenedType);
 
+                Node node;
                 if (kind == Tree.Kind.GREATER_THAN) {
-                    r = new GreaterThanNode(tree, left, right);
+                    node = new GreaterThanNode(tree, left, right);
                 } else if (kind == Tree.Kind.GREATER_THAN_EQUAL) {
-                    r = new GreaterThanOrEqualNode(tree, left, right);
+                    node = new GreaterThanOrEqualNode(tree, left, right);
                 } else if (kind == Tree.Kind.LESS_THAN) {
-                    r = new LessThanNode(tree, left, right);
+                    node = new LessThanNode(tree, left, right);
                 } else {
                     assert kind == Tree.Kind.LESS_THAN_EQUAL;
-                    r = new LessThanOrEqualNode(tree, left, right);
+                    node = new LessThanOrEqualNode(tree, left, right);
                 }
 
-                break;
+                extendWithNode(node);
+
+                conditionalMode = outerConditionalMode;
+
+                if (conditionalMode) {
+                    extendWithExtendedNode(cjump);
+                }
+                return node;
             }
 
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
+                ConditionalJump cjump = null;
+                if (conditionalMode) {
+                    cjump = new ConditionalJump(thenTargetL, elseTargetL);
+                }
+                boolean outerConditionalMode = conditionalMode;
+                conditionalMode = false;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
@@ -2037,86 +2103,184 @@ public class CFGBuilder {
                     right = unbox(right);
                 }
 
+                Node node;
                 if (kind == Tree.Kind.EQUAL_TO) {
-                    r = new EqualToNode(tree, left, right);
+                    node = new EqualToNode(tree, left, right);
                 } else {
-                    r = new NotEqualNode(tree, left, right);
+                    node = new NotEqualNode(tree, left, right);
                 }
-                break;
+                extendWithNode(node);
+
+                conditionalMode = outerConditionalMode;
+
+                if (conditionalMode) {
+                    extendWithExtendedNode(cjump);
+                }
+                return node;
             }
 
             case AND:
             case OR:
             case XOR: {
                 // see JLS 15.22
+                TypeMirror exprType = InternalUtils.typeOf(tree);
+                boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
+                assert !conditionalMode || isBooleanOp;
+
+                ConditionalJump cjump = null;
+                if (conditionalMode) {
+                    cjump = new ConditionalJump(thenTargetL, elseTargetL);
+                }
+                boolean outerConditionalMode = conditionalMode;
+                conditionalMode = false;
+
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
-
-                TypeMirror exprType = InternalUtils.typeOf(tree);
 
                 if (TypesUtils.isNumeric(exprType)) {
                     left = binaryNumericPromotion(left, exprType);
                     right = binaryNumericPromotion(right, exprType);
-                } else if (TypesUtils.isBooleanType(exprType)) {
+                } else if (isBooleanOp) {
                     left = unbox(left);
                     right = unbox(right);
                 }
 
+                Node node;
                 if (kind == Tree.Kind.AND) {
-                    r = new BitwiseAndNode(tree, left, right);
+                    node = new BitwiseAndNode(tree, left, right);
                 } else if (kind == Tree.Kind.OR) {
-                    r = new BitwiseOrNode(tree, left, right);
+                    node = new BitwiseOrNode(tree, left, right);
                 } else {
                     assert kind == Kind.XOR;
-                    r = new BitwiseXorNode(tree, left, right);
+                    node = new BitwiseXorNode(tree, left, right);
                 }
-                break;
-            }
 
-            case CONDITIONAL_AND: {
-                // see JLS 15.23
-
-                // all necessary labels
-                Label rightStartL = new Label();
-                Label mergeL = new Label();
-
-                // left-hand side
-                Node left = scan(tree.getLeftOperand(), p);
-
-                extendWithExtendedNode(new ConditionalJump(rightStartL, mergeL));
-
-                // right-hand side
-                addLabelForNextNode(rightStartL);
-                Node right = scan(tree.getRightOperand(), p);
-
-                addLabelForNextNode(mergeL);
-                Node node = new ConditionalAndNode(tree, left, right);
                 extendWithNode(node);
+
+                conditionalMode = outerConditionalMode;
+
+                if (conditionalMode) {
+                    extendWithExtendedNode(cjump);
+                }
                 return node;
             }
 
+            case CONDITIONAL_AND:
             case CONDITIONAL_OR: {
+                // see JLS 15.23 and 15.24
+
+                boolean condMode = conditionalMode;
+                conditionalMode = true;
+
+                // all necessary labels
+                Label rightStartL = new Label();
+                Label trueNodeL = new Label();
+                Label falseNodeL = new Label();
+                Label oldTrueTargetL = thenTargetL;
+                Label oldFalseTargetL = elseTargetL;
+
+                // left-hand side
+                if (kind == Tree.Kind.CONDITIONAL_AND) {
+                    thenTargetL = rightStartL;
+                    elseTargetL = falseNodeL;
+                } else {
+                    thenTargetL = trueNodeL;
+                    elseTargetL = rightStartL;
+                }
+                Node left = scan(tree.getLeftOperand(), p);
+
+                // right-hand side
+                thenTargetL = trueNodeL;
+                elseTargetL = falseNodeL;
+                addLabelForNextNode(rightStartL);
+                Node right = scan(tree.getRightOperand(), p);
+
+                conditionalMode = condMode;
+
+                if (conditionalMode) {
+                    Node node;
+                    if (kind == Tree.Kind.CONDITIONAL_AND) {
+                        node = new ConditionalAndNode(tree, left, right);
+                    } else {
+                        node = new ConditionalOrNode(tree, left, right);
+                    }
+
+                    // node for true case
+                    addLabelForNextNode(trueNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
+
+                    // node for false case
+                    addLabelForNextNode(falseNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(oldFalseTargetL));
+
+                    return node;
+                } else {
+                    // one node for true/false
+                    addLabelForNextNode(trueNodeL);
+                    addLabelForNextNode(falseNodeL);
+                    Node node;
+                    if (kind == Tree.Kind.CONDITIONAL_AND) {
+                        node = new ConditionalAndNode(tree, left, right);
+                    } else {
+                        node = new ConditionalOrNode(tree, left, right);
+                    }
+                    extendWithNode(node);
+                    return node;
+                }
+            }
+
+                /*            case CONDITIONAL_OR: {
 
                 // see JLS 15.24
 
+                boolean condMode = conditionalMode;
+                conditionalMode = true;
+
                 // all necessary labels
                 Label rightStartL = new Label();
-                Label mergeL = new Label();
+                Label trueNodeL = new Label();
+                Label falseNodeL = new Label();
+                Label oldTrueTargetL = thenTargetL;
+                Label oldFalseTargetL = elseTargetL;
 
                 // left-hand side
+                thenTargetL = trueNodeL;
+                elseTargetL = rightStartL;
                 Node left = scan(tree.getLeftOperand(), p);
 
-                extendWithExtendedNode(new ConditionalJump(mergeL, rightStartL));
-
                 // right-hand side
+                thenTargetL = trueNodeL;
+                elseTargetL = falseNodeL;
                 addLabelForNextNode(rightStartL);
                 Node right = scan(tree.getRightOperand(), p);
 
-                addLabelForNextNode(mergeL);
-                Node node = new ConditionalOrNode(tree, left, right);
-                extendWithNode(node);
-                return node;
-            }
+                conditionalMode = condMode;
+
+                if (conditionalMode) {
+                    Node node = new ConditionalOrNode(tree, left, right);
+
+                    // node for true case
+                    addLabelForNextNode(trueNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
+
+                    // node for false case
+                    addLabelForNextNode(falseNodeL);
+                    extendWithNode(node);
+                    extendWithExtendedNode(new UnconditionalJump(oldFalseTargetL));
+
+                    return node;
+                } else {
+                    // one node for true/false
+                    addLabelForNextNode(trueNodeL);
+                    addLabelForNextNode(falseNodeL);
+                    Node node = new ConditionalOrNode(tree, left, right);
+                    extendWithNode(node);
+                    return node;
+                }
+                } */
             }
             assert r != null : "unexpected binary tree";
             return extendWithNode(r);
@@ -2132,6 +2296,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitBreak(BreakTree tree, Void p) {
+            assert !conditionalMode;
+
             Name label = tree.getLabel();
             if (label == null) {
                 assert breakTargetL != null : "no target for break statement";
@@ -2149,6 +2315,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitCase(CaseTree tree, Void p) {
+            assert !conditionalMode;
+
             assert switchExpr != null : "no switch expression in case";
 
             Tree exprTree = tree.getExpression();
@@ -2213,6 +2381,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
+            assert !conditionalMode;
+
             Name parentLabel = getLabel(getCurrentPath());
 
             Label loopEntry = new Label();
@@ -2242,11 +2412,13 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
             if (tree.getCondition() != null) {
                 unbox(scan(tree.getCondition(), p));
-                extendWithExtendedNode(new ConditionalJump(loopEntry,
-                    loopExit));
             }
+            conditionalMode = false;
 
             // Loop exit
             addLabelForNextNode(loopExit);
@@ -2277,6 +2449,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitForLoop(ForLoopTree tree, Void p) {
+            assert !conditionalMode;
+
             Name parentLabel = getLabel(getCurrentPath());
 
             Label conditionStart = new Label();
@@ -2306,11 +2480,13 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
             if (tree.getCondition() != null) {
                 unbox(scan(tree.getCondition(), p));
-                extendWithExtendedNode(new ConditionalJump(loopEntry,
-                    loopExit));
             }
+            conditionalMode = false;
 
             // Loop body
             addLabelForNextNode(loopEntry);
@@ -2340,11 +2516,18 @@ public class CFGBuilder {
             // TODO: these are not always local variables
             LocalVariableNode node = new LocalVariableNode(tree);
             extendWithNode(node);
+            if (conditionalMode) {
+                extendWithExtendedNode(new ConditionalJump(thenTargetL,
+                    elseTargetL));
+            }
             return node;
         }
 
         @Override
         public Node visitIf(IfTree tree, Void p) {
+
+            assert !conditionalMode;
+
             // TODO exceptions
 
             // all necessary labels
@@ -2353,21 +2536,23 @@ public class CFGBuilder {
             Label endIf = new Label();
 
             // basic block for the condition
-            scan(tree.getCondition(), p);
-
-            extendWithExtendedNode(new ConditionalJump(thenEntry, elseEntry));
+            conditionalMode = true;
+            thenTargetL = thenEntry;
+            elseTargetL = elseEntry;
+            tree.getCondition().accept(this, null);
+            conditionalMode = false;
 
             // then branch
             addLabelForNextNode(thenEntry);
             StatementTree thenStatement = tree.getThenStatement();
-            scan(thenStatement, p);
+            thenStatement.accept(this, null);
             extendWithExtendedNode(new UnconditionalJump(endIf));
 
             // else branch
             addLabelForNextNode(elseEntry);
             StatementTree elseStatement = tree.getElseStatement();
             if (elseStatement != null) {
-                scan(elseStatement, p);
+                elseStatement.accept(this, null);
             }
 
             // label the end of the if statement
@@ -2562,6 +2747,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
+            assert !conditionalMode;
+
             Node operand = scan(tree.getExpression(), p);
             TypeMirror type = InternalUtils.typeOf(tree.getType());
 
@@ -2582,11 +2769,23 @@ public class CFGBuilder {
 
         @Override
         public Node visitInstanceOf(InstanceOfTree tree, Void p) {
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+            conditionalMode = false;
+
             Node operand = scan(tree.getExpression(), p);
             TypeMirror refType = InternalUtils.typeOf(tree.getType());
-
             InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
             extendWithNode(node);
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
+            }
             return node;
         }
 
@@ -2667,6 +2866,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitWhileLoop(WhileLoopTree tree, Void p) {
+            assert !conditionalMode;
+
             Name parentLabel = getLabel(getCurrentPath());
 
             Label loopEntry = new Label();
@@ -2690,11 +2891,13 @@ public class CFGBuilder {
 
             // Condition
             addLabelForNextNode(conditionStart);
+            conditionalMode = true;
+            thenTargetL = loopEntry;
+            elseTargetL = loopExit;
             if (tree.getCondition() != null) {
                 unbox(scan(tree.getCondition(), p));
-                extendWithExtendedNode(new ConditionalJump(loopEntry,
-                    loopExit));
             }
+            conditionalMode = false;
 
             // Loop body
             addLabelForNextNode(loopEntry);
@@ -2734,6 +2937,36 @@ public class CFGBuilder {
         public Node visitMemberReference(MemberReferenceTree node, Void p) {
             assert false : "Member references not yet handled in AST to CFG translation.";
             return null;
+        }
+    }
+
+    /* --------------------------------------------------------- */
+    /* Utility routines for debugging CFG building               */
+    /* --------------------------------------------------------- */
+
+    /**
+     * Print a set of {@link Block}s and the edges between them.
+     * This is useful for examining the results of stage two.
+     */
+    protected void printBlocks(Set<Block> blocks) {
+        for (Block b : blocks) {
+            System.out.print(b.hashCode() + ": " + b);
+            switch (b.getType()) {
+            case REGULAR_BLOCK:
+            case EXCEPTION_BLOCK:
+            case SPECIAL_BLOCK: {
+                Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+                System.out.println(" -> " + (succ != null ? succ.hashCode() : "||"));
+                break;
+            }
+            case CONDITIONAL_BLOCK: {
+                Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
+                Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
+                System.out.println(" -> T " + (tSucc != null ? tSucc.hashCode() : "||") +
+                                   " F " + (eSucc != null ? eSucc.hashCode() : "||"));
+                break;
+            }
+            }
         }
     }
 }
