@@ -241,7 +241,7 @@ public class AnnotatedTypes {
      */
     public AnnotatedExecutableType asMemberOf(AnnotatedTypeMirror t,
             ExecutableElement elem) {
-        return (AnnotatedExecutableType)asMemberOf(t,(Element)elem);
+        return (AnnotatedExecutableType) asMemberOf(t, (Element) elem);
     }
 
     /**
@@ -277,7 +277,7 @@ public class AnnotatedTypes {
         return type;
     }
 
-    private AnnotatedTypeMirror asMemberOfImpl(AnnotatedTypeMirror t, Element elem) {
+    private AnnotatedTypeMirror asMemberOfImpl(final AnnotatedTypeMirror t, final Element elem) {
         if (ElementUtils.isStatic(elem))
             return factory.getAnnotatedType(elem);
 
@@ -294,10 +294,12 @@ public class AnnotatedTypes {
                 return method.substitute(Collections.singletonMap(method.getReturnType(), t));
         }
 
+        final AnnotatedTypeMirror elemType = factory.getAnnotatedType(elem);
+
         // I cannot think of why it wouldn't be a declared type!
         // Defensive Programming
         if (t.getKind() != TypeKind.DECLARED) {
-            return factory.getAnnotatedType(elem);
+            return elemType;
         }
 
         //
@@ -307,17 +309,29 @@ public class AnnotatedTypes {
         //      of passed type)
         // 3. Substitute for type variables if any exist
         TypeElement owner = ElementUtils.enclosingClass(elem);
+        // Is the owner or any enclosing class generic?
+        boolean ownerGeneric = false;
+        {
+            TypeElement encl = owner;
+            while (encl!=null) {
+                if (!encl.getTypeParameters().isEmpty()) {
+                    ownerGeneric = true;
+                    break;
+                }
+                encl = ElementUtils.enclosingClass(encl.getEnclosingElement());
+            }
+        }
 
         // TODO: Potential bug if Raw type is used
-        if (ElementUtils.isStatic(elem) || owner.getTypeParameters().isEmpty())
-            return factory.getAnnotatedType(elem);
+        if (ElementUtils.isStatic(elem) || !ownerGeneric)
+            return elemType;
 
         AnnotatedDeclaredType ownerType = factory.getAnnotatedType(owner);
         AnnotatedDeclaredType base =
             (AnnotatedDeclaredType) asOuterSuper(t, ownerType);
 
         if (base == null)
-            return factory.getAnnotatedType(elem);
+            return elemType;
 
         List<? extends AnnotatedTypeMirror> ownerParams =
             ownerType.getTypeArguments();
@@ -328,12 +342,12 @@ public class AnnotatedTypes {
                 List<AnnotatedTypeMirror> baseParamsEr = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : ownerParams)
                     baseParamsEr.add(arg.getErased());
-                return subst(factory.getAnnotatedType(elem), ownerParams, baseParamsEr);
+                return subst(elemType, ownerParams, baseParamsEr);
             }
-            return subst(factory.getAnnotatedType(elem), ownerParams, baseParams);
+            return subst(elemType, ownerParams, baseParams);
         }
 
-        return factory.getAnnotatedType(elem);
+        return elemType;
     }
 
     /**
@@ -698,8 +712,9 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> lubForVar = finder.visit(exeType.getReturnType(), returnType);
 
         // TODO: This may introduce a bug, but I don't want to deal with it right now
-        if (lubForVar.isEmpty() || (lubForVar.get(0).getEffectiveAnnotations().isEmpty()))
+        if (lubForVar.isEmpty()) {
             return null;
+        }
 
         List<? extends ExpressionTree> args;
         if (expr instanceof MethodInvocationTree) {
