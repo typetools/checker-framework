@@ -1609,7 +1609,7 @@ public class CFGBuilder {
 
             Node target;
             Tree methodSelect = tree.getMethodSelect();
-            if (ASTUtils.isFieldAccess(methodSelect)) {
+            if (TreeUtils.isFieldAccess(methodSelect)) {
                 Node receiver = getReceiver(methodSelect,
                      TreeUtils.enclosingClass(getCurrentPath()));
 
