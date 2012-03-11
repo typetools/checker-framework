@@ -297,9 +297,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             if (result != null) return result;
             checkerClass = checkerClass.getSuperclass();
         }
-        boolean useFlow = env.getOptions().containsKey("flow") &&
-            env.getOptions().get("flow").equals("old");
-        return new BasicAnnotatedTypeFactory<BaseTypeChecker>(this, root, useFlow);
+        return new BasicAnnotatedTypeFactory<BaseTypeChecker>(this, root);
     }
 
     // **********************************************************************
