@@ -206,6 +206,17 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     analysis.performAnalysis(cfg);
                     AnalysisResult<CFValue> result = analysis.getResult();
                     flowResult.combine(result);
+
+                    if (env.getOptions().containsKey("flowdotdir")) {
+                        String dotfilename =
+                            env.getOptions().get("flowdotdir") + "/" +
+                            mt.getName() + ".dot";
+                        // make path safe for Windows
+                        dotfilename = dotfilename.replace("<", ".").replace(">", ".");
+                        System.err.println("Output to DOT file: " + dotfilename);
+                        analysis.outputToDotFile(dotfilename);
+                    }
+
                     break;
                 case VARIABLE:
                     // TODO: handle initializers

@@ -229,26 +229,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
         }
         
-        // **********************************************************************
-        // EXPERIMENTAL!  Construct a CFG and perform flow-sensitive analysis
-        // over it.
-        // **********************************************************************
-        if (options.containsKey("flow") && options.get("flow").equals("new")) {
-            System.err.println("Analyze method: " + node.getName());
-            ProcessingEnvironment env = checker.getProcessingEnvironment();
-	    ControlFlowGraph cfg = CFGBuilder.build(root, env, node);
-            CFAnalysis analysis = new CFAnalysis(atypeFactory, env);
-            analysis.performAnalysis(cfg);
-
-            if (options.containsKey("flowdotdir")) {
-                String dotfilename = options.get("flowdotdir") + "/" + node.getName() + ".dot";
-                // make path safe for Windows
-                dotfilename = dotfilename.replace("<", ".").replace(">", ".");
-                System.err.println("Output to DOT file: " + dotfilename);
-                analysis.outputToDotFile(dotfilename);
-            }
-        }
-
         return super.visitMethod(node, p);
         } finally {
             visitorState.setMethodReceiver(preMRT);
