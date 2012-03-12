@@ -1,3 +1,15 @@
+Version 1.2.6, 13 Mar 2012
+
+Nullness Checker:
+  Correctly handle unboxing in more contexts (if, switch, while loops, ...)
+
+Internal bug fixes:
+  Fix generics corner cases (Issues 131, 132, 133, 135)
+  Support type annotations in annotations and type check annotations.
+  Improve reflective look-up of visitors and factories.
+  Small cleanups.
+
+----------------------------------------------------------------------
 Version 1.2.5.1, 06 Feb 2012
 
 Nullness Checker:
