@@ -475,6 +475,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
         for (ExpressionTree arg : args) {
+            if (!(arg instanceof AssignmentTree)) {
+                // TODO: when can this happen?
+                continue;
+            }
+
             AssignmentTree at = (AssignmentTree) arg;
             // Ensure that we never ask for the annotated type of an annotation, because
             // we don't have a type for annotations.
