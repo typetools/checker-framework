@@ -1,17 +1,17 @@
-Version 1.2.6, 13 Mar 2012
-
-Improve flow's support of annotations with parameters.
+Version 1.2.6, 17 Mar 2012
 
 Nullness Checker:
-  Correctly handle unboxing in more contexts (if, switch, while loops, ...)
+  Correctly handle unboxing in more contexts (if, switch (Issue 129),
+    while loops, ...)
 
 Regex Checker:
-  Verify legal group number to method calls that take a capturing group number.
+  Verify group number to method calls that take a capturing group number.
   Update RegexUtil methods to take optional groups parameter.
   Add special case for Pattern.compile when called with Pattern.LITERAL flag.
 
 Internal bug fixes:
-  Fix generics corner cases (Issues 131, 132, 133, 135)
+  Improve flow's support of annotations with parameters.
+  Fix generics corner cases (Issues 131, 132, 133, 135).
   Support type annotations in annotations and type check annotations.
   Improve reflective look-up of visitors and factories.
   Small cleanups.
