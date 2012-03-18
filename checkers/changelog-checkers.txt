@@ -1,4 +1,4 @@
-Version 1.2.6, 17 Mar 2012
+Version 1.2.6, 18 Mar 2012
 
 Nullness Checker:
   Correctly handle unboxing in more contexts (if, switch (Issue 129),
