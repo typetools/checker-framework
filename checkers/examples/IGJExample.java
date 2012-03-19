@@ -7,7 +7,7 @@ import checkers.igj.quals.*;
 class Date {
     int time; // epoch time
 
-    public Date(int time) @AssignsFields {
+    public Date(@AssignsFields Date this, int time) {
         this.time = time;
     }
 
@@ -30,13 +30,13 @@ class Point {
     double x;
     double y;
 
-    Point(double x, double y) @AssignsFields {
+    Point(@AssignsFields Point this, double x, double y) {
         setX(x);
         setY(y);
     }
 
-    void setX(double x) @AssignsFields { this.x = x; }
-    void setY(double y) @AssignsFields { this.y = y; }
+    void setX(@AssignsFields Point this, double x) { this.x = x; }
+    void setY(@AssignsFields Point this, double y) { this.y = y; }
 
     double getX() /*@ReadOnly*/ { return x; }
     double getY() /*@ReadOnly*/ { return y; }
@@ -81,7 +81,7 @@ class TestClass {
     static void isImmutable(@Immutable TestClass tc) { }
     static void isRO(@ReadOnly TestClass tc) { }
 
-    TestClass() @AssignsFields {
+    TestClass(@AssignsFields TestClass this) {
         readOnlyReceiver();
         mutableReceiver();   // Error: cannot call method with mutable receiver
         immutableReceiver();  // Error: Cannot call method with immutable receiver
