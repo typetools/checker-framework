@@ -129,6 +129,12 @@ public class QualifierDefaults {
                     if (d == null && ds == null)
                         break;
                 }
+                if (prev!=null && prev.getKind() == Tree.Kind.MODIFIERS) {
+                    // Annotations are modifiers. We do not want to apply the local variable default to
+                    // annotations. Without this, test fenum/TestSwitch failed, because the default for
+                    // an argument became incompatible with the declared type.
+                    break;
+                }
                 return TreeUtils.elementFromDeclaration((VariableTree)t);
             case METHOD:
                 return TreeUtils.elementFromDeclaration((MethodTree)t);

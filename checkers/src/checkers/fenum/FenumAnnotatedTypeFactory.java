@@ -25,30 +25,19 @@ public class FenumAnnotatedTypeFactory extends
 
   public FenumAnnotatedTypeFactory(FenumChecker checker,
                                    CompilationUnitTree root) {
-    // Use the "flowinference" lint option to enable or disable flow inference.
-    // Unfortunately, inference changes a field access that has the type
-    // @Fenum("A") into an access @Fenum, ignoring the arguments.
-    // This happens in BasicAnnotatedTypeFactory.annotateImplicit, where
-    // all annotations are removed and the inferred annotation is added.
-    // Inference apparently does not handle arguments yet.
 
-    super(checker, root, checker.getLintOption("flowinference", false));
+    super(checker, root);
 
     // Reuse the framework Bottom annotation and make it the default for the
     // null literal.
     treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, checker.BOTTOM);
 
-    if(checker.getLintOption("flowinference", false)) {
-      defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
-                                   Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-      defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
+    defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
+                                 Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+    defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
 
-      // flow.setDebug(System.err);
-      flow.scan(root);
-    } else {
-      defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
-    		  Collections.singleton(DefaultLocation.ALL));
-    }
+    // flow.setDebug(System.err);
+    flow.scan(root);
   }
 
   @Override

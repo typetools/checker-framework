@@ -649,6 +649,34 @@ public final class TreeUtils {
         }
         throw new RuntimeException("Shouldn't be here!");
     }
-
+    
+    /**
+     * Returns true if the given tree represents an access of the given VariableElement.
+     */
+    public static boolean isFieldAccess(Tree tree, VariableElement var, ProcessingEnvironment env) {
+        if (!(tree instanceof MemberSelectTree)) {
+            return false;
+        }
+        MemberSelectTree memSel = (MemberSelectTree) tree;
+        Element field = TreeUtils.elementFromUse(memSel);
+        return field.equals(var);
+    }
+    
+    /**
+     * Returns the VariableElement for a field declaration.
+     *
+     * @param typeName the class where the field is declared.
+     * @param fieldName the name of the field.
+     * @param env the processing environment.
+     * @return the VariableElement for typeName.fieldName
+     */
+    public static VariableElement getField(String typeName, String fieldName, ProcessingEnvironment env) {
+        TypeElement mapElt = env.getElementUtils().getTypeElement(typeName);
+        for (VariableElement var : ElementFilter.fieldsIn(mapElt.getEnclosedElements())) {
+            if (var.getSimpleName().contentEquals(fieldName)) {
+                return var;
+            }
+        }
+        throw new RuntimeException("Shouldn't be here!");
+    }
 }
-

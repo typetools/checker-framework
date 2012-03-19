@@ -1,4 +1,3 @@
-import checkers.nullness.quals.Nullable;
 import checkers.util.test.*;
 
 class AnnotatedGenerics {

@@ -9,11 +9,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
 import checkers.igj.quals.*;
-import checkers.quals.Bottom;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -256,7 +254,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 checkerClass.getName().replace("Checker", "Visitor")
                 .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { this.getClass(), CompilationUnitTree.class },
+                    new Class<?>[] { checkerClass, CompilationUnitTree.class },
                     new Object[] { this, root });
             if (result != null)
                 return result;
@@ -294,7 +292,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 .replace("Subchecker", "AnnotatedTypeFactory");
 
             AnnotatedTypeFactory result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { this.getClass(), CompilationUnitTree.class },
+                    new Class<?>[] { checkerClass, CompilationUnitTree.class },
                     new Object[] { this, root });
             if (result != null) return result;
             checkerClass = checkerClass.getSuperclass();

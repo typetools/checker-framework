@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
-public class InheritableThreadLocal<T> extends ThreadLocal<T> {
+// See comment in ThreadLocal class about type parameter annotation.
+public class InheritableThreadLocal<@Nullable T> extends ThreadLocal<T> {
   public InheritableThreadLocal() { throw new RuntimeException("skeleton method"); }
 }

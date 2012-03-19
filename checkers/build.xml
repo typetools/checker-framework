@@ -337,7 +337,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="flow-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
-            <param name="param" value="tests.FrameworkTest"/>
+            <param name="param" value="tests.FlowTest"/>
         </antcall>
     </target>
 
@@ -627,8 +627,12 @@ ${build.version} of the 'javac.jar' library."/>
       </exec>
     </target>
 
-    <target name="bindist" depends="-prep-bindist,jar,jdk.jar"
+    <target name="bindist" depends="-prep-bindist,jar,jdk.jar,bindist-nojdk"
             description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
+    </target>
+
+    <target name="bindist-nojdk" depends="-prep-bindist,jar"
+            description="Generates jar file jsr308-all.jar including both javac and the Checker Framework, WITHOUT updating jdk.jar">
         <delete dir="${temp.dir}"/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
         <unjar src="${javac.lib}" dest="${temp.dir}"/>

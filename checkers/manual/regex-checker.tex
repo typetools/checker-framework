@@ -2,13 +2,14 @@
 \chapter{Regex checker for regular expression syntax\label{regex-checker}}
 
 The Regex Checker prevents, at compile-time, use of syntactically invalid
-regular expressions.
+regular expressions and access of invalid capturing groups.
 
 A regular expression, or regex, is a pattern for matching certain strings
 of text.  In Java, a programmer writes a regular expression as a string.
 At run time, the string is ``compiled'' into an efficient internal form
 (\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
-text-matching.
+text-matching. Regular expression in Java also have capturing groups, which
+are delimited by parentheses and allow for extraction from text.
 
 The syntax of regular expressions is complex, so it is easy to make a
 mistake.  It is also easy to accidentally use a regex feature from another
@@ -28,7 +29,9 @@ These qualifiers make up the Regex type system:
 \begin{description}
 
 \item[\<@\refclass{regex/quals}{Regex}>]
-  indicates valid regular expression \code{String}s.
+  indicates valid regular expression \code{String}s. This qualifier takes
+  an optional parameter of at the least the number of capturing groups in
+  the regular expression. If not provided, the parameter defaults to 0.
 
 \item[\<@\refclass{regex/quals}{PolyRegex}>]
   indicates qualifier polymorphism. For a description of
@@ -37,6 +40,21 @@ These qualifiers make up the Regex type system:
 
 \end{description}
 
+A subtyping hierarchy of the Regex checker's qualifiers is shown in
+Figure~\ref{fig:regex-hierarchy}.
+
+\begin{figure}
+\includeimage{regex}{9cm}
+\caption{The subtyping relationship of the Regex checkers's qualifiers.
+  Because the parameter to a \<@Regex> qualifier is at least the number of
+  capturing groups in a regular expression, a \<@Regex> qualifier with more
+  capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
+  groups. The \<@Regex> qualifier is shorthand for \<@Regex(0)>. Qualifiers
+  in gray are provided for the benefit of the type
+  system and should never be used.}
+\label{fig:regex-hierarchy}
+\end{figure}
+
 \section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
 
 
@@ -44,10 +62,25 @@ These qualifiers make up the Regex type system:
 
 As described in Section~\ref{effective-qualifier}, the Regex checker adds
 implicit qualifiers, reducing the number of annotations that must appear
-in your code. The checker implicitly adds the \code{Regex} qualifier to
-any \code{String} literal that is a valid regex and to the \code{null}
-literal.
+in your code. The checker implicitly adds the \code{Regex} qualifier with
+the parameter set to the correct number of capturing groups to
+any \code{String} literal that is a valid regex. The Regex checker allows
+for the \code{null} literal to be assigned to any type qualified with the
+\code{Regex} qualifier.
 
+\subsection{Capturing groups\label{regex-capturing-groups}}
+
+The Regex checker validates that a legal capturing group number is passed
+to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
+\sunjavadoc{java/util/regex/Matcher.html#group(int)}{group},
+\sunjavadoc{java/util/regex/Matcher.html#start(int)}{start} and
+\sunjavadoc{java/util/regex/Matcher.html#end(int)}{end} methods. To do this,
+the type of \<Matcher> must be qualified with a \<@Regex> annotation
+with the number of capturing groups in the regular expression. This is
+handled implicitly by the Regex checker for local variables (see
+Section~\ref{type-refinement}), but you may need to add \<@Regex> annotations
+with a capturing group count to \<Pattern> and \<Matcher> fields and
+parameters.
 
 \subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
 
@@ -77,6 +110,16 @@ example of the intended use of the \code{RegexUtil} methods.
   if its argument is a valid regular expression.
 
 \end{description}
+
+An additional version of each of these methods is also provided that takes
+an additional group count parameter. The
+\refmethod{regex}{RegexUtil}{isRegex}{(java.lang.String, int)} method
+verifies that the argument has at least the given number of groups. The
+\refmethod{regex}{RegexUtil}{regexError}{(java.lang.String, int)} and
+\refmethod{regex}{RegexUtil}{regexException}{(java.lang.String, int)}
+methods return a \<String> error message and \<PatternSyntaxException>,
+respectively, detailing why the given String is not a syntactically valid
+regular expression with at least the given number of capturing groups.
 
 A potential disadvantage of using these methods is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time.
@@ -120,6 +163,11 @@ is a cast:  it returns its argument unchanged, but with the type
 \code{@Regex String} if it is a valid regular expression.  It throws an
 Error if its argument is not a valid regular expression, but you should
 only use it when you are sure it will not throw an error.
+
+There is an additional \refmethod{regex}{RegexUtil}{asRegex}{(java.lang.String, int)}
+method that takes a capturing group parameter. This method works the same as
+described above, but returns a \code{@Regex String} with the parameter on the
+annotation set to the value of the capturing group parameter passed to the method.
 
 This method is
 mainly a workaround until the Regex Checker supports flow-sensitivity (see
