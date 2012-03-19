@@ -60,6 +60,14 @@ public class TypeFromElement {
         } else if (element.getKind() == ElementKind.EXCEPTION_PARAMETER) {
             // Or is this like a local variable?
             // TODO: annotateExceptionParam(type, element);
+            if (strict) {
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+            }
+        } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
+            // TODO;
+            if (strict) {
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+            }
         } else {
             throw new CheckerError("TypeFromElement.annotate: illegal argument: " + element.getKind());
         }
@@ -609,8 +617,13 @@ public class TypeFromElement {
         } else if (location.get(0) < type.getTypeArguments().size()) {
             return getLocationTypeATM(type.getTypeArguments().get(location.get(0)), tail(location));
         } else {
-            throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
-                    "invalid locations " + location + " for type: " + type);
+            // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not handled yet
+            // throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
+            //        "invalid locations " + location + " for type: " + type);
+            if (strict) {
+                System.out.println("TypeFromElement.getLocationTypeADT: handle outer classes.");
+            }
+            return type;
         }
     }
 
