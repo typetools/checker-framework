@@ -3,7 +3,9 @@ package checkers.types;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -196,35 +198,43 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         flowResult = new AnalysisResult<>();
         for (Tree t : root.getTypeDecls()) {
             assert t instanceof ClassTree;
-            ClassTree ct = (ClassTree) t;
-            for (Tree m : ct.getMembers()) {
-                switch (m.getKind()) {
-                case METHOD:
-                    MethodTree mt = (MethodTree) m;
-                    ControlFlowGraph cfg = CFGBuilder.build(root, env, mt);
-                    CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
-                    analysis.performAnalysis(cfg);
-                    AnalysisResult<CFValue> result = analysis.getResult();
-                    flowResult.combine(result);
+            Queue<ClassTree> queue = new LinkedList<>();
+            queue.add((ClassTree) t);
+            while (!queue.isEmpty()) {
+                ClassTree ct = queue.remove();
+                for (Tree m : ct.getMembers()) {
+                    switch (m.getKind()) {
+                    case METHOD:
+                        MethodTree mt = (MethodTree) m;
+                        ControlFlowGraph cfg = CFGBuilder.build(root, env, mt);
+                        CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+                        analysis.performAnalysis(cfg);
+                        AnalysisResult<CFValue> result = analysis.getResult();
+                        flowResult.combine(result);
 
-                    if (env.getOptions().containsKey("flowdotdir")) {
-                        String dotfilename =
-                            env.getOptions().get("flowdotdir") + "/" +
-                            mt.getName() + ".dot";
-                        // make path safe for Windows
-                        dotfilename = dotfilename.replace("<", ".").replace(">", ".");
-                        System.err.println("Output to DOT file: " + dotfilename);
-                        analysis.outputToDotFile(dotfilename);
+                        if (env.getOptions().containsKey("flowdotdir")) {
+                            String dotfilename =
+                                env.getOptions().get("flowdotdir") + "/" +
+                                mt.getName() + ".dot";
+                            // make path safe for Windows
+                            dotfilename = dotfilename.replace("<", ".").replace(">", ".");
+                            System.err.println("Output to DOT file: " + dotfilename);
+                            analysis.outputToDotFile(dotfilename);
+                        }
+
+                        break;
+                    case VARIABLE:
+                        // TODO: handle initializers
+                        break;
+                    case CLASS:
+                        // Visit inner and nested classes.
+                        queue.add((ClassTree) m);
+                        break;
+                    default:
+                        System.err.println("Unexpected member: "+m.getKind());
+                        assert false;
+                        break;
                     }
-
-                    break;
-                case VARIABLE:
-                    // TODO: handle initializers
-                    break;
-                default:
-                    System.err.println("Unexpected member: "+m.getKind());
-                    assert false;
-                    break;
                 }
             }
         }
