@@ -123,6 +123,15 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
         R r = scan(type.getTypeArguments(), p);
+        /*
+         * TODO: Would it be good to do the following here? I only do this in
+         * QualifierDefaults now, but maybe more general would be better?
+         * But the IGJ Checker loops (again...) if I add this.
+        if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
+            for(AnnotatedDeclaredType adt : type.directSuperTypes()) {
+                r = scanAndReduce(adt, p, r);
+            }
+        }*/
         return r;
     }
 
