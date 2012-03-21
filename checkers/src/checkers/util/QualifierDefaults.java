@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.quals.*;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 
@@ -348,6 +347,17 @@ public class QualifierDefaults {
             }
 
             return super.scan(t, p);
+        }
+
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror p) {
+            // TODO: should this logic be in AnnotatedTypeScanner?
+            if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
+                for(AnnotatedDeclaredType adt : type.directSuperTypes()) {
+                    scan(adt, p);
+                }
+            }
+            return super.visitDeclared(type, p);
         }
 
         private boolean isTypeVarExtends = false;
