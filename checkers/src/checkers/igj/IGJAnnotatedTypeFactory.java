@@ -542,7 +542,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (actualType == null) {
                 TypeElement elem = (TypeElement)type.getUnderlyingType().asElement();
-                actualType = getAnnotatedType(elem);
+                actualType = fromElement(elem);
             }
 
             if (actualType.getKind() == TypeKind.TYPEVAR) {
