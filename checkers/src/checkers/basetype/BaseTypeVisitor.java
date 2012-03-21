@@ -716,6 +716,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
+        if (options.containsKey("showchecks")) {
+            long valuePos = positions.getStartPosition(root, valueTree);
+            System.out.printf(
+                    " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
+                    "About to test whether actual is a subtype of expected",
+                    root.getLineMap().getLineNumber(valuePos),
+                    valueTree.getKind(), valueTree,
+                    valueType.getKind(), valueType,
+                    varType.getKind(), varType);
+        }
+
         boolean success = checker.isSubtype(valueType, varType);
 
         if (options.containsKey("showchecks")) {
