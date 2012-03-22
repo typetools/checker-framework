@@ -170,4 +170,7 @@ public interface NodeVisitor<R, P> {
 
     // Method invocations
     R visitMethodInvocation(MethodInvocationNode n, P p);
+
+    // Class names
+    R visitClassName(ClassNameNode n, P p);
 }
