@@ -14,7 +14,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
 /**
- * A node for a field access:
+ * A node for a field access, including a method accesses:
  * 
  * <pre>
  *   <em>expression</em> . <em>field</em>

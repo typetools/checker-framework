@@ -7,6 +7,7 @@ import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeMirror;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -694,6 +695,33 @@ public final class TreeUtils {
             IdentifierTree itree = (IdentifierTree) tree;
             return itree.getName().toString();
         }
+    }
+
+    /**
+     * Determine whether <code>tree</code> refers to a method element, such
+     * as
+     * 
+     * <pre>
+     *   <em>m</em>(...)
+     *   <em>obj</em> . <em>m</em>(...)
+     * </pre>
+     * 
+     * @return true iff if tree is a method access expression (implicit or
+     *         explicit).
+     */
+    public static boolean isMethodAccess(Tree tree) {
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            // explicit field access
+            MemberSelectTree memberSelect = (MemberSelectTree) tree;
+            Element el = TreeUtils.elementFromUse(memberSelect);
+            return el.getKind() == ElementKind.METHOD;
+        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+            // implicit field access
+            IdentifierTree ident = (IdentifierTree) tree;
+            Element el = TreeUtils.elementFromUse(ident);
+            return el.getKind() == ElementKind.METHOD;
+        }
+        return false;
     }
 
     /**
