@@ -64,9 +64,8 @@ public class MethodInvocationNode extends Node {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         if (target != null) {
-            sb.append("(" + target + ").");
+            sb.append(target);
         }
-        sb.append(TreeUtils.elementFromUse(tree).getSimpleName());
         sb.append("(");
         boolean needComma = false;
         for (Node arg : arguments) {

@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
@@ -45,6 +46,7 @@ import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.BoxingNode;
 import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.CharacterLiteralNode;
+import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.ConditionalAndNode;
 import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
@@ -101,6 +103,7 @@ import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
+import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
@@ -1607,15 +1610,15 @@ public class CFGBuilder {
 
             ExecutableElement method = TreeUtils.elementFromUse(tree);
 
-            Node target;
+            Node target = null;
             Tree methodSelect = tree.getMethodSelect();
-            if (TreeUtils.isFieldAccess(methodSelect)) {
+            if (TreeUtils.isMethodAccess(methodSelect)) {
                 Node receiver = getReceiver(methodSelect,
-                     TreeUtils.enclosingClass(getCurrentPath()));
+                                            TreeUtils.enclosingClass(getCurrentPath()));
 
                 target = new FieldAccessNode(methodSelect, receiver);
-            } else {
-                target = scan(methodSelect, p);
+                // TODO: Handle exceptions caused by field access.
+                extendWithNode(target);
             }
 
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
@@ -1741,7 +1744,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Note 1: Requires <code>tree</code> to be a field access tree.
+         * Note 1: Requires <code>tree</code> to be a field or method access tree.
          * <p>
          * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          * 
@@ -1750,7 +1753,7 @@ public class CFGBuilder {
          * @return The receiver of the field access.
          */
         private Node getReceiver(Tree tree, ClassTree classTree) {
-            assert TreeUtils.isFieldAccess(tree);
+            assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
@@ -2517,7 +2520,21 @@ public class CFGBuilder {
                         TreeUtils.enclosingClass(getCurrentPath()));
                 node = new FieldAccessNode(tree, receiver);
             } else {
-                node = new LocalVariableNode(tree);
+                Element element = TreeUtils.elementFromUse(tree);
+                switch (element.getKind()) {
+                case CLASS:
+                    node = new ClassNameNode(tree);
+                    break;
+                case FIELD:
+                    // Note that "this" is a field, but not a field access.
+                case LOCAL_VARIABLE:
+                case PARAMETER:
+                    node = new LocalVariableNode(tree);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                        "unexpected element kind : " + element.getKind());
+                }
             }
             extendWithNode(node);
             if (conditionalMode) {
@@ -2679,8 +2696,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            ExpressionTree expr = tree.getExpression();
+            Node receiver = getReceiver(expr, TreeUtils.enclosingClass(getCurrentPath()));
+            return extendWithNode(new FieldAccessNode(expr, receiver));
         }
 
         @Override

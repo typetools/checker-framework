@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.flow.analysis.Store;
+import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.ExplicitThisNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
@@ -173,6 +174,52 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
+    /**
+     * A ClassName represents the occurrence of a class as part of 
+     * a static field access or method invocation.
+     */
+    public static class ClassName extends Receiver {
+        protected Element element;
+
+        public ClassName(TypeMirror type, Element element) {
+            super(type);
+            this.element = element;
+        }
+
+        public Element getElement() {
+            return element;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null && !(obj instanceof ClassName)) {
+                return false;
+            }
+            ClassName other = (ClassName) obj;
+            return getElement().equals(other.getElement());
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeUtils.hash(getElement());
+        }
+
+        @Override
+        public String toString() {
+            return getElement().getSimpleName().toString();
+        }
+
+        @Override
+        public boolean containsUnknown() {
+            return false;
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return this.equals(other);
+        }
+    }
+
     public static class Unknown extends Receiver {
         public Unknown(TypeMirror type) {
             super(type);
@@ -324,6 +371,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
             receiver = new LocalVariable(lv);
+        } else if (receiverNode instanceof ClassNameNode) {
+            ClassNameNode cn = (ClassNameNode) receiverNode;
+            receiver = new ClassName(cn.getType(), cn.getElement());
         } else {
             receiver = new Unknown(receiverNode.getType());
         }
