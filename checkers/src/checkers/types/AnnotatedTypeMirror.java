@@ -880,7 +880,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                ? extends AnnotatedTypeMirror> mapping) {
+                    ? extends AnnotatedTypeMirror> mapping) {
             if (mapping.containsKey(this))
                 return mapping.get(this);
 
@@ -1177,13 +1177,19 @@ public abstract class AnnotatedTypeMirror {
             {
             	List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
             	for (AnnotatedTypeVariable t : getTypeVariables()) {
-            		// TODO: I would like to do the substitution, but it results in
-            		// a ClassCastException, because substitute on the type variable
-            		// seems to do more than necessary.
-            		// To fix the immediate problem, a deep clone is enough, but we
-            		// should investigate when the substitution is necessary.
-            		// mtvs.add((AnnotatedTypeVariable) t.substitute(mappings));
-            		mtvs.add((AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t));
+            	    // Substitute upper and lower bound of the type variable.
+            		AnnotatedTypeVariable newtv = (AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t);
+            		AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
+            		if (bnd!=null) {
+            		    bnd = bnd.substitute(mappings);
+            		    newtv.setUpperBound(bnd);
+            		}
+            		bnd = newtv.getLowerBoundField();
+            		if (bnd!=null) {
+            		    bnd = bnd.substitute(mappings);
+            		    newtv.setLowerBound(bnd);
+            		}
+            		mtvs.add(newtv);
             	}
             	type.setTypeVariables(mtvs);
             }
@@ -2022,13 +2028,13 @@ public abstract class AnnotatedTypeMirror {
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
-                    if (getSuperBound() != null && getSuperBound().getKind() != TypeKind.NULL) {
+                    if (getSuperBoundField() != null && getSuperBoundField().getKind() != TypeKind.NULL) {
                         sb.append(" super ");
-                        sb.append(getSuperBound());
+                        sb.append(getSuperBoundField());
                     }
-                    if (getExtendsBound() != null && getExtendsBound().getKind() != TypeKind.NONE) {
+                    if (getExtendsBoundField() != null && getExtendsBoundField().getKind() != TypeKind.NONE) {
                         sb.append(" extends ");
-                        sb.append(getExtendsBound());
+                        sb.append(getExtendsBoundField());
                     }
                 } finally {
                     isPrintingBound = false;
