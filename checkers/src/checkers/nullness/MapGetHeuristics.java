@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.util.ElementFilter;
 
 import checkers.nullness.quals.KeyFor;
 
@@ -166,7 +165,7 @@ import com.sun.source.util.TreePath;
     /**
      * Helper function to determine if the passed element is sufficient
      * to resolve a reference at compile time, without needing to
-     * represent the call/derefence site.
+     * represent the call/dereference site.
      */
     private boolean isSiteRequired(ExpressionTree node, Element elt) {
         boolean r = ElementUtils.isStatic(elt) ||
@@ -252,7 +251,7 @@ import com.sun.source.util.TreePath;
     }
 
     /**
-     * Case 5: get() is preceded by put-if-abset pattern
+     * Case 5: get() is preceded by put-if-absent pattern
      */
     private Matcher preceededByIfThenPut(final Element key, final VariableElement map) {
         return preceededBy(ofKind(Tree.Kind.IF, new Matcher() {
