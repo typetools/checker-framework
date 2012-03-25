@@ -14,36 +14,44 @@ class A {
             void isBReadOnly() @ReadOnly { }
 
             void testImmutableForB() @Immutable {
-                isAMutable(); // error
+                //:: error: (method.invocation.invalid)
+                isAMutable();
                 isAImmutable();
                 isAReadOnly();
-                A.this.isAMutable(); // error
+                //:: error: (method.invocation.invalid)
+                A.this.isAMutable();
                 A.this.isAImmutable();
                 A.this.isAReadOnly();
 
-                isBMutable();   // error
+                //:: error: (method.invocation.invalid)
+                isBMutable();
                 isBImmutable();
                 isBReadOnly();
 
-                B.this.isBMutable();   // error
+                //:: error: (method.invocation.invalid)
+                B.this.isBMutable();
                 B.this.isBImmutable();
                 B.this.isBReadOnly();
             }
 
             void testMutableForB() @Mutable {
                 isAMutable();
-                isAImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                isAImmutable();
                 isAReadOnly();
                 A.this.isAMutable();
-                A.this.isAImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                A.this.isAImmutable();
                 A.this.isAReadOnly();
 
                 isBMutable();
-                isBImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                isBImmutable();
                 isBReadOnly();
 
                 B.this.isBMutable();
-                B.this.isBImmutable();  // error
+                //:: error: (method.invocation.invalid)
+                B.this.isBImmutable();
                 B.this.isBReadOnly();
             }
 
