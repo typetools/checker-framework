@@ -336,8 +336,9 @@ public class TypeHierarchy {
         }
 
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
-            return isSubtype(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
-                    ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound());
+            AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
+            AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+            return isSubtype(rhsbnd, lhsbnd);
         }
 
         if (lhs.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
