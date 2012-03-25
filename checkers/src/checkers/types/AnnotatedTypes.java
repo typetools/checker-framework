@@ -879,7 +879,7 @@ public class AnnotatedTypes {
             return factory.getAnnotatedType(variable);
         } else if (assignmentContext instanceof CompoundAssignmentTree) {
             ExpressionTree variable =
-                ((CompoundAssignmentTree)assignmentContext).getExpression();
+                ((CompoundAssignmentTree)assignmentContext).getVariable();
             return factory.getAnnotatedType(variable);
         } else if (assignmentContext instanceof MethodInvocationTree) {
             MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
