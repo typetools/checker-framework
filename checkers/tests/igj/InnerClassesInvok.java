@@ -14,11 +14,11 @@ class A {
             void isBReadOnly() @ReadOnly { }
 
             void testImmutableForB() @Immutable {
-                isAMutable();
-                isAImmutable(); // error
+                isAMutable(); // error
+                isAImmutable();
                 isAReadOnly();
-                A.this.isAMutable();
-                A.this.isAImmutable(); // error
+                A.this.isAMutable(); // error
+                A.this.isAImmutable();
                 A.this.isAReadOnly();
 
                 isBMutable();   // error
