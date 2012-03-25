@@ -19,7 +19,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public Locale getLocale() @ReadOnly {
+    public Locale getLocale(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -27,7 +27,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toPattern() @ReadOnly {
+    public String toPattern(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -47,16 +47,16 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public Format[] getFormatsByArgumentIndex() @ReadOnly {
+    public Format[] getFormatsByArgumentIndex(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Format[] getFormats() @ReadOnly {
+    public Format[] getFormats(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public final StringBuffer format(@ReadOnly Object[] arguments, StringBuffer result,
-                                     FieldPosition pos) @ReadOnly
+    public final StringBuffer format(@ReadOnly MessageFormat this, @ReadOnly Object[] arguments, StringBuffer result,
+                                     FieldPosition pos)
     {
         throw new RuntimeException("skeleton method");
     }
@@ -65,37 +65,37 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public final StringBuffer format(@ReadOnly Object arguments, StringBuffer result,
-                                     FieldPosition pos) @ReadOnly
+    public final StringBuffer format(@ReadOnly MessageFormat this, @ReadOnly Object arguments, StringBuffer result,
+                                     FieldPosition pos)
     {
         throw new RuntimeException("skeleton method");
     }
 
-    public AttributedCharacterIterator formatToCharacterIterator(@ReadOnly Object arguments) @ReadOnly {
+    public AttributedCharacterIterator formatToCharacterIterator(@ReadOnly MessageFormat this, @ReadOnly Object arguments) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object[] parse(String source, ParsePosition pos) @ReadOnly {
+    public Object[] parse(@ReadOnly MessageFormat this, String source, ParsePosition pos) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object[] parse(String source) @ReadOnly throws ParseException {
+    public Object[] parse(@ReadOnly MessageFormat this, String source) throws ParseException {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object parseObject(String source, ParsePosition pos) @ReadOnly {
+    public Object parseObject(@ReadOnly MessageFormat this, String source, ParsePosition pos) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object clone() @ReadOnly {
+    public Object clone(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(Object obj) @ReadOnly {
+    public boolean equals(@ReadOnly MessageFormat this, Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int hashCode() @ReadOnly {
+    public int hashCode(@ReadOnly MessageFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -107,7 +107,7 @@ public class MessageFormat extends Format {
             throw new RuntimeException("skeleton method");
         }
 
-        protected Object readResolve() @ReadOnly throws InvalidObjectException {
+        protected Object readResolve(@ReadOnly Field this) throws InvalidObjectException {
             throw new RuntimeException("skeleton method");
         }
 

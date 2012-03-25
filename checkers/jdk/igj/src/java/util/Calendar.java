@@ -47,32 +47,32 @@ public abstract class Calendar implements @I java.io.Serializable, @I Cloneable,
   public final static int ALL_STYLES = 0;
   public final static int SHORT = 1;
   public final static int LONG = 2;
-  protected Calendar() @ReadOnly {}
+  protected Calendar(@ReadOnly Calendar this) {}
   public static @I Calendar getInstance() { throw new RuntimeException("skeleton method"); }
   public static @I Calendar getInstance(@ReadOnly TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public static @I Calendar getInstance(@ReadOnly Locale a1) { throw new RuntimeException("skeleton method"); }
   public static @I Calendar getInstance(@ReadOnly TimeZone a1, Locale a2) { throw new RuntimeException("skeleton method"); }
   public static synchronized Locale @ReadOnly [] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
-  public final @I Date getTime() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public final void setTime(Date a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public long getTimeInMillis() @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public void setTimeInMillis(long a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public int get(int a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public void set(int a1, int a2) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3, int a4, int a5) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final void set(int a1, int a2, int a3, int a4, int a5, int a6) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final void clear() @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final void clear(int a1) @AssignsFields { throw new RuntimeException("skeleton method"); }
-  public final boolean isSet(int a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public String getDisplayName(int a1, int a2, Locale a3) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public Map<String, Integer> getDisplayNames(int a1, int a2, Locale a3) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@ReadOnly Object a1) @ReadOnly  { throw new RuntimeException("skeleton method"); }
-  public int hashCode() @ReadOnly  { throw new RuntimeException("skeleton method"); }
-  public boolean before(Object a1) @ReadOnly  { throw new RuntimeException("skeleton method"); }
-  public boolean after(Object a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public int compareTo(@ReadOnly Calendar a1) @ReadOnly { throw new RuntimeException("skeleton method"); }
-  public abstract void add(int a1, int a2) @Mutable;
+  public final @I Date getTime(@ReadOnly Calendar this) { throw new RuntimeException("skeleton method"); }
+  public final void setTime(@AssignsFields Calendar this, Date a1) { throw new RuntimeException("skeleton method"); }
+  public long getTimeInMillis(@ReadOnly Calendar this) { throw new RuntimeException("skeleton method"); }
+  public void setTimeInMillis(@AssignsFields Calendar this, long a1) { throw new RuntimeException("skeleton method"); }
+  public int get(@ReadOnly Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public void set(@AssignsFields Calendar this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public final void set(@AssignsFields Calendar this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public final void set(@AssignsFields Calendar this, int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
+  public final void set(@AssignsFields Calendar this, int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
+  public final void clear(@AssignsFields Calendar this) { throw new RuntimeException("skeleton method"); }
+  public final void clear(@AssignsFields Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public final boolean isSet(@ReadOnly Calendar this, int a1) { throw new RuntimeException("skeleton method"); }
+  public String getDisplayName(@ReadOnly Calendar this, int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public Map<String, Integer> getDisplayNames(@ReadOnly Calendar this, int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@ReadOnly Calendar this, @ReadOnly Object a1)  { throw new RuntimeException("skeleton method"); }
+  public int hashCode(@ReadOnly Calendar this)  { throw new RuntimeException("skeleton method"); }
+  public boolean before(@ReadOnly Calendar this, Object a1)  { throw new RuntimeException("skeleton method"); }
+  public boolean after(@ReadOnly Calendar this, Object a1) { throw new RuntimeException("skeleton method"); }
+  public int compareTo(@ReadOnly Calendar this, @ReadOnly Calendar a1) { throw new RuntimeException("skeleton method"); }
+  public abstract void add(@Mutable Calendar this, int a1, int a2);
   public abstract void roll(int a1, boolean a2);
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }

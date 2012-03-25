@@ -6,9 +6,9 @@ public class Fields {
     @I Fields next;
     @ReadOnly Fields ro;
 
-    Fields() @AssignsFields { }
+    Fields(@AssignsFields Fields this) { }
 
-    Fields(int arg) @AssignsFields {
+    Fields(@AssignsFields Fields this, int arg) {
         left = new @I Fields();
         next = new @Mutable Fields();   // should emit error
         next = new @Immutable Fields(); //  should emit error
@@ -20,11 +20,11 @@ public class Fields {
     static void isMutable(@Mutable Fields f) { }
     static void isImmutable(@Immutable Fields f) { }
 
-    @I Fields getLeft() @ReadOnly { return left; }
-    @I Fields getNext() @ReadOnly { return next; }
-    @ReadOnly Fields getRO() @ReadOnly { return ro; }
+    @I Fields getLeft(@ReadOnly Fields this) { return left; }
+    @I Fields getNext(@ReadOnly Fields this) { return next; }
+    @ReadOnly Fields getRO(@ReadOnly Fields this) { return ro; }
 
-    void mutableReciever() @Mutable {
+    void mutableReciever(@Mutable Fields this) {
         // all but ro should be mutable
         isRO(left);
         isRO(next);
@@ -58,7 +58,7 @@ public class Fields {
         isImmutable(getRO());          // should emit error
     }
 
-    void immutableReceiver() @Immutable {
+    void immutableReceiver(@Immutable Fields this) {
         // all but ro should be mutable
         isRO(left);
         isRO(next);
@@ -92,7 +92,7 @@ public class Fields {
         isImmutable(getRO());   // should emit error
     }
 
-    void roMethod() @ReadOnly {
+    void roMethod(@ReadOnly Fields this) {
         // all but ro should be mutable
         isRO(left);
         isRO(next);
@@ -126,7 +126,7 @@ public class Fields {
         isImmutable(getRO());  // should emit error
     }
 
-    void assignsFieldsMethod() @AssignsFields {
+    void assignsFieldsMethod(@AssignsFields Fields this) {
         // all but ro should be mutable
         isRO(left);
         isRO(next);
