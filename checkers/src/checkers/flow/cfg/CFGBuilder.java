@@ -86,6 +86,8 @@ import checkers.flow.cfg.node.NumericalMultiplicationNode;
 import checkers.flow.cfg.node.NumericalPlusNode;
 import checkers.flow.cfg.node.NumericalSubtractionAssignmentNode;
 import checkers.flow.cfg.node.NumericalSubtractionNode;
+import checkers.flow.cfg.node.ObjectCreationNode;
+import checkers.flow.cfg.node.PackageNameNode;
 import checkers.flow.cfg.node.PostfixDecrementNode;
 import checkers.flow.cfg.node.PostfixIncrementNode;
 import checkers.flow.cfg.node.PrefixDecrementNode;
@@ -2531,6 +2533,9 @@ public class CFGBuilder {
                 case PARAMETER:
                     node = new LocalVariableNode(tree);
                     break;
+                case PACKAGE:
+                    node = new PackageNameNode(tree);
+                    break;
                 default:
                     throw new IllegalArgumentException(
                         "unexpected element kind : " + element.getKind());
@@ -2671,8 +2676,38 @@ public class CFGBuilder {
 
         @Override
         public Node visitNewClass(NewClassTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            // see JLS 15.9
+
+            Tree enclosingExpr = tree.getEnclosingExpression();
+            if (enclosingExpr != null) {
+                scan(enclosingExpr, p);
+            }
+
+            // We ignore any class body because its methods should
+            // be visited separately.
+
+            // Convert constructor arguments
+            ExecutableElement constructor = TreeUtils.elementFromUse(tree);
+
+            List<? extends ExpressionTree> actualExprs = tree.getArguments();
+            List<? extends VariableElement> formals = constructor.getParameters();
+
+            ArrayList<Node> actualNodes = new ArrayList<Node>();
+
+            for (ExpressionTree actual : actualExprs) {
+                actualNodes.add(scan(actual, p));
+            }
+
+            ArrayList<Node> convertedNodes = new ArrayList<Node>();
+            for (int i = 0; i < formals.size(); i++) {
+                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
+                    formals.get(i).asType()));
+            }
+
+            Node constructorNode = scan(tree.getIdentifier(), p);
+
+            Node node = new ObjectCreationNode(tree, constructorNode, convertedNodes);
+            return extendWithNode(node);
         }
 
         @Override
@@ -2696,9 +2731,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
-            ExpressionTree expr = tree.getExpression();
-            Node receiver = getReceiver(expr, TreeUtils.enclosingClass(getCurrentPath()));
-            return extendWithNode(new FieldAccessNode(expr, receiver));
+            Node expr = scan(tree.getExpression(), p);
+            return extendWithNode(new FieldAccessNode(tree, expr));
         }
 
         @Override
