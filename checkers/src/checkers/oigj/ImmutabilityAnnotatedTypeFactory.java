@@ -315,7 +315,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     }
 
     @Override
-    protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
+    protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         AnnotatedDeclaredType receiver = super.getImplicitReceiverType(tree);
         if (receiver != null && !isMostEnclosingThisDeref(tree)) {
             receiver.removeAnnotation(ASSIGNS_FIELDS);
