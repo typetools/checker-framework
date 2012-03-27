@@ -158,8 +158,10 @@ abstract class TypeFromTree extends
 
             // The expression might be a primitive type (as in "int.class").
             if (!(node.getExpression() instanceof PrimitiveTypeTree)) {
-                if (node.getIdentifier().contentEquals("this"))
+                // TODO: why don't we use getSelfType here?
+                if (node.getIdentifier().contentEquals("this")) {
                     return f.getEnclosingType((TypeElement)InternalUtils.symbol(node.getExpression()), node);
+                }
                 // We need the original t with the implicit annotations
                 AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
                 if (t instanceof AnnotatedDeclaredType)
