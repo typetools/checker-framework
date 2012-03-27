@@ -201,7 +201,11 @@ public class GenKillBits<K> {
     arg2.valid();
     // System.err.println("");
 
-    for (AnnotationMirror key1 : outarg1.bitsets.keySet()) {
+    // Copy the keySet so it can be modified without a ConcurrentModificationException.
+    // This is important for annotations with values where an annotation with a value
+    // not seen yet may need to be added.
+    Set<AnnotationMirror> arg1KeySet = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+    for (AnnotationMirror key1 : arg1KeySet) {
       if (!arg2.bitsets.containsKey(key1))
         arg2.bitsets.put(key1, new BitSet());
 
@@ -217,7 +221,7 @@ public class GenKillBits<K> {
             if( lhs.get(var) ) {
               AnnotationMirror glb = annoRelations.leastUpperBound(key1, key2);
               lhs.clear(var);
-              outarg1.bitsets.get(glb).set(var);
+              outarg1.set(glb, var);
             } else {
               /* If the rhs has the bit set, but the lhs has not, there _might_ be a different
                * modifier in the lhs that already has the bit set.
@@ -225,12 +229,17 @@ public class GenKillBits<K> {
                * If we do not find it, set key2.
                */
               boolean found = false;
-              for (AnnotationMirror key3 : outarg1.bitsets.keySet()) {
+
+              // Copy the keySet so it can be modified without a ConcurrentModificationException.
+              // This is important for annotations with values where an annotation with a value
+              // not seen yet may need to be added.
+              Set<AnnotationMirror> arg1KeySet2 = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+              for (AnnotationMirror key3 : arg1KeySet2) {
                 if ( outarg1.bitsets.get(key3).get(var) ) {
                   AnnotationMirror glb = annoRelations.leastUpperBound(key3, key2);
                   if (!glb.equals(key3) ) {
                     outarg1.bitsets.get(key3).clear(var);
-                    outarg1.bitsets.get(glb).set(var);
+                    outarg1.set(glb, var);
                   }
                   found = true;
                   break;
