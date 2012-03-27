@@ -46,7 +46,7 @@ public final class TreeUtils {
 
     /**
      * Returns true if the tree is a tree that 'looks like' either an access
-     * of a field or an invokation of a method that are owned by the same
+     * of a field or an invocation of a method that are owned by the same
      * accessing instance.
      *
      * It would only return true if the access tree is of the form:
@@ -61,15 +61,19 @@ public final class TreeUtils {
      * It does not perform any semantical check to differentiate between
      * fields and local variables; local methods or imported static methods.
      *
+     * TODO: clarify relation to isOuterSelfAccess
+     *
      * @param tree  expression tree representing an access to object member
      * @return {@code true} iff the member is a member of {@code this} instance
      */
     public static boolean isSelfAccess(final ExpressionTree tree) {
         ExpressionTree tr = TreeUtils.skipParens(tree);
-        // If method invocation check the method select
+
+        // TODO: why is an array access not like a field access?
         if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
             return false;
 
+        // If method invocation check the method select
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree)tree).getMethodSelect();
         }
@@ -88,6 +92,60 @@ public final class TreeUtils {
                 return ident.contentEquals("this") ||
                         ident.contentEquals("super");
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the tree is a tree that 'looks like' either an access
+     * of a field or an invocation of a method that are owned by an outer
+     * this instance.
+     *
+     * It would only return true if the access tree is of the form:
+     * <pre>
+     *   Outer.this.field
+     *   Outer.this.method()
+     * </pre>
+     *
+     * @param tree  expression tree representing an access to object member
+     * @return {@code true} iff the member is a member of an outer {@code this} instance
+     */
+    public static boolean isOuterSelfAccess(final ExpressionTree tree) {
+        ExpressionTree tr = TreeUtils.skipParens(tree);
+
+        if (!(tree.getKind() == Tree.Kind.METHOD_INVOCATION
+                || tree.getKind() == Tree.Kind.MEMBER_SELECT
+                || tree.getKind() == Tree.Kind.ARRAY_ACCESS)) {
+            return false;
+        }
+
+        // TODO: shouldn't an array access be like a field access?
+        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
+            return false;
+
+        // If method invocation check the method select
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            tr = ((MethodInvocationTree)tree).getMethodSelect();
+        }
+        tr = TreeUtils.skipParens(tr);
+        if (tr.getKind() == Tree.Kind.TYPE_CAST)
+            tr = ((TypeCastTree)tr).getExpression();
+        tr = TreeUtils.skipParens(tr);
+
+        if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
+            tr = ((MemberSelectTree)tr).getExpression();
+            // Allow class names to come before the this/super
+            if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
+                Name ident = ((MemberSelectTree)tr).getIdentifier();
+                return ident.contentEquals("this") ||
+                        // Is there an outer super?
+                        ident.contentEquals("super");
+            }
+        } else if (tr.getKind() == Tree.Kind.IDENTIFIER) {
+            // TODO: an outer this might also be implicitly accessed.
+            // Is there a better way to disambiguate?
+            return true;
         }
 
         return false;
