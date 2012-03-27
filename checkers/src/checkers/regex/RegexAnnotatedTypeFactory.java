@@ -2,7 +2,6 @@ package checkers.regex;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -119,8 +118,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     regex = Character.toString((Character) tree.getValue());
                 }
                 if (regex != null) {
-                    if(RegexUtil.isRegex(regex)) {
-                        int groupCount = Pattern.compile(regex).matcher("").groupCount();
+                    if (RegexUtil.isRegex(regex)) {
+                        int groupCount = checker.getGroupCount(regex);
                         type.addAnnotation(createRegexAnnotation(groupCount));
                     }
                 }
@@ -152,8 +151,9 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
                 } else if (lExprPoly && rExprPoly
                         || lExprPoly && rExprRE
-                        || lExprRE && rExprPoly)
+                        || lExprRE && rExprPoly) {
                     type.addAnnotation(PolyRegex.class);
+                }
             }
             return super.visitBinary(tree, type);
         }
