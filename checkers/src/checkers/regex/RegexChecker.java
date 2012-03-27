@@ -1,5 +1,7 @@
 package checkers.regex;
 
+import java.util.regex.Pattern;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -137,5 +139,12 @@ public class RegexChecker extends BaseTypeChecker {
         // if a non-regex string is passed to Pattern.compile but warnings
         // are suppressed.
         return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
+    }
+
+    /**
+     * Returns the number of groups in the given regex String.
+     */
+    public int getGroupCount(/*@Regex*/ String regex) {
+        return Pattern.compile(regex).matcher("").groupCount();
     }
 }
