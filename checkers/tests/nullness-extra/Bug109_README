@@ -1,0 +1,24 @@
+These two classes illustrate dependencies between different
+compilation units.
+As of 09/06/2011 these generated two different exceptions in the
+compiler.
+Both of those are fixed, but we should investigate further whether all
+similar cases are correctly handled now. TODO!
+
+If the two classes are compiled individually or in the superclass then
+subclass order:
+
+runcheckers-jdk7.sh -processor checkers.nullness.NullnessChecker Bug109_A.java Bug109_B.java 
+
+everything works as expected.
+If they are compiled in the subclass then superclass order:
+
+runcheckers-jdk7.sh -processor checkers.nullness.NullnessChecker Bug109_B.java Bug109_A.java 
+
+the compiler used to throw exceptions.
+These two problems are now fixed.
+The problem was that AnnotatedTypeFactory.getAnnotatedType looks at a
+field initializer to determine its type. When the field was in a
+different class, this lead to a call of getPath with a tree in a
+different compilation unit, which cannot be handled.
+We now conservatively return null sooner.
