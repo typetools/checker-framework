@@ -11,10 +11,7 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.WildcardType;
+import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -25,6 +22,7 @@ import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.source.SourceChecker.CheckerError;
 import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.TypeFromTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -35,6 +33,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -692,6 +691,12 @@ public class AnnotatedTypeFactory {
     // Utilities method for getting specific types from trees or elements
     // **********************************************************************
 
+    /**
+     * Return the implicit receiver type of an expression tree.
+     *
+     * @param tree The expression that might have an implicit receiver.
+     * @return The type of the receiver.
+     */
     /* TODO: this method assumes that the tree is within the current
      * Compilation Unit. This assumption fails in testcase Bug109_A/B, where
      * a chain of dependencies leads into a different compilation unit.
@@ -699,7 +704,7 @@ public class AnnotatedTypeFactory {
      * return null. See TODO comment below. 
      * 
      */
-    protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
+    protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         assert (tree.getKind() == Tree.Kind.IDENTIFIER
                 || tree.getKind() == Tree.Kind.MEMBER_SELECT
                 || tree.getKind() == Tree.Kind.METHOD_INVOCATION
@@ -713,6 +718,11 @@ public class AnnotatedTypeFactory {
 
         if (isMostEnclosingThisDeref(tree))
             return getSelfType(tree);
+
+        /* TODO: also correctly annotate outer this refs. 
+        if (TreeUtils.isOuterSelfAccess(tree)) {
+            return getImplicitOuterReceiverType(tree);
+        }*/
 
         if (getPath(tree)==null) {
         	// TODO: getPath returns null if the given tree could not be found
@@ -736,6 +746,7 @@ public class AnnotatedTypeFactory {
      * @return True, iff the tree is an explicit or implicit reference to the
      *         most enclosing "this".
      */
+    // TODO: clarify relation to TreeUtils.isSelfAccess. Do we really need both?
     protected final boolean isMostEnclosingThisDeref(Tree tree) {
         // check local variables or expressions
         Element element = InternalUtils.symbol(tree);
@@ -784,6 +795,59 @@ public class AnnotatedTypeFactory {
         return type;
     }
 
+    /**
+     * Returns the type of outer {@code this} in the current location, which can
+     * be used if the outer {@code this} has a special semantics (e.g. {@code this}
+     * is non-null).
+     *
+     * TODO: receiver annotations on outer this.
+     * TODO: What is the difference between getImplicitReceiverType and getSelfType?
+     *
+     * @param tree The tree to the access of the outer {@code this} type,
+     * e.g. tree "Outer.this.f", not just "Outer.this".
+     */
+    protected AnnotatedDeclaredType getImplicitOuterReceiverType(ExpressionTree tree) {
+        ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+        if (receiver==null) {
+            // TODO: problem with ambiguity with implicit receivers.
+            // We need a way to find the correct class. We cannot use the
+            // element, as generics might have to be substituted in a subclass.
+            // See GenericsEnclosing test case.
+            return getImplicitReceiverType(tree);
+        }
+        Element element = InternalUtils.symbol(receiver);
+        assert element != null;
+
+        if (ElementUtils.isStatic(element)
+                || element.getKind() == ElementKind.PACKAGE)
+            return null;
+
+        TypeElement typeElt = ElementUtils.enclosingClass(element);
+        if (typeElt == null) {
+            throw new AssertionError("enclosingClass()==null for element: " + element);
+        }
+
+        AnnotatedDeclaredType type = getAnnotatedType(typeElt);
+
+        // TODO: go through _all_ enclosing methods to see whether any of them has a
+        // receiver annotation of the correct type.
+
+        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
+        if (methodReceiver != null &&
+                !(methodReceiver.getAnnotations().size()==1 && methodReceiver.getAnnotation(Unqualified.class)!=null)) {
+            // TODO: this only takes the main annotations. What about other annotations?
+            type.clearAnnotations();
+            type.addAnnotations(methodReceiver.getAnnotations());
+        }
+
+        return type;
+    }
+
+    /**
+     * Determine the type of the most enclosing class of the given tree that
+     * is a subtype of the given element. Receiver type annotations of an
+     * enclosing method are considered.
+     */
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         Element enclosingElt = getMostInnerClassOrMethod(tree);
 
@@ -791,15 +855,18 @@ public class AnnotatedTypeFactory {
             if (enclosingElt instanceof ExecutableElement) {
                 ExecutableElement method = (ExecutableElement)enclosingElt;
                 if (method.asType() != null // XXX: hack due to a compiler bug
-                        && isSubtype((TypeElement)method.getEnclosingElement(), element))
-                    if (ElementUtils.isStatic(method))
+                        && isSubtype((TypeElement)method.getEnclosingElement(), element)) {
+                    if (ElementUtils.isStatic(method)) {
+                        // TODO: why not the type of the class?
                         return null;
-                    else
+                    } else {
                         return getAnnotatedType(method).getReceiverType();
-            } else
-            if (enclosingElt instanceof TypeElement) {
-                if (isSubtype((TypeElement)enclosingElt, element))
+                    }
+                }
+            } else if (enclosingElt instanceof TypeElement) {
+                if (isSubtype((TypeElement)enclosingElt, element)) {
                     return (AnnotatedDeclaredType) getAnnotatedType(enclosingElt);
+                }
             }
             enclosingElt = enclosingElt.getEnclosingElement();
         }
@@ -827,44 +894,17 @@ public class AnnotatedTypeFactory {
      * @return  the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiver(ExpressionTree expression) {
-        if (!(expression.getKind() == Tree.Kind.METHOD_INVOCATION
-                || expression.getKind() == Tree.Kind.MEMBER_SELECT
-                || expression.getKind() == Tree.Kind.IDENTIFIER
-                || expression.getKind() == Tree.Kind.ARRAY_ACCESS))
-            // No receiver type for those
-            return null;
+        ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
 
-        if (expression.getKind() == Tree.Kind.IDENTIFIER
-            && "this".equals(expression.toString()))
-            return null;
-
-        ExpressionTree receiver = TreeUtils.skipParens(expression);
-        if (receiver.getKind() == Tree.Kind.ARRAY_ACCESS)
-            return getAnnotatedType(((ArrayAccessTree)receiver).getExpression());
-
-        Element elem = InternalUtils.symbol(expression);
-        if (elem == null || ElementUtils.isStatic(elem))
-            return null;
-
-        // Avoid int.class
-        if (expression.getKind() == Tree.Kind.MEMBER_SELECT &&
-                ((MemberSelectTree)expression).getExpression() instanceof PrimitiveTypeTree)
-            return null;
-
-        if (TreeUtils.isSelfAccess(expression)) {
-            return getImplicitReceiverType(expression);
+        if (receiver==null) {
+            if (TreeUtils.isSelfAccess(expression)) {
+                return getImplicitReceiverType(expression);
+            }
         }
-        //
-        // Trying to handle receiver calls to trees of the form
-        // ((m).getArray())
-        // returns the type of 'm' in this case
 
-        if (receiver.getKind() == Tree.Kind.METHOD_INVOCATION)
-            receiver = ((MethodInvocationTree)receiver).getMethodSelect();
-        receiver = TreeUtils.skipParens(receiver);
-        assert receiver.getKind() == Tree.Kind.MEMBER_SELECT;
-        if (receiver.getKind() == Tree.Kind.MEMBER_SELECT)
-            receiver = ((MemberSelectTree)receiver).getExpression();
+        if (TreeUtils.isOuterSelfAccess(expression)) {
+            return getImplicitOuterReceiverType(expression);
+        }
 
         return getAnnotatedType(receiver);
     }
