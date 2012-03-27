@@ -14,22 +14,22 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node representing a class name used in an expression
- * such as a static method invocation.
+ * A node representing a package name used in an expression
+ * such as a constructor invocation
  * 
- * <em>class</em> .forName(...)
+ * <em>package</em>.class.object(...)
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
  * 
  */
-public class ClassNameNode extends Node {
+public class PackageNameNode extends Node {
 
     protected Tree tree;
-    // The class named by this node
+    // The package named by this node
     protected Element element;
 
-    public ClassNameNode(Tree tree) {
+    public PackageNameNode(Tree tree) {
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
@@ -47,7 +47,7 @@ public class ClassNameNode extends Node {
 
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitClassName(this, p);
+        return visitor.visitPackageName(this, p);
     }
 
     @Override
@@ -57,10 +57,10 @@ public class ClassNameNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ClassNameNode)) {
+        if (obj == null || !(obj instanceof PackageNameNode)) {
             return false;
         }
-        ClassNameNode other = (ClassNameNode) obj;
+        PackageNameNode other = (PackageNameNode) obj;
         return getElement().equals(other.getElement());
     }
 
