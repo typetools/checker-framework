@@ -14,12 +14,17 @@ class A {
             void isBReadOnly() @ReadOnly { }
 
             void testImmutableForB() @Immutable {
-                //:: error: (method.invocation.invalid)
                 isAMutable();
+                //:: error: (method.invocation.invalid)
                 isAImmutable();
                 isAReadOnly();
+
+                // TODO: this call should be allowed, as above, but
+                // we currently take the @Immutable receiver type annotation
+                // from the most enclosing method.
                 //:: error: (method.invocation.invalid)
                 A.this.isAMutable();
+                //TODO:: error: (method.invocation.invalid)
                 A.this.isAImmutable();
                 A.this.isAReadOnly();
 
@@ -54,8 +59,8 @@ class A {
                 B.this.isBImmutable();
                 B.this.isBReadOnly();
             }
-
         }
     }
+    // TODO: add many more combinations with outer A being immutable, etc.
 }
 
