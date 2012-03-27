@@ -405,15 +405,25 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
-    // Method invocations
+    // Method and constructor invocations
     @Override
     public R visitMethodInvocation(MethodInvocationNode n, P p) {
         return visitNode(n, p);
     }
 
-    // Class names
+    @Override
+    public R visitObjectCreation(ObjectCreationNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    // Package and class names
     @Override
     public R visitClassName(ClassNameNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    @Override
+    public R visitPackageName(PackageNameNode n, P p) {
         return visitNode(n, p);
     }
 }

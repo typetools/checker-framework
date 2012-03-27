@@ -168,9 +168,13 @@ public interface NodeVisitor<R, P> {
     // Cases
     R visitCase(CaseNode n, P p);
 
-    // Method invocations
+    // Method and constructor invocations
     R visitMethodInvocation(MethodInvocationNode n, P p);
 
-    // Class names
+    R visitObjectCreation(ObjectCreationNode n, P p);
+
+    // Package and class names
     R visitClassName(ClassNameNode n, P p);
+
+    R visitPackageName(PackageNameNode n, P p);
 }
