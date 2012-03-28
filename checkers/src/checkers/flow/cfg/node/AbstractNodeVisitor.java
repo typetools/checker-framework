@@ -416,6 +416,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
+    @Override
+    public R visitArrayCreation(ArrayCreationNode n, P p) {
+        return visitNode(n, p);
+    }
+
     // Package and class names
     @Override
     public R visitClassName(ClassNameNode n, P p) {
@@ -424,6 +429,12 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     @Override
     public R visitPackageName(PackageNameNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    // Marker nodes
+    @Override
+    public R visitMarker(MarkerNode n, P p) {
         return visitNode(n, p);
     }
 }

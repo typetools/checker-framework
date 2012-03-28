@@ -33,6 +33,7 @@ import checkers.flow.cfg.block.RegularBlockImpl;
 import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
+import checkers.flow.cfg.node.ArrayCreationNode;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
@@ -73,6 +74,7 @@ import checkers.flow.cfg.node.LessThanNode;
 import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.LongLiteralNode;
+import checkers.flow.cfg.node.MarkerNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
@@ -1486,9 +1488,11 @@ public class CFGBuilder {
             }
             
             boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
+            boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
             boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
             boolean isRightReference = nodeType instanceof ReferenceType;
             boolean isLeftNumeric = TypesUtils.isNumeric(varType);
+            boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
             boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
             boolean isLeftReference = varType instanceof ReferenceType;
             boolean isSubtype = types.isSubtype(nodeType, varType);
@@ -1499,10 +1503,10 @@ public class CFGBuilder {
             } else if (isRightReference && isLeftReference && isSubtype) {
                 // widening reference conversion is a no-op, but if it
                 // applies, then later conversions do not.
-            } else if (isRightNumeric && isLeftBoxed) {
+            } else if (isRightPrimitive && isLeftBoxed) {
                 node = box(node);
                 nodeType = node.getType();
-            } else if (isRightBoxed && isLeftNumeric) {
+            } else if (isRightBoxed && isLeftPrimitive) {
                 node = unbox(node);
                 nodeType = node.getType();
 
@@ -1566,6 +1570,77 @@ public class CFGBuilder {
         }
 
         /**
+         * Given a method element and as list of argument expressions,
+         * return a list of {@link Node}s representing the arguments converted
+         * for a call of the method.  This method applies to both method
+         * invocations and constructor calls.
+         *
+         * @param method an ExecutableElement representing a method to be called
+         * @param actualExprs a List of argument expressions to a call
+         * @return a List of {@link Node}s representing arguments after conversions
+         *         required by a call to this method.
+         */
+        protected List<Node> convertCallArguments(ExecutableElement method,
+            List<? extends ExpressionTree> actualExprs) {
+            List<? extends VariableElement> formals = method.getParameters();
+
+            ArrayList<Node> actualNodes = new ArrayList<Node>();
+
+            for (ExpressionTree actual : actualExprs) {
+                actualNodes.add(scan(actual, null));
+            }
+
+            if (method.isVarArgs()) {
+                // Create a new array argument if the actuals outnumber
+                // the formals, or if the last actual is not assignable
+                // to the last formal.
+                int numFormals = formals.size();
+                int lastArgIndex = numFormals - 1;
+                int numActuals = actualExprs.size();
+                TypeMirror lastParamType = formals.get(lastArgIndex).asType();
+                List<Node> dimensions = new ArrayList<>();
+                List<Node> initializers = new ArrayList<>();
+
+                if (numActuals == numFormals - 1) {
+                    // Create an empty array for the last parameter
+                    Node lastArgument = new ArrayCreationNode(null, lastParamType,
+                            dimensions, initializers);
+                    extendWithNode(lastArgument);
+
+                    actualNodes.add(lastArgument);
+                } else {
+                    TypeMirror actualType =
+                        InternalUtils.typeOf(actualExprs.get(lastArgIndex));
+                    if (numActuals == numFormals
+                        && types.isAssignable(actualType, lastParamType)) {
+                        // Normal call with no array creation
+                    } else {
+                        for (int i = lastArgIndex; i < numActuals; i++) {
+                            initializers.add(actualNodes.remove(lastArgIndex));
+                        }
+
+                        Node lastArgument = new ArrayCreationNode(null, lastParamType,
+                                dimensions, initializers);
+                        extendWithNode(lastArgument);
+
+                        actualNodes.add(lastArgument);
+                    }
+                }
+            }
+
+            // TODO: handle null pointer exception for receiver
+
+            // Convert arguments
+            ArrayList<Node> convertedNodes = new ArrayList<Node>();
+            for (int i = 0; i < formals.size(); i++) {
+                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
+                    formals.get(i).asType()));
+            }
+
+            return convertedNodes;
+        }
+
+        /**
          * Returns the label {@link Name} of the leaf in the argument path,
          * or null if the leaf is not a labeled statement.
          */
@@ -1610,60 +1685,28 @@ public class CFGBuilder {
             // Fifth, if the method is synchronized, lock the receiving
             // object or class (15.12.4.5)
 
+            Tree methodSelect = tree.getMethodSelect();
+            assert TreeUtils.isMethodAccess(methodSelect);
+
+            Node receiver = getReceiver(methodSelect,
+                TreeUtils.enclosingClass(getCurrentPath()));
+
+            Node target = new FieldAccessNode(methodSelect, receiver);
+            // TODO: Handle exceptions caused by field access.
+            extendWithNode(target);
+
             ExecutableElement method = TreeUtils.elementFromUse(tree);
 
-            Node target = null;
-            Tree methodSelect = tree.getMethodSelect();
-            if (TreeUtils.isMethodAccess(methodSelect)) {
-                Node receiver = getReceiver(methodSelect,
-                                            TreeUtils.enclosingClass(getCurrentPath()));
-
-                target = new FieldAccessNode(methodSelect, receiver);
-                // TODO: Handle exceptions caused by field access.
-                extendWithNode(target);
-            }
-
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
-            List<? extends VariableElement> formals = method.getParameters();
 
-            ArrayList<Node> actualNodes = new ArrayList<Node>();
-
-            for (ExpressionTree actual : actualExprs) {
-                actualNodes.add(scan(actual, p));
-            }
-
-            if (method.isVarArgs()) {
-                // Create a new array argument if the actuals outnumber
-                // the formals, or if the last actual is not assignable
-                // to the last formal.
-                int lastArgIndex = formals.size() - 1;
-                TypeMirror lastParamType = formals.get(lastArgIndex).asType();
-                TypeMirror actualType =
-                    InternalUtils.typeOf(actualExprs.get(lastArgIndex));
-                if (actualExprs.size() > formals.size() ||
-                    !types.isAssignable(actualType, lastParamType)) {
-                    // TODO: finish this when we have array creation nodes.
-                    // Node lastArgument = new ArrayCreation();
-                    // actualNodes.removeRange(lastArgIndex, actualNodes.size());
-                    // actualNodes.add(lastArgument);
-                }
-            }
-
-            // TODO: handle null pointer exception for receiver
-
-            // Convert arguments
-            ArrayList<Node> convertedNodes = new ArrayList<Node>();
-            for (int i = 0; i < formals.size(); i++) {
-                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
-                    formals.get(i).asType()));
-            }
+            List<Node> arguments = convertCallArguments(method, actualExprs);
 
             // TODO: lock the receiver for synchronized methods
 
             // TODO: emit a conditional jump for boolean methods when
             // conditionalMode is true
 
-            Node node = new MethodInvocationNode(tree, target, convertedNodes);
+            Node node = new MethodInvocationNode(tree, target, arguments);
             return extendWithNode(node);
         }
 
@@ -2670,8 +2713,28 @@ public class CFGBuilder {
 
         @Override
         public Node visitNewArray(NewArrayTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            // see JLS 15.10
+
+            List<? extends ExpressionTree> dimensions = tree.getDimensions();
+            List<? extends ExpressionTree> initializers = tree.getInitializers();
+
+            List<Node> dimensionNodes = new ArrayList<Node>();
+            if (dimensions != null) {
+                for (ExpressionTree dim : dimensions) {
+                    dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
+                }
+            }
+
+            List<Node> initializerNodes = new ArrayList<Node>();
+            if (initializers != null) {
+                for (ExpressionTree init : initializers) {
+                    initializerNodes.add(scan(init, p));
+                }
+            }
+
+            TypeMirror type = tree == null ? null : InternalUtils.typeOf(tree);
+            Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
+            return extendWithNode(node);
         }
 
         @Override
@@ -2690,23 +2753,12 @@ public class CFGBuilder {
             ExecutableElement constructor = TreeUtils.elementFromUse(tree);
 
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
-            List<? extends VariableElement> formals = constructor.getParameters();
 
-            ArrayList<Node> actualNodes = new ArrayList<Node>();
-
-            for (ExpressionTree actual : actualExprs) {
-                actualNodes.add(scan(actual, p));
-            }
-
-            ArrayList<Node> convertedNodes = new ArrayList<Node>();
-            for (int i = 0; i < formals.size(); i++) {
-                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
-                    formals.get(i).asType()));
-            }
+            List<Node> arguments = convertCallArguments(constructor, actualExprs);
 
             Node constructorNode = scan(tree.getIdentifier(), p);
 
-            Node node = new ObjectCreationNode(tree, constructorNode, convertedNodes);
+            Node node = new ObjectCreationNode(tree, constructorNode, arguments);
             return extendWithNode(node);
         }
 
@@ -2744,6 +2796,8 @@ public class CFGBuilder {
         public Node visitSwitch(SwitchTree tree, Void p) {
             switchExpr = unbox(scan(tree.getExpression(), p));
 
+            extendWithNode(new MarkerNode(tree, "start of switch statement"));
+
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = new Label();
 
@@ -2761,7 +2815,16 @@ public class CFGBuilder {
 
         @Override
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            // see JLS 14.19
+
+            scan(tree.getExpression(), p);
+
+            extendWithNode(new MarkerNode(tree, "start of synchronized block"));
+
+            scan(tree.getBlock(), p);
+
+            extendWithNode(new MarkerNode(tree, "end of synchronized block"));
+
             return null;
         }
 
@@ -3002,7 +3065,7 @@ public class CFGBuilder {
 
     /**
      * Print a set of {@link Block}s and the edges between them.
-     * This is useful for examining the results of stage two.
+     * This is useful for examining the results of phase two.
      */
     protected void printBlocks(Set<Block> blocks) {
         for (Block b : blocks) {
