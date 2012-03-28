@@ -10,7 +10,6 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for new object creation

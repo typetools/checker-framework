@@ -10,7 +10,6 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the method invocation
@@ -95,7 +94,10 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public int hashCode() {
-        int hash = HashCodeUtils.hash(target);
+        int hash = 0;
+        if (target != null) {
+            hash = HashCodeUtils.hash(target);
+        }
         for (Node arg : arguments) {
             hash = HashCodeUtils.hash(hash, arg.hashCode());
         }

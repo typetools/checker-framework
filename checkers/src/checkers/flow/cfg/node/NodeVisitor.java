@@ -173,8 +173,13 @@ public interface NodeVisitor<R, P> {
 
     R visitObjectCreation(ObjectCreationNode n, P p);
 
+    R visitArrayCreation(ArrayCreationNode n, P p);
+
     // Package and class names
     R visitClassName(ClassNameNode n, P p);
 
     R visitPackageName(PackageNameNode n, P p);
+
+    // Marker nodes
+    R visitMarker(MarkerNode n, P p);
 }
