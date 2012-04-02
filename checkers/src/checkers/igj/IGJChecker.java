@@ -103,10 +103,10 @@ public class IGJChecker extends BaseTypeChecker {
         assert receiverType != null;
 
         final boolean isAssignable =
-            (receiverType.hasEffectiveAnnotation(MUTABLE)
+            receiverType.hasEffectiveAnnotation(MUTABLE)
              || receiverType.hasEffectiveAnnotation(BOTTOM_QUAL)
              || (receiverType.hasEffectiveAnnotation(ASSIGNS_FIELDS)
-                     && TreeUtils.isSelfAccess((ExpressionTree)varTree)));
+                     && factory.isMostEnclosingThisDeref((ExpressionTree)varTree));
 
         return isAssignable;
     }
