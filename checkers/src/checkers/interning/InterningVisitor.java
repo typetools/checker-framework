@@ -120,7 +120,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (isInvocationOfEquals(node)) {
-            AnnotatedTypeMirror recv = atypeFactory.getReceiver(node);
+            AnnotatedTypeMirror recv = atypeFactory.getReceiverType(node);
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
