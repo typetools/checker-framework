@@ -68,8 +68,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        if (!TreeUtils.isSelfAccess(node))
-            checkForNullability(node.getExpression(), "dereference.of.nullable");
+        checkForNullability(node.getExpression(), "dereference.of.nullable");
 
         return super.visitMemberSelect(node, p);
     }
@@ -298,7 +297,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (nonInitializedFields != null
-            && TreeUtils.isSelfAccess(node)) {
+            && atypeFactory.isMostEnclosingThisDeref(node)) {
 
             AnnotationMirror nnAfter =
                 atypeFactory.getDeclAnnotation(TreeUtils.elementFromUse(node), AssertNonNullAfter.class);
@@ -449,7 +448,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     @Override
     protected boolean checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
-        if (TreeUtils.isSelfAccess(node)) {
+        if (atypeFactory.isMostEnclosingThisDeref(node)) {
             // An alternate approach would be to let the rawness checker
             // issue the warning, but the approach taken here gives, in the
             // error message, an explicit list of the fields that have been
@@ -473,12 +472,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                     }
                 }
             }
-        } else {
-            // Claim that methods with a @NonNull receiver are invokable so that
-            // visitMemberSelect issues dereference errors instead.
-            if (method.getReceiverType().hasEffectiveAnnotation(NONNULL))
-                return true;
         }
+
+        // Claim that methods with a @NonNull receiver are invokable so that
+        // visitMemberSelect issues dereference errors instead.
+        if (method.getReceiverType().hasEffectiveAnnotation(NONNULL)) {
+            return true;
+        }
+
         return super.checkMethodInvocability(method, node);
     }
 
