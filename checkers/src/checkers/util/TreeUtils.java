@@ -279,8 +279,7 @@ public final class TreeUtils {
      * @return the element for the given class
      */
     public static final TypeElement elementFromDeclaration(ClassTree node) {
-        assert node != null : "null node";
-        TypeElement elt = (TypeElement) TreeInfo.symbolFor((JCTree) node);
+        TypeElement elt = (TypeElement) InternalUtils.symbol(node);
         return elt;
     }
 
@@ -291,8 +290,7 @@ public final class TreeUtils {
      * @return the element for the given method
      */
     public static final ExecutableElement elementFromDeclaration(MethodTree node) {
-        assert node != null : "null node";
-        ExecutableElement elt = (ExecutableElement)TreeInfo.symbolFor((JCTree)node);
+        ExecutableElement elt = (ExecutableElement) InternalUtils.symbol(node);
         return elt;
     }
 
@@ -303,8 +301,7 @@ public final class TreeUtils {
      * @return the element for the given variable
      */
     public static final VariableElement elementFromDeclaration(VariableTree node) {
-        assert node != null : "null node";
-        VariableElement elt = (VariableElement)TreeInfo.symbolFor((JCTree)node);
+        VariableElement elt = (VariableElement) InternalUtils.symbol(node);
         return elt;
     }
 
@@ -314,28 +311,21 @@ public final class TreeUtils {
      * To get the element for a declaration, use {@link
      * Trees#getElement(TreePath)} instead.
      *
+     * TODO: remove this method, as it really doesn't do anything.
+     *
      * @param node the tree corresponding to a use of an element
      * @return the element for the corresponding declaration
      */
     public static final Element elementFromUse(ExpressionTree node) {
-        node = TreeUtils.skipParens(node);
-        switch (node.getKind()) {
-        case IDENTIFIER:
-        case MEMBER_SELECT:
-            return TreeInfo.symbol((JCTree)node);
-        case METHOD_INVOCATION:
-            return TreeInfo.symbol((JCTree)((MethodInvocationTree)node).getMethodSelect());
-        case NEW_CLASS:
-            return ((JCNewClass)node).constructor;
-        default:
-            throw new IllegalArgumentException("No element for tree kind: " + node.getKind());
-        }
+        return InternalUtils.symbol(node);
     }
 
+    // Specialization for return type.
     public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
         return (ExecutableElement) elementFromUse((ExpressionTree) node);
     }
 
+    // Specialization for return type.
     public static final ExecutableElement elementFromUse(NewClassTree node) {
         return (ExecutableElement) elementFromUse((ExpressionTree) node);
     }
