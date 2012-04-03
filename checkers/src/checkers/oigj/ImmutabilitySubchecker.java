@@ -94,6 +94,11 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         if (varElement != null && factory.getDeclAnnotation(varElement, Assignable.class) != null)
             return true;
 
+        if (receiverType==null) {
+            // Happens e.g. for local variable, which doesn't have a receiver.
+            return true;
+        }
+
         if (getQualifierHierarchy().isSubtype(
                 receiverType.getAnnotations(),
                 Collections.singleton(ASSIGNS_FIELDS)))
