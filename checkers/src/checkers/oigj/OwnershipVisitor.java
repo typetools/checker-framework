@@ -8,7 +8,6 @@ import com.sun.source.tree.ExpressionTree;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Dominator;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.TreeUtils;
 
 public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker> {
 
@@ -21,7 +20,7 @@ public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker> {
             AnnotatedTypeMirror receiver, ExpressionTree accessTree) {
         AnnotatedTypeMirror fType = atypeFactory.getAnnotatedType(field);
         if (fType.hasAnnotation(Dominator.class)
-            && !TreeUtils.isSelfAccess(accessTree))
+            && !atypeFactory.isMostEnclosingThisDeref(accessTree))
             return false;
         return super.isAccessAllowed(field, receiver, accessTree);
     }
