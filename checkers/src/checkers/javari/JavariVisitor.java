@@ -70,7 +70,7 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
             return;
 
         boolean variableLocalField =
-            TreeUtils.isSelfAccess((ExpressionTree) varTree)
+            atypeFactory.isMostEnclosingThisDeref((ExpressionTree) varTree)
             && varElt != null
             && varElt.getKind().isField();
         // visitState.getMethodTree() is null when in static initializer block
@@ -82,14 +82,14 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
             checker.report(Result.failure("ro.field"), varTree);
 
         if (varTree.getKind() == Tree.Kind.MEMBER_SELECT
-            && !TreeUtils.isSelfAccess((ExpressionTree)varTree)) {
-            AnnotatedTypeMirror receiver = atypeFactory.getReceiver((ExpressionTree)varTree);
+            && !atypeFactory.isMostEnclosingThisDeref((ExpressionTree)varTree)) {
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType((ExpressionTree)varTree);
             if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
                 checker.report(Result.failure("ro.field"), varTree);
         }
 
         if (varTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
-            AnnotatedTypeMirror receiver = atypeFactory.getReceiver((ExpressionTree)varTree);
+            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType((ExpressionTree)varTree);
             if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
                 checker.report(Result.failure("ro.element"), varTree);
         }

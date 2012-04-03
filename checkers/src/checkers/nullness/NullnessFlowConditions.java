@@ -169,7 +169,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             debug.println("NullnessFlowConditions::visitInstanceOf: " + node);
         }
 
-        Tree expr = node.getExpression();
+        ExpressionTree expr = node.getExpression();
         visit(expr, p);
 
         if (hasVar(expr)) {

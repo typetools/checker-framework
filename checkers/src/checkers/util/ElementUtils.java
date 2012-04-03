@@ -165,4 +165,18 @@ public class ElementUtils {
     public static boolean isError(Element element) {
         return element.getClass().getName().equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
     }
+
+    /**
+     * Does the given element need a receiver for accesses?
+     * For example, an access to a local variable does not require a receiver.
+     *
+     * @param element The element to test.
+     * @return whether the element requires a receiver for accesses.
+     */
+    public static boolean hasReceiver(Element element) {
+        return element.getKind() != ElementKind.LOCAL_VARIABLE
+                && element.getKind() != ElementKind.PARAMETER
+                && element.getKind() != ElementKind.PACKAGE
+                && !ElementUtils.isStatic(element);
+    }
 }
