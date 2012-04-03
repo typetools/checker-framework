@@ -103,7 +103,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * Currently, flow can only find the complement of
      * a simple clause
      */
-    private static boolean isFlippableLogic(Tree tree) {
+    private static boolean isFlippableLogic(ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case EQUAL_TO:
@@ -682,8 +682,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         if (hasRawReceiver(meth) || TreeUtils.isConstructor(meth)) {
             for (int i = 0; i < this.flowState.vars.size(); i++) {
                 Element var = this.flowState.vars.get(i);
-                if (var.getKind() == ElementKind.FIELD)
+                if (var.getKind() == ElementKind.FIELD) {
                     this.flowState.annos.clear(NONNULL, i);
+                }
             }
         }
 
@@ -1022,10 +1023,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 AnnotatedTypeMirror recvType;
 
                 if (isStatic) {
-                    ExecutableElement meth = TreeUtils.elementFromUse((MethodInvocationTree)call);
+                    ExecutableElement meth = TreeUtils.elementFromUse(call);
                     recvType = factory.getAnnotatedType(ElementUtils.enclosingClass(meth));
                 } else {
-                    recvType = this.factory.getReceiver(call);
+                    recvType = this.factory.getReceiverType(call);
                 }
                 // System.err.printf("checkNonNullOnEntry(%s): recvType=%s, isStatic=%s%n", call, recvType, isStatic);
 
@@ -1057,7 +1058,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     // we've already output an error message
                     continue;
                 }
-                if (TreeUtils.isSelfAccess(call) && !recvImmediateFields.contains(el)) {
+                if (factory.isMostEnclosingThisDeref(call) && !recvImmediateFields.contains(el)) {
                     // super class fields already initialized
                     // TODO: Handle nullable and raw fields
                     continue;
@@ -1312,7 +1313,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return true if the tree may have a variable element, false otherwise
      */
-    static final boolean hasVar(final Tree tree) {
+    static final boolean hasVar(final ExpressionTree tree) {
         Tree tr = TreeUtils.skipParens(tree);
         if (tr.getKind() == Tree.Kind.ASSIGNMENT)
             tr = ((AssignmentTree)tr).getVariable();
@@ -1326,7 +1327,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return the element for the variable in the tree
      */
-    static final Element var(Tree tree) {
+    static final Element var(ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case IDENTIFIER:
@@ -1346,10 +1347,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * Returns true if it's a pure method invocation or array access.
      * TODO: what if the receiver or array index are not pure?
      */
-    final boolean isPure(Tree tree) {
+    final boolean isPure(ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
-            ExecutableElement method = TreeUtils.elementFromUse((MethodInvocationTree)tree);
+            ExecutableElement method = (ExecutableElement) TreeUtils.elementFromUse(tree);
             boolean result = (factory.getDeclAnnotation(method, Pure.class)) != null;
             return result;
         }
