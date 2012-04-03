@@ -106,7 +106,7 @@ public class QualifierPolymorphism {
         List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
-                collector.visit(factory.getReceiver(tree), type.getReceiverType()));
+                collector.visit(factory.getReceiverType(tree), type.getReceiverType()));
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             AnnotationMirror qual = matchingMapping.values().iterator().next();
@@ -193,7 +193,7 @@ public class QualifierPolymorphism {
                     return;
 
                 if (rcv.hasAnnotation(polyQual)) {
-                    Set<AnnotationMirror> r = factory.getReceiver(node).getAnnotations();
+                    Set<AnnotationMirror> r = factory.getReceiverType(node).getAnnotations();
                     type.clearAnnotations();
                     type.addAnnotations(r);
                 }
