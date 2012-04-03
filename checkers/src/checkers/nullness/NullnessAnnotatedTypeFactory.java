@@ -327,10 +327,19 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             }
         }
 
+        if (tree instanceof MemberSelectTree
+                && "class".contentEquals(((MemberSelectTree)tree).getIdentifier())) {
+            // TODO: do not make a "C.class" LazyNonNull.
+            // Is there a nicer way for this? Should the type factory
+            // assign a type to "C"?
+            return false;
+        }
+
         // case 13
         final AnnotatedTypeMirror select = rawnessFactory.getReceiverType((ExpressionTree) tree);
         if (select != null && select.hasEffectiveAnnotation(RAW)
-                && !type.hasEffectiveAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
+                && !type.hasEffectiveAnnotation(NULLABLE)
+                && !type.getKind().isPrimitive()) {
             boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
             type.removeAnnotationInHierarchy(LAZYNONNULL);
             type.addAnnotation(LAZYNONNULL);
