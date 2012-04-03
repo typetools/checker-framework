@@ -1,3 +1,5 @@
+// Note that this file is a near duplicate in /nullness and /nullness-uninit
+
 import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier("Nullable")
@@ -11,9 +13,13 @@ class RawTypes {
             this.init();                                // error
             //:: error: (method.invocation.invalid.rawness)
             init();                                     // error
+
             this.field = "field";                       // valid
             //:: error: (assignment.type.incompatible)
             this.field = null;                          // error
+            field = "field";                            // valid
+            //:: error: (assignment.type.incompatible)
+            field = null;                               // error
         }
 
         void init() {
@@ -26,12 +32,29 @@ class RawTypes {
 
         public A() {
             this.field = "field";                               // valid
+            field = "field";                                    // valid
+            this.init();                                        // valid
             init();                                             // valid
         }
 
         public void init() @Raw {
             //:: error: (dereference.of.nullable)
-            output(this.field.length());             // error
+            output(this.field.length());
+        }
+
+        public void initExpl2() @Raw {
+            //:: error: (argument.type.incompatible)
+            output(this.field);
+        }
+
+        public void initImpl1() @Raw {
+            //:: error: (dereference.of.nullable)
+            output(field.length());
+        }
+
+        public void initImpl2() @Raw {
+            //:: error: (argument.type.incompatible)
+            output(field);
         }
     }
 
@@ -49,11 +72,22 @@ class RawTypes {
         public void init() @Raw {
             //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
-            //output(field.length());                 // error (TODO: substitution)
+            super.init();                                       // valid
+        }
+
+        public void initImpl1() @Raw {
+            //:: error: (dereference.of.nullable)
+            output(field.length());                 // error (TODO: substitution)
+        }
+
+        public void initExpl2() @Raw {
             //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
-            //output(otherField.length());            // error
-            super.init();                                       // valid
+        }
+
+        public void initImpl2() @Raw {
+            //:: error: (dereference.of.nullable)
+            output(otherField.length());            // error
         }
 
         void other() {
@@ -65,7 +99,7 @@ class RawTypes {
             init();                                             // valid
             this.init();                                        // valid
         }
-}
+    }
 
     class C extends B {
 
@@ -80,9 +114,8 @@ class RawTypes {
 
     }
 
-    void output(Object o) @Raw {
-
-    }
+    // To test whether the argument is @NonNull and @NonRaw
+    static void output(@NonNull Object o) { }
 
     class D extends C {
         @Override
