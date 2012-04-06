@@ -240,7 +240,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     public boolean equals(Object o) {
         if (o != null && o instanceof TransferInput) {
             @SuppressWarnings("unchecked")
-            TransferInput other = (TransferInput) o;
+            TransferInput<A, S> other = (TransferInput<A, S>) o;
             if (containsTwoStores()) {
                 if (other.containsTwoStores()) {
                     return getThenStore().equals(other.getThenStore()) &&

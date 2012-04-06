@@ -6,7 +6,6 @@ import java.util.List;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
