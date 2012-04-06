@@ -108,6 +108,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return fa.getField().equals(getField())
                     && fa.getReceiver().equals(getReceiver());
         }
+        
+        @Override
+        public int hashCode() {
+            return HashCodeUtils.hash(getField(), getReceiver());
+        }
 
         @Override
         public boolean containsAliasOf(CFAbstractStore<?, ?> store,
@@ -488,10 +493,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                         newFieldValues.put(otherFieldAccess,
                                 val.leastUpperBound(otherVal));
                     } else {
-                        continue; // remove information completely
+                        // remove information completely
                     }
+                    continue;
                 }
             }
+            // information is save to be carried over
+            newFieldValues.put(otherFieldAccess, otherVal);
         }
         fieldValues = newFieldValues;
     }
