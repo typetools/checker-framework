@@ -63,10 +63,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S info = analysis.createEmptyStore();
 
         for (LocalVariableNode p : parameters) {
-            V flowInsensitive = null; // TODO
-            // assert flowInsensitive != null :
-            // "Missing initial type information for method parameter";
-            // info.mergeValue(p, flowInsensitive);
+            AnnotatedTypeMirror anno = analysis.getFactory().getAnnotatedType(p.getElement());
+            info.initializeMethodParameter(p, analysis.createAbstractValue(anno.getAnnotations()));
         }
 
         return info;
