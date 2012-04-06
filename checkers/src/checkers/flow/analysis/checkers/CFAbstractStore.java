@@ -98,14 +98,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             this.receiver = receiver;
             this.field = node.getElement();
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof FieldAccess)) {
                 return false;
             }
             FieldAccess fa = (FieldAccess) obj;
-            return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
+            return fa.getField().equals(getField())
+                    && fa.getReceiver().equals(getReceiver());
         }
 
         @Override
@@ -175,8 +176,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * A ClassName represents the occurrence of a class as part of 
-     * a static field access or method invocation.
+     * A ClassName represents the occurrence of a class as part of a static
+     * field access or method invocation.
      */
     public static class ClassName extends Receiver {
         protected Element element;
