@@ -107,7 +107,6 @@ import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
-import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
