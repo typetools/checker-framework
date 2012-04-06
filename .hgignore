@@ -35,6 +35,7 @@ demos/units-extension/*.class
 # manual files
 bib
 doc
+**.synctex.gz
 manual.aux
 manual.blg
 manual.dvi
