@@ -18,6 +18,7 @@ tags
 .project
 .externalToolBuilders
 .settings
+dot_files
 
 # build files
 bin
@@ -35,7 +36,7 @@ demos/units-extension/*.class
 # manual files
 bib
 doc
-**.synctex.gz
+*.synctex.gz
 manual.aux
 manual.blg
 manual.dvi
