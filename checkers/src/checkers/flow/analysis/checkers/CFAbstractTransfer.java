@@ -63,8 +63,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S info = analysis.createEmptyStore();
 
         for (LocalVariableNode p : parameters) {
-            AnnotatedTypeMirror anno = analysis.getFactory().getAnnotatedType(p.getElement());
-            info.initializeMethodParameter(p, analysis.createAbstractValue(anno.getAnnotations()));
+            AnnotatedTypeMirror anno = analysis.getFactory().getAnnotatedType(
+                    p.getElement());
+            info.initializeMethodParameter(p,
+                    analysis.createAbstractValue(anno.getAnnotations()));
         }
 
         return info;
@@ -98,11 +100,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TransferInput<V, S> p) {
         S store = p.getRegularStore();
         V value = store.getValue(n);
-        if (value == null) {
-            Tree tree = n.getTree();
-            assert tree != null;
-            value = getValueFromFactory(tree);
-        }
         return new RegularTransferResult<>(value, store);
     }
 
