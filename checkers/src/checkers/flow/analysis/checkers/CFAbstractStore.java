@@ -335,6 +335,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected Map<FieldAccess, V> fieldValues;
 
+    /* --------------------------------------------------------- */
+    /* Initialization */
+    /* --------------------------------------------------------- */
+
     public CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis) {
         this.analysis = analysis;
         localVariableValues = new HashMap<>();
@@ -346,6 +350,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         this.analysis = other.analysis;
         localVariableValues = new HashMap<>(other.localVariableValues);
         fieldValues = new HashMap<>(other.fieldValues);
+    }
+
+    /**
+     * Set the abstract value of a method parameter (only adds the information
+     * to the store, does not remove any other knowledge).
+     */
+    public void initializeMethodParameter(LocalVariableNode p, V value) {
+        localVariableValues.put(p.getElement(), value);
     }
 
     /* --------------------------------------------------------- */
