@@ -1,5 +1,6 @@
 package checkers.flow.analysis;
 
+import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -260,6 +261,23 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         if (store == null) {
             return "[then=" + thenStore + ", else=" + elseStore + "]";
         } else {
+            return "[" + store + "]";
+        }
+    }
+
+    public String toDOToutput() {
+        if (store == null) {
+            if (thenStore instanceof CFAbstractStore<?, ?>) {
+                CFAbstractStore<?, ?> t = (CFAbstractStore<?, ?>) thenStore;
+                CFAbstractStore<?, ?> e = (CFAbstractStore<?, ?>) elseStore;
+                return "[then=" + t.toDOToutput() + ", else=" + e.toDOToutput() + "]";
+            }
+            return "[then=" + thenStore + ", else=" + elseStore + "]";
+        } else {
+            if (store instanceof CFAbstractStore<?, ?>) {
+                CFAbstractStore<?, ?> s = (CFAbstractStore<?, ?>) store;
+                return "[" + s.toDOToutput() + "]";
+            }
             return "[" + store + "]";
         }
     }
