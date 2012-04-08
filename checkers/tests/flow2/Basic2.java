@@ -2,7 +2,7 @@ import checkers.util.test.*;
 import java.util.*;
 import checkers.quals.*;
 
-class Basic {
+class Basic2 {
 
     // basic tests to make sure everything works
     void t1(@Odd String p1, String p2) {
