@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -14,8 +15,11 @@ import checkers.flow.cfg.node.ExplicitThisNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.HashCodeUtils;
+import checkers.quals.Pure;
+import checkers.util.TreeUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -108,7 +112,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return fa.getField().equals(getField())
                     && fa.getReceiver().equals(getReceiver());
         }
-        
+
         @Override
         public int hashCode() {
             return HashCodeUtils.hash(getField(), getReceiver());
@@ -369,9 +373,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* Handling of fields */
     /* --------------------------------------------------------- */
 
-    // TODO: add MethodCallNode as parameter and check for pure-ity
-    public void updateForMethodCall() {
-        fieldValues = new HashMap<>();
+    /**
+     * Remove any information that might not be valid any more after a method
+     * call, and add information guaranteed by the method.
+     */
+    public void updateForMethodCall(MethodInvocationNode n) {
+        ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
+        boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
+        if (!isPure) {
+            fieldValues = new HashMap<>();
+        }
     }
 
     /**
