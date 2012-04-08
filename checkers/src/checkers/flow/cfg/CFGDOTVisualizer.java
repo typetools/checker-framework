@@ -12,6 +12,7 @@ import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
+import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;
@@ -211,7 +212,7 @@ public class CFGDOTVisualizer {
             StringBuilder sb2 = new StringBuilder();
 
             // split store representation to two lines
-            String s = store.toString().replace("}, else={", "}\\nelse={");
+            String s = store.toDOToutput().replace("}, else={", "}\\nelse={");
             sb2.append(s.subSequence(1, s.length() - 1));
 
             // separator

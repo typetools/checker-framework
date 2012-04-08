@@ -657,9 +657,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return false;
         }
     }
-
+    
     @Override
     public String toString() {
+        return toDOToutput().replace("\\n", "\n");
+    }
+    
+    /**
+     * @return DOT representation of the store (may contain control characters such as "\n").
+     */
+    public String toDOToutput() {
         StringBuilder result = new StringBuilder("CFStore (\\n");
         for (Entry<Element, V> entry : localVariableValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
