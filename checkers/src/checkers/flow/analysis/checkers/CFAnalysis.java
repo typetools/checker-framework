@@ -41,7 +41,7 @@ public class CFAnalysis extends
     protected CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
         Set<AnnotationMirror> as = new HashSet<>();
         for (AnnotationMirror a : annotations) {
-            if (AnnotationUtils.containsSame(legalAnnotations, a)) {
+            if (AnnotationUtils.containsSameIgnoringValues(legalAnnotations, a)) {
                 as.add(a);
             }
         }
