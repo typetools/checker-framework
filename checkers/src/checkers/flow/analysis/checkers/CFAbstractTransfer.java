@@ -12,6 +12,7 @@ import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -146,6 +147,20 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // TODO: other assignments
 
         return new RegularTransferResult<>(rhsValue, info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitMethodInvocation(MethodInvocationNode n,
+            TransferInput<V, S> in) {
+
+        S info = in.getRegularStore();
+
+        // use value from factory (no flowsensitive information available)
+        V resValue = getValueFromFactory(n.getTree());
+        
+        info.updateForMethodCall(n);
+
+        return new RegularTransferResult<>(resValue, info);
     }
 
     /**
