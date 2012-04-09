@@ -315,7 +315,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     }
 
     @Override
-    protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
+    protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         AnnotatedDeclaredType receiver = super.getImplicitReceiverType(tree);
         if (receiver != null && !isMostEnclosingThisDeref(tree)) {
             receiver.removeAnnotation(ASSIGNS_FIELDS);
@@ -412,7 +412,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             new ImmutabilityResolver().visit(type, matchingMapping);
 
         // For finding resolved types, rather than to actually resolve immutability
-        Map<String, AnnotationMirror> fromReceiver = collector.visit(getReceiver(tree));
+        Map<String, AnnotationMirror> fromReceiver = collector.visit(getReceiverType(tree));
         final Map<String, AnnotationMirror> mapping =
             collector.reduce(matchingMapping, fromReceiver);
         new AnnotatedTypeScanner<Void, Void>() {

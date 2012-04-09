@@ -146,9 +146,11 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
-            if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty()) {
-                checker.errorAbort("TypeHierarchy: empty annotations in lhs: " +
-                        lhs + " " + lhsAnnos + " or rhs: " + rhs + " " + rhsAnnos);
+            if (lhsAnnos.isEmpty() || rhsAnnos.isEmpty() && lhsBase.getKind()==TypeKind.TYPEVAR) {
+                // TODO: allow type variables without annotations for now. Better solution?
+                // System.out.println("TypeHierarchy: empty annotations in lhs: " +
+                //        lhs + " " + lhsAnnos + " or rhs: " + rhs + " " + rhsAnnos);
+                return true;
             }
 
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
@@ -334,8 +336,9 @@ public class TypeHierarchy {
         }
 
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
-            return isSubtype(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
-                    ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound());
+            AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
+            AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+            return isSubtype(rhsbnd, lhsbnd);
         }
 
         if (lhs.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {

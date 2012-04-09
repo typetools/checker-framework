@@ -15,10 +15,11 @@ public final class SequenceAndIndices<T extends @Interned Object> {
   public int end;
 
   /**
-   * @param seq An interned array
+   * @param seqpar An interned array
    **/
-  public SequenceAndIndices (T seq, int start, int end) {
-    this.seq = seq;
+  public SequenceAndIndices (T seqpar, int start, int end) {
+    this.seq = seqpar;
+    seq = seqpar;
     this.start = start;
     this.end = end;
     // assert isInterned(seq);

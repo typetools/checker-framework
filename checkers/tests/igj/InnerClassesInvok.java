@@ -15,39 +15,52 @@ class A {
 
             void testImmutableForB() @Immutable {
                 isAMutable();
-                isAImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                isAImmutable();
                 isAReadOnly();
+
+                // TODO: this call should be allowed, as above, but
+                // we currently take the @Immutable receiver type annotation
+                // from the most enclosing method.
+                //:: error: (method.invocation.invalid)
                 A.this.isAMutable();
-                A.this.isAImmutable(); // error
+                //TODO:: error: (method.invocation.invalid)
+                A.this.isAImmutable();
                 A.this.isAReadOnly();
 
-                isBMutable();   // error
+                //:: error: (method.invocation.invalid)
+                isBMutable();
                 isBImmutable();
                 isBReadOnly();
 
-                B.this.isBMutable();   // error
+                //:: error: (method.invocation.invalid)
+                B.this.isBMutable();
                 B.this.isBImmutable();
                 B.this.isBReadOnly();
             }
 
             void testMutableForB() @Mutable {
                 isAMutable();
-                isAImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                isAImmutable();
                 isAReadOnly();
                 A.this.isAMutable();
-                A.this.isAImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                A.this.isAImmutable();
                 A.this.isAReadOnly();
 
                 isBMutable();
-                isBImmutable(); // error
+                //:: error: (method.invocation.invalid)
+                isBImmutable();
                 isBReadOnly();
 
                 B.this.isBMutable();
-                B.this.isBImmutable();  // error
+                //:: error: (method.invocation.invalid)
+                B.this.isBImmutable();
                 B.this.isBReadOnly();
             }
-
         }
     }
+    // TODO: add many more combinations with outer A being immutable, etc.
 }
 

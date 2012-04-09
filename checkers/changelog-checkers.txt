@@ -1,3 +1,26 @@
+Version 1.2.6, 18 Mar 2012
+
+Nullness Checker:
+  Correctly handle unboxing in more contexts (if, switch (Issue 129),
+    while loops, ...)
+
+Regex Checker:
+  Add capturing groups parameter to Regex qualifier.
+    Count groups in String literals and String concatenation.
+    Verify group number to method calls that take a capturing group
+      number.
+    Update RegexUtil methods to take optional groups parameter.
+    Modify regex qualifier hierarchy to support groups parameter.
+  Add special case for Pattern.compile when called with Pattern.LITERAL flag.
+
+Internal bug fixes:
+  Improve flow's support of annotations with parameters.
+  Fix generics corner cases (Issues 131, 132, 133, 135).
+  Support type annotations in annotations and type check annotations.
+  Improve reflective look-up of visitors and factories.
+  Small cleanups.
+
+----------------------------------------------------------------------
 Version 1.2.5.1, 06 Feb 2012
 
 Nullness Checker:
