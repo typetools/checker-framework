@@ -1677,7 +1677,7 @@ public class CFGBuilder {
             // First, compute the receiver, if any (15.12.4.1)
             // Second, evaluate the actual arguments, left to right and
             // possibly some arguments are stored into an array for variable
-            // argumnents calls (15.12.4.2)
+            // arguments calls (15.12.4.2)
             // Third, test the receiver, if any, for nullness (15.12.4.4)
             // Fourth, convert the arguments to the type of the formal
             // parameters (15.12.4.5)
@@ -1690,7 +1690,7 @@ public class CFGBuilder {
             Node receiver = getReceiver(methodSelect,
                 TreeUtils.enclosingClass(getCurrentPath()));
 
-            Node target = new FieldAccessNode(methodSelect, receiver);
+            FieldAccessNode target = new FieldAccessNode(methodSelect, receiver);
             // TODO: Handle exceptions caused by field access.
             extendWithNode(target);
 
