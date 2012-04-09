@@ -1,9 +1,12 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
@@ -18,8 +21,12 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.HashCodeUtils;
+import checkers.flow.util.ValueParseUtil;
+import checkers.quals.AssertAfter;
 import checkers.quals.Pure;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
+import checkers.util.test.Odd;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -101,6 +108,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             super(node.getType());
             this.receiver = receiver;
             this.field = node.getElement();
+        }
+        
+        public FieldAccess(Receiver receiver, TypeMirror type, Element fieldElement) {
+            super(type);
+            this.receiver = receiver;
+            this.field = fieldElement;
         }
 
         @Override
@@ -379,9 +392,56 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForMethodCall(MethodInvocationNode n) {
         ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
+
+        // remove information if necessary
         boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
         if (!isPure) {
             fieldValues = new HashMap<>();
+        }
+
+        // add new information based on postcondition
+        AnnotationMirror assertAfter = analysis.factory.getDeclAnnotation(
+                method, AssertAfter.class);
+        if (assertAfter != null) {
+            List<String> strings = AnnotationUtils.elementValueStringArray(
+                    assertAfter, "value");
+            for (String s : strings) {
+                Node receiver = n.getTarget().getReceiver();
+                Receiver r = ValueParseUtil.parse(s, receiver, internalReprOf(receiver));
+                if (r != null) {
+                    insertValue(r, analysis.factory.annotationFromClass(Odd.class));
+                }
+            }
+        }
+    }
+
+    /**
+     * Add the annotation {@code a} for the expression {@code r} (correctly
+     * deciding where to store the information depending on the type of the
+     * expression {@code r}).
+     */
+    protected void insertValue(Receiver r, AnnotationMirror a) {
+        V value = analysis.createAbstractValue(Collections.singleton(a));
+        if (r instanceof LocalVariable) {
+            Element localVar = ((LocalVariable) r).getElement();
+            if (localVariableValues.containsKey(localVar)) {
+                V mergedValue = localVariableValues.get(localVar)
+                        .leastUpperBound(value);
+                localVariableValues.put(localVar, mergedValue);
+            } else {
+                localVariableValues.put(localVar, value);
+            }
+        } else if (r instanceof FieldAccess) {
+            FieldAccess fieldAcc = (FieldAccess) r;
+            if (fieldValues.containsKey(fieldAcc)) {
+                V mergedValue = fieldValues.get(fieldAcc)
+                        .leastUpperBound(value);
+                fieldValues.put(fieldAcc, mergedValue);
+            } else {
+                fieldValues.put(fieldAcc, value);
+            }
+        } else {
+            assert false;
         }
     }
 
@@ -389,11 +449,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * @return The internal representation (as {@link FieldAccess}) of a
      *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
-    protected FieldAccess internalReprOf(FieldAccessNode node) {
+    protected static FieldAccess internalReprOfFieldAccess(FieldAccessNode node) {
         Receiver receiver;
         Node receiverNode = node.getReceiver();
+        receiver = internalReprOf(receiverNode);
+        return new FieldAccess(receiver, node);
+    }
+
+    protected static Receiver internalReprOf(Node receiverNode) {
+        Receiver receiver;
         if (receiverNode instanceof FieldAccessNode) {
-            receiver = internalReprOf((FieldAccessNode) receiverNode);
+            receiver = internalReprOfFieldAccess((FieldAccessNode) receiverNode);
         } else if (receiverNode instanceof ImplicitThisLiteralNode
                 || receiverNode instanceof ExplicitThisNode) {
             receiver = new ThisReference(receiverNode.getType());
@@ -406,7 +472,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else {
             receiver = new Unknown(receiverNode.getType());
         }
-        return new FieldAccess(receiver, node);
+        return receiver;
     }
 
     /**
@@ -414,7 +480,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         information is available.
      */
     public/* @Nullable */V getValue(FieldAccessNode n) {
-        FieldAccess fieldAccess = internalReprOf(n);
+        FieldAccess fieldAccess = internalReprOfFieldAccess(n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -429,7 +495,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
         assert val != null;
-        FieldAccess fieldAccess = internalReprOf(n);
+        FieldAccess fieldAccess = internalReprOfFieldAccess(n);
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             fieldValues.put(fieldAccess, val);
@@ -657,14 +723,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         return toDOToutput().replace("\\n", "\n");
     }
-    
+
     /**
-     * @return DOT representation of the store (may contain control characters such as "\n").
+     * @return DOT representation of the store (may contain control characters
+     *         such as "\n").
      */
     public String toDOToutput() {
         StringBuilder result = new StringBuilder("CFStore (\\n");

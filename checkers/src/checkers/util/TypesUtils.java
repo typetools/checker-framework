@@ -241,4 +241,15 @@ public final class TypesUtils {
 
         return TypeKind.INT;
     }
+    
+    public static TypeElement elementFromTypeMirror(TypeMirror type) {
+        switch (type.getKind()) {
+        case DECLARED:
+            return (TypeElement) ((DeclaredType) type).asElement();
+
+        default:
+            assert false;
+            return null;
+        }
+    }
 }
