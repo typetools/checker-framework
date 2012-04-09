@@ -9,6 +9,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.flow.cfg.CFGBuilder;
+import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
@@ -190,7 +194,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-
+        
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node);
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
@@ -224,6 +228,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 annoTypes.asMemberOf(overriddenType, pair.getValue());
             checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
         }
+        
         return super.visitMethod(node, p);
         } finally {
             visitorState.setMethodReceiver(preMRT);

@@ -3,7 +3,9 @@ package checkers.types;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -16,6 +18,13 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
+import checkers.flow.analysis.AnalysisResult;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.cfg.CFGBuilder;
+import checkers.flow.cfg.ControlFlowGraph;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -24,8 +33,10 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -167,25 +178,85 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
     }
 
-    // Indicate whether flow has performed the analysis or not
-    boolean scanned = false;
-    boolean finishedScanning = false;
+    /** Did the dataflow analysis over the compilation unit finish yet? */
+    protected boolean finishedScanning = false;
+    /** Did the dataflow analysis over the compilation unit start yet? */
+    protected boolean scanned = false;
+    /**
+     * The result of the flow analysis. Invariant:
+     * <pre>
+     *  finishedScanning ==> flowResult != null
+     * </pre>
+     */
+    protected AnalysisResult<CFValue> flowResult = null;
+	
+    /**
+     * Perform a dataflow analysis over the whole compilation unit.
+     */
+	protected void performFlowAnalysis() {
+        scanned = true;
+        flowResult = new AnalysisResult<>();
+        for (Tree t : root.getTypeDecls()) {
+            assert t instanceof ClassTree;
+            Queue<ClassTree> queue = new LinkedList<>();
+            queue.add((ClassTree) t);
+            while (!queue.isEmpty()) {
+                ClassTree ct = queue.remove();
+                for (Tree m : ct.getMembers()) {
+                    switch (m.getKind()) {
+                    case METHOD:
+                        MethodTree mt = (MethodTree) m;
+                        ControlFlowGraph cfg = CFGBuilder.build(root, env, mt);
+                        CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+                        analysis.performAnalysis(cfg);
+                        AnalysisResult<CFValue> result = analysis.getResult();
+                        flowResult.combine(result);
+
+                        if (env.getOptions().containsKey("flowdotdir")) {
+                            String dotfilename =
+                                env.getOptions().get("flowdotdir") + "/" +
+                                mt.getName() + ".dot";
+                            // make path safe for Windows
+                            dotfilename = dotfilename.replace("<", ".").replace(">", ".");
+                            System.err.println("Output to DOT file: " + dotfilename);
+                            analysis.outputToDotFile(dotfilename);
+                        }
+
+                        break;
+                    case VARIABLE:
+                        // TODO: handle initializers
+                        break;
+                    case CLASS:
+                        // Visit inner and nested classes.
+                        queue.add((ClassTree) m);
+                        break;
+                    default:
+                        System.err.println("Unexpected member: "+m.getKind());
+                        assert false;
+                        break;
+                    }
+                }
+            }
+        }
+        /*ControlFlowGraph cfg = CFGBuilder.build(env, node);
+        analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+        analysis.performAnalysis(cfg);
+
+        super.fromTreeCache.clear();*/
+        finishedScanning = true;
+    }
+	
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
         if (useFlow && !scanned) {
-            // Perform the flow analysis at the first invocation of
-            // annotateImplicit.  note that flow may call .getAnnotatedType
-            // so scanned is set to true before flow.scan
-            scanned = true;
-            // Apply flow-sensitive qualifier inference.
-            flow.scan(root);
-            super.fromTreeCache.clear();
-            finishedScanning = true;
+            performFlowAnalysis();
         }
         treeAnnotator.visit(tree, type);
         if (useFlow) {
-            final AnnotationMirror inferred = flow.test(tree);
+            CFValue as = flowResult.getValue(tree);
+            // TODO: handle inference of more than one qualifier
+			final AnnotationMirror inferred = as != null ? as.getAnnotations().iterator().next() : null;
             if (inferred != null) {
                 if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations().iterator().next())) {
                     /* TODO:

@@ -160,6 +160,20 @@ public class AnnotatedTypeFactory {
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
+    
+    /**
+     * Construct an annotation from a class.
+     */
+    public AnnotationMirror annotationFromClass(Class<? extends Annotation> clazz) {
+        return annotations.fromClass(clazz);
+    }
+    
+    /**
+     * Construct an annotation from a name.
+     */
+    public AnnotationMirror annotationFromName(CharSequence name) {
+        return annotations.fromName(name);
+    }
 
     /**
      * Actions that logically belong in the constructor, but need to run
@@ -191,24 +205,14 @@ public class AnnotatedTypeFactory {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Should results be cached? Disable for better debugging. */
+    /** Should cache? disable for better debugging */
     private final static boolean SHOULD_CACHE = true;
 
-    /** Size of LRU cache. */
-    private final static int CACHE_SIZE = 300;
-
-    /** Mapping from a Tree to its annotated type; implicits have been applied. */
+    /** Various Caches **/
+    /** Size of LRU cache **/
+    private final static int CACHE_SIZE = 50;
     private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
-
-    /** Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
-    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
-
-    /** Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
     private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
-
-    /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /**
@@ -225,7 +229,6 @@ public class AnnotatedTypeFactory {
         if (elt == null)
             throw new IllegalArgumentException("null element");
         AnnotatedTypeMirror type = fromElement(elt);
-        annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
@@ -269,12 +272,10 @@ public class AnnotatedTypeFactory {
             case ENUM:
             case INTERFACE:
             case ANNOTATION_TYPE:
-                type = fromClass((ClassTree)tree);
-                break;
+                type = fromClass((ClassTree)tree); break;
             case METHOD:
             case VARIABLE:
-                type = fromMember(tree);
-                break;
+                type = fromMember(tree); break;
             default:
                 if (tree instanceof ExpressionTree) {
                     type = fromExpression((ExpressionTree)tree);
@@ -381,6 +382,8 @@ public class AnnotatedTypeFactory {
             fromTreeWithVisitor(TypeFromTree.TypeFromClassINSTANCE, tree);
         return result;
     }
+
+    protected Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
 
     /**
      * Determines the annotated type of a variable or method declaration.
@@ -679,10 +682,9 @@ public class AnnotatedTypeFactory {
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
-                if (!type.isAnnotated() && 
-                        !type.getUpperBound().isAnnotated() &&
+                if (!type.isAnnotated() &&
                         tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
-                        TypeFromElement.annotate(type, tpelt);
+                   TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);
@@ -735,7 +737,7 @@ public class AnnotatedTypeFactory {
                 // element, as generics might have to be substituted in a subclass.
                 // See GenericsEnclosing test case.
                 // TODO: is this fixed?
-                return getSelfType(tree);
+            return getSelfType(tree);
             } else {
                 TypeElement typeElt = ElementUtils.enclosingClass(element);
                 if (typeElt == null) {
@@ -752,7 +754,7 @@ public class AnnotatedTypeFactory {
         if (!ElementUtils.hasReceiver(rcvelem)) {
             return null;
         }
-
+        
         if ("this".contentEquals(receiver.toString())) {
             // TODO: also "super"?
             return this.getSelfType(tree);
@@ -775,7 +777,7 @@ public class AnnotatedTypeFactory {
             // TODO: this only takes the main annotations. What about other annotations?
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
-        }
+    }
 
         return type;
     }
@@ -825,7 +827,7 @@ public class AnnotatedTypeFactory {
 
         if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
             return false;
-        }
+    }
 
         MemberSelectTree memSelTree = (MemberSelectTree) tree;
         if (memSelTree.getIdentifier().contentEquals("this")) {
@@ -914,6 +916,7 @@ public class AnnotatedTypeFactory {
      * enclosing method are considered.
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
+
         Element enclosingElt = getMostInnerClassOrMethod(tree);
 
         while (enclosingElt != null) {
@@ -930,8 +933,8 @@ public class AnnotatedTypeFactory {
                 }
             } else if (enclosingElt instanceof TypeElement) {
                 if (isSubtype((TypeElement)enclosingElt, element)) {
-                    return (AnnotatedDeclaredType) getAnnotatedType(enclosingElt);
-                }
+                    return getAnnotatedType(element);
+            }
             }
             enclosingElt = enclosingElt.getEnclosingElement();
         }
@@ -966,11 +969,11 @@ public class AnnotatedTypeFactory {
         }
 
         if (receiver!=null) {
-            return getAnnotatedType(receiver);
+        return getAnnotatedType(receiver);
         } else {
             // E.g. local variables
             return null;
-        }
+    }
     }
 
     /**
@@ -1011,13 +1014,13 @@ public class AnnotatedTypeFactory {
 
         if (!typeVarMapping.isEmpty()) {
             for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-                if (typeVarMapping.get(tv)==null) {
-                    System.err.println("Detected a mismatch between the declared method" +
-                            " type variables and the inferred method type arguments. Something is going wrong!");
-                    System.err.println("Method type variables: " + methodType.getTypeVariables());
-                    System.err.println("Inferred method type arguments: " + typeVarMapping);
-                    throw new AssertionError("Mismatch between declared method type variables and the inferred method type arguments!");
-                }
+            	if (typeVarMapping.get(tv)==null) {
+					System.err.println("Detected a mismatch between the declared method" +
+							" type variables and the inferred method type arguments. Something is going wrong!");
+					System.err.println("Method type variables: " + methodType.getTypeVariables());
+					System.err.println("Inferred method type arguments: " + typeVarMapping);
+					throw new AssertionError("Mismatch between declared method type variables and the inferred method type arguments!");
+            	}
                 typeargs.add(typeVarMapping.get(tv));
             }
             methodType = methodType.substitute(typeVarMapping);
@@ -1567,20 +1570,17 @@ public class AnnotatedTypeFactory {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
             throw new Error("buildIndexTypes called more than once");
         }
-
         Map<Element, AnnotatedTypeMirror> indexTypes
             = new HashMap<Element, AnnotatedTypeMirror>();
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
 
-        if (!env.getOptions().containsKey("ignorejdkastub")) {
-            InputStream in = null;
-            if (checkerClass != null)
-                in = checkerClass.getResourceAsStream("jdk.astub");
-            if (in != null) {
-                StubParser stubParser = new StubParser("jdk.astub", in, this, env);
-                stubParser.parse(indexTypes, indexDeclAnnos);
-            }
+        InputStream in = null;
+        if (checkerClass != null)
+            in = checkerClass.getResourceAsStream("jdk.astub");
+        if (in != null) {
+            StubParser stubParser = new StubParser("jdk.astub", in, this, env);
+            stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
         String stubFiles = env.getOptions().get("stubs");
@@ -1635,7 +1635,6 @@ public class AnnotatedTypeFactory {
         // First look in the stub files.
         String eltName = ElementUtils.getVerboseName(elt);
         Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
                 if (sameAnnotation(am, aname)) {
