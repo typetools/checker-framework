@@ -18,6 +18,7 @@ import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.NotEqualNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.TreeUtils;
@@ -137,6 +138,31 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             return a;
         }
         a = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, false);
+        if (a != null) {
+            return a;
+        }
+
+        return res;
+    }
+    
+    @Override
+    public TransferResult<V, S> visitNotEqual(NotEqualNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> res = super.visitNotEqual(n, p);
+
+        Node leftN = n.getLeftOperand();
+        Node rightN = n.getRightOperand();
+        V leftV = p.getValueOfSubNode(leftN);
+        V rightV = p.getValueOfSubNode(rightN);
+
+        // if annotations differ, use the one that is more precise for both
+        // sides (and add it to the store if possible)
+        ConditionalTransferResult<V, S> a;
+        a = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, true);
+        if (a != null) {
+            return a;
+        }
+        a = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, true);
         if (a != null) {
             return a;
         }
