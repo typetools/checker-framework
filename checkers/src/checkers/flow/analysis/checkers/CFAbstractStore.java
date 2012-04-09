@@ -1,6 +1,5 @@
 package checkers.flow.analysis.checkers;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,20 +12,17 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import com.sun.tools.javac.code.Type;
-
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.util.ValueParseUtil;
-import checkers.quals.AssertAfter;
+import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
-import checkers.util.test.Odd;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -100,16 +96,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // add new information based on postcondition
-        AnnotationMirror assertAfter = analysis.factory.getDeclAnnotation(
-                method, AssertAfter.class);
-        if (assertAfter != null) {
+        AnnotationMirror ensuresAnnotation = analysis.factory.getDeclAnnotation(
+                method, EnsuresAnnotation.class);
+        if (ensuresAnnotation != null) {
             List<String> expressions = AnnotationUtils.elementValueStringArray(
-                    assertAfter, "expression");
+                    ensuresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
-                    assertAfter, "annotation");
+                    ensuresAnnotation, "annotation");
             for (String e : expressions) {
                 Node receiver = n.getTarget().getReceiver();
-                FlowExpressions.Receiver r = ValueParseUtil.parse(e, receiver,
+                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(e, receiver,
                         FlowExpressions.internalReprOf(receiver));
                 if (r != null) {
                     insertValue(r,
