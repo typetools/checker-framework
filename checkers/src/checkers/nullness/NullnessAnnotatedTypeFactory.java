@@ -182,7 +182,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // case 6: apply default
         defaults.annotate(tree, type);
 
-        substituteRaw(tree, type);
+        if (TreeUtils.isExpressionTree(tree)) {
+            substituteRaw((ExpressionTree)tree, type);
+        }
         substituteUnused(tree, type);
 
         final AnnotationMirror inferred = flow.test(tree);
@@ -196,11 +198,11 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
-    protected AnnotatedDeclaredType getImplicitReceiverType(Tree tree) {
-        AnnotatedDeclaredType type = super.getImplicitReceiverType(tree);
-        // 'this' should always be nonnull, unless it's raw
-        if (type != null && !type.hasAnnotation(RAW)) {
-            type.clearAnnotations();
+    public AnnotatedDeclaredType getSelfType(Tree tree) {
+        AnnotatedDeclaredType type = super.getSelfType(tree);
+        // 'this' should always be nonnull
+        if (type != null) {
+            type.removeAnnotationInHierarchy(NONNULL);
             type.addAnnotation(NONNULL);
         }
         return type;
@@ -260,8 +262,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     public Set<VariableElement> initializedAfter(MethodTree node) {
-    	return ((NullnessFlow)flow).initializedFieldsAfter(
-    			TreeUtils.elementFromDeclaration(node));
+        return ((NullnessFlow)flow).initializedFieldsAfter(
+                TreeUtils.elementFromDeclaration(node));
     }
 
     // called for side effect; return value is always ignored.
@@ -280,7 +282,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         String whenName = AnnotationUtils.elementValueClassName(unused, "when");
-        AnnotatedTypeMirror receiver = plainFactory.getReceiver((ExpressionTree)tree);
+        AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
         if (receiver == null || receiver.getAnnotation(whenName) == null) {
             return false;
         }
@@ -290,7 +292,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     /**
-     * Substitutes {@link Raw} annotations on a type. If the the receiver of
+     * Substitutes {@link Raw} annotations on a type. If the receiver of
      * the member select expression tree (which might implicitly be "this") is
      * {@link Raw}, this replaces the annotations on {@code type} with
      * {@link Raw}.
@@ -301,7 +303,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @return true iff we reduced the annotated type from {@link NonNull} to
      *         {@link Raw}
      */
-    private boolean substituteRaw(Tree tree, AnnotatedTypeMirror type) {
+    private boolean substituteRaw(ExpressionTree tree, AnnotatedTypeMirror type) {
 
         // If it's not an expression tree, it's definitely not a select.
         if (tree.getKind() != Tree.Kind.MEMBER_SELECT
@@ -325,10 +327,19 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             }
         }
 
+        if (tree instanceof MemberSelectTree
+                && "class".contentEquals(((MemberSelectTree)tree).getIdentifier())) {
+            // TODO: do not make a "C.class" LazyNonNull.
+            // Is there a nicer way for this? Should the type factory
+            // assign a type to "C"?
+            return false;
+        }
+
         // case 13
-        final AnnotatedTypeMirror select = rawnessFactory.getReceiver((ExpressionTree) tree);
+        final AnnotatedTypeMirror select = rawnessFactory.getReceiverType((ExpressionTree) tree);
         if (select != null && select.hasEffectiveAnnotation(RAW)
-                && !type.hasEffectiveAnnotation(NULLABLE) && !type.getKind().isPrimitive()) {
+                && !type.hasEffectiveAnnotation(NULLABLE)
+                && !type.getKind().isPrimitive()) {
             boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
             type.removeAnnotationInHierarchy(LAZYNONNULL);
             type.addAnnotation(LAZYNONNULL);

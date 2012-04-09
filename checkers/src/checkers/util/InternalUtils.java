@@ -29,8 +29,7 @@ public class InternalUtils {
     /**
      * Gets the {@link Element} ("symbol") for the given Tree API node.
      *
-     * @param tree
-     *            the {@link Tree} node to get the symbol for
+     * @param tree the {@link Tree} node to get the symbol for
      * @throws IllegalArgumentException
      *         if {@code tree} is null or is not a valid javac-internal tree
      *         (JCTree)
@@ -38,14 +37,15 @@ public class InternalUtils {
      *         could not be found
      */
     public static /*@Nullable*/ Element symbol(/*@Nullable*/ Tree tree) {
-
         if (tree == null)
             throw new IllegalArgumentException("tree is null");
 
         if (!(tree instanceof JCTree))
             throw new IllegalArgumentException("tree is not a valid Javac tree");
 
-        tree = TreeUtils.skipParens(tree);
+        if (TreeUtils.isExpressionTree(tree)) {
+            tree = TreeUtils.skipParens((ExpressionTree)tree);
+        }
 
         switch (tree.getKind()) {
             case VARIABLE:
@@ -54,20 +54,21 @@ public class InternalUtils {
             case ENUM:
             case INTERFACE:
             case ANNOTATION_TYPE:
-
                 return TreeInfo.symbolFor((JCTree) tree);
 
             // symbol() only works on MethodSelects, so we need to get it manually
             // for method invocations.
             case METHOD_INVOCATION:
-                return TreeInfo.symbol(((JCMethodInvocation) tree)
-                .getMethodSelect());
+                return TreeInfo.symbol(((JCMethodInvocation) tree).getMethodSelect());
 
             case ASSIGNMENT:
                 return TreeInfo.symbol((JCTree)((AssignmentTree)tree).getVariable());
 
             case ARRAY_ACCESS:
                 return symbol(((ArrayAccessTree)tree).getExpression());
+
+            case NEW_CLASS:
+                return ((JCNewClass)tree).constructor;
 
             default:
                 return TreeInfo.symbol((JCTree) tree);

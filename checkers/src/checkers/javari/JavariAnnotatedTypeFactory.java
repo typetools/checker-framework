@@ -414,7 +414,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         if (receiverType.hasEffectiveAnnotation(POLYREAD)) {
             // if MemberSelectTree, we can just look at the expression tree
             ExpressionTree exprTree = tree.getMethodSelect();
-            AnnotatedTypeMirror exprReceiver = this.getReceiver(exprTree);
+            AnnotatedTypeMirror exprReceiver = this.getReceiverType(exprTree);
             if (exprReceiver.hasEffectiveAnnotation(READONLY)) {
                 allMutable = false;
                 allThisMutable = false;

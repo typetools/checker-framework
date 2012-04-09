@@ -37,6 +37,7 @@ public final class TestUtilities {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+        boolean seenKeyword = false;
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test"))
@@ -44,9 +45,9 @@ public final class TestUtilities {
             if (nextLine.contains("class")
                     || nextLine.contains("interface")
                     || nextLine.contains("enum"))
-                break;
+                seenKeyword = true;
         }
-        return true;
+        return seenKeyword;
     }
 
     /**

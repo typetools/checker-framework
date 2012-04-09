@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.util.ElementFilter;
 
 import checkers.nullness.quals.KeyFor;
 
@@ -166,12 +165,12 @@ import com.sun.source.util.TreePath;
     /**
      * Helper function to determine if the passed element is sufficient
      * to resolve a reference at compile time, without needing to
-     * represent the call/derefence site.
+     * represent the call/dereference site.
      */
     private boolean isSiteRequired(ExpressionTree node, Element elt) {
         boolean r = ElementUtils.isStatic(elt) ||
             !elt.getKind().isField() ||
-            TreeUtils.isSelfAccess(node);
+            factory.isMostEnclosingThisDeref(node);
         return !r;
     }
 
@@ -252,7 +251,7 @@ import com.sun.source.util.TreePath;
     }
 
     /**
-     * Case 5: get() is preceded by put-if-abset pattern
+     * Case 5: get() is preceded by put-if-absent pattern
      */
     private Matcher preceededByIfThenPut(final Element key, final VariableElement map) {
         return preceededBy(ofKind(Tree.Kind.IF, new Matcher() {
@@ -295,11 +294,11 @@ import com.sun.source.util.TreePath;
 
     private Element getSite(MethodInvocationTree tree) {
         AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)factory.getReceiver(tree);
+            (AnnotatedDeclaredType)factory.getReceiverType(tree);
         return type.getElement();
     }
 
-    private boolean isInvocationOfContains(Element key, VariableElement map, Tree tree) {
+    private boolean isInvocationOfContains(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
             if (TreeUtils.isMethodInvocation(invok, mapContains, env)) {
@@ -311,7 +310,7 @@ import com.sun.source.util.TreePath;
         return false;
     }
 
-    private boolean isInvocationOfPut(Element key, VariableElement map, Tree tree) {
+    private boolean isInvocationOfPut(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
             if (TreeUtils.isMethodInvocation(invok, mapPut, env)) {
@@ -341,7 +340,7 @@ import com.sun.source.util.TreePath;
         return first;
     }
 
-    private boolean isCheckOfGet(Element key, VariableElement map, Tree tree) {
+    private boolean isCheckOfGet(Element key, VariableElement map, ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() != Tree.Kind.NOT_EQUAL_TO
             || ((BinaryTree)tree).getRightOperand().getKind() != Tree.Kind.NULL_LITERAL)

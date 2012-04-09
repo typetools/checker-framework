@@ -20,10 +20,6 @@ class MethodTypeVars3 {
                 Set<T> set = Collections.singleton(node);
                 dom.put(node, new ArrayList<T>(set));
 
-                // TODO: the above works, but inlining local variable set fails.
-                // The changed assignment context seems to mess with type argument
-                // inference.
-                //:: error: (argument.type.incompatible)
                 dom.put(node, new ArrayList<T>(Collections.singleton(node)));
             } else {
                 non_roots.add(node);

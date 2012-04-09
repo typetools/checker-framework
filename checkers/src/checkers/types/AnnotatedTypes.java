@@ -241,7 +241,7 @@ public class AnnotatedTypes {
      */
     public AnnotatedExecutableType asMemberOf(AnnotatedTypeMirror t,
             ExecutableElement elem) {
-        return (AnnotatedExecutableType)asMemberOf(t,(Element)elem);
+        return (AnnotatedExecutableType) asMemberOf(t, (Element) elem);
     }
 
     /**
@@ -277,7 +277,7 @@ public class AnnotatedTypes {
         return type;
     }
 
-    private AnnotatedTypeMirror asMemberOfImpl(AnnotatedTypeMirror t, Element elem) {
+    private AnnotatedTypeMirror asMemberOfImpl(final AnnotatedTypeMirror t, final Element elem) {
         if (ElementUtils.isStatic(elem))
             return factory.getAnnotatedType(elem);
 
@@ -294,10 +294,12 @@ public class AnnotatedTypes {
                 return method.substitute(Collections.singletonMap(method.getReturnType(), t));
         }
 
+        final AnnotatedTypeMirror elemType = factory.getAnnotatedType(elem);
+
         // I cannot think of why it wouldn't be a declared type!
         // Defensive Programming
         if (t.getKind() != TypeKind.DECLARED) {
-            return factory.getAnnotatedType(elem);
+            return elemType;
         }
 
         //
@@ -307,17 +309,29 @@ public class AnnotatedTypes {
         //      of passed type)
         // 3. Substitute for type variables if any exist
         TypeElement owner = ElementUtils.enclosingClass(elem);
+        // Is the owner or any enclosing class generic?
+        boolean ownerGeneric = false;
+        {
+            TypeElement encl = owner;
+            while (encl!=null) {
+                if (!encl.getTypeParameters().isEmpty()) {
+                    ownerGeneric = true;
+                    break;
+                }
+                encl = ElementUtils.enclosingClass(encl.getEnclosingElement());
+            }
+        }
 
         // TODO: Potential bug if Raw type is used
-        if (ElementUtils.isStatic(elem) || owner.getTypeParameters().isEmpty())
-            return factory.getAnnotatedType(elem);
+        if (ElementUtils.isStatic(elem) || !ownerGeneric)
+            return elemType;
 
         AnnotatedDeclaredType ownerType = factory.getAnnotatedType(owner);
         AnnotatedDeclaredType base =
             (AnnotatedDeclaredType) asOuterSuper(t, ownerType);
 
         if (base == null)
-            return factory.getAnnotatedType(elem);
+            return elemType;
 
         List<? extends AnnotatedTypeMirror> ownerParams =
             ownerType.getTypeArguments();
@@ -328,12 +342,12 @@ public class AnnotatedTypes {
                 List<AnnotatedTypeMirror> baseParamsEr = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : ownerParams)
                     baseParamsEr.add(arg.getErased());
-                return subst(factory.getAnnotatedType(elem), ownerParams, baseParamsEr);
+                return subst(elemType, ownerParams, baseParamsEr);
             }
-            return subst(factory.getAnnotatedType(elem), ownerParams, baseParams);
+            return subst(elemType, ownerParams, baseParams);
         }
 
-        return factory.getAnnotatedType(elem);
+        return elemType;
     }
 
     /**
@@ -524,10 +538,9 @@ public class AnnotatedTypes {
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
         ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree) {
-            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
-        } else if (expr instanceof NewClassTree) {
-            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        if (expr instanceof MethodInvocationTree ||
+                expr instanceof NewClassTree) {
+            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
             System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -577,7 +590,7 @@ public class AnnotatedTypes {
     // TODO: Note that this implementation is buggy as it only infers arguments
     // that make it to the return type.  So it would fail for invocations to
     // <T> void test(T arg1, T arg2)
-    // in such cases, T is infered to be '? extends T.upperBound'
+    // in such cases, T is inferred to be '? extends T.upperBound'
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
     inferTypeArguments(ExpressionTree expr) {
         //
@@ -592,10 +605,9 @@ public class AnnotatedTypes {
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
         ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree) {
-            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
-        } else if (expr instanceof NewClassTree) {
-            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        if (expr instanceof MethodInvocationTree ||
+                expr instanceof NewClassTree) {
+            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
             System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -603,12 +615,17 @@ public class AnnotatedTypes {
         }
 
         // Find the un-annotated type
+        // TODO: WMD thinks it would be better to (also?) determine the assignment context,
+        // instead of just the defaulted return type. For an example, see
+        // nullness/generics/MethodTypeVars6.java where an annotation on a type variable
+        // gets ignored.
         AnnotatedTypeMirror returnType = factory.type(expr);
         factory.annotateImplicit(expr, returnType);
+
         AnnotatedExecutableType methodType;
 
         if (expr instanceof MethodInvocationTree) {
-            methodType = asMemberOf(factory.getReceiver(expr), elt);
+            methodType = asMemberOf(factory.getReceiverType(expr), elt);
         } else if (expr instanceof NewClassTree) {
             // consider the constructor type itself as the viewpoint
             methodType = asMemberOf(returnType, elt);
@@ -698,8 +715,9 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> lubForVar = finder.visit(exeType.getReturnType(), returnType);
 
         // TODO: This may introduce a bug, but I don't want to deal with it right now
-        if (lubForVar.isEmpty() || (lubForVar.get(0).getEffectiveAnnotations().isEmpty()))
+        if (lubForVar.isEmpty()) {
             return null;
+        }
 
         List<? extends ExpressionTree> args;
         if (expr instanceof MethodInvocationTree) {
@@ -859,7 +877,7 @@ public class AnnotatedTypes {
             return factory.getAnnotatedType(variable);
         } else if (assignmentContext instanceof CompoundAssignmentTree) {
             ExpressionTree variable =
-                ((CompoundAssignmentTree)assignmentContext).getExpression();
+                ((CompoundAssignmentTree)assignmentContext).getVariable();
             return factory.getAnnotatedType(variable);
         } else if (assignmentContext instanceof MethodInvocationTree) {
             MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
@@ -868,7 +886,7 @@ public class AnnotatedTypes {
                     && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
                 return null;
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
-            AnnotatedTypeMirror receiver = factory.getReceiver(methodInvocation);
+            AnnotatedTypeMirror receiver = factory.getReceiverType(methodInvocation);
             AnnotatedExecutableType method = asMemberOf(receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
@@ -933,7 +951,7 @@ public class AnnotatedTypes {
 
     /**
      * Annotate the lub type as if it is the least upper bound of the rest of
-     * the types.  This is a useful method for the finding conditional expression
+     * the types.  This is a useful method for finding conditional expression
      * types.
      *
      * All the types need to be subtypes of lub.
@@ -1002,6 +1020,10 @@ public class AnnotatedTypes {
     private void addAnnotationsImpl(AnnotatedTypeMirror alub,
             Set<TypeMirror> visited,
             AnnotatedTypeMirror ...types) {
+        // System.out.println("AnnotatedTypes.addAnnotationsImpl: alub: " + alub +
+        //        "\n   visited: " + visited +
+        //        "\n   types: " + Arrays.toString(types));
+
         // types may contain a null in the context of unchecked cast
         // TODO: fix this
         boolean isFirst = true;
@@ -1062,8 +1084,15 @@ public class AnnotatedTypes {
                 AnnotatedTypeMirror adtArg = adt.getTypeArguments().get(i);
                 List<AnnotatedTypeMirror> dTypesArg = new ArrayList<AnnotatedTypeMirror>();
                 for (int j = 0; j < types.length; ++j) {
-                    if (types[j].getKind() != TypeKind.NULL) {
-                        dTypesArg.add(((AnnotatedDeclaredType)types[j]).getTypeArguments().get(i));
+                    if (types[j].getKind() == TypeKind.DECLARED) {
+                        AnnotatedDeclaredType adtypej = (AnnotatedDeclaredType) types[j];
+                        if (adtypej.getTypeArguments().size() == adt.getTypeArguments().size()) {
+                            dTypesArg.add(adtypej.getTypeArguments().get(i));
+                        } else {
+                            // TODO: actually not just the number of type arguments should match, but
+                            // the base types should be equal. See test case framework/GenericTest1
+                            // for when this test fails.
+                        }
                     }
                 }
                 addAnnotationsImpl(adtArg, visited, dTypesArg.toArray(new AnnotatedTypeMirror[0]));

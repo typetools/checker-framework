@@ -80,7 +80,7 @@ public class DependentTypes {
             return;
 
         // FIXME: handle this case
-        AnnotatedTypeMirror receiver = factory.getReceiver(expr);
+        AnnotatedTypeMirror receiver = factory.getReceiverType(expr);
         if (receiver != null)
             doSubsitution(symbol, type, receiver);
     }
