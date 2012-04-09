@@ -122,6 +122,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         V value = analysis.createAbstractValue(Collections.singleton(a));
+        insertValue(r, value);
+    }
+    protected void insertValue(FlowExpressions.Receiver r, V value) {
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             if (localVariableValues.containsKey(localVar)) {

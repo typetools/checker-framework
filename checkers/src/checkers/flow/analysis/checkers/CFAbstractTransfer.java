@@ -2,6 +2,9 @@ package checkers.flow.analysis.checkers;
 
 import java.util.List;
 
+import checkers.flow.analysis.ConditionalTransferResult;
+import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
@@ -10,6 +13,7 @@ import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.CaseNode;
+import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
@@ -115,6 +119,68 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return new RegularTransferResult<>(value, store);
     }
 
+    @Override
+    public TransferResult<V, S> visitEqualTo(EqualToNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> res = super.visitEqualTo(n, p);
+
+        Node leftN = n.getLeftOperand();
+        Node rightN = n.getRightOperand();
+        V leftV = p.getValueOfSubNode(leftN);
+        V rightV = p.getValueOfSubNode(rightN);
+
+        // if annotations differ, use the one that is more precise for both
+        // sides (and add it to the store if possible)
+        ConditionalTransferResult<V, S> a;
+        a = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, false);
+        if (a != null) {
+            return a;
+        }
+        a = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, false);
+        if (a != null) {
+            return a;
+        }
+
+        return res;
+    }
+
+    /**
+     * Refine the annotation of {@code secondNode} if the annotation
+     * {@code secondValue} is less precise than {@code firstvalue}. This is
+     * possible, if {@code secondNode} is an expression that is tracked by the
+     * store (e.g., a local variable or a field).
+     * 
+     * @param res
+     *            The previous result.
+     * @param notEqualTo
+     *            If true, indicates that the logic is flipped (i.e., the
+     *            information is added to the {@code elseStore} instead of the
+     *            {@code thenStore}) for a not-equal comparison.
+     * @return The conditional transfer result (if information has been added),
+     *         or {@code null}.
+     */
+    protected ConditionalTransferResult<V, S> strengthenAnnotationOfEqualTo(
+            TransferResult<V, S> res, Node secondNode, V firstValue,
+            V secondValue, boolean notEqualTo) {
+        if (firstValue != null
+                && (secondValue == null || firstValue.isSubtypeOf(secondValue))) {
+            Receiver secondInternal = FlowExpressions
+                    .internalReprOf(secondNode);
+            if (!secondInternal.containsUnknown()) {
+                S thenStore = res.getRegularStore();
+                S elseStore = thenStore.copy();
+                if (notEqualTo) {
+                    elseStore.insertValue(secondInternal, firstValue);
+                } else {
+                    thenStore.insertValue(secondInternal, firstValue);
+                }
+                return new ConditionalTransferResult<>(res.getResultValue(),
+                        thenStore, elseStore);
+            }
+        }
+        return null;
+    }
+
     /**
      * Determine abstract value of right-hand side and update the store
      * accordingly to the assignment.
@@ -157,7 +223,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // use value from factory (no flowsensitive information available)
         V resValue = getValueFromFactory(n.getTree());
-        
+
         info.updateForMethodCall(n);
 
         return new RegularTransferResult<>(resValue, info);
