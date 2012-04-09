@@ -3,8 +3,10 @@ package checkers.flow.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.FlowExpressions;
@@ -13,7 +15,6 @@ import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.cfg.node.Node;
 import checkers.util.ElementUtils;
-import checkers.util.TypesUtils;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
@@ -40,7 +41,10 @@ public class FlowExpressionParseUtil {
             }
 
             // field of a the receiver (implicit self reference as receiver)
-            TypeElement elType = TypesUtils.elementFromTypeMirror(receiverType);
+            assert receiverType instanceof DeclaredType;
+            Element el = ((DeclaredType) receiverType).asElement();
+            assert el instanceof TypeElement;
+            TypeElement elType = (TypeElement) el;
             VariableElement fieldElement = ElementUtils.findFieldInType(elType,
                     s);
             return new FieldAccess(receiver, receiverType, fieldElement);
