@@ -1,5 +1,6 @@
 package checkers.flow.analysis.checkers;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+
+import com.sun.tools.javac.code.Type;
 
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.Store;
@@ -100,15 +103,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         AnnotationMirror assertAfter = analysis.factory.getDeclAnnotation(
                 method, AssertAfter.class);
         if (assertAfter != null) {
-            List<String> strings = AnnotationUtils.elementValueStringArray(
-                    assertAfter, "value");
-            for (String s : strings) {
+            List<String> expressions = AnnotationUtils.elementValueStringArray(
+                    assertAfter, "expression");
+            String annotation = AnnotationUtils.elementValueClassName(
+                    assertAfter, "annotation");
+            for (String e : expressions) {
                 Node receiver = n.getTarget().getReceiver();
-                FlowExpressions.Receiver r = ValueParseUtil.parse(s, receiver,
+                FlowExpressions.Receiver r = ValueParseUtil.parse(e, receiver,
                         FlowExpressions.internalReprOf(receiver));
                 if (r != null) {
                     insertValue(r,
-                            analysis.factory.annotationFromClass(Odd.class));
+                            analysis.factory.annotationFromName(annotation));
                 }
             }
         }
