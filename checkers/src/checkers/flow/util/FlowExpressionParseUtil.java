@@ -18,12 +18,12 @@ import checkers.util.TypesUtils;
 /**
  * A collection of helper methods to parse a string that represents a restricted
  * Java expression. Such expressions can be found in annotations (e.g., to
- * specify a precondition).
+ * specify a pre- or postcondition).
  * 
  * @author Stefan Heule
  * 
  */
-public class ValueParseUtil {
+public class FlowExpressionParseUtil {
 
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
             Node receiverNode, Receiver receiver) {
