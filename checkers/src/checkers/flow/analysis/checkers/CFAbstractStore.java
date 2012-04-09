@@ -12,15 +12,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.Store;
-import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.ExplicitThisNode;
 import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.util.HashCodeUtils;
 import checkers.flow.util.ValueParseUtil;
 import checkers.quals.AssertAfter;
 import checkers.quals.Pure;
@@ -40,306 +37,6 @@ import checkers.util.test.Odd;
 public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
         implements Store<S> {
 
-    public static abstract class Receiver {
-        protected final TypeMirror type;
-
-        public Receiver(TypeMirror type) {
-            this.type = type;
-        }
-
-        public TypeMirror getType() {
-            return type;
-        }
-
-        public abstract boolean containsUnknown();
-
-        /**
-         * @return True if and only if the two receiver are syntactically
-         *         identical.
-         */
-        public boolean syntacticEquals(Receiver other) {
-            return other == this;
-        }
-
-        /**
-         * @return True if and only if this receiver contains a receiver that is
-         *         syntactically equal to {@code other}.
-         */
-        public boolean containsSyntacticEqualReceiver(Receiver other) {
-            return syntacticEquals(other);
-        }
-
-        /**
-         * Returns true if and only if {@code other} appear anywhere in this
-         * receiver or an expression appears in this receiver such that
-         * {@code other} might alias this expression.
-         * 
-         * <p>
-         * 
-         * Informal examples include:
-         * 
-         * <pre>
-         *   "a".containsAliasOf("a") == true
-         *   "x.f".containsAliasOf("x.f") == true
-         *   "x.f".containsAliasOf("y.g") == false
-         *   "x.f".containsAliasOf("a") == true // unless information about "x != a" is available
-         *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
-         * </pre>
-         */
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
-                Receiver other) {
-            return this.equals(other) || store.canAlias(this, other);
-        }
-    }
-
-    public static class FieldAccess extends Receiver {
-        protected Receiver receiver;
-        protected Element field;
-
-        public Receiver getReceiver() {
-            return receiver;
-        }
-
-        public Element getField() {
-            return field;
-        }
-
-        public FieldAccess(Receiver receiver, FieldAccessNode node) {
-            super(node.getType());
-            this.receiver = receiver;
-            this.field = node.getElement();
-        }
-        
-        public FieldAccess(Receiver receiver, TypeMirror type, Element fieldElement) {
-            super(type);
-            this.receiver = receiver;
-            this.field = fieldElement;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof FieldAccess)) {
-                return false;
-            }
-            FieldAccess fa = (FieldAccess) obj;
-            return fa.getField().equals(getField())
-                    && fa.getReceiver().equals(getReceiver());
-        }
-
-        @Override
-        public int hashCode() {
-            return HashCodeUtils.hash(getField(), getReceiver());
-        }
-
-        @Override
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
-                Receiver other) {
-            return super.containsAliasOf(store, other)
-                    || receiver.containsAliasOf(store, other);
-        }
-
-        @Override
-        public boolean containsSyntacticEqualReceiver(Receiver other) {
-            return syntacticEquals(other)
-                    || receiver.containsSyntacticEqualReceiver(other);
-        }
-
-        @Override
-        public boolean syntacticEquals(Receiver other) {
-            if (!(other instanceof FieldAccess)) {
-                return false;
-            }
-            FieldAccess fa = (FieldAccess) other;
-            return super.syntacticEquals(other)
-                    || fa.getField().equals(getField())
-                    && fa.getReceiver().syntacticEquals(getReceiver());
-        }
-
-        @Override
-        public String toString() {
-            return receiver + "." + field;
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return receiver.containsUnknown();
-        }
-    }
-
-    public static class ThisReference extends Receiver {
-        public ThisReference(TypeMirror type) {
-            super(type);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj != null && obj instanceof ThisReference;
-        }
-
-        @Override
-        public int hashCode() {
-            return HashCodeUtils.hash(0);
-        }
-
-        @Override
-        public String toString() {
-            return "this";
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return false;
-        }
-
-        @Override
-        public boolean syntacticEquals(Receiver other) {
-            return other instanceof ThisReference;
-        }
-    }
-
-    /**
-     * A ClassName represents the occurrence of a class as part of a static
-     * field access or method invocation.
-     */
-    public static class ClassName extends Receiver {
-        protected Element element;
-
-        public ClassName(TypeMirror type, Element element) {
-            super(type);
-            this.element = element;
-        }
-
-        public Element getElement() {
-            return element;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null && !(obj instanceof ClassName)) {
-                return false;
-            }
-            ClassName other = (ClassName) obj;
-            return getElement().equals(other.getElement());
-        }
-
-        @Override
-        public int hashCode() {
-            return HashCodeUtils.hash(getElement());
-        }
-
-        @Override
-        public String toString() {
-            return getElement().getSimpleName().toString();
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return false;
-        }
-
-        @Override
-        public boolean syntacticEquals(Receiver other) {
-            return this.equals(other);
-        }
-    }
-
-    public static class Unknown extends Receiver {
-        public Unknown(TypeMirror type) {
-            super(type);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj == this;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(this);
-        }
-
-        @Override
-        public String toString() {
-            return "?";
-        }
-
-        @Override
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
-                Receiver other) {
-            return true;
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return true;
-        }
-
-    }
-
-    public static class LocalVariable extends Receiver {
-        protected Element element;
-
-        public LocalVariable(LocalVariableNode localVar) {
-            super(localVar.getType());
-            this.element = localVar.getElement();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof LocalVariable)) {
-                return false;
-            }
-            LocalVariable other = (LocalVariable) obj;
-            return other.element.equals(element);
-        }
-
-        public Element getElement() {
-            return element;
-        }
-
-        @Override
-        public int hashCode() {
-            return HashCodeUtils.hash(element);
-        }
-
-        @Override
-        public String toString() {
-            return element.toString();
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return false;
-        }
-
-        @Override
-        public boolean syntacticEquals(Receiver other) {
-            if (!(other instanceof LocalVariable)) {
-                return false;
-            }
-            LocalVariable l = (LocalVariable) other;
-            return l.getElement().equals(getElement());
-        }
-
-        @Override
-        public boolean containsSyntacticEqualReceiver(Receiver other) {
-            return syntacticEquals(other);
-        }
-    }
-
-    // TODO: add pure method calls later
-    public static class PureMethodCall extends Receiver {
-
-        public PureMethodCall(TypeMirror type) {
-            super(type);
-        }
-
-        @Override
-        public boolean containsUnknown() {
-            return false; // TODO: correct implementation
-        }
-    }
-
     /**
      * The analysis class this store belongs to.
      */
@@ -353,9 +50,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Information collected about fields, using the interal representation
-     * {@link FieldAccess}.
+     * {@link FlowExpressions.FieldAccess}.
      */
-    protected Map<FieldAccess, V> fieldValues;
+    protected Map<FlowExpressions.FieldAccess, V> fieldValues;
 
     /* --------------------------------------------------------- */
     /* Initialization */
@@ -407,9 +104,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     assertAfter, "value");
             for (String s : strings) {
                 Node receiver = n.getTarget().getReceiver();
-                Receiver r = ValueParseUtil.parse(s, receiver, internalReprOf(receiver));
+                FlowExpressions.Receiver r = ValueParseUtil.parse(s, receiver,
+                        FlowExpressions.internalReprOf(receiver));
                 if (r != null) {
-                    insertValue(r, analysis.factory.annotationFromClass(Odd.class));
+                    insertValue(r,
+                            analysis.factory.annotationFromClass(Odd.class));
                 }
             }
         }
@@ -420,10 +119,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * deciding where to store the information depending on the type of the
      * expression {@code r}).
      */
-    protected void insertValue(Receiver r, AnnotationMirror a) {
+    protected void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         V value = analysis.createAbstractValue(Collections.singleton(a));
-        if (r instanceof LocalVariable) {
-            Element localVar = ((LocalVariable) r).getElement();
+        if (r instanceof FlowExpressions.LocalVariable) {
+            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             if (localVariableValues.containsKey(localVar)) {
                 V mergedValue = localVariableValues.get(localVar)
                         .leastUpperBound(value);
@@ -431,8 +130,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             } else {
                 localVariableValues.put(localVar, value);
             }
-        } else if (r instanceof FieldAccess) {
-            FieldAccess fieldAcc = (FieldAccess) r;
+        } else if (r instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             if (fieldValues.containsKey(fieldAcc)) {
                 V mergedValue = fieldValues.get(fieldAcc)
                         .leastUpperBound(value);
@@ -446,41 +145,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * @return The internal representation (as {@link FieldAccess}) of a
-     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
-     */
-    protected static FieldAccess internalReprOfFieldAccess(FieldAccessNode node) {
-        Receiver receiver;
-        Node receiverNode = node.getReceiver();
-        receiver = internalReprOf(receiverNode);
-        return new FieldAccess(receiver, node);
-    }
-
-    protected static Receiver internalReprOf(Node receiverNode) {
-        Receiver receiver;
-        if (receiverNode instanceof FieldAccessNode) {
-            receiver = internalReprOfFieldAccess((FieldAccessNode) receiverNode);
-        } else if (receiverNode instanceof ImplicitThisLiteralNode
-                || receiverNode instanceof ExplicitThisNode) {
-            receiver = new ThisReference(receiverNode.getType());
-        } else if (receiverNode instanceof LocalVariableNode) {
-            LocalVariableNode lv = (LocalVariableNode) receiverNode;
-            receiver = new LocalVariable(lv);
-        } else if (receiverNode instanceof ClassNameNode) {
-            ClassNameNode cn = (ClassNameNode) receiverNode;
-            receiver = new ClassName(cn.getType(), cn.getElement());
-        } else {
-            receiver = new Unknown(receiverNode.getType());
-        }
-        return receiver;
-    }
-
-    /**
      * @return Current abstract value of a field access, or {@code null} if no
      *         information is available.
      */
     public/* @Nullable */V getValue(FieldAccessNode n) {
-        FieldAccess fieldAccess = internalReprOfFieldAccess(n);
+        FlowExpressions.FieldAccess fieldAccess = FlowExpressions
+                .internalReprOfFieldAccess(n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -495,7 +165,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
         assert val != null;
-        FieldAccess fieldAccess = internalReprOfFieldAccess(n);
+        FlowExpressions.FieldAccess fieldAccess = FlowExpressions
+                .internalReprOfFieldAccess(n);
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             fieldValues.put(fieldAccess, val);
@@ -513,10 +184,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * </ol>
      */
     public void updateForUnknownAssignment(Node n) {
-        Unknown unknown = new Unknown(n.getType());
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-            FieldAccess otherFieldAccess = e.getKey();
+        FlowExpressions.Unknown unknown = new FlowExpressions.Unknown(
+                n.getType());
+        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
+        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
+            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             // case 1:
             if (otherFieldAccess.getReceiver().containsAliasOf(this, unknown)) {
@@ -550,11 +222,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    protected void removeConflicting(FieldAccess fieldAccess, /* @Nullable */
+    protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, /*
+                                                                               * @
+                                                                               * Nullable
+                                                                               */
             V val) {
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-            FieldAccess otherFieldAccess = e.getKey();
+        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
+        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
+            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             // case 2:
             if (otherFieldAccess.getReceiver().containsAliasOf(this,
@@ -593,10 +268,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * </ol>
      */
     protected void removeConflicting(LocalVariableNode localVar) {
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
-        LocalVariable var = new LocalVariable(localVar);
-        for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
-            FieldAccess otherFieldAccess = e.getKey();
+        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
+        FlowExpressions.LocalVariable var = new FlowExpressions.LocalVariable(
+                localVar);
+        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
+            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             // case 1:
             if (otherFieldAccess.containsSyntacticEqualReceiver(var)) {
                 continue;
@@ -611,7 +287,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * conservative answer (i.e., returns {@code true} if not enough information
      * is available to determine aliasing).
      */
-    protected boolean canAlias(Receiver a, Receiver b) {
+    public boolean canAlias(FlowExpressions.Receiver a,
+            FlowExpressions.Receiver b) {
         TypeMirror tb = b.getType();
         TypeMirror ta = a.getType();
         Types types = analysis.getTypes();
@@ -672,11 +349,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 newStore.localVariableValues.put(el, mergedVal);
             }
         }
-        for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
+        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
+                .entrySet()) {
             // information about fields that are only part of one store, but not
             // the other are discarded, as one store implicitly contains 'top'
             // for that field.
-            FieldAccess el = e.getKey();
+            FlowExpressions.FieldAccess el = e.getKey();
             if (fieldValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = fieldValues.get(el);
@@ -703,8 +381,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 return false;
             }
         }
-        for (Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-            FieldAccess key = e.getKey();
+        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
+                .entrySet()) {
+            FlowExpressions.FieldAccess key = e.getKey();
             if (!fieldValues.containsKey(key)
                     || !fieldValues.get(key).equals(e.getValue())) {
                 return false;
@@ -739,7 +418,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
-        for (Entry<FieldAccess, V> entry : fieldValues.entrySet()) {
+        for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues
+                .entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
