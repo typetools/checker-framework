@@ -4,8 +4,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.analysis.checkers.CFAbstractStore.FieldAccess;
-import checkers.flow.analysis.checkers.CFAbstractStore.Receiver;
+import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.cfg.node.Node;
 import checkers.util.ElementUtils;
 import checkers.util.TypesUtils;
@@ -20,13 +19,12 @@ import checkers.util.TypesUtils;
  */
 public class ValueParseUtil {
 
-    public static/* @Nullable */Receiver parse(String s, Node receiverNode, Receiver receiver) {
-        System.out.println(s + " - "+receiverNode);
+    public static/* @Nullable */FlowExpressions.Receiver parse(String s, Node receiverNode, FlowExpressions.Receiver receiver) {
         if (true) { // TODO: check field syntax
             TypeMirror receiverType = receiverNode.getType();
             TypeElement elType = TypesUtils.elementFromTypeMirror(receiverType);
             VariableElement fieldElement = ElementUtils.findFieldInType(elType, s);
-            return new FieldAccess(receiver, receiverType, fieldElement);
+            return new FlowExpressions.FieldAccess(receiver, receiverType, fieldElement);
         } else {
             assert false; // TODO: error message
             return null;
