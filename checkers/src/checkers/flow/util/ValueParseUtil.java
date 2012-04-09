@@ -1,10 +1,16 @@
 package checkers.flow.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.FieldAccess;
+import checkers.flow.analysis.FlowExpressions.Receiver;
+import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.cfg.node.Node;
 import checkers.util.ElementUtils;
 import checkers.util.TypesUtils;
@@ -19,15 +25,28 @@ import checkers.util.TypesUtils;
  */
 public class ValueParseUtil {
 
-    public static/* @Nullable */FlowExpressions.Receiver parse(String s, Node receiverNode, FlowExpressions.Receiver receiver) {
-        if (true) { // TODO: check field syntax
+    public static/* @Nullable */FlowExpressions.Receiver parse(String s,
+            Node receiverNode, Receiver receiver) {
+
+        Pattern identifierPattern = Pattern.compile("[a-z_$][a-z_$0-9]*");
+        Matcher identifierMatcher = identifierPattern.matcher(s);
+
+        if (identifierMatcher.matches()) {
             TypeMirror receiverType = receiverNode.getType();
+
+            // this literal
+            if (s.equals("this")) {
+                return new ThisReference(receiverType);
+            }
+
+            // field of a the receiver (implicit self reference as receiver)
             TypeElement elType = TypesUtils.elementFromTypeMirror(receiverType);
-            VariableElement fieldElement = ElementUtils.findFieldInType(elType, s);
-            return new FlowExpressions.FieldAccess(receiver, receiverType, fieldElement);
+            VariableElement fieldElement = ElementUtils.findFieldInType(elType,
+                    s);
+            return new FieldAccess(receiver, receiverType, fieldElement);
         } else {
-            assert false; // TODO: error message
-            return null;
+            // TODO: real error handling
+            throw new RuntimeException("Cannot parse expression '" + s + "'.");
         }
     }
 
