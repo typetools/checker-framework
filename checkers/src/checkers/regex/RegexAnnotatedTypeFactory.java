@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.types.AnnotatedTypeMirror;
@@ -33,7 +34,8 @@ import com.sun.source.tree.Tree.Kind;
  * regular expression</li>
  *
  * <li value="2">concatenation of two valid regular expression values
- * (either {@code String} or {@code char}.)</li>
+ * (either {@code String} or {@code char}) or two partial regular expression
+ * values that make a valid regular expression when concatenated.</li>
  * 
  * <li value="3">for calls to Pattern.compile changes the group count value
  * of the return type to be the same as the parameter. For calls to the asRegex
@@ -43,6 +45,20 @@ import com.sun.source.tree.Tree.Kind;
  * 
  * <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
+ *
+ * </ol>
+ *
+ * Provides a basic analysis of concatenation of partial regular expressions
+ * to determine if a valid regular expression is produced by concatenating
+ * non-regular expression Strings. Do do this, {@link PartialRegex} is added
+ * to the type of tree in the following cases:
+ *
+ * <ol>
+ *
+ * <li value="1">a String literal that is not a valid regular expression.</li>
+ *
+ * <li value="2">concatenation of two partial regex Strings that doesn't result
+ * in a regex String or a partial regex and regex String.</li>
  *
  * </ol>
  *
@@ -57,6 +73,13 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      * @see java.util.regex.Pattern#compile(String)
      */
     private final ExecutableElement patternCompile;
+
+    /**
+     * The value method of the PartialRegex qualifier.
+     * 
+     * @see checkers.regex.quals.PartialRegex
+     */
+    private final ExecutableElement partialRegexValue;
 
     /**
      * Class names that contain an {@code asRegex(String, int)} method. These
@@ -82,6 +105,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         super(checker, root);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
+        partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, env);
         asRegexes = new ArrayList<ExecutableElement>();
         for (String clazz : asRegexClasses) {
             try {
@@ -106,7 +130,9 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 1: valid regular expression String or char literal
+         * Case 1: valid regular expression String or char literal.
+         * Adds PartialRegex annotation to String literals that are not valid
+         * regular expressions.
          */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
@@ -121,6 +147,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     if (RegexUtil.isRegex(regex)) {
                         int groupCount = checker.getGroupCount(regex);
                         type.addAnnotation(createRegexAnnotation(groupCount));
+                    } else {
+                        type.addAnnotation(createPartialRegexAnnotation(regex));
                     }
                 }
             }
@@ -128,7 +156,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
         /**
-         * Case 2: concatenation of Regex or PolyRegex String/char literals
+         * Case 2: concatenation of Regex or PolyRegex String/char literals.
+         * Also handles concatenation of partial regular expressions.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -139,6 +168,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 
                 boolean lExprRE = lExpr.hasAnnotation(Regex.class);
                 boolean rExprRE = rExpr.hasAnnotation(Regex.class);
+                boolean lExprPart = lExpr.hasAnnotation(PartialRegex.class);
+                boolean rExprPart = rExpr.hasAnnotation(PartialRegex.class);
                 boolean lExprPoly = lExpr.hasAnnotation(PolyRegex.class);
                 boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
 
@@ -153,6 +184,24 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                         || lExprPoly && rExprRE
                         || lExprRE && rExprPoly) {
                     type.addAnnotation(PolyRegex.class);
+                } else if (lExprPart && rExprPart) {
+                    String lRegex = getPartialRegexValue(lExpr);
+                    String rRegex = getPartialRegexValue(rExpr);
+                    String concat = lRegex + rRegex;
+                    if (RegexUtil.isRegex(concat)) {
+                        int groupCount = checker.getGroupCount(concat);
+                        type.addAnnotation(createRegexAnnotation(groupCount));
+                    } else {
+                        type.addAnnotation(createPartialRegexAnnotation(concat));
+                    }
+                } else if (lExprRE && rExprPart) {
+                    String rRegex = getPartialRegexValue(rExpr);
+                    String concat = "e" + rRegex;
+                    type.addAnnotation(createPartialRegexAnnotation(concat));
+                } else if (lExprPart && rExprRE) {
+                    String lRegex = getPartialRegexValue(lExpr);
+                    String concat = lRegex + "e";
+                    type.addAnnotation(createPartialRegexAnnotation(concat));
                 }
             }
             return super.visitBinary(tree, type);
@@ -225,6 +274,24 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
             builder.setValue("value", groupCount);
             return builder.build();
+        }
+
+        /**
+         * Returns a new PartialRegex annotation with the given partial regular
+         * expression.
+         */
+        private AnnotationMirror createPartialRegexAnnotation(String partial) {
+            AnnotationUtils.AnnotationBuilder builder =
+                new AnnotationUtils.AnnotationBuilder(env, PartialRegex.class.getCanonicalName());
+            builder.setValue("value", partial);
+            return builder.build();
+        }
+
+        /**
+         * Returns the value of a PartialRegex annotation.
+         */
+        private String getPartialRegexValue(AnnotatedTypeMirror type) {
+            return (String) AnnotationUtils.getElementValuesWithDefaults(type.getAnnotation(PartialRegex.class)).get(partialRegexValue).getValue();
         }
 
 //         This won't work correctly until flow sensitivity is supported by the
