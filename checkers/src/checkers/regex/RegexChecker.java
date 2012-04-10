@@ -1,5 +1,7 @@
 package checkers.regex;
 
+import java.util.regex.Pattern;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -9,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
+import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.regex.quals.RegexBottom;
@@ -24,7 +27,7 @@ import checkers.util.TreeUtils;
  * A type-checker plug-in for the {@link Regex} qualifier that finds
  * syntactically invalid regular expressions.
  */
-@TypeQualifiers({ Regex.class, PolyRegex.class, RegexBottom.class, Unqualified.class })
+@TypeQualifiers({ Regex.class, PartialRegex.class, PolyRegex.class, RegexBottom.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX;
@@ -137,5 +140,12 @@ public class RegexChecker extends BaseTypeChecker {
         // if a non-regex string is passed to Pattern.compile but warnings
         // are suppressed.
         return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
+    }
+
+    /**
+     * Returns the number of groups in the given regex String.
+     */
+    public int getGroupCount(/*@Regex*/ String regex) {
+        return Pattern.compile(regex).matcher("").groupCount();
     }
 }
