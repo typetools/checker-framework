@@ -1,3 +1,10 @@
+Version ????, ????
+
+Regex Checker:
+  Add basic support for the concatenation of two non-regular expressions
+  that produce a valid regular expression.
+
+----------------------------------------------------------------------
 Version 1.2.6, 18 Mar 2012
 
 Nullness Checker:
