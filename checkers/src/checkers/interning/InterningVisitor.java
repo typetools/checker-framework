@@ -120,7 +120,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (isInvocationOfEquals(node)) {
-            AnnotatedTypeMirror recv = atypeFactory.getReceiver(node);
+            AnnotatedTypeMirror recv = atypeFactory.getReceiverType(node);
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
@@ -149,40 +149,40 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
      */
     @Override
     public Void visitClass(ClassTree node, Void p){
-    	//Looking for an @UsesObjectEquals class declaration
-   	
-    	TypeElement elt = TreeUtils.elementFromDeclaration(node);
-    	UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
+        //Looking for an @UsesObjectEquals class declaration
 
-    	Tree superClass = node.getExtendsClause();
-		Element elmt = null;
-		if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)){
-			elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
-		}
+        TypeElement elt = TreeUtils.elementFromDeclaration(node);
+        UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
 
-
-		//if it's there, check to make sure does not override equals
-    	//and supertype is Object or @UsesObjectEquals
-		if (annotation != null){
-    		//check methods to ensure no .equals
-    		if(overridesEquals(node)){
-    			checker.report(Result.failure("overrides.equals"), node);
-    		}
+        Tree superClass = node.getExtendsClause();
+        Element elmt = null;
+        if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)){
+            elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
+        }
 
 
-    		if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
-    			checker.report(Result.failure("superclass.unmarked"), node);
-    		}
-    	} else {
-    		//the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
-    		//this is impossible after design change making @UsesObjectEquals inherited?
-    		//check left in case of future design change back to non-inherited. 
-  			if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
-    			checker.report(Result.failure("superclass.marked"), node);
-    		}
-    	}
+        //if it's there, check to make sure does not override equals
+        //and supertype is Object or @UsesObjectEquals
+        if (annotation != null){
+            //check methods to ensure no .equals
+            if(overridesEquals(node)){
+                checker.report(Result.failure("overrides.equals"), node);
+            }
 
-    	return super.visitClass(node, p);
+
+            if(!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))){
+                checker.report(Result.failure("superclass.unmarked"), node);
+            }
+        } else {
+            //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
+            //this is impossible after design change making @UsesObjectEquals inherited?
+            //check left in case of future design change back to non-inherited. 
+            if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
+                checker.report(Result.failure("superclass.marked"), node);
+            }
+        }
+
+        return super.visitClass(node, p);
     }
 
     // **********************************************************************
@@ -193,20 +193,19 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
      * Returns true if a class overrides Object.equals
      */
     private boolean overridesEquals(ClassTree node){
-    	List<? extends Tree> members = node.getMembers();
-    	for(Tree member : members){
-			if(member instanceof MethodTree){
-				MethodTree mTree = (MethodTree) member;
-				ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
-				if(overrides(enclosing, Object.class, "equals")){
-					return true;
-				}
-			}
-		}
-    	return false;
+        List<? extends Tree> members = node.getMembers();
+        for(Tree member : members){
+            if(member instanceof MethodTree){
+                MethodTree mTree = (MethodTree) member;
+                ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
+                if(overrides(enclosing, Object.class, "equals")){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
-    
-    
+
     /**
      * Tests whether a method invocation is an invocation of
      * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
@@ -319,12 +318,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
                             ((LiteralTree)expr).getValue().equals(0));
                 }
             };
+
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
                 Heuristics.Matchers.withIn(
-                                           Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
 
             if (!returnsZero)
                 return false;
@@ -347,7 +347,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
 
             final boolean returnsZero =
                 Heuristics.Matchers.withIn(
-                                           Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
 
             if (!returnsZero) {
                 return false;
@@ -494,8 +494,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
                     return false;
                 }
             };
+
         boolean okay = Heuristics.Matchers.withIn(
-                                                  Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
         return okay;
     }
 
@@ -542,7 +543,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
                         }
 
                         return visit(leftTree, p);
-                    } else {                                                                                            // a == b || a.compareTo(b) == 0
+                    } else {
+                        // a == b || a.compareTo(b) == 0
                         ExpressionTree leftTree = tree.getLeftOperand();        //looking for a==b
                         ExpressionTree rightTree = tree.getRightOperand();      //looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
                         if (leftTree != node) {
@@ -591,7 +593,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
             };
 
         boolean okay = Heuristics.Matchers.withIn(
-                                                  Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
         return okay;
     }
 

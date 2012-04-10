@@ -170,7 +170,7 @@ import com.sun.source.util.TreePath;
     private boolean isSiteRequired(ExpressionTree node, Element elt) {
         boolean r = ElementUtils.isStatic(elt) ||
             !elt.getKind().isField() ||
-            TreeUtils.isSelfAccess(node);
+            factory.isMostEnclosingThisDeref(node);
         return !r;
     }
 
@@ -294,11 +294,11 @@ import com.sun.source.util.TreePath;
 
     private Element getSite(MethodInvocationTree tree) {
         AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)factory.getReceiver(tree);
+            (AnnotatedDeclaredType)factory.getReceiverType(tree);
         return type.getElement();
     }
 
-    private boolean isInvocationOfContains(Element key, VariableElement map, Tree tree) {
+    private boolean isInvocationOfContains(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
             if (TreeUtils.isMethodInvocation(invok, mapContains, env)) {
@@ -310,7 +310,7 @@ import com.sun.source.util.TreePath;
         return false;
     }
 
-    private boolean isInvocationOfPut(Element key, VariableElement map, Tree tree) {
+    private boolean isInvocationOfPut(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
             if (TreeUtils.isMethodInvocation(invok, mapPut, env)) {
@@ -340,7 +340,7 @@ import com.sun.source.util.TreePath;
         return first;
     }
 
-    private boolean isCheckOfGet(Element key, VariableElement map, Tree tree) {
+    private boolean isCheckOfGet(Element key, VariableElement map, ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         if (tree.getKind() != Tree.Kind.NOT_EQUAL_TO
             || ((BinaryTree)tree).getRightOperand().getKind() != Tree.Kind.NULL_LITERAL)

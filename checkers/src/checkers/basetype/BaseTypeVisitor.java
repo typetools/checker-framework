@@ -372,7 +372,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node.getArguments().get(0));
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
 
-        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(node);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
         AnnotatedDeclaredType receiverAsVector =
             (AnnotatedDeclaredType)annoTypes.asSuper(receiver, vectorType);
         if (receiverAsVector == null || receiverAsVector.getTypeArguments().isEmpty())
@@ -841,7 +841,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             MethodInvocationTree node) {
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
-        AnnotatedTypeMirror rcv = atypeFactory.getReceiver(node);
+        AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
         if (!checker.isSubtype(treeReceiver, methodReceiver)) {
@@ -1012,13 +1012,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
         if (varTree instanceof ExpressionTree &&
                 !checker.isAssignable(varType,
-                        atypeFactory.getReceiver((ExpressionTree)varTree),
+                        atypeFactory.getReceiverType((ExpressionTree)varTree),
                         varTree,
                         atypeFactory)) {
             checker.report(
                     Result.failure("assignability.invalid",
                             InternalUtils.symbol(varTree),
-                            atypeFactory.getReceiver((ExpressionTree)varTree)),
+                            atypeFactory.getReceiverType((ExpressionTree)varTree)),
                     varTree);
         }
     }
@@ -1065,7 +1065,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (elem == null || !elem.getKind().isField())
             return;
 
-        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(tree);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);

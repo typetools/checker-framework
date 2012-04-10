@@ -410,7 +410,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             new ImmutabilityResolver().visit(type, matchingMapping);
 
         // For finding resolved types, rather than to actually resolve immutability
-        Map<String, AnnotationMirror> fromReceiver = collector.visit(getReceiver(tree));
+        Map<String, AnnotationMirror> fromReceiver = collector.visit(getReceiverType(tree));
         final Map<String, AnnotationMirror> mapping =
             collector.reduce(matchingMapping, fromReceiver);
         new AnnotatedTypeScanner<Void, Void>() {
