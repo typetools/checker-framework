@@ -1604,6 +1604,16 @@ public class AnnotatedTypeFactory {
                     stubPath = base + "/" + stubPath;
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
                 if (stubs.size()==0) {
+                    InputStream in = null;
+                    if (checkerClass != null)
+                        in = checkerClass.getResourceAsStream(stubPath);
+                    if (in != null) {
+                        StubParser stubParser = new StubParser(stubPath, in, this, env);
+                        stubParser.parse(indexTypes, indexDeclAnnos);
+                        // We could handle the stubPath -> continue.
+                        continue;
+                    }
+                    // We couldn't handle the stubPath -> error message.
                     System.err.println("Did not find stub file or files within directory: " + stubPath);
                 }
 
