@@ -115,9 +115,29 @@ to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
 handled implicitly by the Regex checker for local variables (see
-Section~\ref{type-refinement}), but you may need to add \<@Regex> annotations
+ection~\ref{type-refinement}), but you may need to add \<@Regex> annotations
 with a capturing group count to \<Pattern> and \<Matcher> fields and
 parameters.
+
+
+\subsection{Concatenation of partial regular expresions\label{regex-partial-regex}}
+
+\begin{figure}
+\begin{Verbatim}
+public @Regex String parenthesize(@Regex String regex) {
+    return "(" + regex + ")"; // Even though the parentheses are not @Regex Strings, the checker still treats
+                              // the whole expression as a @Regex String
+}
+\end{Verbatim}
+\caption{An example of the Regex Checker's support for concatenation
+of non-regular expression Strings to produce valid regular expression Strings.}
+\label{fig:regex-partial}
+\end{figure}
+
+The Regex Checker supports concatenation of non-regular expression Strings
+that produce valid regular expression Strings. For an example see
+Figure~\ref{fig:regex-partial}.
+
 
 \subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
 
