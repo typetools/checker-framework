@@ -90,8 +90,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
-        	defaults.addAbsoluteDefault(unqualified,
-        			Collections.singleton(DefaultLocation.ALL));
+            defaults.addAbsoluteDefault(unqualified,
+                    Collections.singleton(DefaultLocation.ALL));
         }
 
         // This also gets called by subclasses.  Is that a problem?

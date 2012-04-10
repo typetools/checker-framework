@@ -83,12 +83,12 @@ public class RegexChecker extends BaseTypeChecker {
     private TypeMirror getTypeMirror(String className) {
         return env.getElementUtils().getTypeElement(className).asType();
     }
-    
+
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new RegexQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
     }
-    
+
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
       return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
@@ -125,7 +125,7 @@ public class RegexChecker extends BaseTypeChecker {
             return (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue).getValue();
         }
     }
-    
+
     /**
      * Returns the group count value of the given annotation or 0 if
      * there's a problem getting the group count value.
