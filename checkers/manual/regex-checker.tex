@@ -141,7 +141,7 @@ example of the intended use of the \code{RegexUtil} methods.
 
 \item[\refmethod{regex}{RegexUtil}{regexException}{(java.lang.String)}]
   returns the
-  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{PatternSyntaxException}
+  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
   that \sunjavadoc{java/util/regex/Pattern.html#compile(java.lang.String)}{Pattern.compile(String)}
   throws when compiling an invalid regular expression.  It returns \<null>
   if its argument is a valid regular expression.
@@ -154,7 +154,7 @@ an additional group count parameter. The
 verifies that the argument has at least the given number of groups. The
 \refmethod{regex}{RegexUtil}{regexError}{(java.lang.String, int)} and
 \refmethod{regex}{RegexUtil}{regexException}{(java.lang.String, int)}
-methods return a \<String> error message and \<PatternSyntaxException>,
+methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
 respectively, detailing why the given String is not a syntactically valid
 regular expression with at least the given number of capturing groups.
 
