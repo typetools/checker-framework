@@ -19,38 +19,38 @@ that adds pluggable types to the Java type system.
 
 
 
-\section{The Control Flow Graph}
+\section{The Control-Flow Graph}
 \label{sec:cfg}
 
-%In this section, we describe the control flow graph (CFG), and the translation from the
+%In this section, we describe the control-flow graph (CFG), and the translation from the
 %Java abstract syntax tree (AST) to the CFG.
 
 The dataflow framework described here is designed to perform an intra-procedural analysis.
 This analysis is modular and every method is considered in isolation. In this section
-we describe the control flow graph (CFG), which is used to represent a single method, and the
+we describe the control-flow graph (CFG), which is used to represent a single method, and the
 translation from the abstract syntax tree (AST) to the CFG. We start with a simple
 example, then give a more formal definition of the CFG and its properties and finally
 describe the translation from the AST to the CFG.
 
-As is standard, a control flow graph in our framework is a set of basic blocks
-that are linked by control flow edges. Possibly less standard,
+As is standard, a control-flow graph in our framework is a set of basic blocks
+that are linked by control-flow edges. Possibly less standard,
 every basic block consists of a sequence
 of so-called nodes, which correspond to a minimal Java operations or expression.
 
 
 \flow{Simple}{A simple Java code snippet to introduce the CFG.}
 
-Consider the method \code{test} of \autoref{lst:CFGSimple} whose control
-flow graph is shown in \autoref{fig:CFGSimple}. The if conditional got translated to
+Consider the method \code{test} of \autoref{lst:CFGSimple} whose control-flow
+graph is shown in \autoref{fig:CFGSimple}. The if conditional got translated to
 a \emph{conditional basic block} with two successors. There are also two
 special basic blocks to denote the entry and exit point of the method.
 
 
-\subsection{Formal Definition of the Control Flow Graph}
+\subsection{Formal Definition of the Control-Flow Graph}
 \label{sec:cfg-formal}
 
-\begin{definition}[Control Flow Graph]
-    A \emph{control flow graph} consists of a set of \emph{basic blocks} and
+\begin{definition}[Control-Flow Graph]
+    A \emph{control-flow graph} consists of a set of \emph{basic blocks} and
     a set of directed edges between these basic blocks, some of which are labeled.
 \end{definition}
 
@@ -62,14 +62,14 @@ special basic blocks to denote the entry and exit point of the method.
     Furthermore, the only control flow between the nodes inside
     the basic block is sequential.
     
-    As is standard, the control flow graph models all paths that can possibly be taken by
+    As is standard, the control-flow graph models all paths that can possibly be taken by
     an execution of the method.
 \end{definition}
 
 
 
 \begin{definition}[Types of Basic Blocks]
-    There are three \emph{types} of basic blocks in a control flow graph:
+    There are three \emph{types} of basic blocks in a control-flow graph:
     \begin{enumerate}
         \item \textbf{Special basic blocks.} A \emph{special basic block} contains
         the empty sequence of nodes (i.e., is empty) and denotes either the
@@ -111,12 +111,12 @@ In the visualizations used in this document (e.g., in \autoref{fig:CFGSimple}), 
 shown as ovals, conditional basic blocks are polygons with eight sides and any
 other basic block appears as rectangle.
 
-\begin{definition}[Control Flow Graph Edges]
+\begin{definition}[Control-Flow Graph Edges]
 \label{def:edges}
-The basic blocks of a control flow graph are connected by directed \emph{edges}.
+The basic blocks of a control-flow graph are connected by directed \emph{edges}.
 If $b_1$ and $b_2$ are connected by a directed edge $(b_1,b_2)$, we call
 $b_1$ the predecessor of $b_2$, and $b_2$ the successor of $b_1$.
-In a control flow graph, there are three types of edges:
+In a control-flow graph, there are three types of edges:
 \begin{enumerate}
     \item \textbf{Exceptional edges}. An \emph{exceptional edge} connects an exception basic block
     basic block with its exceptional successors, and it is labeled by the most
@@ -154,7 +154,7 @@ In a control flow graph, there are three types of edges:
     It is important to note that, even though nodes can contain references to other nodes,
     it is only that ``top-level'' node which is considered at that point in the basic
     block. In our example of the addition node, this means that only the addition operation
-    is to be executed, and its operands would occur earlier in the control flow graph
+    is to be executed, and its operands would occur earlier in the control-flow graph
     (as they are evaluated first, before performing the addition).
 \end{definition}
 
@@ -276,7 +276,7 @@ different variants of loops, if-then-else constructs, try-catch-finally blocks
 or switch statements.  During the translation from the AST to the CFG some
 of this program structure is lost and all non-sequential control flow is
 represented by two low-level constructs: conditional basic blocks and
-control flow edges between basic blocks. For instance, a \code{while} loop is translated
+control-flow edges between basic blocks. For instance, a \code{while} loop is translated
 into its condition followed by a conditional basic block that models the two
 possible outcomes of the condition: either, the control flow follows the
 `true' branch and continues with the loops body, or goes to the `false'
@@ -411,7 +411,7 @@ extending the framework with a second transfer function, that is used for r-valu
 \subsection{AST to CFG Translation}
 
 In this section we give a high level overview of the translation process from the
-abstract syntax tree to the control flow graph as described in \autoref{sec:cfg-formal}.
+abstract syntax tree to the control-flow graph as described in \autoref{sec:cfg-formal}.
 
 First, we define several entities, which will be used in the translation.
 
@@ -461,7 +461,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     \item It is the first node following a jump.
     \end{itemize}
     
-    \item \textbf{Phase two.} Phase two translates the linear representation to a control flow graph
+    \item \textbf{Phase two.} Phase two translates the linear representation to a control-flow graph
     by performing the following transformations:
     \begin{itemize}
         \item Simple extended nodes are translated to regular basic blocks, where multiple nodes
@@ -470,7 +470,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
         \item Unconditional jumps are replaced with edges between the correct basic blocks.
         \item Conditional jumps are replaced by a conditional basic block.
     \end{itemize}
-    To greatly simplify the implementation, phase two is allowed to produce a degenerated control flow
+    To greatly simplify the implementation, phase two is allowed to produce a degenerated control-flow
     graph. In particular, the following deficiencies are possible:
     \begin{itemize}
     \item Regular basic blocks might be empty.
@@ -479,7 +479,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     \item Two consecutive, non-empty, regular basic blocks can exist, even if the second block has only
     exactly one predecessor and the two block could thus be merged.
     \end{itemize}
-    \item \textbf{Phase three.} In the third and last phase, the control flow graph is transformed such that
+    \item \textbf{Phase three.} In the third and last phase, the control-flow graph is transformed such that
     the deficiencies remaining from phase two are removed. It is ensured that removing one kind of deficiency
     does not create another degenerate case.
 \end{enumerate}
@@ -491,15 +491,15 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
 
 \section{Dataflow Analysis}
 
-In this section, we describe how the dataflow analysis over the control
-flow graph is performed and what the user of our framework has to implement to
+In this section, we describe how the dataflow analysis over the control-flow
+graph is performed and what the user of our framework has to implement to
 define a particular analysis.
 
 
 \subsection{Overview}
 
 Roughly, a dataflow analysis in our framework works as follows. Given the abstract syntax
-tree of a method, the framework computes the corresponding control flow graph as
+tree of a method, the framework computes the corresponding control-flow graph as
 described in \autoref{sec:cfg}. Then, a simple iterative algorithm is used to compute
 a fix-point, by iteratively applying a set of transfer functions to the nodes in the
 CFG. These transfer functions are specific to the particular analysis and are used
@@ -507,12 +507,12 @@ to approximate the runtime-behavior of different statements and expressions.
 
 So-called \emph{stores} are used to keep track of the current information the dataflow
 analysis has accumulated. Every store is associated with a particular point in the
-control flow graph.
+control-flow graph.
 
 The class \code{Analysis<S, T>} (parameterized by the type \code S of the store and the type \code T of the
 transfer function) performs the actual dataflow analysis. It requires the transfer function
 as an argument to the constructor. Then, the object provides a method to perform the dataflow
-analysis on a given control flow graph and methods to query the result of that dataflow analysis.
+analysis on a given control-flow graph and methods to query the result of that dataflow analysis.
 
 
 
@@ -565,8 +565,8 @@ The dataflow framework manages these abstract values that have been computed for
 makes them available to the transfer function.  To this end, a mapping called the
 \emph{node-value mapping} is used that maps \code{Node}s to their abstract values.
 The design of the framework consciously avoids storing the abstract value directly in
-nodes to remove any coupling between the control flow graph and a particular analysis.
-This allows the control flow graph to be constructed only once, and then reused for different
+nodes to remove any coupling between the control-flow graph and a particular analysis.
+This allows the control-flow graph to be constructed only once, and then reused for different
 dataflow analyses.
 
 Besides the abstract value of every node,
@@ -576,7 +576,7 @@ could contain information about which variables can be considered \code{@NonNull
 A store is required to provide the following operations:
 \begin{itemize}
 \item Least upper bound: Compute the least upper bound of two stores (e.g., at a merge-point
-in the control flow graph).
+in the control-flow graph).
 \item Equivalence: Compare two stores if they are (semantically) different, which is used
 to determine if a fix-point is reached in the dataflow analysis. Note that reference-equality
 is most likely not sufficient.
@@ -585,7 +585,7 @@ is most likely not sufficient.
 The store is analysis-dependent, but the framework provides a default store implementation
 which can be reused.
 
-Every store is associated with a particular point in the control flow graph, and
+Every store is associated with a particular point in the control-flow graph, and
 all stores are managed by the framework. It maintains
 a single store for every basic block that represents the information available at the
 beginning of that block.
