@@ -635,17 +635,39 @@ public final class TreeUtils {
      */
     public static boolean isMethodAccess(Tree tree) {
         if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
-            // explicit field access
+            // explicit method access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
             return el.getKind() == ElementKind.METHOD;
         } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
-            // implicit field access
+            // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
+            // The field "super" is also a legal method
+            if (ident.getName().contentEquals("super")) {
+                return true;
+            }
             Element el = TreeUtils.elementFromUse(ident);
             return el.getKind() == ElementKind.METHOD;
         }
         return false;
+    }
+
+    /**
+     * Compute the name of the method that the method access <code>tree</code>
+     * accesses. Requires <code>tree</code> to be a method access, as determined
+     * by <code>isMethodAccess</code>.
+     * 
+     * @return The name of the method accessed by <code>tree</code>.
+     */
+    public static String getMethodName(Tree tree) {
+        assert isMethodAccess(tree);
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            MemberSelectTree mtree = (MemberSelectTree) tree;
+            return mtree.getIdentifier().toString();
+        } else {
+            IdentifierTree itree = (IdentifierTree) tree;
+            return itree.getName().toString();
+        }
     }
 
     /**

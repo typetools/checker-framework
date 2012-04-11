@@ -23,11 +23,11 @@ import com.sun.source.tree.MethodInvocationTree;
 public class MethodInvocationNode extends Node {
 
     protected MethodInvocationTree tree;
-    protected/* @Nullable */FieldAccessNode target;
+    protected/* @Nullable */MethodAccessNode target;
     protected List<Node> arguments;
 
     public MethodInvocationNode(MethodInvocationTree tree,
-            /* @Nullable */FieldAccessNode target,
+            /* @Nullable */MethodAccessNode target,
             List<Node> arguments) {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
@@ -35,7 +35,7 @@ public class MethodInvocationNode extends Node {
         this.arguments = arguments;
     }
     
-    public/* @Nullable */FieldAccessNode getTarget() {
+    public/* @Nullable */MethodAccessNode getTarget() {
         return target;
     }
 
