@@ -29,7 +29,7 @@ The dataflow framework described here is designed to perform an intra-procedural
 This analysis is modular and every method is considered in isolation. In this section
 we describe the control-flow graph (CFG), which is used to represent a single method, and the
 translation from the abstract syntax tree (AST) to the CFG. We start with a simple
-example, then give a more formal definition of the CFG and its properties and finally
+example, then give a more formal definition of the CFG and its properties, and finally
 describe the translation from the AST to the CFG.
 
 As is standard, a control-flow graph in our framework is a set of basic blocks
@@ -39,6 +39,7 @@ of so-called nodes, which correspond to a minimal Java operations or expression.
 
 
 \flow{Simple}{A simple Java code snippet to introduce the CFG.}
+\todo{It would be nice for the octagon to contain the text ``if'', as a clarification.}
 
 Consider the method \code{test} of \autoref{lst:CFGSimple} whose control-flow
 graph is shown in \autoref{fig:CFGSimple}. The if conditional got translated to
@@ -289,7 +290,7 @@ behave. In particular, there is usually no need to handle different high-level
 constructs in a special manner. However, the loss of the program structure
 also means that a dataflow analysis cannot easily (if at all) implement special behavior
 for a specific high-level construct. If this becomes a problem in the future,
-it is possible to extends the dataflow framework to keep this information.
+it is possible to extend the dataflow framework to keep this information.
 
 
 
@@ -500,9 +501,12 @@ define a particular analysis.
 
 Roughly, a dataflow analysis in our framework works as follows. Given the abstract syntax
 tree of a method, the framework computes the corresponding control-flow graph as
-described in \autoref{sec:cfg}. Then, a simple iterative algorithm is used to compute
+described in \autoref{sec:cfg}. Then, a simple forward iterative algorithm is used to compute
 a fix-point, by iteratively applying a set of transfer functions to the nodes in the
-CFG. These transfer functions are specific to the particular analysis and are used
+CFG\@.
+(For our initial application, type-checking, we do not need to support
+backwards analyses; in the future, we may wish to do so.)
+ These transfer functions are specific to the particular analysis and are used
 to approximate the runtime-behavior of different statements and expressions.
 
 So-called \emph{stores} are used to keep track of the current information the dataflow
@@ -622,7 +626,7 @@ stores but rather only those for key positions as described in \autoref{sec:stor
 
 To support the both kinds of queries, our framework builds a map from AST tree nodes (of type
 \code{com.sun.source.tree.Tree}) to CFG nodes.  To answer questions of the first type it is
-then possible to to from the AST tree node to the CFG node and look up its abstract value in
+then possible to go from the AST tree node to the CFG node and look up its abstract value in
 the node-value mapping.  To support questions of the second kind, every node has a reference
 to the basic block it is part of. Thus, for a given AST tree node, the framework
 can determine the CFG node and thereby the CFG basic block, and compute the necessary store
@@ -676,8 +680,8 @@ for conditional basic blocks.
     
     \textbf{The transfer function.} The transfer function is very simple. The initial store contains
     \emph{top} for all parameters, as any value could have been passed in. Then, for
-    an integer literal, the store is extended with the information what abstract value this literal
-    stands for. Furthermore, for an assignment I check if the left-hand side is
+    an integer literal, the store is extended to indicate what abstract value this literal
+    stands for. Furthermore, for an assignment, I check if the left-hand side is
     a local variable, and if so update its abstract value in the
     store with the abstract value of the right-hand side (which can be looked up in the store).
     
@@ -781,16 +785,16 @@ A few of the implementation details of the default analysis are worth discussing
 %\code{AnnotatedTypeFactory} when none is present.
 
 The nodes in the node-value mapping are used to provide the abstract value of sub-nodes
-that have already been computed.  For this reason, once an are done with a particular node,
+that have already been computed.  For this reason, once an are\todo{Clarify} done with a particular node,
 any of its sub-nodes can potentially be removed from the node-value mapping,
 leading to more efficient space use\footnote{One has to be very careful, for two reasons: (1)
 some nodes can appear as children of multiple other nodes, and (2) the transfer function of
 a node might not only look at its immediate children, but at any node it contains.  However,
 such an optimization does not seem impossible.}.
 However, after the last iteration, it seems beneficial to keep around all nodes in this mapping,
-such that querying the dataflow analysis later on will be more efficient.  As it is not
-possible to decide in advance, which is the last iteration, we keep all nodes in this mapping
-at any time.
+such that querying the dataflow analysis later on will be more efficient.  We keep all nodes in this mapping
+all the time, because it is not
+possible to decide, in advance, which is the last iteration.
 
 Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
 \code{Transfer} interfaces, so the
