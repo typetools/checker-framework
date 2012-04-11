@@ -140,6 +140,8 @@ public interface NodeVisitor<R, P> {
 
     R visitFieldAccess(FieldAccessNode n, P p);
 
+    R visitMethodAccess(MethodAccessNode n, P p);
+
     R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
 
     R visitExplicitThis(ExplicitThisNode n, P p);

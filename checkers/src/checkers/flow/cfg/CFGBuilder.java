@@ -75,6 +75,7 @@ import checkers.flow.cfg.node.LessThanOrEqualNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.LongLiteralNode;
 import checkers.flow.cfg.node.MarkerNode;
+import checkers.flow.cfg.node.MethodAccessNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.NarrowingConversionNode;
 import checkers.flow.cfg.node.Node;
@@ -1690,7 +1691,7 @@ public class CFGBuilder {
             Node receiver = getReceiver(methodSelect,
                 TreeUtils.enclosingClass(getCurrentPath()));
 
-            FieldAccessNode target = new FieldAccessNode(methodSelect, receiver);
+            MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
             // TODO: Handle exceptions caused by field access.
             extendWithNode(target);
 

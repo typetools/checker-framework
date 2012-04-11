@@ -220,7 +220,6 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * {@code leastUpperBound} of {@link Store}.
      */
     public TransferInput<A, S> leastUpperBound(TransferInput<A, S> other) {
-        assert node == other.node;
         if (store == null) {
             S newThenStore = thenStore.leastUpperBound(other.getThenStore());
             S newElseStore = elseStore.leastUpperBound(other.getElseStore());
