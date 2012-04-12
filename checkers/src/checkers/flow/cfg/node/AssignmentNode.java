@@ -32,9 +32,9 @@ public class AssignmentNode extends Node {
     public AssignmentNode(Tree tree, Node target, Node expression) {
         assert tree instanceof AssignmentTree || tree instanceof VariableTree
                 || tree instanceof CompoundAssignmentTree;
-        // TODO: also allow array assignments
         assert target instanceof FieldAccessNode
-                || target instanceof LocalVariableNode;
+                || target instanceof LocalVariableNode
+                || target instanceof ArrayAccessNode;
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
         this.lhs = target;

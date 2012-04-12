@@ -344,6 +344,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     }
 
     @Override
+    public R visitArrayAccess(ArrayAccessNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    @Override
     public R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p) {
         return visitNode(n, p);
     }

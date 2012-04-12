@@ -33,6 +33,7 @@ import checkers.flow.cfg.block.RegularBlockImpl;
 import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
 import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
+import checkers.flow.cfg.node.ArrayAccessNode;
 import checkers.flow.cfg.node.ArrayCreationNode;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
@@ -1759,9 +1760,7 @@ public class CFGBuilder {
                 extendWithNode(assignmentNode);
             }
 
-            // TODO: case 2: array access
-
-            // case 3: other cases
+            // case 2: other cases
             else {
                 Node target = scan(variable, p);
                 target.setLValue();
@@ -2638,8 +2637,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
-            return null;
+            Node array = scan(tree.getExpression(), p);
+            Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
+            return extendWithNode(new ArrayAccessNode(tree, array, index));
         }
 
         @Override
