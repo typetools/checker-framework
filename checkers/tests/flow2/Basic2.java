@@ -113,4 +113,27 @@ class Basic2 {
         pure();
         @Odd String l2 = c1.f1;
     }
+
+    // array accesses
+    // Note that we do not track the abstract value of array elements,
+    // so we just test that annotations declared on arrays are propagated
+    // through local variables.
+    void t8(@Odd String a1[], String a2[], String p3) {
+        String l1 = a1[0];
+
+        //:: error: (assignment.type.incompatible)
+        @Odd String l2 = a2[0];
+
+        @Odd String l3 = l1;
+
+        a1[0] = l1;
+        a1[1] = l3;
+
+        //:: error: (assignment.type.incompatible)
+        a1[2] = p3;
+
+        a2[0] = l1;
+        a2[1] = l3;
+        a2[2] = p3;
+    }
 }
