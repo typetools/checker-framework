@@ -246,6 +246,10 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     // Visit inner and nested classes.
                     queue.add((ClassTree) m);
                     break;
+                case INTERFACE:
+                case ENUM:
+                    // not necessary to handle
+                    break;
                 default:
                     System.err.println("Unexpected member: "+m.getKind());
                     assert false;
