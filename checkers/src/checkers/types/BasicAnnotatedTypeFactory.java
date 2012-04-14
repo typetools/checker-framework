@@ -206,6 +206,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * nested classes.
      */
     protected void performFlowAnalysis(ClassTree classTree) {
+        CFGBuilder builder = new CFGBuilder();
         scannedClasses.put(classTree, ScanState.IN_PROGRESS);
         if (flowResult == null) {
             flowResult = new AnalysisResult<>();
@@ -218,7 +219,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 switch (m.getKind()) {
                 case METHOD:
                     MethodTree mt = (MethodTree) m;
-                    ControlFlowGraph cfg = CFGBuilder.build(root, env, mt);
+                    ControlFlowGraph cfg = builder.run(root, env, mt);
                     CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
                     analysis.performAnalysis(cfg);
                     AnalysisResult<CFValue> result = analysis.getResult();
@@ -233,6 +234,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                         System.err.println("Output to DOT file: " + dotfilename);
                         analysis.outputToDotFile(dotfilename);
                     }
+                    
+                    // add classes declared in method
+                    queue.addAll(builder.getDeclaredClasses());
 
                     break;
                 case VARIABLE:
