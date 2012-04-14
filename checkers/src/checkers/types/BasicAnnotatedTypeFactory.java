@@ -40,6 +40,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 
 /**
@@ -207,10 +208,14 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     protected void performFlowAnalysis(ClassTree classTree) {
         CFGBuilder builder = new CFGBuilder();
-        scannedClasses.put(classTree, ScanState.IN_PROGRESS);
         if (flowResult == null) {
             flowResult = new AnalysisResult<>();
         }
+        // no need to scan interfaces or enums
+        if (classTree.getKind() == Tree.Kind.INTERFACE || classTree.getKind() == Kind.ENUM){
+            return;
+        }
+        scannedClasses.put(classTree, ScanState.IN_PROGRESS);
         Queue<ClassTree> queue = new LinkedList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
