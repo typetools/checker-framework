@@ -2872,7 +2872,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitParameterizedType(ParameterizedTypeTree tree, Void p) {
-            assert false : "ParameterizedTypeTree is unexpected in AST to CFG translation";
+            assert false : "not implemented yet";
             return null;
         }
 
