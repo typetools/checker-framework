@@ -2390,7 +2390,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitCatch(CatchTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert false : "not implemented yet";
             return null;
         }
 
@@ -2403,7 +2403,7 @@ public class CFGBuilder {
         @Override
         public Node visitConditionalExpression(ConditionalExpressionTree tree,
                 Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert false : "not implemented yet";
             return null;
         }
 
@@ -2488,7 +2488,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert false : "not implemented yet";
             return null;
         }
 
@@ -2830,7 +2830,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitThrow(ThrowTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert false : "not implemented yet";
             return null;
         }
 
@@ -2842,7 +2842,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitTry(TryTree tree, Void p) {
-            assert false; // TODO Auto-generated method stub
+            assert false : "not implemented yet";
             return null;
         }
 
