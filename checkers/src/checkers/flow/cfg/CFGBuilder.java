@@ -204,20 +204,28 @@ import com.sun.source.util.Trees;
 public class CFGBuilder {
 
     /**
+     * Class declarations that have been encountered when building the
+     * control-flow graph for a method.
+     */
+    protected List<ClassTree> declaredClasses;
+
+    public List<ClassTree> getDeclaredClasses() {
+        return declaredClasses;
+    }
+
+    /**
      * Build the control flow graph of a method.
      */
     public static ControlFlowGraph build(CompilationUnitTree root,
-            ProcessingEnvironment env,
-            MethodTree method) {
+            ProcessingEnvironment env, MethodTree method) {
         return new CFGBuilder().run(root, env, method);
     }
 
-    protected ControlFlowGraph run(CompilationUnitTree root, 
-            ProcessingEnvironment env,
-            MethodTree method) {
-        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(root,
-                env,
-                method);
+    public ControlFlowGraph run(CompilationUnitTree root,
+            ProcessingEnvironment env, MethodTree method) {
+        declaredClasses = new LinkedList<>();
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
+                root, env, method);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -422,10 +430,9 @@ public class CFGBuilder {
     }
 
     /**
-     * A label is used to refer to other extended nodes using a
-     * mapping from labels to extended nodes. Labels get their names
-     * either from labeled statements in the source code or from
-     * internally generated unique names.
+     * A label is used to refer to other extended nodes using a mapping from
+     * labels to extended nodes. Labels get their names either from labeled
+     * statements in the source code or from internally generated unique names.
      */
     protected static class Label {
         private static int uid = 0;
@@ -446,9 +453,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Return a new unique label name that cannot be confused with
-         * a Java source code label.
-         *
+         * Return a new unique label name that cannot be confused with a Java
+         * source code label.
+         * 
          * @return a new unique label name
          */
         private String uniqueName() {
@@ -1042,8 +1049,8 @@ public class CFGBuilder {
     protected class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         /**
-         * Annotation processing environment and its associated
-         * type and tree utilities.
+         * Annotation processing environment and its associated type and tree
+         * utilities.
          */
         protected ProcessingEnvironment env;
         protected Types types;
@@ -1079,15 +1086,15 @@ public class CFGBuilder {
         protected Label elseTargetL;
 
         /**
-         * Current {@link Label} to which a break statement with no label
-         * should jump, or null if there is no valid destination.
+         * Current {@link Label} to which a break statement with no label should
+         * jump, or null if there is no valid destination.
          */
         protected/* @Nullable */Label breakTargetL;
 
         /**
-         * Map from AST label Names to CFG {@link Label}s for breaks.
-         * Each labeled statement creates two CFG {@link Label}s, one
-         * for break and one for continue.
+         * Map from AST label Names to CFG {@link Label}s for breaks. Each
+         * labeled statement creates two CFG {@link Label}s, one for break and
+         * one for continue.
          */
         protected HashMap<Name, Label> breakLabels;
 
@@ -1098,15 +1105,15 @@ public class CFGBuilder {
         protected/* @Nullable */Label continueTargetL;
 
         /**
-         * Map from AST label Names to CFG {@link Label}s for continues.
-         * Each labeled statement creates two CFG {@link Label}s, one
-         * for break and one for continue.
+         * Map from AST label Names to CFG {@link Label}s for continues. Each
+         * labeled statement creates two CFG {@link Label}s, one for break and
+         * one for continue.
          */
         protected HashMap<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing switch
-         * statement, or null if there is no such statement.
+         * Node yielding the value for the lexically enclosing switch statement,
+         * or null if there is no such statement.
          */
         protected Node switchExpr;
 
@@ -1138,8 +1145,7 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(CompilationUnitTree root,
-                ProcessingEnvironment env,
-                MethodTree t) {
+                ProcessingEnvironment env, MethodTree t) {
             this.env = env;
             types = env.getTypeUtils();
             trees = Trees.instance(env);
@@ -1189,10 +1195,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Replace a node in the lookup map.  The node should refer
-         * to a Tree and that Tree should already be in the lookup
-         * map.  This method is used to update the Tree-Node mapping
-         * with conversion nodes.
+         * Replace a node in the lookup map. The node should refer to a Tree and
+         * that Tree should already be in the lookup map. This method is used to
+         * update the Tree-Node mapping with conversion nodes.
          * 
          * @param node
          *            The node to add to the lookup map.
@@ -1282,20 +1287,21 @@ public class CFGBuilder {
         /* --------------------------------------------------------- */
 
         /**
-         * If the input node is an unboxed primitive type, box it,
-         * otherwise leave it alone.
-         *
-         * @param node in input node
-         * @return a Node representing the boxed version of the
-         *         input, which may simply be the input node
+         * If the input node is an unboxed primitive type, box it, otherwise
+         * leave it alone.
+         * 
+         * @param node
+         *            in input node
+         * @return a Node representing the boxed version of the input, which may
+         *         simply be the input node
          */
         protected Node box(Node node) {
             // For boxing conversion, see JLS 5.1.7
             if (TypesUtils.isPrimitive(node.getType())) {
-                PrimitiveType primitive =
-                    types.getPrimitiveType(node.getType().getKind());
-                TypeMirror boxedType =
-                    types.getDeclaredType(types.boxedClass(primitive));
+                PrimitiveType primitive = types.getPrimitiveType(node.getType()
+                        .getKind());
+                TypeMirror boxedType = types.getDeclaredType(types
+                        .boxedClass(primitive));
                 node = new BoxingNode(node.getTree(), node, boxedType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1304,17 +1310,17 @@ public class CFGBuilder {
         }
 
         /**
-         * If the input node is a boxed type, unbox it, otherwise
-         * leave it alone.
-         *
-         * @param node in input node
-         * @return a Node representing the unboxed version of the
-         *         input, which may simply be the input node
+         * If the input node is a boxed type, unbox it, otherwise leave it
+         * alone.
+         * 
+         * @param node
+         *            in input node
+         * @return a Node representing the unboxed version of the input, which
+         *         may simply be the input node
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                node = new UnboxingNode(node.getTree(),
-                        node,
+                node = new UnboxingNode(node.getTree(), node,
                         types.unboxedType(node.getType()));
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1324,18 +1330,19 @@ public class CFGBuilder {
 
         /**
          * Convert the input node to String type, if it isn't already.
-         *
-         * @param node an input node
-         * @param stringType representation of the String type
-         * @return a Node with the value promoted to String,
-         *         which may be the input node
+         * 
+         * @param node
+         *            an input node
+         * @param stringType
+         *            representation of the String type
+         * @return a Node with the value promoted to String, which may be the
+         *         input node
          */
         protected Node stringConversion(Node node, TypeMirror stringType) {
             // For string conversion, see JLS 5.1.11
             assert TypesUtils.isString(stringType);
             if (!TypesUtils.isString(node.getType())) {
-                node = new StringConversionNode(node.getTree(),
-                        node,
+                node = new StringConversionNode(node.getTree(), node,
                         stringType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1345,11 +1352,12 @@ public class CFGBuilder {
 
         /**
          * Perform unary numeric promotion on the input node.
-         *
-         * @param node a node producing a value of numeric primitive
-         *             or boxed type
-         * @return a Node with the value promoted to the int, long
-         *         float or double, which may be the input node
+         * 
+         * @param node
+         *            a node producing a value of numeric primitive or boxed
+         *            type
+         * @return a Node with the value promoted to the int, long float or
+         *         double, which may be the input node
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1
@@ -1371,23 +1379,23 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform binary numeric promotion on the input node to
-         * make it match the expression type.
-         *
-         * @param node a node producing a value of numeric primitive
-         *             or boxed type
-         * @param exprType the type to promote the value to
-         * @return a Node with the value promoted to the exprType,
-         *         which may be the input node
+         * Perform binary numeric promotion on the input node to make it match
+         * the expression type.
+         * 
+         * @param node
+         *            a node producing a value of numeric primitive or boxed
+         *            type
+         * @param exprType
+         *            the type to promote the value to
+         * @return a Node with the value promoted to the exprType, which may be
+         *         the input node
          */
-        protected Node binaryNumericPromotion(Node node,
-                TypeMirror exprType) {
+        protected Node binaryNumericPromotion(Node node, TypeMirror exprType) {
             // For binary numeric promotion, see JLS 5.6.2
             node = unbox(node);
 
             if (!types.isSameType(node.getType(), exprType)) {
-                node = new WideningConversionNode(node.getTree(),
-                        node,
+                node = new WideningConversionNode(node.getTree(), node,
                         exprType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1396,23 +1404,23 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform widening primitive conversion on the input node to
-         * make it match the destination type.
-         *
-         * @param node a node producing a value of numeric primitive type
-         * @param destType the type to widen the value to
-         * @return a Node with the value widened to the exprType, which
-         *         may be the input node
+         * Perform widening primitive conversion on the input node to make it
+         * match the destination type.
+         * 
+         * @param node
+         *            a node producing a value of numeric primitive type
+         * @param destType
+         *            the type to widen the value to
+         * @return a Node with the value widened to the exprType, which may be
+         *         the input node
          */
         protected Node widen(Node node, TypeMirror destType) {
             // For widening conversion, see JLS 5.1.2
-            assert TypesUtils.isPrimitive(node.getType()) &&
-                TypesUtils.isPrimitive(destType) :
-            "widening must be applied to primitive types";
-            if (types.isSubtype(node.getType(), destType) &&
-                !types.isSameType(node.getType(), destType)) {
-                node = new WideningConversionNode(node.getTree(),
-                        node,
+            assert TypesUtils.isPrimitive(node.getType())
+                    && TypesUtils.isPrimitive(destType) : "widening must be applied to primitive types";
+            if (types.isSubtype(node.getType(), destType)
+                    && !types.isSameType(node.getType(), destType)) {
+                node = new WideningConversionNode(node.getTree(), node,
                         destType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1422,23 +1430,23 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform narrowing conversion on the input node to make it
-         * match the destination type.
-         *
-         * @param node a node producing a value of numeric primitive type
-         * @param destType the type to narrow the value to
-         * @return a Node with the value narrowed to the exprType,
-         *         which may be the input node
+         * Perform narrowing conversion on the input node to make it match the
+         * destination type.
+         * 
+         * @param node
+         *            a node producing a value of numeric primitive type
+         * @param destType
+         *            the type to narrow the value to
+         * @return a Node with the value narrowed to the exprType, which may be
+         *         the input node
          */
         protected Node narrow(Node node, TypeMirror destType) {
             // For narrowing conversion, see JLS 5.1.3
-            assert TypesUtils.isPrimitive(node.getType()) &&
-                TypesUtils.isPrimitive(destType) :
-            "narrowing must be applied to primitive types";
-            if (types.isSubtype(destType, node.getType()) &&
-                    !types.isSameType(destType, node.getType())) {
-                node = new NarrowingConversionNode(node.getTree(),
-                        node,
+            assert TypesUtils.isPrimitive(node.getType())
+                    && TypesUtils.isPrimitive(destType) : "narrowing must be applied to primitive types";
+            if (types.isSubtype(destType, node.getType())
+                    && !types.isSameType(destType, node.getType())) {
+                node = new NarrowingConversionNode(node.getTree(), node,
                         destType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
@@ -1448,11 +1456,13 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform narrowing conversion and optionally boxing conversion
-         * on the input node to make it match the destination type.
-         *
-         * @param node a node producing a value of numeric primitive type
-         * @param destType the type to narrow the value to (possibly boxed)
+         * Perform narrowing conversion and optionally boxing conversion on the
+         * input node to make it match the destination type.
+         * 
+         * @param node
+         *            a node producing a value of numeric primitive type
+         * @param destType
+         *            the type to narrow the value to (possibly boxed)
          * @return a Node with the value narrowed and boxed to the destType,
          *         which may be the input node
          */
@@ -1465,16 +1475,19 @@ public class CFGBuilder {
         }
 
         /**
-         * Assignment conversion and method invocation conversion are
-         * almost identical, except that assignment conversion allows
-         * narrowing.  We factor out the common logic here.
-         *
-         * @param node a Node producing a value
-         * @param varType the type of a variable
-         * @param allowNarrowing whether to allow narrowing (for assignment
-         *         conversion) or not (for method invocation conversion)
-         * @return a Node with the value converted to the type of the
-         *         variable, which may be the input node itself
+         * Assignment conversion and method invocation conversion are almost
+         * identical, except that assignment conversion allows narrowing. We
+         * factor out the common logic here.
+         * 
+         * @param node
+         *            a Node producing a value
+         * @param varType
+         *            the type of a variable
+         * @param allowNarrowing
+         *            whether to allow narrowing (for assignment conversion) or
+         *            not (for method invocation conversion)
+         * @return a Node with the value converted to the type of the variable,
+         *         which may be the input node itself
          */
         protected Node commonConvert(Node node, TypeMirror varType,
                 boolean allowNarrowing) {
@@ -1487,7 +1500,7 @@ public class CFGBuilder {
             if (isSameType) {
                 return node;
             }
-            
+
             boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
             boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
             boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
@@ -1511,19 +1524,19 @@ public class CFGBuilder {
                 node = unbox(node);
                 nodeType = node.getType();
 
-                if (types.isSubtype(nodeType, varType) &&
-                    !types.isSameType(nodeType, varType)) {
+                if (types.isSubtype(nodeType, varType)
+                        && !types.isSameType(nodeType, varType)) {
                     node = widen(node, varType);
                     nodeType = node.getType();
                 }
             }
 
             // Unchecked conversion of raw types
-            boolean isRightRaw = (nodeType instanceof DeclaredType) &&
-                ((DeclaredType) nodeType).getTypeArguments().isEmpty();
+            boolean isRightRaw = (nodeType instanceof DeclaredType)
+                    && ((DeclaredType) nodeType).getTypeArguments().isEmpty();
             if (isRightRaw) {
                 // TODO: if checkers need to know about unchecked conversions
-                // add a Node class for them.  Otherwise, we can omit this
+                // add a Node class for them. Otherwise, we can omit this
                 // case.
             }
 
@@ -1545,44 +1558,50 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform assignment conversion so that it can be assigned to
-         * a variable of the given type.
-         *
-         * @param node a Node producing a value
-         * @param varType the type of a variable
-         * @return a Node with the value converted to the type of the
-         *         variable, which may be the input node itself
+         * Perform assignment conversion so that it can be assigned to a
+         * variable of the given type.
+         * 
+         * @param node
+         *            a Node producing a value
+         * @param varType
+         *            the type of a variable
+         * @return a Node with the value converted to the type of the variable,
+         *         which may be the input node itself
          */
         protected Node assignConvert(Node node, TypeMirror varType) {
             return commonConvert(node, varType, true);
         }
 
         /**
-         * Perform method invocation conversion so that the node
-         * can be passed as a formal parameter of the given type.
-         *
-         * @param node a Node producing a value
-         * @param formalType the type of a formal parameter
-         * @return a Node with the value converted to the type of the
-         *         formal, which may be the input node itself
+         * Perform method invocation conversion so that the node can be passed
+         * as a formal parameter of the given type.
+         * 
+         * @param node
+         *            a Node producing a value
+         * @param formalType
+         *            the type of a formal parameter
+         * @return a Node with the value converted to the type of the formal,
+         *         which may be the input node itself
          */
         protected Node methodInvocationConvert(Node node, TypeMirror formalType) {
             return commonConvert(node, formalType, false);
         }
 
         /**
-         * Given a method element and as list of argument expressions,
-         * return a list of {@link Node}s representing the arguments converted
-         * for a call of the method.  This method applies to both method
-         * invocations and constructor calls.
-         *
-         * @param method an ExecutableElement representing a method to be called
-         * @param actualExprs a List of argument expressions to a call
-         * @return a List of {@link Node}s representing arguments after conversions
-         *         required by a call to this method.
+         * Given a method element and as list of argument expressions, return a
+         * list of {@link Node}s representing the arguments converted for a call
+         * of the method. This method applies to both method invocations and
+         * constructor calls.
+         * 
+         * @param method
+         *            an ExecutableElement representing a method to be called
+         * @param actualExprs
+         *            a List of argument expressions to a call
+         * @return a List of {@link Node}s representing arguments after
+         *         conversions required by a call to this method.
          */
         protected List<Node> convertCallArguments(ExecutableElement method,
-            List<? extends ExpressionTree> actualExprs) {
+                List<? extends ExpressionTree> actualExprs) {
             List<? extends VariableElement> formals = method.getParameters();
 
             ArrayList<Node> actualNodes = new ArrayList<Node>();
@@ -1604,24 +1623,24 @@ public class CFGBuilder {
 
                 if (numActuals == numFormals - 1) {
                     // Create an empty array for the last parameter
-                    Node lastArgument = new ArrayCreationNode(null, lastParamType,
-                            dimensions, initializers);
+                    Node lastArgument = new ArrayCreationNode(null,
+                            lastParamType, dimensions, initializers);
                     extendWithNode(lastArgument);
 
                     actualNodes.add(lastArgument);
                 } else {
-                    TypeMirror actualType =
-                        InternalUtils.typeOf(actualExprs.get(lastArgIndex));
+                    TypeMirror actualType = InternalUtils.typeOf(actualExprs
+                            .get(lastArgIndex));
                     if (numActuals == numFormals
-                        && types.isAssignable(actualType, lastParamType)) {
+                            && types.isAssignable(actualType, lastParamType)) {
                         // Normal call with no array creation
                     } else {
                         for (int i = lastArgIndex; i < numActuals; i++) {
                             initializers.add(actualNodes.remove(lastArgIndex));
                         }
 
-                        Node lastArgument = new ArrayCreationNode(null, lastParamType,
-                                dimensions, initializers);
+                        Node lastArgument = new ArrayCreationNode(null,
+                                lastParamType, dimensions, initializers);
                         extendWithNode(lastArgument);
 
                         actualNodes.add(lastArgument);
@@ -1635,15 +1654,15 @@ public class CFGBuilder {
             ArrayList<Node> convertedNodes = new ArrayList<Node>();
             for (int i = 0; i < formals.size(); i++) {
                 convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
-                    formals.get(i).asType()));
+                        formals.get(i).asType()));
             }
 
             return convertedNodes;
         }
 
         /**
-         * Returns the label {@link Name} of the leaf in the argument path,
-         * or null if the leaf is not a labeled statement.
+         * Returns the label {@link Name} of the leaf in the argument path, or
+         * null if the leaf is not a labeled statement.
          */
         protected/* @Nullable */Name getLabel(TreePath path) {
             if (path.getParentPath() != null) {
@@ -1690,9 +1709,10 @@ public class CFGBuilder {
             assert TreeUtils.isMethodAccess(methodSelect);
 
             Node receiver = getReceiver(methodSelect,
-                TreeUtils.enclosingClass(getCurrentPath()));
+                    TreeUtils.enclosingClass(getCurrentPath()));
 
-            MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
+            MethodAccessNode target = new MethodAccessNode(methodSelect,
+                    receiver);
             // TODO: Handle exceptions caused by field access.
             extendWithNode(target);
 
@@ -1734,7 +1754,7 @@ public class CFGBuilder {
             if (TreeUtils.isFieldAccess(variable)) {
                 // visit receiver
                 Node receiver = getReceiver(variable,
-                                            TreeUtils.enclosingClass(getCurrentPath()));
+                        TreeUtils.enclosingClass(getCurrentPath()));
 
                 // visit expression
                 expression = scan(tree.getExpression(), p);
@@ -1788,16 +1808,20 @@ public class CFGBuilder {
         }
 
         /**
-         * Note 1: Requires <code>tree</code> to be a field or method access tree.
+         * Note 1: Requires <code>tree</code> to be a field or method access
+         * tree.
          * <p>
          * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
          * 
-         * @param tree the field access tree containing the receiver
-         * @param classTree the ClassTree enclosing the field access
+         * @param tree
+         *            the field access tree containing the receiver
+         * @param classTree
+         *            the ClassTree enclosing the field access
          * @return The receiver of the field access.
          */
         private Node getReceiver(Tree tree, ClassTree classTree) {
-            assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
+            assert TreeUtils.isFieldAccess(tree)
+                    || TreeUtils.isMethodAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
@@ -1816,23 +1840,23 @@ public class CFGBuilder {
             // except that E1 is evaluated only once.
             //
             // We do not separate compound assignments into separate
-            // operation and assignment nodes.  For example, += is not
-            // split into a + followed by an =.  We do perform
+            // operation and assignment nodes. For example, += is not
+            // split into a + followed by an =. We do perform
             // promotions of operands to compound assignments,
             // though. So our representation of E1 op= E2 will be:
             //
-            //            ... nodes for E1 ...
-            //        N1: optional promotion of E1
-            //            ... nodes for E2 ...
-            //        N2: optional promotion of E2
-            //            op= N1 N2
+            // ... nodes for E1 ...
+            // N1: optional promotion of E1
+            // ... nodes for E2 ...
+            // N2: optional promotion of E2
+            // op= N1 N2
             //
-            // This has several consequences.  First, the variable
+            // This has several consequences. First, the variable
             // being assigned to may not be the immediate left operand
-            // of op=.  If promotion or conversion happens, the
+            // of op=. If promotion or conversion happens, the
             // variable will have to be extracted from those nodes.
             // Second, the type cast (T) will not be explicitly
-            // represented.  The transfer function for op= will need
+            // represented. The transfer function for op= will need
             // to account for that possible type cast.
 
             // TODO: correct evaluation rules (e.g. arrays)
@@ -1854,19 +1878,24 @@ public class CFGBuilder {
                 value = binaryNumericPromotion(value, exprType);
 
                 if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
-                    r = new NumericalMultiplicationAssignmentNode(tree, target, value);
+                    r = new NumericalMultiplicationAssignmentNode(tree, target,
+                            value);
                 } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
                     if (TypesUtils.isIntegral(exprType)) {
-                        r = new IntegerDivisionAssignmentNode(tree, target, value);
+                        r = new IntegerDivisionAssignmentNode(tree, target,
+                                value);
                     } else {
-                        r = new FloatingDivisionAssignmentNode(tree, target, value);
+                        r = new FloatingDivisionAssignmentNode(tree, target,
+                                value);
                     }
                 } else {
                     assert kind == Kind.REMAINDER_ASSIGNMENT;
                     if (TypesUtils.isIntegral(exprType)) {
-                        r = new IntegerRemainderAssignmentNode(tree, target, value);
+                        r = new IntegerRemainderAssignmentNode(tree, target,
+                                value);
                     } else {
-                        r = new FloatingRemainderAssignmentNode(tree, target, value);
+                        r = new FloatingRemainderAssignmentNode(tree, target,
+                                value);
                     }
                 }
                 break;
@@ -1891,10 +1920,12 @@ public class CFGBuilder {
                     value = binaryNumericPromotion(value, exprType);
 
                     if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
-                        r = new NumericalAdditionAssignmentNode(tree, target, value);
+                        r = new NumericalAdditionAssignmentNode(tree, target,
+                                value);
                     } else {
                         assert kind == Kind.MINUS_ASSIGNMENT;
-                        r = new NumericalSubtractionAssignmentNode(tree, target, value);
+                        r = new NumericalSubtractionAssignmentNode(tree,
+                                target, value);
                     }
                 }
                 break;
@@ -1916,7 +1947,8 @@ public class CFGBuilder {
                     r = new SignedRightShiftAssignmentNode(tree, target, value);
                 } else {
                     assert kind == Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
-                    r = new UnsignedRightShiftAssignmentNode(tree, target, value);
+                    r = new UnsignedRightShiftAssignmentNode(tree, target,
+                            value);
                 }
                 break;
             }
@@ -2070,10 +2102,10 @@ public class CFGBuilder {
                     rightType = types.unboxedType(rightType);
                 }
 
-                TypeKind widenedTypeKind =
-                    TypesUtils.widenedNumericType(leftType, rightType);
-                TypeMirror widenedType =
-                    types.getPrimitiveType(widenedTypeKind);
+                TypeKind widenedTypeKind = TypesUtils.widenedNumericType(
+                        leftType, rightType);
+                TypeMirror widenedType = types
+                        .getPrimitiveType(widenedTypeKind);
 
                 left = binaryNumericPromotion(left, widenedType);
                 right = binaryNumericPromotion(right, widenedType);
@@ -2118,26 +2150,26 @@ public class CFGBuilder {
 
                 boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
                 boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
-                boolean isLeftBoxedNumeric = isLeftBoxed &&
-                TypesUtils.isNumeric(types.unboxedType(leftType));
-                boolean isLeftBoxedBoolean = isLeftBoxed &&
-                TypesUtils.isBooleanType(leftType);
+                boolean isLeftBoxedNumeric = isLeftBoxed
+                        && TypesUtils.isNumeric(types.unboxedType(leftType));
+                boolean isLeftBoxedBoolean = isLeftBoxed
+                        && TypesUtils.isBooleanType(leftType);
 
                 boolean isRightNumeric = TypesUtils.isNumeric(rightType);
                 boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
-                boolean isRightBoxedNumeric = isRightBoxed &&
-                TypesUtils.isNumeric(types.unboxedType(rightType));
-                boolean isRightBoxedBoolean = isRightBoxed &&
-                TypesUtils.isBooleanType(rightType);
+                boolean isRightBoxedNumeric = isRightBoxed
+                        && TypesUtils.isNumeric(types.unboxedType(rightType));
+                boolean isRightBoxedBoolean = isRightBoxed
+                        && TypesUtils.isBooleanType(rightType);
 
-                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric) ||
-                        isLeftBoxedNumeric && isRightNumeric) {
-                    TypeMirror leftUnboxedType =
-                        isLeftBoxedNumeric ? types.unboxedType(leftType) : leftType;
-                    TypeMirror rightUnboxedType =
-                        isRightBoxedNumeric ? types.unboxedType(rightType) : rightType;
-                    TypeKind widened =
-                        TypesUtils.widenedNumericType(leftUnboxedType, rightUnboxedType);
+                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric)
+                        || isLeftBoxedNumeric && isRightNumeric) {
+                    TypeMirror leftUnboxedType = isLeftBoxedNumeric ? types
+                            .unboxedType(leftType) : leftType;
+                    TypeMirror rightUnboxedType = isRightBoxedNumeric ? types
+                            .unboxedType(rightType) : rightType;
+                    TypeKind widened = TypesUtils.widenedNumericType(
+                            leftUnboxedType, rightUnboxedType);
                     TypeMirror commonType = types.getPrimitiveType(widened);
                     left = binaryNumericPromotion(left, commonType);
                     right = binaryNumericPromotion(right, commonType);
@@ -2258,7 +2290,8 @@ public class CFGBuilder {
                     // node for false case
                     addLabelForNextNode(falseNodeL);
                     extendWithNode(node);
-                    extendWithExtendedNode(new UnconditionalJump(oldFalseTargetL));
+                    extendWithExtendedNode(new UnconditionalJump(
+                            oldFalseTargetL));
 
                     return node;
                 } else {
@@ -2276,56 +2309,43 @@ public class CFGBuilder {
                 }
             }
 
-                /*            case CONDITIONAL_OR: {
-
-                // see JLS 15.24
-
-                boolean condMode = conditionalMode;
-                conditionalMode = true;
-
-                // all necessary labels
-                Label rightStartL = new Label();
-                Label trueNodeL = new Label();
-                Label falseNodeL = new Label();
-                Label oldTrueTargetL = thenTargetL;
-                Label oldFalseTargetL = elseTargetL;
-
-                // left-hand side
-                thenTargetL = trueNodeL;
-                elseTargetL = rightStartL;
-                Node left = scan(tree.getLeftOperand(), p);
-
-                // right-hand side
-                thenTargetL = trueNodeL;
-                elseTargetL = falseNodeL;
-                addLabelForNextNode(rightStartL);
-                Node right = scan(tree.getRightOperand(), p);
-
-                conditionalMode = condMode;
-
-                if (conditionalMode) {
-                    Node node = new ConditionalOrNode(tree, left, right);
-
-                    // node for true case
-                    addLabelForNextNode(trueNodeL);
-                    extendWithNode(node);
-                    extendWithExtendedNode(new UnconditionalJump(oldTrueTargetL));
-
-                    // node for false case
-                    addLabelForNextNode(falseNodeL);
-                    extendWithNode(node);
-                    extendWithExtendedNode(new UnconditionalJump(oldFalseTargetL));
-
-                    return node;
-                } else {
-                    // one node for true/false
-                    addLabelForNextNode(trueNodeL);
-                    addLabelForNextNode(falseNodeL);
-                    Node node = new ConditionalOrNode(tree, left, right);
-                    extendWithNode(node);
-                    return node;
-                }
-                } */
+            /*
+             * case CONDITIONAL_OR: {
+             * 
+             * // see JLS 15.24
+             * 
+             * boolean condMode = conditionalMode; conditionalMode = true;
+             * 
+             * // all necessary labels Label rightStartL = new Label(); Label
+             * trueNodeL = new Label(); Label falseNodeL = new Label(); Label
+             * oldTrueTargetL = thenTargetL; Label oldFalseTargetL =
+             * elseTargetL;
+             * 
+             * // left-hand side thenTargetL = trueNodeL; elseTargetL =
+             * rightStartL; Node left = scan(tree.getLeftOperand(), p);
+             * 
+             * // right-hand side thenTargetL = trueNodeL; elseTargetL =
+             * falseNodeL; addLabelForNextNode(rightStartL); Node right =
+             * scan(tree.getRightOperand(), p);
+             * 
+             * conditionalMode = condMode;
+             * 
+             * if (conditionalMode) { Node node = new ConditionalOrNode(tree,
+             * left, right);
+             * 
+             * // node for true case addLabelForNextNode(trueNodeL);
+             * extendWithNode(node); extendWithExtendedNode(new
+             * UnconditionalJump(oldTrueTargetL));
+             * 
+             * // node for false case addLabelForNextNode(falseNodeL);
+             * extendWithNode(node); extendWithExtendedNode(new
+             * UnconditionalJump(oldFalseTargetL));
+             * 
+             * return node; } else { // one node for true/false
+             * addLabelForNextNode(trueNodeL); addLabelForNextNode(falseNodeL);
+             * Node node = new ConditionalOrNode(tree, left, right);
+             * extendWithNode(node); return node; } }
+             */
             }
             assert r != null : "unexpected binary tree";
             return extendWithNode(r);
@@ -2351,8 +2371,8 @@ public class CFGBuilder {
             } else {
                 assert breakLabels.containsKey(label);
 
-                extendWithExtendedNode(
-                    new UnconditionalJump(breakLabels.get(label)));
+                extendWithExtendedNode(new UnconditionalJump(
+                        breakLabels.get(label)));
             }
 
             return null;
@@ -2373,7 +2393,8 @@ public class CFGBuilder {
                 Node expr = scan(exprTree, p);
                 CaseNode test = new CaseNode(tree, switchExpr, expr);
                 extendWithNode(test);
-                extendWithExtendedNode(new ConditionalJump(thisBlockL, nextCaseL));
+                extendWithExtendedNode(new ConditionalJump(thisBlockL,
+                        nextCaseL));
                 addLabelForNextNode(thisBlockL);
                 for (StatementTree stmt : tree.getStatements()) {
                     scan(stmt, p);
@@ -2396,7 +2417,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitClass(ClassTree tree, Void p) {
-            assert false : "ClassTree is unexpected in AST to CFG translation";
+            declaredClasses.add(tree);
             return null;
         }
 
@@ -2417,8 +2438,8 @@ public class CFGBuilder {
             } else {
                 assert continueLabels.containsKey(label);
 
-                extendWithExtendedNode(
-                    new UnconditionalJump(continueLabels.get(label)));
+                extendWithExtendedNode(new UnconditionalJump(
+                        continueLabels.get(label)));
             }
 
             return null;
@@ -2552,7 +2573,7 @@ public class CFGBuilder {
 
             breakTargetL = oldBreakTargetL;
             continueTargetL = oldContinueTargetL;
-            
+
             return null;
         }
 
@@ -2580,13 +2601,13 @@ public class CFGBuilder {
                     break;
                 default:
                     throw new IllegalArgumentException(
-                        "unexpected element kind : " + element.getKind());
+                            "unexpected element kind : " + element.getKind());
                 }
             }
             extendWithNode(node);
             if (conditionalMode) {
                 extendWithExtendedNode(new ConditionalJump(thenTargetL,
-                    elseTargetL));
+                        elseTargetL));
             }
             return node;
         }
@@ -2646,7 +2667,7 @@ public class CFGBuilder {
         public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
             // This method can set the break target after generating all Nodes
             // in the contained statement, but it can't set the continue target,
-            // which may be in the middle of a sequence of nodes.  Labeled loops
+            // which may be in the middle of a sequence of nodes. Labeled loops
             // must look up and use the continue Labels.
             Name labelName = tree.getLabel();
 
@@ -2716,7 +2737,8 @@ public class CFGBuilder {
             // see JLS 15.10
 
             List<? extends ExpressionTree> dimensions = tree.getDimensions();
-            List<? extends ExpressionTree> initializers = tree.getInitializers();
+            List<? extends ExpressionTree> initializers = tree
+                    .getInitializers();
 
             List<Node> dimensionNodes = new ArrayList<Node>();
             if (dimensions != null) {
@@ -2733,7 +2755,8 @@ public class CFGBuilder {
             }
 
             TypeMirror type = tree == null ? null : InternalUtils.typeOf(tree);
-            Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
+            Node node = new ArrayCreationNode(tree, type, dimensionNodes,
+                    initializerNodes);
             return extendWithNode(node);
         }
 
@@ -2754,7 +2777,8 @@ public class CFGBuilder {
 
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-            List<Node> arguments = convertCallArguments(constructor, actualExprs);
+            List<Node> arguments = convertCallArguments(constructor,
+                    actualExprs);
 
             Node constructorNode = scan(tree.getIdentifier(), p);
 
@@ -2897,7 +2921,8 @@ public class CFGBuilder {
 
             Node operand = scan(tree.getExpression(), p);
             TypeMirror refType = InternalUtils.typeOf(tree.getType());
-            InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
+            InstanceOfNode node = new InstanceOfNode(tree, operand, refType,
+                    types);
             extendWithNode(node);
 
             conditionalMode = outerConditionalMode;
@@ -2927,28 +2952,32 @@ public class CFGBuilder {
                 TypeMirror exprType = InternalUtils.typeOf(tree);
 
                 switch (kind) {
-                    case BITWISE_COMPLEMENT:
-                        return extendWithNode(new BitwiseComplementNode(tree, expr));
-                    case POSTFIX_DECREMENT: {
-                        Node node = extendWithNode(new PostfixDecrementNode(tree, expr));
-                        return narrowAndBox(node, exprType);
-                    }
-                    case POSTFIX_INCREMENT: {
-                        Node node = extendWithNode(new PostfixIncrementNode(tree, expr));
-                        return narrowAndBox(node, exprType);
-                    }
-                    case PREFIX_DECREMENT: {
-                        Node node = extendWithNode(new PrefixDecrementNode(tree, expr));
-                        return narrowAndBox(node, exprType);
-                    }
-                    case PREFIX_INCREMENT: {
-                        Node node = extendWithNode(new PrefixIncrementNode(tree, expr));
-                        return narrowAndBox(node, exprType);
-                    }
-                    case UNARY_MINUS:
-                        return extendWithNode(new NumericalMinusNode(tree, expr));
-                    case UNARY_PLUS:
-                        return extendWithNode(new NumericalPlusNode(tree, expr));
+                case BITWISE_COMPLEMENT:
+                    return extendWithNode(new BitwiseComplementNode(tree, expr));
+                case POSTFIX_DECREMENT: {
+                    Node node = extendWithNode(new PostfixDecrementNode(tree,
+                            expr));
+                    return narrowAndBox(node, exprType);
+                }
+                case POSTFIX_INCREMENT: {
+                    Node node = extendWithNode(new PostfixIncrementNode(tree,
+                            expr));
+                    return narrowAndBox(node, exprType);
+                }
+                case PREFIX_DECREMENT: {
+                    Node node = extendWithNode(new PrefixDecrementNode(tree,
+                            expr));
+                    return narrowAndBox(node, exprType);
+                }
+                case PREFIX_INCREMENT: {
+                    Node node = extendWithNode(new PrefixIncrementNode(tree,
+                            expr));
+                    return narrowAndBox(node, exprType);
+                }
+                case UNARY_MINUS:
+                    return extendWithNode(new NumericalMinusNode(tree, expr));
+                case UNARY_PLUS:
+                    return extendWithNode(new NumericalPlusNode(tree, expr));
                 }
             }
 
@@ -2959,7 +2988,7 @@ public class CFGBuilder {
 
             default:
                 assert false : "Unknown kind of unary expression";
-            return null;
+                return null;
             }
         }
 
@@ -3060,12 +3089,12 @@ public class CFGBuilder {
     }
 
     /* --------------------------------------------------------- */
-    /* Utility routines for debugging CFG building               */
+    /* Utility routines for debugging CFG building */
     /* --------------------------------------------------------- */
 
     /**
-     * Print a set of {@link Block}s and the edges between them.
-     * This is useful for examining the results of phase two.
+     * Print a set of {@link Block}s and the edges between them. This is useful
+     * for examining the results of phase two.
      */
     protected void printBlocks(Set<Block> blocks) {
         for (Block b : blocks) {
@@ -3075,14 +3104,16 @@ public class CFGBuilder {
             case EXCEPTION_BLOCK:
             case SPECIAL_BLOCK: {
                 Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
-                System.out.println(" -> " + (succ != null ? succ.hashCode() : "||"));
+                System.out.println(" -> "
+                        + (succ != null ? succ.hashCode() : "||"));
                 break;
             }
             case CONDITIONAL_BLOCK: {
                 Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
                 Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
-                System.out.println(" -> T " + (tSucc != null ? tSucc.hashCode() : "||") +
-                                   " F " + (eSucc != null ? eSucc.hashCode() : "||"));
+                System.out.println(" -> T "
+                        + (tSucc != null ? tSucc.hashCode() : "||") + " F "
+                        + (eSucc != null ? eSucc.hashCode() : "||"));
                 break;
             }
             }
