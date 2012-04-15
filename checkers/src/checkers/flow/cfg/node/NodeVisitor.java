@@ -184,6 +184,9 @@ public interface NodeVisitor<R, P> {
 
     R visitPackageName(PackageNameNode n, P p);
 
+    // Parameterized types
+    R visitParameterizedType(ParameterizedTypeNode n, P p);
+
     // Marker nodes
     R visitMarker(MarkerNode n, P p);
 }

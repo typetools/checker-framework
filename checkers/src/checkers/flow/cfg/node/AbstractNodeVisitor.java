@@ -442,6 +442,12 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
+    // Parameterized types
+    @Override
+    public R visitParameterizedType(ParameterizedTypeNode n, P p) {
+        return visitNode(n, p);
+    }
+
     // Marker nodes
     @Override
     public R visitMarker(MarkerNode n, P p) {

@@ -92,6 +92,7 @@ import checkers.flow.cfg.node.NumericalSubtractionAssignmentNode;
 import checkers.flow.cfg.node.NumericalSubtractionNode;
 import checkers.flow.cfg.node.ObjectCreationNode;
 import checkers.flow.cfg.node.PackageNameNode;
+import checkers.flow.cfg.node.ParameterizedTypeNode;
 import checkers.flow.cfg.node.PostfixDecrementNode;
 import checkers.flow.cfg.node.PostfixIncrementNode;
 import checkers.flow.cfg.node.PrefixDecrementNode;
@@ -2872,8 +2873,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitParameterizedType(ParameterizedTypeTree tree, Void p) {
-            assert false : "not implemented yet";
-            return null;
+            return extendWithNode(new ParameterizedTypeNode(tree));
         }
 
         @Override
