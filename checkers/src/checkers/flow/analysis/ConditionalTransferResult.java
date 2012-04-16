@@ -2,6 +2,8 @@ package checkers.flow.analysis;
 
 import java.util.Map;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * Implementation of a {@link TransferResult} with two non-exceptional store;
  * one for the 'then' edge and one for 'else'. The result of
@@ -67,7 +69,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * objects is transfered to this class.
      */
     public ConditionalTransferResult(A value, S thenStore, S elseStore,
-            Map<Class<? extends Throwable>, S> exceptionalStores) {
+            Map<TypeMirror, S> exceptionalStores) {
         super(value);
         this.exceptionalStores = exceptionalStores;
         this.thenStore = thenStore;

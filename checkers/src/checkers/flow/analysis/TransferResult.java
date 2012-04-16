@@ -2,6 +2,8 @@ package checkers.flow.analysis;
 
 import java.util.Map;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * {@code TransferResult} is used as the result type of the individual transfer
  * functions of a {@link TransferFunction}. It always belongs to the result of
@@ -11,7 +13,7 @@ import java.util.Map;
  * <p>
  * 
  * A {@code TransferResult} contains one or two stores (for 'then' and 'else'),
- * and zero or more stores with a cause ({@link Throwable}).
+ * and zero or more stores with a cause ({@link TypeMirror}).
  * 
  * @author Stefan Heule
  * 
@@ -26,7 +28,7 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
      * not necessarily contain a store for every exception, in which case the
      * in-store will be used.
      */
-    protected/* @Nullable */Map<Class<? extends Throwable>, S> exceptionalStores;
+    protected/* @Nullable */Map<TypeMirror, S> exceptionalStores;
 
     /**
      * The abstract value of the {@link Node} associated with this
@@ -69,7 +71,7 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
      *         required for exceptional edges).
      */
     public/* @Nullable */S getExceptionalStore(
-            Class<? extends Throwable> exception) {
+            TypeMirror exception) {
         if (exceptionalStores == null) {
             return null;
         }

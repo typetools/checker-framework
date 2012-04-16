@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -16,7 +18,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock {
 
     /** Set of exceptional successors. */
-    protected Map<Class<? extends Throwable>, Block> exceptionalSuccessors;
+    protected Map<TypeMirror, Block> exceptionalSuccessors;
 
     public ExceptionBlockImpl() {
         type = BlockType.EXCEPTION_BLOCK;
@@ -43,7 +45,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
      * Add an exceptional successor.
      */
     public void addExceptionalSuccessor(BlockImpl b,
-            Class<? extends Throwable> cause) {
+            TypeMirror cause) {
         if (exceptionalSuccessors == null) {
             exceptionalSuccessors = new HashMap<>();
         }
@@ -52,7 +54,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
     }
 
     @Override
-    public Map<Class<? extends Throwable>, Block> getExceptionalSuccessors() {
+    public Map<TypeMirror, Block> getExceptionalSuccessors() {
         if (exceptionalSuccessors == null) {
             return Collections.emptyMap();
         }
