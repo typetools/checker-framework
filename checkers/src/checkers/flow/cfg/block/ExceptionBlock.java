@@ -2,6 +2,8 @@ package checkers.flow.cfg.block;
 
 import java.util.Map;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.cfg.node.Node;
 
 /**
@@ -30,6 +32,6 @@ public interface ExceptionBlock extends SingleSuccessorBlock {
     /**
      * @return The list of exceptional successor blocks as an unmodifiable map.
      */
-    Map<Class<? extends Throwable>, Block> getExceptionalSuccessors();
+    Map<TypeMirror, Block> getExceptionalSuccessors();
 
 }

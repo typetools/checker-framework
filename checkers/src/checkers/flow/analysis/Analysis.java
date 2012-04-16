@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.flow.cfg.ControlFlowGraph;
@@ -181,10 +182,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 }
 
                 // propagate store to exceptional successors
-                for (Entry<Class<? extends Throwable>, Block> e : eb
+                for (Entry<TypeMirror, Block> e : eb
                         .getExceptionalSuccessors().entrySet()) {
                     Block exceptionSucc = e.getValue();
-                    Class<? extends Throwable> cause = e.getKey();
+                    TypeMirror cause = e.getKey();
                     S exceptionalStore = transferResult
                             .getExceptionalStore(cause);
                     if (exceptionalStore != null) {
