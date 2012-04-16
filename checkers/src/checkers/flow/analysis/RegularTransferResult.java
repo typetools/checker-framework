@@ -2,6 +2,8 @@ package checkers.flow.analysis;
 
 import java.util.Map;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * Implementation of a {@link TransferResult} with just one non-exceptional
  * store. The result of {@code getThenStore} and {@code getElseStore} is equal
@@ -62,7 +64,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * objects is transfered to this class.
      */
     public RegularTransferResult(A value, S resultStore,
-            Map<Class<? extends Throwable>, S> exceptionalStores) {
+            Map<TypeMirror, S> exceptionalStores) {
         super(value);
         this.store = resultStore;
         this.exceptionalStores = exceptionalStores;
