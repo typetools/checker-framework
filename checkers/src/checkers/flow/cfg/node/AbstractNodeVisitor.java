@@ -409,6 +409,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
+    @Override
+    public R visitThrow(ThrowNode n, P p) {
+        return visitNode(n, p);
+    }
+
     // Cases
     @Override
     public R visitCase(CaseNode n, P p) {
@@ -439,6 +444,12 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     @Override
     public R visitPackageName(PackageNameNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    // Parameterized types
+    @Override
+    public R visitParameterizedType(ParameterizedTypeNode n, P p) {
         return visitNode(n, p);
     }
 

@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
@@ -102,11 +104,11 @@ public class CFGDOTVisualizer {
             // exceptional edges
             if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
                 ExceptionBlock ecur = (ExceptionBlock) cur;
-                for (Entry<Class<? extends Throwable>, Block> e : ecur
+                for (Entry<TypeMirror, Block> e : ecur
                         .getExceptionalSuccessors().entrySet()) {
                     Block b = e.getValue();
-                    Class<?> cause = e.getKey();
-                    String exception = cause.getCanonicalName();
+                    TypeMirror cause = e.getKey();
+                    String exception = cause.toString();
                     if (exception.startsWith("java.lang.")) {
                         exception = exception.replace("java.lang.", "");
                     }

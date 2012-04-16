@@ -169,6 +169,8 @@ public interface NodeVisitor<R, P> {
     // Statements
     R visitAssert(AssertNode n, P p);
 
+    R visitThrow(ThrowNode n, P p);
+
     // Cases
     R visitCase(CaseNode n, P p);
 
@@ -183,6 +185,9 @@ public interface NodeVisitor<R, P> {
     R visitClassName(ClassNameNode n, P p);
 
     R visitPackageName(PackageNameNode n, P p);
+
+    // Parameterized types
+    R visitParameterizedType(ParameterizedTypeNode n, P p);
 
     // Marker nodes
     R visitMarker(MarkerNode n, P p);

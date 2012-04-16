@@ -11,7 +11,6 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node representing a class name used in an expression

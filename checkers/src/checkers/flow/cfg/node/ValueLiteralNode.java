@@ -30,7 +30,7 @@ public abstract class ValueLiteralNode extends Node {
     /**
      * @return The value of the literal.
      */
-    abstract public Object getValue();
+    abstract public /*@Nullable*/ Object getValue();
 
     @Override
     public LiteralTree getTree() {
@@ -39,7 +39,7 @@ public abstract class ValueLiteralNode extends Node {
 
     @Override
     public String toString() {
-        return getValue().toString();
+        return String.valueOf(getValue());
     }
 
     /**
@@ -51,7 +51,9 @@ public abstract class ValueLiteralNode extends Node {
             return false;
         }
         ValueLiteralNode other = (ValueLiteralNode) obj;
-        return getValue().equals(other.getValue());
+        Object val = getValue();
+        Object otherVal = other.getValue();
+        return ((val == null || otherVal == null) && val == otherVal) || val.equals(otherVal);
     }
 
     @Override
