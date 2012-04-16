@@ -5,14 +5,13 @@ import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.report.quals.*;
 
@@ -20,19 +19,40 @@ import com.sun.source.tree.*;
 
 public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
+    /**
+     * The tree kinds that should be reported.
+     */
+    private final String[] treeKinds;
+
+    /**
+     * The modifiers that should be reported.
+     */
+    private final String[] modifiers;
+
     public ReportVisitor(ReportChecker checker, CompilationUnitTree root) {
         super(checker, root);
+
+        if (options.containsKey("reportTreeKinds")) {
+            String trees = options.get("reportTreeKinds");
+            treeKinds = trees.split(",");
+        } else {
+            treeKinds = null;
+        }
+
+        if (options.containsKey("reportModifiers")) {
+            String mods = options.get("reportModifiers");
+            modifiers = mods.split(",");
+        } else {
+            modifiers = null;
+        }
     }
 
     @Override
     public Void scan(Tree tree, Void p) {
-        if (tree!=null) {
-            if (options.containsKey("reportTreeKinds")) {
-                String trees = options.get("reportTreeKinds");
-                for (String tk : trees.split(",")) {
-                    if (tree.getKind().toString().equals(tk)) {
-                        checker.report(Result.failure("Tree.Kind." + tk), tree);
-                    }
+        if (tree!=null && treeKinds!=null) {
+            for (String tk : treeKinds) {
+                if (tree.getKind().toString().equals(tk)) {
+                    checker.report(Result.failure("Tree.Kind." + tk), tree);
                 }
             }
         }
@@ -204,5 +224,19 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
         // TODO Is it worth adding a separate annotation for this?
         return super.visitInstanceOf(node, p);
+    }
+
+    @Override
+    public Void visitModifiers(ModifiersTree node, Void p) {
+        if (node!=null && modifiers!=null) {
+            for (Modifier hasmod : node.getFlags()) {
+                for (String searchmod : modifiers) {
+                    if (hasmod.toString().equals(searchmod)) {
+                        checker.report(Result.failure("Modifier." + hasmod), node);
+                    }
+                }
+            }
+        }
+        return super.visitModifiers(node, p);
     }
 }
