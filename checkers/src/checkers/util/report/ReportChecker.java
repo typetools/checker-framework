@@ -16,5 +16,5 @@ import checkers.quals.Unqualified;
  *
  */
 @TypeQualifiers({ Unqualified.class })
-@SupportedOptions({"reportTreeKinds"})
+@SupportedOptions({"reportTreeKinds", "reportModifiers"})
 public class ReportChecker extends BaseTypeChecker {}
