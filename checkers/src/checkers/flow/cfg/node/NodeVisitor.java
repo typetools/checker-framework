@@ -169,6 +169,8 @@ public interface NodeVisitor<R, P> {
     // Statements
     R visitAssert(AssertNode n, P p);
 
+    R visitThrow(ThrowNode n, P p);
+
     // Cases
     R visitCase(CaseNode n, P p);
 

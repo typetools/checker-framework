@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
@@ -39,6 +40,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -224,6 +226,14 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 switch (m.getKind()) {
                 case METHOD:
                     MethodTree mt = (MethodTree) m;
+                    // Skip abstract methods because they have no body.
+                    ModifiersTree modifiers = mt.getModifiers();
+                    if (modifiers != null) {
+                        Set<Modifier> flags = modifiers.getFlags();
+                        if (flags.contains(Modifier.ABSTRACT)) {
+                            break;
+                        }
+                    }
                     ControlFlowGraph cfg = builder.run(root, env, mt);
                     CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
                     analysis.performAnalysis(cfg);
@@ -251,6 +261,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     // Visit inner and nested classes.
                     queue.add((ClassTree) m);
                     break;
+                case ANNOTATION_TYPE:
                 case INTERFACE:
                 case ENUM:
                     // not necessary to handle

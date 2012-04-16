@@ -15,12 +15,14 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
@@ -104,10 +106,12 @@ import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.cfg.node.ThrowNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
 import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.UnsignedRightShiftNode;
+import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.util.InternalUtils;
@@ -345,16 +349,16 @@ public class CFGBuilder {
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
-        protected Map<Class<? extends Throwable>, Label> exceptions;
+        protected Map<TypeMirror, Label> exceptions;
 
         public NodeWithExceptionsHolder(Node node,
-                Map<Class<? extends Throwable>, Label> exceptions) {
+                Map<TypeMirror, Label> exceptions) {
             super(ExtendedNodeType.EXCEPTION_NODE);
             this.node = node;
             this.exceptions = exceptions;
         }
 
-        public Map<Class<? extends Throwable>, Label> getExceptions() {
+        public Map<TypeMirror, Label> getExceptions() {
             return exceptions;
         }
 
@@ -736,9 +740,9 @@ public class CFGBuilder {
                 if (e.getSuccessor() == cur) {
                     return singleSuccessorHolder(e, cur);
                 } else {
-                    Set<Entry<Class<? extends Throwable>, Block>> entrySet = e
+                    Set<Entry<TypeMirror, Block>> entrySet = e
                             .getExceptionalSuccessors().entrySet();
-                    for (final Entry<Class<? extends Throwable>, Block> entry : entrySet) {
+                    for (final Entry<TypeMirror, Block> entry : entrySet) {
                         if (entry.getValue() == cur) {
                             return new PredecessorHolder() {
                                 @Override
@@ -840,7 +844,7 @@ public class CFGBuilder {
             Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
 
             // missing exceptional edges
-            Set<Tuple<ExceptionBlockImpl, Integer, Class<? extends Throwable>>> missingExceptionalEdges = new HashSet<>();
+            Set<Tuple<ExceptionBlockImpl, Integer, TypeMirror>> missingExceptionalEdges = new HashSet<>();
 
             // create start block
             SpecialBlockImpl startBlock = new SpecialBlockImpl(
@@ -917,13 +921,13 @@ public class CFGBuilder {
                     missingEdges.add(new Tuple<>(e, i + 1));
 
                     // exceptional edges
-                    for (Entry<Class<? extends Throwable>, Label> entry : en
+                    for (Entry<TypeMirror, Label> entry : en
                             .getExceptions().entrySet()) {
                         // missingEdges.put(e, bindings.get(key))
                         Integer target = bindings.get(entry.getValue());
-                        Class<? extends Throwable> cause = entry.getKey();
+                        TypeMirror cause = entry.getKey();
                         missingExceptionalEdges
-                                .add(new Tuple<ExceptionBlockImpl, Integer, Class<? extends Throwable>>(
+                                .add(new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
                                         e, target, cause));
                     }
                     break;
@@ -944,7 +948,7 @@ public class CFGBuilder {
             for (Tuple<ExceptionBlockImpl, Integer, ?> p : missingExceptionalEdges) {
                 Integer index = p.b;
                 @SuppressWarnings("unchecked")
-                Class<? extends Throwable> cause = (Class<? extends Throwable>) p.c;
+                TypeMirror cause = (TypeMirror) p.c;
                 ExceptionBlockImpl source = p.a;
                 if (index == null) {
                     // edge to exceptional exit
@@ -1054,6 +1058,7 @@ public class CFGBuilder {
          * utilities.
          */
         protected ProcessingEnvironment env;
+        protected Elements elements;
         protected Types types;
         protected Trees trees;
 
@@ -1148,6 +1153,7 @@ public class CFGBuilder {
         public PhaseOneResult process(CompilationUnitTree root,
                 ProcessingEnvironment env, MethodTree t) {
             this.env = env;
+            elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
 
@@ -1229,13 +1235,12 @@ public class CFGBuilder {
          * @param node
          *            The node to add.
          * @param causes
-         *            Set of exceptions that the node might throw.
+         *            An exception that the node might throw.
          * @return The same node (for convenience).
          */
-        protected Node extendWithNodeWithException(Node node,
-                Class<? extends Throwable> cause) {
+        protected Node extendWithNodeWithException(Node node, TypeMirror cause) {
             addToLookupMap(node);
-            Set<Class<? extends Throwable>> causes = new HashSet<>();
+            Set<TypeMirror> causes = new HashSet<>();
             causes.add(cause);
             return extendWithNodeWithExceptions(node, causes);
         }
@@ -1252,10 +1257,10 @@ public class CFGBuilder {
          * @return The same node (for convenience).
          */
         protected Node extendWithNodeWithExceptions(Node node,
-                Set<Class<? extends Throwable>> causes) {
+                Set<TypeMirror> causes) {
             // TODO: catch blocks
-            Map<Class<? extends Throwable>, Label> exceptions = new HashMap<>();
-            for (Class<? extends Throwable> cause : causes) {
+            Map<TypeMirror, Label> exceptions = new HashMap<>();
+            for (TypeMirror cause : causes) {
                 exceptions.put(cause, exceptionalExitLabel);
             }
             NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(
@@ -1542,13 +1547,23 @@ public class CFGBuilder {
             }
 
             if (allowNarrowing) {
-                // Allow narrowing conversions
-                if (isLeftNumeric) {
-                    node = narrow(node, varType);
-                    nodeType = node.getType();
-                } else if (isLeftBoxed) {
-                    node = narrowAndBox(node, varType);
-                    nodeType = node.getType();
+                // Narrowing is restricted to cases where the left hand side
+                // is byte, char, short or Byte, Char, Short and the right
+                // hand side is a constant.
+                TypeMirror unboxedVarType = isLeftBoxed ? types.unboxedType(varType) : varType;
+                TypeKind unboxedVarKind = unboxedVarType.getKind();
+                boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE ||
+                    unboxedVarKind == TypeKind.SHORT ||
+                    unboxedVarKind == TypeKind.CHAR;
+                boolean isRightConstant = node instanceof ValueLiteralNode;
+                if (isLeftNarrowableTo && isRightConstant) {
+                    if (isLeftBoxed) {
+                        node = narrowAndBox(node, varType);
+                        nodeType = node.getType();
+                    } else {
+                        node = narrow(node, varType);
+                        nodeType = node.getType();
+                    }
                 }
             }
 
@@ -1769,8 +1784,8 @@ public class CFGBuilder {
                 boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
                 // TODO: explicit this access does not throw exception
                 if (canThrow) {
-                    extendWithNodeWithException(target,
-                            NullPointerException.class);
+                    TypeElement element = elements.getTypeElement("java.lang.NullPointerException");
+                    extendWithNodeWithException(target, element.asType());
                 } else {
                     extendWithNode(target);
                 }
@@ -2855,8 +2870,9 @@ public class CFGBuilder {
 
         @Override
         public Node visitThrow(ThrowTree tree, Void p) {
-            assert false : "not implemented yet";
-            return null;
+            Node expression = scan(tree.getExpression(), p);
+            TypeMirror exception = expression.getType();
+            return extendWithNodeWithException(new ThrowNode(tree, expression), exception);
         }
 
         @Override
