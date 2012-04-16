@@ -1,8 +1,15 @@
-Version ????, ????
+Version 1.2.7, ?? Apr 2012
 
 Regex Checker:
   Add basic support for the concatenation of two non-regular expressions
   that produce a valid regular expression.
+
+New semantic search tool:
+  The Report Checker allows semantic searches for certain tree kinds,
+  invocations, field writes, etc.
+
+Internal bug fixes:
+  Respect skipDefs and skipUses in NullnessFlow
 
 ----------------------------------------------------------------------
 Version 1.2.6, 18 Mar 2012
