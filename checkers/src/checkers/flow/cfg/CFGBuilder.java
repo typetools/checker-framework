@@ -106,6 +106,7 @@ import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.cfg.node.ThrowNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
@@ -1677,6 +1678,70 @@ public class CFGBuilder {
         }
 
         /**
+         * Convert an operand of a conditional expression to the type of the
+         * whole expression.
+         * 
+         * @param node
+         *            a node occurring as the second or third operand of
+         *            a conditional expression
+         * @param destType
+         *            the type to promote the value to
+         * @return a Node with the value promoted to the destType, which may be
+         *         the input node
+         */
+        protected Node conditionalExprPromotion(Node node, TypeMirror destType) {
+            // For rules on converting operands of conditional expressions,
+            // JLS 15.25
+            TypeMirror nodeType = node.getType();
+
+            // If the operand is already the same type as the whole
+            // expression, then do nothing.
+            if (types.isSameType(nodeType, destType)) {
+                return node;
+            }
+
+            // If the operand is a primitive and the whole expression is
+            // boxed, then apply boxing.
+            if (TypesUtils.isPrimitive(nodeType) &&
+                TypesUtils.isBoxedPrimitive(destType)) {
+                return box(node);
+            }
+
+            // If the operand is byte or Byte and the whole expression is
+            // short, then convert to short.
+            boolean isBoxedPrimitive = TypesUtils.isBoxedPrimitive(nodeType);
+            TypeMirror unboxedNodeType =
+                isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
+            if (TypesUtils.isNumeric(unboxedNodeType)) {
+                if (unboxedNodeType.getKind() == TypeKind.BYTE &&
+                    destType.getKind() == TypeKind.SHORT) {
+                    if (isBoxedPrimitive) {
+                        node = unbox(node);
+                    }
+                    return widen(node, destType);
+                }
+
+                // If the operand is Byte, Short or Character and the whole expression
+                // is the unboxed version of it, then apply unboxing.
+                TypeKind destKind = destType.getKind();
+                if (destKind == TypeKind.BYTE || destKind == TypeKind.CHAR ||
+                    destKind == TypeKind.SHORT) {
+                    if (isBoxedPrimitive) {
+                        return unbox(node);
+                    } else if (nodeType.getKind() == TypeKind.INT) {
+                        return narrow(node, destType);
+                    }
+                }
+
+                return binaryNumericPromotion(node, destType);
+            }
+
+            // TODO: Do we need to cast to lub(box(nodeType)) if the final
+            // case in JLS 15.25 applies?
+            return node;
+        }
+
+        /**
          * Returns the label {@link Name} of the leaf in the argument path, or
          * null if the leaf is not a labeled statement.
          */
@@ -2440,8 +2505,49 @@ public class CFGBuilder {
         @Override
         public Node visitConditionalExpression(ConditionalExpressionTree tree,
                 Void p) {
-            assert false : "not implemented yet";
-            return null;
+            // see JLS 15.25
+            TypeMirror exprType = InternalUtils.typeOf(tree);
+            boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
+            assert !conditionalMode || isBooleanOp;
+
+            Label trueStart = new Label();
+            Label falseStart = new Label();
+            Label merge = new Label();
+
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+
+            conditionalMode = true;
+            thenTargetL = trueStart;
+            elseTargetL = falseStart;
+            Node condition = unbox(scan(tree.getCondition(), p));
+            conditionalMode = false;
+
+            addLabelForNextNode(trueStart);
+            Node trueExpr = scan(tree.getTrueExpression(), p);
+            trueExpr = conditionalExprPromotion(trueExpr, exprType);
+            extendWithExtendedNode(new UnconditionalJump(merge));
+
+            addLabelForNextNode(falseStart);
+            Node falseExpr = scan(tree.getFalseExpression(), p);
+            falseExpr = conditionalExprPromotion(falseExpr, exprType);
+            
+            addLabelForNextNode(merge);
+            Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
+            extendWithNode(node);
+
+            // Finally, emit a jump if the expression occurs within a conditional.
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
+            }
+
+            return node;
         }
 
         @Override
