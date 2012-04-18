@@ -374,6 +374,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * Tests whether the variable accessed is an assignable variable or not,
      * given the current scope
      *
+     * TODO: document which parameters are nullable; e.g. receiverType is null in
+     * many cases, e.g. local variables.
+     *
      * @param varType   the annotated variable type
      * @param variable  tree used to access the variable
      * @return  true iff variable is assignable in the current scope

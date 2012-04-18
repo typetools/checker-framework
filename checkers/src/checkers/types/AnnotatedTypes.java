@@ -538,10 +538,9 @@ public class AnnotatedTypes {
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
         ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree) {
-            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
-        } else if (expr instanceof NewClassTree) {
-            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        if (expr instanceof MethodInvocationTree ||
+                expr instanceof NewClassTree) {
+            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
             System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -606,10 +605,9 @@ public class AnnotatedTypes {
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
         ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree) {
-            elt = TreeUtils.elementFromUse( (MethodInvocationTree) expr);
-        } else if (expr instanceof NewClassTree) {
-            elt = TreeUtils.elementFromUse( (NewClassTree) expr);
+        if (expr instanceof MethodInvocationTree ||
+                expr instanceof NewClassTree) {
+            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
             System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -627,7 +625,7 @@ public class AnnotatedTypes {
         AnnotatedExecutableType methodType;
 
         if (expr instanceof MethodInvocationTree) {
-            methodType = asMemberOf(factory.getReceiver(expr), elt);
+            methodType = asMemberOf(factory.getReceiverType(expr), elt);
         } else if (expr instanceof NewClassTree) {
             // consider the constructor type itself as the viewpoint
             methodType = asMemberOf(returnType, elt);
@@ -888,7 +886,7 @@ public class AnnotatedTypes {
                     && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
                 return null;
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
-            AnnotatedTypeMirror receiver = factory.getReceiver(methodInvocation);
+            AnnotatedTypeMirror receiver = factory.getReceiverType(methodInvocation);
             AnnotatedExecutableType method = asMemberOf(receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {

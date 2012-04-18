@@ -124,16 +124,19 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitIdentifier(IdentifierTree node,
                 AnnotatedTypeFactory f) {
+            if (node.getName().contentEquals("this")
+                    || node.getName().contentEquals("super")) {
+                AnnotatedDeclaredType res = f.getSelfType(node);
+                return res;
+            }
 
             Element elt = TreeUtils.elementFromUse(node);
-            if (node.getName().contentEquals("this")
-                    && elt.getKind() != ElementKind.CONSTRUCTOR)
-                return f.getSelfType(node);
             AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
-            if (selfType != null)
+            if (selfType != null) {
                 return f.atypes.asMemberOf(selfType, elt);
+            }
+
             return f.getAnnotatedType(elt);
-//            return f.fromElement(elt);
         }
 
         @Override
@@ -158,8 +161,10 @@ abstract class TypeFromTree extends
 
             // The expression might be a primitive type (as in "int.class").
             if (!(node.getExpression() instanceof PrimitiveTypeTree)) {
-                if (node.getIdentifier().contentEquals("this"))
+                // TODO: why don't we use getSelfType here?
+                if (node.getIdentifier().contentEquals("this")) {
                     return f.getEnclosingType((TypeElement)InternalUtils.symbol(node.getExpression()), node);
+                }
                 // We need the original t with the implicit annotations
                 AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
                 if (t instanceof AnnotatedDeclaredType)

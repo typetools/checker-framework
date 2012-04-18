@@ -180,11 +180,12 @@ public class StubUtil {
             return printer.getOutput();
         }
 
-        private StringBuilder sb = new StringBuilder();
+        private final StringBuilder sb = new StringBuilder();
         public String getOutput() {
             return sb.toString();
         }
 
+        @Override
         public void visit(ConstructorDeclaration n, Void arg) {
             sb.append("<init>");
 
@@ -201,6 +202,7 @@ public class StubUtil {
             sb.append(")");
         }
 
+        @Override
         public void visit(MethodDeclaration n, Void arg) {
             sb.append(n.getName());
 
@@ -219,6 +221,7 @@ public class StubUtil {
             sb.append(")");
         }
 
+        @Override
         public void visit(Parameter n, Void arg) {
             if (n.getId().getArrayCount() > 0) {
                 throw new Error("Put array brackets on the type, not the variable: " + n);
@@ -227,10 +230,12 @@ public class StubUtil {
         }
 
         // Types
+        @Override
         public void visit(ClassOrInterfaceType n, Void arg) {
             sb.append(n.getName());
         }
 
+        @Override
         public void visit(PrimitiveType n, Void arg) {
             switch (n.getType()) {
             case Boolean:
@@ -262,16 +267,19 @@ public class StubUtil {
             }
         }
 
+        @Override
         public void visit(ReferenceType n, Void arg) {
             n.getType().accept(this, arg);
             for (int i = 0; i < n.getArrayCount(); ++i)
                 sb.append("[]");
         }
 
+        @Override
         public void visit(VoidType n, Void arg) {
             sb.append("void");
         }
 
+        @Override
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             throw new IllegalStateException("don't print type args!");

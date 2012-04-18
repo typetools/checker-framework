@@ -1,12 +1,12 @@
 package checkers.util;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import checkers.nullness.quals.Nullable;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
@@ -164,5 +164,59 @@ public class ElementUtils {
 
     public static boolean isError(Element element) {
         return element.getClass().getName().equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+    }
+
+    /**
+     * Does the given element need a receiver for accesses?
+     * For example, an access to a local variable does not require a receiver.
+     *
+     * @param element The element to test.
+     * @return whether the element requires a receiver for accesses.
+     */
+    public static boolean hasReceiver(Element element) {
+        return element.getKind() != ElementKind.LOCAL_VARIABLE
+                && element.getKind() != ElementKind.PARAMETER
+                && element.getKind() != ElementKind.PACKAGE
+                && !ElementUtils.isStatic(element);
+    }
+
+    /**
+     * Determine all type elements for the classes and interfaces referenced
+     * in the extends/implements clauses of the given type element.
+     */
+    public static Set<TypeElement> getSuperTypes(TypeElement type) {
+
+        Set<TypeElement> superelems = new HashSet<TypeElement>();
+        if (type == null)
+            return superelems;
+
+        // Set up a stack containing type, which is our starting point.
+        Deque<TypeElement> stack = new ArrayDeque<TypeElement>();
+        stack.push(type);
+
+        while (!stack.isEmpty()) {
+            TypeElement current = stack.pop();
+
+            // For each direct supertype of the current type element, if it
+            // hasn't already been visited, push it onto the stack and
+            // add it to our superelems set.
+            TypeMirror supertypecls = current.getSuperclass();
+            if (supertypecls.getKind() != TypeKind.NONE) {
+                TypeElement supercls = (TypeElement) ((DeclaredType)supertypecls).asElement();
+                if (!superelems.contains(supercls)) {
+                    stack.push(supercls);
+                    superelems.add(supercls);
+                }
+            }
+            for (TypeMirror supertypeitf : current.getInterfaces()) {
+                TypeElement superitf = (TypeElement) ((DeclaredType)supertypeitf).asElement();
+                if (!superelems.contains(superitf)) {
+                    stack.push(superitf);
+                    superelems.add(superitf);
+                }
+            }
+        }
+
+        return Collections.<TypeElement>unmodifiableSet(superelems);
     }
 }

@@ -124,7 +124,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        if (shouldSkipDefs(node)) {
+        if (checker.shouldSkipDefs(node)) {
             // Not "return super.visitClass(node, p);" because that would
             // recursively call visitors on subtrees; we want to skip the
             // class entirely.
@@ -372,7 +372,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node.getArguments().get(0));
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
 
-        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(node);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
         AnnotatedDeclaredType receiverAsVector =
             (AnnotatedDeclaredType)annoTypes.asSuper(receiver, vectorType);
         if (receiverAsVector == null || receiverAsVector.getTypeArguments().isEmpty())
@@ -397,7 +397,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitNewClass(NewClassTree node, Void p) {
-        if (shouldSkipUses(InternalUtils.constructor(node)))
+        if (checker.shouldSkipUses(InternalUtils.constructor(node)))
             return super.visitNewClass(node, p);
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory.constructorFromUse(node);
@@ -841,7 +841,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             MethodInvocationTree node) {
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
-        AnnotatedTypeMirror rcv = atypeFactory.getReceiver(node);
+        AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
         if (!checker.isSubtype(treeReceiver, methodReceiver)) {
@@ -911,7 +911,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedDeclaredType overriddenType,
             Void p) {
 
-        if (shouldSkipUses(overriddenType.getElement())) {
+        if (checker.shouldSkipUses(overriddenType.getElement())) {
             return true;
         }
 
@@ -1012,13 +1012,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
         if (varTree instanceof ExpressionTree &&
                 !checker.isAssignable(varType,
-                        atypeFactory.getReceiver((ExpressionTree)varTree),
+                        atypeFactory.getReceiverType((ExpressionTree)varTree),
                         varTree,
                         atypeFactory)) {
             checker.report(
                     Result.failure("assignability.invalid",
                             InternalUtils.symbol(varTree),
-                            atypeFactory.getReceiver((ExpressionTree)varTree)),
+                            atypeFactory.getReceiverType((ExpressionTree)varTree)),
                     varTree);
         }
     }
@@ -1065,7 +1065,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (elem == null || !elem.getKind().isField())
             return;
 
-        AnnotatedTypeMirror receiver = atypeFactory.getReceiver(tree);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);
@@ -1131,7 +1131,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-            if (shouldSkipUses(type.getElement()))
+            if (checker.shouldSkipUses(type.getElement()))
                 return super.visitDeclared(type, tree);
 
             {
@@ -1257,7 +1257,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
-            if (shouldSkipUses(type.getElement()))
+            if (checker.shouldSkipUses(type.getElement()))
                 return super.visitPrimitive(type, tree);
 
             if (!checker.isValidUse(type)) {
@@ -1283,7 +1283,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 return null;
 
             final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
-            if (shouldSkipUses(element))
+            if (checker.shouldSkipUses(element))
                 return null;
 
             List<AnnotatedTypeVariable> typevars = atypeFactory.typeVariablesFromUse(type, element);
@@ -1397,36 +1397,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // }
 
         Element elm = InternalUtils.symbol(exprTree);
-        return shouldSkipUses(elm);
-    }
-
-    /**
-     * Tests whether the class owner of the passed element is an unannotated
-     * class and matches the pattern specified in the
-     * {@code checker.skipUses} property.
-     *
-     * @param element   an element
-     * @return  true iff the enclosing class of element should be skipped
-     */
-    protected final boolean shouldSkipUses(Element element) {
-        if (element == null)
-            return false;
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
-        String name = typeElement.getQualifiedName().toString();
-        return checker.getShouldSkipUses().matcher(name).find();
-
-    }
-
-    /**
-     * Tests whether the class definition should not be checked because it
-     * matches the {@code checker.skipDefs} property.
-     *
-     * @param node class to potentially skip
-     * @return true if checker should not test node
-     */
-    protected final boolean shouldSkipDefs(ClassTree node) {
-        String qualifiedName = InternalUtils.typeOf(node).toString();
-        return checker.getShouldSkipDefs().matcher(qualifiedName).find();
+        return checker.shouldSkipUses(elm);
     }
 
 
