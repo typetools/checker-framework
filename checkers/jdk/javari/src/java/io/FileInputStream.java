@@ -34,7 +34,7 @@ public class FileInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public final FileDescriptor getFD() @ReadOnly throws IOException {
+    public final FileDescriptor getFD(@ReadOnly FileInputStream this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

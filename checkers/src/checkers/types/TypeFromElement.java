@@ -60,6 +60,14 @@ public class TypeFromElement {
         } else if (element.getKind() == ElementKind.EXCEPTION_PARAMETER) {
             // Or is this like a local variable?
             // TODO: annotateExceptionParam(type, element);
+            if (strict) {
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+            }
+        } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
+            // TODO;
+            if (strict) {
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+            }
         } else {
             throw new CheckerError("TypeFromElement.annotate: illegal argument: " + element.getKind());
         }
@@ -75,7 +83,7 @@ public class TypeFromElement {
                     switch (typeAnno.position.type) {
                     case CLASS_TYPE_PARAMETER:
                     case CLASS_TYPE_PARAMETER_BOUND:
-                    case CLASS_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+                    case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                         if (typeAnno.position.parameter_index == param_index) {
                             annotatePossibleBound(type, typeAnno);
                         } /*else if (strict) {
@@ -84,7 +92,7 @@ public class TypeFromElement {
                         }*/
                         break;
                     case CLASS_EXTENDS:
-                    case CLASS_EXTENDS_GENERIC_OR_ARRAY:
+                    case CLASS_EXTENDS_COMPONENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -103,9 +111,9 @@ public class TypeFromElement {
                 for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
                     switch (typeAnno.position.type) {
                     case METHOD_TYPE_PARAMETER:
-                    //case METHOD_TYPE_PARAMETER_GENERIC_OR_ARRAY:
+                    //case METHOD_TYPE_PARAMETER_COMPONENT:
                     case METHOD_TYPE_PARAMETER_BOUND:
-                    case METHOD_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                         if (typeAnno.position.parameter_index == param_index) {
                             annotatePossibleBound(type, typeAnno);
                         }/* else if (strict) {
@@ -114,17 +122,17 @@ public class TypeFromElement {
                         }*/
                         break;
                     case METHOD_RETURN:
-                    case METHOD_RETURN_GENERIC_OR_ARRAY:
+                    case METHOD_RETURN_COMPONENT:
                     case METHOD_PARAMETER:
-                    case METHOD_PARAMETER_GENERIC_OR_ARRAY:
+                    case METHOD_PARAMETER_COMPONENT:
                     case METHOD_RECEIVER:
-                    // TODO? case METHOD_RECEIVER_GENERIC_OR_ARRAY:
+                    case METHOD_RECEIVER_COMPONENT:
                     case LOCAL_VARIABLE:
-                    case LOCAL_VARIABLE_GENERIC_OR_ARRAY:
+                    case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
-                    case NEW_GENERIC_OR_ARRAY:
+                    case NEW_COMPONENT:
                     case TYPECAST:
-                    case TYPECAST_GENERIC_OR_ARRAY:
+                    case TYPECAST_COMPONENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -151,26 +159,27 @@ public class TypeFromElement {
                 for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
                     switch (typeAnno.position.type) { 
                     case METHOD_PARAMETER:
-                    case METHOD_PARAMETER_GENERIC_OR_ARRAY:
+                    case METHOD_PARAMETER_COMPONENT:
                         if (typeAnno.position.parameter_index == param_index) {
                             annotate(type, typeAnno);
                         }
                         break;
                     case METHOD_RECEIVER:
+                    case METHOD_RECEIVER_COMPONENT:
                     case METHOD_RETURN:
-                    case METHOD_RETURN_GENERIC_OR_ARRAY:
+                    case METHOD_RETURN_COMPONENT:
                     case THROWS:
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
-                    case METHOD_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                     case WILDCARD_BOUND:
-                    case WILDCARD_BOUND_GENERIC_OR_ARRAY:
+                    case WILDCARD_BOUND_COMPONENT:
                     case LOCAL_VARIABLE:
-                    case LOCAL_VARIABLE_GENERIC_OR_ARRAY:
+                    case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
-                    case NEW_GENERIC_OR_ARRAY:
+                    case NEW_COMPONENT:
                     case TYPECAST:
-                    case TYPECAST_GENERIC_OR_ARRAY:
+                    case TYPECAST_COMPONENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -209,17 +218,17 @@ public class TypeFromElement {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case FIELD:
-            case FIELD_GENERIC_OR_ARRAY:
+            case FIELD_COMPONENT:
                 annotate(type, anno);
                 break;
             case WILDCARD_BOUND:
-            case WILDCARD_BOUND_GENERIC_OR_ARRAY:
+            case WILDCARD_BOUND_COMPONENT:
                 annotateWildcardBound(type, element, anno);
                 break;
             case NEW:
-            case NEW_GENERIC_OR_ARRAY:
+            case NEW_COMPONENT:
             case TYPECAST:
-            case TYPECAST_GENERIC_OR_ARRAY:
+            case TYPECAST_COMPONENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -248,19 +257,19 @@ public class TypeFromElement {
         addAnnotationsToElt(type, element.getAnnotationMirrors());
 
         VarSymbol symbol = (VarSymbol) element;
-        
+
         for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
 
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case LOCAL_VARIABLE:
-            case LOCAL_VARIABLE_GENERIC_OR_ARRAY:
+            case LOCAL_VARIABLE_COMPONENT:
                 annotate(type, anno);
                 break;
             case NEW:
-            case NEW_GENERIC_OR_ARRAY:
+            case NEW_COMPONENT:
             case TYPECAST:
-            case TYPECAST_GENERIC_OR_ARRAY:
+            case TYPECAST_COMPONENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -308,7 +317,7 @@ public class TypeFromElement {
                 }
                 break;
             case CLASS_TYPE_PARAMETER_BOUND:
-            case CLASS_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+            case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParameters.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParameters.get(pos.parameter_index));
                     if (pos.bound_index >= 0 && pos.bound_index < bounds.size()) {
@@ -323,13 +332,13 @@ public class TypeFromElement {
                 }
                 break;
             case CLASS_EXTENDS:
-            case CLASS_EXTENDS_GENERIC_OR_ARRAY:
+            case CLASS_EXTENDS_COMPONENT:
             case LOCAL_VARIABLE: // ? TODO: check why those appear on a type element
-            case LOCAL_VARIABLE_GENERIC_OR_ARRAY: // ?
+            case LOCAL_VARIABLE_COMPONENT: // ?
             case NEW: // ?
-            case NEW_GENERIC_OR_ARRAY: // ?
+            case NEW_COMPONENT: // ?
             case TYPECAST: // ?
-            case TYPECAST_GENERIC_OR_ARRAY: // ?
+            case TYPECAST_COMPONENT: // ?
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -351,7 +360,7 @@ public class TypeFromElement {
             TypeAnnotationPosition pos = anno.position;
             switch(pos.type) {
             case CLASS_EXTENDS:
-            case CLASS_EXTENDS_GENERIC_OR_ARRAY:
+            case CLASS_EXTENDS_COMPONENT:
                 if (pos.type_index == -1 && superClassType != null) {
                     annotate(superClassType, anno);
                 } else if (pos.type_index >= 0 && pos.type_index < superInterfaces.size()) {
@@ -363,7 +372,7 @@ public class TypeFromElement {
                 break;
             case CLASS_TYPE_PARAMETER:
             case CLASS_TYPE_PARAMETER_BOUND:
-            case CLASS_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+            case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -403,17 +412,17 @@ public class TypeFromElement {
 
             switch (pos.type) {
             case METHOD_RECEIVER:
-            //TODO: case METHOD_RECEIVER_GENERIC_OR_ARRAY:
+            case METHOD_RECEIVER_COMPONENT:
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 
             case METHOD_RETURN:
-            case METHOD_RETURN_GENERIC_OR_ARRAY:
+            case METHOD_RETURN_COMPONENT:
                 annotate(type.getReturnType(), typeAnno);
                 break;
 
             case METHOD_PARAMETER:
-            case METHOD_PARAMETER_GENERIC_OR_ARRAY:
+            case METHOD_PARAMETER_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < params.size()) {
                     annotate(params.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
@@ -423,7 +432,7 @@ public class TypeFromElement {
                 break;
 
             case THROWS:
-            //case THROWS_GENERIC_OR_ARRAY:
+            //case THROWS_COMPONENT:
                 final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
                 if (pos.type_index >= 0 && pos.type_index < thrown.size()) {
                     annotate(thrown.get(pos.type_index), typeAnno);
@@ -434,7 +443,7 @@ public class TypeFromElement {
                 break;
 
             case METHOD_TYPE_PARAMETER:
-            //case METHOD_TYPE_PARAMETER_GENERIC_OR_ARRAY:
+            //case METHOD_TYPE_PARAMETER_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     annotate(typeParams.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
@@ -444,7 +453,7 @@ public class TypeFromElement {
                 break;
 
             case METHOD_TYPE_PARAMETER_BOUND:
-            case METHOD_TYPE_PARAMETER_BOUND_GENERIC_OR_ARRAY:
+            case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParams.get(pos.parameter_index));
                     if (pos.bound_index >= 0 && pos.bound_index < bounds.size()) {
@@ -462,15 +471,15 @@ public class TypeFromElement {
                 }
                 break;
             case WILDCARD_BOUND:
-            case WILDCARD_BOUND_GENERIC_OR_ARRAY:
+            case WILDCARD_BOUND_COMPONENT:
                 annotateWildcardBound(type, element, typeAnno);
                 break;
             case LOCAL_VARIABLE:
-            case LOCAL_VARIABLE_GENERIC_OR_ARRAY:
+            case LOCAL_VARIABLE_COMPONENT:
             case NEW:
-            case NEW_GENERIC_OR_ARRAY:
+            case NEW_COMPONENT:
             case TYPECAST:
-            case TYPECAST_GENERIC_OR_ARRAY:
+            case TYPECAST_COMPONENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -485,12 +494,12 @@ public class TypeFromElement {
             Element element, TypeCompound typeAnno) {
         final TypeAnnotationPosition pos = typeAnno.position;
         assert pos.type==TargetType.WILDCARD_BOUND ||
-                pos.type==TargetType.WILDCARD_BOUND_GENERIC_OR_ARRAY : "Only for wildcard bound positions";
+                pos.type==TargetType.WILDCARD_BOUND_COMPONENT : "Only for wildcard bound positions";
         
         final TypeAnnotationPosition wcpos = pos.wildcard_position;
 
         switch (wcpos.type) {
-        case METHOD_PARAMETER_GENERIC_OR_ARRAY:
+        case METHOD_PARAMETER_COMPONENT:
             AnnotatedExecutableType exetype = (AnnotatedExecutableType) type;
             final List<AnnotatedTypeMirror> params = exetype.getParameterTypes();
             if (wcpos.parameter_index >= 0 && wcpos.parameter_index < params.size()) {
@@ -509,7 +518,7 @@ public class TypeFromElement {
                         "invalid parameter index " + wcpos.parameter_index + " for annotation: " + typeAnno);
             }
             break;
-        case METHOD_RETURN_GENERIC_OR_ARRAY:
+        case METHOD_RETURN_COMPONENT:
             AnnotatedExecutableType rexetype = (AnnotatedExecutableType) type;
             AnnotatedTypeMirror ret = rexetype.getReturnType();
             AnnotatedTypeMirror rgen = getLocationTypeATM(ret, wcpos.location);
@@ -522,7 +531,7 @@ public class TypeFromElement {
                 annotate(wcrgen.getSuperBound(), typeAnno);
             }
             break;
-        case FIELD_GENERIC_OR_ARRAY:
+        case FIELD_COMPONENT:
             AnnotatedTypeMirror gen = getLocationTypeATM(type, wcpos.location);
             assert gen.getKind() == TypeKind.WILDCARD : "Expected wildcard, found: " + gen;
             AnnotatedWildcardType wcgen = (AnnotatedWildcardType) gen;
@@ -597,7 +606,7 @@ public class TypeFromElement {
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType)type, location);
         } else {
-            throw new CheckerError("TypeFromElement.annotate(ATM): only declared types and arrays can have annotations; " +
+            throw new CheckerError("TypeFromElement.getLocationTypeATM: only declared types and arrays can have annotations with location; " +
                     "found type: " + type + " location: " + location);
         }
     }
@@ -608,8 +617,13 @@ public class TypeFromElement {
         } else if (location.get(0) < type.getTypeArguments().size()) {
             return getLocationTypeATM(type.getTypeArguments().get(location.get(0)), tail(location));
         } else {
-            throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
-                    "invalid locations " + location + " for type: " + type);
+            // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not handled yet
+            // throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
+            //        "invalid locations " + location + " for type: " + type);
+            if (strict) {
+                System.out.println("TypeFromElement.getLocationTypeADT: handle outer classes.");
+            }
+            return type;
         }
     }
 
