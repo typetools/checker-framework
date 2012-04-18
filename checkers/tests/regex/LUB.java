@@ -1,3 +1,4 @@
+import java.util.regex.Pattern;
 import checkers.regex.quals.Regex;
 
 public class LUB {
@@ -48,5 +49,20 @@ public class LUB {
 
         //:: error: (assignment.type.incompatible)
         @Regex(9) String test2 = s;
+    }
+
+    void test5(@Regex(10) String s10, @Regex(11) String s11, boolean b) {
+        String s;
+        if (b) {
+            s = s11;
+        } else {
+            s = s10;
+            return;
+        }
+        // TODO: s is a @Regex(10) here, but shouldn't it be a @Regex(11)?
+        // @Regex(11) String test = s;
+
+        //:: error: (assignment.type.incompatible)
+        @Regex(12) String test2 = s;
     }
 }
