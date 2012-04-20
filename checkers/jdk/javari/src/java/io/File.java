@@ -31,69 +31,69 @@ public class File implements Serializable, Comparable<File> {
     public File(String parent, String child) {
         throw new RuntimeException("skeleton method");
     }
-    public File(@PolyRead File parent, String child) @PolyRead {
+    public File(@PolyRead File this, @PolyRead File parent, String child) {
       throw new RuntimeException("skeleton method");
     }
     public File(@ReadOnly URI uri) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName() @ReadOnly {
+    public String getName(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String getParent() @ReadOnly {
+    public String getParent(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File getParentFile() @PolyRead {
+    public @PolyRead File getParentFile(@PolyRead File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String getPath() @ReadOnly {
+    public String getPath(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isAbsolute() @ReadOnly {
+    public boolean isAbsolute(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String getAbsolutePath() @ReadOnly {
+    public String getAbsolutePath(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File getAbsoluteFile() @PolyRead {
+    public @PolyRead File getAbsoluteFile(@PolyRead File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String getCanonicalPath() @ReadOnly throws IOException {
+    public String getCanonicalPath(@ReadOnly File this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File getCanonicalFile() @PolyRead throws IOException {
+    public @PolyRead File getCanonicalFile(@PolyRead File this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
     @Deprecated
-    public @PolyRead URL toURL() @PolyRead throws MalformedURLException {
+    public @PolyRead URL toURL(@PolyRead File this) throws MalformedURLException {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead URI toURI() @PolyRead {
+    public @PolyRead URI toURI(@PolyRead File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canRead() @ReadOnly {
+    public boolean canRead(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canWrite() @ReadOnly {
+    public boolean canWrite(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean exists() @ReadOnly {
+    public boolean exists(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isDirectory() @ReadOnly {
+    public boolean isDirectory(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isFile() @ReadOnly {
+    public boolean isFile(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isHidden() @ReadOnly {
+    public boolean isHidden(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public long lastModified() @ReadOnly {
+    public long lastModified(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public long length() @ReadOnly {
+    public long length(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
     public boolean createNewFile() throws IOException {
@@ -105,19 +105,19 @@ public class File implements Serializable, Comparable<File> {
     public void deleteOnExit() {
         throw new RuntimeException("skeleton method");
     }
-    public String[] list() @ReadOnly {
+    public String[] list(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String[] list(FilenameFilter filter) @ReadOnly {
+    public String[] list(@ReadOnly File this, FilenameFilter filter) {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File [] listFiles() @PolyRead {
+    public @PolyRead File [] listFiles(@PolyRead File this) {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File [] listFiles(FilenameFilter filter) @PolyRead {
+    public @PolyRead File [] listFiles(@PolyRead File this, FilenameFilter filter) {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyRead File [] listFiles(FileFilter filter) @PolyRead {
+    public @PolyRead File [] listFiles(@PolyRead File this, FileFilter filter) {
         throw new RuntimeException("skeleton method");
     }
     public boolean mkdir() {
@@ -153,19 +153,19 @@ public class File implements Serializable, Comparable<File> {
     public boolean setExecutable(boolean executable) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canExecute() @ReadOnly {
+    public boolean canExecute(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
     public static File[] listRoots() {
         throw new RuntimeException("skeleton method");
     }
-    public long getTotalSpace() @ReadOnly {
+    public long getTotalSpace(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public long getFreeSpace() @ReadOnly {
+    public long getFreeSpace(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public long getUsableSpace() @ReadOnly {
+    public long getUsableSpace(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
     public static File createTempFile(String prefix, String suffix, File directory) throws IOException {
@@ -177,19 +177,19 @@ public class File implements Serializable, Comparable<File> {
 //     public static File createTemporaryFile(String prefix, String suffx, @ReadOnly FileAttribute<?>... attrs) {
 //         throw new RuntimeException("skeleton method");
 //     }
-    public int compareTo(@ReadOnly File pathname) @ReadOnly {
+    public int compareTo(@ReadOnly File this, @ReadOnly File pathname) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean equals(@ReadOnly Object obj) @ReadOnly {
+    public boolean equals(@ReadOnly File this, @ReadOnly Object obj) {
         throw new RuntimeException("skeleton method");
     }
-    public int hashCode() @ReadOnly {
+    public int hashCode(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly File this) {
         throw new RuntimeException("skeleton method");
     }
-//     public Path toPath() @ReadOnly {
+//     public Path toPath(@ReadOnly File this) {
 //         throw new RuntimeException("skeleton method");
 //     }
 
