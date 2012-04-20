@@ -226,11 +226,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         String msg;
         Throwable cause;
 
-        public CheckerError() {}
+        public CheckerError() {
+            this.cause = new Throwable();
+        }
 
         public CheckerError(String msg) {
             this.msg = msg;
-            this.cause = null;
+            this.cause = new Throwable();
         }
 
         public CheckerError(String msg, Throwable cause) {
