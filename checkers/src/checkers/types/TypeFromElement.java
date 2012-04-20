@@ -43,6 +43,7 @@ public class TypeFromElement {
      *
      */
     public static void annotate(AnnotatedTypeMirror type, Element element) {
+        // System.out.println("TypeFromElement::annotate: type: " + type + " element: " + element);
         if (element == null) {
             throw new CheckerError("TypeFromElement.annotate: element cannot be null");
         } else if (element.getKind().isField()) {
@@ -172,8 +173,37 @@ public class TypeFromElement {
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
                     case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
-                    case WILDCARD_BOUND:
-                    case WILDCARD_BOUND_COMPONENT:
+                    case LOCAL_VARIABLE:
+                    case LOCAL_VARIABLE_COMPONENT:
+                    case NEW:
+                    case NEW_COMPONENT:
+                    case TYPECAST:
+                    case TYPECAST_COMPONENT:
+                        // Valid in this location, but handled elsewhere.
+                        break;
+                    default: if (strict) {
+                        throw new CheckerError("TypeFromElement.annotateParam: " +
+                                "invalid position " + typeAnno.position + " for annotation: " + typeAnno);
+                    }
+                    }
+                }
+            } else if (element.getSimpleName().contentEquals("this")) {
+                // TODO: Should the ExecutableElement have a way to get the receiver element?
+                // Is there such a thing as the receiver element?
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                    switch (typeAnno.position.type) { 
+                    case METHOD_RECEIVER:
+                    case METHOD_RECEIVER_COMPONENT:
+                        annotate(type, typeAnno);
+                        break;
+                    case METHOD_PARAMETER:
+                    case METHOD_PARAMETER_COMPONENT:
+                    case METHOD_RETURN:
+                    case METHOD_RETURN_COMPONENT:
+                    case THROWS:
+                    case METHOD_TYPE_PARAMETER:
+                    case METHOD_TYPE_PARAMETER_BOUND:
+                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                     case LOCAL_VARIABLE:
                     case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
@@ -189,10 +219,11 @@ public class TypeFromElement {
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateParam: not found in enclosing executable");
+                throw new CheckerError("TypeFromElement.annotateParam: element: " + element +
+                        " not found in enclosing executable: " + enclosing);
             }
         } else if (strict) {
-            throw new CheckerError("TypeFromElement.annotateParam: enclosing element not an executable");
+            throw new CheckerError("TypeFromElement.annotateParam: enclosing element not an executable: " + enclosing);
         }
     }
 
@@ -220,10 +251,6 @@ public class TypeFromElement {
             case FIELD:
             case FIELD_COMPONENT:
                 annotate(type, anno);
-                break;
-            case WILDCARD_BOUND:
-            case WILDCARD_BOUND_COMPONENT:
-                annotateWildcardBound(type, element, anno);
                 break;
             case NEW:
             case NEW_COMPONENT:
@@ -470,10 +497,6 @@ public class TypeFromElement {
                             "invalid method type parameter index (bound) " + pos.parameter_index + " for annotation: " + typeAnno);
                 }
                 break;
-            case WILDCARD_BOUND:
-            case WILDCARD_BOUND_COMPONENT:
-                annotateWildcardBound(type, element, typeAnno);
-                break;
             case LOCAL_VARIABLE:
             case LOCAL_VARIABLE_COMPONENT:
             case NEW:
@@ -487,65 +510,6 @@ public class TypeFromElement {
                         "invalid position " + pos.type + " for annotation: " + typeAnno);
             }
             }
-        }
-    }
-
-    private static void annotateWildcardBound(AnnotatedTypeMirror type,
-            Element element, TypeCompound typeAnno) {
-        final TypeAnnotationPosition pos = typeAnno.position;
-        assert pos.type==TargetType.WILDCARD_BOUND ||
-                pos.type==TargetType.WILDCARD_BOUND_COMPONENT : "Only for wildcard bound positions";
-        
-        final TypeAnnotationPosition wcpos = pos.wildcard_position;
-
-        switch (wcpos.type) {
-        case METHOD_PARAMETER_COMPONENT:
-            AnnotatedExecutableType exetype = (AnnotatedExecutableType) type;
-            final List<AnnotatedTypeMirror> params = exetype.getParameterTypes();
-            if (wcpos.parameter_index >= 0 && wcpos.parameter_index < params.size()) {
-                AnnotatedTypeMirror pi = params.get(wcpos.parameter_index);
-                AnnotatedTypeMirror pigen = getLocationTypeATM(pi, wcpos.location);
-                assert pigen.getKind() == TypeKind.WILDCARD : "Expected wildcard, found: " + pigen;
-                AnnotatedWildcardType wcpigen = (AnnotatedWildcardType) pigen;
-                if (wcpigen.getUnderlyingType().getExtendsBound()!=null) {
-                    // Either extends or super bound is non-null
-                    annotate(wcpigen.getExtendsBound(), typeAnno);
-                } else {
-                    annotate(wcpigen.getSuperBound(), typeAnno);
-                }
-            } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateWildcardBound: " +
-                        "invalid parameter index " + wcpos.parameter_index + " for annotation: " + typeAnno);
-            }
-            break;
-        case METHOD_RETURN_COMPONENT:
-            AnnotatedExecutableType rexetype = (AnnotatedExecutableType) type;
-            AnnotatedTypeMirror ret = rexetype.getReturnType();
-            AnnotatedTypeMirror rgen = getLocationTypeATM(ret, wcpos.location);
-            assert rgen.getKind() == TypeKind.WILDCARD : "Expected wildcard, found: " + rgen;
-            AnnotatedWildcardType wcrgen = (AnnotatedWildcardType) rgen;
-            if (wcrgen.getUnderlyingType().getExtendsBound()!=null) {
-                // Either extends or super bound is non-null
-                annotate(wcrgen.getExtendsBound(), typeAnno);
-            } else {
-                annotate(wcrgen.getSuperBound(), typeAnno);
-            }
-            break;
-        case FIELD_COMPONENT:
-            AnnotatedTypeMirror gen = getLocationTypeATM(type, wcpos.location);
-            assert gen.getKind() == TypeKind.WILDCARD : "Expected wildcard, found: " + gen;
-            AnnotatedWildcardType wcgen = (AnnotatedWildcardType) gen;
-            if (wcgen.getUnderlyingType().getExtendsBound()!=null) {
-                // Either extends or super bound is non-null
-                annotate(wcgen.getExtendsBound(), typeAnno);
-            } else {
-                annotate(wcgen.getSuperBound(), typeAnno);
-            }
-            break;
-        default: if (strict) {
-            throw new CheckerError("TypeFromElement.annotateWildcardBound: " +
-                    "invalid position " + wcpos.type + " for annotation: " + typeAnno);
-        }
         }
     }
 
@@ -594,6 +558,7 @@ public class TypeFromElement {
     }
 
     private static void annotate(AnnotatedTypeMirror type, List<Integer> location, List<? extends AnnotationMirror> annotations) {
+        // System.out.printf("TypeFromElement.annotate: type: %s, location: %s, annos: %s%n", type, location, annotations);
         AnnotatedTypeMirror inner = getLocationTypeATM(type, location);
         inner.addAnnotations(annotations);
     }
@@ -603,6 +568,8 @@ public class TypeFromElement {
             return type;
         } else if (type.getKind() == TypeKind.DECLARED) {
             return getLocationTypeADT((AnnotatedDeclaredType)type, location);
+        } else if (type.getKind() == TypeKind.WILDCARD) {
+            return getLocationTypeAWT((AnnotatedWildcardType)type, location);
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType)type, location);
         } else {
@@ -621,7 +588,24 @@ public class TypeFromElement {
             // throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
             //        "invalid locations " + location + " for type: " + type);
             if (strict) {
-                System.out.println("TypeFromElement.getLocationTypeADT: handle outer classes.");
+                System.out.println("TypeFromElement.getLocationTypeADT: something is wrong!\n" +
+                        "    Found location: " + location + " for type: " + type);
+            }
+            return type;
+        }
+    }
+
+    private static AnnotatedTypeMirror getLocationTypeAWT(AnnotatedWildcardType type,  List<Integer> location) {
+        if (location.isEmpty()) {
+            return type;
+        } else if (location.get(0) == 0) {
+            List<AnnotatedTypeMirror> bounds = getBounds(type);
+            // TODO: what should happen if bounds is empty or has more than one entry?
+            return getLocationTypeATM(bounds.get(0), tail(location));
+        } else {
+            if (strict) {
+                System.out.println("TypeFromElement.getLocationTypeAWT: type not handled.\n" +
+                        "    Found location: " + location + " for type: " + type);
             }
             return type;
         }
