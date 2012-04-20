@@ -56,7 +56,7 @@
     <target name="etags" depends="tags">
     </target>
     <target name="tags" description="Create Emacs TAGS table">
-      <exec executable="/bin/sh">
+      <exec executable="/bin/sh" failonerror="true">
 	<arg value="-c"/>
 	<arg value="etags `find -name '*.java' | sort-directory-order`"/>
       </exec>

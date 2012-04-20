@@ -215,7 +215,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
-        <exec executable="/bin/sh">
+        <exec executable="/bin/sh" failonerror="true">
             <arg value="-c"/>
             <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
@@ -398,7 +398,7 @@ ${build.version} of the 'javac.jar' library."/>
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests"
       description="Run extra tests for the Nullness checker">
-      <exec executable="make">
+      <exec executable="make" failonerror="true">
 	<env key="JAVAC" value="${basedir}/binary/javac"/>
 	<arg line="-C tests/nullness-extra/"/>
       </exec>
