@@ -336,7 +336,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         // case 13
-        final AnnotatedTypeMirror select = rawnessFactory.getReceiverType((ExpressionTree) tree);
+        final AnnotatedTypeMirror select = rawnessFactory.getReceiverType(tree);
         if (select != null && select.hasEffectiveAnnotation(RAW)
                 && !type.hasEffectiveAnnotation(NULLABLE)
                 && !type.getKind().isPrimitive()) {
