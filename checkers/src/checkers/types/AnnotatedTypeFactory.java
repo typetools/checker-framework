@@ -737,9 +737,16 @@ public class AnnotatedTypeFactory {
                 // TODO: is this fixed?
                 return getSelfType(tree);
             } else {
+                TreePath path = getPath(tree);
+                if (path == null) {
+                    // The path is null if the field is in a compilation unit we haven't
+                    // processed yet. TODO: is there a better way?
+                    // This only arises in the Nullness Checker when substituting rawness.
+                    return null;
+                }
                 TypeElement typeElt = ElementUtils.enclosingClass(element);
                 if (typeElt == null) {
-                    throw new AssertionError("enclosingClass()==null for element: " + element);
+                    throw new CheckerError("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + element);
                 }
                 // TODO: method receiver annotations on outer this
                 return getEnclosingType(typeElt, tree);
@@ -760,7 +767,7 @@ public class AnnotatedTypeFactory {
 
         TypeElement typeElt = ElementUtils.enclosingClass(rcvelem);
         if (typeElt == null) {
-            throw new AssertionError("enclosingClass()==null for element: " + rcvelem);
+            throw new CheckerError("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + rcvelem);
         }
 
         AnnotatedDeclaredType type = getAnnotatedType(typeElt);
@@ -1016,7 +1023,7 @@ public class AnnotatedTypeFactory {
                             " type variables and the inferred method type arguments. Something is going wrong!");
                     System.err.println("Method type variables: " + methodType.getTypeVariables());
                     System.err.println("Inferred method type arguments: " + typeVarMapping);
-                    throw new AssertionError("Mismatch between declared method type variables and the inferred method type arguments!");
+                    throw new CheckerError("AnnotatedTypeFactory.methodFromUse: mismatch between declared method type variables and the inferred method type arguments!");
                 }
                 typeargs.add(typeVarMapping.get(tv));
             }
@@ -1416,7 +1423,7 @@ public class AnnotatedTypeFactory {
 
         TreePath path = getPath(tree);
         if (path == null) {
-            throw new AssertionError(String.format("getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
+            throw new CheckerError(String.format("getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
                                                    TreePath.getPath(root, tree), tree.getClass(), tree, root));
         }
         for (Tree pathTree : path) {
@@ -1565,7 +1572,7 @@ public class AnnotatedTypeFactory {
     /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
     private void buildIndexTypes() {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
-            throw new Error("buildIndexTypes called more than once");
+            throw new CheckerError("AnnotatedTypeFactory.buildIndexTypes called more than once");
         }
 
         Map<Element, AnnotatedTypeMirror> indexTypes
