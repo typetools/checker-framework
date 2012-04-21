@@ -40,7 +40,7 @@ public class FilterInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported() @ReadOnly {
+    public boolean markSupported(@ReadOnly FilterInputStream this) {
         throw new RuntimeException("skeleton method");
     }
 }

@@ -41,7 +41,7 @@ public class DependentTypes {
   public void setDepSubQualGOOD1(@NonNull String s) {
     privateDepSubQual = s;
   }
-  public void setDepSubQualGOOD2(@Nullable String s) @SuperQual {
+  public void setDepSubQualGOOD2(@SuperQual DependentTypes this, @Nullable String s) {
     privateDepSubQual = s;
   }
 
@@ -54,13 +54,13 @@ public class DependentTypes {
   public @Nullable String getDepSuperQualGOOD1() {
     return privateDepSuperQual;
   }
-  public @NonNull String getDepSuperQualGOOD2() @SuperQual {
+  public @NonNull String getDepSuperQualGOOD2(@SuperQual DependentTypes this) {
     return privateDepSuperQual;
   }
   public void setDepSuperQual(@Nullable @Dependent(result = NonNull.class, when=SuperQual.class) String s) {
     privateDepSuperQual = s;
   }
-  public void setDepSuperQualOTHERGOOD(@NonNull String s) @SuperQual {
+  public void setDepSuperQualOTHERGOOD(@SuperQual DependentTypes this, @NonNull String s) {
     privateDepSuperQual = s;
   }
 

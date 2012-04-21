@@ -7,10 +7,10 @@ import javax.lang.model.type.*;
 import checkers.javari.quals.*;
 
 public interface ExecutableElement extends Element, Parameterizable {
-    @PolyRead List<? extends TypeParameterElement> getTypeParameters() @PolyRead;
-    TypeMirror getReturnType() @ReadOnly;
-    @PolyRead List<? extends VariableElement> getParameters() @PolyRead;
-    boolean isVarArgs() @ReadOnly;
-    @PolyRead List<? extends TypeMirror> getThrownTypes() @PolyRead;
-    @PolyRead AnnotationValue getDefaultValue() @PolyRead;
+    @PolyRead List<? extends TypeParameterElement> getTypeParameters(@PolyRead ExecutableElement this);
+    TypeMirror getReturnType(@ReadOnly ExecutableElement this);
+    @PolyRead List<? extends VariableElement> getParameters(@PolyRead ExecutableElement this);
+    boolean isVarArgs(@ReadOnly ExecutableElement this);
+    @PolyRead List<? extends TypeMirror> getThrownTypes(@PolyRead ExecutableElement this);
+    @PolyRead AnnotationValue getDefaultValue(@PolyRead ExecutableElement this);
 }

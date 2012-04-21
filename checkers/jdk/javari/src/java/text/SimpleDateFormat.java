@@ -27,7 +27,7 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public Date get2DigitYearStart() @ReadOnly {
+    public Date get2DigitYearStart(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,11 +43,11 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toPattern() @ReadOnly {
+    public String toPattern(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toLocalizedPattern() @ReadOnly {
+    public String toLocalizedPattern(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -59,7 +59,7 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public DateFormatSymbols getDateFormatSymbols() @ReadOnly {
+    public DateFormatSymbols getDateFormatSymbols(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -67,15 +67,15 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object clone() @ReadOnly {
+    public Object clone(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int hashCode() @ReadOnly {
+    public int hashCode(@ReadOnly SimpleDateFormat this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadOnly Object obj) @ReadOnly {
+    public boolean equals(@ReadOnly SimpleDateFormat this, @ReadOnly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 }
