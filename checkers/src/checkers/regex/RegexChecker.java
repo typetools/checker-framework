@@ -94,7 +94,7 @@ public class RegexChecker extends BaseTypeChecker {
 
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-      return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
+        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
     }
 
     /**
