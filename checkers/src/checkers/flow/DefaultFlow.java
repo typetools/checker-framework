@@ -76,8 +76,10 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
     @Override
     protected void propagate(Tree lhs, ExpressionTree rhs) {
-        if (debug != null)
+        if (debug != null) {
             debug.println("Flow: try propagate from rhs: " + rhs + " into lhs: " + lhs);
+            debug.println("  flowState before propagate: " + flowState);
+        }
 
         // Skip assignment to arrays.
         if (lhs.getKind() == Tree.Kind.ARRAY_ACCESS)
@@ -125,14 +127,17 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         }
 
         for (AnnotationMirror annotation : this.flowState.annotations) {
+            AnnotationMirror annotationRoot = annoRelations.getRootAnnotation(annotation);
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
             if (AnnotationUtils.containsSame(typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
                 // to ensure that there is always just one annotation set, we
-                // first clear the annotation that was previously used
+                // first clear the annotation that was previously used (if in the same hierarchy)
                 for (AnnotationMirror other : this.flowState.annotations) {
-                    flowState.annos.clear(other, idx);
+                    if (annoRelations.isSubtype(other, annotationRoot)) {
+                        flowState.annos.clear(other, idx);
+                    }
                 }
                 flowState.annos.set(annotation, idx);
             } else if (rIdx >= 0 && flowState.annos.get(annotation, rIdx)) {
@@ -193,7 +198,6 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
     @Override
     protected void recordBitsImps(Tree tree, Element elt) {
-
         int idx = this.flowState.vars.indexOf(elt);
         // If the variable has not been previously encountered, add it to the
         // list of variables. (We can't use newVar here since we don't have the
@@ -205,16 +209,32 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
         if (idx >= 0) {
             for (AnnotationMirror annotation : this.flowState.annotations) {
-                if (debug != null)
+                if (debug != null) {
                     debug.println("Flow: recordBits(" + tree + ") + " + annotation + " "
                             + flowState.annos.get(annotation, idx) + " as " + tree.getKind());
+                }
                 if (flowState.annos.get(annotation, idx)) {
                     Set<AnnotationMirror> existing = flowResults.get(tree);
 
                     // Don't replace the existing annotation unless the current
                     // annotation is *more* specific than the existing one.
-                    if (existing == null || annoRelations.isSubtype(existing, Collections.singleton(annotation))) {
+                    if (existing == null) {
                         addFlowResult(flowResults, tree, annotation);
+                    } else {
+                        AnnotationMirror annotationRoot = annoRelations.getRootAnnotation(annotation);
+                        boolean inExisting = false;
+                        for (AnnotationMirror ex : existing) {
+                            if (annoRelations.isSubtype(ex, annotationRoot)) {
+                                inExisting = true;
+                            }
+                            if (annoRelations.isSubtype(ex, annotation)) {
+                                // TODO: isn't this logic inverted here? Shouldn't we test the other direction?
+                                addFlowResult(flowResults, tree, annotation);
+                            }
+                        }
+                        if (!inExisting) {
+                            addFlowResult(flowResults, tree, annotation);
+                        }
                     }
                 } else {
                     Set<AnnotationMirror> exists = flowResults.get(tree);
@@ -239,11 +259,12 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         if (!isPure) {
             for (int i = 0; i < this.flowState.vars.size(); i++) {
                 Element var = this.flowState.vars.get(i);
-                for (AnnotationMirror a : this.flowState.annotations)
+                for (AnnotationMirror a : this.flowState.annotations) {
                     if (!isJDKMethod && isNonFinalField(var)
                             && !varDefHasAnnotation(enclMeth, a, var)) {
                         flowState.annos.clear(a, i);
                     }
+                }
             }
         }
     }
