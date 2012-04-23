@@ -93,24 +93,30 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
-
-        if (type.isAnnotated())
-            return null;
-
         // If this tree's kind is in treeKinds, annotate the type.
         // If this tree's class or any of its interfaces are in treeClasses,
         // annotate the type, and if it was an interface add a mapping for it to
         // treeClasses.
 
-        if (treeKinds.containsKey(tree.getKind()))
-            type.addAnnotation(treeKinds.get(tree.getKind()));
-        else if (!treeClasses.isEmpty()) {
+        if (treeKinds.containsKey(tree.getKind())) {
+            AnnotationMirror fnd = treeKinds.get(tree.getKind());
+            if (!type.isAnnotatedInHierarchy(fnd)) {
+                type.addAnnotation(fnd);
+            }
+        } else if (!treeClasses.isEmpty()) {
             Class<? extends Tree> t = tree.getClass();
-            if (treeClasses.containsKey(t))
-                type.addAnnotation(treeClasses.get(t));
+            if (treeClasses.containsKey(t)) {
+                AnnotationMirror fnd = treeClasses.get(t);
+                if (!type.isAnnotatedInHierarchy(fnd)) {
+                    type.addAnnotation(fnd);
+                }
+            }
             for (Class<?> c : t.getInterfaces()) {
                 if (treeClasses.containsKey(c)) {
-                    type.addAnnotation(treeClasses.get(c));
+                    AnnotationMirror fnd = treeClasses.get(c);
+                    if (!type.isAnnotatedInHierarchy(fnd)) {
+                        type.addAnnotation(fnd);
+                    }
                     treeClasses.put(t, treeClasses.get(c));
                 }
             }
