@@ -631,7 +631,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     private void markTree(Tree node, AnnotationMirror anno) {
-        flowResults.put(node, anno);
+        addFlowResult(flowResults, node, anno);
     }
 
     @Override
