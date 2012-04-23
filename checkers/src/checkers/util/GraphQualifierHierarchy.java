@@ -72,7 +72,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         if (roots.size() != 1) {
             checker.errorAbort("Expected 1 possible root, found "
                                + roots.size()
-                               + " (does the checker know about all type qualifiers?):: "
+                               + " (does the checker know about all type qualifiers?): "
                                + roots);
         }
         return this.roots;
