@@ -1,5 +1,6 @@
 package checkers.flow;
 
+import java.util.Collections;
 import java.util.Set;
 
 import javax.lang.model.element.*;
@@ -208,18 +209,22 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
                     debug.println("Flow: recordBits(" + tree + ") + " + annotation + " "
                             + flowState.annos.get(annotation, idx) + " as " + tree.getKind());
                 if (flowState.annos.get(annotation, idx)) {
-                    AnnotationMirror existing = flowResults.get(tree);
+                    Set<AnnotationMirror> existing = flowResults.get(tree);
 
                     // Don't replace the existing annotation unless the current
                     // annotation is *more* specific than the existing one.
-                    if (existing == null || annoRelations.isSubtype(existing, annotation))
-                        flowResults.put(tree, annotation);
-                } else if (flowResults.get(tree) == annotation) {
-                    // We inferred an annotation in this location that is not
-                    // applicable anymore
-                    // occurs in loop where an assignment invalidates the
-                    // condition in the next round
-                    flowResults.remove(tree);
+                    if (existing == null || annoRelations.isSubtype(existing, Collections.singleton(annotation))) {
+                        addFlowResult(flowResults, tree, annotation);
+                    }
+                } else {
+                    Set<AnnotationMirror> exists = flowResults.get(tree);
+                    if (exists!=null && exists.contains(annotation)) {
+                        // We inferred an annotation in this location that is not
+                        // applicable anymore
+                        // occurs in loop where an assignment invalidates the
+                        // condition in the next round
+                        removeFlowResult(flowResults, tree, annotation);
+                    }
                 }
             }
         }

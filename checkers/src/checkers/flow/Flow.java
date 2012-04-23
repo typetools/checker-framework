@@ -1,6 +1,7 @@
 package checkers.flow;
 
 import java.io.PrintStream;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -23,10 +24,10 @@ public interface Flow {
      * Determines the inference result for a tree.
      *
      * @param tree The tree to test
-     * @return The annotation inferred for a tree, or null if no annotation was
+     * @return The set of annotations inferred for a tree, or null if no annotation was
      *         inferred for that tree
      */
-    AnnotationMirror test(Tree tree);
+    Set<AnnotationMirror> test(Tree tree);
 
     /**
      * Sets the {@link PrintStream} for printing debug messages, such as

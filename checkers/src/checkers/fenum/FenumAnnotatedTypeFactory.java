@@ -52,11 +52,11 @@ public class FenumAnnotatedTypeFactory extends
 
       defaults.annotate(tree, type);
 
-      final AnnotationMirror inferred = flow.test(tree);
+      final Set<AnnotationMirror> inferred = flow.test(tree);
       if (inferred != null && type.getKind()!=TypeKind.TYPEVAR) {
         // TODO: Flow incorrectly infers an annotation for type variables
         type.clearAnnotations();
-        type.addAnnotation(inferred);
+        type.addAnnotations(inferred);
         // System.out.println("Inferred: " + type);
       }
       // completer.visit(type);
