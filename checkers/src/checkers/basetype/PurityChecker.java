@@ -56,7 +56,6 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.TreePath;
 
 /**
  * A visitor that checks the purity (as defined by {@link checkers.quals.Pure})
@@ -67,9 +66,9 @@ import com.sun.source.util.TreePath;
  */
 public class PurityChecker {
 
-    public static Result checkPurity(TreePath methodBodyPath) {
+    public static Result checkPurity(Tree method) {
         PurityCheckerHelper helper = new PurityCheckerHelper();
-        Result res = helper.scan(methodBodyPath, new PureResult());
+        Result res = helper.scan(method, new PureResult());
         return res;
     }
 
@@ -130,44 +129,20 @@ public class PurityChecker {
          * Scan a single node.
          */
         public Result scan(Tree node, Result p) {
-            return node.accept(this, p);
-        }
-
-        private Result scanAndReduce(Tree node, Result p, Result r) {
-            return reduce(scan(node, p), r);
-        }
-
-        private Result scanAndReduce(Iterable<? extends Tree> nodes, Result p,
-                Result r) {
-            return reduce(scan(nodes, p), r);
+            return node == null ? p : node.accept(this, p);
         }
 
         /**
          * Scan a list of nodes.
          */
         public Result scan(Iterable<? extends Tree> nodes, Result p) {
-            Result r = null;
+            Result r = p;
             if (nodes != null) {
-                boolean first = true;
                 for (Tree node : nodes) {
-                    r = (first ? scan(node, p) : scanAndReduce(node, p, r));
-                    first = false;
+                    r = scan(node, r);
                 }
             }
             return r;
-        }
-
-        /**
-         * Reduces two results into a combined result. The default
-         * implementation is to return the first parameter. The general contract
-         * of the method is that it may take any action whatsoever.
-         */
-        public Result reduce(Result r1, Result r2) {
-            if (r1 != null && r2 != null && r1.isPure() && r2.isPure()) {
-                return new PureResult();
-            } else {
-                return new NonPureResult("TODO");
-            }
         }
 
         /* ***************************************************************************
@@ -208,28 +183,28 @@ public class PurityChecker {
 
         public Result visitDoWhileLoop(DoWhileLoopTree node, Result p) {
             Result r = scan(node.getStatement(), p);
-            r = scanAndReduce(node.getCondition(), p, r);
+            r = scan(node.getCondition(), r);
             return r;
         }
 
         public Result visitWhileLoop(WhileLoopTree node, Result p) {
             Result r = scan(node.getCondition(), p);
-            r = scanAndReduce(node.getStatement(), p, r);
+            r = scan(node.getStatement(), r);
             return r;
         }
 
         public Result visitForLoop(ForLoopTree node, Result p) {
             Result r = scan(node.getInitializer(), p);
-            r = scanAndReduce(node.getCondition(), p, r);
-            r = scanAndReduce(node.getUpdate(), p, r);
-            r = scanAndReduce(node.getStatement(), p, r);
+            r = scan(node.getCondition(), r);
+            r = scan(node.getUpdate(), r);
+            r = scan(node.getStatement(), r);
             return r;
         }
 
         public Result visitEnhancedForLoop(EnhancedForLoopTree node, Result p) {
             Result r = scan(node.getVariable(), p);
-            r = scanAndReduce(node.getExpression(), p, r);
-            r = scanAndReduce(node.getStatement(), p, r);
+            r = scan(node.getExpression(), r);
+            r = scan(node.getStatement(), r);
             return r;
         }
 
@@ -239,48 +214,48 @@ public class PurityChecker {
 
         public Result visitSwitch(SwitchTree node, Result p) {
             Result r = scan(node.getExpression(), p);
-            r = scanAndReduce(node.getCases(), p, r);
+            r = scan(node.getCases(), r);
             return r;
         }
 
         public Result visitCase(CaseTree node, Result p) {
             Result r = scan(node.getExpression(), p);
-            r = scanAndReduce(node.getStatements(), p, r);
+            r = scan(node.getStatements(), r);
             return r;
         }
 
         public Result visitSynchronized(SynchronizedTree node, Result p) {
             Result r = scan(node.getExpression(), p);
-            r = scanAndReduce(node.getBlock(), p, r);
+            r = scan(node.getBlock(), r);
             return r;
         }
 
         public Result visitTry(TryTree node, Result p) {
             Result r = scan(node.getResources(), p);
-            r = scanAndReduce(node.getBlock(), p, r);
-            r = scanAndReduce(node.getCatches(), p, r);
-            r = scanAndReduce(node.getFinallyBlock(), p, r);
+            r = scan(node.getBlock(), r);
+            r = scan(node.getCatches(), r);
+            r = scan(node.getFinallyBlock(), r);
             return r;
         }
 
         public Result visitCatch(CatchTree node, Result p) {
             Result r = scan(node.getParameter(), p);
-            r = scanAndReduce(node.getBlock(), p, r);
+            r = scan(node.getBlock(), r);
             return r;
         }
 
         public Result visitConditionalExpression(
                 ConditionalExpressionTree node, Result p) {
             Result r = scan(node.getCondition(), p);
-            r = scanAndReduce(node.getTrueExpression(), p, r);
-            r = scanAndReduce(node.getFalseExpression(), p, r);
+            r = scan(node.getTrueExpression(), r);
+            r = scan(node.getFalseExpression(), r);
             return r;
         }
 
         public Result visitIf(IfTree node, Result p) {
             Result r = scan(node.getCondition(), p);
-            r = scanAndReduce(node.getThenStatement(), p, r);
-            r = scanAndReduce(node.getElseStatement(), p, r);
+            r = scan(node.getThenStatement(), r);
+            r = scan(node.getElseStatement(), r);
             return r;
         }
 
@@ -307,13 +282,13 @@ public class PurityChecker {
 
         public Result visitAssert(AssertTree node, Result p) {
             Result r = scan(node.getCondition(), p);
-            r = scanAndReduce(node.getDetail(), p, r);
+            r = scan(node.getDetail(), r);
             return r;
         }
 
         public Result visitMethodInvocation(MethodInvocationTree node, Result p) {
             Result r = scan(node.getMethodSelect(), p);
-            r = scanAndReduce(node.getArguments(), p, r);
+            r = scan(node.getArguments(), r);
             // TODO: nonpure call
             return r;
         }
@@ -321,23 +296,23 @@ public class PurityChecker {
         public Result visitNewClass(NewClassTree node, Result p) {
             Result r = scan(node.getEnclosingExpression(), new NonPureResult(
                     "creation of new object", p));
-            r = scanAndReduce(node.getIdentifier(), p, r);
-            r = scanAndReduce(node.getTypeArguments(), p, r);
-            r = scanAndReduce(node.getArguments(), p, r);
-            r = scanAndReduce(node.getClassBody(), p, r);
+            r = scan(node.getIdentifier(), r);
+            r = scan(node.getTypeArguments(), r);
+            r = scan(node.getArguments(), r);
+            r = scan(node.getClassBody(), r);
             return r;
         }
 
         public Result visitNewArray(NewArrayTree node, Result p) {
             Result r = scan(node.getType(), p);
-            r = scanAndReduce(node.getDimensions(), p, r);
-            r = scanAndReduce(node.getInitializers(), p, r);
+            r = scan(node.getDimensions(), r);
+            r = scan(node.getInitializers(), r);
             return r;
         }
 
         public Result visitLambdaExpression(LambdaExpressionTree node, Result p) {
             Result r = scan(node.getParameters(), p);
-            r = scanAndReduce(node.getBody(), p, r);
+            r = scan(node.getBody(), r);
             return r;
         }
 
@@ -349,19 +324,21 @@ public class PurityChecker {
             ExpressionTree variable = node.getVariable();
             p = assignmentCheck(p, variable);
             Result r = scan(variable, p);
-            r = scanAndReduce(node.getExpression(), p, r);
+            r = scan(node.getExpression(), r);
             return r;
         }
 
         protected Result assignmentCheck(Result p, ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // rhs is a field access
-                p = new NonPureResult("assignment to field", p);
+                p = new NonPureResult("assignment to field '"
+                        + TreeUtils.getFieldName(variable) + "'", p);
             } else if (variable instanceof ArrayAccessTree) {
                 // allow only local variables for the array
                 ArrayAccessTree a = (ArrayAccessTree) variable;
                 if (!isLocalVariable(a.getExpression())) {
-                    p = new NonPureResult("assignment to array field", p);
+                    p = new NonPureResult("assignment to non-local array '"
+                            + a.getExpression() + "'", p);
                 }
             } else {
                 // rhs is a local variable
@@ -380,7 +357,7 @@ public class PurityChecker {
             ExpressionTree variable = node.getVariable();
             p = assignmentCheck(p, variable);
             Result r = scan(variable, p);
-            r = scanAndReduce(node.getExpression(), p, r);
+            r = scan(node.getExpression(), r);
             return r;
         }
 
@@ -390,7 +367,7 @@ public class PurityChecker {
 
         public Result visitBinary(BinaryTree node, Result p) {
             Result r = scan(node.getLeftOperand(), p);
-            r = scanAndReduce(node.getRightOperand(), p, r);
+            r = scan(node.getRightOperand(), r);
             return r;
         }
 
@@ -406,7 +383,7 @@ public class PurityChecker {
 
         public Result visitArrayAccess(ArrayAccessTree node, Result p) {
             Result r = scan(node.getExpression(), p);
-            r = scanAndReduce(node.getIndex(), p, r);
+            r = scan(node.getIndex(), r);
             return r;
         }
 
