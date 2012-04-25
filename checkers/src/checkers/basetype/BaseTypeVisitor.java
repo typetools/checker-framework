@@ -8,11 +8,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.flow.cfg.CFGBuilder;
-import checkers.flow.cfg.ControlFlowGraph;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.Pure;
@@ -222,10 +217,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 if (node.getReturnType().toString().equals("void")) {
                     checker.report(Result.warning("pure.void.method"), node);
                 }
-                TreePath methodBodyPath = new TreePath(getCurrentPath(),
-                        node.getBody());
                 checkers.basetype.PurityChecker.Result r = PurityChecker
-                        .checkPurity(methodBodyPath);
+                        .checkPurity(node.getBody());
                 if (!r.isPure()) {
                     checker.report(
                             Result.failure("pure.not.pure", r.getReason()),
