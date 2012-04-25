@@ -1,5 +1,11 @@
 package checkers.basetype;
 
+import java.util.List;
+
+import javax.lang.model.element.Element;
+
+import checkers.quals.Pure;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -66,9 +72,11 @@ import com.sun.source.tree.WildcardTree;
  */
 public class PurityChecker {
 
-    public static Result checkPurity(Tree method) {
-        PurityCheckerHelper helper = new PurityCheckerHelper();
-        Result res = helper.scan(method, new PureResult());
+    public static Result checkPurity(MethodTree method,
+            AnnotatedTypeFactory atypeFactory) {
+        PurityCheckerHelper helper = new PurityCheckerHelper(method,
+                atypeFactory);
+        Result res = helper.scan(method.getBody(), new PureResult());
         return res;
     }
 
@@ -122,8 +130,18 @@ public class PurityChecker {
         }
     }
 
-    private static class PurityCheckerHelper implements
+    protected static class PurityCheckerHelper implements
             TreeVisitor<Result, Result> {
+
+        protected AnnotatedTypeFactory atypeFactory;
+        protected MethodTree method;
+        protected/* @Nullable */List<Element> methodParameter;
+
+        public PurityCheckerHelper(MethodTree method,
+                AnnotatedTypeFactory atypeFactory) {
+            this.atypeFactory = atypeFactory;
+            this.method = method;
+        }
 
         /**
          * Scan a single node.
@@ -287,9 +305,14 @@ public class PurityChecker {
         }
 
         public Result visitMethodInvocation(MethodInvocationTree node, Result p) {
+            Element elt = TreeUtils.elementFromUse(node);
+            boolean isPureCall = atypeFactory
+                    .getDeclAnnotation(elt, Pure.class) != null;
+            if (!isPureCall) {
+                p = new NonPureResult("non-pure method call to method", p);
+            }
             Result r = scan(node.getMethodSelect(), p);
             r = scan(node.getArguments(), r);
-            // TODO: nonpure call
             return r;
         }
 
@@ -334,12 +357,10 @@ public class PurityChecker {
                 p = new NonPureResult("assignment to field '"
                         + TreeUtils.getFieldName(variable) + "'", p);
             } else if (variable instanceof ArrayAccessTree) {
-                // allow only local variables for the array
+                // rhs is array access
                 ArrayAccessTree a = (ArrayAccessTree) variable;
-                if (!isLocalVariable(a.getExpression())) {
-                    p = new NonPureResult("assignment to non-local array '"
-                            + a.getExpression() + "'", p);
-                }
+                p = new NonPureResult("assignment to array '"
+                        + a.getExpression() + "'", p);
             } else {
                 // rhs is a local variable
                 assert isLocalVariable(variable);
