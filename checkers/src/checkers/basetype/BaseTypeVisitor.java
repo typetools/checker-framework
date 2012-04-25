@@ -218,7 +218,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     checker.report(Result.warning("pure.void.method"), node);
                 }
                 checkers.basetype.PurityChecker.Result r = PurityChecker
-                        .checkPurity(node.getBody());
+                        .checkPurity(node, atypeFactory);
                 if (!r.isPure()) {
                     checker.report(
                             Result.failure("pure.not.pure", r.getReason()),
