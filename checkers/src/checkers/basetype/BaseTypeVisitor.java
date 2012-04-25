@@ -216,16 +216,20 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             
             // check method purity if needed
             // TODO: warning keys
-            boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt, Pure.class) != null;
+            boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt,
+                    Pure.class) != null;
             if (hasPureAnnotation) {
                 if (node.getReturnType().toString().equals("void")) {
                     checker.report(Result.warning("pure.void.method"), node);
                 }
-                PurityChecker purityChecker = new PurityChecker();
-                TreePath methodBodyPath = new TreePath(getCurrentPath(), node.getBody());
-                boolean isPure = purityChecker.isPure(methodBodyPath);
-                if (!isPure) {
-                    checker.report(Result.failure("pure.not.pure"), node);
+                TreePath methodBodyPath = new TreePath(getCurrentPath(),
+                        node.getBody());
+                checkers.basetype.PurityChecker.Result r = PurityChecker
+                        .checkPurity(methodBodyPath);
+                if (!r.isPure()) {
+                    checker.report(
+                            Result.failure("pure.not.pure", r.getReason()),
+                            node);
                 }
             }
 
