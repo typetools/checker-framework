@@ -80,9 +80,18 @@ public class PurityChecker {
         return res;
     }
 
+    /**
+     * Result of the {@link PurityChecker}.
+     */
     public static abstract class Result {
+
+        /** Is the method pure? */
         public abstract boolean isPure();
 
+        /**
+         * @return The reason why the method might not be pure (only applicable
+         *         if {@code isPure()} returns {@code false}).
+         */
         public abstract String getReason();
     }
 
@@ -130,6 +139,13 @@ public class PurityChecker {
         }
     }
 
+    /**
+     * Helper class to keep {@link PurityChecker}s interface clean. The
+     * implementation is heavily based on {@link TreeScanner}, but some parts of
+     * the AST are skipped (such as types or modifiers). Furthermore, scanning
+     * works differently in that the input parameter (usually named {@code p})
+     * gets "threaded through", instead of using {@code reduce}.
+     */
     protected static class PurityCheckerHelper implements
             TreeVisitor<Result, Result> {
 
@@ -162,11 +178,6 @@ public class PurityChecker {
             }
             return r;
         }
-
-        /* ***************************************************************************
-         * Visitor methods
-         * *******************************************************
-         */
 
         public Result visitCompilationUnit(CompilationUnitTree node, Result p) {
             assert false : "this type of tree is unexpected here";
