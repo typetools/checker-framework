@@ -6,6 +6,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 
 import checkers.quals.*;
+import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -29,8 +30,8 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory factory;
     private final AnnotationUtils annoFactory;
 
-	private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
-			new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
+    private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
+            new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
 
     private final Map<String, String> qualifiedNameMap;
 
@@ -56,17 +57,17 @@ public class QualifierDefaults {
      * writing the @DefaultQualifier annotation.
      */
     public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, Set<DefaultLocation> locations) {
-    	for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
-    		AnnotationMirror anno = def.first;
-    		QualifierHierarchy qh = factory.getQualifierHierarchy();
-    		if (!absoluteDefaultAnno.equals(anno) &&
-    				qh.isSubtype(absoluteDefaultAnno, qh.getRootAnnotation(anno))) {
+        for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
+            AnnotationMirror anno = def.first;
+            QualifierHierarchy qh = factory.getQualifierHierarchy();
+            if (!absoluteDefaultAnno.equals(anno) &&
+                    qh.isSubtype(absoluteDefaultAnno, qh.getRootAnnotation(anno))) {
                 // TODO: get a Checker for a nicer error message
-    			throw new Error("Only one qualifier from a hierarchy can be the default! Existing: "
-    				+ absoluteDefaults + " and new: " + absoluteDefaultAnno);
-    		}
-    	}
-    	absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
+                throw new SourceChecker.CheckerError("Only one qualifier from a hierarchy can be the default! Existing: "
+                        + absoluteDefaults + " and new: " + absoluteDefaultAnno);
+            }
+        }
+        absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
     }
 
     public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
@@ -268,7 +269,7 @@ public class QualifierDefaults {
         if (anno == null)
             return;
         if (factory.isSupportedQualifier(anno)) {
-        	new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
+            new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
         }
     }
 
@@ -309,11 +310,11 @@ public class QualifierDefaults {
                     && t == type) {
 
                 if (localVarDefaultAnnos != null) {
-                	for (AnnotationMirror anno : localVarDefaultAnnos) {
-                		if (!t.isAnnotatedInHierarchy(anno)) {
-                			t.addAnnotation(anno);
-                		}
-                	}
+                    for (AnnotationMirror anno : localVarDefaultAnnos) {
+                        if (!t.isAnnotatedInHierarchy(anno)) {
+                            t.addAnnotation(anno);
+                        }
+                    }
                 }
 
                 return super.scan(t, p);

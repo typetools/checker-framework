@@ -304,21 +304,22 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         treeAnnotator.visit(tree, type);
 
         CFValue as = flowResult.getValue(tree);
-        // TODO: handle inference of more than one qualifier
-        final AnnotationMirror inferred = as != null ? as.getAnnotations().iterator().next() : null;
+        final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations() : null;
         if (inferred != null) {
-            if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations().iterator().next())) {
+                if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations())) {
                 /* TODO:
                  * The above check should NOT be necessary. However, for the InterningChecker test case Arrays fails
                  * without it. It only fails if Unqualified is one of the supported type qualifiers, which it should.
                  * Flow inference should always just return subtypes of the declared type, so something is going wrong!
                  * TODO!
                  */
-                type.removeAnnotationInHierarchy(inferred);
-                type.addAnnotation(inferred);
-            }
-        }
+                    for (AnnotationMirror inf: inferred) {
+                        type.removeAnnotationInHierarchy(inf);
+                    }
+                    type.addAnnotations(inferred);
+                }
 
+        }
         // TODO: This is quite ugly
         boolean finishedScanning = scannedClasses.get(enclosingClass) == ScanState.FINISHED;
         if (finishedScanning || type.getKind() != TypeKind.TYPEVAR) {

@@ -631,7 +631,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     }
 
     private void markTree(Tree node, AnnotationMirror anno) {
-        flowResults.put(node, anno);
+        addFlowResult(flowResults, node, anno);
     }
 
     @Override
@@ -785,11 +785,13 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         AnnotationMirror anno = factory.getDeclAnnotation(methElem, AssertNonNullAfter.class);
         List<String> annoValues = AnnotationUtils.elementValueStringArray(anno, "value");
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
+        ClassTree cls = TreeUtils.enclosingClass(factory.getPath(meth));
 
         for (String annoVal : annoValues) {
 
             if (parameterPtn.matcher(annoVal).find()) {
-                if (DO_ADVANCED_CHECKS) {
+                if (DO_ADVANCED_CHECKS
+                        && !checker.shouldSkipDefs(cls, meth)) {
                     checker.report(Result.warning("nullness.parse.error", annoVal), meth);
                 }
                 continue;
@@ -808,6 +810,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             int index = this.flowState.vars.indexOf(e);
             if (DO_ADVANCED_CHECKS &&
+                !checker.shouldSkipDefs(cls, meth) &&
                 !(index != -1 && (this.flowState.annos.get(NONNULL, index) ||
                 // TODO: a boxed primitive is sometimes still @Primitive.
                 // Is this needed elsewhere? Fix it?
@@ -861,7 +864,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         List<String> toCheck = substitutePatternsDecl(meth, annoValues);
-        TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
+        TreePath clspath = TreeUtils.pathTillClass(getCurrentPath());
+        ClassTree cls = (ClassTree) clspath.getLeaf();
+        TreePath path = TreePath.getPath(clspath, meth);
 
         NullnessFlowConditions conds = new NullnessFlowConditions((NullnessAnnotatedTypeFactory)factory, this, debug);
         conds.visit(retExp, null);
@@ -894,6 +899,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
                     int index = this.flowState.vars.indexOf(e);
                     if (DO_ADVANCED_CHECKS &&
+                        !checker.shouldSkipDefs(cls, meth) &&
                         !(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
                         !this.flowState.nnExprs.contains(check)) {
                         checker.report(Result.failure(
@@ -980,19 +986,21 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 e = findElement(check, flowState.vars);
             }
             if (ifTrue) {
-                if (!conds.getNonnullExpressions().contains(check) &&
+                if (DO_ADVANCED_CHECKS &&
+                    !checker.shouldSkipDefs(cls, meth) &&
+                    !conds.getNonnullExpressions().contains(check) &&
                     !conds.getNonnullElements().contains(e) &&
-                    !conds.getExplicitNonnullElements().contains(e) &&
-                    DO_ADVANCED_CHECKS) {
+                    !conds.getExplicitNonnullElements().contains(e)) {
                     checker.report(Result.failure(
                                                   "assertiftrue.postcondition.not.satisfied",
                                                   check), ret);
                 }
             } else {
-                if (!conds.getNullableExpressions().contains(check) &&
+                if (DO_ADVANCED_CHECKS &&
+                    !checker.shouldSkipDefs(cls, meth) &&
+                    !conds.getNullableExpressions().contains(check) &&
                     !conds.getNullableElements().contains(e) &&
-                    !conds.getExplicitNullableElements().contains(e) &&
-                    DO_ADVANCED_CHECKS) {
+                    !conds.getExplicitNullableElements().contains(e)) {
                     checker.report(Result.failure(
                                                   "assertiffalse.postcondition.not.satisfied",
                                                   check), ret);
@@ -1069,9 +1077,10 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
                 int index = this.flowState.vars.indexOf(el);
                 if (index == -1 || !this.flowState.annos.get(NONNULL, index)) {
-                    if (!this.flowState.nnExprs.contains(elName)
-                            && !this.flowState.nnExprs.contains(elClass + "." + elName) &&
-                            DO_ADVANCED_CHECKS) {
+                    if (DO_ADVANCED_CHECKS &&
+                            !checker.shouldSkipUses(method) &&
+                            !this.flowState.nnExprs.contains(elName) &&
+                            !this.flowState.nnExprs.contains(elClass + "." + elName)) {
                         checker.report(Result.failure("nonnullonentry.precondition.not.satisfied", nnoeExpr), call);
                     }
                 } else {

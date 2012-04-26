@@ -15,6 +15,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
@@ -80,7 +81,7 @@ implements Flow {
     protected final AnnotatedTypes atypes;
 
     /** Stores the results of the analysis (source location to qualifier). */
-    protected final Map<Tree, AnnotationMirror> flowResults;
+    protected final Map<Tree, Set<AnnotationMirror>> flowResults;
 
     /**
      * Tracks the state of the inference.
@@ -145,21 +146,17 @@ implements Flow {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.root = root;
 
-        if (factory == null)
+        if (factory == null) {
             this.factory = new AnnotatedTypeFactory(checker, root);
-        else
+        } else {
             this.factory = factory;
+        }
 
         this.atypes = new AnnotatedTypes(env, factory);
-
         this.visitorState = this.factory.getVisitorState();
-
-        this.flowResults = new IdentityHashMap<Tree, AnnotationMirror>();
-
+        this.flowResults = new IdentityHashMap<Tree, Set<AnnotationMirror>>();
         this.tryBits = new LinkedList<ST>();
-
         this.annoRelations = checker.getQualifierHierarchy();
-
         this.flowState = createFlowState(annotations);
     }
 
@@ -198,18 +195,49 @@ implements Flow {
      *         inferred for that tree
      */
     @Override
-    public AnnotationMirror test(Tree tree) {
-        while (tree.getKind() == Tree.Kind.ASSIGNMENT)
+    public Set<AnnotationMirror> test(Tree tree) {
+        while (tree.getKind() == Tree.Kind.ASSIGNMENT) {
             tree = ((AssignmentTree)tree).getVariable();
+        }
         if (!flowResults.containsKey(tree)) {
             return null;
         }
         // a hack needs to be fixed
         // always follow variable declarations
-        AnnotationMirror flowResult = flowResults.get(tree);
+        Set<AnnotationMirror> flowResult = flowResults.get(tree);
 
         return flowResult;
     }
+
+    public static void addFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
+        Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+        if (flowResults.containsKey(tree)) {
+            set.addAll(flowResults.get(tree));
+        }
+        set.add(anno);
+        flowResults.put(tree, set);
+    }
+
+    public static void removeFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
+        Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+        if (flowResults.containsKey(tree)) {
+            set.addAll(flowResults.get(tree));
+        } else {
+            return;
+        }
+
+        if (AnnotationUtils.containsSame(set, anno)) {
+            // Careful, remove ignores annotation argument. Do your own check first.
+            set.remove(anno);
+        }
+
+        if (!set.isEmpty()) {
+            flowResults.put(tree, set);
+        } else {
+            flowResults.remove(tree);
+        }
+    }
+
 
     /**
      * Registers a new variable for flow tracking.
@@ -258,12 +286,17 @@ implements Flow {
         // of "tree". The loop determines whether the path leaf is a variable
         // immediately enclosed by an assignment or compound assignment.
         for (Tree tree : path) {
-            if (tree.getKind() == Tree.Kind.IDENTIFIER) { break; } // TODO: do nothing
-            else if (tree instanceof AssignmentTree)
+            if (tree.getKind() == Tree.Kind.IDENTIFIER) {
+                break; // TODO: do nothing
+            } else if (tree instanceof AssignmentTree) {
                 return last == ((AssignmentTree)tree).getVariable();
-            else if (tree instanceof CompoundAssignmentTree)
+            } else if (tree instanceof CompoundAssignmentTree) {
                 return last == ((CompoundAssignmentTree)tree).getVariable();
-            if (last != null) break;
+            }
+
+            if (last != null) {
+                break;
+            }
             last = tree;
         }
         return false;
@@ -283,14 +316,15 @@ implements Flow {
         Tree tree = path.getLeaf();
 
         Element elt;
-        if (tree instanceof MemberSelectTree)
+        if (tree instanceof MemberSelectTree) {
             elt = TreeUtils.elementFromUse((MemberSelectTree)tree);
-        else if (tree instanceof IdentifierTree)
+        } else if (tree instanceof IdentifierTree) {
             elt = TreeUtils.elementFromUse((IdentifierTree)tree);
-        else if (tree instanceof VariableTree)
+        } else if (tree instanceof VariableTree) {
             elt = TreeUtils.elementFromDeclaration((VariableTree)tree);
-        else
+        } else {
             return;
+        }
 
         recordBitsImps(tree, elt);
     }
@@ -430,9 +464,11 @@ implements Flow {
             return null;
         }
 
-        for (AnnotationMirror a : this.flowState.getAnnotations())
-            if (t.hasAnnotation(a))
-                flowResults.put(node, a);
+        for (AnnotationMirror a : this.flowState.getAnnotations()) {
+            if (t.hasAnnotation(a)) {
+                addFlowResult(flowResults, node, a);
+            }
+        }
         return null;
     }
 
@@ -502,7 +538,7 @@ implements Flow {
         AnnotatedTypeMirror t = factory.getAnnotatedType(var);
         for (AnnotationMirror a : this.flowState.getAnnotations()) {
             if (t.hasAnnotation(a)) {
-                flowResults.put(node, a);
+                addFlowResult(flowResults, node, a);
             }
         }
 
