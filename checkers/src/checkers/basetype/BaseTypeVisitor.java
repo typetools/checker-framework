@@ -210,7 +210,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
             
             // check method purity if needed
-            // TODO: warning keys
             boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt,
                     Pure.class) != null;
             if (hasPureAnnotation) {
