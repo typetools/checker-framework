@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;

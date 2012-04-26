@@ -8,7 +8,6 @@ import javax.lang.model.type.TypeMirror;
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the string conversion operation. See JLS 5.1.11 for the definition

@@ -6,9 +6,8 @@ import java.util.LinkedList;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A node for an array access:

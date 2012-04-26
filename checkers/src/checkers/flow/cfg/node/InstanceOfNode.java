@@ -10,7 +10,6 @@ import javax.lang.model.util.Types;
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the instanceof operator:
