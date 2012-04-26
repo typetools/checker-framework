@@ -142,8 +142,8 @@
     <target name="manual" depends="update-versions"
       description="makes the checkers manual (PDF and HTML)">
 
-        <exec executable="make" dir="${checkers.manual}"
-          failonerror="true" taskname="make">
+        <exec executable="make" failonerror="true"
+            dir="${checkers.manual}" taskname="make">
             <arg line="manual.pdf manual.html"/>
         </exec>
     </target>

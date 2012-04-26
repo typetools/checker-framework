@@ -136,9 +136,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
       <my-ant task="@{task}" logfile="output.tmp"/>
       <my-diff file1="@{expected}" file2="output.tmp"
                ignore-matching-lines="Total time"/>
-      <exec executable="rm">
-          <arg line="-f output.tmp"/>
-      </exec>
+      <delete file="output.tmp"/>
     </sequential>
   </macrodef>
 

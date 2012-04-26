@@ -17,6 +17,7 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.Nullable;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
@@ -85,10 +86,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /** issue errors as warnings */
     private boolean warns;
 
-    /** A regular expression for classes whose uses should be skipped. */
+    /**
+     * Regular expression pattern to specify Java classes that are not
+     * annotated, so warnings about uses of them should be suppressed.
+     *
+     * It contains the pattern specified by the user, through the option
+     * {@code checkers.skipUses}; otherwise it contains a pattern that can
+     * match no class.
+     */
     private Pattern skipUsesPattern;
 
-    /** A regular expression for classes whose definitions should be skipped. */
+    /**
+     * Regular expression pattern to specify Java classes whose
+     * definition should not be checked.
+     *
+     * It contains the pattern specified by the user, through the option
+     * {@code checkers.skipDefs}; otherwise it contains a pattern that can
+     * match no class.
+     */
     private Pattern skipDefsPattern;
 
     /** The chosen lint options that have been enabled by programmer */
@@ -211,11 +226,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         String msg;
         Throwable cause;
 
-        public CheckerError() {}
+        public CheckerError() {
+            this.cause = new Throwable();
+        }
 
         public CheckerError(String msg) {
             this.msg = msg;
-            this.cause = null;
+            this.cause = new Throwable();
         }
 
         public CheckerError(String msg, Throwable cause) {
@@ -843,32 +860,47 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
-     * Returns a regular expression pattern to specify Java classes that are not
-     * annotated, so warnings about uses of them should be supressed.
+     * Tests whether the class owner of the passed element is an unannotated
+     * class and matches the pattern specified in the
+     * {@code checker.skipUses} property.
      *
-     * It returns the pattern specified by the user, through the option
-     * {@code checkers.skipUses}; otherwise it returns a pattern that can
-     * match no class.
-     *
-     * @return Pattern of un-annotated classes that should be skipped
+     * @param element   an element
+     * @return  true iff the enclosing class of element should be skipped
      */
-    public Pattern getShouldSkipUses() {
-        return this.skipUsesPattern;
+    public final boolean shouldSkipUses(Element element) {
+        if (element == null)
+            return false;
+        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        String name = typeElement.getQualifiedName().toString();
+        return skipUsesPattern.matcher(name).find();
     }
 
     /**
-     * Returns a regular expression pattern to specify Java classes whose
-     * definiton should not be checked.
+     * Tests whether the class definition should not be checked because it
+     * matches the {@code checker.skipDefs} property.
      *
-     * It returns the pattern specified by the user, through the option
-     * {@code checkers.skipDefs}; otherwise it returns a pattern that can
-     * match no class.
-     *
-     * @return Pattern of classes whose definition should not be checked
+     * @param node class to potentially skip
+     * @return true if checker should not test node
      */
-    public Pattern getShouldSkipDefs() {
-        return this.skipDefsPattern;
+    public final boolean shouldSkipDefs(ClassTree node) {
+        String qualifiedName = InternalUtils.typeOf(node).toString();
+        return skipDefsPattern.matcher(qualifiedName).find();
     }
+
+    /**
+     * Tests whether the method definition should not be checked because it
+     * matches the {@code checker.skipDefs} property.
+     *
+     * TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
+     *
+     * @param cls class to potentially skip
+     * @param meth method to potentially skip
+     * @return true if checker should not test node
+     */
+    public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
+        return shouldSkipDefs(cls);
+    }
+
 
     /**
      * A helper function to parse a Properties file

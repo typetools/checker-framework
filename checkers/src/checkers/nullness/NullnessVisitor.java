@@ -512,7 +512,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         if (!super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p)) {
             return false;
         }
-        if (shouldSkipUses(overriddenType.getElement())) {
+        if (checker.shouldSkipUses(overriddenType.getElement())) {
             return true;
         }
 
