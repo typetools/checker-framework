@@ -320,7 +320,7 @@ public class PurityChecker {
             boolean isPureCall = atypeFactory
                     .getDeclAnnotation(elt, Pure.class) != null;
             if (!isPureCall) {
-                p = new NonPureResult("non-pure method call to method", p);
+                p = new NonPureResult("non-pure method call", p);
             }
             Result r = scan(node.getMethodSelect(), p);
             r = scan(node.getArguments(), r);
