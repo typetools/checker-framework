@@ -947,7 +947,6 @@ public class CFGBuilder {
             // add missing exceptional edges
             for (Tuple<ExceptionBlockImpl, Integer, ?> p : missingExceptionalEdges) {
                 Integer index = p.b;
-                @SuppressWarnings("unchecked")
                 TypeMirror cause = (TypeMirror) p.c;
                 ExceptionBlockImpl source = p.a;
                 if (index == null) {
