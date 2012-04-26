@@ -3,11 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.lang.model.element.Element;
-
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;

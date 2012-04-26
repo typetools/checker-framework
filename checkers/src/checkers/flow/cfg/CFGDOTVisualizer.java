@@ -14,7 +14,6 @@ import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
-import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.ConditionalBlock;

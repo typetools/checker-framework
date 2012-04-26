@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import javax.lang.model.type.TypeMirror;
 
+import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.block.Block;
 
 import com.sun.source.tree.Tree;
