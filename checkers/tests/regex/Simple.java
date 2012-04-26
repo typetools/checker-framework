@@ -61,6 +61,7 @@ public class Simple {
         takesRegex(regex);
 
         nonRegex = "()";
+        // nonRegex is refined by flow to be a regular expression
         takesRegex(nonRegex);
         nonRegex += ")";
         //:: error: (argument.type.incompatible)

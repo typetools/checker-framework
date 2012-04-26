@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
+import checkers.flow.AbstractFlow;
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.PolyNull;
 import checkers.types.AnnotatedTypeMirror;
@@ -52,7 +53,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
     /** Variables that should be ignored when setting annoWhenFalse. */
     private final Set<Element> excludes = new HashSet<Element>();
 
-    private final Map<Tree, AnnotationMirror> treeResults = new IdentityHashMap<Tree, AnnotationMirror>();
+    private final Map<Tree, Set<AnnotationMirror>> treeResults = new IdentityHashMap<Tree, Set<AnnotationMirror>>();
 
     protected final NullnessAnnotatedTypeFactory typefactory;
     protected final NullnessFlow nullnessFlow;
@@ -121,7 +122,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
         return excludes;
     }
 
-    public /*@ReadOnly*/ Map<Tree, AnnotationMirror> getTreeResults() {
+    public /*@ReadOnly*/ Map<Tree, Set<AnnotationMirror>> getTreeResults() {
         return treeResults;
     }
 
@@ -214,14 +215,14 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
                 int idx = vars.indexOf(e);
                 if (idx >= 0) {
                     if (mergeAnd ? nullableSplit.get(idx) : nonnullSplit.get(idx)) {
-                        treeResults.put(node, typefactory.NONNULL);
+                        AbstractFlow.addFlowResult(treeResults, node, typefactory.NONNULL);
                     }
                 }
                 if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                    treeResults.put(node, typefactory.NONNULL);
+                    AbstractFlow.addFlowResult(treeResults, node, typefactory.NONNULL);
                 }
                 if ((mergeAnd ? nullableElements : nonnullElements).contains(e)) {
-                    treeResults.put(node, typefactory.NONNULL);
+                    AbstractFlow.addFlowResult(treeResults, node, typefactory.NONNULL);
                 }
             }
 
@@ -242,7 +243,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             @Override
             public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
                 if ((mergeAnd ? nullableExpressions : nonnullExpressions).contains(node.toString())) {
-                    treeResults.put(node, typefactory.NONNULL);
+                    AbstractFlow.addFlowResult(treeResults, node, typefactory.NONNULL);
                 }
                 return super.visitMethodInvocation(node, p);
             }
@@ -432,7 +433,7 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             vars.add((VariableElement) e);
         if (this.nonnullExpressions.contains(node.toString()) ||
             this.nonnullElements.contains(e)) {
-            treeResults.put(node, typefactory.NONNULL);
+            AbstractFlow.addFlowResult(treeResults, node, typefactory.NONNULL);
         }
         return super.visitMemberSelect(node, p);
     }
