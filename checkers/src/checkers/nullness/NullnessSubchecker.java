@@ -3,8 +3,6 @@ package checkers.nullness;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.tools.javac.code.Symbol;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
@@ -13,8 +11,6 @@ import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -48,7 +44,7 @@ public class NullnessSubchecker extends BaseTypeChecker {
         NULLABLE = annoFactory.fromClass(Nullable.class);
         PRIMITIVE = annoFactory.fromClass(Primitive.class);
     }
-    
+
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
@@ -73,6 +69,34 @@ public class NullnessSubchecker extends BaseTypeChecker {
         return super.isValidUse(type);
     }
 
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new NullnessTypeHierarchy(this, getQualifierHierarchy());
+    }
+
+    class NullnessTypeHierarchy extends TypeHierarchy {
+
+        public NullnessTypeHierarchy(BaseTypeChecker checker,
+                QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
+        }
+
+        @Override
+        protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+            // @Primitive and @NonNull are interchangeable
+            if (sub.getEffectiveAnnotations().contains(PRIMITIVE) &&
+                    sup.getEffectiveAnnotations().contains(NONNULL)) {
+                return true;
+            }
+            return super.isSubtypeAsTypeArgument(sub, sup);
+        }
+
+    }
+
+    /*
+     * TODO: it's ugly that this method cannot be in the TypeHierarchy, as these methods
+     * are final there. Try to refactor this.
+     */
     @Override
     public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
         // @Primitive and @NonNull are interchangeable
