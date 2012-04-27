@@ -79,13 +79,18 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
 
-        if (!type.isAnnotated()) {
-            if (typeKinds.containsKey(type.getKind()))
-                type.addAnnotation(typeKinds.get(type.getKind()));
-            else if (!typeClasses.isEmpty()) {
-                Class<? extends AnnotatedTypeMirror> t = type.getClass();
-                if (typeClasses.containsKey(t))
-                    type.addAnnotation(typeClasses.get(t));
+        if (typeKinds.containsKey(type.getKind())) {
+            AnnotationMirror fnd = typeKinds.get(type.getKind());
+            if (!type.isAnnotatedInHierarchy(fnd)) {
+                type.addAnnotation(fnd);
+            }
+        } else if (!typeClasses.isEmpty()) {
+            Class<? extends AnnotatedTypeMirror> t = type.getClass();
+            if (typeClasses.containsKey(t)) {
+                AnnotationMirror fnd = typeClasses.get(t);
+                if (!type.isAnnotatedInHierarchy(fnd)) {
+                    type.addAnnotation(fnd);
+                }
             }
         }
 

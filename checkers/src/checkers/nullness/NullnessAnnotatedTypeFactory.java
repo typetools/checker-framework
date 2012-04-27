@@ -187,11 +187,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
         substituteUnused(tree, type);
 
-        final AnnotationMirror inferred = flow.test(tree);
+        final Set<AnnotationMirror> inferred = flow.test(tree);
         if (inferred != null) {
             // case 7: flow analysis
-            type.removeAnnotationInHierarchy(inferred);
-            type.addAnnotation(inferred);
+            for (AnnotationMirror inf : inferred) {
+                type.removeAnnotationInHierarchy(inf);
+            }
+            type.addAnnotations(inferred);
         }
         dependentTypes.handle(tree, type);
         completer.visit(type);
@@ -239,13 +241,13 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         TreePath path = this.getPath(tree);
         if (path!=null) {
-        	/* The above check for null ensures that Issue 109 does not arise.
-        	 * TODO: I'm a bit concerned about one aspect: it looks like the field
-        	 * initializer is used to determine the type of a read field. Why is this
-        	 * not just using the declared type of the field?
-        	 * Could this lead to confusion for programmers?
-        	 * I think skipping the mapGetHeuristics is always a safe option.
-        	 */
+            /* The above check for null ensures that Issue 109 does not arise.
+             * TODO: I'm a bit concerned about one aspect: it looks like the field
+             * initializer is used to determine the type of a read field. Why is this
+             * not just using the declared type of the field?
+             * Could this lead to confusion for programmers?
+             * I think skipping the mapGetHeuristics is always a safe option.
+             */
             mapGetHeuristics.handle(path, method);
         }
         systemGetPropertyHandler.handle(tree, method);
@@ -336,7 +338,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         // case 13
-        final AnnotatedTypeMirror select = rawnessFactory.getReceiverType((ExpressionTree) tree);
+        final AnnotatedTypeMirror select = rawnessFactory.getReceiverType(tree);
         if (select != null && select.hasEffectiveAnnotation(RAW)
                 && !type.hasEffectiveAnnotation(NULLABLE)
                 && !type.getKind().isPrimitive()) {
