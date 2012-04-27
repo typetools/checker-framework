@@ -189,6 +189,11 @@ public interface NodeVisitor<R, P> {
     // Parameterized types
     R visitParameterizedType(ParameterizedTypeNode n, P p);
 
+    // Internal (CFG builder created) variable nodes
+    R visitInternalVariableDeclaration(InternalVariableDeclarationNode n, P p);
+
+    R visitInternalVariable(InternalVariableNode n, P p);
+
     // Marker nodes
     R visitMarker(MarkerNode n, P p);
 }
