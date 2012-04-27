@@ -149,7 +149,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-    	return new GraphQualifierHierarchy.GraphFactory(this);
+        return new GraphQualifierHierarchy.GraphFactory(this);
     }
 
     /**
@@ -450,7 +450,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                         "class name " + name +
                         " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
                         // + " and args: " + Arrays.toString(args),
-                ite);       
+                ite);
             }
         } catch (Exception e) {
             throw new CheckerError("Unexpected " + e.getClass().getSimpleName() + " for " +

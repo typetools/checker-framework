@@ -16,6 +16,6 @@ import com.sun.source.tree.Tree;
 @TypeQualifier
 @InvisibleQualifier
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-@SubtypeOf(Regex.class)
+@SubtypeOf({Regex.class, PartialRegex.class})
 @Target({}) // empty target prevents programmers from writing this in a program
 public @interface RegexBottom {}
