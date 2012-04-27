@@ -24,12 +24,13 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class TypeCastNode extends Node {
 
+    protected/* @Nullable */Tree tree;
     protected Node operand;
 
-    public TypeCastNode(Tree tree, Node operand, TypeMirror type) {
-        assert tree.getKind() == Tree.Kind.TYPE_CAST;
+    public TypeCastNode(/* @Nullable */Tree tree, Node operand, TypeMirror type) {
+        this.tree = tree;
         this.operand = operand;
-        this.type = InternalUtils.typeOf(tree);
+        this.type = type;
     }
 
     public Node getOperand() {

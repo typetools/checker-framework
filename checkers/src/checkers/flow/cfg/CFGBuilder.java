@@ -1,6 +1,7 @@
 package checkers.flow.cfg;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -22,6 +23,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -71,6 +73,8 @@ import checkers.flow.cfg.node.IntegerDivisionNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.IntegerRemainderAssignmentNode;
 import checkers.flow.cfg.node.IntegerRemainderNode;
+import checkers.flow.cfg.node.InternalVariableDeclarationNode;
+import checkers.flow.cfg.node.InternalVariableNode;
 import checkers.flow.cfg.node.LeftShiftAssignmentNode;
 import checkers.flow.cfg.node.LeftShiftNode;
 import checkers.flow.cfg.node.LessThanNode;
@@ -106,6 +110,7 @@ import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
+import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.cfg.node.ThrowNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
@@ -1222,7 +1227,7 @@ public class CFGBuilder {
          *            The node to add.
          * @return The same node (for convenience).
          */
-        protected Node extendWithNode(Node node) {
+        protected <T extends Node> T extendWithNode(T node) {
             addToLookupMap(node);
             extendWithExtendedNode(new NodeHolder(node));
             return node;
@@ -1677,6 +1682,70 @@ public class CFGBuilder {
         }
 
         /**
+         * Convert an operand of a conditional expression to the type of the
+         * whole expression.
+         * 
+         * @param node
+         *            a node occurring as the second or third operand of
+         *            a conditional expression
+         * @param destType
+         *            the type to promote the value to
+         * @return a Node with the value promoted to the destType, which may be
+         *         the input node
+         */
+        protected Node conditionalExprPromotion(Node node, TypeMirror destType) {
+            // For rules on converting operands of conditional expressions,
+            // JLS 15.25
+            TypeMirror nodeType = node.getType();
+
+            // If the operand is already the same type as the whole
+            // expression, then do nothing.
+            if (types.isSameType(nodeType, destType)) {
+                return node;
+            }
+
+            // If the operand is a primitive and the whole expression is
+            // boxed, then apply boxing.
+            if (TypesUtils.isPrimitive(nodeType) &&
+                TypesUtils.isBoxedPrimitive(destType)) {
+                return box(node);
+            }
+
+            // If the operand is byte or Byte and the whole expression is
+            // short, then convert to short.
+            boolean isBoxedPrimitive = TypesUtils.isBoxedPrimitive(nodeType);
+            TypeMirror unboxedNodeType =
+                isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
+            if (TypesUtils.isNumeric(unboxedNodeType)) {
+                if (unboxedNodeType.getKind() == TypeKind.BYTE &&
+                    destType.getKind() == TypeKind.SHORT) {
+                    if (isBoxedPrimitive) {
+                        node = unbox(node);
+                    }
+                    return widen(node, destType);
+                }
+
+                // If the operand is Byte, Short or Character and the whole expression
+                // is the unboxed version of it, then apply unboxing.
+                TypeKind destKind = destType.getKind();
+                if (destKind == TypeKind.BYTE || destKind == TypeKind.CHAR ||
+                    destKind == TypeKind.SHORT) {
+                    if (isBoxedPrimitive) {
+                        return unbox(node);
+                    } else if (nodeType.getKind() == TypeKind.INT) {
+                        return narrow(node, destType);
+                    }
+                }
+
+                return binaryNumericPromotion(node, destType);
+            }
+
+            // TODO: Do we need to cast to lub(box(nodeType)) if the final
+            // case in JLS 15.25 applies?
+            return node;
+        }
+
+        /**
          * Returns the label {@link Name} of the leaf in the argument path, or
          * null if the leaf is not a labeled statement.
          */
@@ -1721,7 +1790,7 @@ public class CFGBuilder {
             // Fifth, if the method is synchronized, lock the receiving
             // object or class (15.12.4.5)
 
-            Tree methodSelect = tree.getMethodSelect();
+            ExpressionTree methodSelect = tree.getMethodSelect();
             assert TreeUtils.isMethodAccess(methodSelect);
 
             Node receiver = getReceiver(methodSelect,
@@ -1818,6 +1887,19 @@ public class CFGBuilder {
             Node expression = scan(rhs, null);
             expression = assignConvert(expression, target.getType());
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
+                    expression);
+            extendWithNode(assignmentNode);
+            return expression;
+        }
+
+        /**
+         * Translate an assignment with no corresponding AST {@link Tree}.
+         */
+        protected Node translateAssignment(Node target, ExpressionTree rhs) {
+            target.setLValue();
+            Node expression = scan(rhs, null);
+            expression = assignConvert(expression, target.getType());
+            AssignmentNode assignmentNode = new AssignmentNode(null, target,
                     expression);
             extendWithNode(assignmentNode);
             return expression;
@@ -2440,8 +2522,49 @@ public class CFGBuilder {
         @Override
         public Node visitConditionalExpression(ConditionalExpressionTree tree,
                 Void p) {
-            assert false : "not implemented yet";
-            return null;
+            // see JLS 15.25
+            TypeMirror exprType = InternalUtils.typeOf(tree);
+            boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
+            assert !conditionalMode || isBooleanOp;
+
+            Label trueStart = new Label();
+            Label falseStart = new Label();
+            Label merge = new Label();
+
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+
+            conditionalMode = true;
+            thenTargetL = trueStart;
+            elseTargetL = falseStart;
+            Node condition = unbox(scan(tree.getCondition(), p));
+            conditionalMode = false;
+
+            addLabelForNextNode(trueStart);
+            Node trueExpr = scan(tree.getTrueExpression(), p);
+            trueExpr = conditionalExprPromotion(trueExpr, exprType);
+            extendWithExtendedNode(new UnconditionalJump(merge));
+
+            addLabelForNextNode(falseStart);
+            Node falseExpr = scan(tree.getFalseExpression(), p);
+            falseExpr = conditionalExprPromotion(falseExpr, exprType);
+            
+            addLabelForNextNode(merge);
+            Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
+            extendWithNode(node);
+
+            // Finally, emit a jump if the expression occurs within a conditional.
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
+            }
+
+            return node;
         }
 
         @Override
@@ -2525,7 +2648,161 @@ public class CFGBuilder {
 
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-            assert false : "not implemented yet";
+            // see JLS 14.14.2
+            assert !conditionalMode;
+
+            Name parentLabel = getLabel(getCurrentPath());
+
+            Label conditionStart = new Label();
+            Label loopEntry = new Label();
+            Label loopExit = new Label();
+
+            // If the loop is a labeled statement, then its continue
+            // target is identical for continues with no label and
+            // continues with the loop's label.
+            Label updateStart;
+            if (parentLabel != null) {
+                updateStart = continueLabels.get(parentLabel);
+            } else {
+                updateStart = new Label();
+            }
+
+            Label oldBreakTargetL = breakTargetL;
+            breakTargetL = loopExit;
+
+            Label oldContinueTargetL = continueTargetL;
+            continueTargetL = updateStart;
+
+            // Distinguish loops over Iterables from loops over arrays.
+
+            TypeElement iterableElement = elements.getTypeElement("java.lang.Iterable");
+            TypeMirror iterableType = iterableElement.asType();
+
+            VariableTree variable = tree.getVariable();
+            ExpressionTree expression = tree.getExpression();
+            StatementTree statement = tree.getStatement();
+
+            TypeMirror exprType = InternalUtils.typeOf(expression);
+            if (types.isSubtype(exprType, iterableType)) {
+                assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
+                DeclaredType declaredExprType = (DeclaredType) exprType;
+                Element exprElement = declaredExprType.asElement();
+                List<? extends TypeMirror> typeArgs = declaredExprType.getTypeArguments();
+
+                // Find the iterator(), hasNext() and next() methods of the iterable type.
+                ExecutableElement iteratorMethod = null;
+                ExecutableElement hasNextMethod = null;
+                ExecutableElement nextMethod = null;
+                
+                for (ExecutableElement method :
+                         ElementFilter.methodsIn(exprElement.getEnclosedElements())) {
+                    Name methodName = method.getSimpleName();
+                    
+                    if (method.getParameters().size() == 0) {
+                        if (methodName.contentEquals("iterator")) {
+                            iteratorMethod = method;
+                        } else if (methodName.contentEquals("hasNext")) {
+                            hasNextMethod = method;
+                        } else if (methodName.contentEquals("next")) {
+                            nextMethod = method;
+                        }
+                    }
+                }
+
+                assert iteratorMethod != null : "no iterator method declared for expression type";
+                assert hasNextMethod != null : "no hasNext method declared for expression type";
+                assert nextMethod != null : "no next method declared for expression type";
+                
+                TypeMirror iteratorType = iteratorMethod.getReturnType();
+
+                // Declare and initialize a new, unique iterator variable
+                Node expressionNode = scan(expression, p);
+
+                MethodAccessNode iteratorMethodAccess =
+                    extendWithNode(new MethodAccessNode(iteratorMethod, expressionNode));
+                MethodInvocationNode iteratorMethodCall =
+                    extendWithNode(new MethodInvocationNode(iteratorMethodAccess,
+                                                            Collections.<Node>emptyList()));
+
+                InternalVariableDeclarationNode iteratorDeclNode
+                    = extendWithNode(new InternalVariableDeclarationNode("iter", iteratorType));
+                Node iteratorInitNode =
+                    translateAssignment(new InternalVariableNode(iteratorDeclNode), expression);
+
+                // Test the loop ending condition
+                addLabelForNextNode(conditionStart);
+                conditionalMode = true;
+                thenTargetL = loopEntry;
+                elseTargetL = loopExit;
+                MethodAccessNode hasNextMethodAccess =
+                    extendWithNode(new MethodAccessNode(hasNextMethod,
+                        new InternalVariableNode(iteratorDeclNode)));
+                MethodInvocationNode hasNextMethodCall =
+                    extendWithNode(new MethodInvocationNode(hasNextMethodAccess,
+                                                            Collections.<Node>emptyList()));
+                conditionalMode = false;
+
+                // Loop body, starting with declaration of the loop iteration variable
+                addLabelForNextNode(loopEntry);
+                VariableDeclarationNode varDeclNode =
+                    extendWithNode(new VariableDeclarationNode(variable));
+                MethodAccessNode nextMethodAccess =
+                    extendWithNode(new MethodAccessNode(nextMethod,
+                        new InternalVariableNode(iteratorDeclNode)));
+                MethodInvocationNode nextMethodCall =
+                    extendWithNode(new MethodInvocationNode(nextMethodAccess,
+                        Collections.<Node>emptyList()));
+
+                // If the variable is of reference type, then the target type is equal to it.
+                // Otherwise, the target type is the upper bound of the capture conversion of
+                // the type argument of iterator type, or Object if iterator type is raw.
+                TypeMirror varType = varDeclNode.getType();
+                TypeMirror targetType = null;
+                if (varType instanceof ReferenceType) {
+                    targetType = varType;
+                } else {
+                    assert iteratorMethod.getReturnType() instanceof DeclaredType :
+                        "iterator method should return a declared type";
+                    DeclaredType localIterType = (DeclaredType) iteratorMethod.getReturnType();
+                    List<? extends TypeMirror> localIterArgs = localIterType.getTypeArguments();
+                    switch (typeArgs.size()) {
+                    case 0:
+                        targetType = elements.getTypeElement("java.lang.Object").asType();
+                        break;
+                    case 1:
+                        targetType = types.capture(localIterArgs.get(0));
+                        break;
+                    default:
+                        assert false : "iterator should have 0 or 1 type arguments";
+                    }
+                }
+
+                LocalVariableNode varNode = 
+                    extendWithNode(new LocalVariableNode(variable));
+                TypeCastNode targetTypeCast =
+                    extendWithNode(new TypeCastNode(null, nextMethodCall, targetType));
+                AssignmentNode varInitNode =
+                    extendWithNode(new AssignmentNode(variable, varNode,
+                        assignConvert(targetTypeCast, varNode.getType())));
+
+                if (statement != null) {
+                    scan(statement, p);
+                }
+
+            } else {
+                assert false : "no loops over arrays yet";
+            }
+
+            // Loop back edge
+            addLabelForNextNode(updateStart);
+            extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+            // Loop exit
+            addLabelForNextNode(loopExit);
+
+            breakTargetL = oldBreakTargetL;
+            continueTargetL = oldContinueTargetL;
+
             return null;
         }
 

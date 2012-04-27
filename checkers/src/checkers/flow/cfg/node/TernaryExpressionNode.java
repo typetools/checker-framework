@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -22,12 +22,12 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class TernaryExpressionNode extends Node {
 
-    protected BinaryTree tree;
+    protected ConditionalExpressionTree tree;
     protected Node condition;
     protected Node thenOperand;
     protected Node elseOperand;
 
-    public TernaryExpressionNode(BinaryTree tree, Node condition,
+    public TernaryExpressionNode(ConditionalExpressionTree tree, Node condition,
             Node thenOperand, Node elseOperand) {
         assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
         this.tree = tree;
@@ -50,7 +50,7 @@ public class TernaryExpressionNode extends Node {
     }
 
     @Override
-    public BinaryTree getTree() {
+    public ConditionalExpressionTree getTree() {
         return tree;
     }
 
