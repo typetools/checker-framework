@@ -16,7 +16,6 @@ import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.Node;
 
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -30,17 +29,17 @@ public class ControlFlowGraph {
     /** The entry block of the control flow graph. */
     protected SpecialBlock entryBlock;
 
-    /** The method this CFG corresponds to. */
-    protected MethodTree tree;
+    /** The AST this CFG corresponds to. */
+    protected UnderlyingAST underlyingAST;
 
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected IdentityHashMap<Tree, Node> treeLookup;
 
-    public ControlFlowGraph(SpecialBlock entryBlock, MethodTree tree,
+    public ControlFlowGraph(SpecialBlock entryBlock, UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup) {
         super();
         this.entryBlock = entryBlock;
-        this.tree = tree;
+        this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
     }
 
@@ -57,9 +56,9 @@ public class ControlFlowGraph {
         return entryBlock;
     }
 
-    /** @return The method this CFG corresponds to. */
-    public MethodTree getTree() {
-        return tree;
+    /** @return The AST this CFG corresponds to. */
+    public UnderlyingAST getUnderlyingAST() {
+        return underlyingAST;
     }
 
     /**

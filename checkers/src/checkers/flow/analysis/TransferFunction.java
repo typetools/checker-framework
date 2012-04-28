@@ -2,11 +2,10 @@ package checkers.flow.analysis;
 
 import java.util.List;
 
+import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NodeVisitor;
-
-import com.sun.source.tree.MethodTree;
 
 /**
  * Interface of a transfer function for the abstract interpretation used for the
@@ -37,6 +36,10 @@ import com.sun.source.tree.MethodTree;
 public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>>
         extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> {
 
-    /** @return The initial store to be used by the dataflow analysis. */
-    S initialStore(MethodTree tree, List<LocalVariableNode> parameters);
+    /**
+     * @return The initial store to be used by the dataflow analysis.
+     *         {@code parameters} is only set if the underlying AST is a method.
+     */
+    S initialStore(UnderlyingAST underlyingAST, /* @Nullable */
+            List<LocalVariableNode> parameters);
 }
