@@ -22,19 +22,22 @@ import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.cfg.UnderlyingAST.CFGStatement;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.*;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.QualifierDefaults;
+import checkers.util.QualifierPolymorphism;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -225,7 +228,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             ClassTree ct = queue.remove();
             for (Tree m : ct.getMembers()) {
                 switch (m.getKind()) {
-                case METHOD:
+                case METHOD: {
                     MethodTree mt = (MethodTree) m;
                     // Skip abstract methods because they have no body.
                     ModifiersTree modifiers = mt.getModifiers();
@@ -236,25 +239,28 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                         }
                     }
                     ControlFlowGraph cfg = builder.run(root, env, mt);
-                    CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
+                    CFAnalysis analysis = new CFAnalysis(this,
+                            checker.getProcessingEnvironment());
                     analysis.performAnalysis(cfg);
                     AnalysisResult<CFValue> result = analysis.getResult();
                     flowResult.combine(result);
 
                     if (env.getOptions().containsKey("flowdotdir")) {
-                        String dotfilename =
-                            env.getOptions().get("flowdotdir") + "/" +
-                            mt.getName() + ".dot";
+                        String dotfilename = env.getOptions().get("flowdotdir")
+                                + "/" + mt.getName() + ".dot";
                         // make path safe for Windows
-                        dotfilename = dotfilename.replace("<", ".").replace(">", ".");
-                        System.err.println("Output to DOT file: " + dotfilename);
+                        dotfilename = dotfilename.replace("<", ".").replace(
+                                ">", ".");
+                        System.err
+                                .println("Output to DOT file: " + dotfilename);
                         analysis.outputToDotFile(dotfilename);
                     }
-                    
+
                     // add classes declared in method
                     queue.addAll(builder.getDeclaredClasses());
 
                     break;
+                }
                 case VARIABLE:
                     // TODO: handle initializers
                     break;
@@ -267,8 +273,33 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 case ENUM:
                     // not necessary to handle
                     break;
+                case BLOCK: {
+                    BlockTree b = (BlockTree) m;
+                    ControlFlowGraph cfg = builder.run(root, env,
+                            new CFGStatement(b));
+                    CFAnalysis analysis = new CFAnalysis(this,
+                            checker.getProcessingEnvironment());
+                    analysis.performAnalysis(cfg);
+                    AnalysisResult<CFValue> result = analysis.getResult();
+                    flowResult.combine(result);
+
+                    if (env.getOptions().containsKey("flowdotdir")) {
+                        String dotfilename = env.getOptions().get("flowdotdir")
+                                + "/initializer-" + b.hashCode() + ".dot";
+                        // make path safe for Windows
+                        dotfilename = dotfilename.replace("<", ".").replace(
+                                ">", ".");
+                        System.err
+                                .println("Output to DOT file: " + dotfilename);
+                        analysis.outputToDotFile(dotfilename);
+                    }
+
+                    // add classes declared in method
+                    queue.addAll(builder.getDeclaredClasses());
+                    break;
+                }
                 default:
-                    assert false : "Unexpected member: "+m.getKind();
+                    assert false : "Unexpected member: " + m.getKind();
                     break;
                 }
             }
