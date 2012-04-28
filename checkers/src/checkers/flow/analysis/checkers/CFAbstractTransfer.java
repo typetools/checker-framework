@@ -110,6 +110,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TransferInput<V, S> p) {
         S store = p.getRegularStore();
         V value = store.getValue(n);
+        // look up value in factory, if necessary
+        // TODO: handle cases, where this is not allowed (e.g. contructors in
+        // non-null type systems)
+        if (value == null) {
+            value = getValueFromFactory(n.getTree());
+        }
         return new RegularTransferResult<>(value, store);
     }
 
