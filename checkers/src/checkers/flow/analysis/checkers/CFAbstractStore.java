@@ -1,5 +1,6 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,12 +14,14 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
 import checkers.util.AnnotationUtils;
@@ -96,17 +99,31 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // add new information based on postcondition
-        AnnotationMirror ensuresAnnotation = analysis.factory.getDeclAnnotation(
-                method, EnsuresAnnotation.class);
+        AnnotationMirror ensuresAnnotation = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotation.class);
         if (ensuresAnnotation != null) {
             List<String> expressions = AnnotationUtils.elementValueStringArray(
                     ensuresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotation, "annotation");
+
+            Node receiver = n.getTarget().getReceiver();
+            Receiver internalReceiver = FlowExpressions
+                    .internalReprOf(receiver);
+            List<Receiver> internalArguments = new ArrayList<>();
+            for (Node arg : n.getArguments()) {
+                internalArguments.add(FlowExpressions.internalReprOf(arg));
+            }
+
             for (String e : expressions) {
-                Node receiver = n.getTarget().getReceiver();
-                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(e, receiver,
-                        FlowExpressions.internalReprOf(receiver));
+                FlowExpressions.Receiver r;
+                try {
+                    r = FlowExpressionParseUtil.parse(e,
+                            receiver, internalReceiver, internalArguments);
+                } catch (FlowExpressionParseException e1) {
+                    // TODO;
+                    throw new RuntimeException("");
+                }
                 if (r != null) {
                     insertValue(r,
                             analysis.factory.annotationFromName(annotation));
@@ -124,6 +141,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         V value = analysis.createAbstractValue(Collections.singleton(a));
         insertValue(r, value);
     }
+
     protected void insertValue(FlowExpressions.Receiver r, V value) {
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();

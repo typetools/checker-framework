@@ -8,6 +8,7 @@ import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.util.TreePath;
 
 /**
  * A node for the method invocation
@@ -25,14 +26,16 @@ public class MethodInvocationNode extends Node {
     protected MethodInvocationTree tree;
     protected/* @Nullable */MethodAccessNode target;
     protected List<Node> arguments;
+    protected TreePath treePath;
 
     public MethodInvocationNode(MethodInvocationTree tree,
             /* @Nullable */MethodAccessNode target,
-            List<Node> arguments) {
+            List<Node> arguments, TreePath treePath) {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
         this.target = target;
         this.arguments = arguments;
+        this.treePath = treePath;
     }
     
     public/* @Nullable */MethodAccessNode getTarget() {
@@ -45,6 +48,10 @@ public class MethodInvocationNode extends Node {
 
     public Node getArgument(int i) {
         return arguments.get(i);
+    }
+    
+    public TreePath getTreePath() {
+        return treePath;
     }
 
     @Override

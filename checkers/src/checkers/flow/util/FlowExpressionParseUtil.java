@@ -1,5 +1,6 @@
 package checkers.flow.util;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,17 +27,31 @@ import checkers.util.ElementUtils;
  */
 public class FlowExpressionParseUtil {
 
-    public static/* @Nullable */FlowExpressions.Receiver parse(String s,
-            Node receiverNode, Receiver receiver) {
+    public static class FlowExpressionParseException extends Exception {
+        private static final long serialVersionUID = 1L;
 
-        Pattern identifierPattern = Pattern.compile("[a-z_$][a-z_$0-9]*");
-        Matcher identifierMatcher = identifierPattern.matcher(s);
+        protected final String message;
+
+        public FlowExpressionParseException(String message) {
+            this.message = message;
+        }
+    }
+
+    public static/* @Nullable */FlowExpressions.Receiver parse(String s,
+            Node receiverNode, Receiver receiver, List<Receiver> arguments)
+            throws FlowExpressionParseException {
+
+        Matcher identifierMatcher = Pattern.compile("[a-z_$][a-z_$0-9]*")
+                .matcher(s);
+        Matcher selfMatcher = Pattern.compile("this|#0").matcher(s);
+        Matcher parameterMatcher = Pattern.compile("#([1-9]+[0-9]*)")
+                .matcher(s);
 
         if (identifierMatcher.matches()) {
             TypeMirror receiverType = receiverNode.getType();
 
             // this literal
-            if (s.equals("this")) {
+            if (selfMatcher.matches()) {
                 return new ThisReference(receiverType);
             }
 
@@ -48,10 +63,25 @@ public class FlowExpressionParseUtil {
             VariableElement fieldElement = ElementUtils.findFieldInType(elType,
                     s);
             return new FieldAccess(receiver, receiverType, fieldElement);
+
+        } else if (parameterMatcher.matches()) {
+            // parameter syntax
+            int idx = -1;
+            try {
+                idx = Integer.parseInt(parameterMatcher.group(1));
+            } catch (NumberFormatException e) {
+                // cannot occur by the way the pattern is defined (matches only
+                // numbers)
+            }
+            if (idx > arguments.size()) {
+                throw new FlowExpressionParseException(
+                        "index too big for argument");
+            }
+            return arguments.get(idx - 1);
         } else {
             // TODO: real error handling
-            throw new RuntimeException("Cannot parse expression '" + s + "'.");
+            throw new FlowExpressionParseException("Cannot parse expression '"
+                    + s + "'.");
         }
     }
-
 }
