@@ -1,7 +1,6 @@
 package checkers.flow.cfg;
 
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -17,8 +16,7 @@ public abstract class UnderlyingAST {
         METHOD,
 
         /**
-         * The underlying code is an arbitrary sequence of statements (of type
-         * {@link StatementTree})
+         * The underlying code is an arbitrary Java statement or expression
          */
         ARBITRARY_CODE,
     }
@@ -32,7 +30,7 @@ public abstract class UnderlyingAST {
     /**
      * @return The code that corresponds to the CFG.
      */
-    abstract public StatementTree getCode();
+    abstract public Tree getCode();
 
     public Kind getKind() {
         return kind;
@@ -52,7 +50,7 @@ public abstract class UnderlyingAST {
         }
 
         @Override
-        public StatementTree getCode() {
+        public Tree getCode() {
             return method.getBody();
         }
 
@@ -63,21 +61,20 @@ public abstract class UnderlyingAST {
     }
 
     /**
-     * If the underlying AST is a statement.
+     * If the underlying AST is a statement or expression.
      */
     public static class CFGStatement extends UnderlyingAST {
 
-        /** The sequence of statements */
-        protected final StatementTree statement;
+        protected final Tree code;
 
-        public CFGStatement(StatementTree statement) {
+        public CFGStatement(Tree code) {
             super(Kind.ARBITRARY_CODE);
-            this.statement = statement;
+            this.code = code;
         }
 
         @Override
-        public StatementTree getCode() {
-            return statement;
+        public Tree getCode() {
+            return code;
         }
     }
 }
