@@ -168,7 +168,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            {@code null} if the abstract value is not known).
      */
     public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
-        assert val != null;
         FlowExpressions.FieldAccess fieldAccess = FlowExpressions
                 .internalReprOfFieldAccess(n);
         removeConflicting(fieldAccess, val);
