@@ -259,7 +259,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // use value from factory (no flowsensitive information available)
         V resValue = getValueFromFactory(n.getTree());
 
-        info.updateForMethodCall(n);
+        info.updateForMethodCall(n, analysis.checker);
 
         return new RegularTransferResult<>(resValue, info);
     }
