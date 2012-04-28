@@ -1765,7 +1765,7 @@ public class CFGBuilder {
             // TODO: emit a conditional jump for boolean methods when
             // conditionalMode is true
 
-            Node node = new MethodInvocationNode(tree, target, arguments);
+            Node node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
             return extendWithNode(node);
         }
 
