@@ -16,11 +16,20 @@ class Postcondition {
     void valueF1() {
     }
     
+    @EnsuresAnnotation(expression="---", annotation=Value.class)
+    //:: error: (flowexpr.parse.error)
+    void error() {
+    }
+    
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
     void param1(String f) {
     }
     @EnsuresAnnotation(expression={"#1","#2"}, annotation=Value.class)
     void param2(String f, String g) {
+    }
+    @EnsuresAnnotation(expression="#1", annotation=Value.class)
+    //:: error: (flowexpr.parse.index.too.big)
+    void param3() {
     }
 
     // basic postcondition test
@@ -30,6 +39,8 @@ class Postcondition {
         @Odd String l1 = f1;
         oddF1();
         @Odd String l2 = f1;
+        
+        error();
     }
     
     // test parameter syntax
@@ -46,5 +57,7 @@ class Postcondition {
         param2(f2, f3);
         @Value String l5 = f2;
         @Value String l6 = f3;
+        
+        param3();
     }
 }
