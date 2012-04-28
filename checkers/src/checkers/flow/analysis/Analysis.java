@@ -14,6 +14,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.UnderlyingAST.CFGMethod;
+import checkers.flow.cfg.UnderlyingAST.Kind;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.ExceptionBlock;
@@ -265,16 +268,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         nodeValues = new IdentityHashMap<>();
         worklist.add(cfg.getEntryBlock());
 
-        List<LocalVariableNode> parameters = new ArrayList<>();
-        MethodTree tree = cfg.getTree();
-        for (VariableTree p : tree.getParameters()) {
-            LocalVariableNode var = new LocalVariableNode(p);
-            parameters.add(var);
-            // TODO: document that LocalVariableNode has no block that it
-            // belongs to
+        List<LocalVariableNode> parameters = null;
+        UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
+        if (underlyingAST.getKind() == Kind.METHOD) {
+            MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
+            parameters = new ArrayList<>();
+            for (VariableTree p : tree.getParameters()) {
+                LocalVariableNode var = new LocalVariableNode(p);
+                parameters.add(var);
+                // TODO: document that LocalVariableNode has no block that it
+                // belongs to
+            }
+        } else {
+            // nothing to do
         }
         stores.put(cfg.getEntryBlock(), new TransferInput<>(null, this,
-                transferFunction.initialStore(tree, parameters)));
+                transferFunction.initialStore(underlyingAST, parameters)));
     }
 
     /**

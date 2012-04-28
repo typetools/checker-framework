@@ -9,6 +9,8 @@ import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
+import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.UnderlyingAST.Kind;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
@@ -23,7 +25,6 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.TreeUtils;
 
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -65,14 +66,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * refined type.
      */
     @Override
-    public S initialStore(MethodTree tree, List<LocalVariableNode> parameters) {
+    public S initialStore(UnderlyingAST underlyingAST, /* @Nullable */
+            List<LocalVariableNode> parameters) {
         S info = analysis.createEmptyStore();
 
-        for (LocalVariableNode p : parameters) {
-            AnnotatedTypeMirror anno = analysis.getFactory().getAnnotatedType(
-                    p.getElement());
-            info.initializeMethodParameter(p,
-                    analysis.createAbstractValue(anno.getAnnotations()));
+        if (underlyingAST.getKind() == Kind.METHOD) {
+            for (LocalVariableNode p : parameters) {
+                AnnotatedTypeMirror anno = analysis.getFactory()
+                        .getAnnotatedType(p.getElement());
+                info.initializeMethodParameter(p,
+                        analysis.createAbstractValue(anno.getAnnotations()));
+            }
         }
 
         return info;
@@ -144,7 +148,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         return res;
     }
-    
+
     @Override
     public TransferResult<V, S> visitNotEqual(NotEqualNode n,
             TransferInput<V, S> p) {
