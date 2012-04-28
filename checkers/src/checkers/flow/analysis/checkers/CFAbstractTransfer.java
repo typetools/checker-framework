@@ -232,11 +232,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             info.updateForAssignment(fieldAccess, rhsValue);
         }
 
+        // assignment to array (not treated)
         else {
             info.updateForUnknownAssignment(lhs);
         }
-
-        // TODO: other assignments
 
         return new RegularTransferResult<>(rhsValue, info);
     }
