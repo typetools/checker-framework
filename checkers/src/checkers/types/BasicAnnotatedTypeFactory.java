@@ -36,6 +36,7 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -267,8 +268,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     // not necessary to handle
                     break;
                 default:
-                    System.err.println("Unexpected member: "+m.getKind());
-                    assert false;
+                    assert false : "Unexpected member: "+m.getKind();
                     break;
                 }
             }
