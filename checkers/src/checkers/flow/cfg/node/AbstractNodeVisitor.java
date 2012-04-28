@@ -29,11 +29,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     // Literals
     @Override
-    public R visitByteLiteral(ByteLiteralNode n, P p) {
-        return visitValueLiteral(n, p);
-    }
-
-    @Override
     public R visitShortLiteral(ShortLiteralNode n, P p) {
         return visitValueLiteral(n, p);
     }

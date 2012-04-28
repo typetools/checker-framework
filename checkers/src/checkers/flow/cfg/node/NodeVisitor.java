@@ -14,8 +14,6 @@ package checkers.flow.cfg.node;
  */
 public interface NodeVisitor<R, P> {
     // Literals
-    R visitByteLiteral(ByteLiteralNode n, P p);
-
     R visitShortLiteral(ShortLiteralNode n, P p);
 
     R visitIntegerLiteral(IntegerLiteralNode n, P p);
