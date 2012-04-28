@@ -13,6 +13,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
@@ -89,7 +90,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Remove any information that might not be valid any more after a method
      * call, and add information guaranteed by the method.
      */
-    public void updateForMethodCall(MethodInvocationNode n) {
+    public void updateForMethodCall(MethodInvocationNode n, BaseTypeChecker checker) {
         ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
 
         // remove information if necessary
@@ -115,14 +116,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 internalArguments.add(FlowExpressions.internalReprOf(arg));
             }
 
-            for (String e : expressions) {
-                FlowExpressions.Receiver r;
+            for (String exp : expressions) {
+                FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(e,
+                    r = FlowExpressionParseUtil.parse(exp,
                             receiver, internalReceiver, internalArguments);
-                } catch (FlowExpressionParseException e1) {
-                    // TODO;
-                    throw new RuntimeException("");
+                } catch (FlowExpressionParseException e) {
+                    // these errors are reported at the declaration, ignore here
                 }
                 if (r != null) {
                     insertValue(r,

@@ -15,6 +15,7 @@ import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.cfg.node.Node;
+import checkers.source.Result;
 import checkers.util.ElementUtils;
 
 /**
@@ -30,10 +31,14 @@ public class FlowExpressionParseUtil {
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 1L;
 
-        protected final String message;
+        protected final Result result;
 
-        public FlowExpressionParseException(String message) {
-            this.message = message;
+        public FlowExpressionParseException(Result result) {
+            this.result = result;
+        }
+
+        public Result getResult() {
+            return result;
         }
     }
 
@@ -74,14 +79,13 @@ public class FlowExpressionParseUtil {
                 // numbers)
             }
             if (idx > arguments.size()) {
-                throw new FlowExpressionParseException(
-                        "index too big for argument");
+                throw new FlowExpressionParseException(Result.failure(
+                        "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
             return arguments.get(idx - 1);
         } else {
-            // TODO: real error handling
-            throw new FlowExpressionParseException("Cannot parse expression '"
-                    + s + "'.");
+            throw new FlowExpressionParseException(Result.failure(
+                    "flowexpr.parse.error", s));
         }
     }
 }
