@@ -120,7 +120,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, receiver,
+                    r = FlowExpressionParseUtil.parse(exp, receiver.getType(),
                             internalReceiver, internalArguments);
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
