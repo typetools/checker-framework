@@ -290,7 +290,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         // declaration (i.e. here) and for every use. this could
                         // be optimized to store the result the first time.
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                receiver, internalReceiver, internalArguments);
+                                receiver.getType(), internalReceiver, internalArguments);
 
                         // TODO: we should not need to cast here?
                         BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
