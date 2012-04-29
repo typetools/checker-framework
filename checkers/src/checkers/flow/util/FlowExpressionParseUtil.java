@@ -1,5 +1,6 @@
 package checkers.flow.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,15 @@ import checkers.util.ElementUtils;
  */
 public class FlowExpressionParseUtil {
 
+    /** Matches a parameter */
+    protected static Pattern parameterPattern = Pattern
+            .compile("#([1-9]+[0-9]*)");
+    /** Matches the self reference */
+    protected static Pattern selfPattern = Pattern.compile("this|#0");
+    /** Matches an identifier */
+    protected static Pattern identifierPattern = Pattern
+            .compile("[a-z_$][a-z_$0-9]*");
+
     /**
      * Parse a string and return its representation as a
      * {@link FlowExpression.Receiver}, or throw an
@@ -47,11 +57,9 @@ public class FlowExpressionParseUtil {
             TypeMirror receiverType, Receiver receiver, List<Receiver> arguments)
             throws FlowExpressionParseException {
 
-        Matcher identifierMatcher = Pattern.compile("[a-z_$][a-z_$0-9]*")
-                .matcher(s);
-        Matcher selfMatcher = Pattern.compile("this|#0").matcher(s);
-        Matcher parameterMatcher = Pattern.compile("#([1-9]+[0-9]*)")
-                .matcher(s);
+        Matcher identifierMatcher = identifierPattern.matcher(s);
+        Matcher selfMatcher = selfPattern.matcher(s);
+        Matcher parameterMatcher = parameterPattern.matcher(s);
 
         if (identifierMatcher.matches()) {
 
@@ -88,20 +96,34 @@ public class FlowExpressionParseUtil {
                     "flowexpr.parse.error", s));
         }
     }
-    
+
+    /**
+     * @return The list of parameters that occur in {@code s}, identified by the
+     *         number of the parameter (starting at 1).
+     */
+    public static List<Integer> parameterIndices(String s) {
+        List<Integer> result = new ArrayList<>();
+        Matcher matcher = parameterPattern.matcher(s);
+        while (matcher.find()) {
+            int idx = Integer.parseInt(matcher.group(1));
+            result.add(idx);
+        }
+        return result;
+    }
+
     /**
      * An exception that indicates a parse error. It contains a {@link Result}
      * that can be used for error reporting.
      */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 1L;
-        
+
         protected final Result result;
-        
+
         public FlowExpressionParseException(Result result) {
             this.result = result;
         }
-        
+
         public Result getResult() {
             return result;
         }

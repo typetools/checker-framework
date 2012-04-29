@@ -301,6 +301,22 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                         value.getAnnotations(), anno)) {
                             checker.report(Result.failure("contracts.postcondition.not.satisfied"), node);
                         }
+                        
+                        // check that all parameters used in the expression are
+                        // final, so that they cannot be modified
+                        List<Integer> parameterIndices = FlowExpressionParseUtil
+                                .parameterIndices(stringExpr);
+                        for (Integer idx : parameterIndices) {
+                            VariableTree parameter = node.getParameters().get(
+                                    idx - 1);
+                            Element element = TreeUtils
+                                    .elementFromDeclaration(parameter);
+                            if (!ElementUtils.isFinal(element)) {
+                                checker.report(Result.failure(
+                                        "flowexpr.parameter.not.final", "#"
+                                                + idx, stringExpr), node);
+                            }
+                        }
                     } catch (FlowExpressionParseException e) {
                         // report errors here
                         checker.report(e.getResult(), node);
