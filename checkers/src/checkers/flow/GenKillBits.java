@@ -5,6 +5,7 @@ import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationUtils;
 
 /**
  * Maintains multiple gen-kill sets, "keyed" by a value. For instance, the
@@ -118,6 +119,15 @@ public class GenKillBits<K> {
       bitsets.get(key).clear(index);
   }
 
+  /**
+   * For all keys, clear the bit at the given index.
+   */
+  public void clearInAll(int index) {
+    for(K key : bitsets.keySet()) {
+      bitsets.get(key).clear(index);
+    }
+  }
+
   @Override
   public String toString() {
     return "[GenKill: " + bitsets + "]";
@@ -155,7 +165,8 @@ public class GenKillBits<K> {
       // if needed without a ConcurrentModificationException. This is important
       // for annotations with values, where the lub we get is an annotation that
       // we haven't seen yet.
-      Set<AnnotationMirror> arg1KeySet = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+      Set<AnnotationMirror> arg1KeySet = AnnotationUtils.createAnnotationSet();
+      arg1KeySet.addAll(outarg1.bitsets.keySet());
       for (AnnotationMirror key1 : arg1KeySet) {
         if (!arg2.bitsets.containsKey(key1))
           arg2.bitsets.put(key1, new BitSet());
@@ -204,7 +215,8 @@ public class GenKillBits<K> {
     // Copy the keySet so it can be modified without a ConcurrentModificationException.
     // This is important for annotations with values where an annotation with a value
     // not seen yet may need to be added.
-    Set<AnnotationMirror> arg1KeySet = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+    Set<AnnotationMirror> arg1KeySet = AnnotationUtils.createAnnotationSet();
+    arg1KeySet.addAll(outarg1.bitsets.keySet());
     for (AnnotationMirror key1 : arg1KeySet) {
       if (!arg2.bitsets.containsKey(key1))
         arg2.bitsets.put(key1, new BitSet());
@@ -233,7 +245,8 @@ public class GenKillBits<K> {
               // Copy the keySet so it can be modified without a ConcurrentModificationException.
               // This is important for annotations with values where an annotation with a value
               // not seen yet may need to be added.
-              Set<AnnotationMirror> arg1KeySet2 = new HashSet<AnnotationMirror>(outarg1.bitsets.keySet());
+              Set<AnnotationMirror> arg1KeySet2 = AnnotationUtils.createAnnotationSet();
+              arg1KeySet2.addAll(outarg1.bitsets.keySet());
               for (AnnotationMirror key3 : arg1KeySet2) {
                 if ( outarg1.bitsets.get(key3).get(var) ) {
                   AnnotationMirror glb = annoRelations.leastUpperBound(key3, key2);
