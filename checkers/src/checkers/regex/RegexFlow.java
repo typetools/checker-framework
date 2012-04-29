@@ -30,6 +30,11 @@ public class RegexFlow extends DefaultFlow<DefaultFlowState> {
 
         super.scanCond(tree);
 
+        if (tree == null) {
+            // The tree can be null for conditions in "for(;;)" loops
+            return;
+        }
+
         tree = TreeUtils.skipParens(tree);
 
         RegexChecker rec = (RegexChecker) this.checker;
