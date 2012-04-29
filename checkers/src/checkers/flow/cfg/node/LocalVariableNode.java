@@ -20,13 +20,16 @@ import com.sun.source.tree.VariableTree;
  *   <em>identifier</em>
  * </pre>
  * 
+ * We allow local variable uses introduced by the {@link CFGBuilder}
+ * without corresponding AST {@link Tree}s.
+ *
  * @author Stefan Heule
  * 
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
-    protected Tree tree;
+    protected/* @Nullable */Tree tree;
 
     public LocalVariableNode(Tree t) {
         // IdentifierTree for normal uses of the local variable or parameter,
@@ -56,7 +59,7 @@ public class LocalVariableNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public/* @Nullable */Tree getTree() {
         return tree;
     }
 

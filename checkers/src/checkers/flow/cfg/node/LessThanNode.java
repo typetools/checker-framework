@@ -3,6 +3,9 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
@@ -15,6 +18,8 @@ import com.sun.source.tree.Tree.Kind;
  * <pre>
  *   <em>expression</em> < <em>expression</em>
  * </pre>
+ *
+ * We allow less than nodes without corresponding AST {@link Tree}s.
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
@@ -22,7 +27,7 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class LessThanNode extends Node {
 
-    protected Tree tree;
+    protected/* @Nullable */Tree tree;
     protected Node left;
     protected Node right;
 
@@ -30,6 +35,14 @@ public class LessThanNode extends Node {
         assert tree.getKind() == Kind.LESS_THAN;
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
+        this.left = left;
+        this.right = right;
+    }
+
+    public LessThanNode(Node left, Node right, TypeMirror type) {
+        assert type.getKind() == TypeKind.BOOLEAN;
+        this.tree = null;
+        this.type = type;
         this.left = left;
         this.right = right;
     }
@@ -43,7 +56,7 @@ public class LessThanNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public/* @Nullable */Tree getTree() {
         return tree;
     }
 
