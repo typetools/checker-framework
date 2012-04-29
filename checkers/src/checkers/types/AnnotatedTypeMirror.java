@@ -229,7 +229,7 @@ public abstract class AnnotatedTypeMirror {
      * array components, etc).
      *
      * @param p The qualifier hierarchy to check for.
-     * @return True iff an annotation from the same hierarchy as p is present. 
+     * @return True iff an annotation from the same hierarchy as p is present.
      */
     public boolean isAnnotatedInHierarchy(AnnotationMirror p) {
         return getAnnotationInHierarchy(p) != null;
@@ -243,7 +243,7 @@ public abstract class AnnotatedTypeMirror {
      * array components, etc).
      *
      * @param p The qualifier hierarchy to check for.
-     * @return An annotation from the same hierarchy as p if present. 
+     * @return An annotation from the same hierarchy as p if present.
      */
     public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
         if (this.typeFactory.qualHierarchy==null) {
@@ -365,10 +365,10 @@ public abstract class AnnotatedTypeMirror {
      *
      * In contrast to {@link #hasAnnotationRelaxed(AnnotationMirror)}
      * this method also compares annotation values.
-     * 
+     *
      * @param a the annotation to check for
      * @return true iff the type contains the annotation {@code a}
-     * 
+     *
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
@@ -378,7 +378,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * A version of hasAnnotation that considers annotations on the
      * upper bound of wildcards and type variables.
-     * 
+     *
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotation(AnnotationMirror a) {
@@ -394,11 +394,11 @@ public abstract class AnnotatedTypeMirror {
      *
      * In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}
      * this method also compares annotation values.
-     * 
+     *
      * @param a the annotation to check for
      * @return true iff the annotation {@code a} is explicitly written
      * on the type
-     * 
+     *
      * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasExplicitAnnotation(AnnotationMirror a) {
@@ -415,31 +415,31 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation to check for
      * @return true iff the type contains an annotation with the same type as
      * the annotation given by {@code a}
-     * 
+     *
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasAnnotationRelaxed(AnnotationMirror a) {
-        return getAnnotations().contains(a);
+        return AnnotationUtils.containsSameIgnoringValues(getAnnotations(), a);
     }
 
     /**
      * A version of hasAnnotationRelaxed that considers annotations on the
      * upper bound of wildcards and type variables.
-     * 
+     *
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
-        return getEffectiveAnnotations().contains(a);
+        return AnnotationUtils.containsSameIgnoringValues(getEffectiveAnnotations(), a);
     }
 
     /**
      * A version of hasAnnotationRelaxed that only considers annotations that
      * are explicitly written on the type.
-     * 
+     *
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
-        return getExplicitAnnotations().contains(a);
+        return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
     }
 
     /**
@@ -557,7 +557,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Removes multiple annotations from the type.
-     * 
+     *
      * @param annotations
      *            the annotations to remove
      * @return true if at least one annotation was removed, false if the type's
@@ -657,7 +657,7 @@ public abstract class AnnotatedTypeMirror {
      * Copy the fields on this type onto the passed type.
      * This method needs to be overridden by any subclass of
      * {@code AnnotatedTypeMirror}.
-     * 
+     *
      * TODO: None of the subtypes in this compilation unit override this method, however.
      * Is this documentation inconsistent? Or should we add these implementations?
      * The separation between copyFields and getCopy is unclear.
@@ -930,7 +930,7 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /* Using this equals method resulted in an infinite recursion
-         * with type variables. TODO: Keep track of visited type variables? 
+         * with type variables. TODO: Keep track of visited type variables?
         @Override
         public boolean equals(Object o) {
             boolean res = super.equals(o);
@@ -1193,7 +1193,7 @@ public abstract class AnnotatedTypeMirror {
             	}
             	type.setTypeVariables(mtvs);
             }
-            
+
             return type;
         }
 
@@ -1370,7 +1370,7 @@ public abstract class AnnotatedTypeMirror {
          * Get the lower bound field directly, bypassing any lazy initialization.
          * This method is necessary to prevent infinite recursions in initialization.
          * In general, prefer getLowerBound.
-         * 
+         *
          * @return the lower bound field.
          */
         public AnnotatedTypeMirror getLowerBoundField() {
@@ -1490,7 +1490,7 @@ public abstract class AnnotatedTypeMirror {
          * Get the upper bound field directly, bypassing any lazy initialization.
          * This method is necessary to prevent infinite recursions in initialization.
          * In general, prefer getUpperBound.
-         * 
+         *
          * @return the upper bound field.
          */
         public AnnotatedTypeMirror getUpperBoundField() {
@@ -1502,7 +1502,7 @@ public abstract class AnnotatedTypeMirror {
          * Attention: If the upper bound is lazily initialized, it will not contain
          * any annotations! Callers of the method have to make sure that an
          * AnnotatedTypeFactory first processed the bound.
-         *  
+         *
          * @return the upper bound type of this type variable
          * @see #getEffectiveUpperBoundAnnotations
          */
@@ -1583,7 +1583,7 @@ public abstract class AnnotatedTypeMirror {
          * This type variable will be used for hashmaps that keep track
          * of type arguments.
         private AnnotatedTypeVariable canonical;
-        
+
         public AnnotatedTypeVariable getCanonical() {
             if (canonical==null) {
                 canonical = new AnnotatedTypeVariable(this.actualType, env, typeFactory);
@@ -1986,7 +1986,7 @@ public abstract class AnnotatedTypeMirror {
             type.setSuperBound(getSuperBound());
 
             type.methodTypeArgHack = methodTypeArgHack;
-            
+
             return type;
         }
 
