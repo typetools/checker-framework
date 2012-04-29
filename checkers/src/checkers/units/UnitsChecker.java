@@ -1,6 +1,5 @@
 package checkers.units;
 
-
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Collection;
@@ -9,11 +8,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
+import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.units.quals.*;
 import checkers.util.AnnotationUtils;
@@ -22,15 +23,22 @@ import checkers.basetype.BaseTypeChecker;
 
 /**
  * Units Checker main class.
- * 
+ *
  * Supports "units" option to add support for additional units.
  */
 @SupportedOptions( { "units" } )
 public class UnitsChecker extends BaseTypeChecker {
-    
+
     // Map from canonical class name to the corresponding UnitsRelations instance.
     // We use the string to prevent instantiating the UnitsRelations multiple times.
     protected Map<String, UnitsRelations> unitsRel = new HashMap<String, UnitsRelations>();
+    protected AnnotationUtils utils;
+
+    @Override
+    public void initChecker(ProcessingEnvironment env) {
+        utils = AnnotationUtils.getInstance(env);
+        super.initChecker(env);
+    }
 
     /** Copied from BasicChecker and adapted "quals" to "units".
      */
@@ -119,11 +127,11 @@ public class UnitsChecker extends BaseTypeChecker {
     /**
      * Look for an @UnitsRelations annotation on the qualifier and
      * add it to the list of UnitsRelations.
-     * 
+     *
      * @param annoUtils The AnnotationUtils instance to use.
      * @param qual The qualifier to investigate.
      */
-    private void addUnitsRelations(AnnotationUtils annoUtils, Class<? extends Annotation> qual) {        
+    private void addUnitsRelations(AnnotationUtils annoUtils, Class<? extends Annotation> qual) {
         AnnotationMirror am = annoUtils.fromClass(qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
@@ -179,5 +187,32 @@ public class UnitsChecker extends BaseTypeChecker {
     @Override
     protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
         return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
+    }
+
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new UnitsQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    }
+
+    protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public UnitsQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+                return AnnotationUtils.areSame(lhs, rhs);
+            }
+            lhs = stripValues(lhs);
+            rhs = stripValues(rhs);
+
+            return super.isSubtype(rhs, lhs);
+        }
+    }
+
+    private AnnotationMirror stripValues(AnnotationMirror anno) {
+        return utils.fromName(anno.getAnnotationType().toString());
     }
 }
