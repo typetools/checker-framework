@@ -11,7 +11,7 @@ import checkers.types.AnnotatedTypeMirror;
 
 /**
  * Units visitor.
- * 
+ *
  * Ensure consistent use of compound assignments.
  */
 public class UnitsVisitor extends BaseTypeVisitor<UnitsChecker> {
@@ -27,7 +27,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsChecker> {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
         Kind kind = node.getKind();
-        
+
         if ( (kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT) &&
                 !checker.isSubtype(exprType, varType)) {
             checker.report(Result.failure("compoundassign.type.incompatible",
