@@ -10,9 +10,11 @@ class Postcondition {
     
     @EnsuresAnnotation(expression="f1", annotation=Odd.class)
     void oddF1() {
+        f1 = null;
     }
     
     @EnsuresAnnotation(expression="f1", annotation=Value.class)
+    //:: error: (contracts.postcondition.not.satisfied)
     void valueF1() {
     }
     
@@ -22,10 +24,10 @@ class Postcondition {
     }
     
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
-    void param1(String f) {
+    void param1(@Value String f) {
     }
     @EnsuresAnnotation(expression={"#1","#2"}, annotation=Value.class)
-    void param2(String f, String g) {
+    void param2(@Value String f, @Value String g) {
     }
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
     //:: error: (flowexpr.parse.index.too.big)
@@ -45,18 +47,7 @@ class Postcondition {
     
     // test parameter syntax
     void t2(@Odd String p1, String p2) {
-        //:: error: (assignment.type.incompatible)
-        @Value String l1 = f1;
-        param1(f1);
-        @Value String l2 = f1;
         
-        //:: error: (assignment.type.incompatible)
-        @Value String l3 = f2;
-        //:: error: (assignment.type.incompatible)
-        @Value String l4 = f3;
-        param2(f2, f3);
-        @Value String l5 = f2;
-        @Value String l6 = f3;
         
         param3();
     }

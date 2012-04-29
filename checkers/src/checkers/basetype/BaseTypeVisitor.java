@@ -10,6 +10,8 @@ import javax.tools.Diagnostic.Kind;
 
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.Receiver;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
@@ -281,19 +283,28 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                             .internalReprOf(new LocalVariableNode(arg)));
                 }
 
-                for (String exp : expressions) {
-                    FlowExpressions.Receiver r = null;
+                for (String stringExpr : expressions) {
+                    FlowExpressions.Receiver expr = null;
                     try {
                         // TODO: currently, these expressions are parsed at the
                         // declaration (i.e. here) and for every use. this could
                         // be optimized to store the result the first time.
-                        r = FlowExpressionParseUtil.parse(exp, receiver,
-                                internalReceiver, internalArguments);
+                        expr = FlowExpressionParseUtil.parse(stringExpr,
+                                receiver, internalReceiver, internalArguments);
+
+                        // TODO: we should not need to cast here?
+                        BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
+                        CFStore exitStore = factory.getRegularExitStore(node);
+                        CFValue value = exitStore.getValue(expr);
+                        if (value == null
+                                || !AnnotationUtils.containsSame(
+                                        value.getAnnotations(), anno)) {
+                            checker.report(Result.failure("contracts.postcondition.not.satisfied"), node);
+                        }
                     } catch (FlowExpressionParseException e) {
                         // report errors here
                         checker.report(e.getResult(), node);
                     }
-                    // TODO: do something here
                 }
             }
 

@@ -90,7 +90,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Remove any information that might not be valid any more after a method
      * call, and add information guaranteed by the method.
      */
-    public void updateForMethodCall(MethodInvocationNode n, BaseTypeChecker checker) {
+    public void updateForMethodCall(MethodInvocationNode n,
+            BaseTypeChecker checker) {
         ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
 
         // remove information if necessary
@@ -119,8 +120,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp,
-                            receiver, internalReceiver, internalArguments);
+                    r = FlowExpressionParseUtil.parse(exp, receiver,
+                            internalReceiver, internalArguments);
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
@@ -142,6 +143,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         insertValue(r, value);
     }
 
+    /**
+     * Add the abstract value {@code value} for the expression {@code r}
+     * (correctly deciding where to store the information depending on the type
+     * of the expression {@code r}).
+     */
     protected void insertValue(FlowExpressions.Receiver r, V value) {
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
@@ -163,6 +169,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else {
             assert false;
+        }
+    }
+
+    /**
+     * @return Current abstract value of a flow expression, or {@code null} if
+     *         no information is available.
+     */
+    public/* @Nullable */V getValue(FlowExpressions.Receiver expr) {
+        if (expr instanceof FlowExpressions.LocalVariable) {
+            Element localVar = ((FlowExpressions.LocalVariable) expr)
+                    .getElement();
+            return localVariableValues.get(localVar);
+        } else if (expr instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
+            return fieldValues.get(fieldAcc);
+        } else {
+            assert false;
+            return null;
         }
     }
 

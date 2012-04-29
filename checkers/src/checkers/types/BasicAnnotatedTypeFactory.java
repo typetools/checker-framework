@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
 import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
@@ -211,13 +213,25 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * performFlowAnalysis.
      */
     protected AnalysisResult<CFValue> flowResult = null;
-	
+    
+    /**
+     * A mapping from method to their regular exit store (used to check
+     * postconditions).
+     */
+    protected IdentityHashMap<MethodTree, CFStore> regularExitStores = null;
+    
+    public CFStore getRegularExitStore(MethodTree methodTree) {
+        assert regularExitStores.containsKey(methodTree);
+        return regularExitStores.get(methodTree);
+    }
+
     /**
      * Perform a dataflow analysis over a single class tree and its nested
      * classes.
      */
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
+            regularExitStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>();
         }
         // no need to scan interfaces or enums
@@ -291,7 +305,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 checker.getProcessingEnvironment(), checker);
         analysis.performAnalysis(cfg);
         AnalysisResult<CFValue> result = analysis.getResult();
+        
+        // store result
         flowResult.combine(result);
+        if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
+            // store exit store (for checking postconditions)
+            CFGMethod mast = (CFGMethod) ast;
+            MethodTree method = mast.getMethod();
+            regularExitStores.put(method, analysis.getRegularExitStore());
+        }
 
         if (env.getOptions().containsKey("flowdotdir")) {
             String dotfilename = env.getOptions().get("flowdotdir") + "/"

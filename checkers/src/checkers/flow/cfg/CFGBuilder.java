@@ -986,7 +986,7 @@ public class CFGBuilder {
                 }
             }
 
-            return new ControlFlowGraph(startBlock, in.underlyingAST,
+            return new ControlFlowGraph(startBlock, regularExitBlock, exceptionalExitBlock, in.underlyingAST,
                     in.treeLookupMap);
         }
     }
