@@ -2,11 +2,13 @@ package checkers.regex;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.Flow;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
@@ -36,13 +38,13 @@ import com.sun.source.tree.Tree.Kind;
  * <li value="2">concatenation of two valid regular expression values
  * (either {@code String} or {@code char}) or two partial regular expression
  * values that make a valid regular expression when concatenated.</li>
- * 
+ *
  * <li value="3">for calls to Pattern.compile changes the group count value
  * of the return type to be the same as the parameter. For calls to the asRegex
  * methods of the classes in asRegexClasses these asRegex methods will return a
  * {@code @Regex String} with the same group count as the second argument to the
  * call to asRegex.</li>
- * 
+ *
  * <!--<li value="4">initialization of a char array that when converted to a String
  * is a valid regular expression.</li>-->
  *
@@ -69,14 +71,14 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 
     /**
      * The Pattern.compile method.
-     * 
+     *
      * @see java.util.regex.Pattern#compile(String)
      */
     private final ExecutableElement patternCompile;
 
     /**
      * The value method of the PartialRegex qualifier.
-     * 
+     *
      * @see checkers.regex.quals.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
@@ -85,7 +87,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      * Class names that contain an {@code asRegex(String, int)} method. These
      * asRegex methods will return a {@code @Regex String} with the same group
      * count as the second parameter to the asRegex call.
-     * 
+     *
      * @see RegexUtil#asRegex(String, int)
      */
     private final String[] asRegexClasses = new String[] {
@@ -94,7 +96,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
     /**
      * A list of all of the ExecutableElements for the class names in
      * asRegexClasses.
-     * 
+     *
      * @see #asRegexClasses
      * @see RegexUtil#asRegex(String, int)
      */
@@ -116,6 +118,12 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 continue;
             }
         }
+    }
+
+    @Override
+    public Flow createFlow(RegexChecker checker, CompilationUnitTree tree,
+            Set<AnnotationMirror> flowQuals) {
+        return new RegexFlow(checker, tree, flowQuals, this);
     }
 
     @Override
@@ -255,7 +263,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 
         /**
          * Returns true if the given MethodInvocationTree represents a call to
-         * an asRegex method in one of the classes in asRegexClasses. 
+         * an asRegex method in one of the classes in asRegexClasses.
          */
         private boolean isAsRegex(MethodInvocationTree tree) {
             for (ExecutableElement asRegex : asRegexes) {
