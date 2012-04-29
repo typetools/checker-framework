@@ -25,7 +25,7 @@ import checkers.types.QualifierHierarchy;
  * Represents the type qualifier hierarchy of a type system.
  *
  * This class is immutable and can be only created through {@link MultiGraphFactory}.
- * 
+ *
  * A QualifierHierarchy that supports multiple separate subtype hierarchies.
  */
 public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
@@ -57,7 +57,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         AnnotationMirror polyQualifier;
 
         private final SourceChecker checker;
-        
+
         public MultiGraphFactory(SourceChecker checker) {
             supertypes = AnnotationUtils.createAnnotationMap();
             this.checker = checker;
@@ -110,9 +110,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return result;
         }
 
-    	protected QualifierHierarchy createQualifierHierarchy() {
-    		return new MultiGraphQualifierHierarchy(this);
-    	}
+        protected QualifierHierarchy createQualifierHierarchy() {
+            return new MultiGraphQualifierHierarchy(this);
+        }
 
         private boolean wasBuilt = false;
 
@@ -163,58 +163,58 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         this.supertypesGraph = f.supertypes;
         this.supertypesMap = buildFullMap(f.supertypes);
 
-    	this.roots = findRoots(checker, this.supertypesMap, f.polyQualifier);
+        this.roots = findRoots(checker, this.supertypesMap, f.polyQualifier);
         this.bottoms = findBottoms(this.supertypesMap, f.polyQualifier);
     }
 
-	protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
+    protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
         super(h.checker);
         this.supertypesGraph = h.supertypesGraph;
         this.supertypesMap = h.supertypesMap;
         this.lubs = h.lubs;
         this.glbs = h.glbs;
-		this.roots = h.roots;
-		this.bottoms = h.bottoms;
-	}
+        this.roots = h.roots;
+        this.bottoms = h.bottoms;
+    }
 
-	@Override
-	public String toString() {
-	    // TODO: it would be easier to debug if the graph and map were sorted by the key.
-	    // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
-	    return "Supertypes Graph: " + supertypesGraph.toString() +
-	            "\nSupertypes Map: " + supertypesMap.toString() +
-	            "\nRoots: " + roots +
-	            "\nBottoms: " + bottoms;
-	}
+    @Override
+    public String toString() {
+        // TODO: it would be easier to debug if the graph and map were sorted by the key.
+        // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
+        return "Supertypes Graph: " + supertypesGraph.toString() +
+                "\nSupertypes Map: " + supertypesMap.toString() +
+                "\nRoots: " + roots +
+                "\nBottoms: " + bottoms;
+    }
 
-	@Override
+    @Override
     public Set<AnnotationMirror> getRootAnnotations() {
         return this.roots;
     }
 
     @Override
     public AnnotationMirror getRootAnnotation(AnnotationMirror start) {
-    	for (AnnotationMirror root : roots) {
-    		if (AnnotationUtils.areSameIgnoringValues(start, root) ||
-    		        isSubtype(start, root)) {
-    			return root;
-    		}
-    	}
-    	checker.errorAbort("Did not find the root corresponding to qualifier " + start +
-    	        " all roots: " + roots);
+        for (AnnotationMirror root : roots) {
+            if (AnnotationUtils.areSameIgnoringValues(start, root) ||
+                    isSubtype(start, root)) {
+                return root;
+            }
+        }
+        checker.errorAbort("Did not find the root corresponding to qualifier " + start +
+                " all roots: " + roots);
         return null;
     }
 
     @Override
     public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-    	for (AnnotationMirror bot : bottoms) {
-    		if (AnnotationUtils.areSameIgnoringValues(start, bot) ||
-    		        isSubtype(bot, start)) {
-    			return bot;
-    		}
-    	}
-    	checker.errorAbort("Did not find the bottom corresponding to qualifier " + start +
-    	        " all bottoms: " + bottoms);
+        for (AnnotationMirror bot : bottoms) {
+            if (AnnotationUtils.areSameIgnoringValues(start, bot) ||
+                    isSubtype(bot, start)) {
+                return bot;
+            }
+        }
+        checker.errorAbort("Did not find the bottom corresponding to qualifier " + start +
+                " all bottoms: " + bottoms);
         return null;
     }
 
@@ -236,8 +236,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {
                 if (getRootAnnotation(lhsAnno) == getRootAnnotation(rhsAnno) &&
-                		isSubtype(rhsAnno, lhsAnno)) {
-                	++valid;
+                        isSubtype(rhsAnno, lhsAnno)) {
+                    ++valid;
                 }
             }
         }
@@ -310,10 +310,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return AnnotationUtils.areSame(anno1, anno2);
         /* TODO: this optimization leads to recursion
         for (AnnotationMirror root : roots) {
-        	System.out.println("Looking at root: " + root + " and " + anno1);
-        	// We cannot use getRootAnnotation, as that would use subtyping and recurse
-        	if (isSubtype(anno1, root) && AnnotationUtils.areSame(root, anno2))
-        		return true;
+            System.out.println("Looking at root: " + root + " and " + anno1);
+            // We cannot use getRootAnnotation, as that would use subtyping and recurse
+            if (isSubtype(anno1, root) && AnnotationUtils.areSame(root, anno2))
+            return true;
         }*/
         checkAnnoInGraph(anno1);
         checkAnnoInGraph(anno2);
@@ -330,7 +330,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     "use a @DefaulQualifierInHierarchy annotation.");
         } else {
             checker.errorAbort("MultiGraphQualifierHierarchy found the unrecognized qualifier: " + a +
-            		". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
+                    ". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
         }
     }
 
@@ -406,7 +406,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 "with qualifiers from the same hierarchy. Found a1: " + a1 + " [root: " + getRootAnnotation(a1) +
                 "], a2: " + a2 + " [root: " + getRootAnnotation(a2) + "]";
 
-        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1Super : findSmallestTypes(supertypesMap.get(a1))) {
             // TODO: we take the first of the smallest supertypes, maybe we would
             // get a different LUB if we used a different one?
@@ -440,7 +440,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     // remove all supertypes of elements contained in the set
     private Set<AnnotationMirror> findSmallestTypes(Set<AnnotationMirror> inset) {
-        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
+        Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
+        outset.addAll(inset);
 
         for( AnnotationMirror a1 : inset ) {
             Iterator<AnnotationMirror> outit = outset.iterator();
@@ -507,7 +508,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 "with qualifiers from the same hierarchy. Found a1: " + a1 + " [root: " + getRootAnnotation(a1) +
                 "], a2: " + a2 + " [root: " + getRootAnnotation(a2) + "]";
 
-        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1Sub : supertypesGraph.keySet()) {
             if (isSubtype(a1Sub, a1) && !a1Sub.equals(a1)) {
                 AnnotationMirror a1lb = findGlb(a1Sub, a2);
@@ -532,7 +533,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     // remove all subtypes of elements contained in the set
     private Set<AnnotationMirror> findGreatestTypes(Set<AnnotationMirror> inset) {
-        Set<AnnotationMirror> outset = new HashSet<AnnotationMirror>(inset);
+        Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
+        outset.addAll(inset);
 
         for( AnnotationMirror a1 : inset ) {
             Iterator<AnnotationMirror> outit = outset.iterator();

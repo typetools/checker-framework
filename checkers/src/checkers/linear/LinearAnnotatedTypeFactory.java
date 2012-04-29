@@ -99,8 +99,8 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
             if (this.flowState.vars.contains(elem)) {
                 int idx = this.flowState.vars.indexOf(elem);
                 if (this.flowState.annos.get(LINEAR, idx)) {
-                	this.flowState.annos.set(UNUSABLE, idx);
-                	this.flowState.annos.clear(LINEAR, idx);
+                    this.flowState.annos.set(UNUSABLE, idx);
+                    this.flowState.annos.clear(LINEAR, idx);
                 }
             }
         }
