@@ -30,7 +30,7 @@ import checkers.util.TreeUtils;
 @TypeQualifiers({ Regex.class, PartialRegex.class, PolyRegex.class, RegexBottom.class, Unqualified.class })
 public class RegexChecker extends BaseTypeChecker {
 
-    protected AnnotationMirror REGEX;
+    protected AnnotationMirror REGEX, PARTIALREGEX;
     protected ExecutableElement regexValue;
     private TypeMirror[] legalReferenceTypes;
 
@@ -40,6 +40,7 @@ public class RegexChecker extends BaseTypeChecker {
 
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         REGEX = annoFactory.fromClass(Regex.class);
+        PARTIALREGEX = annoFactory.fromClass(PartialRegex.class);
         regexValue = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, env);
 
         legalReferenceTypes = new TypeMirror[] {
@@ -117,6 +118,20 @@ public class RegexChecker extends BaseTypeChecker {
                 int rhsValue = getRegexValue(rhs);
                 int lhsValue = getRegexValue(lhs);
                 return lhsValue <= rhsValue;
+            }
+            // TODO: subtyping between PartialRegex?
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameIgnoringValues(lhs, REGEX)) {
+                lhs = REGEX;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, REGEX)) {
+                rhs = REGEX;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(lhs, PARTIALREGEX)) {
+                lhs = PARTIALREGEX;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, PARTIALREGEX)) {
+                rhs = PARTIALREGEX;
             }
             return super.isSubtype(rhs, lhs);
         }

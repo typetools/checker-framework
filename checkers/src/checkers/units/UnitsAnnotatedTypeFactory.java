@@ -25,10 +25,10 @@ import com.sun.source.tree.Tree;
 
 /**
  * Annotated type factory for the Units Checker.
- * 
+ *
  * Handles multiple names for the same unit, with different prefixes,
  * e.g. @kg is the same as @g(Prefix.kilo).
- * 
+ *
  * Supports relations between units, e.g. if "m" is a variable of type "@m" and
  * "s" is a variable of type "@s", the division "m/s" is automatically annotated
  * as "mPERs", the correct unit for the result.
@@ -51,7 +51,7 @@ public class UnitsAnnotatedTypeFactory extends
     }
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
-    
+
     @Override
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         String aname = a.getAnnotationType().toString();
@@ -74,7 +74,7 @@ public class UnitsAnnotatedTypeFactory extends
         }
         return super.aliasedAnnotation(a);
     }
-    
+
     @Override
     protected TreeAnnotator createTreeAnnotator(UnitsChecker checker) {
         return new UnitsTreeAnnotator(checker);
@@ -88,17 +88,17 @@ public class UnitsAnnotatedTypeFactory extends
         UnitsTreeAnnotator(BaseTypeChecker checker) {
             super(checker, UnitsAnnotatedTypeFactory.this);
         }
-        
+
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror lht = getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rht = getAnnotatedType(node.getRightOperand());
             Tree.Kind kind = node.getKind();
-            
+
             AnnotationMirror bestres = null;
             for (UnitsRelations ur : checker.unitsRel.values()) {
-                AnnotationMirror res = useUnitsRelation(kind, ur, lht, rht); 
-                
+                AnnotationMirror res = useUnitsRelation(kind, ur, lht, rht);
+
                 if (bestres != null && res != null && !bestres.equals(res)) {
                     // TODO: warning
                     System.out.println("UnitsRelation mismatch, taking neither! Previous: "
@@ -115,7 +115,7 @@ public class UnitsAnnotatedTypeFactory extends
                 type.addAnnotation(bestres);
             } else {
                 // Handle the binary operations that do not produce a UnitsRelation.
-                
+
                 switch(kind) {
                 case MINUS:
                 case PLUS:
@@ -147,15 +147,15 @@ public class UnitsAnnotatedTypeFactory extends
                     type.addAnnotation(mixedUnits);
                     break;
 
-		// Placeholders for unhandled binary operations
-		case REMAINDER:
-		    // The checker disallows the following:
-		    //     @Length int q = 10 * UnitTools.m;
-		    //     @Length int r = q % 3;
-		    // This seems wrong because it allows this:
-		    //     @Length int r = q - (q / 3) * 3;
-		    // TODO: We agreed to treat remainder like division.
-		    break;
+                    // Placeholders for unhandled binary operations
+                case REMAINDER:
+                    // The checker disallows the following:
+                    //     @Length int q = 10 * UnitTools.m;
+                    //     @Length int r = q % 3;
+                    // This seems wrong because it allows this:
+                    //     @Length int r = q - (q / 3) * 3;
+                    // TODO: We agreed to treat remainder like division.
+                    break;
                 }
             }
 
@@ -177,10 +177,10 @@ public class UnitsAnnotatedTypeFactory extends
             type.addAnnotations(varType.getAnnotations());
             return super.visitCompoundAssignment(node, type);
         }
-        
+
         private AnnotationMirror useUnitsRelation(Tree.Kind kind, UnitsRelations ur,
                 AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
-            
+
             AnnotationMirror res = null;
             if (ur!=null) {
                 switch(kind) {

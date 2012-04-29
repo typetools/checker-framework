@@ -329,7 +329,7 @@ public class AnnotationUtils {
         return parseAnnotationValue(new TypeValueParser(), ad, field);
     }
 
-    
+
     // **********************************************************************
     // Parsers for annotations values
     // **********************************************************************
@@ -522,7 +522,7 @@ public class AnnotationUtils {
 
             Map<? extends ExecutableElement, ? extends AnnotationValue> elval1 = getElementValuesWithDefaults(a1);
             Map<? extends ExecutableElement, ? extends AnnotationValue> elval2 = getElementValuesWithDefaults(a2);
-            
+
             return elval1.toString().equals(elval2.toString());
         }
 
@@ -606,6 +606,10 @@ public class AnnotationUtils {
         @Override
         public int compare(AnnotationMirror a1, AnnotationMirror a2) {
             if (a1 == null || a2 == null) {
+                // TODO: I would really like to just do this:
+                // throw new SourceChecker.CheckerError("AnnotationUtils.ANNOTATION_ORDERING: found null AnnotationMirror!");
+                // However, things break then :-(
+
                 if (a1 == a2)
                     return 0;
                 else if (a1 == null)
@@ -614,16 +618,10 @@ public class AnnotationUtils {
                     return 1;
             }
 
-            Name n1 = annotationName(a1);
-            Name n2 = annotationName(a2);
-            if (n1.equals(n2))
-                return 0;
+            String n1 = a1.toString();
+            String n2 = a2.toString();
 
-            int comp = n1.hashCode() - n2.hashCode();
-            if (comp != 0)
-                return comp;
-
-            return n1.toString().compareTo(n2.toString());
+            return n1.compareTo(n2);
         }
     };
 
@@ -948,7 +946,7 @@ public class AnnotationUtils {
                 }
 
                 @Override
-                public String toString() {                    
+                public String toString() {
                     if (value instanceof String) {
                         return "\"" + value.toString() + "\"";
                     } else if (value instanceof Character) {
