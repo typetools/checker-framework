@@ -29,22 +29,22 @@ public class UnitsTools {
     public static final /*@mm*/ int mm = 1;
     public static final /*@m*/ int m = 1;
     public static final /*@km*/ int km = 1;
-        
+
     public static /*@m*/ int fromMilliMeterToMeter(/*@mm*/ int mm) { return mm / 1000; }
     public static /*@mm*/ int fromMeterToMilliMeter(/*@m*/ int m) { return m * 1000; }
     public static /*@km*/ int fromMeterToKiloMeter(/*@m*/ int m) { return m / 1000; }
     public static /*@m*/ int fromKiloMeterToMeter(/*@km*/ int km) { return km * 1000; }
-    
+
     // Area
     public static final /*@mm2*/ int mm2 = 1;
     public static final /*@m2*/ int m2 = 1;
     public static final /*@km2*/ int km2 = 1;
-            
+
     // Time
     public static final /*@s*/ int s = 1;
     public static final /*@min*/ int min = 1;
     public static final /*@h*/ int h = 1;
-        
+
     public static /*@min*/ int fromSecondToMinute(/*@s*/ int s) { return s / 60; }
     public static /*@s*/ int fromMinuteToSecond(/*@min*/ int min) { return min * 60; }
     public static /*@h*/ int fromMinuteToHour(/*@min*/ int min) { return min / 60; }
