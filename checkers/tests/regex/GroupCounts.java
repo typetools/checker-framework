@@ -61,12 +61,12 @@ public class GroupCounts {
         @Regex String test0 = s0;
         //:: error: (assignment.type.incompatible)
         @Regex(1) String test01 = s0;
-        
+
         s0 += s1;
         @Regex(1) String test1 = s0;
         //:: error: (assignment.type.incompatible)
         @Regex(2) String test12 = s0;
-        
+
         s1 += s3;
         @Regex(4) String test4 = s1;
         //:: error: (assignment.type.incompatible)
