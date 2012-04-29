@@ -120,7 +120,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
     @Override
     protected Set<AnnotationMirror> createFlowQualifiers(ImmutabilitySubchecker checker) {
-        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
             if (!I.class.equals(cl))
                 flowQuals.add(annotations.fromClass(cl));
