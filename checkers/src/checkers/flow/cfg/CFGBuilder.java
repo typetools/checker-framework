@@ -2787,8 +2787,7 @@ public class CFGBuilder {
                     extendWithNode(new InternalVariableNode(iteratorDeclNode));
                 MethodAccessNode hasNextMethodAccess =
                     extendWithNode(new MethodAccessNode(hasNextMethod, iteratorReceiverNode));
-                MethodInvocationNode hasNextMethodCall =
-                    extendWithNode(new MethodInvocationNode(hasNextMethodAccess,
+                extendWithNode(new MethodInvocationNode(hasNextMethodAccess,
                                                             Collections.<Node>emptyList(), getCurrentPath()));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
@@ -2883,14 +2882,12 @@ public class CFGBuilder {
                 IntegerLiteralNode fakeLength =
                     extendWithNode(new IntegerLiteralNode(10, intType));
                 TypeMirror booleanType = types.getPrimitiveType(TypeKind.BOOLEAN);
-                LessThanNode lessThan =
-                    extendWithNode(new LessThanNode(indexUse, fakeLength, booleanType));
+                extendWithNode(new LessThanNode(indexUse, fakeLength, booleanType));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
                 // Loop body, starting with declaration of the loop iteration variable
                 addLabelForNextNode(loopEntry);
-                VariableDeclarationNode varDeclNode =
-                    extendWithNode(new VariableDeclarationNode(variable));
+                extendWithNode(new VariableDeclarationNode(variable));
                 LocalVariableNode varNode =
                     extendWithNode(new LocalVariableNode(variable));
                 InternalVariableNode arrayUse =
@@ -2909,8 +2906,7 @@ public class CFGBuilder {
                 // Loop back edge
                 addLabelForNextNode(updateStart);
                 indexUse = extendWithNode(new InternalVariableNode(indexVarNode));
-                PostfixIncrementNode increment =
-                    extendWithNode(new PostfixIncrementNode(indexUse));
+                extendWithNode(new PostfixIncrementNode(indexUse));
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
 
