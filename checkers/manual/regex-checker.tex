@@ -40,7 +40,7 @@ These qualifiers make up the Regex type system:
 
 \end{description}
 
-A subtyping hierarchy of the Regex checker's qualifiers is shown in
+The subtyping hierarchy of the Regex checker's qualifiers is shown in
 Figure~\ref{fig:regex-hierarchy}.
 
 \begin{figure}
@@ -49,8 +49,8 @@ Figure~\ref{fig:regex-hierarchy}.
   Because the parameter to a \<@Regex> qualifier is at least the number of
   capturing groups in a regular expression, a \<@Regex> qualifier with more
   capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
-  groups. Qualifiers in gray are provided for the benefit of the type
-  system and should never be used.}
+  groups. Qualifiers in gray are used internally by the type
+  system but should never be written by a programmer.}
 \label{fig:regex-hierarchy}
 \end{figure}
 
