@@ -22,12 +22,13 @@ import checkers.util.AnnotationUtils.AnnotationBuilder;
 public class UnitsRelationsDefault implements UnitsRelations {
 
     protected AnnotationMirror m, km, m2, km2, s, h, mPERs, kmPERh;
-    
+
+    @Override
     public UnitsRelations init(AnnotationUtils annos, ProcessingEnvironment env) {
         AnnotationBuilder builder = new AnnotationBuilder(env, m.class);
         builder.setValue("value", Prefix.one);
         m = builder.build();
-        
+
         builder = new AnnotationBuilder(env, m.class);
         builder.setValue("value", Prefix.kilo);
         km = builder.build();
@@ -37,7 +38,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
         builder = new AnnotationBuilder(env, s.class);
         builder.setValue("value", Prefix.one);
-        s = builder.build();       
+        s = builder.build();
         h = annos.fromClass(h.class);
 
         mPERs = annos.fromClass(mPERs.class);
@@ -45,16 +46,17 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
         return this;
     }
-            
+
     @Override
     public AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
-
-        // TODO: instead of contains, use ???
-        if (p1.getAnnotations().contains(m) && p2.getAnnotations().contains(m)) {
+        // TODO: does this handle scaling correctly?
+        if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), m) &&
+                AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), m)) {
             return m2;
         }
 
-        if (p1.getAnnotations().contains(km) && p2.getAnnotations().contains(km)) {
+        if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), km) &&
+                AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), km)) {
             return km2;
         }
 
@@ -63,15 +65,17 @@ public class UnitsRelationsDefault implements UnitsRelations {
 
     @Override
     public AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
-        if (p1.getAnnotations().contains(m) && p2.getAnnotations().contains(s)) {
+        if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), m) &&
+                AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), s)) {
             return mPERs;
         }
 
-        if (p1.getAnnotations().contains(km) && p2.getAnnotations().contains(h)) {
+        if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), km) &&
+                AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), h)) {
             return kmPERh;
         }
 
         return null;
     }
-    
+
 }

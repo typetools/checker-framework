@@ -144,7 +144,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawness.init(checker.getProcessingEnvironment());
         rawnessFactory = rawness.createFactory(root);
 
-        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
         flowQuals.add(NONNULL);
         flowQuals.add(PRIMITIVE);
         flow = new NullnessFlow(checker, root, flowQuals, this);

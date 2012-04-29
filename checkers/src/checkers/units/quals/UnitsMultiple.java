@@ -13,7 +13,7 @@ public @interface UnitsMultiple {
      * @return The base unit to use.
      */
     Class<? extends Annotation> quantity();
-    
+
     /**
      * @return The scaling prefix.
      */
