@@ -24,7 +24,6 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -1839,7 +1838,7 @@ public class CFGBuilder {
 
             // TODO: lock the receiver for synchronized methods
 
-            Node node = new MethodInvocationNode(tree, target, arguments);
+            Node node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
             extendWithNode(node);
 
             conditionalMode = outerConditionalMode;
@@ -2778,7 +2777,7 @@ public class CFGBuilder {
                     extendWithNode(new MethodAccessNode(iteratorMethod, expressionNode));
                 MethodInvocationNode iteratorMethodCall =
                     extendWithNode(new MethodInvocationNode(iteratorMethodAccess,
-                                                            Collections.<Node>emptyList()));
+                                                            Collections.<Node>emptyList(), getCurrentPath()));
 
                 translateAssignment(iteratorLHSNode, iteratorMethodCall);
 
@@ -2790,7 +2789,7 @@ public class CFGBuilder {
                     extendWithNode(new MethodAccessNode(hasNextMethod, iteratorReceiverNode));
                 MethodInvocationNode hasNextMethodCall =
                     extendWithNode(new MethodInvocationNode(hasNextMethodAccess,
-                                                            Collections.<Node>emptyList()));
+                                                            Collections.<Node>emptyList(), getCurrentPath()));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
                 // Loop body, starting with declaration of the loop iteration variable
@@ -2805,7 +2804,7 @@ public class CFGBuilder {
                     extendWithNode(new MethodAccessNode(nextMethod, iteratorReceiverNode));
                 MethodInvocationNode nextMethodCall =
                     extendWithNode(new MethodInvocationNode(nextMethodAccess,
-                        Collections.<Node>emptyList()));
+                        Collections.<Node>emptyList(), getCurrentPath()));
 
                 // If the variable is of reference type, then the target type is equal to it.
                 // Otherwise, the target type is the upper bound of the capture conversion of
