@@ -28,24 +28,6 @@ import checkers.util.ElementUtils;
 public class FlowExpressionParseUtil {
 
     /**
-     * An exception that indicates a parse error. It contains a {@link Result}
-     * that can be used for error reporting.
-     */
-    public static class FlowExpressionParseException extends Exception {
-        private static final long serialVersionUID = 1L;
-
-        protected final Result result;
-
-        public FlowExpressionParseException(Result result) {
-            this.result = result;
-        }
-
-        public Result getResult() {
-            return result;
-        }
-    }
-
-    /**
      * Parse a string and return its representation as a
      * {@link FlowExpression.Receiver}, or throw an
      * {@link FlowExpressionParseException}. The expression is assumed to be
@@ -104,6 +86,24 @@ public class FlowExpressionParseUtil {
         } else {
             throw new FlowExpressionParseException(Result.failure(
                     "flowexpr.parse.error", s));
+        }
+    }
+    
+    /**
+     * An exception that indicates a parse error. It contains a {@link Result}
+     * that can be used for error reporting.
+     */
+    public static class FlowExpressionParseException extends Exception {
+        private static final long serialVersionUID = 1L;
+        
+        protected final Result result;
+        
+        public FlowExpressionParseException(Result result) {
+            this.result = result;
+        }
+        
+        public Result getResult() {
+            return result;
         }
     }
 }
