@@ -878,20 +878,6 @@ public class CFGBuilder {
                     SpecialBlockType.ENTRY);
             missingEdges.add(new Tuple<>(startBlock, 0));
 
-            System.out.println("Nodes:");
-            Map<Integer, Label> inverseBindings = new HashMap<>();
-            for (Map.Entry<Label, Integer> entry : bindings.entrySet()) {
-                inverseBindings.put(entry.getValue(), entry.getKey());
-            }
-            int ni = 0;
-            for (ExtendedNode node : nodeList) {
-                if (inverseBindings.containsKey(ni)) {
-                    System.out.print(inverseBindings.get(ni) + ": ");
-                }
-                System.out.println(node);
-                ni++;
-            }
-
             // loop through all 'leaders' (while dynamically detecting the
             // leaders)
             RegularBlockImpl block = new RegularBlockImpl();
@@ -976,16 +962,6 @@ public class CFGBuilder {
                 i++;
             }
 
-            Set<Block> allBlocks = new HashSet<>();
-            for (ExtendedNode node : nodeList) {
-                if (node.getBlock() != null) {
-                    allBlocks.add(node.getBlock());
-                }
-            }
-
-            System.out.println("All blocks: ");
-            printBlocks(allBlocks);
-
             // add missing edges
             for (Tuple<? extends SingleSuccessorBlockImpl, Integer, ?> p : missingEdges) {
                 Integer index = p.b;
@@ -994,9 +970,6 @@ public class CFGBuilder {
                 SingleSuccessorBlockImpl source = p.a;
                 source.setSuccessor(target);
             }
-
-            System.out.println("With missing edges: ");
-            printBlocks(allBlocks);
 
             // add missing exceptional edges
             for (Tuple<ExceptionBlockImpl, Integer, ?> p : missingExceptionalEdges) {
@@ -2745,9 +2718,6 @@ public class CFGBuilder {
             StatementTree statement = tree.getStatement();
 
             TypeMirror exprType = InternalUtils.typeOf(expression);
-            System.out.println("exprType: " + exprType);
-            System.out.println("iterableType: " + iterableType);
-            System.out.println("isSubtype: " + types.isSubtype(exprType, iterableType));
             if (types.isSubtype(exprType, iterableType)) {
                 assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
                 DeclaredType declaredExprType = (DeclaredType) exprType;
@@ -2756,18 +2726,6 @@ public class CFGBuilder {
 
                 // Find the iterator() method of the iterable type
                 ExecutableElement iteratorMethod = null;
-
-                System.out.println("\nEnclosed methods");
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(exprElement.getEnclosedElements())) {
-                    System.out.println(method);
-                }
-
-                System.out.println("\nAll methods");
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-                    System.out.println(method);
-                }
 
                 for (ExecutableElement method :
                          ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
@@ -2792,18 +2750,6 @@ public class CFGBuilder {
                 ExecutableElement hasNextMethod = null;
                 ExecutableElement nextMethod = null;
                 
-                System.out.println("\nEnclosed methods");
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(iteratorElement.getEnclosedElements())) {
-                    System.out.println(method);
-                }
-
-                System.out.println("\nAll methods");
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(elements.getAllMembers(iteratorElement))) {
-                    System.out.println(method);
-                }
-
                 for (ExecutableElement method :
                          ElementFilter.methodsIn(elements.getAllMembers(iteratorElement))) {
                     Name methodName = method.getSimpleName();
@@ -2899,10 +2845,6 @@ public class CFGBuilder {
             } else {
                 assert (exprType instanceof ArrayType) : "expression must be an array";
                 ArrayType arrayType = (ArrayType) exprType;
-                Element arrayElement = types.asElement(arrayType);
-                System.out.println("Element: " + arrayElement);
-                System.out.println("Class: " + arrayElement.getClass());
-                assert arrayElement != null : "array element should be a type";
                 
                 // TODO: Shift any labels after the initialization of the
                 // temporary array variable.
@@ -2934,6 +2876,7 @@ public class CFGBuilder {
                 // }
                 // assert lengthField != null : "no length field in array type";
 
+                addLabelForNextNode(conditionStart);
                 InternalVariableNode indexUse =
                     extendWithNode(new InternalVariableNode(indexVarNode));
 

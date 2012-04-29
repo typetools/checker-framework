@@ -261,7 +261,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         Tree tree = n.getTree();
         if (tree != null) {
-            getValueFromFactory(tree);
+            resValue = getValueFromFactory(tree);
         }
 
         info.updateForMethodCall(n);
