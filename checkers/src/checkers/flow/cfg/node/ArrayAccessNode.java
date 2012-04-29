@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
@@ -16,6 +18,8 @@ import com.sun.source.tree.ArrayAccessTree;
  * <pre>
  *   <em>array ref</em> [ <em>index</em> ]
  * </pre>
+ *
+ * We allow array accesses without corresponding AST {@link Tree}s.
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
@@ -24,7 +28,7 @@ import com.sun.source.tree.ArrayAccessTree;
 
 public class ArrayAccessNode extends Node {
 
-    protected Tree tree;
+    protected/* @Nullable */Tree tree;
     protected Node array;
     protected Node index;
 
@@ -32,6 +36,13 @@ public class ArrayAccessNode extends Node {
         assert t instanceof ArrayAccessTree;
         this.tree = t;
         this.type = InternalUtils.typeOf(tree);
+        this.array = array;
+        this.index = index;
+    }
+
+    public ArrayAccessNode(Node array, Node index, TypeMirror type) {
+        this.tree = null;
+        this.type = type;
         this.array = array;
         this.index = index;
     }
@@ -45,7 +56,7 @@ public class ArrayAccessNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public/* @Nullable */Tree getTree() {
         return tree;
     }
 

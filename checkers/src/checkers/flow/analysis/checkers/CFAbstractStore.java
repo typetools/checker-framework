@@ -87,7 +87,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * call, and add information guaranteed by the method.
      */
     public void updateForMethodCall(MethodInvocationNode n) {
-        ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
+        ExecutableElement method = n.getTarget().getMethod();
 
         // remove information if necessary
         boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
