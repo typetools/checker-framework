@@ -49,7 +49,7 @@ public class StubParser {
      * The supported annotations. Keys are simple (unqualified) names.
      * (This may be a problem in the unlikely occurrence that a
      * type-checker supports two annotations with the same simple name.)
-     */ 
+     */
     private final Map<String, AnnotationMirror> supportedAnnotations;
 
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
@@ -296,7 +296,7 @@ public class StubParser {
      * List of all array component types.
      * Example input: int[][]
      * Example output: int, int[], int[][]
-     */        
+     */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
         LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
 
@@ -406,7 +406,7 @@ public class StubParser {
     private void annotateDecl(Map<String, Set<AnnotationMirror>> declAnnos, Element elt, List<AnnotationExpr> annotations) {
         if (annotations == null)
             return;
-        Set<AnnotationMirror> annos = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
             String annoName = StubUtil.getAnnotationName(annotation);
             AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
