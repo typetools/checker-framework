@@ -14,7 +14,6 @@ import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.cfg.node.Node;
 import checkers.source.Result;
 import checkers.util.ElementUtils;
 
@@ -28,6 +27,10 @@ import checkers.util.ElementUtils;
  */
 public class FlowExpressionParseUtil {
 
+    /**
+     * An exception that indicates a parse error. It contains a {@link Result}
+     * that can be used for error reporting.
+     */
     public static class FlowExpressionParseException extends Exception {
         private static final long serialVersionUID = 1L;
 
@@ -42,8 +45,24 @@ public class FlowExpressionParseUtil {
         }
     }
 
+    /**
+     * Parse a string and return its representation as a
+     * {@link FlowExpression.Receiver}, or throw an
+     * {@link FlowExpressionParseException}. The expression is assumed to be
+     * used in the context of a method.
+     * 
+     * @param s
+     *            The string to parse.
+     * @param receiverType
+     *            The type of the receiver that this expression might refer to.
+     * @param receiver
+     *            The receiver to be used in the result (if it occurs).
+     * @param arguments
+     *            The arguments of the method.
+     * @throws FlowExpressionParseException
+     */
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
-            Node receiverNode, Receiver receiver, List<Receiver> arguments)
+            TypeMirror receiverType, Receiver receiver, List<Receiver> arguments)
             throws FlowExpressionParseException {
 
         Matcher identifierMatcher = Pattern.compile("[a-z_$][a-z_$0-9]*")
@@ -53,7 +72,6 @@ public class FlowExpressionParseUtil {
                 .matcher(s);
 
         if (identifierMatcher.matches()) {
-            TypeMirror receiverType = receiverNode.getType();
 
             // this literal
             if (selfMatcher.matches()) {
