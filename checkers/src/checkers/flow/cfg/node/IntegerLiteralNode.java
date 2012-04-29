@@ -8,8 +8,8 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A node for an integer literal. For example:

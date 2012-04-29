@@ -136,4 +136,9 @@ class Basic2 {
         a2[1] = l3;
         a2[2] = p3;
     }
+    
+    // self type
+    void t9() @Odd {
+        @Odd Basic2 l1 = this;
+    }
 }

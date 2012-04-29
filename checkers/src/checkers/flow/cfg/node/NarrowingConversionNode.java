@@ -9,7 +9,6 @@ import checkers.flow.util.HashCodeUtils;
 import checkers.util.TypesUtils;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the narrowing primitive conversion operation. See JLS 5.1.3 for

@@ -7,15 +7,13 @@ import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
+import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.AbstractNodeVisitor;
-import checkers.flow.constantpropagation.Constant.Type;
-
-import com.sun.source.tree.MethodTree;
 
 public class ConstantPropagationTransfer
         extends
@@ -23,15 +21,9 @@ public class ConstantPropagationTransfer
         implements TransferFunction<Constant, ConstantPropagationStore> {
 
     @Override
-    public ConstantPropagationStore initialStore(MethodTree tree,
+    public ConstantPropagationStore initialStore(UnderlyingAST underlyingAST,
             List<LocalVariableNode> parameters) {
         ConstantPropagationStore store = new ConstantPropagationStore();
-
-        // we have no information about parameters
-        for (LocalVariableNode p : parameters) {
-            store.mergeInformation(p, new Constant(Type.TOP));
-        }
-
         return store;
     }
 

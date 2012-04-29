@@ -30,6 +30,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
+import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.Block.BlockType;
 import checkers.flow.cfg.block.BlockImpl;
@@ -184,8 +185,8 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 /**
- * Builds the control flow graph of a Java method (represented by its abstract
- * syntax tree, {@link MethodTree}).
+ * Builds the control flow graph of some Java code (either a method, or an
+ * arbitrary statement).
  * 
  * <p>
  * 
@@ -225,23 +226,43 @@ public class CFGBuilder {
     }
 
     /**
+     * Build the control flow graph of some code.
+     */
+    public static ControlFlowGraph build(CompilationUnitTree root,
+            ProcessingEnvironment env, UnderlyingAST underlyingAST) {
+        return new CFGBuilder().run(root, env, underlyingAST);
+    }
+
+    /**
      * Build the control flow graph of a method.
      */
     public static ControlFlowGraph build(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree method) {
-        return new CFGBuilder().run(root, env, method);
+            ProcessingEnvironment env, MethodTree tree) {
+        return new CFGBuilder().run(root, env, tree);
     }
 
+    /**
+     * Build the control flow graph of some code.
+     */
     public ControlFlowGraph run(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree method) {
+            ProcessingEnvironment env, UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                root, env, method);
+                root, env, underlyingAST);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
                 .process(phase2result);
         return phase3result;
+    }
+
+    /**
+     * Build the control flow graph of a method.
+     */
+    public ControlFlowGraph run(CompilationUnitTree root,
+            ProcessingEnvironment env, MethodTree tree) {
+        UnderlyingAST underlyingAST = new CFGMethod(tree);
+        return run(root, env, underlyingAST);
     }
 
     /* --------------------------------------------------------- */
@@ -941,8 +962,8 @@ public class CFGBuilder {
                     missingEdges.add(new Tuple<>(e, i + 1));
 
                     // exceptional edges
-                    for (Entry<TypeMirror, Label> entry : en
-                            .getExceptions().entrySet()) {
+                    for (Entry<TypeMirror, Label> entry : en.getExceptions()
+                            .entrySet()) {
                         // missingEdges.put(e, bindings.get(key))
                         Integer target = bindings.get(entry.getValue());
                         TypeMirror cause = entry.getKey();
@@ -980,7 +1001,6 @@ public class CFGBuilder {
             // add missing exceptional edges
             for (Tuple<ExceptionBlockImpl, Integer, ?> p : missingExceptionalEdges) {
                 Integer index = p.b;
-                @SuppressWarnings("unchecked")
                 TypeMirror cause = (TypeMirror) p.c;
                 ExceptionBlockImpl source = p.a;
                 if (index == null) {
@@ -994,7 +1014,8 @@ public class CFGBuilder {
                 }
             }
 
-            return new ControlFlowGraph(startBlock, in.tree, in.treeLookupMap);
+            return new ControlFlowGraph(startBlock, in.underlyingAST,
+                    in.treeLookupMap);
         }
     }
 
@@ -1009,16 +1030,16 @@ public class CFGBuilder {
     protected static class PhaseOneResult {
 
         private IdentityHashMap<Tree, Node> treeLookupMap;
-        private MethodTree tree;
+        private UnderlyingAST underlyingAST;
         private Map<Label, Integer> bindings;
         private ArrayList<ExtendedNode> nodeList;
         private Set<Integer> leaders;
 
-        public PhaseOneResult(MethodTree t,
+        public PhaseOneResult(UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
                 ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
                 Set<Integer> leaders) {
-            this.tree = t;
+            this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.nodeList = nodeList;
             this.bindings = bindings;
@@ -1184,7 +1205,7 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(CompilationUnitTree root,
-                ProcessingEnvironment env, MethodTree t) {
+                ProcessingEnvironment env, UnderlyingAST underlyingAST) {
             this.env = env;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
@@ -1202,7 +1223,7 @@ public class CFGBuilder {
             continueLabels = new HashMap<>();
 
             // traverse AST of the method body
-            TreePath bodyPath = trees.getPath(root, t.getBody());
+            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             scan(bodyPath, null);
 
             // add marker to indicate that the next block will be the exit block
@@ -1213,8 +1234,8 @@ public class CFGBuilder {
             // removed in a later phase.
             nodeList.add(new UnconditionalJump(regularExitLabel));
 
-            return new PhaseOneResult(t, treeLookupMap, nodeList, bindings,
-                    leaders);
+            return new PhaseOneResult(underlyingAST, treeLookupMap, nodeList,
+                    bindings, leaders);
         }
 
         /* --------------------------------------------------------- */
@@ -1583,11 +1604,12 @@ public class CFGBuilder {
                 // Narrowing is restricted to cases where the left hand side
                 // is byte, char, short or Byte, Char, Short and the right
                 // hand side is a constant.
-                TypeMirror unboxedVarType = isLeftBoxed ? types.unboxedType(varType) : varType;
+                TypeMirror unboxedVarType = isLeftBoxed ? types
+                        .unboxedType(varType) : varType;
                 TypeKind unboxedVarKind = unboxedVarType.getKind();
-                boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE ||
-                    unboxedVarKind == TypeKind.SHORT ||
-                    unboxedVarKind == TypeKind.CHAR;
+                boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE
+                        || unboxedVarKind == TypeKind.SHORT
+                        || unboxedVarKind == TypeKind.CHAR;
                 boolean isRightConstant = node instanceof ValueLiteralNode;
                 if (isLeftNarrowableTo && isRightConstant) {
                     if (isLeftBoxed) {
@@ -1893,7 +1915,8 @@ public class CFGBuilder {
                 boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
                 // TODO: explicit this access does not throw exception
                 if (canThrow) {
-                    TypeElement element = elements.getTypeElement("java.lang.NullPointerException");
+                    TypeElement element = elements
+                            .getTypeElement("java.lang.NullPointerException");
                     extendWithNodeWithException(target, element.asType());
                 } else {
                     extendWithNode(target);
@@ -3301,7 +3324,8 @@ public class CFGBuilder {
         public Node visitThrow(ThrowTree tree, Void p) {
             Node expression = scan(tree.getExpression(), p);
             TypeMirror exception = expression.getType();
-            return extendWithNodeWithException(new ThrowNode(tree, expression), exception);
+            return extendWithNodeWithException(new ThrowNode(tree, expression),
+                    exception);
         }
 
         @Override

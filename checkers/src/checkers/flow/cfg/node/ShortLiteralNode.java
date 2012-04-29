@@ -5,8 +5,8 @@ import java.util.Collections;
 
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A node for a short literal. For example:

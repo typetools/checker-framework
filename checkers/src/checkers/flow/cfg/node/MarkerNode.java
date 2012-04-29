@@ -2,10 +2,8 @@ package checkers.flow.cfg.node;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 
