@@ -3,6 +3,9 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+
 import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
@@ -20,15 +23,25 @@ import com.sun.source.tree.LiteralTree;
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 
+    int value;
+
     public IntegerLiteralNode(LiteralTree t) {
         assert t.getKind().equals(Tree.Kind.INT_LITERAL);
         tree = t;
+        value = (Integer) tree.getValue();
         type = InternalUtils.typeOf(tree);
     }
 
+    public IntegerLiteralNode(int value, TypeMirror type) {
+        assert type.getKind() == TypeKind.INT;
+        this.tree = null;
+        this.value = value;
+        this.type = type;
+    }
+        
     @Override
     public Integer getValue() {
-        return (Integer) tree.getValue();
+        return value;
     }
 
     @Override

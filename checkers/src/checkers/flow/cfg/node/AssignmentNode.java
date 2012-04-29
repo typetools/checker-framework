@@ -20,12 +20,14 @@ import com.sun.source.tree.VariableTree;
  *   <em>expression</em> [ <em>index</em> ] = <em>expression</em>
  * </pre>
  * 
+ * We allow assignments without corresponding AST {@link Tree}s.
+ *
  * @author Stefan Heule
  * 
  */
 public class AssignmentNode extends Node {
 
-    protected Tree tree;
+    protected/* @Nullable */Tree tree;
     protected Node lhs;
     protected Node rhs;
 
@@ -41,6 +43,17 @@ public class AssignmentNode extends Node {
         this.rhs = expression;
     }
 
+    /**
+     * Constructor for internally generated assignments without AST
+     * {@link Tree}s.
+     */
+    public AssignmentNode(Node target, Node expression) {
+        this.tree = null;
+        this.type = target.getType();
+        this.lhs = target;
+        this.rhs = expression;
+    }
+
     public Node getTarget() {
         return lhs;
     }
@@ -50,7 +63,7 @@ public class AssignmentNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public/* @Nullable */Tree getTree() {
         return tree;
     }
 

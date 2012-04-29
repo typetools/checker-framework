@@ -455,11 +455,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     // Internal (CFG builder created) variable nodes
     @Override
-    public R visitInternalVariableDeclaration(InternalVariableDeclarationNode n, P p) {
-        return visitNode(n, p);
-    }
-
-    @Override
     public R visitInternalVariable(InternalVariableNode n, P p) {
         return visitNode(n, p);
     }
