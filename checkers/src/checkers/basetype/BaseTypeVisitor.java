@@ -284,9 +284,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 for (String exp : expressions) {
                     FlowExpressions.Receiver r = null;
                     try {
+                        // TODO: currently, these expressions are parsed at the
+                        // declaration (i.e. here) and for every use. this could
+                        // be optimized to store the result the first time.
                         r = FlowExpressionParseUtil.parse(exp, receiver,
                                 internalReceiver, internalArguments);
                     } catch (FlowExpressionParseException e) {
+                        // report errors here
                         checker.report(e.getResult(), node);
                     }
                     // TODO: do something here
