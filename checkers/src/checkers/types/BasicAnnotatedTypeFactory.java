@@ -288,7 +288,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         CFGBuilder builder = new CFGBuilder();
         ControlFlowGraph cfg = builder.run(root, env, ast);
         CFAnalysis analysis = new CFAnalysis(this,
-                checker.getProcessingEnvironment());
+                checker.getProcessingEnvironment(), checker);
         analysis.performAnalysis(cfg);
         AnalysisResult<CFValue> result = analysis.getResult();
         flowResult.combine(result);

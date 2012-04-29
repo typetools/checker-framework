@@ -1,5 +1,6 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,13 +13,16 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
 import checkers.util.AnnotationUtils;
@@ -86,8 +90,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Remove any information that might not be valid any more after a method
      * call, and add information guaranteed by the method.
      */
-    public void updateForMethodCall(MethodInvocationNode n) {
-        ExecutableElement method = n.getTarget().getMethod();
+    public void updateForMethodCall(MethodInvocationNode n, BaseTypeChecker checker) {
+        ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
 
         // remove information if necessary
         boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
@@ -96,17 +100,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // add new information based on postcondition
-        AnnotationMirror ensuresAnnotation = analysis.factory.getDeclAnnotation(
-                method, EnsuresAnnotation.class);
+        AnnotationMirror ensuresAnnotation = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotation.class);
         if (ensuresAnnotation != null) {
             List<String> expressions = AnnotationUtils.elementValueStringArray(
                     ensuresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotation, "annotation");
-            for (String e : expressions) {
-                Node receiver = n.getTarget().getReceiver();
-                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(e, receiver,
-                        FlowExpressions.internalReprOf(receiver));
+
+            Node receiver = n.getTarget().getReceiver();
+            Receiver internalReceiver = FlowExpressions
+                    .internalReprOf(receiver);
+            List<Receiver> internalArguments = new ArrayList<>();
+            for (Node arg : n.getArguments()) {
+                internalArguments.add(FlowExpressions.internalReprOf(arg));
+            }
+
+            for (String exp : expressions) {
+                FlowExpressions.Receiver r = null;
+                try {
+                    r = FlowExpressionParseUtil.parse(exp,
+                            receiver, internalReceiver, internalArguments);
+                } catch (FlowExpressionParseException e) {
+                    // these errors are reported at the declaration, ignore here
+                }
                 if (r != null) {
                     insertValue(r,
                             analysis.factory.annotationFromName(annotation));
@@ -124,6 +141,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         V value = analysis.createAbstractValue(Collections.singleton(a));
         insertValue(r, value);
     }
+
     protected void insertValue(FlowExpressions.Receiver r, V value) {
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();

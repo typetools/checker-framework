@@ -8,8 +8,16 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.Receiver;
+import checkers.flow.cfg.node.ImplicitThisLiteralNode;
+import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.Node;
+import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
+import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
 import checkers.quals.Unused;
 import checkers.source.Result;
@@ -200,6 +208,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(methodType.getReceiverType());
         visitorState.setMethodTree(node);
+        ExecutableElement methodElement = TreeUtils
+                .elementFromDeclaration(node);
 
         try {
             Element elt = InternalUtils.symbol(node);
@@ -208,7 +218,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 // We shouldn't dig deeper
                 return null;
             }
-            
+
             // check method purity if needed
             boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt,
                     Pure.class) != null;
@@ -231,8 +241,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         node.getReturnType());
             }
 
-            ExecutableElement methodElement = TreeUtils
-                    .elementFromDeclaration(node);
             AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) atypeFactory
                     .getAnnotatedType(methodElement.getEnclosingElement());
 
@@ -250,6 +258,41 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             return super.visitMethod(node, p);
         } finally {
+
+            // check postcondition annotations
+            AnnotationMirror ensuresAnnotation = atypeFactory
+                    .getDeclAnnotation(methodElement, EnsuresAnnotation.class);
+            if (ensuresAnnotation != null) {
+                List<String> expressions = AnnotationUtils
+                        .elementValueStringArray(ensuresAnnotation,
+                                "expression");
+                String annotation = AnnotationUtils.elementValueClassName(
+                        ensuresAnnotation, "annotation");
+                AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+
+                Tree classTree = TreeUtils.enclosingClass(getCurrentPath());
+                Node receiver = new ImplicitThisLiteralNode(
+                        InternalUtils.typeOf(classTree));
+                Receiver internalReceiver = FlowExpressions
+                        .internalReprOf(receiver);
+                List<Receiver> internalArguments = new ArrayList<>();
+                for (VariableTree arg : node.getParameters()) {
+                    internalArguments.add(FlowExpressions
+                            .internalReprOf(new LocalVariableNode(arg)));
+                }
+
+                for (String exp : expressions) {
+                    FlowExpressions.Receiver r = null;
+                    try {
+                        r = FlowExpressionParseUtil.parse(exp, receiver,
+                                internalReceiver, internalArguments);
+                    } catch (FlowExpressionParseException e) {
+                        checker.report(e.getResult(), node);
+                    }
+                    // TODO: do something here
+                }
+            }
+
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
@@ -1526,7 +1569,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         Element elm = InternalUtils.symbol(exprTree);
         return checker.shouldSkipUses(elm);
     }
-
 
     // **********************************************************************
     // Overriding to avoid visit part of the tree
