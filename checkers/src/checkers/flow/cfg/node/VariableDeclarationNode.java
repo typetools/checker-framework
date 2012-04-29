@@ -3,6 +3,8 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
@@ -22,22 +24,39 @@ import com.sun.source.tree.VariableTree;
  * 
  */
 public class VariableDeclarationNode extends Node {
+    static long uid = 0;
 
-    protected VariableTree tree;
+    protected/* @Nullable */VariableTree tree;
+    protected String name;
 
     // TODO: make modifier accessible
 
     public VariableDeclarationNode(VariableTree t) {
         tree = t;
+        name = tree.getName().toString();
         type = InternalUtils.typeOf(tree);
     }
 
+    /**
+     * Constructor for internally generated declarations without AST
+     * {@link Tree}s.
+     */
+    public VariableDeclarationNode(String prefix, TypeMirror type) {
+        this.tree = null;
+        this.name = uniqueName(prefix);
+        this.type = type;
+    }
+
+    static String uniqueName(String prefix) {
+        return prefix + "#var" + uid++;
+    }
+
     public String getName() {
-        return tree.getName().toString();
+        return name;
     }
 
     @Override
-    public VariableTree getTree() {
+    public/* @Nullable */VariableTree getTree() {
         return tree;
     }
 
@@ -48,7 +67,7 @@ public class VariableDeclarationNode extends Node {
 
     @Override
     public String toString() {
-        return getName().toString();
+        return name;
     }
 
     @Override
