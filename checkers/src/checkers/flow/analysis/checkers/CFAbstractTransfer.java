@@ -146,7 +146,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (thenValue != null && elseValue != null) {
             resultValue = thenValue.leastUpperBound(elseValue);
         }
-        System.out.println(thenValue + " - " + elseValue + " -> " + resultValue);
         return new RegularTransferResult<>(resultValue, store);
     }
 
