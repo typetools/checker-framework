@@ -388,4 +388,14 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         assert !isRunning;
         return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
     }
+    
+    public S getRegularExitStore() {
+        S regularExitStore = stores.get(cfg.getRegularExitBlock()).getRegularStore();
+        return regularExitStore;
+    }
+    
+    public S getExceptionalExitStore() {
+        S exceptionalExitStore = stores.get(cfg.getExceptionalExitBlock()).getRegularStore();
+        return exceptionalExitStore;
+    }
 }

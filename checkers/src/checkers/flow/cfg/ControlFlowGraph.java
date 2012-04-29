@@ -14,6 +14,7 @@ import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
+import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.Node;
 
 import com.sun.source.tree.Tree;
@@ -27,7 +28,13 @@ import com.sun.source.tree.Tree;
 public class ControlFlowGraph {
 
     /** The entry block of the control flow graph. */
-    protected SpecialBlock entryBlock;
+    protected final SpecialBlock entryBlock;
+    
+    /** The regular exit block of the control flow graph. */
+    protected final SpecialBlock regularExitBlock;
+    
+    /** The exceptiona exit block of the control flow graph. */
+    protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
     protected UnderlyingAST underlyingAST;
@@ -35,12 +42,14 @@ public class ControlFlowGraph {
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected IdentityHashMap<Tree, Node> treeLookup;
 
-    public ControlFlowGraph(SpecialBlock entryBlock, UnderlyingAST underlyingAST,
+    public ControlFlowGraph(SpecialBlock entryBlock, SpecialBlockImpl regularExitBlock, SpecialBlockImpl exceptionalExitBlock, UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Node> treeLookup) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
+        this.regularExitBlock = regularExitBlock;
+        this.exceptionalExitBlock = exceptionalExitBlock;
     }
 
     /**
@@ -54,6 +63,14 @@ public class ControlFlowGraph {
     /** @return The entry block of the control flow graph. */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
+    }
+    
+    public SpecialBlock getRegularExitBlock() {
+        return regularExitBlock;
+    }
+    
+    public SpecialBlock getExceptionalExitBlock() {
+        return exceptionalExitBlock;
     }
 
     /** @return The AST this CFG corresponds to. */
