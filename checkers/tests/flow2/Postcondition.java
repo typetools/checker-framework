@@ -24,9 +24,10 @@ class Postcondition {
     }
     
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
-    void param1(@Value String f) {
+    void param1(final @Value String f) {
     }
     @EnsuresAnnotation(expression={"#1","#2"}, annotation=Value.class)
+    //:: error: (flowexpr.parameter.not.final)
     void param2(@Value String f, @Value String g) {
     }
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
