@@ -11,7 +11,7 @@ class NonMethodCode {
     static String sg1 = "def";
     
     // test flow for field initializer
-    //@Odd String f2 = g1 == f1 ? g1 : g1;
+    @Odd String f2 = g1 == f1 ? g1 : f1;
     
     // test flow for initializer blocks
     {
