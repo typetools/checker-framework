@@ -21,6 +21,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
+import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.TreeUtils;
@@ -128,6 +129,25 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S store = in.getRegularStore();
         V value = store.getValue(n);
         return new RegularTransferResult<>(value, store);
+    }
+
+    /**
+     * The resulting abstract value is the merge of the 'then' and 'else'
+     * branch.
+     */
+    @Override
+    public TransferResult<V, S> visitTernaryExpression(TernaryExpressionNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitTernaryExpression(n, p);
+        S store = result.getRegularStore();
+        V thenValue = p.getValueOfSubNode(n.getThenOperand());
+        V elseValue = p.getValueOfSubNode(n.getElseOperand());
+        V resultValue = null;
+        if (thenValue != null && elseValue != null) {
+            resultValue = thenValue.leastUpperBound(elseValue);
+        }
+        System.out.println(thenValue + " - " + elseValue + " -> " + resultValue);
+        return new RegularTransferResult<>(resultValue, store);
     }
 
     @Override
