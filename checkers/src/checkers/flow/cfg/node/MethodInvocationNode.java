@@ -8,46 +8,37 @@ import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.util.TreePath;
 
 /**
- * A node for method invocation
+ * A node for the method invocation
  * 
  * <pre>
- *   <em>target(arg1, arg2, ...)</em>
+ *   <em>target.m(arg1, arg2, ...)</em>
  * </pre>
  * 
- * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST {@link Tree},
- * in which case, the tree field will be null.
- *
  * @author Stefan Heule
  * @author Charlie Garrett
  * 
  */
 public class MethodInvocationNode extends Node {
 
-    protected/* @Nullable */MethodInvocationTree tree;
-    protected MethodAccessNode target;
+    protected MethodInvocationTree tree;
+    protected/* @Nullable */MethodAccessNode target;
     protected List<Node> arguments;
+    protected TreePath treePath;
 
-    public MethodInvocationNode(/* @Nullable */MethodInvocationTree tree,
-            MethodAccessNode target,
-            List<Node> arguments) {
+    public MethodInvocationNode(MethodInvocationTree tree,
+            /* @Nullable */MethodAccessNode target,
+            List<Node> arguments, TreePath treePath) {
         this.tree = tree;
-        if (tree != null) {
-            this.type = InternalUtils.typeOf(tree);
-        } else {
-            this.type = target.getMethod().getReturnType();
-        }
+        this.type = InternalUtils.typeOf(tree);
         this.target = target;
         this.arguments = arguments;
-    }
-
-    public MethodInvocationNode(MethodAccessNode target,
-            List<Node> arguments) {
-        this(null, target, arguments);
+        this.treePath = treePath;
     }
     
-    public MethodAccessNode getTarget() {
+    public/* @Nullable */MethodAccessNode getTarget() {
         return target;
     }
 
@@ -58,9 +49,13 @@ public class MethodInvocationNode extends Node {
     public Node getArgument(int i) {
         return arguments.get(i);
     }
+    
+    public TreePath getTreePath() {
+        return treePath;
+    }
 
     @Override
-    public/* @Nullable */MethodInvocationTree getTree() {
+    public MethodInvocationTree getTree() {
         return tree;
     }
 
@@ -72,7 +67,9 @@ public class MethodInvocationNode extends Node {
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append(target);
+        if (target != null) {
+            sb.append(target);
+        }
         sb.append("(");
         boolean needComma = false;
         for (Node arg : arguments) {
@@ -92,6 +89,10 @@ public class MethodInvocationNode extends Node {
             return false;
         }
         MethodInvocationNode other = (MethodInvocationNode) obj;
+        if (target == null && other.getTarget() != null) {
+            return false;
+        }
+
         return getTarget().equals(other.getTarget())
                 && getArguments().equals(other.getArguments());
     }
@@ -99,7 +100,9 @@ public class MethodInvocationNode extends Node {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash = HashCodeUtils.hash(target);
+        if (target != null) {
+            hash = HashCodeUtils.hash(target);
+        }
         for (Node arg : arguments) {
             hash = HashCodeUtils.hash(hash, arg.hashCode());
         }
@@ -109,7 +112,9 @@ public class MethodInvocationNode extends Node {
     @Override
     public Collection<Node> getOperands() {
         LinkedList<Node> list = new LinkedList<Node>();
-        list.add(target);
+        if (target != null) {
+            list.add(target);
+        }
         list.addAll(arguments);
         return list;
     }

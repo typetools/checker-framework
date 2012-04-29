@@ -1846,7 +1846,7 @@ public class CFGBuilder {
 
             if (conditionalMode && isBooleanMethod) {
                 extendWithExtendedNode(cjump);
-            }
+        }
 
             return node;
         }
@@ -2569,7 +2569,7 @@ public class CFGBuilder {
             ConditionalJump cjump = null;
             if (conditionalMode) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
-            }
+        }
             boolean outerConditionalMode = conditionalMode;
 
             conditionalMode = true;

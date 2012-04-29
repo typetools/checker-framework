@@ -264,7 +264,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             resValue = getValueFromFactory(tree);
         }
 
-        info.updateForMethodCall(n);
+        info.updateForMethodCall(n, analysis.checker);
 
         return new RegularTransferResult<>(resValue, info);
     }

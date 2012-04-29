@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
 
@@ -18,8 +19,8 @@ import checkers.util.AnnotationUtils;
 public class CFAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public CFAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env) {
-        super(factory, env);
+    public CFAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env, BaseTypeChecker checker) {
+        super(factory, env, checker);
     }
 
     @Override
