@@ -22,27 +22,35 @@ import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
+import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.UnderlyingAST.CFGMethod;
+import checkers.flow.cfg.UnderlyingAST.CFGStatement;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.*;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.QualifierDefaults;
+import checkers.util.QualifierPolymorphism;
+import checkers.util.TreeUtils;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 /**
@@ -205,16 +213,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected AnalysisResult<CFValue> flowResult = null;
 	
     /**
-     * Perform a dataflow analysis over a single class tree and its
-     * nested classes.
+     * Perform a dataflow analysis over a single class tree and its nested
+     * classes.
      */
     protected void performFlowAnalysis(ClassTree classTree) {
-        CFGBuilder builder = new CFGBuilder();
         if (flowResult == null) {
             flowResult = new AnalysisResult<>();
         }
         // no need to scan interfaces or enums
-        if (classTree.getKind() == Tree.Kind.INTERFACE || classTree.getKind() == Kind.ENUM){
+        if (classTree.getKind() == Tree.Kind.INTERFACE
+                || classTree.getKind() == Kind.ENUM) {
             return;
         }
         scannedClasses.put(classTree, ScanState.IN_PROGRESS);
@@ -234,28 +242,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                             break;
                         }
                     }
-                    ControlFlowGraph cfg = builder.run(root, env, mt);
-                    CFAnalysis analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
-                    analysis.performAnalysis(cfg);
-                    AnalysisResult<CFValue> result = analysis.getResult();
-                    flowResult.combine(result);
 
-                    if (env.getOptions().containsKey("flowdotdir")) {
-                        String dotfilename =
-                            env.getOptions().get("flowdotdir") + "/" +
-                            mt.getName() + ".dot";
-                        // make path safe for Windows
-                        dotfilename = dotfilename.replace("<", ".").replace(">", ".");
-                        System.err.println("Output to DOT file: " + dotfilename);
-                        analysis.outputToDotFile(dotfilename);
-                    }
-                    
-                    // add classes declared in method
-                    queue.addAll(builder.getDeclaredClasses());
-
+                    analyze(queue, new CFGMethod(mt));
                     break;
                 case VARIABLE:
-                    // TODO: handle initializers
+                    VariableTree vt = (VariableTree) m;
+                    ExpressionTree initializer = vt.getInitializer();
+                    // analyze initializer if present
+                    if (initializer != null) {
+                        analyze(queue, new CFGStatement(initializer));
+                    }
                     break;
                 case CLASS:
                     // Visit inner and nested classes.
@@ -266,20 +262,59 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 case ENUM:
                     // not necessary to handle
                     break;
+                case BLOCK:
+                    BlockTree b = (BlockTree) m;
+                    analyze(queue, new CFGStatement(b));
+                    break;
                 default:
-                    System.err.println("Unexpected member: "+m.getKind());
-                    assert false;
+                    assert false : "Unexpected member: " + m.getKind();
                     break;
                 }
             }
         }
 
-        /*ControlFlowGraph cfg = CFGBuilder.build(env, node);
-        analysis = new CFAnalysis(this, checker.getProcessingEnvironment());
-        analysis.performAnalysis(cfg);
-
-        super.fromTreeCache.clear();*/
         scannedClasses.put(classTree, ScanState.FINISHED);
+    }
+
+    /**
+     * Analyze the AST {@code ast} and store the result.
+     * 
+     * @param queue
+     *            The queue to add more things to scan.
+     * @param ast
+     *            The AST to analyze.
+     */
+    protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
+        CFGBuilder builder = new CFGBuilder();
+        ControlFlowGraph cfg = builder.run(root, env, ast);
+        CFAnalysis analysis = new CFAnalysis(this,
+                checker.getProcessingEnvironment());
+        analysis.performAnalysis(cfg);
+        AnalysisResult<CFValue> result = analysis.getResult();
+        flowResult.combine(result);
+
+        if (env.getOptions().containsKey("flowdotdir")) {
+            String dotfilename = env.getOptions().get("flowdotdir") + "/"
+                    + dotOutputFileName(ast) + ".dot";
+            // make path safe for Windows
+            dotfilename = dotfilename.replace("<", ".").replace(">", ".");
+            System.err.println("Output to DOT file: " + dotfilename);
+            analysis.outputToDotFile(dotfilename);
+        }
+
+        // add classes declared in method
+        queue.addAll(builder.getDeclaredClasses());
+    }
+
+    /** @return The file name used for DOT output. */
+    protected String dotOutputFileName(UnderlyingAST ast) {
+        if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
+            return "initializer-" + ast.hashCode();
+        } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
+            return ((CFGMethod) ast).getMethod().getName().toString();
+        }
+        assert false;
+        return null;
     }
 	
     @Override

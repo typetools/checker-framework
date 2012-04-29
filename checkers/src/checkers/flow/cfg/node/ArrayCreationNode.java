@@ -7,8 +7,6 @@ import java.util.List;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;

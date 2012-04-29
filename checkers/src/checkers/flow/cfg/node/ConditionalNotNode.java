@@ -6,8 +6,8 @@ import java.util.Collections;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 
 /**
  * A node for a conditional not expression:
