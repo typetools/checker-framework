@@ -15,6 +15,8 @@ import com.sun.source.tree.Tree.Kind;
  *   ++<em>expression</em>
  * </pre>
  * 
+ * We allow postfix increment nodes without corresponding AST {@link Tree}s.
+ * 
  * NOTE: If widening of the operand and narrowing of the result
  * are required, they are separate Nodes, so the increment takes
  * place at the type of the operand.
@@ -25,7 +27,7 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class PostfixIncrementNode extends Node {
 
-    protected Tree tree;
+    protected/* @Nullable */Tree tree;
     protected Node operand;
 
     public PostfixIncrementNode(Tree tree, Node operand) {
@@ -35,12 +37,18 @@ public class PostfixIncrementNode extends Node {
         this.operand = operand;
     }
 
+    public PostfixIncrementNode(Node operand) {
+        this.tree = null;
+        this.type = operand.getType();
+        this.operand = operand;
+    }
+
     public Node getOperand() {
         return operand;
     }
 
     @Override
-    public Tree getTree() {
+    public/* @Nullable */Tree getTree() {
         return tree;
     }
 

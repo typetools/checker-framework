@@ -3,12 +3,13 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
@@ -25,34 +26,34 @@ import com.sun.source.tree.Tree;
  */
 public class MethodAccessNode extends Node {
 
-    protected Tree tree;
-    protected String method;
+    protected/* @Nullable */ExpressionTree tree;
+    protected ExecutableElement method;
     protected Node receiver;
 
     // TODO: add method to get modifiers (static, access level, ..)
 
-    public MethodAccessNode(Tree tree, Node receiver) {
+    public MethodAccessNode(ExpressionTree tree, Node receiver) {
         assert TreeUtils.isMethodAccess(tree);
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
+        this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
         this.receiver = receiver;
-        this.method = TreeUtils.getMethodName(tree);
     }
 
-    public Element getElement() {
-        if (tree instanceof MemberSelectTree) {
-            return TreeUtils.elementFromUse((MemberSelectTree) tree);
-        }
-        assert tree instanceof IdentifierTree;
-        return TreeUtils.elementFromUse((IdentifierTree) tree);
+    // Construct a method access from an element instead of a tree.
+    public MethodAccessNode(ExecutableElement method, Node receiver) {
+        this.tree = null;
+        this.type = method.asType();
+        this.method = method;
+        this.receiver = receiver;
+    }
+
+    public ExecutableElement getMethod() {
+        return method;
     }
 
     public Node getReceiver() {
         return receiver;
-    }
-
-    public String getMethodName() {
-        return method;
     }
 
     @Override
@@ -67,7 +68,7 @@ public class MethodAccessNode extends Node {
 
     @Override
     public String toString() {
-        return getReceiver() + "." + method;
+        return getReceiver() + "." + method.getSimpleName();
     }
 
     @Override
@@ -77,12 +78,12 @@ public class MethodAccessNode extends Node {
         }
         MethodAccessNode other = (MethodAccessNode) obj;
         return getReceiver().equals(other.getReceiver())
-                && getMethodName().equals(other.getMethodName());
+                && getMethod().equals(other.getMethod());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getReceiver(), getMethodName());
+        return HashCodeUtils.hash(getReceiver(), getMethod());
     }
 
     @Override
