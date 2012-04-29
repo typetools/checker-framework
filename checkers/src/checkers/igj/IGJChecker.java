@@ -163,6 +163,17 @@ public class IGJChecker extends BaseTypeChecker {
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, I) &&
+                    AnnotationUtils.areSameIgnoringValues(rhs, I)) {
+                return AnnotationUtils.areSame(lhs, rhs);
+            }
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameIgnoringValues(lhs, I)) {
+                lhs = I;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, I)) {
+                rhs = I;
+            }
             return (AnnotationUtils.areSame(rhs, BOTTOM_QUAL)
                     || AnnotationUtils.areSame(lhs, BOTTOM_QUAL)
                     || super.isSubtype(rhs, lhs));
