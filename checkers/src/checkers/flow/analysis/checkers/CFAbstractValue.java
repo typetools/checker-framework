@@ -60,7 +60,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * DefaultTypeAnalysis.Value.
      */
     @Override
-    public V leastUpperBound(V other) {
+    public/* @Nullable */V leastUpperBound(V other) {
         Set<AnnotationMirror> lub = analysis.qualifierHierarchy
                 .leastUpperBound(annotations, other.annotations);
         return analysis.createAbstractValue(lub);
