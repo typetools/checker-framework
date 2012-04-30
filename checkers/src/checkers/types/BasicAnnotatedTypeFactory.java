@@ -37,6 +37,7 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
