@@ -373,6 +373,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
     /**
      * Tests that the qualifiers present on the array type are valid.
+     * This method will be invoked for each array level independently, i.e. this
+     * method only needs to check the top-level qualifiers of an array.
      *
      * The default implementation always returns true.
      * Subclasses should override this method to limit what annotations are
