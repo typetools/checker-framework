@@ -78,8 +78,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Set the abstract value of a method parameter (only adds the information
      * to the store, does not remove any other knowledge).
      */
-    public void initializeMethodParameter(LocalVariableNode p, V value) {
-        localVariableValues.put(p.getElement(), value);
+    public void initializeMethodParameter(LocalVariableNode p, /* @Nullable */V value) {
+        if (value != null) {
+            localVariableValues.put(p.getElement(), value);
+        }
     }
 
     /* --------------------------------------------------------- */
@@ -92,7 +94,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForMethodCall(MethodInvocationNode n,
             BaseTypeChecker checker) {
-        ExecutableElement method = TreeUtils.elementFromUse(n.getTree());
+        ExecutableElement method = n.getTarget().getMethod();
 
         // remove information if necessary
         boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
@@ -148,7 +150,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
      */
-    protected void insertValue(FlowExpressions.Receiver r, V value) {
+    protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */V value) {
+        if (value == null) {
+            // No need to insert a null abstract value because it represents
+            // top and top is also the default value.
+            return;
+        }
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             if (localVariableValues.containsKey(localVar)) {

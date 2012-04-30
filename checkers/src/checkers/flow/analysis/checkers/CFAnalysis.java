@@ -39,7 +39,7 @@ public class CFAnalysis extends
     }
 
     @Override
-    protected CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
+    protected/* @Nullable */CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
         Set<AnnotationMirror> as = new HashSet<>();
         for (AnnotationMirror a : annotations) {
             if (AnnotationUtils.containsSameIgnoringValues(legalAnnotations, a)) {
