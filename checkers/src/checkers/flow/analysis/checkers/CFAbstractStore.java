@@ -26,7 +26,6 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
 import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
