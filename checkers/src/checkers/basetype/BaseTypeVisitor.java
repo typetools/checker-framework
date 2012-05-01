@@ -1,9 +1,17 @@
 package checkers.basetype;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -11,27 +19,60 @@ import javax.tools.Diagnostic.Kind;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.cfg.node.BooleanLiteralNode;
+import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ReturnNode;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.EnsuresAnnotation;
+import checkers.quals.EnsuresAnnotationIf;
 import checkers.quals.Pure;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.AnnotatedTypes;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -280,8 +321,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         // TODO: currently, these expressions are parsed at the
                         // declaration (i.e. here) and for every use. this could
                         // be optimized to store the result the first time.
+                        // (same for other annotations)
                         expr = FlowExpressionParseUtil.parse(stringExpr,
                                 flowExprContext);
+                        checkFlowExprParameters(node, stringExpr);
 
                         // TODO: we should not need to cast here?
                         BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
@@ -295,7 +338,61 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                     node);
                         }
 
+                    } catch (FlowExpressionParseException e) {
+                        // report errors here
+                        checker.report(e.getResult(), node);
+                    }
+                }
+            }
+            
+            // check conditional method postcondition
+            AnnotationMirror ensuresAnnotationIf = atypeFactory
+                    .getDeclAnnotation(methodElement, EnsuresAnnotationIf.class);
+            if (ensuresAnnotationIf != null) {
+                List<String> expressions = AnnotationUtils
+                        .elementValueStringArray(ensuresAnnotationIf,
+                                "expression");
+                String annotation = AnnotationUtils.elementValueClassName(
+                        ensuresAnnotationIf, "annotation");
+                boolean result = AnnotationUtils.elementValue(
+                        ensuresAnnotationIf, "result", Boolean.class);
+                AnnotationMirror anno = atypeFactory
+                        .annotationFromName(annotation);
+
+                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath());
+
+                for (String stringExpr : expressions) {
+                    FlowExpressions.Receiver expr = null;
+                    try {
+                        expr = FlowExpressionParseUtil.parse(stringExpr,
+                                flowExprContext);
                         checkFlowExprParameters(node, stringExpr);
+
+                        // TODO: we should not need to cast here?
+                        BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
+                        List<Pair<ReturnNode, CFStore>> returnStatements = factory
+                                .getReturnStatementStores(node);
+                        for (Pair<ReturnNode, CFStore> r : returnStatements) {
+                            CFStore exitStore = r.second;
+                            ReturnNode returnStmt = r.first;
+                            CFValue value = exitStore.getValue(expr);
+                            // don't check if return statement certainly does not match 'result'.
+                            // at the moment, this means the result is a boolean literal
+                            Node retVal = returnStmt.getResult();
+                            if (!(retVal instanceof BooleanLiteralNode)
+                                    || ((BooleanLiteralNode) retVal).getValue() == result) {
+                                if (value == null
+                                        || !AnnotationUtils.containsSame(
+                                                value.getAnnotations(), anno)) {
+                                    checker.report(
+                                            Result.failure("contracts.conditional.postcondition.not.satisfied"),
+                                            returnStmt.getTree());
+                                }
+                            }
+                        }
+
                     } catch (FlowExpressionParseException e) {
                         // report errors here
                         checker.report(e.getResult(), node);
