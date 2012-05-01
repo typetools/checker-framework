@@ -3003,6 +3003,7 @@ public class CFGBuilder {
                 Element element = TreeUtils.elementFromUse(tree);
                 switch (element.getKind()) {
                 case CLASS:
+                case ENUM:
                     node = new ClassNameNode(tree);
                     break;
                 case FIELD:
