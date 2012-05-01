@@ -1561,7 +1561,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *            the method invocation to check
      * @return true if this is a super call to the {@link Enum} constructor
      */
-    private boolean isEnumSuper(MethodInvocationTree node) {
+    private static boolean isEnumSuper(MethodInvocationTree node) {
         ExecutableElement ex = TreeUtils.elementFromUse(node);
         Name name = ElementUtils.getQualifiedClassName(ex);
         return "java.lang.Enum".contentEquals(name);
