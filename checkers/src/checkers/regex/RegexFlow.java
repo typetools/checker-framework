@@ -51,7 +51,7 @@ public class RegexFlow extends DefaultFlow<DefaultFlowState> {
                 }
             }
         } else if (tree.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
-            tree = ((UnaryTree)tree).getExpression();
+            tree = TreeUtils.skipParens(((UnaryTree)tree).getExpression());
             if (tree.getKind() == Tree.Kind.METHOD_INVOCATION &&
                     isRegex((MethodInvocationTree)tree)) {
                 VariableElement arg = extractArg((MethodInvocationTree)tree);
@@ -67,10 +67,18 @@ public class RegexFlow extends DefaultFlow<DefaultFlowState> {
         }
     }
 
+    private static final String[] isRegexNames = {
+        "checkers.regex.RegexUtil.isRegex(java.lang.String)",
+        "plume.RegexUtil.isRegex(java.lang.String)"
+    };
+
     private boolean isRegex(MethodInvocationTree tree) {
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         String sig = method.getEnclosingElement().toString() + "." + method.toString();
-        return sig.equals("checkers.regex.RegexUtil.isRegex(java.lang.String)");
+        for (String irn : isRegexNames) {
+            if (irn.equals(sig)) return true;
+        }
+        return false;
     }
 
     private VariableElement extractArg(MethodInvocationTree tree) {
