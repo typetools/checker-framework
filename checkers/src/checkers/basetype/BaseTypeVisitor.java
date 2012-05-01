@@ -50,6 +50,7 @@ import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -369,6 +370,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         expr = FlowExpressionParseUtil.parse(stringExpr,
                                 flowExprContext);
                         checkFlowExprParameters(node, stringExpr);
+                        // check return type of method
+                        boolean booleanReturnType = TypesUtils
+                                .isBooleanType(InternalUtils.typeOf(node
+                                        .getReturnType()));
+                        if (!booleanReturnType) {
+                            checker.report(
+                                    Result.failure("contracts.conditional.postcondition.invalid.returntype"),
+                                    node);
+                        }
 
                         // TODO: we should not need to cast here?
                         BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
