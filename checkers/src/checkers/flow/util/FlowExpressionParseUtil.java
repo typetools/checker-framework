@@ -11,12 +11,23 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
+import checkers.flow.cfg.node.ImplicitThisLiteralNode;
+import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
+import checkers.flow.cfg.node.Node;
 import checkers.source.Result;
 import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.TreeUtils;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
@@ -57,8 +68,7 @@ public class FlowExpressionParseUtil {
      * @throws FlowExpressionParseException
      */
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
-            TypeMirror receiverType, Receiver receiver, List<Receiver> arguments)
-            throws FlowExpressionParseException {
+            FlowExpressionContext context) throws FlowExpressionParseException {
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
@@ -68,17 +78,18 @@ public class FlowExpressionParseUtil {
 
             // this literal
             if (selfMatcher.matches()) {
-                return new ThisReference(receiverType);
+                return new ThisReference(context.receiverType);
             }
 
             // field of a the receiver (implicit self reference as receiver)
-            assert receiverType instanceof DeclaredType;
-            Element el = ((DeclaredType) receiverType).asElement();
+            assert context.receiverType instanceof DeclaredType;
+            Element el = ((DeclaredType) context.receiverType).asElement();
             assert el instanceof TypeElement;
             TypeElement elType = (TypeElement) el;
             VariableElement fieldElement = ElementUtils.findFieldInType(elType,
                     s);
-            return new FieldAccess(receiver, receiverType, fieldElement);
+            return new FieldAccess(context.receiver, context.receiverType,
+                    fieldElement);
 
         } else if (parameterMatcher.matches()) {
             // parameter syntax
@@ -89,14 +100,30 @@ public class FlowExpressionParseUtil {
                 // cannot occur by the way the pattern is defined (matches only
                 // numbers)
             }
-            if (idx > arguments.size()) {
+            if (idx > context.arguments.size()) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
-            return arguments.get(idx - 1);
+            return context.arguments.get(idx - 1);
         } else {
             throw new FlowExpressionParseException(Result.failure(
                     "flowexpr.parse.error", s));
+        }
+    }
+
+    /**
+     * Context used to parse a flow expression.
+     */
+    public static class FlowExpressionContext {
+        public final TypeMirror receiverType;
+        public final Receiver receiver;
+        public final List<Receiver> arguments;
+
+        public FlowExpressionContext(TypeMirror receiverType,
+                Receiver receiver, List<Receiver> arguments) {
+            this.receiverType = receiverType;
+            this.receiver = receiver;
+            this.arguments = arguments;
         }
     }
 
@@ -130,5 +157,42 @@ public class FlowExpressionParseUtil {
         public Result getResult() {
             return result;
         }
+    }
+
+    /**
+     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     *         seen at the method declaration.
+     */
+    public static FlowExpressionContext buildFlowExprContextForDeclaration(
+            MethodTree node, TreePath currentPath) {
+        Tree classTree = TreeUtils.enclosingClass(currentPath);
+        Node receiver = new ImplicitThisLiteralNode(
+                InternalUtils.typeOf(classTree));
+        Receiver internalReceiver = FlowExpressions.internalReprOf(receiver);
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (VariableTree arg : node.getParameters()) {
+            internalArguments.add(FlowExpressions
+                    .internalReprOf(new LocalVariableNode(arg)));
+        }
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                receiver.getType(), internalReceiver, internalArguments);
+        return flowExprContext;
+    }
+
+    /**
+     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     *         seen at the method use (i.e., at a method call site).
+     */
+    public static FlowExpressionContext buildFlowExprContextForUse(
+            MethodInvocationNode n) {
+        Node receiver = n.getTarget().getReceiver();
+        Receiver internalReceiver = FlowExpressions.internalReprOf(receiver);
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (Node arg : n.getArguments()) {
+            internalArguments.add(FlowExpressions.internalReprOf(arg));
+        }
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                receiver.getType(), internalReceiver, internalArguments);
+        return flowExprContext;
     }
 }

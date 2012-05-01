@@ -9,13 +9,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.node.ImplicitThisLiteralNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
@@ -270,18 +267,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                 "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         ensuresAnnotation, "annotation");
-                AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+                AnnotationMirror anno = atypeFactory
+                        .annotationFromName(annotation);
 
-                Tree classTree = TreeUtils.enclosingClass(getCurrentPath());
-                Node receiver = new ImplicitThisLiteralNode(
-                        InternalUtils.typeOf(classTree));
-                Receiver internalReceiver = FlowExpressions
-                        .internalReprOf(receiver);
-                List<Receiver> internalArguments = new ArrayList<>();
-                for (VariableTree arg : node.getParameters()) {
-                    internalArguments.add(FlowExpressions
-                            .internalReprOf(new LocalVariableNode(arg)));
-                }
+                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath());
 
                 for (String stringExpr : expressions) {
                     FlowExpressions.Receiver expr = null;
@@ -290,7 +281,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         // declaration (i.e. here) and for every use. this could
                         // be optimized to store the result the first time.
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                receiver.getType(), internalReceiver, internalArguments);
+                                flowExprContext);
 
                         // TODO: we should not need to cast here?
                         BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
@@ -299,24 +290,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         if (value == null
                                 || !AnnotationUtils.containsSame(
                                         value.getAnnotations(), anno)) {
-                            checker.report(Result.failure("contracts.postcondition.not.satisfied"), node);
+                            checker.report(
+                                    Result.failure("contracts.postcondition.not.satisfied"),
+                                    node);
                         }
-                        
-                        // check that all parameters used in the expression are
-                        // final, so that they cannot be modified
-                        List<Integer> parameterIndices = FlowExpressionParseUtil
-                                .parameterIndices(stringExpr);
-                        for (Integer idx : parameterIndices) {
-                            VariableTree parameter = node.getParameters().get(
-                                    idx - 1);
-                            Element element = TreeUtils
-                                    .elementFromDeclaration(parameter);
-                            if (!ElementUtils.isFinal(element)) {
-                                checker.report(Result.failure(
-                                        "flowexpr.parameter.not.final", "#"
-                                                + idx, stringExpr), node);
-                            }
-                        }
+
+                        checkFlowExprParameters(node, stringExpr);
                     } catch (FlowExpressionParseException e) {
                         // report errors here
                         checker.report(e.getResult(), node);
@@ -326,6 +305,26 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
+        }
+    }
+
+    /**
+     * Check that the parameters used in {@code stringExpr} are final for method
+     * {@code method}.
+     */
+    protected void checkFlowExprParameters(MethodTree method, String stringExpr) {
+        // check that all parameters used in the expression are
+        // final, so that they cannot be modified
+        List<Integer> parameterIndices = FlowExpressionParseUtil
+                .parameterIndices(stringExpr);
+        for (Integer idx : parameterIndices) {
+            VariableTree parameter = method.getParameters().get(idx - 1);
+            Element element = TreeUtils.elementFromDeclaration(parameter);
+            if (!ElementUtils.isFinal(element)) {
+                checker.report(
+                        Result.failure("flowexpr.parameter.not.final", "#"
+                                + idx, stringExpr), method);
+            }
         }
     }
 
