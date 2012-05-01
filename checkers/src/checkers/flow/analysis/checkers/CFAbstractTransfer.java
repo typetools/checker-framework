@@ -2,6 +2,9 @@ package checkers.flow.analysis.checkers;
 
 import java.util.List;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.Receiver;
@@ -15,6 +18,7 @@ import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.CaseNode;
+import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -22,8 +26,14 @@ import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
+import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import checkers.quals.EnsuresAnnotation;
+import checkers.quals.EnsuresAnnotationIf;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.Tree;
@@ -89,12 +99,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     @Override
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
-        // TODO: Perform type propagation separately with a thenStore and an
-        // elseStore.
-
-        S info = in.getRegularStore();
         V value = null;
-
+        
         // TODO: handle implicit/explicit this and go to correct factory method
         Tree tree = n.getTree();
         if (tree != null) {
@@ -102,8 +108,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 value = getValueFromFactory(tree);
             }
         }
-
-        return new RegularTransferResult<>(value, info);
+        
+        if (in.containsTwoStores()) {
+            S thenStore = in.getThenStore();
+            S elseStore = in.getElseStore();
+            return new ConditionalTransferResult<>(value, thenStore, elseStore);
+        } else {
+            S info = in.getRegularStore();
+            return new RegularTransferResult<>(value, info);
+        }
     }
 
     @Override
@@ -147,6 +160,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             resultValue = thenValue.leastUpperBound(elseValue);
         }
         return new RegularTransferResult<>(resultValue, store);
+    }
+
+    /**
+     * Revert the role of the 'thenStore' and 'elseStore'.
+     */
+    @Override
+    public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitConditionalNot(n, p);
+        S thenStore = result.getThenStore();
+        S elseStore = result.getElseStore();
+        return new ConditionalTransferResult<>(result.getResultValue(),
+                elseStore, thenStore);
     }
 
     @Override
@@ -273,19 +299,84 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitMethodInvocation(MethodInvocationNode n,
             TransferInput<V, S> in) {
 
-        S info = in.getRegularStore();
+        S thenStore = in.getRegularStore();
+        ExecutableElement method = n.getTarget().getMethod();
 
-        // use value from factory (no flowsensitive information available)
         V resValue = null;
 
         Tree tree = n.getTree();
         if (tree != null) {
+            // use value from factory (no flowsensitive information available)
             resValue = getValueFromFactory(tree);
         }
 
-        info.updateForMethodCall(n, analysis.checker);
+        thenStore.updateForMethodCall(n, analysis.checker);
 
-        return new RegularTransferResult<>(resValue, info);
+        // add new information based on postcondition
+        AnnotationMirror ensuresAnnotation = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotation.class);
+        if (ensuresAnnotation != null) {
+            List<String> expressions = AnnotationUtils.elementValueStringArray(
+                    ensuresAnnotation, "expression");
+            String annotation = AnnotationUtils.elementValueClassName(
+                    ensuresAnnotation, "annotation");
+            AnnotationMirror anno = analysis.factory
+                    .annotationFromName(annotation);
+
+            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                    .buildFlowExprContextForUse(n);
+
+            for (String exp : expressions) {
+                FlowExpressions.Receiver r = null;
+                try {
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
+                } catch (FlowExpressionParseException e) {
+                    // these errors are reported at the declaration, ignore here
+                }
+                if (r != null) {
+                    thenStore.insertValue(r, anno);
+                }
+            }
+        }
+
+        // add new information based on conditional postcondition
+        AnnotationMirror ensuresAnnotationIf = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotationIf.class);
+        if (ensuresAnnotationIf != null) {
+            S elseStore = thenStore.copy();
+            List<String> expressions = AnnotationUtils.elementValueStringArray(
+                    ensuresAnnotationIf, "expression");
+            String annotation = AnnotationUtils.elementValueClassName(
+                    ensuresAnnotationIf, "annotation");
+            boolean result = AnnotationUtils.elementValue(ensuresAnnotationIf,
+                    "result", Boolean.class);
+            AnnotationMirror anno = analysis.factory
+                    .annotationFromName(annotation);
+
+            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                    .buildFlowExprContextForUse(n);
+
+            for (String exp : expressions) {
+                FlowExpressions.Receiver r = null;
+                try {
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
+                } catch (FlowExpressionParseException e) {
+                    // these errors are reported at the declaration, ignore here
+                }
+                if (r != null) {
+                    if (result) {
+                        thenStore.insertValue(r, anno);
+                    } else {
+                        elseStore.insertValue(r, anno);
+                    }
+                }
+            }
+
+            return new ConditionalTransferResult<>(resValue, thenStore,
+                    elseStore);
+        }
+
+        return new RegularTransferResult<>(resValue, thenStore);
     }
 
     /**

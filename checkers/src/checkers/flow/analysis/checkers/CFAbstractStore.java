@@ -2,7 +2,6 @@ package checkers.flow.analysis.checkers;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -19,12 +18,7 @@ import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.util.FlowExpressionParseUtil;
-import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
-import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
-import checkers.util.AnnotationUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -99,33 +93,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
         if (!isPure) {
             fieldValues = new HashMap<>();
-        }
-
-        // add new information based on postcondition
-        AnnotationMirror ensuresAnnotation = analysis.factory
-                .getDeclAnnotation(method, EnsuresAnnotation.class);
-        if (ensuresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueStringArray(
-                    ensuresAnnotation, "expression");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    ensuresAnnotation, "annotation");
-            AnnotationMirror anno = analysis.factory
-                    .annotationFromName(annotation);
-
-            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse(n);
-
-            for (String exp : expressions) {
-                FlowExpressions.Receiver r = null;
-                try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
-                } catch (FlowExpressionParseException e) {
-                    // these errors are reported at the declaration, ignore here
-                }
-                if (r != null) {
-                    insertValue(r, anno);
-                }
-            }
         }
     }
 
