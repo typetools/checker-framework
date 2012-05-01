@@ -30,6 +30,7 @@ import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.UnderlyingAST.CFGStatement;
+import checkers.flow.cfg.node.ReturnNode;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -215,10 +216,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected AnalysisResult<CFValue> flowResult = null;
     
     /**
-     * A mapping from method to their regular exit store (used to check
+     * A mapping from methods to their regular exit store (used to check
      * postconditions).
      */
     protected IdentityHashMap<MethodTree, CFStore> regularExitStores = null;
+    
+    /**
+     * A mapping from methods to their a list with all return statements and the
+     * corresponding store.
+     */
+    protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, CFStore>>> returnStatementStores = null;
     
     public CFStore getRegularExitStore(MethodTree methodTree) {
         assert regularExitStores.containsKey(methodTree);
@@ -313,6 +320,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             CFGMethod mast = (CFGMethod) ast;
             MethodTree method = mast.getMethod();
             regularExitStores.put(method, analysis.getRegularExitStore());
+            returnStatementStores.put(method, analysis.getReturnStatementStores());
         }
 
         if (env.getOptions().containsKey("flowdotdir")) {
