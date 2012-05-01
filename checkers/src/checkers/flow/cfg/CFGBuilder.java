@@ -3132,7 +3132,12 @@ public class CFGBuilder {
                 break;
             }
             assert r != null : "unexpected literal tree";
-            return extendWithNode(r);
+            Node result = extendWithNode(r);
+            if (conditionalMode) {
+                extendWithExtendedNode(new ConditionalJump(thenTargetL,
+                        elseTargetL));
+            }
+            return result;
         }
 
         @Override
