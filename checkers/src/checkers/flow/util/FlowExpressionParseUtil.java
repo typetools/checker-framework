@@ -30,12 +30,15 @@ public class FlowExpressionParseUtil {
 
     /** Matches a parameter */
     protected static Pattern parameterPattern = Pattern
+            .compile("^#([1-9]+[0-9]*)$");
+    /** Finds all parameters */
+    protected static Pattern parametersPattern = Pattern
             .compile("#([1-9]+[0-9]*)");
     /** Matches the self reference */
-    protected static Pattern selfPattern = Pattern.compile("this|#0");
+    protected static Pattern selfPattern = Pattern.compile("^(this|#0)$");
     /** Matches an identifier */
     protected static Pattern identifierPattern = Pattern
-            .compile("[a-z_$][a-z_$0-9]*");
+            .compile("^[a-z_$][a-z_$0-9]*$");
 
     /**
      * Parse a string and return its representation as a
@@ -103,7 +106,7 @@ public class FlowExpressionParseUtil {
      */
     public static List<Integer> parameterIndices(String s) {
         List<Integer> result = new ArrayList<>();
-        Matcher matcher = parameterPattern.matcher(s);
+        Matcher matcher = parametersPattern.matcher(s);
         while (matcher.find()) {
             int idx = Integer.parseInt(matcher.group(1));
             result.add(idx);
