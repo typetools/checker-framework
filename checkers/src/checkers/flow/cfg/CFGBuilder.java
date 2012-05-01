@@ -489,7 +489,7 @@ public class CFGBuilder {
          * 
          * @return a new unique label name
          */
-        private String uniqueName() {
+        private static String uniqueName() {
             return "%L" + uid++;
         }
     }
