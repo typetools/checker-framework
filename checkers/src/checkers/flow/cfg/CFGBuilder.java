@@ -987,7 +987,7 @@ public class CFGBuilder {
             }
 
             return new ControlFlowGraph(startBlock, regularExitBlock, exceptionalExitBlock, in.underlyingAST,
-                    in.treeLookupMap);
+                    in.treeLookupMap, in.returnNodes);
         }
     }
 
@@ -1006,16 +1006,18 @@ public class CFGBuilder {
         private Map<Label, Integer> bindings;
         private ArrayList<ExtendedNode> nodeList;
         private Set<Integer> leaders;
+        private List<ReturnNode> returnNodes;
 
         public PhaseOneResult(UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
                 ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
-                Set<Integer> leaders) {
+                Set<Integer> leaders, List<ReturnNode> returnNodes) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
             this.nodeList = nodeList;
             this.bindings = bindings;
             this.leaders = leaders;
+            this.returnNodes = returnNodes;
         }
 
         @Override
@@ -1163,6 +1165,12 @@ public class CFGBuilder {
 
         /** The set of leaders (represented as indices into {@code nodeList}). */
         protected Set<Integer> leaders;
+        
+        /**
+         * All return nodes (if any) encountered. Only includes return
+         * statements that actually return something
+         */
+        private List<ReturnNode> returnNodes;
 
         /**
          * Performs the actual work of phase one.
@@ -1193,6 +1201,7 @@ public class CFGBuilder {
             leaders = new HashSet<>();
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
+            returnNodes = new ArrayList<>();
 
             // traverse AST of the method body
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
@@ -1207,7 +1216,7 @@ public class CFGBuilder {
             nodeList.add(new UnconditionalJump(regularExitLabel));
 
             return new PhaseOneResult(underlyingAST, treeLookupMap, nodeList,
-                    bindings, leaders);
+                    bindings, leaders, returnNodes);
         }
 
         /* --------------------------------------------------------- */
@@ -3205,6 +3214,7 @@ public class CFGBuilder {
             if (ret != null) {
                 Node node = scan(ret, p);
                 result = new ReturnNode(tree, node);
+                returnNodes.add(result);
                 extendWithNode(result);
             }
             extendWithExtendedNode(new UnconditionalJump(regularExitLabel));

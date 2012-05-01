@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -16,6 +17,7 @@ import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ReturnNode;
 
 import com.sun.source.tree.Tree;
 
@@ -41,15 +43,22 @@ public class ControlFlowGraph {
 
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected IdentityHashMap<Tree, Node> treeLookup;
+    
+    /**
+     * All return nodes (if any) encountered. Only includes return
+     * statements that actually return something
+     */
+    protected final List<ReturnNode> returnNodes;
 
     public ControlFlowGraph(SpecialBlock entryBlock, SpecialBlockImpl regularExitBlock, SpecialBlockImpl exceptionalExitBlock, UnderlyingAST underlyingAST,
-            IdentityHashMap<Tree, Node> treeLookup) {
+            IdentityHashMap<Tree, Node> treeLookup, List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
+        this.returnNodes = returnNodes;
     }
 
     /**
@@ -63,6 +72,10 @@ public class ControlFlowGraph {
     /** @return The entry block of the control flow graph. */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
+    }
+    
+    public List<ReturnNode> getReturnNodes() {
+        return returnNodes;
     }
     
     public SpecialBlock getRegularExitBlock() {

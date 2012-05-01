@@ -24,6 +24,8 @@ import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ReturnNode;
+import checkers.util.Pair;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -185,8 +187,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 }
 
                 // propagate store to exceptional successors
-                for (Entry<TypeMirror, Block> e : eb
-                        .getExceptionalSuccessors().entrySet()) {
+                for (Entry<TypeMirror, Block> e : eb.getExceptionalSuccessors()
+                        .entrySet()) {
                     Block exceptionSucc = e.getValue();
                     TypeMirror cause = e.getKey();
                     S exceptionalStore = transferResult
@@ -388,14 +390,25 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         assert !isRunning;
         return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
     }
-    
+
+    public List<Pair<ReturnNode, S>> getReturnStatementStores() {
+        List<Pair<ReturnNode, S>> result = new ArrayList<>();
+        for (ReturnNode returnNode : cfg.getReturnNodes()) {
+            S store = stores.get(returnNode.getBlock()).getRegularStore();
+            result.add(Pair.of(returnNode, store));
+        }
+        return result;
+    }
+
     public S getRegularExitStore() {
-        S regularExitStore = stores.get(cfg.getRegularExitBlock()).getRegularStore();
+        S regularExitStore = stores.get(cfg.getRegularExitBlock())
+                .getRegularStore();
         return regularExitStore;
     }
-    
+
     public S getExceptionalExitStore() {
-        S exceptionalExitStore = stores.get(cfg.getExceptionalExitBlock()).getRegularStore();
+        S exceptionalExitStore = stores.get(cfg.getExceptionalExitBlock())
+                .getRegularStore();
         return exceptionalExitStore;
     }
 }
