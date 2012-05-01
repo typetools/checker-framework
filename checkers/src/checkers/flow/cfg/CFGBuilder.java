@@ -3358,6 +3358,14 @@ public class CFGBuilder {
 
         @Override
         public Node visitUnary(UnaryTree tree, Void p) {
+            Node result = null;
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+            conditionalMode = false;
+
             Node expr = scan(tree.getExpression(), p);
 
             Tree.Kind kind = tree.getKind();
@@ -3376,43 +3384,64 @@ public class CFGBuilder {
 
                 switch (kind) {
                 case BITWISE_COMPLEMENT:
-                    return extendWithNode(new BitwiseComplementNode(tree, expr));
+                    result = extendWithNode(new BitwiseComplementNode(tree,
+                            expr));
+                    break;
                 case POSTFIX_DECREMENT: {
                     Node node = extendWithNode(new PostfixDecrementNode(tree,
                             expr));
-                    return narrowAndBox(node, exprType);
+                    result = narrowAndBox(node, exprType);
+                    break;
                 }
                 case POSTFIX_INCREMENT: {
                     Node node = extendWithNode(new PostfixIncrementNode(tree,
                             expr));
-                    return narrowAndBox(node, exprType);
+                    result = narrowAndBox(node, exprType);
+                    break;
                 }
                 case PREFIX_DECREMENT: {
                     Node node = extendWithNode(new PrefixDecrementNode(tree,
                             expr));
-                    return narrowAndBox(node, exprType);
+                    result = narrowAndBox(node, exprType);
+                    break;
                 }
                 case PREFIX_INCREMENT: {
                     Node node = extendWithNode(new PrefixIncrementNode(tree,
                             expr));
-                    return narrowAndBox(node, exprType);
+                    result = narrowAndBox(node, exprType);
+                    break;
                 }
                 case UNARY_MINUS:
-                    return extendWithNode(new NumericalMinusNode(tree, expr));
+                    result = extendWithNode(new NumericalMinusNode(tree, expr));
+                    break;
                 case UNARY_PLUS:
-                    return extendWithNode(new NumericalPlusNode(tree, expr));
+                    result = extendWithNode(new NumericalPlusNode(tree, expr));
+                    break;
                 }
             }
-
+                break;
             case LOGICAL_COMPLEMENT: {
                 // see JLS 15.15.6
-                return extendWithNode(new ConditionalNotNode(tree, unbox(expr)));
+                result = extendWithNode(new ConditionalNotNode(tree,
+                        unbox(expr)));
+                if (conditionalMode) {
+                    extendWithExtendedNode(new ConditionalJump(thenTargetL,
+                            elseTargetL));
+                }
+                break;
             }
 
             default:
                 assert false : "Unknown kind of unary expression";
-                return null;
             }
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
+            }
+
+            return result;
         }
 
         @Override
