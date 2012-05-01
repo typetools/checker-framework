@@ -1,6 +1,5 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -15,13 +14,13 @@ import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
+import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.Pure;
@@ -77,7 +76,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Set the abstract value of a method parameter (only adds the information
      * to the store, does not remove any other knowledge).
      */
-    public void initializeMethodParameter(LocalVariableNode p, /* @Nullable */V value) {
+    public void initializeMethodParameter(LocalVariableNode p, /* @Nullable */
+            V value) {
         if (value != null) {
             localVariableValues.put(p.getElement(), value);
         }
@@ -109,26 +109,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     ensuresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotation, "annotation");
+            AnnotationMirror anno = analysis.factory
+                    .annotationFromName(annotation);
 
-            Node receiver = n.getTarget().getReceiver();
-            Receiver internalReceiver = FlowExpressions
-                    .internalReprOf(receiver);
-            List<Receiver> internalArguments = new ArrayList<>();
-            for (Node arg : n.getArguments()) {
-                internalArguments.add(FlowExpressions.internalReprOf(arg));
-            }
+            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                    .buildFlowExprContextForUse(n);
 
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, receiver.getType(),
-                            internalReceiver, internalArguments);
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
                 if (r != null) {
-                    insertValue(r,
-                            analysis.factory.annotationFromName(annotation));
+                    insertValue(r, anno);
                 }
             }
         }
@@ -149,7 +144,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
      */
-    protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */V value) {
+    protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */
+            V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
