@@ -68,6 +68,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected Map<Block, TransferInput<A, S>> stores;
 
+    /**
+     * The stores after every return statement.
+     */
+    protected Map<ReturnNode, S> storesAtReturnStatements;
+
     /** The worklist used for the fix-point iteration. */
     protected Queue<Block> worklist;
 
@@ -259,6 +264,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         TransferResult<A, S> transferResult = node.accept(transferFunction,
                 store);
         currentNode = null;
+        if (node instanceof ReturnNode) {
+            // save a copy of the store to later check if some property held at
+            // a given return statement
+            storesAtReturnStatements.put((ReturnNode) node, transferResult
+                    .getRegularStore().copy());
+        }
         return transferResult;
     }
 
@@ -266,6 +277,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected void init(ControlFlowGraph cfg) {
         this.cfg = cfg;
         stores = new HashMap<>();
+        storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new ArrayDeque<>();
         nodeValues = new IdentityHashMap<>();
         worklist.add(cfg.getEntryBlock());
@@ -394,7 +406,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public List<Pair<ReturnNode, S>> getReturnStatementStores() {
         List<Pair<ReturnNode, S>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            S store = stores.get(returnNode.getBlock()).getRegularStore();
+            S store = storesAtReturnStatements.get(returnNode);
             result.add(Pair.of(returnNode, store));
         }
         return result;
