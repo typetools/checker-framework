@@ -239,6 +239,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected void performFlowAnalysis(ClassTree classTree) {
         if (flowResult == null) {
             regularExitStores = new IdentityHashMap<>();
+            returnStatementStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>();
         }
         // no need to scan interfaces or enums
