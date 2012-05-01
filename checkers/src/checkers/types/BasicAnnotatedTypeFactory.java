@@ -231,6 +231,11 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         assert regularExitStores.containsKey(methodTree);
         return regularExitStores.get(methodTree);
     }
+    
+    public List<Pair<ReturnNode, CFStore>> getReturnStatementStores(MethodTree methodTree) {
+        assert returnStatementStores.containsKey(methodTree);
+        return returnStatementStores.get(methodTree);
+    }
 
     /**
      * Perform a dataflow analysis over a single class tree and its nested
