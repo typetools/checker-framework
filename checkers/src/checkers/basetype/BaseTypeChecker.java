@@ -14,6 +14,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
@@ -149,7 +150,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-    	return new GraphQualifierHierarchy.GraphFactory(this);
+        return new GraphQualifierHierarchy.GraphFactory(this);
     }
 
     /**
@@ -371,6 +372,19 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     /**
+     * Tests that the qualifiers present on the array type are valid.
+     * This method will be invoked for each array level independently, i.e. this
+     * method only needs to check the top-level qualifiers of an array.
+     *
+     * The default implementation always returns true.
+     * Subclasses should override this method to limit what annotations are
+     * allowed on array types.
+     */
+    public boolean isValidUse(AnnotatedArrayType type) {
+        return true;
+    }
+
+    /**
      * Tests whether the variable accessed is an assignable variable or not,
      * given the current scope
      *
@@ -450,7 +464,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                         "class name " + name +
                         " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
                         // + " and args: " + Arrays.toString(args),
-                ite);       
+                ite);
             }
         } catch (Exception e) {
             throw new CheckerError("Unexpected " + e.getClass().getSimpleName() + " for " +

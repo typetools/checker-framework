@@ -8,7 +8,7 @@ public class TestFlow {
 }
 
 class FenumUser {
-  
+
   @Fenum("A") Object state1 = new TestFlow().ACONST1;
 
   void foo(TestFlow t) {
@@ -19,22 +19,22 @@ class FenumUser {
     m();
     //:: error: (method.invocation.invalid)
     state1.hashCode();
-    
+
     Object o = new Object();
     o = t.ACONST1;
     methodA(o);
     //:: error: (argument.type.incompatible)
     methodB(o);
-    
+
     o = t.BCONST1;
     //:: error: (argument.type.incompatible)
     methodA(o);
     methodB(o);
   }
-  
+
   void m() {}
-  
+
   void methodA(@Fenum("A") Object a) {}
-  
+
   void methodB(@Fenum("B") Object a) {}
 }

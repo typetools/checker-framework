@@ -126,7 +126,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
     @Override
     protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
-        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
+        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
             if (!I.class.equals(cl))
                 flowQuals.add(annotations.fromClass(cl));
@@ -710,7 +710,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      *          false otherwise
      */
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
-        // return type.hasAnnotation(READONLY) || type.hasAnnotation(MUTABLE) || 
+        // return type.hasAnnotation(READONLY) || type.hasAnnotation(MUTABLE) ||
         //        type.hasAnnotation(IMMUTABLE) || type.hasAnnotation(I);
         return type.isAnnotated();
     }
