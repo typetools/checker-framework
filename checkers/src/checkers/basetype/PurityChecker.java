@@ -62,10 +62,13 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.tools.javac.tree.TreeScanner;
 
 /**
  * A visitor that checks the purity (as defined by {@link checkers.quals.Pure})
  * of a statement or expression.
+ * 
+ * @see {@link Pure}
  * 
  * @author Stefan Heule
  * 
