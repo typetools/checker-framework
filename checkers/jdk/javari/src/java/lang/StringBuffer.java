@@ -23,11 +23,11 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int length() @ReadOnly {
+    public synchronized int length(@ReadOnly StringBuffer this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int capacity() @ReadOnly {
+    public synchronized int capacity(@ReadOnly StringBuffer this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,28 +43,28 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized char charAt(int index) @ReadOnly {
+    public synchronized char charAt(@ReadOnly StringBuffer this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointAt(int index) @ReadOnly {
+    public synchronized int codePointAt(@ReadOnly StringBuffer this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointBefore(int index) @ReadOnly {
+    public synchronized int codePointBefore(@ReadOnly StringBuffer this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointCount(int beginIndex, int endIndex) @ReadOnly {
+    public synchronized int codePointCount(@ReadOnly StringBuffer this, int beginIndex, int endIndex) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int offsetByCodePoints(int index, int codePointOffset) @ReadOnly {
+    public synchronized int offsetByCodePoints(@ReadOnly StringBuffer this, int index, int codePointOffset) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void getChars(int srcBegin, int srcEnd, char dst[],
-                                      int dstBegin) @ReadOnly {
+    public synchronized void getChars(@ReadOnly StringBuffer this, int srcBegin, int srcEnd, char dst[],
+                                      int dstBegin) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -140,15 +140,15 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String substring(int start) @ReadOnly {
+    public synchronized String substring(@ReadOnly StringBuffer this, int start) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized @ReadOnly CharSequence subSequence(int start, int end) @ReadOnly {
+    public synchronized @ReadOnly CharSequence subSequence(@ReadOnly StringBuffer this, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String substring(int start, int end) @ReadOnly {
+    public synchronized String substring(@ReadOnly StringBuffer this, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -200,19 +200,19 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(String str) @ReadOnly {
+    public int indexOf(@ReadOnly StringBuffer this, String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int indexOf(String str, int fromIndex) @ReadOnly {
+    public synchronized int indexOf(@ReadOnly StringBuffer this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf( String str) @ReadOnly {
+    public int lastIndexOf(@ReadOnly StringBuffer this,  String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int lastIndexOf(String str, int fromIndex) @ReadOnly {
+    public synchronized int lastIndexOf(@ReadOnly StringBuffer this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -220,7 +220,7 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String toString() @ReadOnly {
+    public synchronized String toString(@ReadOnly StringBuffer this) {
         throw new RuntimeException("skeleton method");
     }
 

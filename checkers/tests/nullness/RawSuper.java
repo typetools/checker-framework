@@ -21,7 +21,7 @@ class RawSuper {
             this.raw();
             afield = new Object();
         }
-        void raw() @Raw { }
+        void raw(@Raw A this) { }
         void nonRaw() { }
     }
 
@@ -40,7 +40,7 @@ class RawSuper {
             mB(this);
         }
         // "@Raw" means "@Raw B @NonRaw A", but method overrides take precedence.
-        void raw() @Raw {
+        void raw(@Raw B this) {
             //:: error: (type.incompatible)
             super.nonRaw();
         }

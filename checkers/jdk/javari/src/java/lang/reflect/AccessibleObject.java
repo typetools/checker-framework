@@ -12,7 +12,7 @@ public class AccessibleObject implements AnnotatedElement {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isAccessible() @ReadOnly {
+    public boolean isAccessible(@ReadOnly AccessibleObject this) {
         throw new RuntimeException("skeleton method");
     }
 
