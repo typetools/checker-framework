@@ -14,6 +14,7 @@ import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
+import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
@@ -39,11 +40,13 @@ import checkers.basetype.BaseTypeChecker;
  */
 @SupportedOptions( { "quals" } )
 public class FenumChecker extends BaseTypeChecker {
-    protected AnnotationMirror BOTTOM;
+    protected AnnotationMirror FENUM, BOTTOM;
 
     @Override
     public void initChecker(ProcessingEnvironment env) {
-        BOTTOM = AnnotationUtils.getInstance(env).fromClass(Bottom.class);
+        AnnotationUtils utils = AnnotationUtils.getInstance(env);
+        BOTTOM = utils.fromClass(Bottom.class);
+        FENUM = utils.fromClass(Fenum.class);
         super.initChecker(env);
     }
 
@@ -121,5 +124,33 @@ public class FenumChecker extends BaseTypeChecker {
     @Override
     protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
         return new GraphQualifierHierarchy.GraphFactory(this, BOTTOM);
+    }
+
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    }
+
+    protected class FenumQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM) &&
+                    AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
+                return AnnotationUtils.areSame(lhs, rhs);
+            }
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)) {
+                lhs = FENUM;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
+                rhs = FENUM;
+            }
+            return super.isSubtype(rhs, lhs);
+        }
     }
 }

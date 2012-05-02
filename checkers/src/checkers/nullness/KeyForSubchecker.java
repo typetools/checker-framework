@@ -2,6 +2,8 @@ package checkers.nullness;
 
 import java.util.List;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
@@ -15,12 +17,24 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
+import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
 
 /**
  * TODO: doc
  */
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
 public class KeyForSubchecker extends BaseTypeChecker {
+    protected AnnotationMirror KEYFOR;
+
+    @Override
+    public void initChecker(ProcessingEnvironment env) {
+        super.initChecker(env);
+
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        KEYFOR = annoFactory.fromClass(KeyFor.class);
+    }
+
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new KeyForTypeHierarchy(this, getQualifierHierarchy());
@@ -102,4 +116,35 @@ public class KeyForSubchecker extends BaseTypeChecker {
             return true;
         }
     }
+
+    @Override
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new KeyForQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+    }
+
+    private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public KeyForQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
+            super(hierarchy);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR) &&
+                    AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+                // If they are both KeyFor annotations, they have to be equal.
+                // TODO: or one a subset of the maps of the other? Ordering of maps?
+                return AnnotationUtils.areSame(lhs, rhs);
+            }
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {
+                lhs = KEYFOR;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+                rhs = KEYFOR;
+            }
+            return super.isSubtype(rhs, lhs);
+        }
+    }
+
 }
