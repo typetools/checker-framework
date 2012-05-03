@@ -227,8 +227,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, CFStore>>> returnStatementStores = null;
     
-    public CFStore getRegularExitStore(MethodTree methodTree) {
-        assert regularExitStores.containsKey(methodTree);
+    /**
+     * @return The regular exit store, or {@code null}, if there is no such
+     *         store (because the method cannot exit through the regular exit
+     *         block).
+     */
+    public/* @Nullable */CFStore getRegularExitStore(MethodTree methodTree) {
         return regularExitStores.get(methodTree);
     }
     
@@ -327,7 +331,10 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             // store exit store (for checking postconditions)
             CFGMethod mast = (CFGMethod) ast;
             MethodTree method = mast.getMethod();
-            regularExitStores.put(method, analysis.getRegularExitStore());
+            CFStore regularExitStore = analysis.getRegularExitStore();
+            if (regularExitStore != null) {
+                regularExitStores.put(method, regularExitStore);
+            }
             returnStatementStores.put(method, analysis.getReturnStatementStores());
         }
 
