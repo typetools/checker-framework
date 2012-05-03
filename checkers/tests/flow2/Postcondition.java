@@ -25,6 +25,11 @@ class Postcondition {
     void error() {
     }
     
+    @EnsuresAnnotation(expression="f1", annotation=Value.class)
+    void exception() {
+        throw new RuntimeException();
+    }
+    
     @EnsuresAnnotation(expression="#1", annotation=Value.class)
     void param1(final @Value String f) {
     }
