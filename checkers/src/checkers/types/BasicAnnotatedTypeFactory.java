@@ -254,11 +254,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             scannedClasses.put(classTree, ScanState.FINISHED);
             return;
         }
-        scannedClasses.put(classTree, ScanState.IN_PROGRESS);
+
         Queue<ClassTree> queue = new LinkedList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
             ClassTree ct = queue.remove();
+            scannedClasses.put(ct, ScanState.IN_PROGRESS);
             for (Tree m : ct.getMembers()) {
                 switch (m.getKind()) {
                 case METHOD:
@@ -300,9 +301,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     break;
                 }
             }
+            scannedClasses.put(ct, ScanState.FINISHED);
         }
-
-        scannedClasses.put(classTree, ScanState.FINISHED);
     }
 
     /**
