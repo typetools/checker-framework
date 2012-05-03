@@ -368,10 +368,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
+        // This function can be called on Trees outside of the current
+        // compilation unit root.
         TreePath path = trees.getPath(root, tree);
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-        if (!scannedClasses.containsKey(enclosingClass)) {
-            performFlowAnalysis(enclosingClass);
+        ClassTree enclosingClass = null;
+        if (path != null) {
+            enclosingClass = TreeUtils.enclosingClass(path);
+            if (!scannedClasses.containsKey(enclosingClass)) {
+                performFlowAnalysis(enclosingClass);
+            }
         }
 
         treeAnnotator.visit(tree, type);
@@ -394,7 +399,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         }
         // TODO: This is quite ugly
-        boolean finishedScanning = scannedClasses.get(enclosingClass) == ScanState.FINISHED;
+        boolean finishedScanning = enclosingClass == null ||
+            scannedClasses.get(enclosingClass) == ScanState.FINISHED;
         if (finishedScanning || type.getKind() != TypeKind.TYPEVAR) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
