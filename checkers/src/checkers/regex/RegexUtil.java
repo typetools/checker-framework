@@ -5,6 +5,7 @@ import java.util.regex.PatternSyntaxException;
 
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
+import checkers.quals.*;
 
 // This class should be kept in sync with plume.RegexUtil .
 
@@ -35,6 +36,7 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
+  @EnsuresAnnotationIf(result=true, expression="#1", annotation=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
