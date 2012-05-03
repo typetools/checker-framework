@@ -100,6 +100,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Add the annotation {@code a} for the expression {@code r} (correctly
      * deciding where to store the information depending on the type of the
      * expression {@code r}).
+     * 
+     * <p>
+     * If there is already a value {@code v} present for {@code r}, then the
+     * stronger of the new and old value are taken (according to the lattice).
      */
     protected void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         V value = analysis.createAbstractValue(Collections.singleton(a));
@@ -110,6 +114,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Add the abstract value {@code value} for the expression {@code r}
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
+     * 
+     * <p>
+     * If there is already a value {@code v} present for {@code r}, then the
+     * stronger of the new and old value are taken (according to the lattice).
      */
     protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */
             V value) {
@@ -120,21 +128,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
-            if (localVariableValues.containsKey(localVar)) {
-                V mergedValue = localVariableValues.get(localVar)
-                        .leastUpperBound(value);
-                localVariableValues.put(localVar, mergedValue);
-            } else {
+            V oldValue = localVariableValues.get(localVar);
+            if (oldValue == null || value.isSubtypeOf(oldValue)) {
                 localVariableValues.put(localVar, value);
+            } else {
+                localVariableValues.put(localVar, oldValue);
             }
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
-            if (fieldValues.containsKey(fieldAcc)) {
-                V mergedValue = fieldValues.get(fieldAcc)
-                        .leastUpperBound(value);
-                fieldValues.put(fieldAcc, mergedValue);
-            } else {
+            V oldValue = fieldValues.get(fieldAcc);
+            if (oldValue == null || value.isSubtypeOf(oldValue)) {
                 fieldValues.put(fieldAcc, value);
+            } else {
+                fieldValues.put(fieldAcc, oldValue);
             }
         } else {
             assert false;
