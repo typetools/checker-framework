@@ -3004,6 +3004,7 @@ public class CFGBuilder {
                 switch (element.getKind()) {
                 case CLASS:
                 case ENUM:
+                case INTERFACE:
                     node = new ClassNameNode(tree);
                     break;
                 case FIELD:
