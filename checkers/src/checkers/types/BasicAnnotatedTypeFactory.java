@@ -254,11 +254,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             scannedClasses.put(classTree, ScanState.FINISHED);
             return;
         }
-        scannedClasses.put(classTree, ScanState.IN_PROGRESS);
+
         Queue<ClassTree> queue = new LinkedList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
             ClassTree ct = queue.remove();
+            scannedClasses.put(ct, ScanState.IN_PROGRESS);
             for (Tree m : ct.getMembers()) {
                 switch (m.getKind()) {
                 case METHOD:
@@ -300,9 +301,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     break;
                 }
             }
+            scannedClasses.put(ct, ScanState.FINISHED);
         }
-
-        scannedClasses.put(classTree, ScanState.FINISHED);
     }
 
     /**
@@ -368,10 +368,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
+        // This function can be called on Trees outside of the current
+        // compilation unit root.
         TreePath path = trees.getPath(root, tree);
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-        if (!scannedClasses.containsKey(enclosingClass)) {
-            performFlowAnalysis(enclosingClass);
+        ClassTree enclosingClass = null;
+        if (path != null) {
+            enclosingClass = TreeUtils.enclosingClass(path);
+            if (!scannedClasses.containsKey(enclosingClass)) {
+                performFlowAnalysis(enclosingClass);
+            }
         }
 
         treeAnnotator.visit(tree, type);
@@ -394,7 +399,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         }
         // TODO: This is quite ugly
-        boolean finishedScanning = scannedClasses.get(enclosingClass) == ScanState.FINISHED;
+        boolean finishedScanning = enclosingClass == null ||
+            scannedClasses.get(enclosingClass) == ScanState.FINISHED;
         if (finishedScanning || type.getKind() != TypeKind.TYPEVAR) {
             Element elt = InternalUtils.symbol(tree);
             typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
