@@ -939,12 +939,16 @@ public class CFGBuilder {
                     NodeWithExceptionsHolder en = (NodeWithExceptionsHolder) node;
                     // create new exception block and link with previous block
                     ExceptionBlockImpl e = new ExceptionBlockImpl();
-                    e.setNode(en.getNode());
+                    Node nn = en.getNode();
+                    e.setNode(nn);
                     block.setSuccessor(e);
                     block = new RegularBlockImpl();
 
                     // ensure linking between e and next block (normal edge)
-                    missingEdges.add(new Tuple<>(e, i + 1));
+                    // Note: do not link to the next block for throw statements
+                    // (these throw exceptions for sure)
+                    if (!(nn instanceof ThrowNode))
+                        missingEdges.add(new Tuple<>(e, i + 1));
 
                     // exceptional edges
                     for (Entry<TypeMirror, Label> entry : en.getExceptions()
