@@ -330,13 +330,19 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         // TODO: we should not need to cast here?
                         BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
                         CFStore exitStore = factory.getRegularExitStore(node);
-                        CFValue value = exitStore.getValue(expr);
-                        if (value == null
-                                || !AnnotationUtils.containsSame(
-                                        value.getAnnotations(), anno)) {
-                            checker.report(
-                                    Result.failure("contracts.postcondition.not.satisfied"),
-                                    node);
+                        if (exitStore == null) {
+                            // if there is no regular exitStore, then the method
+                            // cannot reach the regular exit and there is no
+                            // need to check anything
+                        } else {
+                            CFValue value = exitStore.getValue(expr);
+                            if (value == null
+                                    || !AnnotationUtils.containsSame(
+                                            value.getAnnotations(), anno)) {
+                                checker.report(
+                                        Result.failure("contracts.postcondition.not.satisfied"),
+                                        node);
+                            }
                         }
 
                     } catch (FlowExpressionParseException e) {

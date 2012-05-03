@@ -412,10 +412,19 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         return result;
     }
 
-    public S getRegularExitStore() {
-        S regularExitStore = stores.get(cfg.getRegularExitBlock())
-                .getRegularStore();
-        return regularExitStore;
+    /**
+     * @return The regular exit store, or {@code null}, if there is no such
+     *         store (because the method cannot exit through the regular exit
+     *         block).
+     */
+    public/* @Nullable */S getRegularExitStore() {
+        SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
+        if (stores.containsKey(regularExitBlock)) {
+            S regularExitStore = stores.get(regularExitBlock).getRegularStore();
+            return regularExitStore;
+        } else {
+            return null;
+        }
     }
 
     public S getExceptionalExitStore() {
