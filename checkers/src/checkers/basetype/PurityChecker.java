@@ -9,6 +9,7 @@ import checkers.quals.Pure;
 import checkers.quals.Pure.Kind;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.InternalUtils;
 import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 
@@ -85,9 +86,10 @@ public class PurityChecker {
      * {@code type}.
      */
     public static PurityResult checkPurity(MethodTree method,
-            AnnotatedTypeFactory atypeFactory, List<Kind> types) {
+            AnnotatedTypeFactory atypeFactory) {
         PurityCheckerHelper helper = new PurityCheckerHelper(method,
                 atypeFactory);
+        List<Kind> types = PurityUtils.getPurityKinds(atypeFactory, method);
         PurityResult res = helper.scan(method.getBody(),
                 new PurityResult(types));
         return res;
@@ -374,7 +376,8 @@ public class PurityChecker {
                 p.addNotBothReason("non-pure method call");
             } else {
                 boolean det = PurityUtils.isDeterministic(atypeFactory, elt);
-                boolean seFree = PurityUtils.isSideEffectFree(atypeFactory, elt);
+                boolean seFree = PurityUtils
+                        .isSideEffectFree(atypeFactory, elt);
                 if (!det && !seFree) {
                     p.addNotBothReason("non-pure method call");
                 } else if (!det) {
@@ -389,8 +392,14 @@ public class PurityChecker {
         }
 
         public PurityResult visitNewClass(NewClassTree node, PurityResult p) {
-            p.addNotDetReason("object creation");
-            // TODO: non-pure constructor call
+            Element methodElement = InternalUtils.symbol(node);
+            boolean sideEffectFree = PurityUtils.isSideEffectFree(atypeFactory,
+                    methodElement);
+            if (sideEffectFree) {
+                p.addNotDetReason("object creation");
+            } else {
+                p.addNotBothReason("object creation with non-pure constructor");
+            }
             PurityResult r = scan(node.getEnclosingExpression(), p);
             r = scan(node.getIdentifier(), r);
             r = scan(node.getTypeArguments(), r);
