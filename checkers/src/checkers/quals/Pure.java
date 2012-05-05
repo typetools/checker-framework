@@ -63,6 +63,13 @@ import java.lang.annotation.Target;
  * free.
  * 
  * <p>
+ * Note that constructors can only be side-effect free, as the invocation of a
+ * constructor creates a new object and is therefore by definition not
+ * deterministic.
+ * 
+ * TODO: Side-effect free constructors could be allowed to set their own fields.
+ * 
+ * <p>
  * Note that the rules for checking currently imply that every deterministic
  * method is also side-effect free. This might change in the future; in general,
  * a deterministic method does not need to be side-effect free.
@@ -72,7 +79,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 public @interface Pure {
 
     Kind[] value() default { Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE };
