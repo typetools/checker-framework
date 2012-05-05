@@ -3006,6 +3006,7 @@ public class CFGBuilder {
             } else {
                 Element element = TreeUtils.elementFromUse(tree);
                 switch (element.getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:
                 case INTERFACE:

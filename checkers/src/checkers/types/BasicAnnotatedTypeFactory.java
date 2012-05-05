@@ -253,8 +253,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             flowResult = new AnalysisResult<>();
         }
         // no need to scan interfaces or enums
-        if (classTree.getKind() == Tree.Kind.INTERFACE
-                || classTree.getKind() == Kind.ENUM) {
+        if (classTree.getKind() == Kind.INTERFACE
+                || classTree.getKind() == Kind.ENUM
+                || classTree.getKind() == Kind.ANNOTATION_TYPE) {
             // Mark finished so that default annotations will be applied.
             scannedClasses.put(classTree, ScanState.FINISHED);
             return;
