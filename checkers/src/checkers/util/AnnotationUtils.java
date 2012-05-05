@@ -1012,15 +1012,59 @@ public class AnnotationUtils {
         }
     }
 
-    public static <T> T elementValue(AnnotationMirror anno,
-            CharSequence name, Class<T> expectedType) {
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}. The result is expected to have type {@code expectedType}.
+     * 
+     * <p>
+     * <em>Note 1</em>: The method only returns attribute values that are
+     * explicitly present on {@code anno}. Default values are ignored. If
+     * default values should be applied, use {@code elementValueWithDefaults}
+     * instead.
+     * 
+     * <p>
+     * <em>Note 2</em>: The method does not work well for attributes of an array
+     * type (as it would return a list of {@link Attribute}s). Use
+     * {@code elementValueArray} instead. instead.
+     */
+    public static <T> T elementValue(AnnotationMirror anno, CharSequence name,
+            Class<T> expectedType) {
         for (ExecutableElement elem : anno.getElementValues().keySet()) {
             if (elem.getSimpleName().contentEquals(name)) {
                 AnnotationValue val = anno.getElementValues().get(elem);
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new IllegalArgumentException("No element with name " + name + " in annotation " + anno);
+        throw new IllegalArgumentException("No element with name " + name
+                + " in annotation " + anno);
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly.
+     * The result is expected to have type {@code expectedType}.
+     * 
+     * <p>
+     * <em>Note</em>: The method does not work well for attributes of an array
+     * type (as it would return a list of {@link Attribute}s). Use
+     * {@code elementValueArray} instead. instead.
+     */
+    public static <T> T elementValueWithDefaults(AnnotationMirror anno,
+            CharSequence name, Class<T> expectedType) {
+        for (ExecutableElement elem : getElementValuesWithDefaults(anno)
+                .keySet()) {
+            if (elem.getSimpleName().contentEquals(name)) {
+                AnnotationValue val = anno.getElementValues().get(elem);
+                if (val == null) {
+                    AnnotationValue defaultValue = elem.getDefaultValue();
+                    Object value = defaultValue.getValue();
+                    return expectedType.cast(value);
+                }
+                return expectedType.cast(val.getValue());
+            }
+        }
+        throw new IllegalArgumentException("No element with name " + name
+                + " in annotation " + anno);
     }
 
     /**
@@ -1036,6 +1080,63 @@ public class AnnotationUtils {
         for (Attribute a : la) {
             assert a instanceof Attribute.Constant;
             result.add((String) a.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, where the attribute has an array type. One element of the
+     * result is expected to have type {@code expectedType}.
+     * 
+     * <p>
+     * <em>Note</em>: The method only returns attribute values that are
+     * explicitly present on {@code anno}. Default values are ignored. If
+     * default values should be applied, use
+     * {@code elementValueArrayWithDefaults} instead.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> elementValueArray(AnnotationMirror anno,
+            CharSequence name) {
+        List<Attribute> la = elementValue(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (Attribute a : la) {
+            result.add((T) a.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly,
+     * where the attribute has an array type. One element of the result is
+     * expected to have type {@code expectedType}.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> elementValueArrayWithDefaults(
+            AnnotationMirror anno, CharSequence name) {
+        List<Attribute> la = elementValueWithDefaults(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (Attribute a : la) {
+            result.add((T) a.getValue());
+        }
+        return result;
+    }
+    
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly,
+     * where the attribute has an array type and the elements are {@code Enum}s.
+     * One element of the result is expected to have type {@code expectedType}.
+     */
+    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(
+            AnnotationMirror anno, CharSequence name, Class<T> t) {
+        @SuppressWarnings("unchecked")
+        List<Attribute> la = elementValueWithDefaults(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (Attribute a : la) {
+            T value = Enum.valueOf(t, a.getValue().toString());
+            result.add(value);
         }
         return result;
     }
