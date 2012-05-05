@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+import checkers.basetype.PurityChecker.PurityResult;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
@@ -261,18 +262,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt,
-                    Pure.class) != null;
-            if (hasPureAnnotation) {
+            AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(
+                    elt, Pure.class);
+            if (pureAnnotation != null) {
                 if (node.getReturnType().toString().equals("void")) {
                     checker.report(Result.warning("pure.void.method"), node);
                 }
-                checkers.basetype.PurityChecker.Result r = PurityChecker
-                        .checkPurity(node, atypeFactory);
+                List<Pure.Kind> type = AnnotationUtils.elementValueEnumArrayWithDefaults(
+                        pureAnnotation, "value", Pure.Kind.class);
+                PurityResult r = PurityChecker
+                        .checkPurity(node, atypeFactory, type);
                 if (!r.isPure()) {
-                    checker.report(
-                            Result.failure("pure.not.pure", r.getReason()),
-                            node);
+                    r.reportErrors(checker, node);
                 }
             }
 
