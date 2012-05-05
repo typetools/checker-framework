@@ -264,13 +264,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             // check method purity if needed
             if (PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
-                if (node.getReturnType().toString().equals("void")) {
-                    checker.report(Result.warning("pure.void.method"), node);
+                // check "no" purity
+                List<checkers.quals.Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+                if (kinds.isEmpty()) {
+                    checker.report(Result.warning("pure.annotation.with.emtpy.kind"), node);
                 }
-                List<Pure.Kind> type = PurityUtils.getPurityKinds(atypeFactory,
-                        node);
-                PurityResult r = PurityChecker.checkPurity(node, atypeFactory,
-                        type);
+                if (TreeUtils.isConstructor(node)) {
+                    // constructors cannot be deterministic
+                    if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
+                        checker.report(Result.failure("pure.determinstic.constructor"), node);
+                    }
+                } else {
+                    // check return type
+                    if (node.getReturnType().toString().equals("void")) {
+                        checker.report(Result.warning("pure.void.method"), node);
+                    }
+                }
+                PurityResult r = PurityChecker.checkPurity(node, atypeFactory);
                 if (!r.isPure()) {
                     r.reportErrors(checker, node);
                 }
