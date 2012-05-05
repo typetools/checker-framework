@@ -310,7 +310,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             resValue = getValueFromFactory(tree);
         }
 
-        thenStore.updateForMethodCall(n, analysis.checker);
+        thenStore.updateForMethodCall(n, analysis.factory);
 
         // add new information based on postcondition
         AnnotationMirror ensuresAnnotation = analysis.factory
