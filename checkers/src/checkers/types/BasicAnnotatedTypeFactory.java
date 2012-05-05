@@ -36,6 +36,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
@@ -264,47 +265,66 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         while (!queue.isEmpty()) {
             ClassTree ct = queue.remove();
             scannedClasses.put(ct, ScanState.IN_PROGRESS);
-            for (Tree m : ct.getMembers()) {
-                switch (m.getKind()) {
-                case METHOD:
-                    MethodTree mt = (MethodTree) m;
-                    // Skip abstract methods because they have no body.
-                    ModifiersTree modifiers = mt.getModifiers();
-                    if (modifiers != null) {
-                        Set<Modifier> flags = modifiers.getFlags();
-                        if (flags.contains(Modifier.ABSTRACT)) {
-                            break;
-                        }
-                    }
 
-                    analyze(queue, new CFGMethod(mt));
-                    break;
-                case VARIABLE:
-                    VariableTree vt = (VariableTree) m;
-                    ExpressionTree initializer = vt.getInitializer();
-                    // analyze initializer if present
-                    if (initializer != null) {
-                        analyze(queue, new CFGStatement(initializer));
+            AnnotatedDeclaredType preClassType = visitorState.getClassType();
+            ClassTree preClassTree = visitorState.getClassTree();
+            AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
+            MethodTree preMT = visitorState.getMethodTree();
+
+            visitorState.setClassType(getAnnotatedType(ct));
+            visitorState.setClassTree(ct);
+            visitorState.setMethodReceiver(null);
+            visitorState.setMethodTree(null);
+
+            try {
+                for (Tree m : ct.getMembers()) {
+                    switch (m.getKind()) {
+                    case METHOD:
+                        MethodTree mt = (MethodTree) m;
+                        // Skip abstract methods because they have no body.
+                        ModifiersTree modifiers = mt.getModifiers();
+                        if (modifiers != null) {
+                            Set<Modifier> flags = modifiers.getFlags();
+                            if (flags.contains(Modifier.ABSTRACT)) {
+                                break;
+                            }
+                        }
+
+                        analyze(queue, new CFGMethod(mt));
+                        break;
+                    case VARIABLE:
+                        VariableTree vt = (VariableTree) m;
+                        ExpressionTree initializer = vt.getInitializer();
+                        // analyze initializer if present
+                        if (initializer != null) {
+                            analyze(queue, new CFGStatement(initializer));
+                        }
+                        break;
+                    case CLASS:
+                        // Visit inner and nested classes.
+                        queue.add((ClassTree) m);
+                        break;
+                    case ANNOTATION_TYPE:
+                    case INTERFACE:
+                    case ENUM:
+                        // not necessary to handle
+                        break;
+                    case BLOCK:
+                        BlockTree b = (BlockTree) m;
+                        analyze(queue, new CFGStatement(b));
+                        break;
+                    default:
+                        assert false : "Unexpected member: " + m.getKind();
+                        break;
                     }
-                    break;
-                case CLASS:
-                    // Visit inner and nested classes.
-                    queue.add((ClassTree) m);
-                    break;
-                case ANNOTATION_TYPE:
-                case INTERFACE:
-                case ENUM:
-                    // not necessary to handle
-                    break;
-                case BLOCK:
-                    BlockTree b = (BlockTree) m;
-                    analyze(queue, new CFGStatement(b));
-                    break;
-                default:
-                    assert false : "Unexpected member: " + m.getKind();
-                    break;
                 }
+            } finally {
+                visitorState.setClassType(preClassType);
+                visitorState.setClassTree(preClassTree);
+                visitorState.setMethodReceiver(preAMT);
+                visitorState.setMethodTree(preMT);
             }
+
             scannedClasses.put(ct, ScanState.FINISHED);
         }
     }
