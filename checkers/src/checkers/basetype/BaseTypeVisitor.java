@@ -50,6 +50,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
+import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
@@ -262,16 +263,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(
-                    elt, Pure.class);
-            if (pureAnnotation != null) {
+            if (PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
                 if (node.getReturnType().toString().equals("void")) {
                     checker.report(Result.warning("pure.void.method"), node);
                 }
-                List<Pure.Kind> type = AnnotationUtils.elementValueEnumArrayWithDefaults(
-                        pureAnnotation, "value", Pure.Kind.class);
-                PurityResult r = PurityChecker
-                        .checkPurity(node, atypeFactory, type);
+                List<Pure.Kind> type = PurityUtils.getPurityKinds(atypeFactory,
+                        node);
+                PurityResult r = PurityChecker.checkPurity(node, atypeFactory,
+                        type);
                 if (!r.isPure()) {
                     r.reportErrors(checker, node);
                 }
