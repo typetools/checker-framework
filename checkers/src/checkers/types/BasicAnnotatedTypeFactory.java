@@ -22,9 +22,11 @@ import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
 import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.RegexAnalysis;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
@@ -36,6 +38,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
+import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
@@ -341,8 +344,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
         CFGBuilder builder = new CFGBuilder();
         ControlFlowGraph cfg = builder.run(root, env, ast);
-        CFAnalysis analysis = new CFAnalysis(this,
+        CFAbstractAnalysis<CFValue, CFStore, ?> analysis = new CFAnalysis(this,
                 checker.getProcessingEnvironment(), checker);
+        // TODO: remove this hack
+        if (this instanceof RegexAnnotatedTypeFactory) {
+            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this, checker.getProcessingEnvironment(), checker);
+        }
         analysis.performAnalysis(cfg);
         AnalysisResult<CFValue> result = analysis.getResult();
         
