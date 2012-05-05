@@ -2,12 +2,38 @@ import checkers.util.test.*;
 
 import java.util.*;
 import checkers.quals.*;
+import checkers.quals.Pure.Kind;
 
 // various tests for the @Pure annotation
 class Purity {
     
     String f1, f2, f3;
     String[] a;
+    
+    // class with a (potentially) non-pure constructor
+    private static class NonPureClass {
+    }
+    
+    // class with a pure constructor
+    private static class PureClass {
+        @Pure(Kind.SIDE_EFFECT_FREE)
+        // TODO: this should not happen
+        //:: error: (pure.not.sideeffect.free)
+        public PureClass() {
+        }
+    }
+    
+    // class with wrong purity annotations on constructors
+    private static class InvalidClass {
+        @Pure(Kind.DETERMINISTIC)
+        //:: error: (pure.determinstic.constructor)
+        public InvalidClass() {
+        }
+        @Pure
+        //:: error: (pure.determinstic.constructor)
+        public InvalidClass(int i) {
+        }
+    }
     
     // a method that is not pure (no annotation)
     void nonpure() {
@@ -25,7 +51,7 @@ class Purity {
         return "";
     }
     
-    //:: error: (pure.not.pure)
+    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t3() {
       nonpure();
       return "";
@@ -64,30 +90,39 @@ class Purity {
         return "b" + "a";
     }
     
-    //:: error: (pure.not.pure)
+    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t10() {
         f1 = "";
         f2 = "";
         return "";
     }
     
-    //:: error: (pure.not.pure)
+    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t11(Purity l) {
         l.a[0] = "";
         return "";
     }
     
-    //:: error: (pure.not.pure)
+    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t12(String[] s) {
         s[0] = "";
         return "";
     }
     
-    //:: error: (pure.not.pure)
+    //:: error: (pure.not.deterministic)
     @Pure String t13() {
-        // could be relaxed in the future to allow certain object creations. one has to be
-        // careful about whether the code in the constructor might have side effects.
-        String s = new String();
+        PureClass p = new PureClass();
+        return "";
+    }
+    
+    @Pure(Kind.SIDE_EFFECT_FREE) String t13b() {
+        PureClass p = new PureClass();
+        return "";
+    }
+    
+    //:: error: (pure.not.deterministic)
+    @Pure(Kind.DETERMINISTIC) String t13c() {
+        PureClass p = new PureClass();
         return "";
     }
     
@@ -101,5 +136,44 @@ class Purity {
         String[] s = new String[1];
         return s[0];
     }
+    /* TODO: activate, as soon as CFGBuilder supports try
+    // :: error: (pure.not.deterministic)
+    @Pure String t16() {
+        try {
+            int i = 1/0;
+        } catch (Throwable t) {
+            // ..
+        }
+        return "";
+    }
     
+    @Pure(Kind.SIDE_EFFECT_FREE) String t16b() {
+        try {
+            int i = 1/0;
+        } catch (Throwable t) {
+            // ..
+        }
+        return "";
+    }
+    
+    // :: error: (pure.not.deterministic)
+    @Pure(Kind.DETERMINISTIC) String t16c() {
+        try {
+            int i = 1/0;
+        } catch (Throwable t) {
+            // ..
+        }
+        return "";
+    }*/
+    
+    //:: warning: (pure.annotation.with.emtpy.kind)
+    @Pure({}) String t17() {
+        return "";
+    }
+    
+    //:: error: (pure.not.deterministic.and.sideeffect.free)
+    @Pure String t12() {
+        NonPureClass p = new NonPureClass();
+        return "";
+    }
 }
