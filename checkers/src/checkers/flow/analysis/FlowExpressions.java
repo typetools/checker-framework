@@ -239,7 +239,7 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null && !(obj instanceof ClassName)) {
+            if (obj == null || !(obj instanceof ClassName)) {
                 return false;
             }
             ClassName other = (ClassName) obj;
