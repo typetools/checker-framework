@@ -310,13 +310,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             resValue = getValueFromFactory(tree);
         }
 
-        thenStore.updateForMethodCall(n, analysis.checker);
+        thenStore.updateForMethodCall(n, analysis.factory);
 
         // add new information based on postcondition
         AnnotationMirror ensuresAnnotation = analysis.factory
                 .getDeclAnnotation(method, EnsuresAnnotation.class);
         if (ensuresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueStringArray(
+            List<String> expressions = AnnotationUtils.elementValueArray(
                     ensuresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotation, "annotation");
@@ -344,7 +344,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 .getDeclAnnotation(method, EnsuresAnnotationIf.class);
         if (ensuresAnnotationIf != null) {
             S elseStore = thenStore.copy();
-            List<String> expressions = AnnotationUtils.elementValueStringArray(
+            List<String> expressions = AnnotationUtils.elementValueArray(
                     ensuresAnnotationIf, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotationIf, "annotation");

@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+import checkers.basetype.PurityChecker.PurityResult;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
@@ -49,6 +50,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
+import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
@@ -261,18 +263,26 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            boolean hasPureAnnotation = atypeFactory.getDeclAnnotation(elt,
-                    Pure.class) != null;
-            if (hasPureAnnotation) {
-                if (node.getReturnType().toString().equals("void")) {
-                    checker.report(Result.warning("pure.void.method"), node);
+            if (PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
+                // check "no" purity
+                List<checkers.quals.Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+                if (kinds.isEmpty()) {
+                    checker.report(Result.warning("pure.annotation.with.emtpy.kind"), node);
                 }
-                checkers.basetype.PurityChecker.Result r = PurityChecker
-                        .checkPurity(node, atypeFactory);
+                if (TreeUtils.isConstructor(node)) {
+                    // constructors cannot be deterministic
+                    if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
+                        checker.report(Result.failure("pure.determinstic.constructor"), node);
+                    }
+                } else {
+                    // check return type
+                    if (node.getReturnType().toString().equals("void")) {
+                        checker.report(Result.warning("pure.void.method"), node);
+                    }
+                }
+                PurityResult r = PurityChecker.checkPurity(node, atypeFactory);
                 if (!r.isPure()) {
-                    checker.report(
-                            Result.failure("pure.not.pure", r.getReason()),
-                            node);
+                    r.reportErrors(checker, node);
                 }
             }
 
@@ -305,7 +315,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     .getDeclAnnotation(methodElement, EnsuresAnnotation.class);
             if (ensuresAnnotation != null) {
                 List<String> expressions = AnnotationUtils
-                        .elementValueStringArray(ensuresAnnotation,
+                        .elementValueArray(ensuresAnnotation,
                                 "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         ensuresAnnotation, "annotation");
@@ -357,7 +367,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     .getDeclAnnotation(methodElement, EnsuresAnnotationIf.class);
             if (ensuresAnnotationIf != null) {
                 List<String> expressions = AnnotationUtils
-                        .elementValueStringArray(ensuresAnnotationIf,
+                        .elementValueArray(ensuresAnnotationIf,
                                 "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         ensuresAnnotationIf, "annotation");
