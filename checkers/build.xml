@@ -211,6 +211,7 @@ ${build.version} of the 'javac.jar' library."/>
             <include name="**/quals/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
             <include name="**/NullnessUtils*"/>
+            <include name="**/RegexUtil*"/>
         </jar>
     </target>
 
