@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
@@ -24,15 +25,15 @@ import com.sun.source.tree.Tree;
  */
 public class ClassNameNode extends Node {
 
-    protected Tree tree;
+    protected IdentifierTree tree;
     // The class named by this node
     protected Element element;
 
-    public ClassNameNode(Tree tree) {
+    public ClassNameNode(IdentifierTree tree) {
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
-        this.element = TreeUtils.elementFromUse((IdentifierTree) tree);
+        this.element = TreeUtils.elementFromUse(tree);
     }
 
     public Element getElement() {
@@ -40,8 +41,12 @@ public class ClassNameNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public IdentifierTree getTree() {
         return tree;
+    }
+    
+    public Name getName() {
+        return tree.getName();
     }
 
     @Override
