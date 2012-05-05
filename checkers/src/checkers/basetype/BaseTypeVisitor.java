@@ -315,7 +315,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     .getDeclAnnotation(methodElement, EnsuresAnnotation.class);
             if (ensuresAnnotation != null) {
                 List<String> expressions = AnnotationUtils
-                        .elementValueStringArray(ensuresAnnotation,
+                        .elementValueArray(ensuresAnnotation,
                                 "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         ensuresAnnotation, "annotation");
@@ -367,7 +367,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     .getDeclAnnotation(methodElement, EnsuresAnnotationIf.class);
             if (ensuresAnnotationIf != null) {
                 List<String> expressions = AnnotationUtils
-                        .elementValueStringArray(ensuresAnnotationIf,
+                        .elementValueArray(ensuresAnnotationIf,
                                 "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         ensuresAnnotationIf, "annotation");
