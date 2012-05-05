@@ -1068,23 +1068,6 @@ public class AnnotationUtils {
     }
 
     /**
-     * Like elementValue(anno, name, String[].class) except that a String[]
-     * annotation element gets returned by elementValue() as a
-     * List&lt;Attribute&gt; and would have to be converted; this does that
-     * conversion.
-     */
-    public static List<String> elementValueStringArray(AnnotationMirror anno,
-            CharSequence name) {
-        List<Attribute> la = elementValue(anno, name, List.class);
-        List<String> result = new ArrayList<String>(la.size());
-        for (Attribute a : la) {
-            assert a instanceof Attribute.Constant;
-            result.add((String) a.getValue());
-        }
-        return result;
-    }
-
-    /**
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}, where the attribute has an array type. One element of the
      * result is expected to have type {@code expectedType}.
