@@ -11,14 +11,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
-import checkers.quals.Pure;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.util.PurityUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -86,12 +86,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * call, and add information guaranteed by the method.
      */
     public void updateForMethodCall(MethodInvocationNode n,
-            BaseTypeChecker checker) {
+            AnnotatedTypeFactory factory) {
         ExecutableElement method = n.getTarget().getMethod();
 
         // remove information if necessary
-        boolean isPure = analysis.factory.getDeclAnnotation(method, Pure.class) != null;
-        if (!isPure) {
+        if (!PurityUtils.isSideEffectFree(factory, method)) {
             fieldValues = new HashMap<>();
         }
     }

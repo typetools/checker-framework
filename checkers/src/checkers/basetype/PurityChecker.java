@@ -3,14 +3,13 @@ package checkers.basetype;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import checkers.quals.Pure;
 import checkers.quals.Pure.Kind;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
+import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -371,15 +370,11 @@ public class PurityChecker {
         public PurityResult visitMethodInvocation(MethodInvocationTree node,
                 PurityResult p) {
             Element elt = TreeUtils.elementFromUse(node);
-            AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(
-                    elt, Pure.class);
-            if (pureAnnotation == null) {
+            if (!PurityUtils.hasPurityAnnotation(atypeFactory, elt)) {
                 p.addNotBothReason("non-pure method call");
             } else {
-                List<Kind> types = AnnotationUtils
-                        .elementValueArrayWithDefaults(pureAnnotation, "value");
-                boolean det = types.contains(Kind.DETERMINISTIC);
-                boolean seFree = types.contains(Kind.SIDE_EFFECT_FREE);
+                boolean det = PurityUtils.isDeterministic(atypeFactory, elt);
+                boolean seFree = PurityUtils.isSideEffectFree(atypeFactory, elt);
                 if (!det && !seFree) {
                     p.addNotBothReason("non-pure method call");
                 } else if (!det) {
