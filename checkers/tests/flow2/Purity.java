@@ -17,8 +17,6 @@ class Purity {
     // class with a pure constructor
     private static class PureClass {
         @Pure(Kind.SIDE_EFFECT_FREE)
-        // TODO: this should not happen
-        //:: error: (pure.not.sideeffect.free)
         public PureClass() {
         }
     }
