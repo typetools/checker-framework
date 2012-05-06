@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.junit.runners.Parameterized.Parameters;
 
 import checkers.basic.BasicChecker;
-import checkers.util.test.Encrypted;
+import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * Test suite for the basic checker, using a simple {@link Encrypted}
@@ -19,7 +19,7 @@ public class BasicEncryptedTest extends ParameterizedCheckerTest {
                 BasicChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",
-                "-Aquals=checkers.util.test.Encrypted,checkers.util.test.PolyEncrypted,checkers.quals.Unqualified");
+                "-Aquals=tests.util.Encrypted,tests.util.PolyEncrypted,checkers.quals.Unqualified");
     }
 
     @Parameters
