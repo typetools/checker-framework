@@ -889,9 +889,9 @@ implements Flow {
     /**
      * Clear whatever part of the state that gets invalidated by
      * invoking the method.
-     * 
+     *
      * @param enclMeth The method within which "method" is called.
-     *   Might be null if the invocation is in a field initializer.  
+     *   Might be null if the invocation is in a field initializer.
      * @param method The invoked method.
      */
     protected abstract void clearOnCall(/*@Nullable*/ MethodTree enclMeth, ExecutableElement method);
