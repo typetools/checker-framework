@@ -33,7 +33,6 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -1580,6 +1579,13 @@ public class AnnotatedTypeFactory {
             in = checkerClass.getResourceAsStream("jdk.astub");
         if (in != null) {
             StubParser stubParser = new StubParser("jdk.astub", in, this, env);
+            stubParser.parse(indexTypes, indexDeclAnnos);
+        }
+        
+        // stub file for type-system independent annotations
+        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
+        if (input != null) {
+            StubParser stubParser = new StubParser("flow.astub", input, this, env);
             stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
