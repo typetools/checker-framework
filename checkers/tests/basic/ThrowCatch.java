@@ -1,6 +1,6 @@
 import java.util.*;
 
-import checkers.util.test.Critical;
+import tests.util.Critical;
 
 /**
  * Tests the symantics for throwable exception
