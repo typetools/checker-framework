@@ -1,4 +1,4 @@
-package checkers.util.test;
+package tests.util;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;

@@ -1,12 +1,13 @@
-package checkers.util.test;
+package tests.util;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
 import checkers.quals.*;
 
-/** A subtype of SuperQual. */
+/** A supertype of SubQual. */
 @TypeQualifier
-@SubtypeOf(SuperQual.class)
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 @Target(ElementType.TYPE_USE)
-public @interface SubQual {}
+public @interface SuperQual {}
