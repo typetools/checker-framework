@@ -1,4 +1,4 @@
-package checkers.util.test;
+package tests.util;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

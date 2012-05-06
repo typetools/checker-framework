@@ -1,4 +1,4 @@
-package checkers.util.test;
+package tests.util;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
