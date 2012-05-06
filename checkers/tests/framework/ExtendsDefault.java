@@ -1,5 +1,5 @@
 import checkers.quals.*;
-import checkers.util.test.*;
+import tests.util.*;
 
 class ExtendsDefault {
 

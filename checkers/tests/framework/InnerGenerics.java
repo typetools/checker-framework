@@ -1,4 +1,4 @@
-import checkers.util.test.*;
+import tests.util.*;
 
 class ListOuter<T> { }
 

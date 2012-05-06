@@ -1,4 +1,4 @@
-import checkers.util.test.Odd;
+import tests.util.Odd;
 
 
 public class Constructors {

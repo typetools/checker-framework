@@ -1,8 +1,8 @@
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 
-import checkers.util.test.SuperQual;
-import checkers.util.test.SubQual;
+import tests.util.SuperQual;
+import tests.util.SubQual;
 
 public class UnusedNullness {
 
