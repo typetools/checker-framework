@@ -1,4 +1,4 @@
-import checkers.util.test.*;
+import tests.util.*;
 import java.util.*;
 
 public class AnnotatedVoidMethod {

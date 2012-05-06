@@ -1,6 +1,6 @@
 import java.util.*;
 
-import checkers.util.test.Encrypted;
+import tests.util.Encrypted;
 
 abstract class BasicFunctionality {
 
