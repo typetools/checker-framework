@@ -7,12 +7,14 @@ import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.ClassNameNode;
+import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.MethodAccessNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.regex.quals.Regex;
 
 public class RegexTransfer extends
@@ -48,11 +50,21 @@ public class RegexTransfer extends
                 try {
                     Receiver firstParam = FlowExpressionParseUtil.parse("#1",
                             context);
-                    AnnotationMirror regexAnnotation = analysis.factory
-                            .annotationFromClass(Regex.class);
-                    // add annotation with correct group count
-                    // TODO: add group count
-                    thenStore.insertValue(firstParam, regexAnnotation);
+                    // add annotation with correct group count (if possible,
+                    // regex annotation without count otherwise)
+                    Node count = n.getArgument(1);
+                    if (count instanceof IntegerLiteralNode) {
+                        IntegerLiteralNode iln = (IntegerLiteralNode) count;
+                        Integer groupCount = iln.getValue();
+                        RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) analysis.factory;
+                        AnnotationMirror regexAnnotation = f.createRegexAnnotation(groupCount);
+                        thenStore.insertValue(firstParam, regexAnnotation);
+                    } else {
+                        AnnotationMirror regexAnnotation = analysis.factory
+                                .annotationFromClass(Regex.class);
+                        thenStore.insertValue(firstParam, regexAnnotation);
+                    }
+                    //f.createRegexAnnotation();
                 } catch (FlowExpressionParseException e) {
                     assert false;
                 }
