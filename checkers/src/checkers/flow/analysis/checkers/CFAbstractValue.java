@@ -1,12 +1,8 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
@@ -91,18 +87,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     }
 
     /**
-     * @return The string representation as a comma-separated list of simple
-     *         annotation names.
+     * @return The string representation as a comma-separated list.
      */
     @Override
     public String toString() {
-        List<String> l = new LinkedList<>();
-        for (AnnotationMirror a : annotations) {
-            DeclaredType annoType = a.getAnnotationType();
-            TypeElement elm = (TypeElement) annoType.asElement();
-            l.add(elm.getSimpleName().toString());
-        }
-        String s = l.toString();
-        return s.substring(1, s.length() - 1);
+        return annotations.toString();
     }
 }
