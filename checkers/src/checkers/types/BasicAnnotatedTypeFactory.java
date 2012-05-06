@@ -24,6 +24,7 @@ import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFCFGBuilder;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.analysis.checkers.RegexAnalysis;
@@ -342,7 +343,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      *            The AST to analyze.
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
-        CFGBuilder builder = new CFGBuilder();
+        CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
         CFAbstractAnalysis<CFValue, CFStore, ?> analysis = new CFAnalysis(this,
                 checker.getProcessingEnvironment(), checker);

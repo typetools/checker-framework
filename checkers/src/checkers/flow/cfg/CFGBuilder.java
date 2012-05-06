@@ -298,6 +298,9 @@ public class CFGBuilder {
 
         /** Type of this node. */
         protected ExtendedNodeType type;
+        
+        /** Does this node terminate the execution? (e.g., "System.exit()") */
+        protected boolean terminatesExecution = false;
 
         public ExtendedNode(ExtendedNodeType type) {
             this.type = type;
@@ -310,6 +313,14 @@ public class CFGBuilder {
 
         public ExtendedNodeType getType() {
             return type;
+        }
+        
+        public boolean getTerminatesExecution() {
+            return terminatesExecution;
+        }
+        
+        public void setTerminatesExecution(boolean terminatesExecution) {
+            this.terminatesExecution = terminatesExecution;
         }
 
         /**
@@ -519,7 +530,7 @@ public class CFGBuilder {
      * Eliminating the second type of degenerate cases might introduce cases of
      * the third problem. These are also removed.
      */
-    protected static class CFGTranslationPhaseThree {
+    public static class CFGTranslationPhaseThree {
 
         /**
          * A simple wrapper object that holds a basic block and allows to set
@@ -840,7 +851,10 @@ public class CFGBuilder {
     /**
      * Class that performs phase two of the translation process.
      */
-    protected class CFGTranslationPhaseTwo {
+    public class CFGTranslationPhaseTwo {
+        
+        public CFGTranslationPhaseTwo() {
+        }
 
         /**
          * Perform phase two of the translation.
@@ -891,6 +905,14 @@ public class CFGBuilder {
                     }
                     block.addNode(node.getNode());
                     node.setBlock(block);
+                    
+                    // does this node end the execution (modeled as an edge to
+                    // the exceptional exit block)
+                    boolean terminatesExecution = node.getTerminatesExecution();
+                    if (terminatesExecution) {
+                        block.setSuccessor(exceptionalExitBlock);
+                        block = new RegularBlockImpl();
+                    }
                     break;
                 case CONDITIONAL_JUMP: {
                     ConditionalJump cj = (ConditionalJump) node;
@@ -947,7 +969,7 @@ public class CFGBuilder {
                     // ensure linking between e and next block (normal edge)
                     // Note: do not link to the next block for throw statements
                     // (these throw exceptions for sure)
-                    if (!(nn instanceof ThrowNode))
+                    if (!node.getTerminatesExecution())
                         missingEdges.add(new Tuple<>(e, i + 1));
 
                     // exceptional edges
@@ -1083,7 +1105,10 @@ public class CFGBuilder {
      * to the list of nodes (which might only be a jump).
      * 
      */
-    protected class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
+    public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
+        
+        public CFGTranslationPhaseOne() {
+        }
 
         /**
          * Annotation processing environment and its associated type and tree
@@ -1275,9 +1300,9 @@ public class CFGBuilder {
          *            The node to add.
          * @param causes
          *            An exception that the node might throw.
-         * @return The same node (for convenience).
+         * @return The node holder.
          */
-        protected Node extendWithNodeWithException(Node node, TypeMirror cause) {
+        protected NodeWithExceptionsHolder extendWithNodeWithException(Node node, TypeMirror cause) {
             addToLookupMap(node);
             Set<TypeMirror> causes = new HashSet<>();
             causes.add(cause);
@@ -1293,9 +1318,9 @@ public class CFGBuilder {
          *            The node to add.
          * @param causes
          *            Set of exceptions that the node might throw.
-         * @return The same node (for convenience).
+         * @return The node holder.
          */
-        protected Node extendWithNodeWithExceptions(Node node,
+        protected NodeWithExceptionsHolder extendWithNodeWithExceptions(Node node,
                 Set<TypeMirror> causes) {
             // TODO: catch blocks
             Map<TypeMirror, Label> exceptions = new HashMap<>();
@@ -1305,7 +1330,7 @@ public class CFGBuilder {
             NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(
                     node, exceptions);
             extendWithExtendedNode(exNode);
-            return node;
+            return exNode;
         }
 
         /**
@@ -1811,7 +1836,7 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitMethodInvocation(MethodInvocationTree tree, Void p) {
+        public MethodInvocationNode visitMethodInvocation(MethodInvocationTree tree, Void p) {
 
             // see JLS 15.12.4
 
@@ -1851,14 +1876,14 @@ public class CFGBuilder {
 
             // TODO: lock the receiver for synchronized methods
 
-            Node node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
+            MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
             extendWithNode(node);
 
             conditionalMode = outerConditionalMode;
 
             if (conditionalMode && isBooleanMethod) {
                 extendWithExtendedNode(cjump);
-        }
+            }
 
             return node;
         }
@@ -3284,8 +3309,11 @@ public class CFGBuilder {
         public Node visitThrow(ThrowTree tree, Void p) {
             Node expression = scan(tree.getExpression(), p);
             TypeMirror exception = expression.getType();
-            return extendWithNodeWithException(new ThrowNode(tree, expression),
-                    exception);
+            ThrowNode throwsNode = new ThrowNode(tree, expression);
+            NodeWithExceptionsHolder exNode = extendWithNodeWithException(
+                    throwsNode, exception);
+            exNode.setTerminatesExecution(true);
+            return throwsNode;
         }
 
         @Override
