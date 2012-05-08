@@ -24,6 +24,8 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -121,6 +123,7 @@ import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.util.InternalUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
@@ -502,6 +505,168 @@ public class CFGBuilder {
          */
         private static String uniqueName() {
             return "%L" + uid++;
+        }
+    }
+
+    /**
+     * An exception frame stores the control-flow destination labels
+     * for one try-catch block.  A new frame is created on entry to a
+     * try-catch block and discarded on exit.
+     */
+    protected static class ExceptionFrame {
+        protected Types types;
+
+        // An ordered list of pairs because catch blocks are ordered.
+        protected List<Pair<TypeMirror, Label>> catchLabels;
+
+        // The {@link Label} of a finally block, or null if there is none.
+        protected/* @Nullable */Label finallyLabel;
+
+        public/* @Nullable */Label getFinallyLabel() {
+            return finallyLabel;
+        }
+
+        // The {@link Label} for control flow exiting the block normally.
+        protected Label fallThroughLabel;
+
+        public Label getFallThroughLabel() {
+            return fallThroughLabel;
+        }
+
+        public ExceptionFrame(Types types,
+                              List<Pair<TypeMirror, Label>> catchLabels,
+                              Label/* @Nullable */finallyLabel,
+                              Label fallThroughLabel) {
+            this.types = types;
+            this.catchLabels = catchLabels;
+            this.finallyLabel = finallyLabel;
+            this.fallThroughLabel = fallThroughLabel;
+        }
+
+        /**
+         * Given a type of thrown exception, add the set of possible control
+         * flow successor {@link Label}s to the argument set.  Return true
+         * if the exception is known to be caught by one of those labels and
+         * false if it may propagate still further.
+         */
+        public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {
+            // A conservative approach would be to say that every catch block
+            // might execute for any thrown exception, but we try to do better.
+            // 
+            // We rely on several assumptions that seem to hold as of Java 7.
+            // 1) An exception parameter in a catch block must be either
+            //    a declared type or a union composed of declared types,
+            //    all of which are subtypes of Throwable.
+            // 2) A thrown type must either be a declared type or a variable
+            //    that extends a declared type, which is a subtype of Throwable.
+            //
+            // Under those assumptions, if the thrown type (or its bound) is
+            // a subtype of the caught type (or one of its alternatives), then
+            // the catch block must apply and none of the later ones can apply.
+            // Otherwise, if the thrown type (or its bound) is a supertype
+            // of the caught type (or one of its alternatives), then the catch
+            // block may apply, but so may later ones.
+            // Otherwise, the thrown type and the caught type are unrelated
+            // declared types, so they do not overlap on any non-null value.
+            //
+            // Because null is assignable to any exception type, the first
+            // catch block can always apply.
+
+            DeclaredType declaredThrown = null;
+            while (!(thrown instanceof DeclaredType)) {
+                assert thrown instanceof TypeVariable :
+                    "thrown type must be a variable or a declared type";
+                thrown = ((TypeVariable)thrown).getUpperBound();
+            }
+            assert thrown != null : "thrown type must be bounded by a declared type";
+
+            // The first catch block can always apply.
+            boolean canApply = true;
+            for (Pair<TypeMirror, Label> pair : catchLabels) {
+                // TODO: Need a GLB test or other type overlap test.
+                TypeMirror caught = pair.first;
+
+                if (caught instanceof DeclaredType) {
+                    DeclaredType declaredCaught = (DeclaredType)caught;
+                    if (types.isSubtype(declaredThrown, declaredCaught)) {
+                        // No later catch blocks can apply.
+                        labels.add(pair.second);
+                        return true;
+                    } else if (types.isSubtype(declaredCaught, declaredThrown)) {
+                        canApply = true;
+                    }
+                } else {
+                    assert caught instanceof UnionType :
+                        "caught type must be a union or a declared type";
+                    UnionType caughtUnion = (UnionType)caught;
+                    for (TypeMirror alternative : caughtUnion.getAlternatives()) {
+                        assert alternative instanceof DeclaredType :
+                            "alternatives of an caught union type must be declared types";
+                        DeclaredType declaredAlt = (DeclaredType)alternative;
+                        if (types.isSubtype(declaredThrown, declaredAlt)) {
+                            // No later catch blocks can apply.
+                            labels.add(pair.second);
+                            return true;
+                        } else if (types.isSubtype(declaredAlt, declaredThrown)) {
+                            canApply = true;
+                        }
+                    }
+                }
+
+                if (canApply) {
+                    labels.add(pair.second);
+                }
+                canApply = false;
+            }
+
+            if (finallyLabel != null) {
+                labels.add(finallyLabel);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * An exception stack represents the set of all try-catch blocks
+     * in effect at a given point in a program.  It maps an exception
+     * type to a set of Labels and it maps a block exit (via return or
+     * fall-through) to a single Label.
+     */
+    protected static class ExceptionStack {
+        protected LinkedList<ExceptionFrame> frames;
+
+        public ExceptionStack() {
+            frames = new LinkedList<>();
+        }
+
+        public void pushFrame(ExceptionFrame frame) {
+            frames.addFirst(frame);
+        }
+
+        public void popFrame() {
+            frames.removeFirst();
+        }
+
+        /**
+         * Returns the set of possible {@link Label}s where control may
+         * transfer when an exception of the given type is thrown.
+         */
+        public Set<Label> possibleLabels(TypeMirror thrown) {
+            // Work up from the innermost frame until the exception is known to
+            // be caught.
+            Set<Label> labels = new HashSet<>();
+            for (ExceptionFrame frame : frames) {
+                if (frame.possibleLabels(thrown, labels)) {
+                    break;
+                }
+            }
+            return labels;
+        }
+
+        public Label exitDestination() {
+            // TODO: Finish this method.
+            return null;
         }
     }
 
@@ -2581,7 +2746,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitCatch(CatchTree tree, Void p) {
-            assert false : "not implemented yet";
+            scan(tree.getParameter(), p);
+            scan(tree.getBlock(), p);
             return null;
         }
 
@@ -3324,7 +3490,45 @@ public class CFGBuilder {
 
         @Override
         public Node visitTry(TryTree tree, Void p) {
-            assert false : "not implemented yet";
+            List<? extends CatchTree> catches = tree.getCatches();
+            BlockTree finallyBlock = tree.getFinallyBlock();
+
+            // TODO: Handle try-with-resources blocks.
+            // List<? extends Tree> resources = tree.getResources();
+
+            List<TypeMirror> exceptionTypes = new ArrayList<>();
+            List<Label> exceptionLabels = new ArrayList<>();
+            for (CatchTree c : catches) {
+                TypeMirror type = InternalUtils.typeOf(c.getParameter().getType());
+                assert type != null : "exception parameters must have a type";
+                exceptionTypes.add(type);
+
+                exceptionLabels.add(new Label());
+            }
+
+            // TODO: add labels
+
+            Label finallyLabel = null;
+            if (finallyBlock != null) {
+                finallyLabel = new Label();
+            }
+
+            scan(tree.getBlock(), p);
+
+            int catchIndex = 0;
+            for (CatchTree c : catches) {
+                addLabelForNextNode(exceptionLabels.get(catchIndex));
+                scan(c, p);
+                catchIndex++;
+            }
+
+            if (finallyLabel != null) {
+                addLabelForNextNode(finallyLabel);
+            }
+            scan(finallyBlock, p);
+
+            // TODO: Remove labels
+
             return null;
         }
 
