@@ -12,8 +12,8 @@ class Continue {
     }
   }
 
-  // TODO: enable the following two tests.
-  // There's a bug in flow for continues in both an if and an else if. 
+  // TODO: enable the following tests.
+  // There's a bug in flow for an if and an else if that both have continues or throws. 
   @skip-test
   void test2(String[] a, boolean b) {
     for (String s : a) {
@@ -37,5 +37,15 @@ class Continue {
       }
       Pattern.compile(s);
     }
+  }
+
+  @skip-test
+  void twoThrows(String s) {
+    if (s == null) {
+      throw new RuntimeException();
+    } else if (!RegexUtil.isRegex(s)) {
+      throw new RuntimeException();
+    }
+    Pattern.compile(s);
   }
 }
