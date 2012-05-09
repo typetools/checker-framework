@@ -250,7 +250,7 @@ public class CFGBuilder {
             ProcessingEnvironment env, UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                root, env, underlyingAST);
+                root, env, underlyingAST, exceptionalExitLabel);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -389,16 +389,18 @@ public class CFGBuilder {
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
-        protected Map<TypeMirror, Label> exceptions;
+        // Map from exception type to labels of successors that may
+        // be reached as a result of that exception.
+        protected Map<TypeMirror, Set<Label>> exceptions;
 
         public NodeWithExceptionsHolder(Node node,
-                Map<TypeMirror, Label> exceptions) {
+                Map<TypeMirror, Set<Label>> exceptions) {
             super(ExtendedNodeType.EXCEPTION_NODE);
             this.node = node;
             this.exceptions = exceptions;
         }
 
-        public Map<TypeMirror, Label> getExceptions() {
+        public Map<TypeMirror, Set<Label>> getExceptions() {
             return exceptions;
         }
 
@@ -509,38 +511,32 @@ public class CFGBuilder {
     }
 
     /**
-     * An exception frame stores the control-flow destination labels
-     * for one try-catch block.  A new frame is created on entry to a
-     * try-catch block and discarded on exit.
+     * A TryFrame takes a thrown exception type and maps it to a set
+     * of possible control-flow successors.
      */
-    protected static class ExceptionFrame {
+    protected static interface TryFrame {
+        /**
+         * Given a type of thrown exception, add the set of possible control
+         * flow successor {@link Label}s to the argument set.  Return true
+         * if the exception is known to be caught by one of those labels and
+         * false if it may propagate still further.
+         */
+        public boolean possibleLabels(TypeMirror thrown, Set<Label> labels);
+    }
+
+    /**
+     * A TryCatchFrame contains an ordered list of catch labels that apply
+     * to exceptions with specific types.
+     */
+    protected static class TryCatchFrame implements TryFrame {
         protected Types types;
 
         // An ordered list of pairs because catch blocks are ordered.
         protected List<Pair<TypeMirror, Label>> catchLabels;
 
-        // The {@link Label} of a finally block, or null if there is none.
-        protected/* @Nullable */Label finallyLabel;
-
-        public/* @Nullable */Label getFinallyLabel() {
-            return finallyLabel;
-        }
-
-        // The {@link Label} for control flow exiting the block normally.
-        protected Label fallThroughLabel;
-
-        public Label getFallThroughLabel() {
-            return fallThroughLabel;
-        }
-
-        public ExceptionFrame(Types types,
-                              List<Pair<TypeMirror, Label>> catchLabels,
-                              Label/* @Nullable */finallyLabel,
-                              Label fallThroughLabel) {
+        public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
             this.types = types;
             this.catchLabels = catchLabels;
-            this.finallyLabel = finallyLabel;
-            this.fallThroughLabel = fallThroughLabel;
         }
 
         /**
@@ -568,23 +564,18 @@ public class CFGBuilder {
             // block may apply, but so may later ones.
             // Otherwise, the thrown type and the caught type are unrelated
             // declared types, so they do not overlap on any non-null value.
-            //
-            // Because null is assignable to any exception type, the first
-            // catch block can always apply.
 
-            DeclaredType declaredThrown = null;
             while (!(thrown instanceof DeclaredType)) {
                 assert thrown instanceof TypeVariable :
                     "thrown type must be a variable or a declared type";
                 thrown = ((TypeVariable)thrown).getUpperBound();
             }
+            DeclaredType declaredThrown = (DeclaredType)thrown;
             assert thrown != null : "thrown type must be bounded by a declared type";
 
-            // The first catch block can always apply.
-            boolean canApply = true;
             for (Pair<TypeMirror, Label> pair : catchLabels) {
-                // TODO: Need a GLB test or other type overlap test.
                 TypeMirror caught = pair.first;
+                boolean canApply = false;
 
                 if (caught instanceof DeclaredType) {
                     DeclaredType declaredCaught = (DeclaredType)caught;
@@ -616,14 +607,25 @@ public class CFGBuilder {
                 if (canApply) {
                     labels.add(pair.second);
                 }
-                canApply = false;
             }
 
-            if (finallyLabel != null) {
-                labels.add(finallyLabel);
-                return true;
-            }
             return false;
+        }
+    }
+
+    /**
+     * A TryFinallyFrame applies to exceptions of any type
+     */
+    protected class TryFinallyFrame implements TryFrame {
+        protected Label finallyLabel;
+
+        public TryFinallyFrame(Label finallyLabel) {
+            this.finallyLabel = finallyLabel;
+        }
+
+        public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {
+            labels.add(finallyLabel);
+            return true;
         }
     }
 
@@ -633,14 +635,16 @@ public class CFGBuilder {
      * type to a set of Labels and it maps a block exit (via return or
      * fall-through) to a single Label.
      */
-    protected static class ExceptionStack {
-        protected LinkedList<ExceptionFrame> frames;
+    protected static class TryStack {
+        protected Label exitLabel;
+        protected LinkedList<TryFrame> frames;
 
-        public ExceptionStack() {
-            frames = new LinkedList<>();
+        public TryStack(Label exitLabel) {
+            this.exitLabel = exitLabel;
+            this.frames = new LinkedList<>();
         }
 
-        public void pushFrame(ExceptionFrame frame) {
+        public void pushFrame(TryFrame frame) {
             frames.addFirst(frame);
         }
 
@@ -656,17 +660,13 @@ public class CFGBuilder {
             // Work up from the innermost frame until the exception is known to
             // be caught.
             Set<Label> labels = new HashSet<>();
-            for (ExceptionFrame frame : frames) {
+            for (TryFrame frame : frames) {
                 if (frame.possibleLabels(thrown, labels)) {
-                    break;
+                    return labels;
                 }
             }
+            labels.add(exitLabel);
             return labels;
-        }
-
-        public Label exitDestination() {
-            // TODO: Finish this method.
-            return null;
         }
     }
 
@@ -1138,14 +1138,16 @@ public class CFGBuilder {
                         missingEdges.add(new Tuple<>(e, i + 1));
 
                     // exceptional edges
-                    for (Entry<TypeMirror, Label> entry : en.getExceptions()
+                    for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions()
                             .entrySet()) {
                         // missingEdges.put(e, bindings.get(key))
-                        Integer target = bindings.get(entry.getValue());
                         TypeMirror cause = entry.getKey();
-                        missingExceptionalEdges
-                                .add(new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
-                                        e, target, cause));
+                        for (Label label : entry.getValue()) {
+                            Integer target = bindings.get(label);
+                            missingExceptionalEdges
+                                    .add(new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
+                                            e, target, cause));
+                        }
                     }
                     break;
                 }
@@ -1367,6 +1369,12 @@ public class CFGBuilder {
         private List<ReturnNode> returnNodes;
 
         /**
+         * Nested scopes of try-catch blocks in force at the current
+         * program point.
+         */
+        private TryStack tryStack;
+
+        /**
          * Performs the actual work of phase one.
          * 
          * @param root
@@ -1379,8 +1387,10 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(CompilationUnitTree root,
-                ProcessingEnvironment env, UnderlyingAST underlyingAST) {
+                ProcessingEnvironment env, UnderlyingAST underlyingAST,
+                Label exceptionalExitLabel) {
             this.env = env;
+            this.tryStack = new TryStack(exceptionalExitLabel);
             elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
@@ -1487,10 +1497,9 @@ public class CFGBuilder {
          */
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(Node node,
                 Set<TypeMirror> causes) {
-            // TODO: catch blocks
-            Map<TypeMirror, Label> exceptions = new HashMap<>();
+            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
             for (TypeMirror cause : causes) {
-                exceptions.put(cause, exceptionalExitLabel);
+                exceptions.put(cause, tryStack.possibleLabels(cause));
             }
             NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(
                     node, exceptions);
@@ -3064,7 +3073,6 @@ public class CFGBuilder {
                     extendWithNode(new IntegerLiteralNode(0, intType));
                 translateAssignment(indexVarNode, zeroNode);
 
-                // TODO: Compare against length field.  We currently use a fake length.
                 // 
                 // VariableElement lengthField = null;
                 // System.out.println("ArrayElement: " + arrayElement);
@@ -3421,6 +3429,7 @@ public class CFGBuilder {
                 extendWithNode(result);
             }
             extendWithExtendedNode(new UnconditionalJump(regularExitLabel));
+            // TODO: return statements should also flow to an enclosing finally block
             return result;
         }
 
@@ -3493,41 +3502,59 @@ public class CFGBuilder {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
 
+            extendWithNode(new MarkerNode(tree, "start of try statement"));
+
             // TODO: Handle try-with-resources blocks.
             // List<? extends Tree> resources = tree.getResources();
 
-            List<TypeMirror> exceptionTypes = new ArrayList<>();
-            List<Label> exceptionLabels = new ArrayList<>();
+            List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
             for (CatchTree c : catches) {
                 TypeMirror type = InternalUtils.typeOf(c.getParameter().getType());
                 assert type != null : "exception parameters must have a type";
-                exceptionTypes.add(type);
-
-                exceptionLabels.add(new Label());
+                catchLabels.add(Pair.of(type, new Label()));
             }
-
-            // TODO: add labels
 
             Label finallyLabel = null;
             if (finallyBlock != null) {
                 finallyLabel = new Label();
+                tryStack.pushFrame(new TryFinallyFrame(finallyLabel));
             }
 
+            Label doneLabel = new Label();
+
+            tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+
             scan(tree.getBlock(), p);
+            extendWithExtendedNode(new UnconditionalJump(doneLabel));
+
+            tryStack.popFrame();
 
             int catchIndex = 0;
             for (CatchTree c : catches) {
-                addLabelForNextNode(exceptionLabels.get(catchIndex));
+                addLabelForNextNode(catchLabels.get(catchIndex).second);
                 scan(c, p);
                 catchIndex++;
+
+                if (finallyLabel != null) {
+                    // Normal completion of the catch block flows to the finally block.
+                    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
+                } else {
+                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
+                }
             }
 
             if (finallyLabel != null) {
+                tryStack.popFrame();
                 addLabelForNextNode(finallyLabel);
-            }
-            scan(finallyBlock, p);
+                scan(finallyBlock, p);
 
-            // TODO: Remove labels
+                TypeMirror throwableType =
+                    elements.getTypeElement("java.lang.Throwable").asType();
+                extendWithNodeWithException(new MarkerNode(tree, "end of finally block"),
+                                            throwableType);
+            }
+
+            addLabelForNextNode(doneLabel);
 
             return null;
         }

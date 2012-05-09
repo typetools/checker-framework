@@ -38,7 +38,7 @@ public class CFCFGBuilder extends CFGBuilder {
             ProcessingEnvironment env, UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(
-                root, env, underlyingAST);
+                 root, env, underlyingAST, exceptionalExitLabel);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
