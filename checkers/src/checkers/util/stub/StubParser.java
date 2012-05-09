@@ -137,11 +137,20 @@ public class StubParser {
             packageName = null;
         } else {
             packageName = cu.getPackage().getName().toString();
+            parsePackage(cu.getPackage(), atypes, declAnnos);
         }
         if (cu.getTypes() != null) {
             for (TypeDeclaration typeDecl : cu.getTypes())
                 parse(typeDecl, packageName, atypes, declAnnos);
         }
+    }
+
+    private void parsePackage(PackageDeclaration packDecl, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        assert(packDecl != null);
+        String packageName = packDecl.getName().toString();
+        Element elem = elements.getPackageElement(packageName);
+        annotateDecl(declAnnos, elem, packDecl.getAnnotations());
+        // TODO: Handle atypes???
     }
 
     // typeDecl's name may be a binary name such as "A$B".
