@@ -5,7 +5,9 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.util.test.TestChecker;
+import tests.util.TestChecker;
+
+import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * JUnit tests for the Checker Framework, using the {@link TestChecker}.
@@ -13,7 +15,7 @@ import checkers.util.test.TestChecker;
 public class FrameworkTest extends ParameterizedCheckerTest {
 
     public FrameworkTest(File testFile) {
-        super(testFile, checkers.util.test.TestChecker.class.getName(),
+        super(testFile, tests.util.TestChecker.class.getName(),
                 "framework", "-Anomsgtext");
     }
 

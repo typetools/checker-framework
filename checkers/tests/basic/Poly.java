@@ -1,6 +1,6 @@
 import java.util.*;
 
-import checkers.util.test.*;
+import tests.util.*;
 
 class Poly {
 
