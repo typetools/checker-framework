@@ -1,6 +1,7 @@
 import checkers.util.test.*;
 import java.util.*;
 import checkers.quals.*;
+import tests.util.*;
 
 // various tests for @TerminatesExecution
 class Termination {

@@ -1,3 +1,4 @@
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import checkers.regex.RegexUtil;
 import checkers.regex.quals.*;
