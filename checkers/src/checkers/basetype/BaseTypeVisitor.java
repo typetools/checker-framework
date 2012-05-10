@@ -1574,6 +1574,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             return super.visitPrimitive(type, tree);
         }
 
+        @Override
+        public Void visitArray(AnnotatedArrayType type, Tree tree) {
+            if (checker.shouldSkipUses(type.getElement()))
+                return super.visitArray(type, tree);
+
+            if (!checker.isValidUse(type)) {
+                reportError(type, tree);
+            }
+
+            return super.visitArray(type, tree);
+        }
+
         /**
          * Checks that the annotations on the type arguments supplied to a type
          * or a method invocation are within the bounds of the type variables as

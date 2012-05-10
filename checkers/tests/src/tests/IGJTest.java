@@ -9,6 +9,8 @@ import java.util.Scanner;
 
 import org.junit.Test;
 
+import checkers.util.test.CheckerTest;
+
 // Also see file FailedTests, that contains currently-failing tests.
 /**
  * JUnit tests for the IGJ annotation checker.

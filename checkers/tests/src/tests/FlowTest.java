@@ -5,12 +5,14 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 /**
  */
 public class FlowTest extends ParameterizedCheckerTest {
 
     public FlowTest(File testFile) {
-        super(testFile, checkers.util.test.FlowTestChecker.class.getName(),
+        super(testFile, tests.util.FlowTestChecker.class.getName(),
                 "flow", "-Anomsgtext");
     }
 

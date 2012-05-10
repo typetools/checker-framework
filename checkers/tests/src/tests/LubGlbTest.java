@@ -5,6 +5,8 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 /**
  */
 public class LubGlbTest extends ParameterizedCheckerTest {
