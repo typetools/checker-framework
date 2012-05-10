@@ -33,6 +33,9 @@ public class RegexAnalysis extends
 
     @Override
     protected CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
+        if (annotations.size() == 0) {
+            return null;
+        }
         return new CFValue(this, annotations);
     }
 
