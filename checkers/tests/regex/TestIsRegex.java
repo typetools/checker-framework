@@ -1,7 +1,9 @@
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import checkers.regex.RegexUtil;
 
 class TestIsRegex {
+    
     void test1(String str1) throws Exception {
         if (!RegexUtil.isRegex(str1)) {
             throw new Exception();
@@ -31,6 +33,15 @@ class TestIsRegex {
             //:: error: (argument.type.incompatible)
             Pattern.compile(str4);
         }
+    }
+    
+    void test5(String s) throws Exception {
+        if (!RegexUtil.isRegex(s, 2)) {
+            throw new Exception();
+        }
+        Pattern p = Pattern.compile(s);
+        Matcher m = p.matcher("abc");
+        String g = m.group(1);
     }
 }
 
