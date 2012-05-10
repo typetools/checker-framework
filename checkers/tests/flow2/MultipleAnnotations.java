@@ -1,4 +1,5 @@
 import checkers.util.test.*;
+import tests.util.*;
 
 import java.util.*;
 import checkers.quals.*;
