@@ -342,10 +342,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @param ast
      *            The AST to analyze.
      */
+    CFAbstractAnalysis<CFValue, CFStore, ?> analysis = null;
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
         CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
-        CFAbstractAnalysis<CFValue, CFStore, ?> analysis = new CFAnalysis(this,
+        assert analysis == null;
+        analysis = new CFAnalysis(this,
                 checker.getProcessingEnvironment(), checker);
         // TODO: remove this hack
         if (this instanceof RegexAnnotatedTypeFactory) {
@@ -375,6 +377,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             System.err.println("Output to DOT file: " + dotfilename);
             analysis.outputToDotFile(dotfilename);
         }
+        
+        analysis = null;
 
         // add classes declared in method
         queue.addAll(builder.getDeclaredClasses());
@@ -417,7 +421,13 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         treeAnnotator.visit(tree, type);
 
-        CFValue as = flowResult.getValue(tree);
+        CFValue as = null;
+        if (analysis != null && tree != null) {
+            as = analysis.getValue(tree);
+        }
+        if (as == null && tree != null) {
+            as = flowResult.getValue(tree);
+        }
         final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations() : null;
         if (inferred != null) {
                 if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations())) {

@@ -126,6 +126,7 @@ public abstract class Node {
         Collection<Node> transitiveOperands = new HashSet<>(getOperands());
         while (!operands.isEmpty()) {
             Node next = operands.iterator().next();
+            operands.remove(next);
             transitiveOperands.add(next);
             for (Node o : next.getOperands()) {
                 operands.addAll(o.getOperands());
