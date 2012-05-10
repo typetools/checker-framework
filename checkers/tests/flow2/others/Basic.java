@@ -1,5 +1,6 @@
 import checkers.util.test.*;
 import java.util.*;
+import tests.util.*;
 
 class Basic {
 

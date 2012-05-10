@@ -1,5 +1,6 @@
 import checkers.util.test.*;
 import java.util.Collection;
+import tests.util.*;
 
 public class Values {
 

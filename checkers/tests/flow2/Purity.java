@@ -2,6 +2,7 @@ import checkers.util.test.*;
 
 import java.util.*;
 import checkers.quals.*;
+import tests.util.*;
 import checkers.quals.Pure.Kind;
 
 // various tests for the @Pure annotation
