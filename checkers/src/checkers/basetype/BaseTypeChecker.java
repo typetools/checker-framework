@@ -14,6 +14,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
@@ -371,6 +372,19 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     /**
+     * Tests that the qualifiers present on the array type are valid.
+     * This method will be invoked for each array level independently, i.e. this
+     * method only needs to check the top-level qualifiers of an array.
+     *
+     * The default implementation always returns true.
+     * Subclasses should override this method to limit what annotations are
+     * allowed on array types.
+     */
+    public boolean isValidUse(AnnotatedArrayType type) {
+        return true;
+    }
+
+    /**
      * Tests whether the variable accessed is an assignable variable or not,
      * given the current scope
      *
@@ -424,7 +438,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *         null if the constructor does not exist or could not be invoked
      */
     @SuppressWarnings("unchecked")
-    private static <T> T invokeConstructorFor(String name,
+    public static <T> T invokeConstructorFor(String name,
             Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.

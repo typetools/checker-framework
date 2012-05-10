@@ -1,4 +1,4 @@
-import checkers.util.test.Odd;
+import tests.util.Odd;
 
 abstract class C<T> { abstract T id(T x); }
 class D extends C<@Odd String> { @Odd String id(@Odd String x) { return x; } }

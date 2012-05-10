@@ -1,5 +1,5 @@
 import checkers.interning.quals.Interned;
-import checkers.util.test.*;
+import tests.util.*;
 
 class Arrays {
     Object[] @Odd [] objB1 = new Object[] @Odd [] {};

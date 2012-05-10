@@ -1,4 +1,4 @@
-import checkers.util.test.*;
+import tests.util.*;
 
 // Test case for Issue 135:
 // http://code.google.com/p/checker-framework/issues/detail?id=135

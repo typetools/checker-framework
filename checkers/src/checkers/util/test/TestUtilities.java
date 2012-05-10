@@ -1,4 +1,4 @@
-package tests;
+package checkers.util.test;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -15,7 +15,7 @@ public class BasicSuperSubTest extends CheckerTest {
         super(BasicChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",
-                "-Aquals=checkers.util.test.SubQual,checkers.util.test.SuperQual");
+                "-Aquals=tests.util.SubQual,tests.util.SuperQual");
     }
 
     @Test public void dummy()  { }
