@@ -1,7 +1,7 @@
 package checkers.flow.cfg.node;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedList;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -122,15 +122,12 @@ public abstract class Node {
      *         operands.
      */
     public Collection<Node> getTransitiveOperands() {
-        Collection<Node> operands = new HashSet<>(getOperands());
-        Collection<Node> transitiveOperands = new HashSet<>(getOperands());
+        LinkedList<Node> operands = new LinkedList<>(getOperands());
+        LinkedList<Node> transitiveOperands = new LinkedList<>(getOperands());
         while (!operands.isEmpty()) {
-            Node next = operands.iterator().next();
-            operands.remove(next);
+            Node next = operands.removeFirst();
+            operands.addAll(next.getOperands());
             transitiveOperands.add(next);
-            for (Node o : next.getOperands()) {
-                operands.addAll(o.getOperands());
-            }
         }
         return transitiveOperands;
     }

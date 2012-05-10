@@ -8,6 +8,7 @@ import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
+import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodAccessNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
