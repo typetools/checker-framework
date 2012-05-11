@@ -78,6 +78,8 @@ public interface NodeVisitor<R, P> {
     R visitPostfixDecrement(PostfixDecrementNode n, P p);
 
     // Compound assignments
+    R visitCompoundAssignment(CompoundAssignmentNode n, P p);
+    
     R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
 
     R visitNumericalAdditionAssignment(NumericalAdditionAssignmentNode n, P p);
