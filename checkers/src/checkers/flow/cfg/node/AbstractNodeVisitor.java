@@ -182,83 +182,87 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     }
 
     // Compound assignments
+    public R visitCompoundAssignment(CompoundAssignmentNode n, P p) {
+        return visitNode(n, p);
+    };
+
     @Override
     public R visitStringConcatenateAssignment(
             StringConcatenateAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitNumericalAdditionAssignment(
             NumericalAdditionAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitNumericalSubtractionAssignment(
             NumericalSubtractionAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitNumericalMultiplicationAssignment(
             NumericalMultiplicationAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitIntegerDivisionAssignment(IntegerDivisionAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitFloatingDivisionAssignment(FloatingDivisionAssignmentNode n,
             P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitIntegerRemainderAssignment(IntegerRemainderAssignmentNode n,
             P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitFloatingRemainderAssignment(
             FloatingRemainderAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitLeftShiftAssignment(LeftShiftAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitSignedRightShiftAssignment(SignedRightShiftAssignmentNode n,
             P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitUnsignedRightShiftAssignment(
             UnsignedRightShiftAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitBitwiseAndAssignment(BitwiseAndAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitBitwiseOrAssignment(BitwiseOrAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     @Override
     public R visitBitwiseXorAssignment(BitwiseXorAssignmentNode n, P p) {
-        return visitNode(n, p);
+        return visitCompoundAssignment(n, p);
     }
 
     // Comparison operations
