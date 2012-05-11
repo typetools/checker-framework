@@ -247,7 +247,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     //////////////////////// Field Initializations //////////////////////////
 
-    // Case 8: field initialization 
+    // Case 8: field initialization
     /**
      * non-null iff currently processing a method (or constructor) declaration AST.
      * In that case, it is a pair of:
