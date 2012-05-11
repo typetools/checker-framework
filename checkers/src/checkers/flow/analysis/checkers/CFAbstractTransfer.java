@@ -25,6 +25,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
+import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -100,7 +101,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     @Override
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
         V value = null;
-        
+
         // TODO: handle implicit/explicit this and go to correct factory method
         Tree tree = n.getTree();
         if (tree != null) {
@@ -108,7 +109,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 value = getValueFromFactory(tree);
             }
         }
-        
+
         if (in.containsTwoStores()) {
             S thenStore = in.getThenStore();
             S elseStore = in.getElseStore();
@@ -262,10 +263,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return null;
     }
 
-    /**
-     * Determine abstract value of right-hand side and update the store
-     * accordingly to the assignment.
-     */
     @Override
     public TransferResult<V, S> visitAssignment(AssignmentNode n,
             TransferInput<V, S> in) {
@@ -274,6 +271,36 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+        processCommonAssignment(in, lhs, rhs, info, rhsValue);
+
+        return new RegularTransferResult<>(rhsValue, info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitStringConcatenateAssignment(
+            StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n,
+                in);
+        Node lhs = n.getLeftOperand();
+        Node rhs = n.getRightOperand();
+
+        // update the results store if the assignment target is something we can
+        // process
+        S info = result.getRegularStore();
+        V rhsValue = result.getResultValue();
+        processCommonAssignment(in, lhs, rhs, info, rhsValue);
+
+        return result;
+    }
+
+    /**
+     * Determine abstract value of right-hand side and update the store
+     * accordingly to the assignment.
+     * 
+     * @param rhsValue
+     */
+    protected void processCommonAssignment(TransferInput<V, S> in, Node lhs,
+            Node rhs, S info, V rhsValue) {
 
         // assignment to a local variable
         if (lhs instanceof LocalVariableNode) {
@@ -291,8 +318,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         else {
             info.updateForUnknownAssignment(lhs);
         }
-
-        return new RegularTransferResult<>(rhsValue, info);
     }
 
     @Override
