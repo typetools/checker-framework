@@ -3,12 +3,12 @@ package checkers.flow.analysis.checkers;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
+import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodAccessNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
@@ -45,7 +45,9 @@ public class RegexTransfer extends
             if (receiverName.equals("checkers.regex.RegexUtil")
                     && method.toString()
                             .equals("isRegex(java.lang.String,int)")) {
-                CFStore thenStore = result.getThenStore();
+                CFStore thenStore = result.getRegularStore();
+                CFStore elseStore = thenStore.copy();
+                ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
                 FlowExpressionContext context = FlowExpressionParseUtil
                         .buildFlowExprContextForUse(n);
                 try {
@@ -65,10 +67,10 @@ public class RegexTransfer extends
                                 .annotationFromClass(Regex.class);
                         thenStore.insertValue(firstParam, regexAnnotation);
                     }
-                    //f.createRegexAnnotation();
                 } catch (FlowExpressionParseException e) {
                     assert false;
                 }
+                return newResult;
             }
         }
 
