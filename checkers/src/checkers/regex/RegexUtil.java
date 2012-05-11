@@ -67,7 +67,7 @@ public class RegexUtil {
 
   /**
    * Returns null if the argument is a syntactically valid regular
-   * expression. Otherwise returns a string describing why the string is
+   * expression. Otherwise returns a string describing why the argument is
    * not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
@@ -79,7 +79,7 @@ public class RegexUtil {
   /**
    * Returns null if the argument is a syntactically valid regular
    * expression with at least the given number of groups. Otherwise returns
-   * a string describing why the string is not a regex.
+   * a string describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
@@ -99,7 +99,7 @@ public class RegexUtil {
   /**
    * Returns null if the argument is a syntactically valid regular
    * expression. Otherwise returns a PatternSyntaxException describing
-   * why the string is not a regex.
+   * why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
@@ -110,7 +110,7 @@ public class RegexUtil {
   /**
    * Returns null if the argument is a syntactically valid regular
    * expression with at least the given number of groups. Otherwise returns a
-   * PatternSyntaxException describing why the string is not a regex.
+   * PatternSyntaxException describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
