@@ -247,7 +247,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     //////////////////////// Field Initializations //////////////////////////
 
-    // Case 8: field initialization 
+    // Case 8: field initialization
     /**
      * non-null iff currently processing a method (or constructor) declaration AST.
      * In that case, it is a pair of:
@@ -302,7 +302,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror nnAfter =
                 atypeFactory.getDeclAnnotation(TreeUtils.elementFromUse(node), AssertNonNullAfter.class);
             if (nnAfter != null) {
-                List<String> nnAfterValue = AnnotationUtils.elementValueStringArray(nnAfter, "value");
+                List<String> nnAfterValue = AnnotationUtils.elementValueArray(nnAfter, "value");
                 Set<VariableElement> elts =
                     ElementUtils.findFieldsInType(
                         TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
@@ -553,8 +553,8 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         overriderTree);
                 result = false;
             } else {
-                List<String> overriddenValue = AnnotationUtils.elementValueStringArray(overriddenAnno, "value");
-                List<String> overriderValue = AnnotationUtils.elementValueStringArray(overriderAnno, "value");
+                List<String> overriddenValue = AnnotationUtils.elementValueArray(overriddenAnno, "value");
+                List<String> overriderValue = AnnotationUtils.elementValueArray(overriderAnno, "value");
 
                 for (String f : overriddenValue) {
                     // The overrider may have additional fields, but all fields from the
@@ -597,8 +597,8 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         overriderTree);
                 result = false;
             } else {
-                List<String> overriddenValue = AnnotationUtils.elementValueStringArray(overriddenAnno, "value");
-                List<String> overriderValue = AnnotationUtils.elementValueStringArray(overriderAnno, "value");
+                List<String> overriddenValue = AnnotationUtils.elementValueArray(overriddenAnno, "value");
+                List<String> overriderValue = AnnotationUtils.elementValueArray(overriderAnno, "value");
 
                 for (String f : overriderValue) {
                     // The overridden method may have additional fields, but all fields from the
