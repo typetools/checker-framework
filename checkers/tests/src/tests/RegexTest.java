@@ -5,14 +5,13 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.regex.RegexChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 public class RegexTest extends ParameterizedCheckerTest {
 
     public RegexTest(File testFile) {
-        super(testFile, RegexChecker.class.getName(), "regex",
-                "-Anomsgtext");//, "-Aflowdotdir=C:\\Users\\stefan\\Desktop\\tmp");
+        super(testFile, checkers.regex.RegexChecker.class.getName(), "regex",
+                "-Anomsgtext");
     }
 
     @Parameters
