@@ -122,16 +122,6 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
     }
 
-    /**
-     * Returns a new Regex annotation with the given group count.
-     */
-    /*default*/ AnnotationMirror createRegexAnnotation(int groupCount) {
-        AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
-        builder.setValue("value", groupCount);
-        return builder.build();
-    }
-
     @Override
     public Flow createFlow(RegexChecker checker, CompilationUnitTree tree,
             Set<AnnotationMirror> flowQuals) {
@@ -141,6 +131,16 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
     @Override
     public TreeAnnotator createTreeAnnotator(RegexChecker checker) {
         return new RegexTreeAnnotator(checker);
+    }
+    
+    /**
+     * Returns a new Regex annotation with the given group count.
+     */
+    public AnnotationMirror createRegexAnnotation(int groupCount) {
+        AnnotationUtils.AnnotationBuilder builder =
+            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+        builder.setValue("value", groupCount);
+        return builder.build();
     }
 
     private class RegexTreeAnnotator extends TreeAnnotator {
