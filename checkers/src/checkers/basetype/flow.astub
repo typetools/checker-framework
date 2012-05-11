@@ -1,4 +1,5 @@
 import checkers.quals.*;
+import checkers.regex.quals.*;
 
 package java.lang;
 
@@ -9,4 +10,11 @@ public final class System {
 
 public class Object {
     @Pure public Object();
+}
+
+
+package checkers.regex;
+
+public class RegexUtil {
+	public static @Regex String asRegex(String s);
 }

@@ -7,7 +7,6 @@ import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Type;
 
 import java.lang.annotation.Annotation;
@@ -869,6 +868,31 @@ public class AnnotationUtils {
             return this;
         }
 
+        public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
+            assertNotBuilt();
+            VariableElement enumElt = findEnumElement(values[0]);
+            ExecutableElement var = findElement(elementName);
+            TypeMirror expectedType = var.getReturnType();
+
+            if (expectedType.getKind() != TypeKind.ARRAY)
+                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            expectedType = ((ArrayType)expectedType).getComponentType();
+            if (expectedType.getKind() != TypeKind.DECLARED)
+                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
+            if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement()))
+                throw new IllegalArgumentException("expected a different type of enum: " + enumElt.getEnclosingElement());
+
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            for (Enum<?> ev : values) {
+                checkSubtype(expectedType, ev);
+                enumElt = findEnumElement(ev);
+                res.add(createValue(enumElt));
+            }
+            AnnotationValue val = createValue(res);
+            elementValues.put(var, val);
+            return this;
+        }
+
         private VariableElement findEnumElement(Enum<?> value) {
             String enumClass = value.getDeclaringClass().getCanonicalName();
             TypeElement enumClassElt = env.getElementUtils().getTypeElement(enumClass);
@@ -1015,16 +1039,16 @@ public class AnnotationUtils {
     /**
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}. The result is expected to have type {@code expectedType}.
-     * 
+     *
      * <p>
      * <em>Note 1</em>: The method only returns attribute values that are
      * explicitly present on {@code anno}. Default values are ignored. If
      * default values should be applied, use {@code elementValueWithDefaults}
      * instead.
-     * 
+     *
      * <p>
      * <em>Note 2</em>: The method does not work well for attributes of an array
-     * type (as it would return a list of {@link Attribute}s). Use
+     * type (as it would return a list of {@link AnnotationValue}s). Use
      * {@code elementValueArray} instead. instead.
      */
     public static <T> T elementValue(AnnotationMirror anno, CharSequence name,
@@ -1043,10 +1067,10 @@ public class AnnotationUtils {
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}, or the default value if no attribute is present explicitly.
      * The result is expected to have type {@code expectedType}.
-     * 
+     *
      * <p>
      * <em>Note</em>: The method does not work well for attributes of an array
-     * type (as it would return a list of {@link Attribute}s). Use
+     * type (as it would return a list of {@link AnnotationValue}s). Use
      * {@code elementValueArray} instead. instead.
      */
     public static <T> T elementValueWithDefaults(AnnotationMirror anno,
@@ -1071,7 +1095,7 @@ public class AnnotationUtils {
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}, where the attribute has an array type. One element of the
      * result is expected to have type {@code expectedType}.
-     * 
+     *
      * <p>
      * <em>Note</em>: The method only returns attribute values that are
      * explicitly present on {@code anno}. Default values are ignored. If
@@ -1081,9 +1105,9 @@ public class AnnotationUtils {
     @SuppressWarnings("unchecked")
     public static <T> List<T> elementValueArray(AnnotationMirror anno,
             CharSequence name) {
-        List<Attribute> la = elementValue(anno, name, List.class);
+        List<AnnotationValue> la = elementValue(anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
-        for (Attribute a : la) {
+        for (AnnotationValue a : la) {
             result.add((T) a.getValue());
         }
         return result;
@@ -1098,14 +1122,14 @@ public class AnnotationUtils {
     @SuppressWarnings("unchecked")
     public static <T> List<T> elementValueArrayWithDefaults(
             AnnotationMirror anno, CharSequence name) {
-        List<Attribute> la = elementValueWithDefaults(anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
-        for (Attribute a : la) {
+        for (AnnotationValue a : la) {
             result.add((T) a.getValue());
         }
         return result;
     }
-    
+
     /**
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}, or the default value if no attribute is present explicitly,
@@ -1115,9 +1139,9 @@ public class AnnotationUtils {
     public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(
             AnnotationMirror anno, CharSequence name, Class<T> t) {
         @SuppressWarnings("unchecked")
-        List<Attribute> la = elementValueWithDefaults(anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
-        for (Attribute a : la) {
+        for (AnnotationValue a : la) {
             T value = Enum.valueOf(t, a.getValue().toString());
             result.add(value);
         }
