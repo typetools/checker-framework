@@ -18,6 +18,7 @@ import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.CaseNode;
+import checkers.flow.cfg.node.CompoundAssignmentNode;
 import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
@@ -25,7 +26,6 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
-import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -277,10 +277,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     @Override
-    public TransferResult<V, S> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
-        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n,
-                in);
+    public TransferResult<V, S> visitCompoundAssignment(
+            CompoundAssignmentNode n, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitCompoundAssignment(n, in);
         Node lhs = n.getLeftOperand();
         Node rhs = n.getRightOperand();
 
