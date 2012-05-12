@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.NodeVisitor;
 
 import com.sun.source.tree.Tree;
 
@@ -18,7 +19,7 @@ import com.sun.source.tree.Tree;
  * @param <A>
  *            type of the abstract value that is tracked.
  */
-public class AnalysisResult<A extends AbstractValue<A>> {
+public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** Abstract values of nodes. */
     final protected Map<Node, A> nodeValues;
@@ -26,13 +27,7 @@ public class AnalysisResult<A extends AbstractValue<A>> {
     /** Map from AST {@link Tree}s to {@link Node}s. */
     final protected Map<Tree, Node> treeLookup;
 
-    /**
-     * Initialize with a given node-value mapping.
-     */
-    public AnalysisResult(Map<Node, A> nodeValues, Map<Tree, Node> treeLookup) {
-        this.nodeValues = new IdentityHashMap<>(nodeValues);
-        this.treeLookup = new IdentityHashMap<>(treeLookup);
-    }
+    protected final NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> transferFunction;
 
     /**
      * Initialize empty result.
@@ -40,12 +35,13 @@ public class AnalysisResult<A extends AbstractValue<A>> {
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
+        transferFunction = null;
     }
 
     /**
      * Combine with another analysis result.
      */
-    public void combine(AnalysisResult<A> other) {
+    public void combine(AnalysisResult<A, S> other) {
         for (Entry<Node, A> e : other.nodeValues.entrySet()) {
             nodeValues.put(e.getKey(), e.getValue());
         }
@@ -70,4 +66,31 @@ public class AnalysisResult<A extends AbstractValue<A>> {
         A val = getValue(treeLookup.get(t));
         return val;
     }
+
+    /**
+     * @return The {@link Node} for a given {@link Tree}.
+     */
+    public/* @Nullable */Node getNodeForTree(Tree tree) {
+        return treeLookup.get(tree);
+    }
+
+    /**
+     * Call the transfer function for node {@code node}, and set that node as
+     * current node first.
+     */
+    protected TransferResult<A, S> callTransferFunction(Node node,
+            TransferInput<A, S> store) {
+        if (node.isLValue()) {
+            // TODO: should the default behavior be to return either a regular
+            // transfer result or a conditional transfer result (depending on
+            // store.hasTwoStores()), or is the following correct?
+            return new RegularTransferResult<A, S>(null,
+                    store.getRegularStore());
+        }
+        store.node = node;
+        TransferResult<A, S> transferResult = node.accept(transferFunction,
+                store);
+        return transferResult;
+    }
+
 }
