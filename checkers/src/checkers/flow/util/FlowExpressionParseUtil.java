@@ -164,8 +164,7 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, TreePath currentPath) {
-        Tree classTree = TreeUtils.enclosingClass(currentPath);
+            MethodTree node, Tree classTree) {
         Node receiver = new ImplicitThisLiteralNode(
                 InternalUtils.typeOf(classTree));
         Receiver internalReceiver = FlowExpressions.internalReprOf(receiver);
@@ -177,6 +176,16 @@ public class FlowExpressionParseUtil {
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
                 receiver.getType(), internalReceiver, internalArguments);
         return flowExprContext;
+    }
+    
+    /**
+     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     *         seen at the method declaration.
+     */
+    public static FlowExpressionContext buildFlowExprContextForDeclaration(
+            MethodTree node, TreePath currentPath) {
+        Tree classTree = TreeUtils.enclosingClass(currentPath);
+        return buildFlowExprContextForDeclaration(node, classTree);
     }
 
     /**

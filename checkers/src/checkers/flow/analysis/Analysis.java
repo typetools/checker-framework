@@ -23,6 +23,7 @@ import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ReturnNode;
 import checkers.util.Pair;
@@ -72,6 +73,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * The stores after every return statement.
      */
     protected Map<ReturnNode, S> storesAtReturnStatements;
+
+    /**
+     * The stores before every method call.
+     */
+    protected Map<MethodInvocationNode, S> storesBeforeMethodInvocation;
 
     /** The worklist used for the fix-point iteration. */
     protected Queue<Block> worklist;
@@ -252,6 +258,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected TransferResult<A, S> callTransferFunction(Node node,
             TransferInput<A, S> store) {
+
+        if (node instanceof MethodInvocationNode) {
+            storesBeforeMethodInvocation.put((MethodInvocationNode) node, store
+                    .getRegularStore().copy());
+        }
+
         if (node.isLValue()) {
             // TODO: should the default behavior be to return either a regular
             // transfer result or a conditional transfer result (depending on
@@ -278,6 +290,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         this.cfg = cfg;
         stores = new HashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
+        storesBeforeMethodInvocation = new IdentityHashMap<>();
         worklist = new ArrayDeque<>();
         nodeValues = new IdentityHashMap<>();
         worklist.add(cfg.getEntryBlock());
@@ -401,11 +414,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         return getValue(nodeCorrespondingToTree);
     }
 
-    public AnalysisResult<A, S> getResult() {
-        assert !isRunning;
-        return new AnalysisResult<>(nodeValues, stores, cfg.getTreeLookup());
-    }
-
     public List<Pair<ReturnNode, S>> getReturnStatementStores() {
         List<Pair<ReturnNode, S>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
@@ -413,6 +421,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             result.add(Pair.of(returnNode, store));
         }
         return result;
+    }
+
+    public AnalysisResult<A, S> getResult() {
+        assert !isRunning;
+        return new AnalysisResult<>(nodeValues, storesBeforeMethodInvocation,
+                cfg.getTreeLookup());
     }
 
     /**
