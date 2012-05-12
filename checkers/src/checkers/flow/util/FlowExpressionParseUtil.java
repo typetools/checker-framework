@@ -11,11 +11,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
-
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
@@ -28,6 +23,11 @@ import checkers.source.Result;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
@@ -180,7 +180,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return A {@link FlowExpressionContext} for the method {@code node} (represented as a {@link Node} as
      *         seen at the method use (i.e., at a method call site).
      */
     public static FlowExpressionContext buildFlowExprContextForUse(

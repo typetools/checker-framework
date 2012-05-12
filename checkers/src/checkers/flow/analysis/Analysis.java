@@ -401,9 +401,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         return getValue(nodeCorrespondingToTree);
     }
 
-    public AnalysisResult<A> getResult() {
+    public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        return new AnalysisResult<>(nodeValues, cfg.getTreeLookup());
+        return new AnalysisResult<>(nodeValues, stores, cfg.getTreeLookup());
     }
 
     public List<Pair<ReturnNode, S>> getReturnStatementStores() {

@@ -10,11 +10,11 @@ import java.lang.annotation.Target;
 import checkers.flow.util.FlowExpressionParseUtil;
 
 /**
- * A postcondition annotation to indicate that a method ensures certain
- * expressions to have a certain annotation once the method has finished. The
- * expressions for which the annotation must hold after the methods execution
- * are indicated by {@code expression} and are specified using a string. The
- * syntax is specified as part of the documentation of
+ * A precondition annotation to indicate that a method requires certain
+ * expressions to have a certain annotation at the time of the call to the
+ * method. The expressions for which the annotation must hold after the methods
+ * execution are indicated by {@code expression} and are specified using a
+ * string. The syntax is specified as part of the documentation of
  * {@link FlowExpressionParseUtil}. The annotation is specified by
  * {@code annotation}.
  * 
@@ -24,7 +24,7 @@ import checkers.flow.util.FlowExpressionParseUtil;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface EnsuresAnnotation {
+public @interface RequiresAnnotation {
     String[] expression();
 
     Class<? extends Annotation> annotation();

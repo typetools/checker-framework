@@ -33,6 +33,7 @@ import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.UnderlyingAST.CFGStatement;
+import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ReturnNode;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
@@ -218,7 +219,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * multiple classes which are produced by multiple calls to
      * performFlowAnalysis.
      */
-    protected AnalysisResult<CFValue> flowResult = null;
+    protected AnalysisResult<CFValue, CFStore> flowResult = null;
     
     /**
      * A mapping from methods to their regular exit store (used to check
@@ -244,6 +245,13 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     public List<Pair<ReturnNode, CFStore>> getReturnStatementStores(MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
+    }
+
+    /**
+     * @return The {@link Node} for a given {@link Tree}.
+     */
+    public Node getNodeForTree(Tree tree) {
+        return flowResult.getNodeForTree(tree);
     }
 
     /**
@@ -354,7 +362,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this, checker.getProcessingEnvironment(), checker);
         }
         analysis.performAnalysis(cfg);
-        AnalysisResult<CFValue> result = analysis.getResult();
+        AnalysisResult<CFValue, CFStore> result = analysis.getResult();
         
         // store result
         flowResult.combine(result);
@@ -483,5 +491,4 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         }
         return flowQuals;
     }
-
 }
