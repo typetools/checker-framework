@@ -150,7 +150,7 @@ public class JavaSource2CFGDOT {
         // require a ProcessingEnvironment in place of the null argument below.
         // Can
         // we supply an environment for this example?
-        ControlFlowGraph cfg = CFGBuilder.build(r, null, m);
+        ControlFlowGraph cfg = CFGBuilder.build(r, null, m, null);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
         }

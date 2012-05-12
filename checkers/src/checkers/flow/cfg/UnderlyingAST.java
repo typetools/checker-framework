@@ -43,10 +43,14 @@ public abstract class UnderlyingAST {
 
         /** The method declaration */
         protected final MethodTree method;
+        
+        /** The class tree this method belongs to. */
+        protected final Tree classTree;
 
-        public CFGMethod(MethodTree method) {
+        public CFGMethod(MethodTree method, Tree classTree) {
             super(Kind.METHOD);
             this.method = method;
+            this.classTree = classTree;
         }
 
         @Override
@@ -56,6 +60,10 @@ public abstract class UnderlyingAST {
 
         public MethodTree getMethod() {
             return method;
+        }
+        
+        public Tree getClassTree() {
+            return classTree;
         }
 
     }

@@ -573,10 +573,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             for (String stringExpr : expressions) {
                 FlowExpressions.Receiver expr = null;
                 try {
-                    // TODO: currently, these expressions are parsed at the
-                    // declaration (i.e. here) and for every use. this could
-                    // be optimized to store the result the first time.
-                    // (same for other annotations)
                     expr = FlowExpressionParseUtil.parse(stringExpr,
                             flowExprContext);
 

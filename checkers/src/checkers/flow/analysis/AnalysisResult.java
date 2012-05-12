@@ -4,9 +4,10 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.NodeVisitor;
 
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -22,12 +23,26 @@ import com.sun.source.tree.Tree;
 public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** Abstract values of nodes. */
-    final protected Map<Node, A> nodeValues;
+    protected final Map<Node, A> nodeValues;
 
     /** Map from AST {@link Tree}s to {@link Node}s. */
-    final protected Map<Tree, Node> treeLookup;
+    protected final Map<Tree, Node> treeLookup;
 
-    protected final NodeVisitor<TransferResult<A, S>, TransferInput<A, S>> transferFunction;
+    /**
+     * The stores before every method call.
+     */
+    protected final Map<MethodInvocationNode, S> storesBeforeMethodInvocation;
+
+    /**
+     * Initialize with a given node-value mapping.
+     */
+    public AnalysisResult(Map<Node, A> nodeValues,
+            Map<MethodInvocationNode, S> storesBeforeMethodInvocation,
+            Map<Tree, Node> treeLookup) {
+        this.nodeValues = new IdentityHashMap<>(nodeValues);
+        this.treeLookup = new IdentityHashMap<>(treeLookup);
+        this.storesBeforeMethodInvocation = storesBeforeMethodInvocation;
+    }
 
     /**
      * Initialize empty result.
@@ -35,7 +50,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
-        transferFunction = null;
+        storesBeforeMethodInvocation = new IdentityHashMap<>();
     }
 
     /**
@@ -47,6 +62,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
         for (Entry<Tree, Node> e : other.treeLookup.entrySet()) {
             treeLookup.put(e.getKey(), e.getValue());
+        }
+        for (Entry<MethodInvocationNode, S> e : other.storesBeforeMethodInvocation
+                .entrySet()) {
+            storesBeforeMethodInvocation.put(e.getKey(), e.getValue());
         }
     }
 
@@ -75,22 +94,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * Call the transfer function for node {@code node}, and set that node as
-     * current node first.
+     * @return The store immediately before a method invocation.
      */
-    protected TransferResult<A, S> callTransferFunction(Node node,
-            TransferInput<A, S> store) {
-        if (node.isLValue()) {
-            // TODO: should the default behavior be to return either a regular
-            // transfer result or a conditional transfer result (depending on
-            // store.hasTwoStores()), or is the following correct?
-            return new RegularTransferResult<A, S>(null,
-                    store.getRegularStore());
-        }
-        store.node = node;
-        TransferResult<A, S> transferResult = node.accept(transferFunction,
-                store);
-        return transferResult;
+    public S getStoreBeforeMethodInvocation(MethodInvocationTree tree) {
+        return storesBeforeMethodInvocation.get(getNodeForTree(tree));
     }
-
 }
