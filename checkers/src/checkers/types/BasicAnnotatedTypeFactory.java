@@ -64,12 +64,14 @@ import com.sun.source.util.TreePath;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
- * flow-sensitive qualifier inference, qualifier polymorphism, implicit annotations
- * via {@link ImplicitFor}, and user-specified defaults via {@link DefaultQualifier}
- *
+ * flow-sensitive qualifier inference, qualifier polymorphism, implicit
+ * annotations via {@link ImplicitFor}, and user-specified defaults via
+ * {@link DefaultQualifier}
+ * 
  * @see Flow
  */
-public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends AnnotatedTypeFactory {
+public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
+        AnnotatedTypeFactory {
 
     /** The type checker to use. */
     protected Checker checker;
@@ -88,7 +90,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     /** to handle defaults specified by the user */
     protected final QualifierDefaults defaults;
 
-    //// Flow related fields
+    // // Flow related fields
     /** Should use flow analysis? */
     protected boolean useFlow;
     /** Flow sensitive instance */
@@ -97,12 +99,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
-     *
-     * @param checker the checker to which this type factory belongs
-     * @param root the compilation unit to scan
-     * @param useFlow whether flow analysis should be performed
+     * 
+     * @param checker
+     *            the checker to which this type factory belongs
+     * @param root
+     *            the compilation unit to scan
+     * @param useFlow
+     *            whether flow analysis should be performed
      */
-    public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root, boolean useFlow) {
+    public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
+            boolean useFlow) {
         super(checker, root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
@@ -114,7 +120,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         this.defaults = new QualifierDefaults(this, this.annotations);
         boolean foundDefault = false;
-        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
+        for (Class<? extends Annotation> qual : checker
+                .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
                         Collections.singleton(DefaultLocation.ALL));
@@ -122,22 +129,25 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
         }
 
-        AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
+        AnnotationMirror unqualified = this.annotations
+                .fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
-        	defaults.addAbsoluteDefault(unqualified,
-        			Collections.singleton(DefaultLocation.ALL));
+            defaults.addAbsoluteDefault(unqualified,
+                    Collections.singleton(DefaultLocation.ALL));
         }
 
-        // This also gets called by subclasses.  Is that a problem?
+        // This also gets called by subclasses. Is that a problem?
         postInit();
     }
 
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
-     *
-     * @param checker the checker to which this type factory belongs
-     * @param root the compilation unit to scan
+     * 
+     * @param checker
+     *            the checker to which this type factory belongs
+     * @param root
+     *            the compilation unit to scan
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
@@ -148,12 +158,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     // **********************************************************************
 
     /**
-     * Returns a {@link TreeAnnotator} that adds annotations to a type based
-     * on the contents of a tree.
-     *
+     * Returns a {@link TreeAnnotator} that adds annotations to a type based on
+     * the contents of a tree.
+     * 
      * Subclasses may override this method to specify more appriopriate
      * {@link TreeAnnotator}
-     *
+     * 
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator(Checker checker) {
@@ -161,9 +171,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     /**
-     * Returns a {@link TypeAnnotator} that adds annotations to a type based
-     * on the content of the type itself.
-     *
+     * Returns a {@link TypeAnnotator} that adds annotations to a type based on
+     * the content of the type itself.
+     * 
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
@@ -171,13 +181,16 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     /**
-     * Returns a {@link Flow} instance that performs flow sensitive analysis
-     * to infer qualifiers on unqualified types.
-     *
-     * @param checker   the checker
-     * @param root      the compilation unit associated with this factory
-     * @param flowQuals the qualifiers to infer
-     * @return  the flow analysis class
+     * Returns a {@link Flow} instance that performs flow sensitive analysis to
+     * infer qualifiers on unqualified types.
+     * 
+     * @param checker
+     *            the checker
+     * @param root
+     *            the compilation unit associated with this factory
+     * @param flowQuals
+     *            the qualifiers to infer
+     * @return the flow analysis class
      */
     protected Flow createFlow(Checker checker, CompilationUnitTree root,
             Set<AnnotationMirror> flowQuals) {
@@ -196,43 +209,52 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             for (AnnotatedTypeMirror supertype : supertypes) {
                 // FIXME: Recursive initialization for defaults fields
                 if (defaults != null) {
-                    defaults.annotate(((DeclaredType)supertype.getUnderlyingType()).asElement(), supertype);
+                    defaults.annotate(((DeclaredType) supertype
+                            .getUnderlyingType()).asElement(), supertype);
                 }
             }
     }
 
     /**
-     * Track the state of dataflow analysis scanning for each class tree
-     * in the compilation unit.
+     * Track the state of dataflow analysis scanning for each class tree in the
+     * compilation unit.
      */
-    protected enum ScanState { IN_PROGRESS, FINISHED };
+    protected enum ScanState {
+        IN_PROGRESS, FINISHED
+    };
 
     protected Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
 
     /**
      * The result of the flow analysis. Invariant:
+     * 
      * <pre>
      *  scannedClasses.get(c) == FINISHED for some class c ==> flowResult != null
      * </pre>
-     *
-     * Note that flowResult contains analysis results for Trees from
-     * multiple classes which are produced by multiple calls to
-     * performFlowAnalysis.
+     * 
+     * Note that flowResult contains analysis results for Trees from multiple
+     * classes which are produced by multiple calls to performFlowAnalysis.
      */
     protected AnalysisResult<CFValue, CFStore> flowResult = null;
-    
+
     /**
      * A mapping from methods to their regular exit store (used to check
      * postconditions).
      */
     protected IdentityHashMap<MethodTree, CFStore> regularExitStores = null;
-    
+
     /**
      * A mapping from methods to their a list with all return statements and the
      * corresponding store.
      */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, CFStore>>> returnStatementStores = null;
     
+    /**
+     * A mapping from methods to their a list with all return statements and the
+     * corresponding store.
+     */
+    protected IdentityHashMap<MethodInvocationTree, CFStore> methodInvocationStores = null;
+
     /**
      * @return The regular exit store, or {@code null}, if there is no such
      *         store (because the method cannot exit through the regular exit
@@ -241,10 +263,21 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     public/* @Nullable */CFStore getRegularExitStore(MethodTree methodTree) {
         return regularExitStores.get(methodTree);
     }
-    
-    public List<Pair<ReturnNode, CFStore>> getReturnStatementStores(MethodTree methodTree) {
+
+    /**
+     * @return All return node and store pairs for a given method.
+     */
+    public List<Pair<ReturnNode, CFStore>> getReturnStatementStores(
+            MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
+    }
+
+    /**
+     * @return The store immediately before a method invocation.
+     */
+    public CFStore getStoreBefore(MethodInvocationTree tree) {
+        return flowResult.getStoreBeforeMethodInvocation(tree);
     }
 
     /**
@@ -303,7 +336,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                             }
                         }
 
-                        analyze(queue, new CFGMethod(mt));
+                        analyze(queue, new CFGMethod(mt, TreeUtils.enclosingClass(getPath(mt))));
                         break;
                     case VARIABLE:
                         VariableTree vt = (VariableTree) m;
@@ -351,19 +384,21 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      *            The AST to analyze.
      */
     CFAbstractAnalysis<CFValue, CFStore, ?> analysis = null;
+
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
         CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
         assert analysis == null;
-        analysis = new CFAnalysis(this,
-                checker.getProcessingEnvironment(), checker);
+        analysis = new CFAnalysis(this, checker.getProcessingEnvironment(),
+                checker);
         // TODO: remove this hack
         if (this instanceof RegexAnnotatedTypeFactory) {
-            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this, checker.getProcessingEnvironment(), checker);
+            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this,
+                    checker.getProcessingEnvironment(), checker);
         }
         analysis.performAnalysis(cfg);
         AnalysisResult<CFValue, CFStore> result = analysis.getResult();
-        
+
         // store result
         flowResult.combine(result);
         if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
@@ -374,7 +409,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
-            returnStatementStores.put(method, analysis.getReturnStatementStores());
+            returnStatementStores.put(method,
+                    analysis.getReturnStatementStores());
         }
 
         if (env.getOptions().containsKey("flowdotdir")) {
@@ -385,7 +421,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             System.err.println("Output to DOT file: " + dotfilename);
             analysis.outputToDotFile(dotfilename);
         }
-        
+
         analysis = null;
 
         // add classes declared in method
@@ -402,7 +438,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         assert false;
         return null;
     }
-	
+
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
@@ -436,28 +472,34 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         if (as == null && tree != null) {
             as = flowResult.getValue(tree);
         }
-        final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations() : null;
+        final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations()
+                : null;
         if (inferred != null) {
-                if (!type.isAnnotated() || this.qualHierarchy.isSubtype(inferred, type.getAnnotations())) {
-                /* TODO:
-                 * The above check should NOT be necessary. However, for the InterningChecker test case Arrays fails
-                 * without it. It only fails if Unqualified is one of the supported type qualifiers, which it should.
-                 * Flow inference should always just return subtypes of the declared type, so something is going wrong!
-                 * TODO!
+            if (!type.isAnnotated()
+                    || this.qualHierarchy.isSubtype(inferred,
+                            type.getAnnotations())) {
+                /*
+                 * TODO: The above check should NOT be necessary. However, for
+                 * the InterningChecker test case Arrays fails without it. It
+                 * only fails if Unqualified is one of the supported type
+                 * qualifiers, which it should. Flow inference should always
+                 * just return subtypes of the declared type, so something is
+                 * going wrong! TODO!
                  */
-                    for (AnnotationMirror inf: inferred) {
-                        type.removeAnnotationInHierarchy(inf);
-                    }
-                    type.addAnnotations(inferred);
+                for (AnnotationMirror inf : inferred) {
+                    type.removeAnnotationInHierarchy(inf);
                 }
+                type.addAnnotations(inferred);
+            }
 
         }
         // TODO: This is quite ugly
-        boolean finishedScanning = enclosingClass == null ||
-            scannedClasses.get(enclosingClass) == ScanState.FINISHED;
+        boolean finishedScanning = enclosingClass == null
+                || scannedClasses.get(enclosingClass) == ScanState.FINISHED;
         if (finishedScanning || type.getKind() != TypeKind.TYPEVAR) {
             Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
+            typeAnnotator.visit(type, elt != null ? elt.getKind()
+                    : ElementKind.OTHER);
             defaults.annotate(tree, type);
         }
     }
@@ -469,8 +511,10 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
+            MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
+                .methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         poly.annotate(method.getElement(), method);
@@ -486,7 +530,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      */
     protected Set<AnnotationMirror> createFlowQualifiers(Checker checker) {
         Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
+        for (Class<? extends Annotation> cl : checker
+                .getSupportedTypeQualifiers()) {
             flowQuals.add(annotations.fromClass(cl));
         }
         return flowQuals;

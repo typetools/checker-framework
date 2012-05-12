@@ -239,8 +239,8 @@ public class CFGBuilder {
      * Build the control flow graph of a method.
      */
     public static ControlFlowGraph build(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree tree) {
-        return new CFGBuilder().run(root, env, tree);
+            ProcessingEnvironment env, MethodTree tree, Tree classTree) {
+        return new CFGBuilder().run(root, env, tree, classTree);
     }
 
     /**
@@ -262,8 +262,8 @@ public class CFGBuilder {
      * Build the control flow graph of a method.
      */
     public ControlFlowGraph run(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree tree) {
-        UnderlyingAST underlyingAST = new CFGMethod(tree);
+            ProcessingEnvironment env, MethodTree tree, Tree classTree) {
+        UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return run(root, env, underlyingAST);
     }
 

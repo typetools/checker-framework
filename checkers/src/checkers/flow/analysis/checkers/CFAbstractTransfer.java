@@ -3,6 +3,7 @@ package checkers.flow.analysis.checkers;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.flow.analysis.ConditionalTransferResult;
@@ -13,6 +14,7 @@ import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.UnderlyingAST.Kind;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
 import checkers.flow.cfg.node.AssertNode;
@@ -32,11 +34,13 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
+import checkers.quals.RequiresAnnotation;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -57,7 +61,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * The analysis class this store belongs to.
      */
     protected CFAbstractAnalysis<V, S, T> analysis;
-
+    
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
     }
@@ -83,11 +87,48 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S info = analysis.createEmptyStore();
 
         if (underlyingAST.getKind() == Kind.METHOD) {
+            AnnotatedTypeFactory factory = analysis.getFactory();
             for (LocalVariableNode p : parameters) {
-                AnnotatedTypeMirror anno = analysis.getFactory()
+                AnnotatedTypeMirror anno = factory
                         .getAnnotatedType(p.getElement());
                 info.initializeMethodParameter(p,
                         analysis.createAbstractValue(anno.getAnnotations()));
+            }
+            
+            // add properties known through precondition
+            CFGMethod method = (CFGMethod) underlyingAST;
+            MethodTree methodTree = method.getMethod();
+            Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
+            AnnotationMirror requiresAnnotation = factory
+                    .getDeclAnnotation(methodElem, RequiresAnnotation.class);
+            if (requiresAnnotation != null) {
+                List<String> expressions = AnnotationUtils
+                        .elementValueArray(requiresAnnotation,
+                                "expression");
+                String annotation = AnnotationUtils.elementValueClassName(
+                        requiresAnnotation, "annotation");
+                AnnotationMirror anno = factory
+                        .annotationFromName(annotation);
+
+                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(methodTree, method.getClassTree());
+
+                // store all expressions in the store
+                for (String stringExpr : expressions) {
+                    FlowExpressions.Receiver expr = null;
+                    try {
+                        // TODO: currently, these expressions are parsed at the
+                        // declaration (i.e. here) and for every use. this could
+                        // be optimized to store the result the first time.
+                        // (same for other annotations)
+                        expr = FlowExpressionParseUtil.parse(stringExpr,
+                                flowExprContext);
+                        info.insertValue(expr, anno);
+                    } catch (FlowExpressionParseException e) {
+                        // report errors here
+                        analysis.checker.report(e.getResult(), methodTree);
+                    }
+                }
             }
         }
 
