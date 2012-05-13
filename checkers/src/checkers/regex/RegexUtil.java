@@ -31,7 +31,7 @@ public class RegexUtil {
     throw new AssertionError("Class RegexUtil shouldn't be instantiated");
   }
 
-  /** 
+  /**
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
@@ -39,9 +39,9 @@ public class RegexUtil {
     return isRegex(s, 0);
   }
 
-  /** 
+  /**
    * Returns true if the argument is a syntactically valid regular
-   * expression with at least the given number of groups. 
+   * expression with at least the given number of groups.
    */
   @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
@@ -55,9 +55,9 @@ public class RegexUtil {
     return getGroupCount(p) >= groups;
   }
 
-  /** 
+  /**
    * Returns true if the argument is a syntactically valid regular
-   * expression. 
+   * expression.
    */
   @SuppressWarnings("regex")    // RegexUtil
   /*@Pure*/
