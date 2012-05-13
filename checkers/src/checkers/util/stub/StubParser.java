@@ -149,7 +149,10 @@ public class StubParser {
         assert(packDecl != null);
         String packageName = packDecl.getName().toString();
         Element elem = elements.getPackageElement(packageName);
-        annotateDecl(declAnnos, elem, packDecl.getAnnotations());
+        // If the element lookup fails, it's because we have an annotation for a package that isn't on the classpath, which is fine.
+        if (elem != null) {
+            annotateDecl(declAnnos, elem, packDecl.getAnnotations());
+        }
         // TODO: Handle atypes???
     }
 
