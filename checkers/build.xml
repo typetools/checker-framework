@@ -142,7 +142,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
