@@ -399,6 +399,9 @@ ${build.version} of the 'javac.jar' library."/>
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests"
       description="Run extra tests for the Nullness checker">
+      <exec executable="chmod">
+        <arg line="+x ${basedir}/binary/javac"/>
+      </exec>
       <exec executable="make" failonerror="true">
 	<env key="JAVAC" value="${basedir}/binary/javac"/>
 	<arg line="-C tests/nullness-extra/"/>
