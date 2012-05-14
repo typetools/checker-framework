@@ -5,15 +5,14 @@ Regex Checker:
   that produce a valid regular expression.
   Support "isRegex" in flow inference.
 
-New semantic search tool:
-  The Report Checker allows semantic searches for certain tree kinds,
-  invocations, field writes, etc.
+Framework improvements:
+  Declaratively add stub files to a checker using the new @StubFiles
+  annotation.
 
 Internal bug fixes:
   Respect skipDefs and skipUses in NullnessFlow.
   Support package annotations in stub files.
-  Declaratively add stub files to a checker using the new @StubFiles
-  annotation.
+  Better support for enums in annotation attributes.
   Cleanups to how implicit receivers are determined.
 
 ----------------------------------------------------------------------
