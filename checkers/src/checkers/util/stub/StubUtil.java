@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -286,7 +287,13 @@ public class StubUtil {
         }
     }
 
-    /*package-scope*/ static String getAnnotationName(AnnotationExpr annotation) {
+    /*package-scope*/ static AnnotationMirror getAnnotation(AnnotationExpr annotation, Map<String, AnnotationMirror> supportedAnnotations) {
+        String annoName = StubUtil.getAnnotationName(annotation);
+        AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
+        return annoMirror;
+    }
+
+    private static String getAnnotationName(AnnotationExpr annotation) {
         if (annotation instanceof MarkerAnnotationExpr)
             return ((MarkerAnnotationExpr)annotation).getName().getName();
         else if (annotation instanceof NormalAnnotationExpr)

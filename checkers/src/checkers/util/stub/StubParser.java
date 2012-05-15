@@ -408,8 +408,7 @@ public class StubParser {
         if (annotations == null)
             return;
         for (AnnotationExpr annotation : annotations) {
-            String annoName = StubUtil.getAnnotationName(annotation);
-            AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
+            AnnotationMirror annoMirror = StubUtil.getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null)
                 type.addAnnotation(annoMirror);
         }
@@ -420,8 +419,7 @@ public class StubParser {
             return;
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
-            String annoName = StubUtil.getAnnotationName(annotation);
-            AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
+            AnnotationMirror annoMirror = StubUtil.getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null)
                 annos.add(annoMirror);
         }
