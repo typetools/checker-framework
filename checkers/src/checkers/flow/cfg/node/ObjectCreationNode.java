@@ -100,6 +100,7 @@ public class ObjectCreationNode extends Node {
     @Override
     public Collection<Node> getOperands() {
         LinkedList<Node> list = new LinkedList<Node>();
+        list.add(constructor);
         list.addAll(arguments);
         return list;
     }
