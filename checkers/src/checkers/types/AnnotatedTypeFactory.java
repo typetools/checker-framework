@@ -97,10 +97,12 @@ public class AnnotatedTypeFactory {
     // soon as this is non-null, so it should be first set to its final
     // value, not initialized to an empty map that is incrementally filled.
     private Map<Element, AnnotatedTypeMirror> indexTypes;
+
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
      * Map keys cannot be Element, because a different Element appears
-     * in the stub files than in the real files.  So, map keys are: [TODO]
+     * in the stub files than in the real files.  So, map keys are the
+     * verbose element name, as returned by ElementUtils.getVerboseName.
      */
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
