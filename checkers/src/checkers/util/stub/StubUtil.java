@@ -4,10 +4,6 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.Node;
 import japa.parser.ast.body.*;
-import japa.parser.ast.expr.AnnotationExpr;
-import japa.parser.ast.expr.MarkerAnnotationExpr;
-import japa.parser.ast.expr.NormalAnnotationExpr;
-import japa.parser.ast.expr.SingleMemberAnnotationExpr;
 import japa.parser.ast.type.*;
 import japa.parser.ast.visitor.SimpleVoidVisitor;
 
@@ -15,13 +11,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+
+import checkers.source.SourceChecker.CheckerError;
 
 /**
  * Utility class for skeleton files
@@ -171,7 +168,7 @@ public class StubUtil {
             if (type.getKind().isPrimitive())
                 return type.toString();
         }
-        throw new IllegalStateException("Unhandled type");
+        throw new CheckerError("StubUtil: unhandled type: " + type);
     }
 
     private final static class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -225,7 +222,7 @@ public class StubUtil {
         @Override
         public void visit(Parameter n, Void arg) {
             if (n.getId().getArrayCount() > 0) {
-                throw new Error("Put array brackets on the type, not the variable: " + n);
+                throw new CheckerError("StubUtil: put array brackets on the type, not the variable: " + n);
             }
             n.getType().accept(this, arg);
         }
@@ -264,7 +261,7 @@ public class StubUtil {
                 sb.append("short");
                 break;
             default:
-                throw new IllegalStateException("Unknown type: " + n.getType());
+                throw new CheckerError("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -283,25 +280,9 @@ public class StubUtil {
         @Override
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
-            throw new IllegalStateException("don't print type args!");
+            // TODO: Why?
+            throw new CheckerError("StubUtil: don't print type args!");
         }
-    }
-
-    /*package-scope*/ static AnnotationMirror getAnnotation(AnnotationExpr annotation, Map<String, AnnotationMirror> supportedAnnotations) {
-        String annoName = StubUtil.getAnnotationName(annotation);
-        AnnotationMirror annoMirror = supportedAnnotations.get(annoName);
-        return annoMirror;
-    }
-
-    private static String getAnnotationName(AnnotationExpr annotation) {
-        if (annotation instanceof MarkerAnnotationExpr)
-            return ((MarkerAnnotationExpr)annotation).getName().getName();
-        else if (annotation instanceof NormalAnnotationExpr)
-            return ((NormalAnnotationExpr)annotation).getName().getName();
-        else if (annotation instanceof SingleMemberAnnotationExpr)
-            return ((SingleMemberAnnotationExpr)annotation).getName().getName();
-        else
-            throw new AssertionError("unknown annotation type: " + annotation);
     }
 
     public static List<File> allStubFiles(String stub) {
