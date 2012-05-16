@@ -797,10 +797,6 @@ public class AnnotationUtils {
             return setValue(elementName, (Object)value);
         }
 
-        public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
-            return setValue(elementName, (Object)value);
-        }
-
         public AnnotationBuilder setValue(CharSequence elementName, Float value) {
             return setValue(elementName, (Object)value);
         }
@@ -868,6 +864,10 @@ public class AnnotationUtils {
             return this;
         }
 
+        public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
+            return setValue(elementName, (Object)value);
+        }
+
         public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
             assertNotBuilt();
             VariableElement enumElt = findEnumElement(values[0]);
@@ -887,6 +887,29 @@ public class AnnotationUtils {
                 checkSubtype(expectedType, ev);
                 enumElt = findEnumElement(ev);
                 res.add(createValue(enumElt));
+            }
+            AnnotationValue val = createValue(res);
+            elementValues.put(var, val);
+            return this;
+        }
+
+        public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
+            assertNotBuilt();
+            ExecutableElement var = findElement(elementName);
+            TypeMirror expectedType = var.getReturnType();
+
+            if (expectedType.getKind() != TypeKind.ARRAY)
+                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            expectedType = ((ArrayType)expectedType).getComponentType();
+            if (expectedType.getKind() != TypeKind.DECLARED)
+                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
+            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement()))
+                throw new IllegalArgumentException("expected a different type of enum: " + values[0].getEnclosingElement());
+
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            for (VariableElement ev : values) {
+                checkSubtype(expectedType, ev);
+                res.add(createValue(ev));
             }
             AnnotationValue val = createValue(res);
             elementValues.put(var, val);
@@ -913,7 +936,7 @@ public class AnnotationUtils {
             return this;
         }
 
-        private ExecutableElement findElement(CharSequence key) {
+        public ExecutableElement findElement(CharSequence key) {
             for (ExecutableElement elt :
                 ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
                 if (elt.getSimpleName().contentEquals(key)) {
@@ -923,6 +946,7 @@ public class AnnotationUtils {
             throw new IllegalArgumentException("Couldn't find " + key + " element in " + annotationElt);
         }
 
+        // TODO: this method always returns true and no-one ever looks at the return value.
         private boolean checkSubtype(TypeMirror expected, Object givenValue) {
             final String newLine = System.getProperty("line.separator");
 
@@ -946,7 +970,15 @@ public class AnnotationUtils {
                 isSubtype = ((DeclaredType)expected).asElement().equals(((DeclaredType)found).asElement());
             } else if (givenValue instanceof AnnotationMirror) {
                 found = ((AnnotationMirror)givenValue).getAnnotationType();
+                // TODO: why is this always failing???
                 isSubtype = false;
+            } else if (givenValue instanceof VariableElement) {
+                found = ((VariableElement)givenValue).asType();
+                if (expected.getKind() == TypeKind.DECLARED) {
+                    isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
+                } else {
+                    isSubtype = false;
+                }
             } else {
                 found = env.getElementUtils().getTypeElement(givenValue.getClass().getCanonicalName()).asType();
                 isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
