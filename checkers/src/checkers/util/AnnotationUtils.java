@@ -855,19 +855,20 @@ public class AnnotationUtils {
         public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
             assertNotBuilt();
             VariableElement enumElt = findEnumElement(value);
-            ExecutableElement var = findElement(elementName);
-            if (var.getReturnType().getKind() != TypeKind.DECLARED)
-                throw new IllegalArgumentException("exptected a non enum: " + var.getReturnType());
-            if (!((DeclaredType)var.getReturnType()).asElement().equals(enumElt.getEnclosingElement()))
-                throw new IllegalArgumentException("expected a different type of enum: " + enumElt.getEnclosingElement());
-            elementValues.put(var, createValue(enumElt));
-            return this;
+            return setValue(elementName, enumElt);
         }
 
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
-            return setValue(elementName, (Object)value);
+            ExecutableElement var = findElement(elementName);
+            if (var.getReturnType().getKind() != TypeKind.DECLARED)
+                throw new IllegalArgumentException("exptected a non enum: " + var.getReturnType());
+            if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement()))
+                throw new IllegalArgumentException("expected a different type of enum: " + value.getEnclosingElement());
+            elementValues.put(var, createValue(value));
+            return this;
         }
 
+        // Keep this version synchronized with the VariableElement[] version below
         public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
             assertNotBuilt();
             VariableElement enumElt = findEnumElement(values[0]);
@@ -893,6 +894,8 @@ public class AnnotationUtils {
             return this;
         }
 
+        // Keep this version synchronized with the Enum<?>[] version above.
+        // Which one is more useful/general? Unifying adds overhead of creating another array.
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
             assertNotBuilt();
             ExecutableElement var = findElement(elementName);
