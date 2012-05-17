@@ -43,8 +43,8 @@
 
         <java fork="true"
               outputproperty="compiler.version"
-              classpath="${compiler.lib}"
               classname="com.sun.tools.javac.Main">
+          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
           <arg line="-version"/>
         </java>
 
