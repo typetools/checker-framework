@@ -163,6 +163,20 @@ public class AnnotatedTypeFactory {
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
+    
+    /**
+     * Construct an annotation from a class.
+     */
+    public AnnotationMirror annotationFromClass(Class<? extends Annotation> clazz) {
+        return annotations.fromClass(clazz);
+    }
+    
+    /**
+     * Construct an annotation from a name.
+     */
+    public AnnotationMirror annotationFromName(CharSequence name) {
+        return annotations.fromName(name);
+    }
 
     /**
      * Actions that logically belong in the constructor, but need to run
