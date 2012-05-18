@@ -2,6 +2,7 @@ package checkers.types;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -383,21 +384,24 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
      * @param ast
      *            The AST to analyze.
      */
-    CFAbstractAnalysis<CFValue, CFStore, ?> analysis = null;
+
+    // Maintain a deque of analyses to accomodate nested classes.
+    Deque<CFAbstractAnalysis<CFValue, CFStore, ?>> analyses = new LinkedList<>();
 
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
         CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
-        assert analysis == null;
-        analysis = new CFAnalysis(this, checker.getProcessingEnvironment(),
+        CFAbstractAnalysis<CFValue, CFStore, ?> newAnalysis =
+            new CFAnalysis(this, checker.getProcessingEnvironment(),
                 checker);
         // TODO: remove this hack
         if (this instanceof RegexAnnotatedTypeFactory) {
-            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this,
+            newAnalysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this,
                     checker.getProcessingEnvironment(), checker);
         }
-        analysis.performAnalysis(cfg);
-        AnalysisResult<CFValue, CFStore> result = analysis.getResult();
+        analyses.addFirst(newAnalysis);
+        analyses.getFirst().performAnalysis(cfg);
+        AnalysisResult<CFValue, CFStore> result = analyses.getFirst().getResult();
 
         // store result
         flowResult.combine(result);
@@ -405,12 +409,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
             // store exit store (for checking postconditions)
             CFGMethod mast = (CFGMethod) ast;
             MethodTree method = mast.getMethod();
-            CFStore regularExitStore = analysis.getRegularExitStore();
+            CFStore regularExitStore = analyses.getFirst().getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
             returnStatementStores.put(method,
-                    analysis.getReturnStatementStores());
+                    analyses.getFirst().getReturnStatementStores());
         }
 
         if (env.getOptions().containsKey("flowdotdir")) {
@@ -419,10 +423,10 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
             // make path safe for Windows
             dotfilename = dotfilename.replace("<", ".").replace(">", ".");
             System.err.println("Output to DOT file: " + dotfilename);
-            analysis.outputToDotFile(dotfilename);
+            analyses.getFirst().outputToDotFile(dotfilename);
         }
 
-        analysis = null;
+        analyses.removeFirst();
 
         // add classes declared in method
         queue.addAll(builder.getDeclaredClasses());
@@ -466,8 +470,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
         treeAnnotator.visit(tree, type);
 
         CFValue as = null;
-        if (analysis != null && tree != null) {
-            as = analysis.getValue(tree);
+        if (!analyses.isEmpty() && tree != null) {
+            as = analyses.getFirst().getValue(tree);
         }
         if (as == null && tree != null) {
             as = flowResult.getValue(tree);
