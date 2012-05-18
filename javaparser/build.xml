@@ -32,7 +32,7 @@
     </target>
 
     <target name="build" depends="prep" description="Compile files">
-        <javac destdir="${build}" includeantruntime="false"
+        <javac fork="true" destdir="${build}" includeantruntime="false"
             source="${java.source.version}" target="${java.source.version}">
           <src path="${src}"/>
           <include name="**/*.java"/>
