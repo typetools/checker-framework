@@ -1,3 +1,4 @@
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import checkers.regex.RegexUtil;
 import checkers.regex.quals.*;
@@ -101,5 +102,14 @@ class TestIsRegex {
             return pattern;
         }
       }*/
+
+    void test10(String s) throws Exception {
+        if (!RegexUtil.isRegex(s, 2)) {
+            throw new Exception();
+        }
+        Pattern p = Pattern.compile(s);
+        Matcher m = p.matcher("abc");
+        String g = m.group(1);
+    }
 }
 
