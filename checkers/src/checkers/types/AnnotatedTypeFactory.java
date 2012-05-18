@@ -934,7 +934,7 @@ public class AnnotatedTypeFactory {
                 }
             } else if (enclosingElt instanceof TypeElement) {
                 if (isSubtype((TypeElement)enclosingElt, element)) {
-                    return getAnnotatedType(element);
+                    return (AnnotatedDeclaredType) getAnnotatedType(enclosingElt);
             }
             }
             enclosingElt = enclosingElt.getEnclosingElement();
