@@ -1,0 +1,40 @@
+Notes for the taintness demo
+
+1. personalblog-demo
+
+Open personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java
+
+* Note that 
+1. PersonalBlogService.executeQuery() only accepts untainted queries,
+2. PersonalBlogService.constructQuery is used to construct an untainted query.
+
+* Run the taintness checker, by invoking the ant script.
+
+  The checker issues a warning for .getPostsByCategory():
+  (possibly) tainted string category is used in the query construction.
+  Solution: add @Untainted to category parameter declaration.
+  This forces clients to pass an @Untainted value, which was the intention
+  of the designer of the getPostsByCategory method.
+
+* Run the checker again.  There is an error in ReadAction.executeSub(),
+  which is a client of getPostsByCategory:
+  reqCategory is accepted from the user (from request object) without
+    validation.
+  solution: apply the following diff to line 48
+-    String reqCategory = cleanNull(request.getParameter("cat"));
++    String reqCategory = validate(cleanNull(request.getParameter("cat")));
+  
+* Run the checker one more time.  There are no errors.
+
+
+When you finish demoing the basic checker, as with previous scripts,  
+you can do the following:
+
+1. Note that constructQuery is only a helper function to suppress a  
+tainting false error, because the basic checker doesn't handle it.
+2. Replace both occurrences of constructQuery (at lines 162, 173) to  
+simple string concatenation.
+3. Run 'ant pblog', and you will get two errors related to using the  
+concatenation as untainted string.
+4. Run 'ant pblog-tainting' and no error is emitted.
+
