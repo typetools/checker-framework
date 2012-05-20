@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.WildcardType;
 
 import checkers.source.SourceChecker.CheckerError;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -13,10 +14,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.ElementUtils;
 import checkers.util.TypesUtils;
 
 import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -62,19 +63,23 @@ public class TypeFromElement {
             // Or is this like a local variable?
             // TODO: annotateExceptionParam(type, element);
             if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
+                        " [" + element.getKind() + "]");
             }
         } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
             // TODO;
             if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element);
+                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
+                        " [" + element.getKind() + "]");
             }
         } else {
-            throw new CheckerError("TypeFromElement.annotate: illegal argument: " + element.getKind());
+            throw new CheckerError("TypeFromElement.annotate: illegal argument: " + element +
+                    " [" + element.getKind() + "]");
         }
     }
 
     private static void annotateTypeParam(AnnotatedTypeMirror type, Element element) {
+        // System.out.println("TypeFromElement::annotateTypeParam: type: " + type + " element: " + element);
         Element enclosing = element.getEnclosingElement();
         if (enclosing instanceof TypeElement) {
             TypeElement clsElt = (TypeElement)enclosing;
@@ -98,12 +103,15 @@ public class TypeFromElement {
                         break;
                     default: if (strict) {
                         throw new CheckerError("TypeFromElement.annotateTypeParam(class): " +
-                                "invalid position " + typeAnno.position + " for annotation: " + typeAnno);
+                                "invalid position " + typeAnno.position +
+                                " for annotation: " + typeAnno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateTypeParam(class): not found in enclosing element");
+                throw new CheckerError("TypeFromElement.annotateTypeParam(class): " +
+                        "not found in enclosing element: "  + ElementUtils.getVerboseName(element));
             }
         } else if (enclosing instanceof ExecutableElement) {
             ExecutableElement execElt = (ExecutableElement) enclosing;
@@ -138,12 +146,15 @@ public class TypeFromElement {
                         break;
                     default: if (strict) {
                         throw new CheckerError("TypeFromElement.annotateTypeParam(method): " +
-                                "invalid position " + typeAnno.position + " for annotation: " + typeAnno);
+                                "invalid position " + typeAnno.position +
+                                " for annotation: " + typeAnno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateTypeParam(method): not found in enclosing element");
+                throw new CheckerError("TypeFromElement.annotateTypeParam(method): " + 
+                        "not found in enclosing element: " + ElementUtils.getVerboseName(element));
             }
         } else if (strict) {
             throw new CheckerError("TypeFromElement.annotateTypeParam: enclosing element not a type or executable: " +
@@ -183,7 +194,9 @@ public class TypeFromElement {
                         break;
                     default: if (strict) {
                         throw new CheckerError("TypeFromElement.annotateParam: " +
-                                "invalid position " + typeAnno.position + " for annotation: " + typeAnno);
+                                "invalid position " + typeAnno.position +
+                                " for annotation: " + typeAnno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                     }
                 }
@@ -214,7 +227,9 @@ public class TypeFromElement {
                         break;
                     default: if (strict) {
                         throw new CheckerError("TypeFromElement.annotateParam: " +
-                                "invalid position " + typeAnno.position + " for annotation: " + typeAnno);
+                                "invalid position " + typeAnno.position +
+                                " for annotation: " + typeAnno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                     }
                 }
@@ -260,7 +275,9 @@ public class TypeFromElement {
                 break;
             default: if (strict) {
                 throw new CheckerError("TypeFromElement.annotateField: " +
-                        "invalid position " + pos.type + " for annotation: " + anno);
+                        "invalid position " + pos.type +
+                        " for annotation: " + anno +
+                        " for element: " + ElementUtils.getVerboseName(element));
             }
             }
         }
@@ -301,7 +318,9 @@ public class TypeFromElement {
                 break;
             default: if (strict) {
                 throw new CheckerError("TypeFromElement.annotateLocal: " +
-                        "invalid position " + pos.type + " for annotation: " + anno);
+                        "invalid position " + pos.type +
+                        " for annotation: " + anno +
+                        " for element: " + ElementUtils.getVerboseName(element));
             }
             }
         }
@@ -340,22 +359,32 @@ public class TypeFromElement {
                     }
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateType: " +
-                            "invalid parameter index " + pos.parameter_index + " for annotation: " + anno);
+                            "invalid parameter index " + pos.parameter_index +
+                            " for annotation: " + anno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
             case CLASS_TYPE_PARAMETER_BOUND:
             case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParameters.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParameters.get(pos.parameter_index));
-                    if (pos.bound_index >= 0 && pos.bound_index < bounds.size()) {
-                        annotate(bounds.get(pos.bound_index), anno);
+                    int boundIndex = pos.bound_index;
+                    if (((Type)bounds.get(0).getUnderlyingType()).isInterface()) {
+                        boundIndex -= 1;
+                    }
+                    if (boundIndex >= 0 && boundIndex < bounds.size()) {
+                        annotate(bounds.get(boundIndex), anno);
                     } else if (strict) {
                         throw new CheckerError("TypeFromElement.annotateType: " +
-                                "invalid bound index " + pos.bound_index + " for annotation: " + anno);
+                                "invalid bound index " + pos.bound_index +
+                                " for annotation: " + anno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateType: " +
-                            "invalid parameter index " + pos.parameter_index + " for annotation: " + anno);
+                            "invalid parameter index " + pos.parameter_index +
+                            " for annotation: " + anno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
             case CLASS_EXTENDS:
@@ -370,7 +399,9 @@ public class TypeFromElement {
                 break;
             default: if (strict) {
                 throw new CheckerError("TypeFromElement.annotateType: " +
-                        "invalid position " + pos.type + " for annotation: " + anno);
+                        "invalid position " + pos.type +
+                        " for annotation: " + anno +
+                        " for element: " + ElementUtils.getVerboseName(element));
             }
             }
         }
@@ -394,7 +425,9 @@ public class TypeFromElement {
                     annotate(superInterfaces.get(pos.type_index), anno);
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateSupers: " +
-                            "invalid type index " + pos.type_index + " for annotation: " + anno);
+                            "invalid type index " + pos.type_index +
+                            " for annotation: " + anno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
             case CLASS_TYPE_PARAMETER:
@@ -404,7 +437,9 @@ public class TypeFromElement {
                 break;
             default: if (strict) {
                 throw new CheckerError("TypeFromElement.annotateSupers: " +
-                        "invalid position " + pos.type + " for annotation: " + anno);
+                        "invalid position " + pos.type +
+                        " for annotation: " + anno +
+                        " for element: " + ElementUtils.getVerboseName(element));
             }
             }
         }
@@ -454,7 +489,9 @@ public class TypeFromElement {
                     annotate(params.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateExec: " +
-                            "invalid parameter index " + pos.parameter_index + " for annotation: " + typeAnno);
+                            "invalid parameter index " + pos.parameter_index +
+                            " for annotation: " + typeAnno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
 
@@ -465,7 +502,9 @@ public class TypeFromElement {
                     annotate(thrown.get(pos.type_index), typeAnno);
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateExec: " +
-                            "invalid throws index " + pos.type_index + " for annotation: " + typeAnno);
+                            "invalid throws index " + pos.type_index +
+                            " for annotation: " + typeAnno+
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
 
@@ -475,7 +514,9 @@ public class TypeFromElement {
                     annotate(typeParams.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
                     throw new CheckerError("TypeFromElement.annotateExec: " +
-                            "invalid method type parameter index " + pos.parameter_index + " for annotation: " + typeAnno);
+                            "invalid method type parameter index " + pos.parameter_index +
+                            " for annotation: " + typeAnno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
 
@@ -483,18 +524,26 @@ public class TypeFromElement {
             case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParams.get(pos.parameter_index));
-                    if (pos.bound_index >= 0 && pos.bound_index < bounds.size()) {
-                        annotate(bounds.get(pos.bound_index), typeAnno);
+                    int boundIndex = pos.bound_index;
+                    if (((Type)bounds.get(0).getUnderlyingType()).isInterface()) {
+                        boundIndex -= 1;
+                    }
+                    if (boundIndex >= 0 && boundIndex < bounds.size()) {
+                        annotate(bounds.get(boundIndex), typeAnno);
                     } else if (strict) {
                         throw new CheckerError("TypeFromElement.annotateExec: " +
-                                "invalid method type parameter bound index " + pos.bound_index + " for annotation: " + typeAnno);
+                                "invalid method type parameter bound index " + pos.bound_index +
+                                " for annotation: " + typeAnno +
+                                " for element: " + ElementUtils.getVerboseName(element));
                     }
                 } else if (strict) {
                     // TODO: parameter_index is -1 a few times in Daikon. What does that mean?
                     // I think that's an incorrect wildcard bound, e.g. also see ThrowableExample.
                     // System.out.println("element: " + element);
                     throw new CheckerError("TypeFromElement.annotateExec: " +
-                            "invalid method type parameter index (bound) " + pos.parameter_index + " for annotation: " + typeAnno);
+                            "invalid method type parameter index (bound) " + pos.parameter_index +
+                            " for annotation: " + typeAnno +
+                            " for element: " + ElementUtils.getVerboseName(element));
                 }
                 break;
             case LOCAL_VARIABLE:
@@ -507,7 +556,9 @@ public class TypeFromElement {
                 break;
             default: if (strict) {
                 throw new CheckerError("TypeFromElement.annotateExec: " +
-                        "invalid position " + pos.type + " for annotation: " + typeAnno);
+                        "invalid position " + pos.type +
+                        " for annotation: " + typeAnno +
+                        " for element: " + ElementUtils.getVerboseName(element));
             }
             }
         }
@@ -548,6 +599,9 @@ public class TypeFromElement {
             }
             List<AnnotatedTypeMirror> bounds = getBounds(type);
             int boundIndex = anno.position.bound_index;
+            if (((Type)bounds.get(0).getUnderlyingType()).isInterface()) {
+                boundIndex -= 1;
+            }
             if (boundIndex >= 0 && boundIndex < bounds.size()) {
                 annotate(bounds.get(boundIndex), anno);
             } else if (strict) {
@@ -672,7 +726,7 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
-            if (wt.getExtendsBound() != null) {
+            if (((WildcardType)wt.getUnderlyingType()).getExtendsBound()!=null) {
                 bound = wt.getExtendsBound();
             } else {
                 bound = wt.getSuperBound();
