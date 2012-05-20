@@ -3,7 +3,11 @@ import checkers.igj.quals.*;
 public class Constructors {
     int field;
 
-    @Mutable Constructors() {
+    // TODO: This test case doesn't test anything.
+    // The constructor used to have an annotation, which is not legal
+    // for a type annotation.
+    // Also see ReadOnlyConstructor in javari.
+    Constructors() {
         field = 0;
     }
 

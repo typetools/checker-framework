@@ -6,7 +6,7 @@ class PolyReads {
     Object tmObject;
     @ReadOnly Object roObject;
 
-    @PolyRead PolyReads (@PolyRead Object s) {
+    PolyReads (@PolyRead Object s) {
         mObject = s;           // error, cannot assign to mutable
         tmObject = s;          // error, cannot assign to thismutable TODO?
         roObject = s;          // assignable at constructor
