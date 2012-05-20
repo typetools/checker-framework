@@ -1,3 +1,5 @@
+import java.lang.annotation.*;
+
 import checkers.nullness.quals.*;
 import checkers.quals.*;
 
@@ -7,6 +9,7 @@ public class DependentNull {
      * NOTE that @Prototype is a SUPERTYPE of an unannotated reference.
      * (Uh, how does the checker know that?  It's important to the checking!)
      */
+    @Target(ElementType.TYPE_USE)
     @interface Prototype {}
 
 
