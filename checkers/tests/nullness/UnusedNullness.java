@@ -1,3 +1,5 @@
+import java.lang.annotation.*;
+
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 
@@ -8,6 +10,7 @@ public class UnusedNullness {
 
   @TypeQualifier
   @SubtypeOf({})
+  @Target(ElementType.TYPE_USE)
   public @interface Prototype {}
 
   @Unused(when=Prototype.class)
