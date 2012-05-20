@@ -11,7 +11,7 @@ class RawMethodInvocation {
   }
 
   @AssertNonNullAfter("b")
-  void init_b() @Raw {
+  void init_b(@Raw RawMethodInvocation this) {
     b = 2;
   }
 
@@ -32,7 +32,7 @@ class RawMethodInvocation {
   }
 
   @AssertNonNullAfter({"a", "b"})
-  void init_ab() @Raw {
+  void init_ab(@Raw RawMethodInvocation this) {
     a = 1;
     b = 2;
   }

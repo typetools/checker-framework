@@ -14,8 +14,14 @@ class UnannoPrimitives {
     
     int i = new Integer(99) + 1900;
     int j = 7 + 1900;
+
+    //TODO:: error: (type.invalid)
+    @Nullable int f;
+
+    //TODO:: error: (type.invalid)
+    @NonNull int g;
   }
-  
+
   static void testDate() {
     @SuppressWarnings("deprecation") // for iCal4j
     int year = new java.util.Date().getYear() + 1900;

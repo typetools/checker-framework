@@ -6,7 +6,7 @@ class PolyReads {
     Object tmObject;
     @ReadOnly Object roObject;
 
-    @PolyRead PolyReads (@PolyRead Object s) {
+    PolyReads (@PolyRead Object s) {
         mObject = s;           // error, cannot assign to mutable
         tmObject = s;          // error, cannot assign to thismutable TODO?
         roObject = s;          // assignable at constructor
@@ -42,7 +42,7 @@ class PolyReads {
         return null;
     }
 
-    @PolyRead Object testAsReadOnlyReceiver(@PolyRead Object s) @ReadOnly {
+    @PolyRead Object testAsReadOnlyReceiver(@ReadOnly PolyReads this, @PolyRead Object s) {
         mObject = s;           // error, s might be readonly
         tmObject = s;          // error, local field, and unassignable (s readonly, mutable class, for example)
         roObject = s;          // error, local field
@@ -61,7 +61,7 @@ class PolyReads {
         return null;
     }
 
-    @PolyRead Object testAsPolyReadReceiver(@PolyRead Object s) @PolyRead {
+    @PolyRead Object testAsPolyReadReceiver(@PolyRead PolyReads this, @PolyRead Object s) {
         mObject = s;           // error, s might be readonly
         tmObject = s;          // error, local field
         roObject = s;          // error, local field
