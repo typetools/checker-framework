@@ -1,8 +1,10 @@
-package tests;
+package checkers.util.test;
 
 import java.io.StringWriter;
 import java.util.*;
 import javax.tools.*;
+
+
 import java.io.*;
 
 public class TestInput {

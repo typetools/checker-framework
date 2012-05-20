@@ -7,7 +7,6 @@ import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
-import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Type;
 
 import java.lang.annotation.Annotation;
@@ -798,10 +797,6 @@ public class AnnotationUtils {
             return setValue(elementName, (Object)value);
         }
 
-        public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
-            return setValue(elementName, (Object)value);
-        }
-
         public AnnotationBuilder setValue(CharSequence elementName, Float value) {
             return setValue(elementName, (Object)value);
         }
@@ -860,12 +855,67 @@ public class AnnotationUtils {
         public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
             assertNotBuilt();
             VariableElement enumElt = findEnumElement(value);
+            return setValue(elementName, enumElt);
+        }
+
+        public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
             ExecutableElement var = findElement(elementName);
             if (var.getReturnType().getKind() != TypeKind.DECLARED)
                 throw new IllegalArgumentException("exptected a non enum: " + var.getReturnType());
-            if (!((DeclaredType)var.getReturnType()).asElement().equals(enumElt.getEnclosingElement()))
+            if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement()))
+                throw new IllegalArgumentException("expected a different type of enum: " + value.getEnclosingElement());
+            elementValues.put(var, createValue(value));
+            return this;
+        }
+
+        // Keep this version synchronized with the VariableElement[] version below
+        public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
+            assertNotBuilt();
+            VariableElement enumElt = findEnumElement(values[0]);
+            ExecutableElement var = findElement(elementName);
+            TypeMirror expectedType = var.getReturnType();
+
+            if (expectedType.getKind() != TypeKind.ARRAY)
+                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            expectedType = ((ArrayType)expectedType).getComponentType();
+            if (expectedType.getKind() != TypeKind.DECLARED)
+                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
+            if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement()))
                 throw new IllegalArgumentException("expected a different type of enum: " + enumElt.getEnclosingElement());
-            elementValues.put(var, createValue(enumElt));
+
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            for (Enum<?> ev : values) {
+                checkSubtype(expectedType, ev);
+                enumElt = findEnumElement(ev);
+                res.add(createValue(enumElt));
+            }
+            AnnotationValue val = createValue(res);
+            elementValues.put(var, val);
+            return this;
+        }
+
+        // Keep this version synchronized with the Enum<?>[] version above.
+        // Which one is more useful/general? Unifying adds overhead of creating another array.
+        public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
+            assertNotBuilt();
+            ExecutableElement var = findElement(elementName);
+            TypeMirror expectedType = var.getReturnType();
+
+            if (expectedType.getKind() != TypeKind.ARRAY)
+                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            expectedType = ((ArrayType)expectedType).getComponentType();
+            if (expectedType.getKind() != TypeKind.DECLARED)
+                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
+            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement()))
+                throw new IllegalArgumentException("expected a different type of enum: " + values[0].getEnclosingElement());
+
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            for (VariableElement ev : values) {
+                checkSubtype(expectedType, ev);
+                res.add(createValue(ev));
+            }
+            AnnotationValue val = createValue(res);
+            elementValues.put(var, val);
             return this;
         }
 
@@ -889,7 +939,7 @@ public class AnnotationUtils {
             return this;
         }
 
-        private ExecutableElement findElement(CharSequence key) {
+        public ExecutableElement findElement(CharSequence key) {
             for (ExecutableElement elt :
                 ElementFilter.methodsIn(annotationElt.getEnclosedElements())) {
                 if (elt.getSimpleName().contentEquals(key)) {
@@ -899,6 +949,7 @@ public class AnnotationUtils {
             throw new IllegalArgumentException("Couldn't find " + key + " element in " + annotationElt);
         }
 
+        // TODO: this method always returns true and no-one ever looks at the return value.
         private boolean checkSubtype(TypeMirror expected, Object givenValue) {
             final String newLine = System.getProperty("line.separator");
 
@@ -922,7 +973,15 @@ public class AnnotationUtils {
                 isSubtype = ((DeclaredType)expected).asElement().equals(((DeclaredType)found).asElement());
             } else if (givenValue instanceof AnnotationMirror) {
                 found = ((AnnotationMirror)givenValue).getAnnotationType();
+                // TODO: why is this always failing???
                 isSubtype = false;
+            } else if (givenValue instanceof VariableElement) {
+                found = ((VariableElement)givenValue).asType();
+                if (expected.getKind() == TypeKind.DECLARED) {
+                    isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
+                } else {
+                    isSubtype = false;
+                }
             } else {
                 found = env.getElementUtils().getTypeElement(givenValue.getClass().getCanonicalName()).asType();
                 isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
@@ -1012,30 +1071,114 @@ public class AnnotationUtils {
         }
     }
 
-    public static <T> T elementValue(AnnotationMirror anno,
-            CharSequence name, Class<T> expectedType) {
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}. The result is expected to have type {@code expectedType}.
+     *
+     * <p>
+     * <em>Note 1</em>: The method only returns attribute values that are
+     * explicitly present on {@code anno}. Default values are ignored. If
+     * default values should be applied, use {@code elementValueWithDefaults}
+     * instead.
+     *
+     * <p>
+     * <em>Note 2</em>: The method does not work well for attributes of an array
+     * type (as it would return a list of {@link AnnotationValue}s). Use
+     * {@code elementValueArray} instead. instead.
+     */
+    public static <T> T elementValue(AnnotationMirror anno, CharSequence name,
+            Class<T> expectedType) {
         for (ExecutableElement elem : anno.getElementValues().keySet()) {
             if (elem.getSimpleName().contentEquals(name)) {
                 AnnotationValue val = anno.getElementValues().get(elem);
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new IllegalArgumentException("No element with name " + name + " in annotation " + anno);
+        throw new IllegalArgumentException("No element with name " + name
+                + " in annotation " + anno);
     }
 
     /**
-     * Like elementValue(anno, name, String[].class) except that a String[]
-     * annotation element gets returned by elementValue() as a
-     * List&lt;Attribute&gt; and would have to be converted; this does that
-     * conversion.
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly.
+     * The result is expected to have type {@code expectedType}.
+     *
+     * <p>
+     * <em>Note</em>: The method does not work well for attributes of an array
+     * type (as it would return a list of {@link AnnotationValue}s). Use
+     * {@code elementValueArray} instead. instead.
      */
-    public static List<String> elementValueStringArray(AnnotationMirror anno,
+    public static <T> T elementValueWithDefaults(AnnotationMirror anno,
+            CharSequence name, Class<T> expectedType) {
+        for (ExecutableElement elem : getElementValuesWithDefaults(anno)
+                .keySet()) {
+            if (elem.getSimpleName().contentEquals(name)) {
+                AnnotationValue val = anno.getElementValues().get(elem);
+                if (val == null) {
+                    AnnotationValue defaultValue = elem.getDefaultValue();
+                    Object value = defaultValue.getValue();
+                    return expectedType.cast(value);
+                }
+                return expectedType.cast(val.getValue());
+            }
+        }
+        throw new IllegalArgumentException("No element with name " + name
+                + " in annotation " + anno);
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, where the attribute has an array type. One element of the
+     * result is expected to have type {@code expectedType}.
+     *
+     * <p>
+     * <em>Note</em>: The method only returns attribute values that are
+     * explicitly present on {@code anno}. Default values are ignored. If
+     * default values should be applied, use
+     * {@code elementValueArrayWithDefaults} instead.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> elementValueArray(AnnotationMirror anno,
             CharSequence name) {
-        List<Attribute> la = elementValue(anno, name, List.class);
-        List<String> result = new ArrayList<String>(la.size());
-        for (Attribute a : la) {
-            assert a instanceof Attribute.Constant;
-            result.add((String) a.getValue());
+        List<AnnotationValue> la = elementValue(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (AnnotationValue a : la) {
+            result.add((T) a.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly,
+     * where the attribute has an array type. One element of the result is
+     * expected to have type {@code expectedType}.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> elementValueArrayWithDefaults(
+            AnnotationMirror anno, CharSequence name) {
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (AnnotationValue a : la) {
+            result.add((T) a.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Get the attribute with the name {@code name} of the annotation
+     * {@code anno}, or the default value if no attribute is present explicitly,
+     * where the attribute has an array type and the elements are {@code Enum}s.
+     * One element of the result is expected to have type {@code expectedType}.
+     */
+    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(
+            AnnotationMirror anno, CharSequence name, Class<T> t) {
+        @SuppressWarnings("unchecked")
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
+        List<T> result = new ArrayList<T>(la.size());
+        for (AnnotationValue a : la) {
+            T value = Enum.valueOf(t, a.getValue().toString());
+            result.add(value);
         }
         return result;
     }

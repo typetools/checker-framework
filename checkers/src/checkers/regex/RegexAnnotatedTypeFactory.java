@@ -90,8 +90,10 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      *
      * @see RegexUtil#asRegex(String, int)
      */
-    private final String[] asRegexClasses = new String[] {
-            "checkers.regex.RegexUtil", "plume.RegexUtil", "daikon.util.RegexUtil" };
+    /*default*/ static final String[] asRegexClasses = new String[] {
+            "checkers.regex.RegexUtil",
+            "plume.RegexUtil",
+            "daikon.util.RegexUtil" };
 
     /**
      * A list of all of the ExecutableElements for the class names in
@@ -118,6 +120,16 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 continue;
             }
         }
+    }
+
+    /**
+     * Returns a new Regex annotation with the given group count.
+     */
+    /*default*/ AnnotationMirror createRegexAnnotation(int groupCount) {
+        AnnotationUtils.AnnotationBuilder builder =
+            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+        builder.setValue("value", groupCount);
+        return builder.build();
     }
 
     @Override
@@ -272,16 +284,6 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 }
             }
             return false;
-        }
-
-        /**
-         * Returns a new Regex annotation with the given group count.
-         */
-        private AnnotationMirror createRegexAnnotation(int groupCount) {
-            AnnotationUtils.AnnotationBuilder builder =
-                new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
-            builder.setValue("value", groupCount);
-            return builder.build();
         }
 
         /**

@@ -438,7 +438,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *         null if the constructor does not exist or could not be invoked
      */
     @SuppressWarnings("unchecked")
-    private static <T> T invokeConstructorFor(String name,
+    public static <T> T invokeConstructorFor(String name,
             Class<?>[] paramTypes, Object[] args) {
 
         // Load the class.

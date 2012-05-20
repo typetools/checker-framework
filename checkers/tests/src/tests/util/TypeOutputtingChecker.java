@@ -1,4 +1,4 @@
-package checkers.util.test;
+package tests.util;
 
 import java.util.Collections;
 
@@ -34,13 +34,13 @@ import com.sun.tools.javac.util.Context;
  * For testing, you need to do the following:
  * 1. Run the Checker on the source file like any checker:
  *    <pre><code>
- *      java -processor checkers.util.test.TypeOutputtingChecker [source-file]
+ *      java -processor tests.util.TypeOutputtingChecker [source-file]
  *    </code></pre>
  *
  * 2. Run the Checker on the bytecode, by simply running the main and passing
  *    the qualified name, e.g.
  *    <pre><code>
- *      java checkers.util.test.TypeOutputtingChecker [qualified-name]
+ *      java tests.util.TypeOutputtingChecker [qualified-name]
  *    </code></pre>
  *
  * 3. Apply a simple diff on the two outputs

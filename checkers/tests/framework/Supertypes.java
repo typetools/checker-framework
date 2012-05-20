@@ -1,5 +1,5 @@
 import java.util.*;
-import checkers.util.test.*;
+import tests.util.*;
 
 public class Supertypes {
     static interface Inter<E> { }

@@ -1,4 +1,4 @@
-package tests;
+package checkers.util.test;
 
 import java.util.*;
 import javax.tools.*;

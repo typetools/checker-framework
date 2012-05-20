@@ -18,6 +18,7 @@ import javax.lang.model.util.Types;
 import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
+import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.source.SourceChecker.CheckerError;
@@ -96,10 +97,12 @@ public class AnnotatedTypeFactory {
     // soon as this is non-null, so it should be first set to its final
     // value, not initialized to an empty map that is incrementally filled.
     private Map<Element, AnnotatedTypeMirror> indexTypes;
+
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
      * Map keys cannot be Element, because a different Element appears
-     * in the stub files than in the real files.  So, map keys are: [TODO]
+     * in the stub files than in the real files.  So, map keys are the
+     * verbose element name, as returned by ElementUtils.getVerboseName.
      */
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
@@ -449,7 +452,7 @@ public class AnnotatedTypeFactory {
                     AnnotatedTypeMirror upperBound = typeParamVar.getEffectiveUpperBound();
                     while (upperBound.getKind() == TypeKind.TYPEVAR)
                         upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
-                    
+
                     WildcardType wc = env.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
                     AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, env, this);
                     wctype.setElement(typeParam.getElement());
@@ -679,7 +682,7 @@ public class AnnotatedTypeFactory {
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
-                if (!type.isAnnotated() && 
+                if (!type.isAnnotated() &&
                         !type.getUpperBound().isAnnotated() &&
                         tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
                         TypeFromElement.annotate(type, tpelt);
@@ -711,8 +714,8 @@ public class AnnotatedTypeFactory {
      * Compilation Unit. This assumption fails in testcase Bug109_A/B, where
      * a chain of dependencies leads into a different compilation unit.
      * I didn't find a way how to handle this better and conservatively
-     * return null. See TODO comment below. 
-     * 
+     * return null. See TODO comment below.
+     *
      */
     protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         assert (tree.getKind() == Tree.Kind.IDENTIFIER
@@ -791,7 +794,7 @@ public class AnnotatedTypeFactory {
      * Determine whether the tree dereferences the most enclosing "this" object.
      * That is, we have an expression like "f.g" and want to know whether it is
      * an access "this.f.g" or whether e.g. f is a field of an outer class or
-     * e.g. f is a local variable. 
+     * e.g. f is a local variable.
      *
      * @param tree The tree to check.
      * @return True, iff the tree is an explicit or implicit reference to the
@@ -1441,7 +1444,7 @@ public class AnnotatedTypeFactory {
      * checking from the visitor's current path, and only using
      * {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
      * only if {@code node} is not found on the current path.
-     * 
+     *
      * Note that the given Tree has to be within the current compilation unit,
      * otherwise null will be returned.
      *
@@ -1590,20 +1593,42 @@ public class AnnotatedTypeFactory {
             }
         }
 
-        String stubFiles = env.getOptions().get("stubs");
-        if (stubFiles == null)
-            stubFiles = System.getProperty("stubs");
-        if (stubFiles == null)
-            stubFiles = System.getenv("stubs");
+        String allstubFiles = "";
+        String stubFiles;
 
-        if (stubFiles == null) {
+        stubFiles = env.getOptions().get("stubs");
+        if (stubFiles != null)
+            allstubFiles += File.pathSeparator + stubFiles;
+
+        stubFiles = System.getProperty("stubs");
+        if (stubFiles != null)
+            allstubFiles += File.pathSeparator + stubFiles;
+
+        stubFiles = System.getenv("stubs");
+        if (stubFiles != null)
+            allstubFiles += File.pathSeparator + stubFiles;
+
+        {
+            StubFiles sfanno = checkerClass.getAnnotation(StubFiles.class);
+            if (sfanno!=null) {
+                String[] sfarr = sfanno.value();
+                stubFiles = "";
+                for (String sf : sfarr) {
+                    stubFiles += File.pathSeparator + sf;
+                }
+                allstubFiles += stubFiles;
+            }
+        }
+
+        if (allstubFiles.isEmpty()) {
             this.indexTypes = indexTypes;
             this.indexDeclAnnos = indexDeclAnnos;
             return;
         }
 
-        String[] stubArray = stubFiles.split(File.pathSeparator);
+        String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
+            if (stubPath==null || stubPath.isEmpty()) continue;
             try {
                 // Handle case when running in jtreg
                 String base = System.getProperty("test.src");
