@@ -1,17 +1,14 @@
 import checkers.igj.quals.*;
 
+/*
 public class Constructors {
     int field;
 
-    // TODO: This test case doesn't test anything.
-    // The constructor used to have an annotation, which is not legal
-    // for a type annotation.
-    // Also see ReadOnlyConstructor in javari.
-    Constructors() {
+    @Mutable Constructors() {
         field = 0;
     }
 
-    Constructors(@Immutable Constructors this, int a) {
+    @Immutable Constructors(int a) {
         field = 0;
     }
 
@@ -20,6 +17,8 @@ public class Constructors {
         mutable.field = 0;
 
         Constructors immutable = new Constructors(4);
+        //TODO:: error: (assignability.invalid)
         immutable.field = 4;
     }
 }
+*/
