@@ -10,7 +10,7 @@ class Raw2 {
     catch (NullPointerException e) { e.printStackTrace(); }
     field = 0L;
   }
-  private void method(@Raw Raw2 arg) @Raw {
+  private void method(@Raw Raw2 this, @Raw Raw2 arg) {
     //:: error: (dereference.of.nullable)
     arg.field.hashCode();
     // I presume that this gives no warning because of the checkers'
