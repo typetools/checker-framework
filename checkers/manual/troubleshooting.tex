@@ -158,6 +158,24 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
   ant jdk.jar bindist
 \end{Verbatim}
 
+
+\item
+If you get an error such as this:
+
+\begin{Verbatim}
+java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
+\end{Verbatim}
+
+\noindent
+then you likely are using the wrong bootclasspath.  (Field
+\<NATIVE\_HEADER\_OUTPUT> was added in JDK 8, but the compiler is executing
+on a JDK that lacks the field.)  If you are using Ant, then one possibility
+is that the javac compiler is using the same JDK as Ant is using.  You can
+correct this by being sure to use \<fork="yes"> (see
+Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
+\<extJavac>.
+
+
 \item
 If you get an error that contains lines like these:
 
