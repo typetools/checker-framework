@@ -1,7 +1,7 @@
 #!/usr/bin/perl -n
 # hevea-retarget-crossrefs
 # Michael Ernst
-# Last updated: November 29, 2010
+# Last updated: May 20, 2012
 
 # To use:
 #   hevea-retarget-crossrefs < orig.html > new.html
@@ -45,17 +45,17 @@ push @lines, $_;
 END {
 
   for (my $i = 0; $i<scalar(@lines); $i++) {
-    if ($lines[$i] =~ s:<A NAME="(htoc[0-9]+)">(((Chapter&#XA0;)?([0-9]+|[A-Z]))(\.[0-9]+)*)(</A>.*)(<A NAME="(.*)">)</A>(</H[0-9]+>):$8$2$7$10:) {
-      $mapping{$1} = $9;
-      if ($debug) { print STDERR "$1 => $mapping{$1}\n";
-      }
+    # Handle lines *with* htoc, substituting it by the first other anchor and moving others forward.
+    if ($lines[$i] =~ s:<A NAME="(htoc[0-9]+)">(((Chapter&#XA0;)?([0-9]+|[A-Z]))(\.[0-9]+)*)(</A>)(.*?)(<A NAME="(.*?)">)</A>((<A NAME=".*"></A>)*)(</H[0-9]+>):$9$2$7$11$8$13:) {
+      $mapping{$1} = $10;
+      if ($debug) { print STDERR "$1 => $mapping{$1}\n"; }
     }
-    # Move around the "<A NAME=" for sections without htoc (anything not in
+    # Move around the "<A NAME=" for sections *without* htoc (anything not in
     # tocdepth, which is not in a table of contents).  If the anchor comes
-    # at the end of a header, then when going to that URL, some browsers
+    # within but at the end of a header, then when going to that URL, some browsers
     # will position the header off the top of the screen.  Putting the
     # anchor at the beginning of the header fixes this problem.
-    $lines[$i] =~ s:(<(H[345]) CLASS="((sub)*section|paragraph)">)(.*)(<A NAME=".*">)(</A></\2>):$1$6$5$7:;
+    $lines[$i] =~ s:(<(H[345]) CLASS="((sub)*section|paragraph)">)(.*?)(<A NAME=".*">(</A><A NAME=".*">)*)(</A></\2>):$1$6$5$8:;
   }
 
   foreach my $line (@lines) {
