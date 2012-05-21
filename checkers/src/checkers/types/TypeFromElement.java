@@ -731,6 +731,12 @@ public class TypeFromElement {
             } else {
                 bound = wt.getSuperBound();
             }
+            if (bound==null) {
+                // If neither bound is set explicitly, this will
+                // set a meaningful default (java.lang.Object or the type
+                // variable bound.
+                bound = wt.getExtendsBound();
+            }
         } else {
             throw new CheckerError("TypeFromElement.getBounds: " +
                     "type has no bounds: " + type + " [" + type.getKind() + "]");
