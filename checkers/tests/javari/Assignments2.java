@@ -49,7 +49,7 @@ class Assignments2 {
     }
 
     public void cannotDo() {
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int j = 0;   // primitive cannot be annotated as readonly
         //:: error: (assignment.type.incompatible)
         a = b;                 // cannot assign readonly to mutable

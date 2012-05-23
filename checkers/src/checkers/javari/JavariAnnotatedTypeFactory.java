@@ -161,7 +161,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         typePost.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
 
         // 6 - resolve ThisMutable from fields
-        if (type.hasEffectiveAnnotation(THISMUTABLE)) {
+        if (elt!=null && elt.getKind()==ElementKind.FIELD &&
+                 type.hasEffectiveAnnotation(THISMUTABLE)) {
             AnnotatedDeclaredType selfType = getSelfType(tree);
             if (selfType != null) {
                 if (selfType.hasEffectiveAnnotation(POLYREAD))
