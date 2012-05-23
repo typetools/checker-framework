@@ -339,6 +339,7 @@ abstract class TypeFromTree extends
             // AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
             // Instead of the above, but the typeAnnotations are not filled into
             // the VarSymbol of a local variable :-(
+            // TODO: fix this!
             Element elt = TreeUtils.elementFromDeclaration(node);
             result.setElement(elt);
 

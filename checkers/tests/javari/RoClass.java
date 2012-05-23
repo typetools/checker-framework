@@ -32,7 +32,7 @@ import checkers.javari.quals.*;
         x = sx;     // error
     }
 
-    public void testFieldsReadOnly() @ReadOnly {
+    public void testFieldsReadOnly(@ReadOnly RoClass this) {
         @Mutable Object a = null;
         //:: error: (type.incompatible)
         a = x;      // error

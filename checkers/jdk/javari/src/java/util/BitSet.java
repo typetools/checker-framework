@@ -14,21 +14,21 @@ public class BitSet implements Cloneable, java.io.Serializable {
   public void clear(int a1) { throw new RuntimeException(("skeleton method")); }
   public void clear(int a1, int a2) { throw new RuntimeException(("skeleton method")); }
   public void clear() { throw new RuntimeException(("skeleton method")); }
-  public boolean get(int a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public BitSet get(int a1, int a2) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public int nextSetBit(int a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public int nextClearBit(int a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public int length() @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public boolean isEmpty() @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public boolean intersects(BitSet a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public int cardinality() @ReadOnly { throw new RuntimeException(("skeleton method")); }
+  public boolean get(@ReadOnly BitSet this, int a1) { throw new RuntimeException(("skeleton method")); }
+  public BitSet get(@ReadOnly BitSet this, int a1, int a2) { throw new RuntimeException(("skeleton method")); }
+  public int nextSetBit(@ReadOnly BitSet this, int a1) { throw new RuntimeException(("skeleton method")); }
+  public int nextClearBit(@ReadOnly BitSet this, int a1) { throw new RuntimeException(("skeleton method")); }
+  public int length(@ReadOnly BitSet this) { throw new RuntimeException(("skeleton method")); }
+  public boolean isEmpty(@ReadOnly BitSet this) { throw new RuntimeException(("skeleton method")); }
+  public boolean intersects(@ReadOnly BitSet this, BitSet a1) { throw new RuntimeException(("skeleton method")); }
+  public int cardinality(@ReadOnly BitSet this) { throw new RuntimeException(("skeleton method")); }
   public void and(@ReadOnly BitSet a1) { throw new RuntimeException(("skeleton method")); }
   public void or(@ReadOnly BitSet a1) { throw new RuntimeException(("skeleton method")); }
   public void xor(@ReadOnly BitSet a1) { throw new RuntimeException(("skeleton method")); }
   public void andNot(@ReadOnly BitSet a1) { throw new RuntimeException(("skeleton method")); }
-  public int hashCode() @ReadOnly{ throw new RuntimeException(("skeleton method")); }
-  public int size() @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public boolean equals(@ReadOnly Object a1) @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public Object clone() @ReadOnly { throw new RuntimeException(("skeleton method")); }
-  public String toString() @ReadOnly{ throw new RuntimeException(("skeleton method")); }
+  public int hashCode(@ReadOnly BitSet this){ throw new RuntimeException(("skeleton method")); }
+  public int size(@ReadOnly BitSet this) { throw new RuntimeException(("skeleton method")); }
+  public boolean equals(@ReadOnly BitSet this, @ReadOnly Object a1) { throw new RuntimeException(("skeleton method")); }
+  public Object clone(@ReadOnly BitSet this) { throw new RuntimeException(("skeleton method")); }
+  public String toString(@ReadOnly BitSet this){ throw new RuntimeException(("skeleton method")); }
 }

@@ -111,13 +111,6 @@ public class IGJChecker extends BaseTypeChecker {
         return isAssignable;
     }
 
-    @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
-        if (elemType.hasEffectiveAnnotation(I) || use.hasEffectiveAnnotation(READONLY))
-            return true;
-        return super.isValidUse(elemType, use);
-    }
-
     // **********************************************************************
     // Factory methods
     // **********************************************************************

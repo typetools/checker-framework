@@ -38,11 +38,11 @@ public class StringWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly StringWriter this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuffer getBuffer() @ReadOnly {
+    public StringBuffer getBuffer(@ReadOnly StringWriter this) {
         throw new RuntimeException("skeleton method");
     }
 

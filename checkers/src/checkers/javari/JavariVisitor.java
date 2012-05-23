@@ -9,7 +9,7 @@ import checkers.javari.quals.Assignable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypes;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -96,42 +96,23 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
 
     }
 
-
     /**
-     * Tests whether the tree expressed by the passed type tree
-     * contains a qualified primitive type on its qualified type, and
-     * if so emits an error.
+     * Always true; no type validity checking is made by the BaseTypeVisitor.
      *
-     * @param tree  the AST type supplied by the user
+     * @see BaseTypeVisitor
      */
     @Override
-    public void validateTypeOf(Tree tree) {
-        AnnotatedTypeMirror type;
-        // It's quite annoying that there is no TypeTree
-        switch (tree.getKind()) {
-        case PRIMITIVE_TYPE:
-        case PARAMETERIZED_TYPE:
-        case TYPE_PARAMETER:
-        case ARRAY_TYPE:
-        case UNBOUNDED_WILDCARD:
-        case EXTENDS_WILDCARD:
-        case SUPER_WILDCARD:
-            type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
-            break;
-        default:
-            type = atypeFactory.getAnnotatedType(tree);
-        }
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
+        return true;
+    }
 
-        // Here we simply test for primitive types
-        // they can only occur at raw or array most inner component type
-        type = AnnotatedTypes.innerMostType(type);
-        if (type.getKind().isPrimitive()) {
-            if (type.hasEffectiveAnnotation(QREADONLY)
-                    || type.hasEffectiveAnnotation(READONLY)
-                    || type.hasEffectiveAnnotation(POLYREAD)) {
-                    checker.report(Result.failure("primitive.ro"), tree);
-            }
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType useType) {
+        if (useType.hasAnnotation(QREADONLY)
+                || useType.hasAnnotation(READONLY)
+                || useType.hasAnnotation(POLYREAD)) {
+            return false;
         }
-        super.validateTypeOf(tree);
+        return super.isValidUse(useType);
     }
 }
