@@ -38,4 +38,11 @@ public class IGJVisitor extends BaseTypeVisitor<IGJChecker> {
         else
             return super.checkConstructorInvocation(dt, constructor, src);
     }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
+        if (elemType.hasEffectiveAnnotation(checker.I) || use.hasEffectiveAnnotation(checker.READONLY))
+            return true;
+        return super.isValidUse(elemType, use);
+    }
 }
