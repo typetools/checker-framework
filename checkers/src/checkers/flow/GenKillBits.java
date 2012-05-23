@@ -4,6 +4,7 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 
@@ -49,8 +50,12 @@ public class GenKillBits<K> {
    */
   public GenKillBits(Collection<K> keys) {
     bitsets = new HashMap<K, BitSet>(keys.size());
-    for (K key : keys)
+    for (K key : keys) {
+      if (key==null) {
+        throw new SourceChecker.CheckerError("GenKillBits(keys): No null keys allowed!");
+      }
       bitsets.put(key, new BitSet());
+    }
   }
 
   /**
@@ -67,6 +72,9 @@ public class GenKillBits<K> {
 
     bitsets = new HashMap<K, BitSet>(other.bitsets);
     for (K key : bitsets.keySet()) {
+      if (key==null) {
+        throw new SourceChecker.CheckerError("GenKillBits(other): No null keys allowed!");
+      }
       BitSet newbits = (BitSet) bitsets.get(key).clone();
       bitsets.put(key, newbits);
     }
@@ -80,6 +88,9 @@ public class GenKillBits<K> {
    * @param index the index at which to set the bit
    */
   public void set(K key, int index) {
+    if (key==null) {
+      throw new SourceChecker.CheckerError("GenKillBits.set: No null keys allowed!");
+    }
     if (!bitsets.containsKey(key)) {
       bitsets.put(key, new BitSet());
     }
@@ -178,6 +189,9 @@ public class GenKillBits<K> {
 
           if (lhs.get(var) && rhs.get(var)) {
             AnnotationMirror lub = annoRelations.leastUpperBound(key1, key2);
+            if (lub==null) {
+              continue;
+            }
             lhs.clear(var);
             outarg1.set(lub, var);
             notfound = false;
@@ -232,6 +246,9 @@ public class GenKillBits<K> {
           if ( rhs.get(var) ) {
             if( lhs.get(var) ) {
               AnnotationMirror glb = annoRelations.leastUpperBound(key1, key2);
+              if (glb==null) {
+                continue;
+              }
               lhs.clear(var);
               outarg1.set(glb, var);
             } else {
@@ -250,6 +267,9 @@ public class GenKillBits<K> {
               for (AnnotationMirror key3 : arg1KeySet2) {
                 if ( outarg1.bitsets.get(key3).get(var) ) {
                   AnnotationMirror glb = annoRelations.leastUpperBound(key3, key2);
+                  if (glb==null) {
+                      continue;
+                  }
                   if (!glb.equals(key3) ) {
                     outarg1.bitsets.get(key3).clear(var);
                     outarg1.set(glb, var);
