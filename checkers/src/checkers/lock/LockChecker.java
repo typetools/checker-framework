@@ -34,12 +34,6 @@ public class LockChecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
-    }
-
-    @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
 
