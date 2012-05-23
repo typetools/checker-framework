@@ -16,6 +16,7 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
@@ -647,6 +648,31 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     public static final boolean isPrimitive(ExpressionTree tree) {
         return InternalUtils.typeOf(tree).getKind().isPrimitive();
+    }
+
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        // At most a single qualifier on a type
+        if (useType.getAnnotations().size() > 1) {
+            return false;
+        }
+        return super.isValidUse(declarationType, useType);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        // No explicit qualifiers on primitive types
+        if (type.getAnnotations().size()>1 ||
+             (type.getAnnotation(Primitive.class)==null &&
+             // The element is null if the primitive type is an array component ->
+             // always a reason to warn.
+             (type.getElement()==null ||
+                     !type.getExplicitAnnotations().isEmpty()))) {
+            return false;
+        }
+        return super.isValidUse(type);
     }
 
 }
