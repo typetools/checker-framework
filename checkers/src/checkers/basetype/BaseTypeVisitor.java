@@ -326,7 +326,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath());
+                                getCurrentPath(), atypeFactory.getEnv());
 
                 for (String stringExpr : expressions) {
                     FlowExpressions.Receiver expr = null;
@@ -336,7 +336,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         // be optimized to store the result the first time.
                         // (same for other annotations)
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                flowExprContext);
+                                flowExprContext, getCurrentPath());
                         checkFlowExprParameters(node, stringExpr);
 
                         // TODO: we should not need to cast here?
@@ -380,13 +380,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath());
+                                getCurrentPath(), atypeFactory.getEnv());
 
                 for (String stringExpr : expressions) {
                     FlowExpressions.Receiver expr = null;
                     try {
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                flowExprContext);
+                                flowExprContext, getCurrentPath());
                         checkFlowExprParameters(node, stringExpr);
                         // check return type of method
                         boolean booleanReturnType = TypesUtils
@@ -568,13 +568,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             Node node = factory.getNodeForTree(tree);
             FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse((MethodInvocationNode) node);
+                    .buildFlowExprContextForUse((MethodInvocationNode) node, atypeFactory.getEnv());
 
             for (String stringExpr : expressions) {
                 FlowExpressions.Receiver expr = null;
                 try {
                     expr = FlowExpressionParseUtil.parse(stringExpr,
-                            flowExprContext);
+                            flowExprContext, getCurrentPath());
 
                     CFStore store = factory.getStoreBefore(tree);
                     CFValue value = store.getValue(expr);

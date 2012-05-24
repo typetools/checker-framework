@@ -111,7 +111,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                         .annotationFromName(annotation);
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(methodTree, method.getClassTree());
+                        .buildFlowExprContextForDeclaration(methodTree, method.getClassTree(), analysis.getEnv());
 
                 // store all expressions in the store
                 for (String stringExpr : expressions) {
@@ -122,7 +122,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                         // be optimized to store the result the first time.
                         // (same for other annotations)
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                flowExprContext);
+                                flowExprContext, analysis.factory.getPath(methodTree));
                         info.insertValue(expr, anno);
                     } catch (FlowExpressionParseException e) {
                         // report errors here
@@ -389,12 +389,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     .annotationFromName(annotation);
 
             FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse(n);
+                    .buildFlowExprContextForUse(n, analysis.getEnv());
 
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext, analysis.factory.getPath(tree));
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
@@ -419,12 +419,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     .annotationFromName(annotation);
 
             FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse(n);
+                    .buildFlowExprContextForUse(n, analysis.getEnv());
 
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext);
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext, analysis.factory.getPath(tree));
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
