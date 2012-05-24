@@ -136,6 +136,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public Types getTypes() {
         return types;
     }
+    
+    public ProcessingEnvironment getEnv() {
+        return env;
+    }
 
     /**
      * Perform the actual analysis. Should only be called once after the object

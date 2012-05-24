@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -248,7 +249,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
      * corresponding store.
      */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, CFStore>>> returnStatementStores = null;
-    
+
     /**
      * A mapping from methods to their a list with all return statements and the
      * corresponding store.
@@ -336,7 +337,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
                             }
                         }
 
-                        analyze(queue, new CFGMethod(mt, TreeUtils.enclosingClass(getPath(mt))));
+                        analyze(queue,
+                                new CFGMethod(mt, TreeUtils
+                                        .enclosingClass(getPath(mt))));
                         break;
                     case VARIABLE:
                         VariableTree vt = (VariableTree) m;
@@ -389,12 +392,11 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends
         CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
         assert analysis == null;
-        analysis = new CFAnalysis(this, checker.getProcessingEnvironment(),
-                checker);
+        analysis = new CFAnalysis(this, env, checker);
         // TODO: remove this hack
         if (this instanceof RegexAnnotatedTypeFactory) {
-            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this,
-                    checker.getProcessingEnvironment(), checker);
+            analysis = new RegexAnalysis((RegexAnnotatedTypeFactory) this, env,
+                    checker);
         }
         analysis.performAnalysis(cfg);
         AnalysisResult<CFValue, CFStore> result = analysis.getResult();

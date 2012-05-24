@@ -161,6 +161,10 @@ public class AnnotatedTypeFactory {
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
     
+    public ProcessingEnvironment getEnv() {
+        return env;
+    }
+    
     /**
      * Construct an annotation from a class.
      */

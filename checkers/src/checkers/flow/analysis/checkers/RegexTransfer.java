@@ -47,12 +47,13 @@ public class RegexTransfer extends
                             .equals("isRegex(java.lang.String,int)")) {
                 CFStore thenStore = result.getRegularStore();
                 CFStore elseStore = thenStore.copy();
-                ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+                ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
+                        result.getResultValue(), thenStore, elseStore);
                 FlowExpressionContext context = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n);
+                        .buildFlowExprContextForUse(n, analysis.getEnv());
                 try {
                     Receiver firstParam = FlowExpressionParseUtil.parse("#1",
-                            context);
+                            context, analysis.factory.getPath(n.getTree()));
                     // add annotation with correct group count (if possible,
                     // regex annotation without count otherwise)
                     Node count = n.getArgument(1);
@@ -60,7 +61,8 @@ public class RegexTransfer extends
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
                         RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) analysis.factory;
-                        AnnotationMirror regexAnnotation = f.createRegexAnnotation(groupCount);
+                        AnnotationMirror regexAnnotation = f
+                                .createRegexAnnotation(groupCount);
                         thenStore.insertValue(firstParam, regexAnnotation);
                     } else {
                         AnnotationMirror regexAnnotation = analysis.factory
