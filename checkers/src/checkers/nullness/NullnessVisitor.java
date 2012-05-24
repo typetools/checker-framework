@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -263,11 +264,23 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // Check field initialization in constructors
         if (TreeUtils.isConstructor(node)
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
-            Pair<Set<VariableElement>,Set<VariableElement>> oldFields = nonInitializedFields;
+            Pair<Set<VariableElement>, Set<VariableElement>> oldFields = nonInitializedFields;
             try {
+                // TODO: get access to a Types instance and use it to get receiver type
+                // Or, extend ExecutableElement with such a method.
+                // Note that we cannot use the receiver type from AnnotatedExecutableType,
+                // because that would only have the nullness annotations; here we want to
+                // see all annotations on the receiver.
+                ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
+                com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
+                List<? extends AnnotationMirror> rcvannos;
+                if (rcv!=null) {
+                    rcvannos = rcv.typeAnnotations;
+                } else {
+                    rcvannos = Collections.<AnnotationMirror>emptyList();
+                }
                 nonInitializedFields
-                    = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()),
-                                TreeUtils.elementFromDeclaration(node).getAnnotationMirrors());
+                    = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()), rcvannos);
                 return super.visitMethod(node, p);
             } finally {
                 Set<VariableElement> initAfter
