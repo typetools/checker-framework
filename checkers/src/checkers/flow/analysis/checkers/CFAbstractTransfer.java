@@ -5,6 +5,8 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
@@ -75,6 +77,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
         return analysis.createAbstractValue(at.getAnnotations());
+    }
+
+    /**
+     * @return The abstract value of a non-leaf tree {@code tree}, as computed
+     *         by the {@link AnnotatedTypeFactory}, but without considering any
+     *         flow-sensitive refinements.
+     */
+    protected V getEffectiveValueFromFactory(Tree tree) {
+        analysis.setCurrentTree(tree);
+        AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
+        analysis.setCurrentTree(null);
+        return analysis.createAbstractValue(at.getEffectiveAnnotations());
     }
 
     /**
@@ -339,6 +353,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void processCommonAssignment(TransferInput<V, S> in, Node lhs,
             Node rhs, S info, V rhsValue) {
+
+        TypeMirror rhsType = rhs.getType();
+        TypeMirror lhsType = lhs.getType();
+        if ((rhsType.getKind() == TypeKind.TYPEVAR || rhsType.getKind() == TypeKind.WILDCARD)
+                && (lhsType.getKind() != TypeKind.TYPEVAR && lhsType.getKind() != TypeKind.WILDCARD)) {
+            // Only take the effective upper bound if the LHS is not also a type
+            // variable/wildcard.
+            rhsValue = getEffectiveValueFromFactory(rhs.getTree());
+        }
 
         // assignment to a local variable
         if (lhs instanceof LocalVariableNode) {
