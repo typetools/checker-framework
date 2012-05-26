@@ -9,11 +9,15 @@ import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.Flow;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.RegexAnalysis;
+import checkers.flow.analysis.checkers.RegexTransfer;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
@@ -67,7 +71,7 @@ import com.sun.source.tree.Tree.Kind;
  * Also, adds {@link PolyRegex} to the type of String/char concatenation of
  * a Regex and a PolyRegex or two PolyRegexs.
  */
-public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
+public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory<RegexChecker, CFValue, CFStore, RegexTransfer, RegexAnalysis> {
 
     /**
      * The Pattern.compile method.
@@ -126,6 +130,11 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
     public Flow createFlow(RegexChecker checker, CompilationUnitTree tree,
             Set<AnnotationMirror> flowQuals) {
         return new RegexFlow(checker, tree, flowQuals, this);
+    }
+    
+    @Override
+    protected RegexAnalysis createFlowAnalysis(RegexChecker checker) {
+        return new RegexAnalysis(this, getEnv(), checker);
     }
 
     @Override
