@@ -633,7 +633,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * <ul>
      *  <li> passed arguments are subtypes of corresponding c parameters </li>
      *  <li> if c is generic, passed type arguments are subtypes
-     *      of c type variables <li>
+     *      of c type variables </li>
      * </ul>
      */
     @Override
