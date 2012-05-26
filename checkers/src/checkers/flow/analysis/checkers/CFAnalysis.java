@@ -19,7 +19,8 @@ import checkers.util.AnnotationUtils;
 public class CFAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public CFAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env, BaseTypeChecker checker) {
+    public CFAnalysis(AnnotatedTypeFactory factory, ProcessingEnvironment env,
+            BaseTypeChecker checker) {
         super(factory, env, checker);
     }
 
@@ -39,7 +40,19 @@ public class CFAnalysis extends
     }
 
     @Override
-    protected/* @Nullable */CFValue createAbstractValue(Set<AnnotationMirror> annotations) {
+    protected/* @Nullable */CFValue createAbstractValue(
+            Set<AnnotationMirror> annotations) {
+        return defaultCreateAbstractValue(annotations, legalAnnotations, this);
+    }
+
+    /**
+     * Only uses the legal annotations in {@code annotations} and
+     * {@code effectiveAnnotations}, and creates a {@link CFValue}.
+     */
+    public static CFValue defaultCreateAbstractValue(
+            Set<AnnotationMirror> annotations,
+            Set<AnnotationMirror> legalAnnotations,
+            CFAbstractAnalysis<CFValue, ?, ?> analysis) {
         Set<AnnotationMirror> as = new HashSet<>();
         for (AnnotationMirror a : annotations) {
             if (AnnotationUtils.containsSameIgnoringValues(legalAnnotations, a)) {
@@ -49,7 +62,7 @@ public class CFAnalysis extends
         if (as.size() == 0) {
             return null;
         }
-        return new CFValue(this, as);
+        return new CFValue(analysis, as);
     }
 
 }
