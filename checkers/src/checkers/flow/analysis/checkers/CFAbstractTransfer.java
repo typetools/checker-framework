@@ -61,7 +61,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * The analysis class this store belongs to.
      */
     protected CFAbstractAnalysis<V, S, T> analysis;
-    
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
     }
@@ -89,29 +89,28 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (underlyingAST.getKind() == Kind.METHOD) {
             AnnotatedTypeFactory factory = analysis.getFactory();
             for (LocalVariableNode p : parameters) {
-                AnnotatedTypeMirror anno = factory
-                        .getAnnotatedType(p.getElement());
+                AnnotatedTypeMirror anno = factory.getAnnotatedType(p
+                        .getElement());
                 info.initializeMethodParameter(p,
                         analysis.createAbstractValue(anno.getAnnotations()));
             }
-            
+
             // add properties known through precondition
             CFGMethod method = (CFGMethod) underlyingAST;
             MethodTree methodTree = method.getMethod();
             Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
-            AnnotationMirror requiresAnnotation = factory
-                    .getDeclAnnotation(methodElem, RequiresAnnotation.class);
+            AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
+                    methodElem, RequiresAnnotation.class);
             if (requiresAnnotation != null) {
-                List<String> expressions = AnnotationUtils
-                        .elementValueArray(requiresAnnotation,
-                                "expression");
+                List<String> expressions = AnnotationUtils.elementValueArray(
+                        requiresAnnotation, "expression");
                 String annotation = AnnotationUtils.elementValueClassName(
                         requiresAnnotation, "annotation");
-                AnnotationMirror anno = factory
-                        .annotationFromName(annotation);
+                AnnotationMirror anno = factory.annotationFromName(annotation);
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(methodTree, method.getClassTree(), analysis.getEnv());
+                        .buildFlowExprContextForDeclaration(methodTree,
+                                method.getClassTree(), analysis.getEnv());
 
                 // store all expressions in the store
                 for (String stringExpr : expressions) {
@@ -122,7 +121,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                         // be optimized to store the result the first time.
                         // (same for other annotations)
                         expr = FlowExpressionParseUtil.parse(stringExpr,
-                                flowExprContext, analysis.factory.getPath(methodTree));
+                                flowExprContext,
+                                analysis.factory.getPath(methodTree));
                         info.insertValue(expr, anno);
                     } catch (FlowExpressionParseException e) {
                         // report errors here
@@ -336,8 +336,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     /**
      * Determine abstract value of right-hand side and update the store
      * accordingly to the assignment.
-     * 
-     * @param rhsValue
      */
     protected void processCommonAssignment(TransferInput<V, S> in, Node lhs,
             Node rhs, S info, V rhsValue) {
@@ -394,7 +392,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext, analysis.factory.getPath(tree));
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext,
+                            analysis.factory.getPath(tree));
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
@@ -424,7 +423,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             for (String exp : expressions) {
                 FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext, analysis.factory.getPath(tree));
+                    r = FlowExpressionParseUtil.parse(exp, flowExprContext,
+                            analysis.factory.getPath(tree));
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
                 }
