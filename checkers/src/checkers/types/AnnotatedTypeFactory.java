@@ -1610,6 +1610,15 @@ public class AnnotatedTypeFactory {
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
+        
+        // stub file for type-system independent annotations
+        InputStream input = BaseTypeChecker.class
+                .getResourceAsStream("flow.astub");
+        if (input != null) {
+            StubParser stubParser = new StubParser("flow.astub", input, this,
+                    env);
+            stubParser.parse(indexTypes, indexDeclAnnos);
+        }
 
         String allstubFiles = "";
         String stubFiles;
