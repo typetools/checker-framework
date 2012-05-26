@@ -48,6 +48,8 @@ public class FlowExpressionParseUtil {
     /** Matches an identifier */
     protected static Pattern identifierPattern = Pattern
             .compile("^[a-z_$][a-z_$0-9]*$");
+    /** Matches a field access */
+    protected static Pattern dotPattern = Pattern.compile("^([^.]+)\\.(.+)$");
 
     /**
      * Parse a string and return its representation as a
@@ -58,6 +60,7 @@ public class FlowExpressionParseUtil {
      * @param s
      *            The string to parse.
      * @param path
+     *            The current tree path.
      * @param receiverType
      *            The type of the receiver that this expression might refer to.
      * @param receiver
@@ -69,15 +72,27 @@ public class FlowExpressionParseUtil {
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
+        return parse(s, context, path, true, true, true, true);
+    }
+
+    /**
+     * Private implementation of {@link #parse} with a choice of which classes
+     * of expressions should be parsed.
+     */
+    private static/* @Nullable */FlowExpressions.Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean allowSelf,
+            boolean allowIdentifier, boolean allowParameter, boolean allowDot)
+            throws FlowExpressionParseException {
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher dotMatcher = dotPattern.matcher(s);
 
         // this literal
-        if (selfMatcher.matches()) {
+        if (selfMatcher.matches() && allowSelf) {
             return new ThisReference(context.receiverType);
-        } else if (identifierMatcher.matches()) {
+        } else if (identifierMatcher.matches() && allowIdentifier) {
             // field access
             try {
                 Resolver resolver = new Resolver(context.env);
@@ -89,8 +104,7 @@ public class FlowExpressionParseUtil {
                         "flowexpr.parse.error", s));
                 return null;
             }
-
-        } else if (parameterMatcher.matches()) {
+        } else if (parameterMatcher.matches() && allowParameter) {
             // parameter syntax
             int idx = -1;
             try {
@@ -105,6 +119,16 @@ public class FlowExpressionParseUtil {
                         "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
             return context.arguments.get(idx - 1);
+        } else if (dotMatcher.matches() && allowDot) {
+            String receiverString = dotMatcher.group(1);
+            String remainingString = dotMatcher.group(2);
+
+            // Parse the receiver first.
+            Receiver receiver = parse(receiverString, context, path);
+
+            // Parse the rest, with a new receiver.
+            FlowExpressionContext newContext = context.changeReceiver(receiver);
+            return parse(remainingString, newContext, path, false, true, false, true);
         } else {
             throw new FlowExpressionParseException(Result.failure(
                     "flowexpr.parse.error", s));
@@ -128,6 +152,15 @@ public class FlowExpressionParseUtil {
             this.receiver = receiver;
             this.arguments = arguments;
             this.env = env;
+        }
+
+        /**
+         * Returns a copy of the context that is identical, but has a different
+         * receiver.
+         */
+        public FlowExpressionContext changeReceiver(Receiver receiver) {
+            return new FlowExpressionContext(receiver.getType(), receiver,
+                    arguments, env);
         }
     }
 
