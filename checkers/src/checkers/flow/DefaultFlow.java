@@ -106,8 +106,8 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Element rElt = InternalUtils.symbol(rhs);
         int rIdx = this.flowState.vars.indexOf(rElt);
 
-        Set<AnnotationMirror> typeAnnos;
-        Set<AnnotationMirror> eltTypeAnnos;
+        Set<AnnotationMirror> typeAnnos;    // rhs
+        Set<AnnotationMirror> eltTypeAnnos; // lhs
 
         if ((type.getKind() == TypeKind.TYPEVAR ||
                 type.getKind() == TypeKind.WILDCARD) &&
