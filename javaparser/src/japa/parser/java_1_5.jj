@@ -1178,7 +1178,7 @@ IndexUnit IndexUnit():
 {
   [ LOOKAHEAD(PackageDeclaration()) pakage = PackageDeclaration() {line = pakage.getBeginLine(); column = pakage.getBeginColumn();} ]
   ( in = ImportDeclaration() { if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in); } )*
-  ( tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
+  ( LOOKAHEAD(TypeDeclaration()) tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
   { cu = new CompilationUnit(line == -1 ? 0 : line, column, token.endLine, token.endColumn,pakage, imports, types, getComments());
     compilationUnits.add(cu); }
 
@@ -1186,7 +1186,7 @@ IndexUnit IndexUnit():
 (
   pakage = PackageDeclaration() {line = pakage.getBeginLine(); column = pakage.getBeginColumn(); imports = new LinkedList(); types = new LinkedList(); }
   ( in = ImportDeclaration() { if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in); } )*
-  ( tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
+  ( LOOKAHEAD(TypeDeclaration()) tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
   { cu = new CompilationUnit(line == -1 ? 0 : line, column, token.endLine, token.endColumn,pakage, imports, types, getComments());
     compilationUnits.add(cu); }  
 )*
@@ -1212,7 +1212,7 @@ CompilationUnit CompilationUnit():
 {
   [ LOOKAHEAD(PackageDeclaration()) pakage = PackageDeclaration() {line = pakage.getBeginLine(); column = pakage.getBeginColumn();} ]
   ( in = ImportDeclaration() { if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in); } )*
-  ( tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
+  ( LOOKAHEAD(TypeDeclaration()) tn = TypeDeclaration() { if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn); } )*
   (<EOF> | "\u001A" /** ctrl+z char **/)
   { return new CompilationUnit(line == -1 ? 0 : line, column, token.endLine, token.endColumn,pakage, imports, types, getComments()); }
 }
@@ -1226,7 +1226,7 @@ PackageDeclaration PackageDeclaration():
 	int column;
 }
 {
-/*( ann = Annotation() { annotations = add(annotations, ann); } )* */
+  ( ann = Annotation() { annotations = add(annotations, ann); } )* 
   "package" {line=token.beginLine; column=token.beginColumn;}  name = Name() ";"
   { return new PackageDeclaration(line, column, token.endLine, token.endColumn,annotations, name); }
 }
