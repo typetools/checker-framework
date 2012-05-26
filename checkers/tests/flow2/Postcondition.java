@@ -16,6 +16,16 @@ class Postcondition {
         f1 = null;
     }
     
+    @EnsuresAnnotation(expression="p.f1", annotation=Odd.class)
+    void oddF1_1() {
+        p.f1 = null;
+    }
+    
+    @EnsuresAnnotation(expression="#1.f1", annotation=Odd.class)
+    void oddF1_2(final Postcondition param) {
+        param.f1 = null;
+    }
+    
     @EnsuresAnnotation(expression="f1", annotation=Value.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void valueF1() {
@@ -24,6 +34,11 @@ class Postcondition {
     @EnsuresAnnotation(expression="---", annotation=Value.class)
     //:: error: (flowexpr.parse.error)
     void error() {
+    }
+    
+    @EnsuresAnnotation(expression="#1.#2", annotation=Value.class)
+    //:: error: (flowexpr.parse.error)
+    void error2(final String p1, final String p2) {
     }
     
     @EnsuresAnnotation(expression="f1", annotation=Value.class)
@@ -57,6 +72,23 @@ class Postcondition {
     // test parameter syntax
     void t2(@Odd String p1, String p2) {
         param3();
+    }
+    
+    // postcondition with more complex flow expression
+    void tn1(boolean b) {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p.f1;
+        oddF1_1();
+        @Odd String l2 = p.f1;
+    }
+    
+    // postcondition with more complex flow expression
+    void tn2(boolean b) {
+        Postcondition param = null;
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = param.f1;
+        oddF1_2(param);
+        @Odd String l2 = param.f1;
     }
     
     /***** conditional postcondition ******/
