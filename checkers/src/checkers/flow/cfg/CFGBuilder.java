@@ -1999,8 +1999,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
-            assert false : "AnnotatedTypeTree is unexpected in AST to CFG translation";
-            return null;
+            return scan(tree.getUnderlyingType(), p);
         }
 
         @Override
