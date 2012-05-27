@@ -160,4 +160,56 @@ class Postcondition {
             @Odd String l2 = f1;
         }
     }
+    
+    /***** many conditional postcondition ******/
+    @EnsuresAnnotationsIf({
+        @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class),
+        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Value.class)
+    })
+    boolean condsOddF1(boolean b, @Value String p1) {
+        if (b) {
+            f1 = null;
+            return true;
+        }
+        f1 = p1;
+        return false;
+    }
+    
+    @EnsuresAnnotationsIf({
+        @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class),
+        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Value.class)
+    })
+    boolean condsOddF1_invalid(boolean b, @Value String p1) {
+        if (b) {
+            //:: error: (contracts.conditional.postcondition.not.satisfied)
+            return true;
+        }
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
+        return false;
+    }
+    
+    @EnsuresAnnotationsIf({
+        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    })
+    //:: error: (contracts.conditional.postcondition.invalid.returntype)
+    String wrongReturnType3() {
+        return "";
+    }
+    
+    void t6(@Odd String p1, @Value String p2) {
+        condsOddF1(true, p2);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = f1;
+        //:: error: (assignment.type.incompatible)
+        @Value String l2 = f1;
+        if (condsOddF1(false, p2)) {
+            @Odd String l3 = f1;
+            //:: error: (assignment.type.incompatible)
+            @Value String l4 = f1;
+        } else {
+            @Value String l5 = f1;
+            //:: error: (assignment.type.incompatible)
+            @Odd String l6 = f1;
+        }
+    }
 }
