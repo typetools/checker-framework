@@ -8,6 +8,12 @@ import checkers.flow.analysis.checkers.CFValue;
 
 import com.sun.source.tree.CompilationUnitTree;
 
+/**
+ * A factory that extends {@link AbstractBasicAnnotatedTypeFactory} to use the
+ * default flow-sensitive analysis as provided by {@link CFAnalysis}.
+ * 
+ * @author Stefan Heule
+ */
 public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker>
         extends
         AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> {

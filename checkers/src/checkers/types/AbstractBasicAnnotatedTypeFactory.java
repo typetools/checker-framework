@@ -71,7 +71,7 @@ import com.sun.source.util.TreePath;
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
  * flow-sensitive qualifier inference, qualifier polymorphism, implicit
  * annotations via {@link ImplicitFor}, and user-specified defaults via
- * {@link DefaultQualifier}
+ * {@link DefaultQualifier}.
  */
 public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseTypeChecker, Value extends CFAbstractValue<Value>, Store extends CFAbstractStore<Value, Store>, TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>, FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
         extends AnnotatedTypeFactory {
