@@ -96,8 +96,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     // // Flow related fields
     /** Should use flow analysis? */
     protected boolean useFlow;
-    /** Flow sensitive instance */
-    protected final Flow flow;
 
     /**
      * Creates a type factory for checking the given compilation unit with
@@ -118,8 +116,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
-        Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
-        this.flow = useFlow ? createFlow(checker, root, flowQuals) : null;
 
         this.defaults = new QualifierDefaults(this, this.annotations);
         boolean foundDefault = false;
@@ -181,23 +177,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
         return new TypeAnnotator(checker);
-    }
-
-    /**
-     * Returns a {@link Flow} instance that performs flow sensitive analysis to
-     * infer qualifiers on unqualified types.
-     * 
-     * @param checker
-     *            the checker
-     * @param root
-     *            the compilation unit associated with this factory
-     * @param flowQuals
-     *            the qualifiers to infer
-     * @return the flow analysis class
-     */
-    protected Flow createFlow(Checker checker, CompilationUnitTree root,
-            Set<AnnotationMirror> flowQuals) {
-        return new DefaultFlow<DefaultFlowState>(checker, root, flowQuals, this);
     }
     
     abstract protected FlowAnalysis createFlowAnalysis(Checker checker);
@@ -522,21 +501,5 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         poly.annotate(tree, method);
         poly.annotate(method.getElement(), method);
         return mfuPair;
-    }
-
-    // **********************************************************************
-    // Helper method
-    // **********************************************************************
-
-    /**
-     * Returns the set of annotations to be inferred in flow analysis
-     */
-    protected Set<AnnotationMirror> createFlowQualifiers(Checker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker
-                .getSupportedTypeQualifiers()) {
-            flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
     }
 }
