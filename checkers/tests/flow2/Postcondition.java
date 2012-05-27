@@ -131,6 +131,7 @@ class Postcondition {
     }
     
     /***** conditional postcondition ******/
+    
     @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class)
     boolean condOddF1(boolean b) {
         if (b) {
@@ -201,6 +202,7 @@ class Postcondition {
     }
     
     /***** many conditional postcondition ******/
+    
     @EnsuresAnnotationsIf({
         @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class),
         @EnsuresAnnotationIf(result=false, expression="f1", annotation=Value.class)
