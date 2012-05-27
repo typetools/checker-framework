@@ -36,6 +36,7 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
+import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.RequiresAnnotation;
 import checkers.types.AnnotatedTypeFactory;
@@ -400,8 +401,46 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         store.updateForMethodCall(n, analysis.factory);
 
         // add new information based on postcondition
+        processPostconditions(n, store, method, tree);
+
+        S thenStore = store;
+        S elseStore = thenStore.copy();
+
+        // add new information based on conditional postcondition
+        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
+
+        return new ConditionalTransferResult<>(resValue, thenStore, elseStore);
+    }
+
+    /**
+     * Add information based on all postconditions of method {@code n} with tree
+     * {@code tree} and element {@code method} to the store {@code store}.
+     */
+    protected void processPostconditions(MethodInvocationNode n, S store,
+            ExecutableElement method, Tree tree) {
+        // Process a single postcondition (if present).
         AnnotationMirror ensuresAnnotation = analysis.factory
                 .getDeclAnnotation(method, EnsuresAnnotation.class);
+        processPostcondition(n, store, tree, ensuresAnnotation);
+
+        // Process multiple postconditions (if present).
+        AnnotationMirror ensuresAnnotations = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotations.class);
+        if (ensuresAnnotations != null) {
+            List<AnnotationMirror> annotations = AnnotationUtils
+                    .elementValueArray(ensuresAnnotations, "value");
+            for (AnnotationMirror a : annotations) {
+                processPostcondition(n, store, tree, a);
+            }
+        }
+    }
+
+    /**
+     * Add information based on the postcondition {@code ensuresAnnotation} of
+     * method {@code n} with tree {@code tree} to the store {@code store}.
+     */
+    protected void processPostcondition(MethodInvocationNode n, S store,
+            Tree tree, AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation != null) {
             List<String> expressions = AnnotationUtils.elementValueArray(
                     ensuresAnnotation, "expression");
@@ -424,18 +463,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 }
             }
         }
-
-        S thenStore = store;
-        S elseStore = thenStore.copy();
-
-        // add new information based on conditional postcondition
-        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
-
-        return new ConditionalTransferResult<>(resValue, thenStore, elseStore);
     }
 
     /**
-     * Add information based on all conditional postcondition of method
+     * Add information based on all conditional postconditions of method
      * {@code n} with tree {@code tree} and element {@code method} to the
      * appropriate store.
      */
@@ -462,8 +493,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     /**
      * Add information based on the conditional postcondition
-     * {@code ensuresAnnotationIf} of method {@code n} with tree {@code tree}
-     * and element {@code method} to the appropriate store.
+     * {@code ensuresAnnotationIf} of method {@code n} with tree {@code tree} to
+     * the appropriate store.
      */
     protected void processConditionalPostcondition(MethodInvocationNode n,
             Tree tree, AnnotationMirror ensuresAnnotationIf, S thenStore,
