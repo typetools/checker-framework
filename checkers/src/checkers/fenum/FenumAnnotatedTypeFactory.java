@@ -37,12 +37,13 @@ public class FenumAnnotatedTypeFactory extends
     defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
 
     // flow.setDebug(System.err);
-    flow.scan(root);
+    //flow.scan(root);
+    // TODO: Re-enable flow with the new dataflow framework.
   }
 
   @Override
   protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-    if (flow == null) {
+    if (!useFlow) {
       // If the flow field is null, the flow inference is turned off.
       // Just do what the superclass did.
       super.annotateImplicit(tree, type);
@@ -52,7 +53,7 @@ public class FenumAnnotatedTypeFactory extends
 
       defaults.annotate(tree, type);
 
-      final Set<AnnotationMirror> inferred = flow.test(tree);
+      final Set<AnnotationMirror> inferred = null;//flow.test(tree);
       if (inferred != null && type.getKind()!=TypeKind.TYPEVAR) {
         // TODO: Flow incorrectly infers an annotation for type variables
         type.clearAnnotations();

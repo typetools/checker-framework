@@ -119,16 +119,6 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     }
 
     @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(ImmutabilitySubchecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
-    }
-
-    @Override
     protected TreeAnnotator createTreeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTreePreAnnotator(checker);
     }
