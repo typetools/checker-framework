@@ -35,6 +35,7 @@ import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
+import checkers.quals.RequiresAnnotations;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
@@ -624,13 +625,34 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     }
 
     /**
-     * Checks the precondition of the method invocation {@code tree} with
+     * Checks all the preconditions of the method invocation {@code tree} with
      * element {@code invokedMethodElement}.
      */
     protected void checkPreconditions(MethodInvocationTree tree,
             ExecutableElement invokedMethodElement) {
+        // Check a single precondition.
         AnnotationMirror requiresAnnotation = atypeFactory.getDeclAnnotation(
                 invokedMethodElement, RequiresAnnotation.class);
+        checkPrecondition(tree, requiresAnnotation);
+
+        // Check multiple preconditions.
+        AnnotationMirror requiresAnnotations = atypeFactory.getDeclAnnotation(
+                invokedMethodElement, RequiresAnnotations.class);
+        if (requiresAnnotations != null) {
+            List<AnnotationMirror> annotations = AnnotationUtils
+                    .elementValueArray(requiresAnnotations, "value");
+            for (AnnotationMirror a : annotations) {
+                checkPrecondition(tree, a);
+            }
+        }
+    }
+
+    /**
+     * Checks the precondition {@code requiresAnnotation} of the method
+     * invocation {@code tree}.
+     */
+    public void checkPrecondition(MethodInvocationTree tree,
+            AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation != null) {
             // TODO: we should not need to cast here?
             BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
@@ -663,8 +685,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                 tree);
                     }
                 } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    checker.report(e.getResult(), tree);
+                    // errors are reported at declaration site
                 }
             }
         }
