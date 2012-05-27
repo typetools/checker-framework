@@ -31,6 +31,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
+import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
@@ -334,9 +335,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void checkPostconditions(MethodTree node,
             ExecutableElement methodElement) {
+        // Check for a single contract.
         AnnotationMirror ensuresAnnotation = atypeFactory.getDeclAnnotation(
                 methodElement, EnsuresAnnotation.class);
         checkPostcondition(node, ensuresAnnotation);
+        
+        // Check for multiple contracts.
+        AnnotationMirror ensuresAnnotations = atypeFactory.getDeclAnnotation(
+                methodElement, EnsuresAnnotations.class);
+        if (ensuresAnnotations != null) {
+            List<AnnotationMirror> annotations = AnnotationUtils
+                    .elementValueArray(ensuresAnnotations, "value");
+            for (AnnotationMirror a : annotations) {
+                checkPostcondition(node, a);
+            }
+        }
     }
 
     /**
