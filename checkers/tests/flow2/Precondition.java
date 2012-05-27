@@ -101,4 +101,39 @@ class Precondition {
         requiresParam(p1);
         requiresParams(p1, p1);
     }
+    
+    /***** multiple preconditions ******/
+    
+    @RequiresAnnotations({
+        @RequiresAnnotation(expression="f1", annotation=Value.class),
+        @RequiresAnnotation(expression="f2", annotation=Odd.class)
+    })
+    void multi() {
+        @Value String l1 = f1;
+        @Odd String l2 = f2;
+        //:: error: (assignment.type.incompatible)
+        @Value String l3 = f2;
+        //:: error: (assignment.type.incompatible)
+        @Odd String l4 = f1;
+    }
+    
+    @RequiresAnnotations({
+        @RequiresAnnotation(expression="--", annotation=Value.class)
+    })
+    //:: error: (flowexpr.parse.error)
+    void error2() {
+    }
+    
+    void t5(@Odd String p1, String p2, @Value String p3) {
+        //:: error: (contracts.precondition.not.satisfied)
+        multi();
+        f1 = p3;
+        //:: error: (contracts.precondition.not.satisfied)
+        multi();
+        f1 = p3;
+        f2 = p1;
+        multi();
+        
+        error2();
+    }
 }
