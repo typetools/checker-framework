@@ -39,6 +39,7 @@ import checkers.quals.EnsuresAnnotationIf;
 import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.RequiresAnnotation;
+import checkers.quals.RequiresAnnotations;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
@@ -115,40 +116,77 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             CFGMethod method = (CFGMethod) underlyingAST;
             MethodTree methodTree = method.getMethod();
             Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
-            AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
-                    methodElem, RequiresAnnotation.class);
-            if (requiresAnnotation != null) {
-                List<String> expressions = AnnotationUtils.elementValueArray(
-                        requiresAnnotation, "expression");
-                String annotation = AnnotationUtils.elementValueClassName(
-                        requiresAnnotation, "annotation");
-                AnnotationMirror anno = factory.annotationFromName(annotation);
-
-                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(methodTree,
-                                method.getClassTree(), analysis.getEnv());
-
-                // store all expressions in the store
-                for (String stringExpr : expressions) {
-                    FlowExpressions.Receiver expr = null;
-                    try {
-                        // TODO: currently, these expressions are parsed at the
-                        // declaration (i.e. here) and for every use. this could
-                        // be optimized to store the result the first time.
-                        // (same for other annotations)
-                        expr = FlowExpressionParseUtil.parse(stringExpr,
-                                flowExprContext,
-                                analysis.factory.getPath(methodTree));
-                        info.insertValue(expr, anno);
-                    } catch (FlowExpressionParseException e) {
-                        // report errors here
-                        analysis.checker.report(e.getResult(), methodTree);
-                    }
-                }
-            }
+            addInformationFromPreconditions(info, factory, method, methodTree,
+                    methodElem);
         }
 
         return info;
+    }
+
+    /**
+     * Add the information from all the preconditions of the method
+     * {@code method} with corresponding tree {@code methodTree} to the store
+     * {@code info}.
+     */
+    protected void addInformationFromPreconditions(S info,
+            AnnotatedTypeFactory factory, CFGMethod method,
+            MethodTree methodTree, Element methodElem) {
+        // Process single preconditions.
+        AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
+                methodElem, RequiresAnnotation.class);
+        addInformationFromPrecondition(info, factory, method, methodTree,
+                requiresAnnotation);
+
+        // Process multiple preconditions.
+        AnnotationMirror requiresAnnotations = factory.getDeclAnnotation(
+                methodElem, RequiresAnnotations.class);
+        if (requiresAnnotations != null) {
+            List<AnnotationMirror> annotations = AnnotationUtils
+                    .elementValueArray(requiresAnnotations, "value");
+            for (AnnotationMirror a : annotations) {
+                addInformationFromPrecondition(info, factory, method,
+                        methodTree, a);
+            }
+        }
+    }
+
+    /**
+     * Add the information from the precondition {@code requiresAnnotation} of
+     * the method {@code method} with corresponding tree {@code methodTree} to
+     * the store {@code info}.
+     */
+    protected void addInformationFromPrecondition(S info,
+            AnnotatedTypeFactory factory, CFGMethod method,
+            MethodTree methodTree, AnnotationMirror requiresAnnotation) {
+        if (requiresAnnotation != null) {
+            List<String> expressions = AnnotationUtils.elementValueArray(
+                    requiresAnnotation, "expression");
+            String annotation = AnnotationUtils.elementValueClassName(
+                    requiresAnnotation, "annotation");
+            AnnotationMirror anno = factory.annotationFromName(annotation);
+
+            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                    .buildFlowExprContextForDeclaration(methodTree,
+                            method.getClassTree(), analysis.getEnv());
+
+            // store all expressions in the store
+            for (String stringExpr : expressions) {
+                FlowExpressions.Receiver expr = null;
+                try {
+                    // TODO: currently, these expressions are parsed at the
+                    // declaration (i.e. here) and for every use. this could
+                    // be optimized to store the result the first time.
+                    // (same for other annotations)
+                    expr = FlowExpressionParseUtil.parse(stringExpr,
+                            flowExprContext,
+                            analysis.factory.getPath(methodTree));
+                    info.insertValue(expr, anno);
+                } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    analysis.checker.report(e.getResult(), methodTree);
+                }
+            }
+        }
     }
 
     /**
