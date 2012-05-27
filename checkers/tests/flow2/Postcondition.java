@@ -91,6 +91,45 @@ class Postcondition {
         @Odd String l2 = param.f1;
     }
     
+    /***** many postcondition ******/
+    
+    @EnsuresAnnotations({
+        @EnsuresAnnotation(expression="f1", annotation=Odd.class),
+        @EnsuresAnnotation(expression="f2", annotation=Value.class)
+    })
+    void oddValueF1(@Value String p1) {
+        f1 = null;
+        f2 = p1;
+    }
+    
+    @EnsuresAnnotations({
+        @EnsuresAnnotation(expression="f1", annotation=Odd.class),
+        @EnsuresAnnotation(expression="f2", annotation=Value.class)
+    })
+    //:: error: (contracts.postcondition.not.satisfied)
+    void oddValueF1_invalid(@Value String p1) {
+    }
+    
+    @EnsuresAnnotations({
+        @EnsuresAnnotation(expression="--", annotation=Odd.class),
+    })
+    //:: error: (flowexpr.parse.error)
+    void error2() {
+    }
+    
+    // basic postcondition test
+    void tnm1(@Odd String p1, @Value String p2) {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = f1;
+        //:: error: (assignment.type.incompatible)
+        @Value String l2 = f2;
+        oddValueF1(p2);
+        @Odd String l3 = f1;
+        @Value String l4 = f2;
+        
+        error2();
+    }
+    
     /***** conditional postcondition ******/
     @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class)
     boolean condOddF1(boolean b) {
