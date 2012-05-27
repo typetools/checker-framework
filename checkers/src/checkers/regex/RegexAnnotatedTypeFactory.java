@@ -125,12 +125,6 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
             }
         }
     }
-
-    @Override
-    public Flow createFlow(RegexChecker checker, CompilationUnitTree tree,
-            Set<AnnotationMirror> flowQuals) {
-        return new RegexFlow(checker, tree, flowQuals, this);
-    }
     
     @Override
     protected RegexAnalysis createFlowAnalysis(RegexChecker checker) {
