@@ -36,6 +36,7 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
+import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.RequiresAnnotation;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -385,7 +386,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitMethodInvocation(MethodInvocationNode n,
             TransferInput<V, S> in) {
 
-        S thenStore = in.getRegularStore();
+        S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
         V resValue = null;
@@ -396,7 +397,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             resValue = getValueFromFactory(tree);
         }
 
-        thenStore.updateForMethodCall(n, analysis.factory);
+        store.updateForMethodCall(n, analysis.factory);
 
         // add new information based on postcondition
         AnnotationMirror ensuresAnnotation = analysis.factory
@@ -413,24 +414,61 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     .buildFlowExprContextForUse(n, analysis.getEnv());
 
             for (String exp : expressions) {
-                FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext,
+                    FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
+                            exp, flowExprContext,
                             analysis.factory.getPath(tree));
+                    store.insertValue(r, anno);
                 } catch (FlowExpressionParseException e) {
                     // these errors are reported at the declaration, ignore here
-                }
-                if (r != null) {
-                    thenStore.insertValue(r, anno);
                 }
             }
         }
 
+        S thenStore = store;
+        S elseStore = thenStore.copy();
+
         // add new information based on conditional postcondition
+        processConditionalPostconditions(n, method, tree, thenStore, elseStore);
+
+        return new ConditionalTransferResult<>(resValue, thenStore, elseStore);
+    }
+
+    /**
+     * Add information based on all conditional postcondition of method
+     * {@code n} with tree {@code tree} and element {@code method} to the
+     * appropriate store.
+     */
+    protected void processConditionalPostconditions(MethodInvocationNode n,
+            ExecutableElement method, Tree tree, S thenStore, S elseStore) {
+        // Process a single postcondition (if present).
         AnnotationMirror ensuresAnnotationIf = analysis.factory
                 .getDeclAnnotation(method, EnsuresAnnotationIf.class);
+        processConditionalPostcondition(n, tree, ensuresAnnotationIf,
+                thenStore, elseStore);
+
+        // Process multiple postcondition (if present).
+        AnnotationMirror ensuresAnnotationsIf = analysis.factory
+                .getDeclAnnotation(method, EnsuresAnnotationsIf.class);
+        if (ensuresAnnotationsIf != null) {
+            List<AnnotationMirror> annotations = AnnotationUtils
+                    .elementValueArray(ensuresAnnotationsIf, "value");
+            for (AnnotationMirror a : annotations) {
+                processConditionalPostcondition(n, tree, a, thenStore,
+                        elseStore);
+            }
+        }
+    }
+
+    /**
+     * Add information based on the conditional postcondition
+     * {@code ensuresAnnotationIf} of method {@code n} with tree {@code tree}
+     * and element {@code method} to the appropriate store.
+     */
+    protected void processConditionalPostcondition(MethodInvocationNode n,
+            Tree tree, AnnotationMirror ensuresAnnotationIf, S thenStore,
+            S elseStore) {
         if (ensuresAnnotationIf != null) {
-            S elseStore = thenStore.copy();
             List<String> expressions = AnnotationUtils.elementValueArray(
                     ensuresAnnotationIf, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
@@ -444,27 +482,20 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     .buildFlowExprContextForUse(n, analysis.getEnv());
 
             for (String exp : expressions) {
-                FlowExpressions.Receiver r = null;
                 try {
-                    r = FlowExpressionParseUtil.parse(exp, flowExprContext,
+                    FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
+                            exp, flowExprContext,
                             analysis.factory.getPath(tree));
-                } catch (FlowExpressionParseException e) {
-                    // these errors are reported at the declaration, ignore here
-                }
-                if (r != null) {
                     if (result) {
                         thenStore.insertValue(r, anno);
                     } else {
                         elseStore.insertValue(r, anno);
                     }
+                } catch (FlowExpressionParseException e) {
+                    // these errors are reported at the declaration, ignore here
                 }
             }
-
-            return new ConditionalTransferResult<>(resValue, thenStore,
-                    elseStore);
         }
-
-        return new RegularTransferResult<>(resValue, thenStore);
     }
 
     /**
