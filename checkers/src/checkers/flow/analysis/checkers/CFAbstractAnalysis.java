@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.cfg.CFGDOTVisualizer;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 
@@ -43,8 +44,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final AnnotatedTypeFactory factory;
-    
+    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory;
+
     /**
      * A checker used to do error reporting.
      */
@@ -55,7 +56,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      */
     protected final Set<AnnotationMirror> legalAnnotations;
 
-    public CFAbstractAnalysis(AnnotatedTypeFactory factory,
+    public CFAbstractAnalysis(
+            AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             ProcessingEnvironment env, BaseTypeChecker checker) {
         super(env);
         this.qualifierHierarchy = factory.getQualifierHierarchy();
