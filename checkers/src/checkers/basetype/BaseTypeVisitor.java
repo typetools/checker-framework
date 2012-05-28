@@ -33,6 +33,7 @@ import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
 import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
+import checkers.quals.PreconditionAnnotation;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
 import checkers.quals.RequiresAnnotations;
@@ -645,48 +646,72 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkPrecondition(tree, a);
             }
         }
+        
+        // Check type-system specific annotations.
+        Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
+                invokedMethodElement, metaAnnotation);
+        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
+            AnnotationMirror anno = r.first;
+            AnnotationMirror metaAnno = r.second;
+            List<String> expressions = AnnotationUtils.elementValueArray(
+                    anno, "value");
+            String annotation = AnnotationUtils.elementValueClassName(
+                    metaAnno, "annotation");
+            AnnotationMirror requiredAnnotation = atypeFactory.annotationFromName(annotation);
+            checkPrecondition(tree, requiredAnnotation, expressions);
+        }
     }
 
     /**
      * Checks the precondition {@code requiresAnnotation} of the method
      * invocation {@code tree}.
      */
-    public void checkPrecondition(MethodInvocationTree tree,
-            AnnotationMirror requiresAnnotation) {
+    protected void checkPrecondition(MethodInvocationTree tree,
+            /*@Nullable*/AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation != null) {
-            // TODO: we should not need to cast here?
-            BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
-
             List<String> expressions = AnnotationUtils.elementValueArray(
                     requiresAnnotation, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     requiresAnnotation, "annotation");
             AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+            
+            checkPrecondition(tree, anno, expressions);
+        }
+    }
 
-            Node nodeNode = factory.getNodeForTree(tree);
-            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse(
-                            (MethodInvocationNode) nodeNode,
-                            atypeFactory.getEnv());
+    /**
+     * Checks the precondition of the method invocation {@code tree}, such that
+     * the {@code expressions} have the required annotation
+     * {@code requiredAnnotation}.
+     */
+    protected void checkPrecondition(MethodInvocationTree tree,
+            AnnotationMirror requiredAnnotation, List<String> expressions) {
+        // TODO: we should not need to cast here?
+        BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
 
-            for (String stringExpr : expressions) {
-                FlowExpressions.Receiver expr = null;
-                try {
-                    expr = FlowExpressionParseUtil.parse(stringExpr,
-                            flowExprContext, getCurrentPath());
+        Node nodeNode = factory.getNodeForTree(tree);
+        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                .buildFlowExprContextForUse((MethodInvocationNode) nodeNode,
+                        atypeFactory.getEnv());
 
-                    CFStore store = factory.getStoreBefore(tree);
-                    CFValue value = store.getValue(expr);
-                    if (value == null
-                            || !AnnotationUtils.containsSame(
-                                    value.getAnnotations(), anno)) {
-                        checker.report(
-                                Result.failure("contracts.precondition.not.satisfied"),
-                                tree);
-                    }
-                } catch (FlowExpressionParseException e) {
-                    // errors are reported at declaration site
+        for (String stringExpr : expressions) {
+            FlowExpressions.Receiver expr = null;
+            try {
+                expr = FlowExpressionParseUtil.parse(stringExpr,
+                        flowExprContext, getCurrentPath());
+
+                CFStore store = factory.getStoreBefore(tree);
+                CFValue value = store.getValue(expr);
+                if (value == null
+                        || !AnnotationUtils.containsSame(
+                                value.getAnnotations(), requiredAnnotation)) {
+                    checker.report(Result
+                            .failure("contracts.precondition.not.satisfied"),
+                            tree);
                 }
+            } catch (FlowExpressionParseException e) {
+                // errors are reported at declaration site
             }
         }
     }

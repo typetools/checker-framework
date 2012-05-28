@@ -18,12 +18,13 @@ import javax.lang.model.util.Types;
 import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
+import checkers.quals.EnsuresAnnotation;
+import checkers.quals.PreconditionAnnotation;
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.source.SourceChecker.CheckerError;
 import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.TypeFromTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.*;
@@ -1707,7 +1708,7 @@ public class AnnotatedTypeFactory {
 
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
-                if (sameAnnotation(am, aname)) {
+                if (AnnotationUtils.areSameByName(am, aname)) {
                     return am;
                 }
             }
@@ -1715,7 +1716,7 @@ public class AnnotatedTypeFactory {
 
         // Then look at the real annotations.
         for (AnnotationMirror am : elt.getAnnotationMirrors()) {
-            if (sameAnnotation(am, aname)) {
+            if (AnnotationUtils.areSameByName(am, aname)) {
                 return am;
             }
         }
@@ -1724,15 +1725,44 @@ public class AnnotatedTypeFactory {
         return null;
     }
 
-    // Checks the annotation name, but not its arguments
-    private boolean sameAnnotation(AnnotationMirror am, String aname) {
-        Name amname = AnnotationUtils.annotationName(am);
-        return amname.toString().equals(aname);
-    }
+    /**
+     * Returns a list of all annotation mirrors used to annotate this type,
+     * which have a meta-annotation (i.e., an annotation on that annotation)
+     * with class {@code metaAnnotation}.
+     * 
+     * @param element
+     *            The element at which to look for annotations.
+     * @param metaAnnotation
+     *            The meta annotation that needs to be present.
+     * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
+     *         the annotation mirror at {@code element}, and {@code metaAnno} is
+     *         the annotation mirror used to annotate {@code anno}.
+     */
+    public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
+            Element element, Class<PreconditionAnnotation> metaAnnotation) {
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
-    // Checks the annotation name, but not its arguments
-    private boolean sameAnnotation(AnnotationMirror am, Class<? extends Annotation> anno) {
-        return sameAnnotation(am, anno.getCanonicalName());
-    }
+        // Consider real annotations.
+        annotationMirrors.addAll(element.getAnnotationMirrors());
 
+        // Consider stub annotations.
+        String eltName = ElementUtils.getVerboseName(element);
+        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (stubAnnos != null) {
+            annotationMirrors.addAll(stubAnnos);
+        }
+
+        // Go through all annotations found.
+        for (AnnotationMirror annotation : annotationMirrors) {
+            List<? extends AnnotationMirror> annotationsOnAnnotation = annotation
+                    .getAnnotationType().asElement().getAnnotationMirrors();
+            for (AnnotationMirror a : annotationsOnAnnotation) {
+                if (AnnotationUtils.areSameByClass(a, metaAnnotation)) {
+                    result.add(Pair.of(annotation, a));
+                }
+            }
+        }
+        return result;
+    }
 }
