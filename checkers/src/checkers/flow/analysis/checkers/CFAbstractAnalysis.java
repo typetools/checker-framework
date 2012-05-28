@@ -24,7 +24,6 @@ import checkers.types.QualifierHierarchy;
  * the annotations on literals).
  * 
  * <p>
- * 
  * The purpose of this class is twofold: Firstly, it serves as factory for
  * abstract values, stores and the transfer function. Furthermore, it makes it
  * easy for the transfer function and the stores to access the
@@ -52,21 +51,22 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     protected final BaseTypeChecker checker;
 
     /**
-     * The full set of annotations allowed for this type hierarchy.
+     * The set of annotations that the flow analysis should track (must be a
+     * subset of the legal annotations of the qualifier hierarchy).
      */
-    protected final Set<AnnotationMirror> legalAnnotations;
+    protected final Set<AnnotationMirror> supportedAnnotations;
 
-    public CFAbstractAnalysis(
-            AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            ProcessingEnvironment env, BaseTypeChecker checker) {
+    public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
+            AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+            ProcessingEnvironment env, Checker checker) {
         super(env);
         this.qualifierHierarchy = factory.getQualifierHierarchy();
-        this.legalAnnotations = qualifierHierarchy.getAnnotations();
+        this.supportedAnnotations = factory.createFlowAnnotations(checker);
         this.factory = factory;
         this.transferFunction = createTransferFunction();
         this.checker = checker;
     }
-
+    
     /**
      * @return The transfer function to be used by the analysis.
      */
@@ -97,8 +97,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         return factory;
     }
 
-    public Set<AnnotationMirror> getLegalAnnotations() {
-        return legalAnnotations;
+    public Set<AnnotationMirror> getSupportedAnnotations() {
+        return supportedAnnotations;
     }
 
     /**

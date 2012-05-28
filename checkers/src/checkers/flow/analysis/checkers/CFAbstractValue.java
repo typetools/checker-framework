@@ -38,7 +38,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     protected boolean areValidAnnotations(Set<AnnotationMirror> annotations) {
         for (AnnotationMirror a : annotations) {
-            if (!AnnotationUtils.containsSameIgnoringValues(analysis.legalAnnotations, a)) {
+            if (!AnnotationUtils.containsSameIgnoringValues(analysis.supportedAnnotations, a)) {
                 return false;
             }
         }
