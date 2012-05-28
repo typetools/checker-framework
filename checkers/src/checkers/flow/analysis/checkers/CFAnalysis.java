@@ -19,9 +19,9 @@ import checkers.util.AnnotationUtils;
 public class CFAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public CFAnalysis(
-            AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            ProcessingEnvironment env, BaseTypeChecker checker) {
+    public <Checker extends BaseTypeChecker> CFAnalysis(
+            AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
+            ProcessingEnvironment env, Checker checker) {
         super(factory, env, checker);
     }
 
@@ -43,7 +43,8 @@ public class CFAnalysis extends
     @Override
     protected/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return defaultCreateAbstractValue(annotations, legalAnnotations, this);
+        return defaultCreateAbstractValue(annotations, supportedAnnotations,
+                this);
     }
 
     /**

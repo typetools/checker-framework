@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -20,19 +19,12 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.DefaultFlow;
-import checkers.flow.DefaultFlowState;
-import checkers.flow.Flow;
 import checkers.flow.analysis.AnalysisResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
 import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFCFGBuilder;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.analysis.checkers.RegexAnalysis;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
@@ -45,7 +37,6 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
-import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
@@ -150,6 +141,18 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
+    }
+    
+    /**
+     * Returns the set of annotations to be inferred in flow analysis
+     */
+    public Set<AnnotationMirror> createFlowAnnotations(Checker checker) {
+        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
+        for (Class<? extends Annotation> cl : checker
+                .getSupportedTypeQualifiers()) {
+            flowQuals.add(annotations.fromClass(cl));
+        }
+        return flowQuals;
     }
 
     // **********************************************************************
