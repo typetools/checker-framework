@@ -7,35 +7,69 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.javari.quals.Mutable;
-import checkers.nullness.quals.Nullable;
-import checkers.quals.EnsuresAnnotation;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.source.SourceChecker.CheckerError;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.TypeFromTree;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -118,6 +152,13 @@ public class AnnotatedTypeFactory {
      * annotation in the Checker Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
+    
+    /**
+     * A map from the class name (canonical name) of an annotation to the set of
+     * class names (canonical names) for annotations with the same meaning
+     * (i.e., aliases), as well as the annotation mirror that should be used.
+     */
+    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<>();
 
     private static int uidCounter = 0;
     public final int uid;
@@ -1224,7 +1265,6 @@ public class AnnotatedTypeFactory {
     /** Memoization for isRecognizedAnnotation(). set by the constructor */
     private final Set<Name> supportedQuals;
 
-
     /**
      * Creates the set of the names of the recognized type qualifiers in the
      * current checker.
@@ -1261,19 +1301,40 @@ public class AnnotatedTypeFactory {
     protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
         aliases.put(clazz.getCanonicalName(), type);
     }
-
+    
     /**
-     * Returns the canonical annotation for the passed annotation if it is
-     * an alias of a canonical one in the framework.  If it is not an alias,
-     * the method returns null.
-     *
+     * Returns the canonical annotation for the passed annotation if it is an
+     * alias of a canonical one in the framework. If it is not an alias, the
+     * method returns null.
+     * 
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (a==null) return null;
-        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+        if (a == null)
+            return null;
+        TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);
+    }
+    
+    /**
+     * Add the annotation {@code alias} as an alias for the declaration
+     * annotation {@code annotation}, where the annotation mirror
+     * {@code annoationToUse} will be used instead. If multiple calls are made
+     * with the same {@code annotation}, then the {@code anontationToUse} must
+     * be the same.
+     */
+    protected void addAliasedDeclAnnotation(
+            Class<? extends Annotation> annotation,
+            Class<? extends Annotation> alias, AnnotationMirror annotationToUse) {
+        String aliasName = alias.getCanonicalName();
+        String annotationName = annotation.getCanonicalName();
+        Set<String> set = new HashSet<>();
+        if (declAliases.containsKey(annotationName)) {
+            set.addAll(declAliases.get(annotationName).second);
+        }
+        set.add(aliasName);
+        declAliases.put(annotationName, Pair.of(annotationToUse, set));
     }
 
     /**
@@ -1693,31 +1754,59 @@ public class AnnotatedTypeFactory {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exists, null otherwise.
-     *
-     * @param anno annotation class
+     * Returns the actual annotation mirror used to annotate this type, whose
+     * name equals the passed annotationName if one exists, null otherwise.
+     * 
+     * @param anno
+     *            annotation class
      * @return the annotation mirror for anno
      */
-    public AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
-        String aname = anno.getCanonicalName();
+    public AnnotationMirror getDeclAnnotation(Element elt,
+            Class<? extends Annotation> anno) {
+        String annoName = anno.getCanonicalName();
+        String eltName = ElementUtils.getVerboseName(elt);
+        List<? extends AnnotationMirror> annotationMirrors = elt
+                .getAnnotationMirrors();
+        return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
+    }
+
+    /**
+     * Returns the actual annotation mirror used to annotate this type, whose
+     * name equals the passed annotationName if one exists, null otherwise. This
+     * is the private implementation of the same-named, public method.
+     */
+    private AnnotationMirror getDeclAnnotation(String eltName, String annoName,
+            List<? extends AnnotationMirror> annotationMirrors,
+            boolean checkAliases) {
+
+        Pair<AnnotationMirror, Set<String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
         // First look in the stub files.
-        String eltName = ElementUtils.getVerboseName(elt);
         Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
 
         if (stubAnnos != null) {
             for (AnnotationMirror am : stubAnnos) {
-                if (AnnotationUtils.areSameByName(am, aname)) {
+                if (AnnotationUtils.areSameByName(am, annoName)) {
                     return am;
                 }
             }
         }
 
         // Then look at the real annotations.
-        for (AnnotationMirror am : elt.getAnnotationMirrors()) {
-            if (AnnotationUtils.areSameByName(am, aname)) {
+        for (AnnotationMirror am : annotationMirrors) {
+            if (AnnotationUtils.areSameByName(am, annoName)) {
                 return am;
+            }
+        }
+
+        // Look through aliases.
+        if (aliases != null) {
+            for (String alias : aliases.second) {
+                AnnotationMirror declAnnotation = getDeclAnnotation(eltName,
+                        alias, annotationMirrors, false);
+                if (declAnnotation != null) {
+                    return aliases.first;
+                }
             }
         }
 
