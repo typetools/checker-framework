@@ -133,6 +133,13 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     protected TypeAnnotator createTypeAnnotator(IGJChecker checker) {
         return new IGJTypePostAnnotator(checker);
     }
+    
+    @Override
+    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
+        Set<Class<? extends Annotation>> result = new HashSet<>();
+        result.add(I.class);
+        return result;
+    }
 
     // **********************************************************************
     // add implicit annotations
