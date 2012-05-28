@@ -36,7 +36,9 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
+import checkers.quals.Pure;
 import checkers.quals.Unqualified;
+import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
@@ -124,6 +126,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             defaults.addAbsoluteDefault(unqualified,
                     Collections.singleton(DefaultLocation.ALL));
         }
+        
+        // Add common aliases.
+        addAliasedDeclAnnotation(Pure.class,
+                checkers.nullness.quals.Pure.class,
+                annotations.fromClass(Pure.class));
 
         // This also gets called by subclasses. Is that a problem?
         postInit();
