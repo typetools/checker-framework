@@ -5,14 +5,14 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.regex.RegexAnnotatedTypeFactory;
+import checkers.regex.RegexChecker;
 
 public class RegexAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, RegexTransfer> {
 
     public RegexAnalysis(RegexAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, BaseTypeChecker checker) {
+            ProcessingEnvironment env, RegexChecker checker) {
         super(factory, env, checker);
     }
 
@@ -35,7 +35,7 @@ public class RegexAnalysis extends
     protected/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
         return CFAnalysis.defaultCreateAbstractValue(annotations,
-                legalAnnotations, this);
+                supportedAnnotations, this);
     }
 
 }
