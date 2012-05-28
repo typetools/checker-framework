@@ -3,6 +3,7 @@ package checkers.flow.analysis.checkers;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -14,6 +15,7 @@ import checkers.flow.cfg.CFGDOTVisualizer;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationUtils;
 
 /**
  * {@link CFAbstractAnalysis} is an extensible dataflow analysis for the Checker
@@ -60,13 +62,26 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
             AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             ProcessingEnvironment env, Checker checker) {
         super(env);
-        this.qualifierHierarchy = factory.getQualifierHierarchy();
-        this.supportedAnnotations = factory.createFlowAnnotations(checker);
+        qualifierHierarchy = factory.getQualifierHierarchy();
         this.factory = factory;
-        this.transferFunction = createTransferFunction();
+        transferFunction = createTransferFunction();
         this.checker = checker;
+        
+        // Build the set of supported annotations.
+        supportedAnnotations = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a : qualifierHierarchy.getAnnotations()) {
+            boolean add = true;
+            for (Class<? extends Annotation> c : factory.noFlowInferenceAnnotations()) {
+                if (AnnotationUtils.areSameByClass(a, c)) {
+                    add = false;
+                }
+            }
+            if (add) {
+                supportedAnnotations.add(a);
+            }
+        }
     }
-    
+
     /**
      * @return The transfer function to be used by the analysis.
      */
