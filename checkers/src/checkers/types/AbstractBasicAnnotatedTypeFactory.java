@@ -39,7 +39,6 @@ import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
@@ -144,15 +143,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
     
     /**
-     * Returns the set of annotations to be inferred in flow analysis
+     * Returns the set of annotations for which no flow inference should be
+     * performed. This defaults to the empty set.
      */
-    public Set<AnnotationMirror> createFlowAnnotations(Checker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker
-                .getSupportedTypeQualifiers()) {
-            flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
+    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
+        return Collections.emptySet();
     }
 
     // **********************************************************************
