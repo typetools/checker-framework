@@ -281,7 +281,7 @@ public class GenKillBits<K> {
               if (!found) {
                 // we do not need to calculate a lub, because the variable is not set on
                 // the lhs and there is no other modifier that has the bit set.
-                outarg1.bitsets.get(key2).set(var);
+                outarg1.set(key2, var);
               }
             }
           }
