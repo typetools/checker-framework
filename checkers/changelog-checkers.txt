@@ -2,12 +2,11 @@ Version 1.2.7, 14 May 2012
 
 Regex Checker:
   Add basic support for the concatenation of two non-regular expressions
-  that produce a valid regular expression.
+    that produce a valid regular expression.
   Support "isRegex" in flow inference.
 
 Framework improvements:
-  Declaratively add stub files to a checker using the new @StubFiles
-  annotation.
+  New @StubFiles annotation declaratively adds stub files to a checker.
 
 Internal bug fixes:
   Respect skipDefs and skipUses in NullnessFlow.
