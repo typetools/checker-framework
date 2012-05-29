@@ -38,7 +38,6 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Pure;
 import checkers.quals.Unqualified;
-import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
@@ -478,7 +477,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 }
                 type.addAnnotations(inferred);
             }
-
         }
         // TODO: This is quite ugly
         boolean finishedScanning = enclosingClass == null
