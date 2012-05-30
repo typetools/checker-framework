@@ -94,7 +94,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
      *
      * @see RegexUtil#asRegex(String, int)
      */
-    /*default*/ static final String[] asRegexClasses = new String[] {
+    public static final String[] regexUtilClasses = new String[] {
             "checkers.regex.RegexUtil",
             "plume.RegexUtil",
             "daikon.util.RegexUtil" };
@@ -103,7 +103,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
      * A list of all of the ExecutableElements for the class names in
      * asRegexClasses.
      *
-     * @see #asRegexClasses
+     * @see #regexUtilClasses
      * @see RegexUtil#asRegex(String, int)
      */
     private final List<ExecutableElement> asRegexes;
@@ -115,7 +115,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
         partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, env);
         asRegexes = new ArrayList<ExecutableElement>();
-        for (String clazz : asRegexClasses) {
+        for (String clazz : regexUtilClasses) {
             try {
                 asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, env));
             } catch (Exception e) {
