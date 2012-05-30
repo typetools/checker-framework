@@ -35,6 +35,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.javari.quals.Mutable;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
