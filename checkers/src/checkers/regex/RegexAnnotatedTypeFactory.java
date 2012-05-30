@@ -98,6 +98,9 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
             "checkers.regex.RegexUtil",
             "plume.RegexUtil",
             "daikon.util.RegexUtil" };
+    
+    /** The {@code @Regex} annotation. */
+    private final AnnotationMirror REGEX;
 
     /**
      * A list of all of the ExecutableElements for the class names in
@@ -124,6 +127,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                 continue;
             }
         }
+        REGEX = annotations.fromClass(Regex.class);
     }
     
     @Override
@@ -200,7 +204,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                     int lGroupCount = checker.getGroupCount(lExpr.getAnnotation(Regex.class));
                     int rGroupCount = checker.getGroupCount(rExpr.getAnnotation(Regex.class));
                     // Remove current @Regex annotation...
-                    type.removeAnnotation(Regex.class);
+                    type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
                 } else if (lExprPoly && rExprPoly
@@ -241,7 +245,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                 if (lhs.hasAnnotation(Regex.class) && rhs.hasAnnotation(Regex.class)) {
                     int lCount = checker.getGroupCount(lhs.getAnnotation(Regex.class));
                     int rCount = checker.getGroupCount(rhs.getAnnotation(Regex.class));
-                    type.removeAnnotation(Regex.class);
+                    type.removeAnnotationInHierarchy(REGEX);
                     type.addAnnotation(createRegexAnnotation(lCount + rCount));
                 }
             }
@@ -261,7 +265,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                 AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
                 int groupCount = checker.getGroupCount(anno);
                 // Remove current @Regex annotation...
-                type.removeAnnotation(Regex.class);
+                type.removeAnnotationInHierarchy(REGEX);
                 // ...and add a new one with the correct group count value.
                 type.addAnnotation(createRegexAnnotation(groupCount));
             } else if (isAsRegex(tree)) {
@@ -269,7 +273,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                 if (groupArg.getKind() == Kind.INT_LITERAL) {
                     LiteralTree literal = (LiteralTree) groupArg;
                     int paramGroups = (Integer) literal.getValue();
-                    type.removeAnnotation(Regex.class);
+                    type.removeAnnotationInHierarchy(REGEX);
                     type.addAnnotation(createRegexAnnotation(paramGroups));
                 }
             }
