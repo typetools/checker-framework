@@ -16,7 +16,7 @@ public abstract class InputStream implements Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public int available() @ReadOnly throws IOException {
+    public int available(@ReadOnly InputStream this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -28,7 +28,7 @@ public abstract class InputStream implements Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported() @ReadOnly {
+    public boolean markSupported(@ReadOnly InputStream this) {
         throw new RuntimeException("skeleton method");
     }
 }

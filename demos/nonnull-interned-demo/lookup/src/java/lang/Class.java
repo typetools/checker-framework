@@ -50,4 +50,9 @@ public final class Class<T> implements java.io.Serializable, java.lang.reflect.G
   public boolean isAnnotationPresent(@NonNull java.lang.Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
   public @NonNull java.lang.annotation.Annotation @NonNull [] getAnnotations() { throw new RuntimeException("skeleton method"); }
   public @NonNull java.lang.annotation.Annotation @NonNull [] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
+
+  public boolean isTypeAnnotationPresent(@NonNull Class<? extends java.lang.annotation.Annotation> annotationClass) { throw new RuntimeException("skeleton method"); }
+  public <T extends java.lang.annotation.Annotation> T getTypeAnnotation(@NonNull Class<T> annotationClass) { throw new RuntimeException("skeleton method"); }
+  public @NonNull java.lang.annotation.Annotation[] getTypeAnnotations() { throw new RuntimeException("skeleton method"); }
+  public @NonNull java.lang.annotation.Annotation[] getDeclaredTypeAnnotations() { throw new RuntimeException("skeleton method"); }
 }
