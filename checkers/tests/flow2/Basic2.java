@@ -150,4 +150,20 @@ class Basic2 {
       @Odd T l3 = p1;
       @Odd T l4 = p2;
     }
+    
+    // for-each loop
+    void t11(@Odd String p1, String p2, List<String> list, List<@Odd String> oddList) {
+        //:: error: (enhancedfor.type.incompatible)
+        for (@Odd String i : list) {}
+        for (@Odd String i : oddList) {
+            @Odd String l1 = i;
+        }
+        for (@Odd String i : oddList) {
+            //:: error: (assignment.type.incompatible)
+            i = p2;
+        }
+        for (String i : oddList) {
+            //@Odd String l3 = i;
+        }
+    }
 }
