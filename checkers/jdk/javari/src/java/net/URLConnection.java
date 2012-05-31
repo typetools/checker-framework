@@ -32,7 +32,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getConnectTimeout() @ReadOnly {
+    public int getConnectTimeout(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -40,71 +40,71 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getReadTimeout() @ReadOnly {
+    public int getReadTimeout(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    protected URLConnection(@ReadOnly URL url) @ReadOnly {
+    protected URLConnection(@ReadOnly URLConnection this, @ReadOnly URL url) {
         throw new RuntimeException("skeleton method");
     }
 
-    public URL getURL() @ReadOnly {
+    public URL getURL(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getContentLength() @ReadOnly {
+    public int getContentLength(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getContentLengthLong() @ReadOnly {
+    public long getContentLengthLong(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getContentType() @ReadOnly {
+    public String getContentType(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getContentEncoding() @ReadOnly {
+    public String getContentEncoding(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getExpiration() @ReadOnly {
+    public long getExpiration(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getDate() @ReadOnly {
+    public long getDate(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getLastModified() @ReadOnly {
+    public long getLastModified(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(String name) @ReadOnly {
+    public String getHeaderField(@ReadOnly URLConnection this, String name) {
         throw new RuntimeException("skeleton method");
     }
 
-    public @ReadOnly Map<String, @ReadOnly List<String>> getHeaderFields() @ReadOnly {
+    public @ReadOnly Map<String, @ReadOnly List<String>> getHeaderFields(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getHeaderFieldInt(String name, int Default) @ReadOnly {
+    public int getHeaderFieldInt(@ReadOnly URLConnection this, String name, int Default) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldLong(String name, long Default) @ReadOnly {
+    public long getHeaderFieldLong(@ReadOnly URLConnection this, String name, long Default) {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldDate(String name, long Default) @ReadOnly {
+    public long getHeaderFieldDate(@ReadOnly URLConnection this, String name, long Default) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderFieldKey(int n) @ReadOnly {
+    public String getHeaderFieldKey(@ReadOnly URLConnection this, int n) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(int n) @ReadOnly {
+    public String getHeaderField(@ReadOnly URLConnection this, int n) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -116,7 +116,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public Permission getPermission() @ReadOnly throws IOException {
+    public Permission getPermission(@ReadOnly URLConnection this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -128,7 +128,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -136,7 +136,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDoInput() @ReadOnly {
+    public boolean getDoInput(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -144,7 +144,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDoOutput() @ReadOnly {
+    public boolean getDoOutput(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -152,7 +152,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getAllowUserInteraction() @ReadOnly {
+    public boolean getAllowUserInteraction(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -168,7 +168,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getUseCaches() @ReadOnly {
+    public boolean getUseCaches(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -176,11 +176,11 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getIfModifiedSince() @ReadOnly {
+    public long getIfModifiedSince(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDefaultUseCaches() @ReadOnly {
+    public boolean getDefaultUseCaches(@ReadOnly URLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -196,7 +196,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRequestProperty(String key) @ReadOnly {
+    public String getRequestProperty(@ReadOnly URLConnection this, String key) {
         throw new RuntimeException("skeleton method");
     }
 

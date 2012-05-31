@@ -15,8 +15,6 @@ import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.regex.quals.RegexBottom;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
@@ -48,37 +46,6 @@ public class RegexChecker extends BaseTypeChecker {
             getTypeMirror("java.lang.Character"),
             getTypeMirror("java.util.regex.Pattern"),
             getTypeMirror("java.util.regex.MatchResult") };
-    }
-
-    @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
-        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
-        // that supports local variables, array types and parameterized types.
-        /*// Only allow annotations on subtypes of the types in legalReferenceTypes.
-        if (!useType.getExplicitAnnotations().isEmpty()) {
-            Types typeUtils = env.getTypeUtils();
-            for (TypeMirror type : legalReferenceTypes) {
-                if (typeUtils.isSubtype(declarationType.getUnderlyingType(), type)) {
-                    return true;
-                }
-            }
-            return false;
-        }*/
-        return super.isValidUse(declarationType, useType);
-    }
-
-    @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
-        // TODO: only allow Regex and PolyRegex annotations on chars.
-        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
-        // that supports local variables and array types.
-        /*// Only allow annotations on char.
-        if (!type.getExplicitAnnotations().isEmpty()) {
-            return type.getKind() == TypeKind.CHAR;
-        }*/
-        return super.isValidUse(type);
     }
 
     /**
