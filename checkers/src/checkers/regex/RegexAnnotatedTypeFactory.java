@@ -16,6 +16,7 @@ import checkers.flow.analysis.checkers.RegexTransfer;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
+import checkers.regex.quals.RegexBottom;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
@@ -262,12 +263,18 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
-                AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                int groupCount = checker.getGroupCount(anno);
+                ExpressionTree arg0 = tree.getArguments().get(0);
+                AnnotationMirror regexAnno = getAnnotatedType(arg0).getAnnotation(Regex.class);
+                AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
+                int groupCount = checker.getGroupCount(regexAnno);
                 // Remove current @Regex annotation...
                 type.removeAnnotationInHierarchy(REGEX);
                 // ...and add a new one with the correct group count value.
-                type.addAnnotation(createRegexAnnotation(groupCount));
+                if (bottomAnno != null) {
+                    type.addAnnotation(RegexBottom.class);
+                } else {
+                    type.addAnnotation(createRegexAnnotation(groupCount));
+                }
             } else if (isAsRegex(tree)) {
                 ExpressionTree groupArg = tree.getArguments().get(1);
                 if (groupArg.getKind() == Kind.INT_LITERAL) {
