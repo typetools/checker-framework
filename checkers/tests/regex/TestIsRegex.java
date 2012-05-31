@@ -80,7 +80,6 @@ class TestIsRegex {
         }
     }
 
-/* TODO: Why does the following, exact copy of test8 fail?
     @Regex(1) Pattern test9(String input) {
         String datePattern = null;
 
@@ -101,7 +100,7 @@ class TestIsRegex {
             Pattern pattern = datePattern != null ? Pattern.compile(dp) : null;
             return pattern;
         }
-      }*/
+      }
 
     void test10(String s) throws Exception {
         if (!RegexUtil.isRegex(s, 2)) {
