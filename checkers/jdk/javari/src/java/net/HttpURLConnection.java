@@ -27,7 +27,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(int n) @ReadOnly {
+    public String getHeaderField(@ReadOnly HttpURLConnection this, int n) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,7 +43,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getInstanceFollowRedirects() @ReadOnly {
+    public boolean getInstanceFollowRedirects(@ReadOnly HttpURLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -51,7 +51,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRequestMethod() @ReadOnly {
+    public String getRequestMethod(@ReadOnly HttpURLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -63,7 +63,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldDate(String name, long Default) @ReadOnly {
+    public long getHeaderFieldDate(@ReadOnly HttpURLConnection this, String name, long Default) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -71,11 +71,11 @@ abstract public class HttpURLConnection extends URLConnection {
 
     public abstract boolean usingProxy();
 
-    public Permission getPermission() @ReadOnly throws IOException {
+    public Permission getPermission(@ReadOnly HttpURLConnection this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public InputStream getErrorStream() @ReadOnly {
+    public InputStream getErrorStream(@ReadOnly HttpURLConnection this) {
         throw new RuntimeException("skeleton method");
     }
 

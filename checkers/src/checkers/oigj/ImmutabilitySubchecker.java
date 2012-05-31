@@ -107,9 +107,4 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         return false;
     }
 
-    @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
-    }
 }

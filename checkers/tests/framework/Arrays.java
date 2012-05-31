@@ -1,3 +1,4 @@
+import java.lang.annotation.*;
 import checkers.interning.quals.Interned;
 import tests.util.*;
 
@@ -7,10 +8,15 @@ class Arrays {
     Object @Odd [][][] objB1b = new Object @Odd [][][] {};
     @Odd Object[][][] objB1c = new @Odd Object[][][] {};
 
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface A {}
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface B {}
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface C {}
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @interface D {}
+
     class Cell<T> {}
 
 
