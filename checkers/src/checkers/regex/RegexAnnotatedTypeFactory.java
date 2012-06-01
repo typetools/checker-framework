@@ -1,14 +1,9 @@
 package checkers.regex;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.Flow;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.analysis.checkers.RegexAnalysis;
@@ -30,7 +25,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
@@ -103,31 +97,12 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
     /** The {@code @Regex} annotation. */
     private final AnnotationMirror REGEX;
 
-    /**
-     * A list of all of the ExecutableElements for the class names in
-     * asRegexClasses.
-     *
-     * @see #regexUtilClasses
-     * @see RegexUtil#asRegex(String, int)
-     */
-    private final List<ExecutableElement> asRegexes;
-
     public RegexAnnotatedTypeFactory(RegexChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
         partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, env);
-        asRegexes = new ArrayList<ExecutableElement>();
-        for (String clazz : regexUtilClasses) {
-            try {
-                asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, env));
-            } catch (Exception e) {
-                // The class couldn't be loaded so it must not be on the
-                // classpath, just skip it.
-                continue;
-            }
-        }
         REGEX = annotations.fromClass(Regex.class);
     }
     
@@ -275,29 +250,8 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
                 } else {
                     type.addAnnotation(createRegexAnnotation(groupCount));
                 }
-            } else if (isAsRegex(tree)) {
-                ExpressionTree groupArg = tree.getArguments().get(1);
-                if (groupArg.getKind() == Kind.INT_LITERAL) {
-                    LiteralTree literal = (LiteralTree) groupArg;
-                    int paramGroups = (Integer) literal.getValue();
-                    type.removeAnnotationInHierarchy(REGEX);
-                    type.addAnnotation(createRegexAnnotation(paramGroups));
-                }
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /**
-         * Returns true if the given MethodInvocationTree represents a call to
-         * an asRegex method in one of the classes in asRegexClasses.
-         */
-        private boolean isAsRegex(MethodInvocationTree tree) {
-            for (ExecutableElement asRegex : asRegexes) {
-                if (TreeUtils.isMethodInvocation(tree, asRegex, env)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /**
