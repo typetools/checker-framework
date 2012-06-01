@@ -432,6 +432,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             annotateImplicitWithFlow(tree, type);
         } else {
             treeAnnotator.visit(tree, type);
+            Element elt = InternalUtils.symbol(tree);
+            typeAnnotator.visit(type, elt != null ? elt.getKind()
+                    : ElementKind.OTHER);
+            defaults.annotate(tree, type);
         }
     }
 
