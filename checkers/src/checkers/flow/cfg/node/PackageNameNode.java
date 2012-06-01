@@ -10,13 +10,17 @@ import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
 /**
  * A node representing a package name used in an expression
  * such as a constructor invocation
  * 
+ * <p>
  * <em>package</em>.class.object(...)
+ * <p>
+ * parent.<em>package</em>.class.object(...)
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
@@ -24,15 +28,25 @@ import com.sun.source.tree.Tree;
  */
 public class PackageNameNode extends Node {
 
-    protected Tree tree;
+    protected final Tree tree;
     // The package named by this node
-    protected Element element;
+    protected final Element element;
+    
+    /** The parent name, if any. */
+    protected final /*@Nullable*/PackageNameNode parent;
 
-    public PackageNameNode(Tree tree) {
-        assert tree.getKind() == Tree.Kind.IDENTIFIER;
+    public PackageNameNode(IdentifierTree tree) {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
-        this.element = TreeUtils.elementFromUse((IdentifierTree) tree);
+        this.element = TreeUtils.elementFromUse(tree);
+        this.parent = null;
+    }
+    
+    public PackageNameNode(MemberSelectTree tree, PackageNameNode parent) {
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.element = TreeUtils.elementFromUse(tree);
+        this.parent = parent;
     }
 
     public Element getElement() {
