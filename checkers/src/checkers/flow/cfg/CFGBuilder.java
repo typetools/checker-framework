@@ -3436,6 +3436,10 @@ public class CFGBuilder {
         @Override
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
             Node expr = scan(tree.getExpression(), p);
+            if (!TreeUtils.isFieldAccess(tree)) {
+                assert expr instanceof PackageNameNode;
+                return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+            }
             return extendWithNode(new FieldAccessNode(tree, expr));
         }
 
