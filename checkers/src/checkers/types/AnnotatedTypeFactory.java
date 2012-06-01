@@ -1828,7 +1828,7 @@ public class AnnotatedTypeFactory {
      *         the annotation mirror used to annotate {@code anno}.
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
-            Element element, Class<PreconditionAnnotation> metaAnnotation) {
+            Element element, Class<? extends Annotation> metaAnnotation) {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
         List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
