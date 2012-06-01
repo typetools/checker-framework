@@ -83,7 +83,7 @@ public class RegexTransfer extends
                 // RegexUtil.asRegex(s, groups) method
                 if (receiverName.equals(clazz)
                         && method.toString().equals(
-                                "isRegex(java.lang.String,int)")) {
+                                "asRegex(java.lang.String,int)")) {
                     // add annotation with correct group count (if possible,
                     // regex annotation without count otherwise)
                     AnnotationMirror regexAnnotation;
