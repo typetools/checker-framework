@@ -10,13 +10,17 @@ import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
 /**
- * A node representing a package name used in an expression
- * such as a constructor invocation
+ * A node representing a package name used in an expression such as a
+ * constructor invocation
  * 
+ * <p>
  * <em>package</em>.class.object(...)
+ * <p>
+ * parent.<em>package</em>.class.object(...)
  * 
  * @author Stefan Heule
  * @author Charlie Garrett
@@ -24,19 +28,33 @@ import com.sun.source.tree.Tree;
  */
 public class PackageNameNode extends Node {
 
-    protected Tree tree;
+    protected final Tree tree;
     // The package named by this node
-    protected Element element;
+    protected final Element element;
 
-    public PackageNameNode(Tree tree) {
-        assert tree.getKind() == Tree.Kind.IDENTIFIER;
+    /** The parent name, if any. */
+    protected final/* @Nullable */PackageNameNode parent;
+
+    public PackageNameNode(IdentifierTree tree) {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
-        this.element = TreeUtils.elementFromUse((IdentifierTree) tree);
+        this.element = TreeUtils.elementFromUse(tree);
+        this.parent = null;
+    }
+
+    public PackageNameNode(MemberSelectTree tree, PackageNameNode parent) {
+        this.tree = tree;
+        this.type = InternalUtils.typeOf(tree);
+        this.element = TreeUtils.elementFromUse(tree);
+        this.parent = parent;
     }
 
     public Element getElement() {
         return element;
+    }
+
+    public PackageNameNode getParent() {
+        return parent;
     }
 
     @Override
@@ -60,16 +78,28 @@ public class PackageNameNode extends Node {
             return false;
         }
         PackageNameNode other = (PackageNameNode) obj;
-        return getElement().equals(other.getElement());
+        if (getParent() == null) {
+            return other.getParent() == null
+                    && getElement().equals(other.getElement());
+        } else {
+            return getParent().equals(other.getParent())
+                    && getElement().equals(other.getElement());
+        }
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getElement());
+        if (parent == null) {
+            return HashCodeUtils.hash(getElement());
+        }
+        return HashCodeUtils.hash(getElement(), getParent());
     }
 
     @Override
     public Collection<Node> getOperands() {
-        return Collections.emptyList();
+        if (parent == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singleton((Node) parent);
     }
 }
