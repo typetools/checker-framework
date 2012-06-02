@@ -1076,13 +1076,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * @param errorKey
      *            the error message to use if the check fails
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*
-                                                                                 * @
-                                                                                 * CompilerMessageKey
-                                                                                 */
-            String errorKey) {
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null;
+        // If the left-hand side is a local variable, and its type is a type
+        // variable without any annotations, then we use the upper bound (if
+        // any) as annotation.
+        if (var.getKind() == TypeKind.TYPEVAR
+                && var.getAnnotations().size() == 0) {
+            Tree.Kind kind = varTree.getKind();
+            boolean isLocalVar = kind == Tree.Kind.IDENTIFIER
+                    && !TreeUtils.isFieldAccess(varTree);
+            boolean isLocalVarDecl = kind == Tree.Kind.VARIABLE
+                    && TreeUtils.enclosingMethod(getCurrentPath()) != null;
+            if (isLocalVar || isLocalVarDecl) {
+                var.addAnnotations(var.getEffectiveAnnotations());
+            }
+        }
         checkAssignability(var, varTree);
         commonAssignmentCheck(var, valueExp, errorKey);
     }
