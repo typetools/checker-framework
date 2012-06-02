@@ -54,15 +54,14 @@ class Basic2 {
     }
     
     // simple throw statement
-    // TODO: activate, once throw is implemented
-    /*void t4(@Odd String p1, String p2, boolean b1) {
+    void t4(@Odd String p1, String p2, boolean b1) {
         String l1 = p1;
         if (b1) {
             l1 = p2;
             throw new RuntimeException();
         }
         @Odd String l3 = l1;
-    }*/
+    }
     
     class C {
         C c;
