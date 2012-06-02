@@ -99,6 +99,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param useFlow
      *            whether flow analysis should be performed
      */
+    @SuppressWarnings("deprecation") // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
             boolean useFlow) {
         super(checker, root);
