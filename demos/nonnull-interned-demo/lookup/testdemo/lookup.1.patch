@@ -1,0 +1,12 @@
+Index: src/utilMDE/UtilMDE.java
+===================================================================
+--- src/utilMDE/UtilMDE.java	(revision 3589)
++++ src/utilMDE/UtilMDE.java	(working copy)
+@@ -561,6 +561,7 @@
+    */
+   public static void deleteDir(File dir) {
+     File [] files = dir.listFiles();
++    if (files == null) throw new IllegalArgumentException("" + dir);
+     for (int i = 0; i < files.length; i++) {
+       File f = files[i];
+       f.delete();
