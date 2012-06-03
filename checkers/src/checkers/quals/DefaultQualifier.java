@@ -40,5 +40,5 @@ public @interface DefaultQualifier {
     String value();
 
     /** @return the locations to which the annotation should be applied */
-    DefaultLocation[] locations() default {DefaultLocation.ALL};
+    DefaultLocation[] locations() default {DefaultLocation.ALL_EXCEPT_LOCALS};
 }
