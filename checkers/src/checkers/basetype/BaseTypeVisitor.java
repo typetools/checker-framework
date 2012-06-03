@@ -17,6 +17,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
