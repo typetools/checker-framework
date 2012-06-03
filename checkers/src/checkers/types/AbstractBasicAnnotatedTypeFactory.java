@@ -115,7 +115,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
-                        Collections.singleton(DefaultLocation.ALL));
+                        Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
                 foundDefault = true;
             }
         }
@@ -124,7 +124,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
-                    Collections.singleton(DefaultLocation.ALL));
+                    Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         }
         
         // Add common aliases.
