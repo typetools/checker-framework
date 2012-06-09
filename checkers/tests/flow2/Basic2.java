@@ -165,4 +165,8 @@ class Basic2 {
             //@Odd String l3 = i;
         }
     }
+    
+    void t12(@Odd String p1, String p2, boolean b1) {
+        @Odd String l1 = (String) p1;
+    }
 }
