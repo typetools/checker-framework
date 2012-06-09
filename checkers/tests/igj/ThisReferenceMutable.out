@@ -1,0 +1,5 @@
+ThisReference.java:17: error: (argument.type.incompatible)
+ThisReference.java:18: error: (argument.type.incompatible)
+ThisReference.java:23: error: (argument.type.incompatible)
+ThisReference.java:24: error: (argument.type.incompatible)
+ThisReference.java:30: error: (argument.type.incompatible)
