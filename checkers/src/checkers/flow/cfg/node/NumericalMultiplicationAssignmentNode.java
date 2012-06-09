@@ -18,7 +18,7 @@ public class NumericalMultiplicationAssignmentNode extends CompoundAssignmentNod
 
     public NumericalMultiplicationAssignmentNode(Tree tree, Node left,
             Node right) {
-        super(tree, right, right);
+        super(tree, left, right);
         assert tree.getKind() == Kind.MULTIPLY_ASSIGNMENT;
     }
 
