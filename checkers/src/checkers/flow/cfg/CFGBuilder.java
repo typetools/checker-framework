@@ -20,6 +20,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
@@ -185,6 +186,15 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
 
 /**
  * Builds the control flow graph of some Java code (either a method, or an
@@ -1375,6 +1385,15 @@ public class CFGBuilder {
         private TryStack tryStack;
 
         /**
+         * Members to allow creation of new AST Trees.
+         */
+        protected Context context;
+        public TreeMaker maker;
+        protected Names names;
+        protected com.sun.tools.javac.code.Types jctypes;
+        protected Symtab symtab;
+
+        /**
          * Performs the actual work of phase one.
          * 
          * @param root
@@ -1406,6 +1425,11 @@ public class CFGBuilder {
             breakLabels = new HashMap<>();
             continueLabels = new HashMap<>();
             returnNodes = new ArrayList<>();
+
+            // for making new AST nodes.
+            context = ((JavacProcessingEnvironment)env).getContext();
+            maker = TreeMaker.instance(context);
+            names = Names.instance(context);
 
             // traverse AST of the method body
             TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
@@ -1529,6 +1553,11 @@ public class CFGBuilder {
         /* --------------------------------------------------------- */
         /* Utility Methods */
         /* --------------------------------------------------------- */
+
+        protected long uid = 0;
+        protected String uniqueName(String prefix) {
+            return prefix + "#num" + uid++;
+        }
 
         /**
          * If the input node is an unboxed primitive type, box it, otherwise
@@ -2024,6 +2053,9 @@ public class CFGBuilder {
             // object or class (15.12.4.5)
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
+
+            System.out.println("Method invocation tree: " + tree);
+            System.out.println("Return type: " + InternalUtils.typeOf(tree));
 
             ConditionalJump cjump = null;
             if (conditionalMode && isBooleanMethod) {
@@ -2976,7 +3008,7 @@ public class CFGBuilder {
 
                 assert hasNextMethod != null : "no hasNext method declared for expression type";
                 assert nextMethod != null : "no next method declared for expression type";
-                
+
                 // Declare and initialize a new, unique iterator variable
                 VariableDeclarationNode iteratorDeclNode =
                     extendWithNode(new VariableDeclarationNode("iter", iteratorType));
@@ -3052,6 +3084,101 @@ public class CFGBuilder {
                 // Loop back edge
                 addLabelForNextNode(updateStart);
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+                {
+                    System.out.println("Expression type: " + declaredExprType);
+
+                    System.out.println("Iterator method: " + iteratorMethod);
+                    System.out.println("Iterator asType: " + iteratorMethod.asType());
+
+                    Type.MethodType methodType = (Type.MethodType)iteratorMethod.asType();
+                    Symbol.TypeSymbol methodClass =
+                        (Symbol.TypeSymbol)methodType.asElement();
+                    DeclaredType genericReturnType =
+                        (DeclaredType)methodType.getReturnType();
+                    Type specificReturnType =
+                        (Type)types.getDeclaredType((TypeElement)types.asElement(genericReturnType),
+                                                    declaredExprType.getTypeArguments().get(0));
+
+                    // Replace the iterator method's generic return type with
+                    // the actual element type of the expression.
+                    Type.MethodType updatedMethodType =
+                        new Type.MethodType(com.sun.tools.javac.util.List.<Type>nil(),
+                                            specificReturnType,
+                                            com.sun.tools.javac.util.List.<Type>nil(),
+                                            methodClass);
+
+                    JCTree.JCFieldAccess iteratorAccess =
+                        maker.Select((JCTree.JCExpression)expression,
+                                     names.fromString("iterator"));
+                    iteratorAccess.setType(updatedMethodType);
+                    System.out.println("Iterator access: " + iteratorAccess);
+                    System.out.println("Iterator type: " + ((JCTree)iteratorAccess).type);
+                    System.out.println("Iterator return type: " +
+                                       ((JCTree)iteratorAccess).type.getReturnType());
+
+                    JCTree.JCMethodInvocation iteratorCall =
+                        maker.App(iteratorAccess);
+                    System.out.println("Iterator call: " + iteratorCall);
+
+                    // Create a new local variable declaration tree.
+                    JCTree.JCVariableDecl decl =
+                        maker.VarDef(maker.Modifiers(0),
+                                     names.fromString(uniqueName("iter")),
+                                     maker.Type((Type.ClassType)specificReturnType),
+                                     iteratorCall);
+
+                    System.out.println("Translated tree: " + decl.toString());
+
+                    
+                    System.out.println("HasNext method: " + hasNextMethod);
+                    System.out.println("HasNext asType: " + hasNextMethod.asType());
+
+                    JCTree.JCFieldAccess hasNextAccess =
+                        maker.Select((JCTree.JCExpression)expression,
+                                     names.fromString("hasNext"));
+                    hasNextAccess.setType((Type.MethodType)hasNextMethod.asType());
+                    System.out.println("HasNext access: " + hasNextAccess);
+                    System.out.println("HasNext type: " + ((JCTree)hasNextAccess).type);
+                    System.out.println("HasNext return type: " +
+                                       ((JCTree)hasNextAccess).type.getReturnType());
+
+                    JCTree.JCMethodInvocation hasNextCall =
+                        maker.App(hasNextAccess);
+                    System.out.println("HasNext call: " + hasNextCall);
+
+
+                    System.out.println("Next method: " + nextMethod);
+                    System.out.println("Next asType: " + nextMethod.asType());
+
+                    Type.MethodType methodType2 = (Type.MethodType)nextMethod.asType();
+                    Symbol.TypeSymbol methodClass2 =
+                        (Symbol.TypeSymbol)methodType2.asElement();
+                    Type specificReturnType2 = (Type)declaredExprType.getTypeArguments().get(0);
+
+                    Type.MethodType updatedMethodType2 =
+                        new Type.MethodType(com.sun.tools.javac.util.List.<Type>nil(),
+                                            specificReturnType2,
+                                            com.sun.tools.javac.util.List.<Type>nil(),
+                                            methodClass2);
+
+                    JCTree.JCFieldAccess nextAccess =
+                        maker.Select((JCTree.JCExpression)expression,
+                                     names.fromString("next"));
+                    nextAccess.setType(updatedMethodType2);
+                    System.out.println("Next access: " + nextAccess);
+                    System.out.println("Next type: " + ((JCTree)nextAccess).type);
+                    System.out.println("Next return type: " +
+                                       ((JCTree)nextAccess).type.getReturnType());
+
+                    JCTree.JCMethodInvocation nextCall =
+                        maker.App(nextAccess);
+                    System.out.println("Next call: " + nextCall);
+
+
+
+                }
+
             } else {
                 assert (exprType instanceof ArrayType) : "expression must be an array";
                 ArrayType arrayType = (ArrayType) exprType;
