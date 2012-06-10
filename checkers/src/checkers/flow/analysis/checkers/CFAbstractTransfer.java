@@ -32,6 +32,7 @@ import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.cfg.node.TypeCastNode;
+import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -641,5 +642,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         }
         result.setResultValue(resultValue);
         return result;
+    }
+    
+    @Override
+    public TransferResult<V, S> visitVariableDeclaration(
+            VariableDeclarationNode n, TransferInput<V, S> p) {
+        return new RegularTransferResult<>(null, p.getRegularStore());
     }
 }
