@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * An unqualified type.
+ * An unqualified type.  Such a type is incomparable to (that is, neither a
+ * subtype nor a supertype of) any fake enum type.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
