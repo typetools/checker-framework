@@ -270,7 +270,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitLocalVariable(LocalVariableNode n,
             TransferInput<V, S> in) {
         S store = in.getRegularStore();
-        V value = store.getValue(n);
+        V valueFromStore = store.getValue(n);
+        V valueFromFactory = getValueFromFactory(n.getTree());
+        V value = moreSpecificValue(valueFromFactory, valueFromStore);
         return new RegularTransferResult<>(value, store);
     }
 
@@ -635,15 +637,33 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         V operandValue = p.getValueOfSubNode(n.getOperand());
         // Normally we take the value of the type cast node. However, if the old
         // flow-refined value was more precise, we keep that value.
-        V resultValue = value;
-        if (value == null
-                || (operandValue != null && operandValue.isSubtypeOf(value))) {
-            resultValue = operandValue;
-        }
+        V resultValue = moreSpecificValue(value, operandValue);
         result.setResultValue(resultValue);
         return result;
     }
-    
+
+    /**
+     * Returns the abstract value of {@code (value1, value2)) that is more
+     * specific. If the two are incomparable, then {@code value1} is returned.
+     */
+    public V moreSpecificValue(V value1, V value2) {
+        if (value1 == null) {
+            return value2;
+        }
+        if (value2 == null) {
+            return value1;
+        }
+        boolean is1sub2 = value1.isSubtypeOf(value2);
+        boolean is2sub1 = value2.isSubtypeOf(value1);
+        if (!is1sub2 && !is2sub1) {
+            return value1;
+        }
+        if (is1sub2) {
+            return value1;
+        }
+        return value2;
+    }
+
     @Override
     public TransferResult<V, S> visitVariableDeclaration(
             VariableDeclarationNode n, TransferInput<V, S> p) {
