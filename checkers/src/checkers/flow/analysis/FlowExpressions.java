@@ -5,7 +5,7 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.ExplicitThisNode;
+import checkers.flow.cfg.node.ExplicitThisLiteralNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -49,7 +49,7 @@ public class FlowExpressions {
         if (receiverNode instanceof FieldAccessNode) {
             receiver = internalReprOfFieldAccess((FieldAccessNode) receiverNode);
         } else if (receiverNode instanceof ImplicitThisLiteralNode
-                || receiverNode instanceof ExplicitThisNode) {
+                || receiverNode instanceof ExplicitThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
