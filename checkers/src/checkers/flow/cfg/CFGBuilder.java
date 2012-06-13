@@ -2338,7 +2338,7 @@ public class CFGBuilder {
             }
             assert r != null : "unexpected compound assignment type";
             extendWithNode(r);
-            return null;
+            return r;
         }
 
         @Override

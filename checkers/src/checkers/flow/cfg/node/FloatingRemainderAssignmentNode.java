@@ -17,7 +17,7 @@ import com.sun.source.tree.Tree.Kind;
 public class FloatingRemainderAssignmentNode extends CompoundAssignmentNode {
 
     public FloatingRemainderAssignmentNode(Tree tree, Node left, Node right) {
-        super(tree, right, right);
+        super(tree, left, right);
         assert tree.getKind() == Kind.REMAINDER_ASSIGNMENT;
     }
 
