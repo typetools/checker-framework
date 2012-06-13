@@ -17,7 +17,7 @@ import com.sun.source.tree.Tree.Kind;
 public class BitwiseAndAssignmentNode extends CompoundAssignmentNode {
 
     public BitwiseAndAssignmentNode(Tree tree, Node left, Node right) {
-        super(tree, right, right);
+        super(tree, left, right);
         assert tree.getKind() == Kind.AND_ASSIGNMENT;
     }
 
