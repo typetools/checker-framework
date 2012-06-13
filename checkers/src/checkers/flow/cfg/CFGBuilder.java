@@ -20,6 +20,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
@@ -126,6 +127,7 @@ import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
+import checkers.util.trees.TreeBuilder;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -1285,6 +1287,7 @@ public class CFGBuilder {
         protected Elements elements;
         protected Types types;
         protected Trees trees;
+        protected TreeBuilder treeBuilder;
 
         /**
          * The translation starts in regular mode, that is
@@ -1394,6 +1397,7 @@ public class CFGBuilder {
             elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
+            treeBuilder = new TreeBuilder(env);
 
             // start in regular mode
             conditionalMode = false;
@@ -1529,6 +1533,11 @@ public class CFGBuilder {
         /* --------------------------------------------------------- */
         /* Utility Methods */
         /* --------------------------------------------------------- */
+
+        protected long uid = 0;
+        protected String uniqueName(String prefix) {
+            return prefix + "#num" + uid++;
+        }
 
         /**
          * If the input node is an unboxed primitive type, box it, otherwise
@@ -2025,6 +2034,14 @@ public class CFGBuilder {
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 
+            System.out.println("--------------------------------------------------");
+
+            System.out.println("NORMAL METHOD INVOCATION");
+            System.out.println("Method invocation tree: " + tree);
+            System.out.println("Return type: " + InternalUtils.typeOf(tree));
+
+            System.out.println("--------------------------------------------------");
+
             ConditionalJump cjump = null;
             if (conditionalMode && isBooleanMethod) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
@@ -2127,25 +2144,21 @@ public class CFGBuilder {
          */
         protected Node translateAssignment(Tree tree, Node target,
                 ExpressionTree rhs) {
-            assert tree instanceof AssignmentTree
-                    || tree instanceof VariableTree;
-            target.setLValue();
             Node expression = scan(rhs, null);
-            expression = assignConvert(expression, target.getType());
-            AssignmentNode assignmentNode = new AssignmentNode(tree, target,
-                    expression);
-            extendWithNode(assignmentNode);
-            return expression;
+            return translateAssignment(tree, target, expression);
         }
 
         /**
-         * Translate an assignment with no corresponding AST {@link Tree}.
+         * Translate an assignment where the RHS has already been scanned.
          */
-        protected Node translateAssignment(Node target, Node expression) {
+        protected Node translateAssignment(Tree tree, Node target,
+                Node expression) {
+            assert tree instanceof AssignmentTree
+                    || tree instanceof VariableTree;
             target.setLValue();
             expression = assignConvert(expression, target.getType());
-            AssignmentNode assignmentNode =
-                new AssignmentNode(target, expression);
+            AssignmentNode assignmentNode = new AssignmentNode(tree, target,
+                    expression);
             extendWithNode(assignmentNode);
             return expression;
         }
@@ -2925,6 +2938,8 @@ public class CFGBuilder {
             TypeMirror iterableType = types.erasure(iterableElement.asType());
 
             VariableTree variable = tree.getVariable();
+            VariableElement variableElement =
+                TreeUtils.elementFromDeclaration(variable);
             ExpressionTree expression = tree.getExpression();
             StatementTree statement = tree.getStatement();
 
@@ -2932,75 +2947,93 @@ public class CFGBuilder {
             if (types.isSubtype(exprType, iterableType)) {
                 assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
                 DeclaredType declaredExprType = (DeclaredType) exprType;
-                TypeElement exprElement = (TypeElement) declaredExprType.asElement();
                 List<? extends TypeMirror> typeArgs = declaredExprType.getTypeArguments();
 
-                // Find the iterator() method of the iterable type
-                ExecutableElement iteratorMethod = null;
+                System.out.println("--------------------------------------------------");
+                System.out.println("RESULTS OF TREE BUILDER METHODS");
 
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-                    Name methodName = method.getSimpleName();
-                    
-                    if (method.getParameters().size() == 0) {
-                        if (methodName.contentEquals("iterator")) {
-                            iteratorMethod = method;
-                        }
-                    }
-                }
+                MemberSelectTree iteratorSelect =
+                    treeBuilder.buildIteratorMethodAccess(expression);
+                System.out.println("iteratorSelect: " + iteratorSelect +
+                                   " " + InternalUtils.typeOf(iteratorSelect));
 
-                assert iteratorMethod != null : "no iterator method declared for expression type";
+                MethodInvocationTree iteratorCall =
+                    treeBuilder.buildMethodInvocation(iteratorSelect);
+                System.out.println("iteratorCall: " + iteratorCall +
+                                   " " + InternalUtils.typeOf(iteratorCall));
 
-                TypeMirror iteratorType = iteratorMethod.getReturnType();
-                assert iteratorType instanceof DeclaredType : "iterator must be a declared type";
+                DeclaredType elementType =
+                    (DeclaredType)InternalUtils.typeOf(iteratorCall);
 
-                TypeElement iteratorElement =
-                    (TypeElement) ((DeclaredType)iteratorType).asElement();
+                VariableTree iteratorVariable =
+                    treeBuilder.buildVariableDecl(elementType,
+                                                  uniqueName("iter"),
+                                                  variableElement.getEnclosingElement(),
+                                                  iteratorCall);
+                System.out.println("iteratorVariable: " + iteratorVariable +
+                                   " " + InternalUtils.typeOf(iteratorVariable));
 
-                // Find the hasNext() and next() methods of the iterator type
-                ExecutableElement hasNextMethod = null;
-                ExecutableElement nextMethod = null;
-                
-                for (ExecutableElement method :
-                         ElementFilter.methodsIn(elements.getAllMembers(iteratorElement))) {
-                    Name methodName = method.getSimpleName();
-                    
-                    if (method.getParameters().size() == 0) {
-                        if (methodName.contentEquals("hasNext")) {
-                            hasNextMethod = method;
-                        } else if (methodName.contentEquals("next")) {
-                            nextMethod = method;
-                        }
-                    }
-                }
+                IdentifierTree iteratorUse1 =
+                    treeBuilder.buildVariableUse(iteratorVariable);
+                System.out.println("iteratorUse1: " + iteratorUse1 +
+                                   " " + InternalUtils.typeOf(iteratorUse1));
 
-                assert hasNextMethod != null : "no hasNext method declared for expression type";
-                assert nextMethod != null : "no next method declared for expression type";
-                
+                MemberSelectTree hasNextSelect =
+                    treeBuilder.buildHasNextMethodAccess(iteratorUse1);
+                System.out.println("hasNextSelect: " + hasNextSelect +
+                                   " " + InternalUtils.typeOf(hasNextSelect));
+
+                MethodInvocationTree hasNextCall =
+                    treeBuilder.buildMethodInvocation(hasNextSelect);
+                System.out.println("hasNextCall: " + hasNextCall +
+                                   " " + InternalUtils.typeOf(hasNextCall));
+
+                IdentifierTree iteratorUse2 =
+                    treeBuilder.buildVariableUse(iteratorVariable);
+                System.out.println("iteratorUse2: " + iteratorUse2 +
+                                   " " + InternalUtils.typeOf(iteratorUse2));
+
+                MemberSelectTree nextSelect =
+                    treeBuilder.buildNextMethodAccess(iteratorUse2);
+                System.out.println("nextSelect: " + nextSelect +
+                                   " " + InternalUtils.typeOf(nextSelect));
+
+                MethodInvocationTree nextCall =
+                    treeBuilder.buildMethodInvocation(nextSelect);
+                System.out.println("nextCall: " + nextCall +
+                                   " " + InternalUtils.typeOf(nextCall));
+
+                // TODO: Move the Node constructors up closer to the TreeBuilder
+                // calls.
+
+                // TODO: Remove Node constructors that allow null Trees.
+                // TODO: Remove InternalVariableNode class.
+
                 // Declare and initialize a new, unique iterator variable
                 VariableDeclarationNode iteratorDeclNode =
-                    extendWithNode(new VariableDeclarationNode("iter", iteratorType));
-                InternalVariableNode iteratorLHSNode =
-                    extendWithNode(new InternalVariableNode(iteratorDeclNode));
+                    extendWithNode(new VariableDeclarationNode(iteratorVariable));
+                LocalVariableNode iteratorLHSNode =
+                    extendWithNode(new LocalVariableNode(iteratorVariable));
 
                 Node expressionNode = scan(expression, p);
 
-                MethodAccessNode iteratorMethodAccess =
-                    extendWithNode(new MethodAccessNode(iteratorMethod, expressionNode));
-                MethodInvocationNode iteratorMethodCall =
-                    extendWithNode(new MethodInvocationNode(iteratorMethodAccess,
+                MethodAccessNode iteratorAccessNode =
+                    extendWithNode(new MethodAccessNode(iteratorSelect, expressionNode));
+                MethodInvocationNode iteratorCallNode =
+                    extendWithNode(new MethodInvocationNode(iteratorCall, iteratorAccessNode,
                                                             Collections.<Node>emptyList(), getCurrentPath()));
 
-                translateAssignment(iteratorLHSNode, iteratorMethodCall);
+                translateAssignment(iteratorVariable, iteratorLHSNode,
+                                    iteratorCallNode);
 
                 // Test the loop ending condition
                 addLabelForNextNode(conditionStart);
-                InternalVariableNode iteratorReceiverNode =
-                    extendWithNode(new InternalVariableNode(iteratorDeclNode));
-                MethodAccessNode hasNextMethodAccess =
-                    extendWithNode(new MethodAccessNode(hasNextMethod, iteratorReceiverNode));
-                extendWithNode(new MethodInvocationNode(hasNextMethodAccess,
-                                                            Collections.<Node>emptyList(), getCurrentPath()));
+                LocalVariableNode iteratorReceiverNode =
+                    extendWithNode(new LocalVariableNode(iteratorUse1));
+                MethodAccessNode hasNextAccessNode =
+                    extendWithNode(new MethodAccessNode(hasNextSelect, iteratorReceiverNode));
+                extendWithNode(new MethodInvocationNode(hasNextCall, hasNextAccessNode,
+                                                        Collections.<Node>emptyList(), getCurrentPath()));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
                 // Loop body, starting with declaration of the loop iteration variable
@@ -3009,12 +3042,12 @@ public class CFGBuilder {
                     extendWithNode(new VariableDeclarationNode(variable));
                 LocalVariableNode varNode = 
                     extendWithNode(new LocalVariableNode(variable));
-                iteratorReceiverNode =
-                    extendWithNode(new InternalVariableNode(iteratorDeclNode));
-                MethodAccessNode nextMethodAccess =
-                    extendWithNode(new MethodAccessNode(nextMethod, iteratorReceiverNode));
-                MethodInvocationNode nextMethodCall =
-                    extendWithNode(new MethodInvocationNode(nextMethodAccess,
+                LocalVariableNode iteratorReceiverNode2 =
+                    extendWithNode(new LocalVariableNode(iteratorUse2));
+                MethodAccessNode nextAccessNode =
+                    extendWithNode(new MethodAccessNode(nextSelect, iteratorReceiverNode2));
+                MethodInvocationNode nextCallNode =
+                    extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
                         Collections.<Node>emptyList(), getCurrentPath()));
 
                 // If the variable is of reference type, then the target type is equal to it.
@@ -3025,10 +3058,8 @@ public class CFGBuilder {
                 if (varType instanceof ReferenceType) {
                     targetType = varType;
                 } else {
-                    assert iteratorMethod.getReturnType() instanceof DeclaredType :
-                        "iterator method should return a declared type";
-                    DeclaredType localIterType = (DeclaredType) iteratorMethod.getReturnType();
-                    List<? extends TypeMirror> localIterArgs = localIterType.getTypeArguments();
+                    List<? extends TypeMirror> localIterArgs =
+                        elementType.getTypeArguments();
                     switch (typeArgs.size()) {
                     case 0:
                         targetType = elements.getTypeElement("java.lang.Object").asType();
@@ -3041,9 +3072,18 @@ public class CFGBuilder {
                     }
                 }
 
-                TypeCastNode targetTypeCast =
-                    extendWithNode(new TypeCastNode(null, nextMethodCall, targetType));
-                translateAssignment(varNode, targetTypeCast);
+                // According to the JLS, a the result of iter.next() should
+                // be cast to the target type, but that changes qualifiers.
+                // TypeCastTree typeCast =
+                //     treeBuilder.buildTypeCast(targetType, nextCall);
+                // System.out.println("typeCast: " + typeCast +
+                //                    " " + InternalUtils.typeOf(typeCast));
+
+                // TypeCastNode targetTypeCast =
+                //     extendWithNode(new TypeCastNode(typeCast, nextCallNode, targetType));
+
+                System.out.println("--------------------------------------------------");
+                translateAssignment(variable, varNode, nextCall);
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3052,6 +3092,7 @@ public class CFGBuilder {
                 // Loop back edge
                 addLabelForNextNode(updateStart);
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
             } else {
                 assert (exprType instanceof ArrayType) : "expression must be an array";
                 ArrayType arrayType = (ArrayType) exprType;
@@ -3063,16 +3104,17 @@ public class CFGBuilder {
 
                 Node expressionNode = scan(expression, p);
 
-                translateAssignment(arrayVarNode, expressionNode);
+                translateAssignment(null, arrayVarNode, expressionNode);
 
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
                 VariableDeclarationNode indexVarNode =
                     extendWithNode(new VariableDeclarationNode("index", intType));
                 IntegerLiteralNode zeroNode =
                     extendWithNode(new IntegerLiteralNode(0, intType));
-                translateAssignment(indexVarNode, zeroNode);
+                translateAssignment(null, indexVarNode, zeroNode);
 
                 // 
+                // See Symtab.lengthVar
                 // VariableElement lengthField = null;
                 // System.out.println("ArrayElement: " + arrayElement);
                 // for (VariableElement field :
@@ -3108,7 +3150,7 @@ public class CFGBuilder {
                 ArrayAccessNode arrayAccess =
                     extendWithNode(new ArrayAccessNode(arrayUse, indexUse,
                         arrayType.getComponentType()));
-                translateAssignment(varNode, arrayAccess);
+                translateAssignment(variable, varNode, arrayAccess);
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3436,6 +3478,10 @@ public class CFGBuilder {
         @Override
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
             Node expr = scan(tree.getExpression(), p);
+            if (!TreeUtils.isFieldAccess(tree)) {
+                assert expr instanceof PackageNameNode;
+                return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+            }
             return extendWithNode(new FieldAccessNode(tree, expr));
         }
 

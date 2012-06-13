@@ -38,7 +38,6 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Pure;
 import checkers.quals.Unqualified;
-import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
@@ -100,6 +99,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param useFlow
      *            whether flow analysis should be performed
      */
+    @SuppressWarnings("deprecation") // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
             boolean useFlow) {
         super(checker, root);
@@ -115,7 +115,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
-                        Collections.singleton(DefaultLocation.ALL));
+                        Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
                 foundDefault = true;
             }
         }
@@ -124,7 +124,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
-                    Collections.singleton(DefaultLocation.ALL));
+                    Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         }
         
         // Add common aliases.
@@ -433,6 +433,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             annotateImplicitWithFlow(tree, type);
         } else {
             treeAnnotator.visit(tree, type);
+            Element elt = InternalUtils.symbol(tree);
+            typeAnnotator.visit(type, elt != null ? elt.getKind()
+                    : ElementKind.OTHER);
+            defaults.annotate(tree, type);
         }
     }
 
@@ -478,7 +482,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 }
                 type.addAnnotations(inferred);
             }
-
         }
         // TODO: This is quite ugly
         boolean finishedScanning = enclosingClass == null

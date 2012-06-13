@@ -66,12 +66,14 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this.factory = factory;
         transferFunction = createTransferFunction();
         this.checker = checker;
-        
+
         // Build the set of supported annotations.
         supportedAnnotations = AnnotationUtils.createAnnotationSet();
+        Set<Class<? extends Annotation>> noFlowInferenceAnnotations = factory
+                .noFlowInferenceAnnotations();
         for (AnnotationMirror a : qualifierHierarchy.getAnnotations()) {
             boolean add = true;
-            for (Class<? extends Annotation> c : factory.noFlowInferenceAnnotations()) {
+            for (Class<? extends Annotation> c : noFlowInferenceAnnotations) {
                 if (AnnotationUtils.areSameByClass(a, c)) {
                     add = false;
                 }
