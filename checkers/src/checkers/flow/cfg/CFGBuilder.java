@@ -2034,14 +2034,6 @@ public class CFGBuilder {
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 
-            System.out.println("--------------------------------------------------");
-
-            System.out.println("NORMAL METHOD INVOCATION");
-            System.out.println("Method invocation tree: " + tree);
-            System.out.println("Return type: " + InternalUtils.typeOf(tree));
-
-            System.out.println("--------------------------------------------------");
-
             ConditionalJump cjump = null;
             if (conditionalMode && isBooleanMethod) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
@@ -2949,18 +2941,11 @@ public class CFGBuilder {
                 DeclaredType declaredExprType = (DeclaredType) exprType;
                 List<? extends TypeMirror> typeArgs = declaredExprType.getTypeArguments();
 
-                System.out.println("--------------------------------------------------");
-                System.out.println("RESULTS OF TREE BUILDER METHODS");
-
                 MemberSelectTree iteratorSelect =
                     treeBuilder.buildIteratorMethodAccess(expression);
-                System.out.println("iteratorSelect: " + iteratorSelect +
-                                   " " + InternalUtils.typeOf(iteratorSelect));
 
                 MethodInvocationTree iteratorCall =
                     treeBuilder.buildMethodInvocation(iteratorSelect);
-                System.out.println("iteratorCall: " + iteratorCall +
-                                   " " + InternalUtils.typeOf(iteratorCall));
 
                 DeclaredType elementType =
                     (DeclaredType)InternalUtils.typeOf(iteratorCall);
@@ -2970,38 +2955,24 @@ public class CFGBuilder {
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
-                System.out.println("iteratorVariable: " + iteratorVariable +
-                                   " " + InternalUtils.typeOf(iteratorVariable));
 
                 IdentifierTree iteratorUse1 =
                     treeBuilder.buildVariableUse(iteratorVariable);
-                System.out.println("iteratorUse1: " + iteratorUse1 +
-                                   " " + InternalUtils.typeOf(iteratorUse1));
 
                 MemberSelectTree hasNextSelect =
                     treeBuilder.buildHasNextMethodAccess(iteratorUse1);
-                System.out.println("hasNextSelect: " + hasNextSelect +
-                                   " " + InternalUtils.typeOf(hasNextSelect));
 
                 MethodInvocationTree hasNextCall =
                     treeBuilder.buildMethodInvocation(hasNextSelect);
-                System.out.println("hasNextCall: " + hasNextCall +
-                                   " " + InternalUtils.typeOf(hasNextCall));
 
                 IdentifierTree iteratorUse2 =
                     treeBuilder.buildVariableUse(iteratorVariable);
-                System.out.println("iteratorUse2: " + iteratorUse2 +
-                                   " " + InternalUtils.typeOf(iteratorUse2));
 
                 MemberSelectTree nextSelect =
                     treeBuilder.buildNextMethodAccess(iteratorUse2);
-                System.out.println("nextSelect: " + nextSelect +
-                                   " " + InternalUtils.typeOf(nextSelect));
 
                 MethodInvocationTree nextCall =
                     treeBuilder.buildMethodInvocation(nextSelect);
-                System.out.println("nextCall: " + nextCall +
-                                   " " + InternalUtils.typeOf(nextCall));
 
                 // TODO: Move the Node constructors up closer to the TreeBuilder
                 // calls.
@@ -3082,7 +3053,6 @@ public class CFGBuilder {
                 // TypeCastNode targetTypeCast =
                 //     extendWithNode(new TypeCastNode(typeCast, nextCallNode, targetType));
 
-                System.out.println("--------------------------------------------------");
                 translateAssignment(variable, varNode, nextCall);
 
                 if (statement != null) {
