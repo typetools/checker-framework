@@ -41,6 +41,7 @@ import checkers.quals.RequiresAnnotations;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -384,7 +385,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     checkFlowExprParameters(node, stringExpr);
 
                     // TODO: we should not need to cast here?
-                    BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
+                    AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
+                        (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
                     CFStore exitStore = factory.getRegularExitStore(node);
                     if (exitStore == null) {
                         // if there is no regular exitStore, then the method
@@ -471,7 +473,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     }
 
                     // TODO: we should not need to cast here?
-                    BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
+                    AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
+                        (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
                     List<Pair<ReturnNode, CFStore>> returnStatements = factory
                             .getReturnStatementStores(node);
                     for (Pair<ReturnNode, CFStore> r : returnStatements) {
@@ -689,7 +692,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     protected void checkPrecondition(MethodInvocationTree tree,
             AnnotationMirror requiredAnnotation, List<String> expressions) {
         // TODO: we should not need to cast here?
-        BasicAnnotatedTypeFactory<?> factory = (BasicAnnotatedTypeFactory<?>) atypeFactory;
+        AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
+            (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
 
         Node nodeNode = factory.getNodeForTree(tree);
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
