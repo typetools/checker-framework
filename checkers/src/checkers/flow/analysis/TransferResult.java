@@ -46,6 +46,10 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
     public A getResultValue() {
         return resultValue;
     }
+    
+    public void setResultValue(A resultValue) {
+        this.resultValue = resultValue;
+    }
 
     /**
      * @return The regular result store produced if no exception is thrown by

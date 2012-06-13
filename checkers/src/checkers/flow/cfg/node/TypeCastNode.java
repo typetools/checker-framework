@@ -39,7 +39,7 @@ public class TypeCastNode extends Node {
 
     @Override
     public Tree getTree() {
-        return null;
+        return tree;
     }
 
     @Override

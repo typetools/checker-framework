@@ -100,6 +100,22 @@ class Basic2 {
         @Odd String l6 = c1.c.f1;
     }
     
+    // fields
+    void t6b(@Odd String p1, String p2, boolean b1, C c1, C c2) {
+        if (b1) {
+            c1.f1 = p1;
+        }
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = c1.f1;
+        
+        if (b1) {
+            c1.f1 = p1;
+        } else {
+            c1.f1 = p1;
+        }
+        @Odd String l2 = c1.f1;
+    }
+    
     // method calls
     void nonpure() {}
     @Pure int pure() { return 1; }
@@ -164,5 +180,10 @@ class Basic2 {
         for (String i : oddList) {
             //@Odd String l3 = i;
         }
+    }
+    
+    // cast without annotations
+    void t12(@Odd String p1, String p2, boolean b1) {
+        @Odd String l1 = (String) p1;
     }
 }
