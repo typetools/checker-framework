@@ -54,15 +54,14 @@ class Basic2 {
     }
     
     // simple throw statement
-    // TODO: activate, once throw is implemented
-    /*void t4(@Odd String p1, String p2, boolean b1) {
+    void t4(@Odd String p1, String p2, boolean b1) {
         String l1 = p1;
         if (b1) {
             l1 = p2;
             throw new RuntimeException();
         }
         @Odd String l3 = l1;
-    }*/
+    }
     
     class C {
         C c;
@@ -146,8 +145,24 @@ class Basic2 {
     // generics
     public <T extends @Odd String> void t10(T p1, @Odd T p2) {
       T l1 = p1;
-      //T l2 = p2;
+      T l2 = p2;
       @Odd T l3 = p1;
       @Odd T l4 = p2;
+    }
+    
+    // for-each loop
+    void t11(@Odd String p1, String p2, List<String> list, List<@Odd String> oddList) {
+        //:: error: (enhancedfor.type.incompatible)
+        for (@Odd String i : list) {}
+        for (@Odd String i : oddList) {
+            @Odd String l1 = i;
+        }
+        for (@Odd String i : oddList) {
+            //:: error: (assignment.type.incompatible)
+            i = p2;
+        }
+        for (String i : oddList) {
+            //@Odd String l3 = i;
+        }
     }
 }
