@@ -62,6 +62,7 @@ import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.DoubleLiteralNode;
 import checkers.flow.cfg.node.EqualToNode;
+import checkers.flow.cfg.node.ExplicitThisLiteralNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.FloatLiteralNode;
 import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
@@ -3213,6 +3214,8 @@ public class CFGBuilder {
                 case EXCEPTION_PARAMETER:
                 case FIELD:
                     // Note that "this" is a field, but not a field access.
+                    node = new ExplicitThisLiteralNode(tree);
+                    break;
                 case LOCAL_VARIABLE:
                 case PARAMETER:
                     node = new LocalVariableNode(tree);
