@@ -13,7 +13,7 @@ public class Uninit11 {
   public Object f;
 
   // parameter x is just to distinguish the overloaded constructors
-  public Uninit11(@DoesNotUseF Uninit11 this, int x) {
+  public @DoesNotUseF Uninit11(int x) {
   }
 
   public Uninit11(long x) {
