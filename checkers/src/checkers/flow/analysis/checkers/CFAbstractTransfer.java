@@ -253,13 +253,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitFieldAccess(FieldAccessNode n,
             TransferInput<V, S> p) {
         S store = p.getRegularStore();
-        V value = store.getValue(n);
-        // look up value in factory, if necessary
+        V storeValue = store.getValue(n);
+        // look up value in factory, and take the more specific one
         // TODO: handle cases, where this is not allowed (e.g. contructors in
         // non-null type systems)
-        if (value == null) {
-            value = getValueFromFactory(n.getTree());
-        }
+        V factoryValue = getValueFromFactory(n.getTree());
+        V value = moreSpecificValue(factoryValue, storeValue);
         return new RegularTransferResult<>(value, store);
     }
 
