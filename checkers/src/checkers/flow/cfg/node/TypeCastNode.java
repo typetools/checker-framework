@@ -20,10 +20,10 @@ import com.sun.source.tree.Tree;
  */
 public class TypeCastNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
     protected Node operand;
 
-    public TypeCastNode(/* @Nullable */Tree tree, Node operand, TypeMirror type) {
+    public TypeCastNode(Tree tree, Node operand, TypeMirror type) {
         this.tree = tree;
         this.operand = operand;
         this.type = type;

@@ -27,7 +27,7 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class LessThanNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
     protected Node left;
     protected Node right;
 
@@ -35,14 +35,6 @@ public class LessThanNode extends Node {
         assert tree.getKind() == Kind.LESS_THAN;
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
-        this.left = left;
-        this.right = right;
-    }
-
-    public LessThanNode(Node left, Node right, TypeMirror type) {
-        assert type.getKind() == TypeKind.BOOLEAN;
-        this.tree = null;
-        this.type = type;
         this.left = left;
         this.right = right;
     }
@@ -56,7 +48,7 @@ public class LessThanNode extends Node {
     }
 
     @Override
-    public/* @Nullable */Tree getTree() {
+    public Tree getTree() {
         return tree;
     }
 

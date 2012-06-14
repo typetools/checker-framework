@@ -78,7 +78,6 @@ import checkers.flow.cfg.node.IntegerDivisionNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.IntegerRemainderAssignmentNode;
 import checkers.flow.cfg.node.IntegerRemainderNode;
-import checkers.flow.cfg.node.InternalVariableNode;
 import checkers.flow.cfg.node.LeftShiftAssignmentNode;
 import checkers.flow.cfg.node.LeftShiftNode;
 import checkers.flow.cfg.node.LessThanNode;
@@ -2950,41 +2949,15 @@ public class CFGBuilder {
                 DeclaredType elementType =
                     (DeclaredType)InternalUtils.typeOf(iteratorCall);
 
+                // Declare and initialize a new, unique iterator variable
                 VariableTree iteratorVariable =
                     treeBuilder.buildVariableDecl(elementType,
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
 
-                IdentifierTree iteratorUse1 =
-                    treeBuilder.buildVariableUse(iteratorVariable);
-
-                MemberSelectTree hasNextSelect =
-                    treeBuilder.buildHasNextMethodAccess(iteratorUse1);
-
-                MethodInvocationTree hasNextCall =
-                    treeBuilder.buildMethodInvocation(hasNextSelect);
-
-                IdentifierTree iteratorUse2 =
-                    treeBuilder.buildVariableUse(iteratorVariable);
-
-                MemberSelectTree nextSelect =
-                    treeBuilder.buildNextMethodAccess(iteratorUse2);
-
-                MethodInvocationTree nextCall =
-                    treeBuilder.buildMethodInvocation(nextSelect);
-
-                // TODO: Move the Node constructors up closer to the TreeBuilder
-                // calls.
-
-                // TODO: Remove Node constructors that allow null Trees.
-                // TODO: Remove InternalVariableNode class.
-
-                // Declare and initialize a new, unique iterator variable
                 VariableDeclarationNode iteratorDeclNode =
                     extendWithNode(new VariableDeclarationNode(iteratorVariable));
-                LocalVariableNode iteratorLHSNode =
-                    extendWithNode(new LocalVariableNode(iteratorVariable));
 
                 Node expressionNode = scan(expression, p);
 
@@ -2994,15 +2967,27 @@ public class CFGBuilder {
                     extendWithNode(new MethodInvocationNode(iteratorCall, iteratorAccessNode,
                                                             Collections.<Node>emptyList(), getCurrentPath()));
 
-                translateAssignment(iteratorVariable, iteratorLHSNode,
+                translateAssignment(iteratorVariable,
+                                    new LocalVariableNode(iteratorVariable),
                                     iteratorCallNode);
 
                 // Test the loop ending condition
                 addLabelForNextNode(conditionStart);
+                IdentifierTree iteratorUse1 =
+                    treeBuilder.buildVariableUse(iteratorVariable);
+
                 LocalVariableNode iteratorReceiverNode =
                     extendWithNode(new LocalVariableNode(iteratorUse1));
+
+                MemberSelectTree hasNextSelect =
+                    treeBuilder.buildHasNextMethodAccess(iteratorUse1);
+
                 MethodAccessNode hasNextAccessNode =
                     extendWithNode(new MethodAccessNode(hasNextSelect, iteratorReceiverNode));
+
+                MethodInvocationTree hasNextCall =
+                    treeBuilder.buildMethodInvocation(hasNextSelect);
+
                 extendWithNode(new MethodInvocationNode(hasNextCall, hasNextAccessNode,
                                                         Collections.<Node>emptyList(), getCurrentPath()));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
@@ -3011,12 +2996,22 @@ public class CFGBuilder {
                 addLabelForNextNode(loopEntry);
                 VariableDeclarationNode varDeclNode =
                     extendWithNode(new VariableDeclarationNode(variable));
-                LocalVariableNode varNode = 
-                    extendWithNode(new LocalVariableNode(variable));
+
+                IdentifierTree iteratorUse2 =
+                    treeBuilder.buildVariableUse(iteratorVariable);
+
                 LocalVariableNode iteratorReceiverNode2 =
                     extendWithNode(new LocalVariableNode(iteratorUse2));
+
+                MemberSelectTree nextSelect =
+                    treeBuilder.buildNextMethodAccess(iteratorUse2);
+
                 MethodAccessNode nextAccessNode =
                     extendWithNode(new MethodAccessNode(nextSelect, iteratorReceiverNode2));
+
+                MethodInvocationTree nextCall =
+                    treeBuilder.buildMethodInvocation(nextSelect);
+
                 MethodInvocationNode nextCallNode =
                     extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
                         Collections.<Node>emptyList(), getCurrentPath()));
@@ -3024,27 +3019,29 @@ public class CFGBuilder {
                 // If the variable is of reference type, then the target type is equal to it.
                 // Otherwise, the target type is the upper bound of the capture conversion of
                 // the type argument of iterator type, or Object if iterator type is raw.
-                TypeMirror varType = varDeclNode.getType();
-                TypeMirror targetType = null;
-                if (varType instanceof ReferenceType) {
-                    targetType = varType;
-                } else {
-                    List<? extends TypeMirror> localIterArgs =
-                        elementType.getTypeArguments();
-                    switch (typeArgs.size()) {
-                    case 0:
-                        targetType = elements.getTypeElement("java.lang.Object").asType();
-                        break;
-                    case 1:
-                        targetType = types.capture(localIterArgs.get(0));
-                        break;
-                    default:
-                        assert false : "iterator should have 0 or 1 type arguments";
-                    }
-                }
-
                 // According to the JLS, a the result of iter.next() should
                 // be cast to the target type, but that changes qualifiers.
+                // TODO: Decide whether we will use this typecast or not
+                //
+                // TypeMirror varType = varDeclNode.getType();
+                // TypeMirror targetType = null;
+                // if (varType instanceof ReferenceType) {
+                //     targetType = varType;
+                // } else {
+                //     List<? extends TypeMirror> localIterArgs =
+                //         elementType.getTypeArguments();
+                //     switch (typeArgs.size()) {
+                //     case 0:
+                //         targetType = elements.getTypeElement("java.lang.Object").asType();
+                //         break;
+                //     case 1:
+                //         targetType = types.capture(localIterArgs.get(0));
+                //         break;
+                //     default:
+                //         assert false : "iterator should have 0 or 1 type arguments";
+                //     }
+                // }
+
                 // TypeCastTree typeCast =
                 //     treeBuilder.buildTypeCast(targetType, nextCall);
                 // System.out.println("typeCast: " + typeCast +
@@ -3053,7 +3050,9 @@ public class CFGBuilder {
                 // TypeCastNode targetTypeCast =
                 //     extendWithNode(new TypeCastNode(typeCast, nextCallNode, targetType));
 
-                translateAssignment(variable, varNode, nextCall);
+                translateAssignment(variable, 
+                                    new LocalVariableNode(variable),
+                                    nextCall);
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3069,58 +3068,85 @@ public class CFGBuilder {
                 
                 // TODO: Shift any labels after the initialization of the
                 // temporary array variable.
-                VariableDeclarationNode arrayVarNode =
-                    extendWithNode(new VariableDeclarationNode("array", exprType));
 
+                // Declare and initialize a temporary array variable
+                VariableTree arrayVariable =
+                    treeBuilder.buildVariableDecl(arrayType,
+                                                  uniqueName("array"),
+                                                  variableElement.getEnclosingElement(),
+                                                  expression);
+                VariableDeclarationNode arrayVarNode =
+                    extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
 
-                translateAssignment(null, arrayVarNode, expressionNode);
+                translateAssignment(arrayVariable,
+                                    new LocalVariableNode(arrayVariable),
+                                    expressionNode);
 
+                // Declare and initialize the loop index variable
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
+
+                LiteralTree zero =
+                    treeBuilder.buildLiteral(new Integer(0));
+
+                VariableTree indexVariable =
+                    treeBuilder.buildVariableDecl(intType,
+                                                  uniqueName("index"),
+                                                  variableElement.getEnclosingElement(),
+                                                  zero);
                 VariableDeclarationNode indexVarNode =
-                    extendWithNode(new VariableDeclarationNode("index", intType));
+                    extendWithNode(new VariableDeclarationNode(indexVariable));
                 IntegerLiteralNode zeroNode =
-                    extendWithNode(new IntegerLiteralNode(0, intType));
-                translateAssignment(null, indexVarNode, zeroNode);
+                    extendWithNode(new IntegerLiteralNode(zero));
 
-                // 
-                // See Symtab.lengthVar
-                // VariableElement lengthField = null;
-                // System.out.println("ArrayElement: " + arrayElement);
-                // for (VariableElement field :
-                //          ElementFilter.fieldsIn(elements.getAllMembers(arrayElement))) {
-                //     System.out.println("Field: " + field);
-                //     if (field.getSimpleName().contentEquals("length")) {
-                //         lengthField = field;
-                //         break;
-                //     }
-                // }
-                // assert lengthField != null : "no length field in array type";
+                translateAssignment(indexVariable,
+                                    new LocalVariableNode(indexVariable),
+                                    zeroNode);
 
+                // Compare index to array length
                 addLabelForNextNode(conditionStart);
-                InternalVariableNode indexUse =
-                    extendWithNode(new InternalVariableNode(indexVarNode));
+                IdentifierTree indexUse1 =
+                    treeBuilder.buildVariableUse(indexVariable);
+                LocalVariableNode indexNode1 =
+                    extendWithNode(new LocalVariableNode(indexUse1));
 
-                // TODO: Replace this fake length with something better.
-                IntegerLiteralNode fakeLength =
-                    extendWithNode(new IntegerLiteralNode(10, intType));
-                TypeMirror booleanType = types.getPrimitiveType(TypeKind.BOOLEAN);
-                extendWithNode(new LessThanNode(indexUse, fakeLength, booleanType));
+                IdentifierTree arrayUse1 =
+                    treeBuilder.buildVariableUse(arrayVariable);
+                LocalVariableNode arrayNode1 =
+                    extendWithNode(new LocalVariableNode(arrayUse1));
+
+                MemberSelectTree lengthSelect =
+                    treeBuilder.buildArrayLengthAccess(arrayUse1);
+                FieldAccessNode lengthAccessNode =
+                    extendWithNode(new FieldAccessNode(lengthSelect, arrayNode1));
+
+                BinaryTree lessThan =
+                    treeBuilder.buildLessThan(indexUse1, lengthSelect);
+                extendWithNode(new LessThanNode(lessThan, indexNode1, lengthAccessNode));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
                 // Loop body, starting with declaration of the loop iteration variable
                 addLabelForNextNode(loopEntry);
                 extendWithNode(new VariableDeclarationNode(variable));
-                LocalVariableNode varNode =
-                    extendWithNode(new LocalVariableNode(variable));
-                InternalVariableNode arrayUse =
-                    extendWithNode(new InternalVariableNode(arrayVarNode));
-                indexUse = extendWithNode(new InternalVariableNode(indexVarNode));
 
-                ArrayAccessNode arrayAccess =
-                    extendWithNode(new ArrayAccessNode(arrayUse, indexUse,
-                        arrayType.getComponentType()));
-                translateAssignment(variable, varNode, arrayAccess);
+                IdentifierTree arrayUse2 =
+                    treeBuilder.buildVariableUse(arrayVariable);
+                LocalVariableNode arrayNode2 =
+                    extendWithNode(new LocalVariableNode(arrayUse2));
+
+                IdentifierTree indexUse2 =
+                    treeBuilder.buildVariableUse(indexVariable);
+                LocalVariableNode indexNode2 =
+                    extendWithNode(new LocalVariableNode(indexUse2));
+
+                ArrayAccessTree arrayAccess =
+                    treeBuilder.buildArrayAccess(arrayUse2, indexUse2);
+                ArrayAccessNode arrayAccessNode =
+                    extendWithNode(new ArrayAccessNode(arrayAccess, arrayNode2,
+                                                       indexNode2));
+                translateAssignment(variable, 
+                                    new LocalVariableNode(variable),
+                                    arrayAccessNode);
 
                 if (statement != null) {
                     scan(statement, p);
@@ -3128,8 +3154,17 @@ public class CFGBuilder {
 
                 // Loop back edge
                 addLabelForNextNode(updateStart);
-                indexUse = extendWithNode(new InternalVariableNode(indexVarNode));
-                extendWithNode(new PostfixIncrementNode(indexUse));
+
+                IdentifierTree indexUse3 =
+                    treeBuilder.buildVariableUse(indexVariable);
+                LocalVariableNode indexNode3 =
+                    extendWithNode(new LocalVariableNode(indexUse3));
+
+                UnaryTree postfixIncrement =
+                    treeBuilder.buildPostfixIncrement(indexUse3);
+                PostfixIncrementNode postfixIncrementNode =
+                    extendWithNode(new PostfixIncrementNode(postfixIncrement,
+                                                            indexNode3));
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
 
