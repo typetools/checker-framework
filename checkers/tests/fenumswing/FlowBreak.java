@@ -18,7 +18,7 @@ public class FlowBreak {
       Object o;
       // initially o is @FenumTop
       o = null;
-      // o is @FenumBottom
+      // o is @Bottom
       while(flag) {
         if( flag ) {
           o = CENTER;
@@ -36,7 +36,7 @@ public class FlowBreak {
         // TODO @SwingHorizontalOrientation Object pla = o;
       }
       // Here we have to merge three paths:
-      // 1. The entry to the loop, if the condition is false [@FenumBottom]
+      // 1. The entry to the loop, if the condition is false [@Bottom]
       // 2. The normal end of the loop body [@SwingHorizontalOrientation]
       // 3. The path from the break to here [@SwingVerticalOrientation]
       // Currently, the third path is ignored and we do not get this error message.
