@@ -18,7 +18,7 @@ package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 @GwtCompatible

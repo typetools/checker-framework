@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.nullness.quals.AssertNonNullIfFalse;
+import checkers.nullness.quals.Nullable;
 
 public abstract class AbstractQueue<E extends @Nullable Object> extends AbstractCollection<E> implements Queue<E> {
   protected AbstractQueue() {}

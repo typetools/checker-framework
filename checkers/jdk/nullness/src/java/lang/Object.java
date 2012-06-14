@@ -1,8 +1,9 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.Raw;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 @Raw
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
