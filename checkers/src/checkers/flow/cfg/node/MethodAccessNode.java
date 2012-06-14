@@ -24,7 +24,7 @@ import com.sun.source.tree.Tree;
  */
 public class MethodAccessNode extends Node {
 
-    protected/* @Nullable */ExpressionTree tree;
+    protected ExpressionTree tree;
     protected ExecutableElement method;
     protected Node receiver;
 
@@ -35,14 +35,6 @@ public class MethodAccessNode extends Node {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
         this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
-        this.receiver = receiver;
-    }
-
-    // Construct a method access from an element instead of a tree.
-    public MethodAccessNode(ExecutableElement method, Node receiver) {
-        this.tree = null;
-        this.type = method.asType();
-        this.method = method;
         this.receiver = receiver;
     }
 

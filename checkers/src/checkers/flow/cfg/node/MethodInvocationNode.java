@@ -26,12 +26,12 @@ import com.sun.source.util.TreePath;
  */
 public class MethodInvocationNode extends Node {
 
-    protected/* @Nullable */MethodInvocationTree tree;
+    protected MethodInvocationTree tree;
     protected MethodAccessNode target;
     protected List<Node> arguments;
     protected TreePath treePath;
 
-    public MethodInvocationNode(/* @Nullable */MethodInvocationTree tree,
+    public MethodInvocationNode(MethodInvocationTree tree,
             MethodAccessNode target, List<Node> arguments, TreePath treePath) {
         this.tree = tree;
         if (tree != null) {
@@ -66,7 +66,7 @@ public class MethodInvocationNode extends Node {
     }
 
     @Override
-    public/* @Nullable */MethodInvocationTree getTree() {
+    public MethodInvocationTree getTree() {
         return tree;
     }
 

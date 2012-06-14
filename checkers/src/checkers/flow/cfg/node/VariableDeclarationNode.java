@@ -26,7 +26,7 @@ import com.sun.source.tree.VariableTree;
 public class VariableDeclarationNode extends Node {
     static long uid = 0;
 
-    protected/* @Nullable */VariableTree tree;
+    protected VariableTree tree;
     protected String name;
 
     // TODO: make modifier accessible
@@ -37,26 +37,12 @@ public class VariableDeclarationNode extends Node {
         type = InternalUtils.typeOf(tree);
     }
 
-    /**
-     * Constructor for internally generated declarations without AST
-     * {@link Tree}s.
-     */
-    public VariableDeclarationNode(String prefix, TypeMirror type) {
-        this.tree = null;
-        this.name = uniqueName(prefix);
-        this.type = type;
-    }
-
-    static String uniqueName(String prefix) {
-        return prefix + "#var" + uid++;
-    }
-
     public String getName() {
         return name;
     }
 
     @Override
-    public/* @Nullable */VariableTree getTree() {
+    public VariableTree getTree() {
         return tree;
     }
 

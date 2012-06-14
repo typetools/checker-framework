@@ -27,7 +27,7 @@ import com.sun.source.tree.VariableTree;
  */
 public class AssignmentNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
     protected Node lhs;
     protected Node rhs;
 
@@ -43,17 +43,6 @@ public class AssignmentNode extends Node {
         this.rhs = expression;
     }
 
-    /**
-     * Constructor for internally generated assignments without AST
-     * {@link Tree}s.
-     */
-    public AssignmentNode(Node target, Node expression) {
-        this.tree = null;
-        this.type = target.getType();
-        this.lhs = target;
-        this.rhs = expression;
-    }
-
     public Node getTarget() {
         return lhs;
     }
@@ -63,7 +52,7 @@ public class AssignmentNode extends Node {
     }
 
     @Override
-    public/* @Nullable */Tree getTree() {
+    public Tree getTree() {
         return tree;
     }
 
