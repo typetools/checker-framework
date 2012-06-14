@@ -299,10 +299,15 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
             if (retannos == null) {
                 return false;
             }
+            boolean matched = false;
             for (TypeCompound anno :  retannos) {
-                if (anno.toString().equals(whenName)) {
-                    return false;
+                if (anno.getAnnotationType().toString().equals(whenName)) {
+                    matched = true;
+                    break;
                 }
+            }
+            if (!matched) {
+                return false;
             }
         } else {
             AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
