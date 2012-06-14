@@ -1,8 +1,9 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyRaw;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Throwable implements java.io.Serializable{
     private static final long serialVersionUID = 0L;

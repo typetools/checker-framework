@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class FileInputStream extends InputStream {
   public FileInputStream(String a1) throws FileNotFoundException { throw new RuntimeException("skeleton method"); }
