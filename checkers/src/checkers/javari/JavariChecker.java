@@ -71,15 +71,4 @@ public class JavariChecker extends BaseTypeChecker {
         return sub.getKind().isPrimitive() || sup.getKind().isPrimitive() || super.isSubtype(sub, sup);
     }
 
-
-    /**
-     * Always true; no type validity checking is made by the BaseTypeVisitor.
-     *
-     * @see BaseTypeVisitor
-     */
-    @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
-        return true;
-    }
-
 }

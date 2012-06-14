@@ -32,67 +32,67 @@ public final class URL implements java.io.Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getQuery() @ReadOnly {
+    public String getQuery(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getPath() @ReadOnly {
+    public String getPath(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getUserInfo() @ReadOnly {
+    public String getUserInfo(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getAuthority() @ReadOnly {
+    public String getAuthority(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getPort() @ReadOnly {
+    public int getPort(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getDefaultPort() @ReadOnly {
+    public int getDefaultPort(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProtocol() @ReadOnly {
+    public String getProtocol(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHost() @ReadOnly {
+    public String getHost(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getFile() @ReadOnly {
+    public String getFile(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRef() @ReadOnly {
+    public String getRef(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadOnly Object obj) @ReadOnly {
+    public boolean equals(@ReadOnly URL this, @ReadOnly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int hashCode() @ReadOnly {
+    public synchronized int hashCode(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean sameFile(@ReadOnly URL other) @ReadOnly {
+    public boolean sameFile(@ReadOnly URL this, @ReadOnly URL other) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString() @ReadOnly {
+    public String toString(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toExternalForm() @ReadOnly {
+    public String toExternalForm(@ReadOnly URL this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public URI toURI() @ReadOnly throws URISyntaxException {
+    public URI toURI(@ReadOnly URL this) throws URISyntaxException {
         throw new RuntimeException("skeleton method");
     }
 
