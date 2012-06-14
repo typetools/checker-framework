@@ -3,7 +3,11 @@ import checkers.javari.quals.*;
 public class ReadOnlyConstructor {
     int i;
 
-    @ReadOnly ReadOnlyConstructor() {
+    // TODO: This test case doesn't test anything.
+    // The constructor used to have an annotation, which is not legal
+    // for a type annotation.
+    // Also see Constructors in igj.
+    ReadOnlyConstructor() {
         this.i = 3;
     }
 

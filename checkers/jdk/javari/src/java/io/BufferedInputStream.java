@@ -36,7 +36,7 @@ public class BufferedInputStream extends FilterInputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported() @ReadOnly {
+    public boolean markSupported(@ReadOnly BufferedInputStream this) {
         throw new RuntimeException("skeleton method");
     }
 

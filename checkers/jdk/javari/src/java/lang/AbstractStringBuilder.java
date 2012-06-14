@@ -14,11 +14,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         throw new RuntimeException("skeleton method");
     }
 
-    public int length() @ReadOnly {
+    public int length(@ReadOnly AbstractStringBuilder this) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int capacity() @ReadOnly {
+    public int capacity(@ReadOnly AbstractStringBuilder this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -38,28 +38,28 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         throw new RuntimeException("skeleton method");
     }
 
-    public char charAt(int index) @ReadOnly {
+    public char charAt(@ReadOnly AbstractStringBuilder this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int codePointAt(int index) @ReadOnly {
+    public int codePointAt(@ReadOnly AbstractStringBuilder this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int codePointBefore(int index) @ReadOnly {
+    public int codePointBefore(@ReadOnly AbstractStringBuilder this, int index) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int codePointCount(int beginIndex, int endIndex) @ReadOnly {
+    public int codePointCount(@ReadOnly AbstractStringBuilder this, int beginIndex, int endIndex) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int offsetByCodePoints(int index, int codePointOffset) @ReadOnly {
+    public int offsetByCodePoints(@ReadOnly AbstractStringBuilder this, int index, int codePointOffset) {
         throw new RuntimeException("skeleton method");
     }
 
-    public void getChars(int srcBegin, int srcEnd, char dst[],
-                                      int dstBegin) @ReadOnly {
+    public void getChars(@ReadOnly AbstractStringBuilder this, int srcBegin, int srcEnd, char dst[],
+                                      int dstBegin) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -146,15 +146,15 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         throw new RuntimeException("skeleton method");
     }
 
-    public String substring(int start) @ReadOnly {
+    public String substring(@ReadOnly AbstractStringBuilder this, int start) {
         throw new RuntimeException("skeleton method");
     }
 
-    public @ReadOnly CharSequence subSequence(int start, int end) @ReadOnly {
+    public @ReadOnly CharSequence subSequence(@ReadOnly AbstractStringBuilder this, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String substring(int start, int end) @ReadOnly {
+    public String substring(@ReadOnly AbstractStringBuilder this, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -208,19 +208,19 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(String str) @ReadOnly {
+    public int indexOf(@ReadOnly AbstractStringBuilder this, String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(String str, int fromIndex) @ReadOnly {
+    public int indexOf(@ReadOnly AbstractStringBuilder this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(String str) @ReadOnly {
+    public int lastIndexOf(@ReadOnly AbstractStringBuilder this, String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(String str, int fromIndex) @ReadOnly {
+    public int lastIndexOf(@ReadOnly AbstractStringBuilder this, String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -228,7 +228,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         throw new RuntimeException("skeleton method");
     }
 
-    public abstract String toString() @ReadOnly;
+    public abstract String toString(@ReadOnly AbstractStringBuilder this);
 
     final char[] getValue() {
         throw new RuntimeException("skeleton method");
