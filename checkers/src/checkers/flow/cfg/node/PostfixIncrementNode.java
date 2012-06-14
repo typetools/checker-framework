@@ -27,7 +27,7 @@ import com.sun.source.tree.Tree.Kind;
  */
 public class PostfixIncrementNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
     protected Node operand;
 
     public PostfixIncrementNode(Tree tree, Node operand) {
@@ -37,18 +37,12 @@ public class PostfixIncrementNode extends Node {
         this.operand = operand;
     }
 
-    public PostfixIncrementNode(Node operand) {
-        this.tree = null;
-        this.type = operand.getType();
-        this.operand = operand;
-    }
-
     public Node getOperand() {
         return operand;
     }
 
     @Override
-    public/* @Nullable */Tree getTree() {
+    public Tree getTree() {
         return tree;
     }
 

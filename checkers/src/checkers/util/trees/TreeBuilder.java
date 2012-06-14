@@ -6,7 +6,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -14,12 +16,16 @@ import javax.lang.model.util.Types;
 
 import checkers.util.InternalUtils;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 import com.sun.tools.javac.code.Symbol;
@@ -44,6 +50,7 @@ public class TreeBuilder {
     private final Types types;
     private final TreeMaker maker;
     private final Names names;
+    private final Symtab symtab;
 
     public TreeBuilder(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment)env).getContext();
@@ -51,6 +58,7 @@ public class TreeBuilder {
         types = env.getTypeUtils();
         maker = TreeMaker.instance(context);
         names = Names.instance(context);
+        symtab = Symtab.instance(context);
     }
 
     /**
@@ -85,23 +93,27 @@ public class TreeBuilder {
 
         Type.MethodType methodType = (Type.MethodType)iteratorMethod.asType();
         Symbol.TypeSymbol methodClass = (Symbol.TypeSymbol)methodType.asElement();
-        TypeMirror iteratorType = methodType.getReturnType();
-        TypeMirror elementType = exprType.getTypeArguments().get(0);
+        DeclaredType iteratorType = (DeclaredType)methodType.getReturnType();
+        TypeMirror elementType;
 
-        // Remove captured type from a wildcard.
-        if (elementType instanceof Type.CapturedType) {
-            elementType = ((Type.CapturedType)elementType).wildcard;
+        if (iteratorType.getTypeArguments().size() > 0) {
+            elementType = iteratorType.getTypeArguments().get(0);
+            // Remove captured type from a wildcard.
+            if (elementType instanceof Type.CapturedType) {
+                elementType = ((Type.CapturedType)elementType).wildcard;
+            }
+
+            iteratorType = 
+                types.getDeclaredType((TypeElement)types.asElement(iteratorType),
+                                      elementType);
         }
 
-        Type specificReturnType =
-            (Type)types.getDeclaredType((TypeElement)types.asElement(iteratorType),
-                                        elementType);
 
         // Replace the iterator method's generic return type with
         // the actual element type of the expression.
         Type.MethodType updatedMethodType =
             new Type.MethodType(com.sun.tools.javac.util.List.<Type>nil(),
-                                specificReturnType,
+                                (Type)iteratorType,
                                 com.sun.tools.javac.util.List.<Type>nil(),
                                 methodClass);
 
@@ -183,13 +195,19 @@ public class TreeBuilder {
 
         Type.MethodType methodType = (Type.MethodType)nextMethod.asType();
         Symbol.TypeSymbol methodClass = (Symbol.TypeSymbol)methodType.asElement();
-        Type specificReturnType = (Type)exprType.getTypeArguments().get(0);
+        Type elementType;
+
+        if (exprType.getTypeArguments().size() > 0) {
+            elementType = (Type)exprType.getTypeArguments().get(0);
+        } else {
+            elementType = symtab.objectType;
+        }
 
         // Replace the next method's generic return type with
         // the actual element type of the expression.
         Type.MethodType updatedMethodType =
             new Type.MethodType(com.sun.tools.javac.util.List.<Type>nil(),
-                                specificReturnType,
+                                elementType,
                                 com.sun.tools.javac.util.List.<Type>nil(),
                                 methodClass);
 
@@ -200,6 +218,18 @@ public class TreeBuilder {
         nextAccess.setType(updatedMethodType);
 
         return nextAccess;
+    }
+
+    /**
+     * Builds an AST Tree to dereference the length field of an array
+     *
+     * @param expression  the array expression whose length is being accessed
+     * @return  a MemberSelectTree to dereference the length of the array
+     */
+    public MemberSelectTree buildArrayLengthAccess(ExpressionTree expression) {
+        
+        return (JCTree.JCFieldAccess)
+            maker.Select((JCTree.JCExpression)expression, symtab.lengthVar);
     }
 
     /**
@@ -220,13 +250,13 @@ public class TreeBuilder {
      * @param initializer  the initializer expression
      * @return  a VariableDeclTree declaring the new variable
      */
-    public VariableTree buildVariableDecl(DeclaredType type,
+    public VariableTree buildVariableDecl(TypeMirror type,
                                           String name,
                                           Element owner,
                                           ExpressionTree initializer) {
         Symbol.VarSymbol sym =
             new Symbol.VarSymbol(0, names.fromString(name),
-                                 (Type.ClassType)type, (Symbol)owner);
+                                 (Type)type, (Symbol)owner);
         return maker.VarDef(sym, (JCTree.JCExpression)initializer);
     }
 
@@ -263,6 +293,58 @@ public class TreeBuilder {
                                          ExpressionTree expr) {
         return maker.Assignment(TreeInfo.symbolFor((JCTree)variable),
                                 (JCTree.JCExpression)expr);
+    }
+
+    /**
+     * Builds an AST Tree representing a literal value of primitive
+     * or String type.
+     */
+    public LiteralTree buildLiteral(Object value) {
+        return maker.Literal(value);
+    }
+
+    /**
+     * Builds an AST Tree to compare two operands with less than.
+     *
+     * @param left  the left operand tree
+     * @param right  the right operand tree
+     * @return  a Tree representing "left < right"
+     */
+    public BinaryTree buildLessThan(ExpressionTree left, ExpressionTree right) {
+        JCTree.JCBinary binary =
+            maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression)left, 
+                         (JCTree.JCExpression)right);
+        binary.setType((Type)types.getPrimitiveType(TypeKind.BOOLEAN));
+        return binary;
+    }
+
+    /**
+     * Builds an AST Tree to dereference an array.
+     *
+     * @param array  the array to dereference
+     * @param index  the index at which to dereference
+     * @return  a Tree representing the dereference
+     */
+    public ArrayAccessTree buildArrayAccess(ExpressionTree array,
+                                            ExpressionTree index) {
+        ArrayType arrayType = (ArrayType)InternalUtils.typeOf(array);
+        JCTree.JCArrayAccess access =
+            maker.Indexed((JCTree.JCExpression)array, (JCTree.JCExpression)index);
+        access.setType((Type)arrayType.getComponentType());
+        return access;
+    }
+
+    /**
+     * Builds an AST Tree to postincrement an expression (++).
+     *
+     * @param expression  the value to be postincremented
+     * @return  a Tree representing the postincrement
+     */
+    public UnaryTree buildPostfixIncrement(ExpressionTree expression) {
+        JCTree.JCUnary unary =
+            maker.Unary(JCTree.Tag.POSTINC, (JCTree.JCExpression)expression);
+        unary.setType((Type)InternalUtils.typeOf(expression));
+        return unary;
     }
 }
 
