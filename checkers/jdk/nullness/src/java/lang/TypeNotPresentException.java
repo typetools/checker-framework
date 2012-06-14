@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown when an application tries to access a type using a string

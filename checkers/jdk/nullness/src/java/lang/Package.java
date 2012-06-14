@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Package implements java.lang.reflect.AnnotatedElement{
   protected Package() {}

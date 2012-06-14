@@ -26,7 +26,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Multiset implementation backed by an {@link EnumMap}.
