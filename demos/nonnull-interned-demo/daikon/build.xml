@@ -1,0 +1,36 @@
+<project name="daikon" basedir=".">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+    
+    <target name="varinfo">
+        <run-demo checker="checkers.interning.InterningChecker" srcpath="." 
+            files="${basedir}/src/daikon/VarInfo.java" lint="-dotequals"/>
+    </target>
+
+    <target name="check-varinfo">
+      <check-demo-common target="varinfo" step="0"/>
+      <check-demo-common target="varinfo" step="1"/>
+      <echo message="varinfo demo works as expected" />
+      <revert-demo target="varinfo" step="1"/>
+      <revert-demo target="varinfo" step="0"/>
+    </target>
+
+    <target name="fileio">
+        <run-demo checker="checkers.interning.InterningChecker" srcpath="." 
+            files="${basedir}/src/daikon/FileIO.java" lint="-dotequals"/>
+    </target>
+
+    <target name="check-fileio">
+      <check-demo-common target="fileio" step="0"/>
+      <check-demo-common target="fileio" step="1"/>
+      <echo message="fileio demo works as expected" />
+      <revert-demo target="fileio" step="1"/>
+      <revert-demo target="fileio" step="0"/>
+    </target>
+
+    <target name="check-demo" depends="check-varinfo,check-fileio">
+      <echo message="daikon demo works as expected"/>
+    </target>
+</project>
