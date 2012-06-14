@@ -20,7 +20,7 @@ public class MethodInvocation {
         nonInterned.internedMethod();   // should emit error
     }
 
-    void internedMethod() @Interned {
+    void internedMethod(@Interned MethodInvocation this) {
         nonInternedMethod();
         internedMethod();
 

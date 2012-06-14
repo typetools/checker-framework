@@ -3,11 +3,11 @@ import checkers.igj.quals.*;
 public class Constructors {
     int field;
 
-    @Mutable Constructors() {
+    Constructors(@Mutable Constructors this) {
         field = 0;
     }
 
-    Constructors(int a) @Immutable {
+    Constructors(@Immutable Constructors this, int a) {
         field = 0;
     }
 
@@ -16,6 +16,7 @@ public class Constructors {
         mutable.field = 0;
 
         Constructors immutable = new Constructors(4);
+        //:: error: (assignability.invalid)
         immutable.field = 4;
     }
 }

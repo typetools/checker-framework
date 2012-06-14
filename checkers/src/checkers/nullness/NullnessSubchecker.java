@@ -46,30 +46,6 @@ public class NullnessSubchecker extends BaseTypeChecker {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        // At most a single qualifier on a type
-        if (useType.getAnnotations().size() > 1) {
-            return false;
-        }
-        return super.isValidUse(declarationType, useType);
-    }
-
-    @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
-        // No explicit qualifiers on primitive types
-        if (type.getAnnotations().size()>1 ||
-             (type.getAnnotation(Primitive.class)==null &&
-             // The element is null if the primitive type is an array component ->
-             // always a reason to warn.
-             (type.getElement()==null ||
-                     !type.getExplicitAnnotations().isEmpty()))) {
-            return false;
-        }
-        return super.isValidUse(type);
-    }
-
-    @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new NullnessTypeHierarchy(this, getQualifierHierarchy());
     }

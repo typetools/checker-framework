@@ -37,22 +37,22 @@ class RawTypes {
             init();                                             // valid
         }
 
-        public void init() @Raw {
+        public void init(@Raw A this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
-        public void initExpl2() @Raw {
+        public void initExpl2(@Raw A this) {
             //:: error: (argument.type.incompatible)
             output(this.field);
         }
 
-        public void initImpl1() @Raw {
+        public void initImpl1(@Raw A this) {
             //:: error: (dereference.of.nullable)
             output(field.length());
         }
 
-        public void initImpl2() @Raw {
+        public void initImpl2(@Raw A this) {
             //:: error: (argument.type.incompatible)
             output(field);
         }
@@ -69,23 +69,23 @@ class RawTypes {
         }
 
         @Override
-        public void init() @Raw {
+        public void init(@Raw B this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
             super.init();                                       // valid
         }
 
-        public void initImpl1() @Raw {
+        public void initImpl1(@Raw B this) {
             //:: error: (dereference.of.nullable)
             output(field.length());                 // error (TODO: substitution)
         }
 
-        public void initExpl2() @Raw {
+        public void initExpl2(@Raw B this) {
             //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
         }
 
-        public void initImpl2() @Raw {
+        public void initImpl2(@Raw B this) {
             //:: error: (dereference.of.nullable)
             output(otherField.length());            // error
         }
@@ -95,7 +95,7 @@ class RawTypes {
             this.init();                                        // valid
         }
 
-        void otherRaw() @Raw {
+        void otherRaw(@Raw B this) {
             init();                                             // valid
             this.init();                                        // valid
         }
@@ -106,7 +106,7 @@ class RawTypes {
         @NonNull String[] strings;
 
         @Override
-        public void init() @Raw {
+        public void init(@Raw C this) {
             //:: error: (dereference.of.nullable)
             output(this.strings.length);            // error
             System.out.println();                   // valid
@@ -119,7 +119,7 @@ class RawTypes {
 
     class D extends C {
         @Override
-        public void init() @Raw {
+        public void init(@Raw D this) {
             this.field = "s";
             output(this.field.length());
         }
@@ -130,7 +130,7 @@ class RawTypes {
         MyTest(int i) {
             this.i = i;
         }
-        void myTest() @Raw {
+        void myTest(@Raw MyTest this) {
             i++;
         }
     }
@@ -192,7 +192,7 @@ class RawTypes {
             @NonNull String s = string();
         }
 
-        public @NonNull String string() @Raw {
+        public @NonNull String string(@Raw MethodAccess this) {
             return "nonnull";
         }
     }
@@ -248,7 +248,7 @@ class RawTypes {
 //             nonRawMethod();
 //         }
 //
-//         void init_b() @Raw {
+//         void init_b(@Raw InitInHelperMethod this) {
 //             b = 2;
 //             nonRawMethod();
 //         }
@@ -258,7 +258,7 @@ class RawTypes {
 //             nonRawMethod();
 //         }
 //
-//         void init_ab() @Raw {
+//         void init_ab(@Raw InitInHelperMethod this) {
 //             a = 1;
 //             b = 2;
 //             nonRawMethod();
