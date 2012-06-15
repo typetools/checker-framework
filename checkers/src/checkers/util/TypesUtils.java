@@ -241,4 +241,36 @@ public final class TypesUtils {
 
         return TypeKind.INT;
     }
+
+    /**
+     * If the argument is a bounded TypeVariable or WildcardType,
+     * return its non-variable, non-wildcard upper bound.  Otherwise,
+     * return the type itself.
+     *
+     * @param type  a type
+     * @return  the non-variable, non-wildcard upper bound of a type,
+     *    if it has one, or itself if it has no bounds
+     */
+    public static TypeMirror upperBound(TypeMirror type) {
+        do {
+            if (type instanceof TypeVariable) {
+                TypeVariable tvar = (TypeVariable) type;
+                if (tvar.getUpperBound() != null) {
+                    type = tvar.getUpperBound();
+                } else {
+                    break;
+                }
+            } else if (type instanceof WildcardType) {
+                WildcardType wc = (WildcardType) type;
+                if (wc.getExtendsBound() != null) {
+                    type = wc.getExtendsBound();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        } while (true);
+        return type;
+    }
 }
