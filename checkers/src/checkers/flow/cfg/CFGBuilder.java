@@ -3484,8 +3484,20 @@ public class CFGBuilder {
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
             Node expr = scan(tree.getExpression(), p);
             if (!TreeUtils.isFieldAccess(tree)) {
-                assert expr instanceof PackageNameNode;
-                return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                // Could be a selector of a class or package
+                Element element = TreeUtils.elementFromUse(tree);
+                switch (element.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    return extendWithNode(new ClassNameNode(tree, expr));
+                case PACKAGE:
+                    return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                default:
+                    assert false : "Unexpected element kind: " + element.getKind();
+                    return null;
+                }
             }
             return extendWithNode(new FieldAccessNode(tree, expr));
         }
