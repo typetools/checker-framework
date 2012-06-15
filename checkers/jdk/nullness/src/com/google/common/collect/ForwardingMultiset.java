@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A multiset which forwards all its method calls to another multiset.

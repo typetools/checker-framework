@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public class PrintStream extends FilterOutputStream implements Appendable, Closeable {
   public PrintStream(OutputStream a1) { super(a1); throw new RuntimeException("skeleton method"); }
