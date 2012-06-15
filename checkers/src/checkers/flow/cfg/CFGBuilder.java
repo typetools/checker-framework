@@ -2936,6 +2936,9 @@ public class CFGBuilder {
 
             TypeMirror exprType = InternalUtils.typeOf(expression);
             if (types.isSubtype(exprType, iterableType)) {
+                // Take the upper bound of a type variable or wildcard
+                exprType = TypesUtils.upperBound(exprType);
+
                 assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
                 DeclaredType declaredExprType = (DeclaredType) exprType;
                 List<? extends TypeMirror> typeArgs = declaredExprType.getTypeArguments();

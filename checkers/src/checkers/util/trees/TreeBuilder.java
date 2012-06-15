@@ -15,6 +15,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.util.InternalUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
@@ -70,10 +71,11 @@ public class TreeBuilder {
      *    the expression
      */
     public MemberSelectTree buildIteratorMethodAccess(ExpressionTree iterableExpr) {
-        DeclaredType exprType = (DeclaredType)InternalUtils.typeOf(iterableExpr);
-        TypeElement exprElement = (TypeElement)exprType.asElement();
-
+        DeclaredType exprType =
+            (DeclaredType)TypesUtils.upperBound(InternalUtils.typeOf(iterableExpr));
         assert exprType != null : "expression must be of declared type Iterable<>";
+
+        TypeElement exprElement = (TypeElement)exprType.asElement();
 
         // Find the iterator() method of the iterable type
         Symbol.MethodSymbol iteratorMethod = null;
@@ -135,9 +137,9 @@ public class TreeBuilder {
      */
     public MemberSelectTree buildHasNextMethodAccess(ExpressionTree iteratorExpr) {
         DeclaredType exprType = (DeclaredType)InternalUtils.typeOf(iteratorExpr);
-        TypeElement exprElement = (TypeElement)exprType.asElement();
-
         assert exprType != null : "expression must be of declared type Iterator<>";
+
+        TypeElement exprElement = (TypeElement)exprType.asElement();
 
         // Find the hasNext() method of the iterator type
         Symbol.MethodSymbol hasNextMethod = null;
@@ -173,9 +175,9 @@ public class TreeBuilder {
      */
     public MemberSelectTree buildNextMethodAccess(ExpressionTree iteratorExpr) {
         DeclaredType exprType = (DeclaredType)InternalUtils.typeOf(iteratorExpr);
-        TypeElement exprElement = (TypeElement)exprType.asElement();
-
         assert exprType != null : "expression must be of declared type Iterator<>";
+
+        TypeElement exprElement = (TypeElement)exprType.asElement();
 
         // Find the next() method of the iterator type
         Symbol.MethodSymbol nextMethod = null;
