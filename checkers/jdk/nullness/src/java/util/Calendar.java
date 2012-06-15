@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
 public abstract class Calendar implements java.io.Serializable, Cloneable, Comparable<Calendar> {
   protected Calendar() {}

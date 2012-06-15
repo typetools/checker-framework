@@ -181,8 +181,8 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="src/checkers/util/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
-	<!-- This relative path is wrong; running "ant -find" from a
-	subdirectory fails. -->
+        <!-- This relative path is wrong; running "ant -find" from a
+        subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}"
@@ -202,7 +202,7 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates checkers.jar -->
     <target name="jar" depends="build,checkers-quals-jar"
             description="Create jar file">
-	<delete dir="${build.reports}"/>
+        <delete dir="${build.reports}"/>
         <jar destfile="${checkers.jar.file}" basedir="${build}"/>
     </target>
 
@@ -343,8 +343,8 @@ ${build.version} of the 'javac.jar' library."/>
             <param name="param" value="tests.FlowTest"/>
         </antcall>
     </target>
-	
-	<target name="flow2-tests" depends="jar,build-tests"
+
+    <target name="flow2-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.Flow2Test"/>
@@ -412,8 +412,8 @@ ${build.version} of the 'javac.jar' library."/>
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
       <exec executable="make" failonerror="true">
-	<env key="JAVAC" value="${basedir}/binary/javac"/>
-	<arg line="-C tests/nullness-extra/"/>
+        <env key="JAVAC" value="${basedir}/binary/javac"/>
+        <arg line="-C tests/nullness-extra/"/>
       </exec>
     </target>
 
@@ -571,7 +571,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
-	    <arg line="${checker-args}"/>
+            <arg line="${checker-args}"/>
         </java>
     </target>
 
@@ -580,7 +580,7 @@ ${build.version} of the 'javac.jar' library."/>
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
-	    <param name="checker-args" value="-Awarns"/>
+            <param name="checker-args" value="-Awarns"/>
         </antcall>
     </target>
 
@@ -589,7 +589,7 @@ ${build.version} of the 'javac.jar' library."/>
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.igj.IGJChecker"/>
             <param name="checker-jdk" value="jdk/igj/src"/>
-	    <param name="checker-args" value="-Awarns"/>
+            <param name="checker-args" value="-Awarns"/>
         </antcall>
     </target>
 
@@ -657,7 +657,7 @@ ${build.version} of the 'javac.jar' library."/>
             </manifest>
         </jar>
 
-	<!-- overwrite="true" to avoid failing to copy due to timestamps -->
+        <!-- overwrite="true" to avoid failing to copy due to timestamps -->
         <copy file="jdk/jdk.jar" tofile="binary/jdk.jar" overwrite="true"/>
         <delete dir="${temp.dir}"/>
     </target>

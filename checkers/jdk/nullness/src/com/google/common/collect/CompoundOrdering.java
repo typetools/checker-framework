@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 @SuppressWarnings("nullness")
 /** An ordering that tries several comparators in order. */

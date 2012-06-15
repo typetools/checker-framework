@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // permits nullable object
 public class Vector<E extends @Nullable Object> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {

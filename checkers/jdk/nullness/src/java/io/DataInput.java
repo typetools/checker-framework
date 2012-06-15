@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract interface DataInput{
   public abstract void readFully(byte[] a1) throws IOException;
