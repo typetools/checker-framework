@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.io.Serializable;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

@@ -1,8 +1,8 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class File implements Serializable, Comparable<File> {
   private static final long serialVersionUID = 0;

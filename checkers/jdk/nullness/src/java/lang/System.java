@@ -1,6 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 import java.io.*;
 import java.util.Properties;
