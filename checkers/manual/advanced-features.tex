@@ -193,19 +193,22 @@ implicit \<super void> clause.)
 
 \subsection{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
 
-In order to reduce the burden of annotating types in your program, the
+In order to reduce your burden of annotating types in your program, the
 checkers soundly treat certain variables and expressions as having a
 subtype of their declared or defaulted (Section~\ref{defaults})
 type.  This functionality
-never introduces unsoundness or causes an error to be missed:  it merely
-suppresses false positive warnings.
+never introduces unsoundness nor causes an error to be missed.
 
 By default, all checkers, including new checkers that you write, can take
 advantage of this functionality.  Most of the time, users don't have to
 think about, and may not even notice, this feature of the framework.  The
-checkers simply do the right thing even when a programmer forgets an
-annotation on a local variable, or when a programmers writes an
+checkers simply do the right thing even when a programmer omits an
+annotation on a local variable, or when a programmer writes an
 unnecessarily general type in a declaration.
+
+The functionality has a variety of names:  automatic type refinement,
+flow-sensitive type qualifier inference, local type inference, and
+sometimes just ``flow''.
 
 If you are curious or want more details about this feature, then read on.
 
@@ -318,12 +321,17 @@ annotation, e.g.,
 Within method bodies:
 Type inference is performed for fields in the context of method bodies,
 like local variables, but method invocations invalidate any inferred
-information.  Consider the following example, where \code{name} is a nullable
+information.  Consider the following example, where \code{updatedAt} is a nullable
 field:
 
 \begin{Verbatim}
 class DBObject {
   @Nullable Date updatedAt;
+
+  void persistData() {
+    ... // write to disk or other non-volatile memory
+    updatedAt = null;
+  }
 
   void update() {
     if (updatedAt == null)
@@ -343,8 +351,8 @@ of \code{updatedAt}.
 
 When methods do not modify any object state or have any identity side-effects
 (e.g., \code{log()} method here), you can annotate these methods as
-\code{Pure}.  Annotating them as \code{Pure}, would cause the flow analyzer to
-carry the inferred types across the method invocation boundary.
+\code{Pure}.  When a method is annotated as \code{Pure}, the flow analyzer
+carries the inferred types across the method invocation boundary.
 
 \end{itemize}
 
@@ -636,4 +644,4 @@ should use it instead of \code{@Dependent}.
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's NonNullOnEntry AssertNonNullAfter AssertNonNullIfTrue
 % LocalWords:  AssertNonNullIfFalse myLocalVar myClass getPackage getSuperclass
-% LocalWords:  getComponentType
+% LocalWords:  getComponentType enum implementers dereferenced superclasses

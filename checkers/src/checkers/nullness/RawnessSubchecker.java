@@ -22,12 +22,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 @TypeQualifiers({ Raw.class, NonRaw.class, PolyRaw.class })
 public class RawnessSubchecker extends BaseTypeChecker {
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
-    }
-
-    @Override
     public Collection<String> getSuppressWarningsKey() {
         Collection<String> lst = new ArrayList<String>();
         lst.addAll(super.getSuppressWarningsKey());

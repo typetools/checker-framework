@@ -9,6 +9,8 @@ import checkers.basetype.BaseTypeVisitor;
 import checkers.regex.quals.Regex;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -120,4 +122,36 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
         }
         return super.visitCompoundAssignment(node, p);
     }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
+        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
+        // that supports local variables, array types and parameterized types.
+        /*// Only allow annotations on subtypes of the types in legalReferenceTypes.
+        if (!useType.getExplicitAnnotations().isEmpty()) {
+            Types typeUtils = env.getTypeUtils();
+            for (TypeMirror type : legalReferenceTypes) {
+                if (typeUtils.isSubtype(declarationType.getUnderlyingType(), type)) {
+                    return true;
+                }
+            }
+            return false;
+        }*/
+        return super.isValidUse(declarationType, useType);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        // TODO: only allow Regex and PolyRegex annotations on chars.
+        // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
+        // that supports local variables and array types.
+        /*// Only allow annotations on char.
+        if (!type.getExplicitAnnotations().isEmpty()) {
+            return type.getKind() == TypeKind.CHAR;
+        }*/
+        return super.isValidUse(type);
+    }
+
 }
