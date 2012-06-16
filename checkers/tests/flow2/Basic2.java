@@ -154,7 +154,7 @@ class Basic2 {
     }
     
     // self type
-    void t9() @Odd {
+    void t9(@Odd Basic2 this) {
         @Odd Basic2 l1 = this;
     }
     
