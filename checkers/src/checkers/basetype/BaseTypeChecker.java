@@ -327,64 +327,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     /**
-     * Tests that the qualifiers present on the useType are valid qualifiers,
-     * given the qualifiers on the declaration of the type, declarationType.
-     *
-     * <p>
-     *
-     * The check is shallow, as it does not descend into generic or array
-     * types (i.e. only performing the validity check on the raw type or
-     * outermost array dimension).  {@link BaseTypeVisitor#validateTypeOf(Tree)}
-     * would call this for each type argument or array dimension separately.
-     *
-     * <p>
-     *
-     * For instance, in the IGJ type system, a {@code @Mutable} is an invalid
-     * qualifier for {@link String}, as {@link String} is declared as
-     * {@code @Immutable String}.
-     *
-     * <p>
-     *
-     * In most cases, {@code useType} simply needs to be a subtype of
-     * {@code declarationType}, but there are exceptions.  In IGJ, a variable may be
-     * declared {@code @ReadOnly String}, even though {@link String} is
-     * {@code @Immutable String};  {@link ReadOnly} is not a subtype of
-     * {@link Immutable}.
-     *
-     * @param declarationType  the type of the class (TypeElement)
-     * @param useType   the use of the class (instance type)
-     * @return  if the useType is a valid use of elemType
-     */
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return isSubtype(useType.getErased(), declarationType.getErased());
-    }
-
-    /**
-     * Tests that the qualifiers present on the primitive type are valid.
-     *
-     * The default implementation always returns true.
-     * Subclasses should override this method to limit what annotations are
-     * allowed on primitive types.
-     */
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
-        return true;
-    }
-
-    /**
-     * Tests that the qualifiers present on the array type are valid.
-     * This method will be invoked for each array level independently, i.e. this
-     * method only needs to check the top-level qualifiers of an array.
-     *
-     * The default implementation always returns true.
-     * Subclasses should override this method to limit what annotations are
-     * allowed on array types.
-     */
-    public boolean isValidUse(AnnotatedArrayType type) {
-        return true;
-    }
-
-    /**
      * Tests whether the variable accessed is an assignable variable or not,
      * given the current scope
      *

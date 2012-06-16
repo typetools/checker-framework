@@ -22,6 +22,7 @@ import checkers.util.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * Adds the {@link NonNull} annotation to a type that is:
@@ -284,9 +285,35 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
 
         String whenName = AnnotationUtils.elementValueClassName(unused, "when");
-        AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
-        if (receiver == null || receiver.getAnnotation(whenName) == null) {
-            return false;
+        MethodTree method = TreeUtils.enclosingMethod(this.getPath(tree));
+        if (TreeUtils.isConstructor(method)) {
+            /* TODO: this is messy and should be cleaned up.
+             * The problem is that "receiver" means something different in
+             * constructors and methods. Should we adapt .getReceiverType to do something
+             * different in constructors vs. methods?
+             * Or should we change this annotation into a declaration annotation?
+             */
+            com.sun.tools.javac.code.Symbol meth =
+                    (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(method);
+            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.typeAnnotations;
+            if (retannos == null) {
+                return false;
+            }
+            boolean matched = false;
+            for (TypeCompound anno :  retannos) {
+                if (anno.getAnnotationType().toString().equals(whenName)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        } else {
+            AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
+            if (receiver == null || receiver.getAnnotation(whenName) == null) {
+                return false;
+            }
         }
         type.removeAnnotationInHierarchy(NULLABLE);
         type.addAnnotation(NULLABLE);

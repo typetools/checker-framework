@@ -7,7 +7,7 @@ import java.util.Date;
 public class ThisMutability {
     @Assignable /*this-mutable*/ Date tm;
 
-    void testMutable() @Mutable {
+    void testMutable(@Mutable ThisMutability this) {
         @ReadOnly Date ro = null;
         @Mutable Date m = null;
 
@@ -19,7 +19,7 @@ public class ThisMutability {
         tm = m;
     }
 
-    void testReadOnly() @ReadOnly {
+    void testReadOnly(@ReadOnly ThisMutability this) {
         @ReadOnly Date ro = null;
         @Mutable Date m = null;
 
@@ -33,7 +33,7 @@ public class ThisMutability {
         tm = m;
     }
 
-    void testPolyRead() @PolyRead {
+    void testPolyRead(@PolyRead ThisMutability this) {
         @ReadOnly Date ro = null;
         @Mutable Date m = null;
 

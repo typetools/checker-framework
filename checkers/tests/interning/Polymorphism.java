@@ -18,7 +18,7 @@ public class Polymorphism {
     }
 
     // test as receiver
-    @PolyInterned Polymorphism getSelf() @PolyInterned {
+    @PolyInterned Polymorphism getSelf(@PolyInterned Polymorphism this) {
         return this;
     }
 

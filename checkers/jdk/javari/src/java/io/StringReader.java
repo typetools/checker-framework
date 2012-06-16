@@ -18,11 +18,11 @@ public class StringReader extends Reader {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean ready() @ReadOnly throws IOException {
+    public boolean ready(@ReadOnly StringReader this) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported() @ReadOnly {
+    public boolean markSupported(@ReadOnly StringReader this) {
         throw new RuntimeException("skeleton method"); 
     }
 

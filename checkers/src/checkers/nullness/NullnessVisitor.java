@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -16,6 +17,7 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
@@ -262,11 +264,33 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // Check field initialization in constructors
         if (TreeUtils.isConstructor(node)
                 && !TreeUtils.containsThisConstructorInvocation(node)) {
-            Pair<Set<VariableElement>,Set<VariableElement>> oldFields = nonInitializedFields;
+            Pair<Set<VariableElement>, Set<VariableElement>> oldFields = nonInitializedFields;
             try {
+                // TODO: get access to a Types instance and use it to get receiver type
+                // Or, extend ExecutableElement with such a method.
+                // Note that we cannot use the receiver type from AnnotatedExecutableType,
+                // because that would only have the nullness annotations; here we want to
+                // see all annotations on the receiver.
+                // TODO: can we clean up constructor vs. method distinction?
+                List<? extends AnnotationMirror> rcvannos;
+                if (TreeUtils.isConstructor(node)) {
+                    com.sun.tools.javac.code.Symbol meth =
+                            (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(node);
+                    rcvannos = meth.typeAnnotations;
+                    if (rcvannos==null){
+                        rcvannos = Collections.<AnnotationMirror>emptyList();
+                    }
+                } else {
+                    ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
+                    com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
+                    if (rcv!=null) {
+                        rcvannos = rcv.typeAnnotations;
+                    } else {
+                        rcvannos = Collections.<AnnotationMirror>emptyList();
+                    }
+                }
                 nonInitializedFields
-                    = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()),
-                                TreeUtils.elementFromDeclaration(node).getAnnotationMirrors());
+                    = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()), rcvannos);
                 return super.visitMethod(node, p);
             } finally {
                 Set<VariableElement> initAfter
@@ -647,6 +671,31 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
      */
     public static final boolean isPrimitive(ExpressionTree tree) {
         return InternalUtils.typeOf(tree).getKind().isPrimitive();
+    }
+
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        // At most a single qualifier on a type
+        if (useType.getAnnotations().size() > 1) {
+            return false;
+        }
+        return super.isValidUse(declarationType, useType);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        // No explicit qualifiers on primitive types
+        if (type.getAnnotations().size()>1 ||
+             (type.getAnnotation(Primitive.class)==null &&
+             // The element is null if the primitive type is an array component ->
+             // always a reason to warn.
+             (type.getElement()==null ||
+                     !type.getExplicitAnnotations().isEmpty()))) {
+            return false;
+        }
+        return super.isValidUse(type);
     }
 
 }
