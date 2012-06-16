@@ -1,8 +1,10 @@
 import checkers.nullness.quals.*;
 import checkers.quals.*;
+import java.lang.annotation.*;
 
 @TypeQualifier
 @SubtypeOf({})
+@Target(ElementType.TYPE_USE)
 @interface DoesNotUseF {}
 
 public class Uninit11 {
@@ -17,6 +19,6 @@ public class Uninit11 {
   public Uninit11(long x) {
     f = new Object();
   }
-  
+
 }
 

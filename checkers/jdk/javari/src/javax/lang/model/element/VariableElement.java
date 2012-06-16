@@ -6,5 +6,5 @@ import javax.lang.model.util.Elements;
 import checkers.javari.quals.*;
 
 public interface VariableElement extends Element {
-    @PolyRead Object getConstantValue() @PolyRead;
+    @PolyRead Object getConstantValue(@PolyRead VariableElement this);
 }

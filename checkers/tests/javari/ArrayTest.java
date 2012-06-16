@@ -15,25 +15,25 @@ class ArrayTest {
 
     void testPrimitiveArray() {
         int a;
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int b;               // error
         int[] mmi;
         int @ReadOnly [] rmi;
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int[] mri;            // error
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int @ReadOnly [] rri;  // error
         int[][] mmmi;
         int[] @ReadOnly [] rmmi;
         int @ReadOnly [][] mrmi;
         int @ReadOnly [] @ReadOnly [] rrmi;
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int[][] mmri;        // error
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int[] @ReadOnly [] rmri; // error
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int @ReadOnly [][] mrri;  // error
-        //:: error: (primitive.ro)
+        //:: error: (type.invalid)
         @ReadOnly int @ReadOnly [] @ReadOnly [] rrri; // error
 
     }

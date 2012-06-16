@@ -107,7 +107,7 @@ public class Assignability {
         --immutableRef.assignable;
     }
 
-    public void readOnly() @ReadOnly {
+    public void readOnly(@ReadOnly Assignability this) {
         field = 1;  // error
         field *= 1; // error
         field /= 1; // error
@@ -210,7 +210,7 @@ public class Assignability {
 
     }
 
-    public void mutable() @Mutable {
+    public void mutable(@Mutable Assignability this) {
         field = 1;
         field *= 1;
         field /= 1;
@@ -314,7 +314,7 @@ public class Assignability {
 
     }
 
-    public void immutable() @Immutable {
+    public void immutable(@Immutable Assignability this) {
         field = 1;  // error
         field *= 1; // error
         field /= 1; // error

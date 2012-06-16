@@ -18,8 +18,8 @@ public class ImmutableObject {
     static void isMutable(@Mutable ImmutableObject o) { }   // should emit error
 
     void defaultMethod() { }
-    void readOnlyReceiver() @ReadOnly { }
-    void immutableReceiver() @Immutable { }
+    void readOnlyReceiver(@ReadOnly ImmutableObject this) { }
+    void immutableReceiver(@Immutable ImmutableObject this) { }
 
     void testDefaultCall() {
         isReadOnly(this);
@@ -51,7 +51,7 @@ public class ImmutableObject {
         isMutable(immutable);    // should emit error
     }
 
-    void testReadOnlyCall() @ReadOnly {
+    void testReadOnlyCall(@ReadOnly ImmutableObject this) {
         isReadOnly(this);
         isImmutable(this);
         isMutable(this);    // should emit error
@@ -81,7 +81,7 @@ public class ImmutableObject {
         isMutable(immutable);    // should emit error
     }
 
-    void testImmutableCall() @Immutable {
+    void testImmutableCall(@Immutable ImmutableObject this) {
         isReadOnly(this);
         isImmutable(this);
         isMutable(this);    // should emit error
