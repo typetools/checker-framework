@@ -15,10 +15,9 @@ class MultipleAnnotations {
     }
     
     void t2(@Odd @Value String p1) {
-        @Value String l1 = p1;
+        String l1 = p1;
         @Odd String l2 = l1;
         @Odd @Value String l3 = l1;
         @Value @Odd String l4 = l1;
     }
-    
 }

@@ -20,14 +20,13 @@ import com.sun.source.tree.Tree;
  * @author Charlie Garrett
  * 
  */
-// TODO: rename to ExplicitThisLiteralNode
-public class ExplicitThisNode extends Node {
+public class ExplicitThisLiteralNode extends Node {
 
     protected Tree tree;
 
-    public ExplicitThisNode(Tree t) {
+    public ExplicitThisLiteralNode(Tree t) {
         assert t instanceof IdentifierTree
-                && ((IdentifierTree) t).getName().equals("this");
+                && ((IdentifierTree) t).getName().contentEquals("this");
         tree = t;
         type = InternalUtils.typeOf(tree);
     }
@@ -39,7 +38,7 @@ public class ExplicitThisNode extends Node {
 
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitExplicitThis(this, p);
+        return visitor.visitExplicitThisLiteral(this, p);
     }
 
     public String getName() {
@@ -53,7 +52,7 @@ public class ExplicitThisNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ExplicitThisNode)) {
+        if (obj == null || !(obj instanceof ExplicitThisLiteralNode)) {
             return false;
         }
         return true;
