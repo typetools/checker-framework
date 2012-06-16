@@ -146,7 +146,7 @@ public interface NodeVisitor<R, P> {
 
     R visitImplicitThisLiteral(ImplicitThisLiteralNode n, P p);
 
-    R visitExplicitThis(ExplicitThisNode n, P p);
+    R visitExplicitThisLiteral(ExplicitThisLiteralNode n, P p);
 
     R visitSuper(SuperNode n, P p);
 
