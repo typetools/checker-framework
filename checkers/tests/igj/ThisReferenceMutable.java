@@ -10,21 +10,20 @@ class ThisReferenceMutableSuper {
 
 }
 
-@Mutable
 class MutableThisTest extends ThisReferenceMutableSuper {
-    public void testRO() @ReadOnly {
+    public void testRO(@ReadOnly MutableThisTest this) {
         isRO(this);
         isMutable(this);   // should emit error
         isImmutable(this); // should emit error
     }
 
-    public void testAssignsFields () @AssignsFields {
+    public void testAssignsFields (@AssignsFields MutableThisTest this) {
         isRO(this);
         isMutable(this);   // should emit error
         isImmutable(this); // should emit error
     }
 
-    public void testMutable() @Mutable {
+    public void testMutable(@Mutable MutableThisTest this) {
         isRO(this);
         isMutable(this);
         isImmutable(this); // should emit error

@@ -45,11 +45,13 @@ Fenum type system.
 \begin{figure}
 \includeimage{fenum}{2.5cm}
 \caption{Partial type hierarchy for the Fenum type system.
-Fenums that take the form of \code{@Fenum("A")} and \code{@Fenum("B")} are user
-defined fenums while fenums that take the form of \code{@FenumC} and \code{@FenumD} are
-built-in fenums. See section~\ref{fenum-annotations} for descriptions of how to
-introduce both types of fenums. Fenums in gray should never be used but are
-provided for the benefit of the type system.}
+There are two forms of fake enumeration annotations --- above, illustrated
+by \code{@Fenum("A")} and \code{@FenumC}.
+See section~\ref{fenum-annotations} for descriptions of how to
+introduce both types of fenums. The type qualifiers in gray
+(\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@Bottom})
+should never be written in
+source code; they are used internally by the type system.}
 \label{fig:fenum-hierarchy}
 \end{figure}
 
@@ -75,7 +77,7 @@ import checkers.quals.TypeQualifier;
 public @interface \textit{MyFenum} \ttlcb\ttrcb
 \end{alltt}
 
-You only need to adapt the package, annotation, and file names in the example.
+You only need to adapt the italicized package, annotation, and file names in the example.
 
 
 \item Use the provided \code{@\refclass{fenum/quals}{Fenum}} annotation, which takes a
