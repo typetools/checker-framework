@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Provides static methods for serializing collection classes.
