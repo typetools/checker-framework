@@ -2,7 +2,7 @@ import checkers.javari.quals.*;
 
 class ArgumentMutability {
 
-    void roMethod(Object o) @ReadOnly {
+    void roMethod(@ReadOnly ArgumentMutability this, Object o) {
         Object x = (Object) o;
         o.hashCode();
     }

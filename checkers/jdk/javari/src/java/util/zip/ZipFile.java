@@ -36,7 +36,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
     
-    public String getComment() @ReadOnly {
+    public String getComment(@ReadOnly ZipFile this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -48,7 +48,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName() @ReadOnly {
+    public String getName(@ReadOnly ZipFile this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -56,7 +56,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public int size() @ReadOnly {
+    public int size(@ReadOnly ZipFile this) {
         throw new RuntimeException("skeleton method");
     }
 
