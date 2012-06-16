@@ -1,8 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class String implements java.io.Serializable, Comparable<String>, CharSequence {
   private static final long serialVersionUID = 0;

@@ -27,7 +27,7 @@ import com.sun.source.tree.Tree;
 
 public class ArrayAccessNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
     protected Node array;
     protected Node index;
 
@@ -35,13 +35,6 @@ public class ArrayAccessNode extends Node {
         assert t instanceof ArrayAccessTree;
         this.tree = t;
         this.type = InternalUtils.typeOf(tree);
-        this.array = array;
-        this.index = index;
-    }
-
-    public ArrayAccessNode(Node array, Node index, TypeMirror type) {
-        this.tree = null;
-        this.type = type;
         this.array = array;
         this.index = index;
     }
@@ -55,7 +48,7 @@ public class ArrayAccessNode extends Node {
     }
 
     @Override
-    public/* @Nullable */Tree getTree() {
+    public Tree getTree() {
         return tree;
     }
 

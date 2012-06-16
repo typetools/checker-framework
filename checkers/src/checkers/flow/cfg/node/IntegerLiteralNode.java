@@ -32,13 +32,6 @@ public class IntegerLiteralNode extends ValueLiteralNode {
         type = InternalUtils.typeOf(tree);
     }
 
-    public IntegerLiteralNode(int value, TypeMirror type) {
-        assert type.getKind() == TypeKind.INT;
-        this.tree = null;
-        this.value = value;
-        this.type = type;
-    }
-        
     @Override
     public Integer getValue() {
         return value;

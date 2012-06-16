@@ -29,7 +29,7 @@ import com.sun.source.tree.VariableTree;
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected Tree tree;
 
     public LocalVariableNode(Tree t) {
         // IdentifierTree for normal uses of the local variable or parameter,
@@ -59,7 +59,7 @@ public class LocalVariableNode extends Node {
     }
 
     @Override
-    public/* @Nullable */Tree getTree() {
+    public Tree getTree() {
         return tree;
     }
 
