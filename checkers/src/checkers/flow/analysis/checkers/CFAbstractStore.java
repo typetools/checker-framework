@@ -84,6 +84,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Remove any information that might not be valid any more after a method
      * call, and add information guaranteed by the method.
+     * 
+     * <ol>
+     * <li>If the method is side-effect free (as indicated by
+     * {@link checkers.quals.Pure}), then no information needs to be removed.
+     * <li>Otherwise, all information about field accesses {@code a.f} needs to
+     * be removed, except if the method {@code n} cannot modify {@code a.f}
+     * (e.g., if {@code a} is a local variable or {@code this}, and {@code f} is
+     * final).
+     * </ol>
      */
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory factory) {
@@ -91,7 +100,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // remove information if necessary
         if (!PurityUtils.isSideEffectFree(factory, method)) {
-            fieldValues = new HashMap<>();
+            Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
+            for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
+                    .entrySet()) {
+                FlowExpressions.FieldAccess fieldAccess = e.getKey();
+                V otherVal = e.getValue();
+                // case 1:
+                if (!fieldAccess.isUnmodifiableByOtherCode()) {
+                    continue; // remove information completely
+                }
+                newFieldValues.put(fieldAccess, otherVal);
+            }
+            fieldValues = newFieldValues;
         }
     }
 
@@ -230,7 +250,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * receiver <em>b</em> might alias the receiver of {@code fieldAccess},
      * <em>a</em>. This update will raise the abstract value for such field
      * accesses to at least {@code val} (or the old value, if that was less
-     * precise).</li>
+     * precise). However, this is only necessary if the field <em>g</em> is not
+     * final.</li>
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code fieldAccess} is the same (i.e., <em>a=b</em> and
      * <em>f=g</em>), or where {@code fieldAccess} might alias any expression in
@@ -260,13 +281,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
                 if (canAlias(fieldAccess.getReceiver(),
                         otherFieldAccess.getReceiver())) {
-                    if (val != null) {
-                        newFieldValues.put(otherFieldAccess,
-                                val.leastUpperBound(otherVal));
-                    } else {
-                        // remove information completely
+                    if (!otherFieldAccess.isFinal()) {
+                        if (val != null) {
+                            newFieldValues.put(otherFieldAccess,
+                                    val.leastUpperBound(otherVal));
+                        } else {
+                            // remove information completely
+                        }
+                        continue;
                     }
-                    continue;
                 }
             }
             // information is save to be carried over

@@ -11,6 +11,7 @@ import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.ElementUtils;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -77,6 +78,14 @@ public class FlowExpressions {
         public abstract boolean containsUnknown();
 
         /**
+         * Returns true if and only if the value this expression stands for
+         * cannot be changed by a method call. This is the case for local
+         * variables, the self reference as wel as final field accesses for
+         * whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         */
+        public abstract boolean isUnmodifiableByOtherCode();
+
+        /**
          * @return True if and only if the two receiver are syntactically
          *         identical.
          */
@@ -140,6 +149,10 @@ public class FlowExpressions {
             this.field = fieldElement;
         }
 
+        public boolean isFinal() {
+            return ElementUtils.isFinal(field);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof FieldAccess)) {
@@ -188,6 +201,11 @@ public class FlowExpressions {
         public boolean containsUnknown() {
             return receiver.containsUnknown();
         }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return isFinal() && getReceiver().isUnmodifiableByOtherCode();
+        }
     }
 
     public static class ThisReference extends Receiver {
@@ -218,6 +236,11 @@ public class FlowExpressions {
         @Override
         public boolean syntacticEquals(Receiver other) {
             return other instanceof ThisReference;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
         }
     }
 
@@ -265,6 +288,11 @@ public class FlowExpressions {
         public boolean syntacticEquals(Receiver other) {
             return this.equals(other);
         }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
+        }
     }
 
     public static class Unknown extends Receiver {
@@ -296,6 +324,11 @@ public class FlowExpressions {
         @Override
         public boolean containsUnknown() {
             return true;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return false;
         }
 
     }
@@ -349,6 +382,11 @@ public class FlowExpressions {
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
         }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
+        }
     }
 
     // TODO: add pure method calls later
@@ -361,6 +399,11 @@ public class FlowExpressions {
         @Override
         public boolean containsUnknown() {
             return false; // TODO: correct implementation
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return false;
         }
     }
 
