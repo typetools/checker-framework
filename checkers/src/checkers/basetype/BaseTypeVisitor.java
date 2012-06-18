@@ -31,11 +31,13 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.NullnessChecker;
+import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
 import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
+import checkers.quals.PostconditionAnnotation;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
@@ -357,6 +359,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkPostcondition(node, a);
             }
         }
+        
+        // Check type-system specific annotations.
+        Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
+                methodElement, metaAnnotation);
+        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
+            AnnotationMirror anno = r.first;
+            AnnotationMirror metaAnno = r.second;
+            List<String> expressions = AnnotationUtils.elementValueArray(
+                    anno, "value");
+            String annotationString = AnnotationUtils.elementValueClassName(
+                    metaAnno, "annotation");
+            AnnotationMirror annotation = atypeFactory.annotationFromName(annotationString);
+            checkPostcondition(node, expressions, annotation);
+        }
     }
 
     /**
@@ -371,45 +388,54 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotation, "annotation");
             AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+            checkPostcondition(node, expressions, anno);
+        }
+    }
 
-            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                            atypeFactory.getEnv());
+    /**
+     * Checks a single (non-conditional) postcondition for a given list of
+     * expressions {@code expressions} and the annotation {@code anno} on the
+     * method {@code node}.
+     */
+    public void checkPostcondition(MethodTree node, List<String> expressions,
+            AnnotationMirror anno) {
+        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                .buildFlowExprContextForDeclaration(node, getCurrentPath(),
+                        atypeFactory.getEnv());
 
-            for (String stringExpr : expressions) {
-                FlowExpressions.Receiver expr = null;
-                try {
-                    // TODO: currently, these expressions are parsed at the
-                    // declaration (i.e. here) and for every use. this could be
-                    // optimized to store the result the first time. (same for
-                    // other annotations)
-                    expr = FlowExpressionParseUtil.parse(stringExpr,
-                            flowExprContext, getCurrentPath());
-                    checkFlowExprParameters(node, stringExpr);
+        for (String stringExpr : expressions) {
+            FlowExpressions.Receiver expr = null;
+            try {
+                // TODO: currently, these expressions are parsed at the
+                // declaration (i.e. here) and for every use. this could be
+                // optimized to store the result the first time. (same for
+                // other annotations)
+                expr = FlowExpressionParseUtil.parse(stringExpr,
+                        flowExprContext, getCurrentPath());
+                checkFlowExprParameters(node, stringExpr);
 
-                    // TODO: we should not need to cast here?
-                    AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
-                        (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
-                    CFStore exitStore = factory.getRegularExitStore(node);
-                    if (exitStore == null) {
-                        // if there is no regular exitStore, then the method
-                        // cannot reach the regular exit and there is no need to
-                        // check anything
-                    } else {
-                        CFValue value = exitStore.getValue(expr);
-                        if (value == null
-                                || !AnnotationUtils.containsSame(
-                                        value.getAnnotations(), anno)) {
-                            checker.report(
-                                    Result.failure("contracts.postcondition.not.satisfied"),
-                                    node);
-                        }
+                // TODO: we should not need to cast here?
+                AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
+                    (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
+                CFStore exitStore = factory.getRegularExitStore(node);
+                if (exitStore == null) {
+                    // if there is no regular exitStore, then the method
+                    // cannot reach the regular exit and there is no need to
+                    // check anything
+                } else {
+                    CFValue value = exitStore.getValue(expr);
+                    if (value == null
+                            || !AnnotationUtils.containsSame(
+                                    value.getAnnotations(), anno)) {
+                        checker.report(
+                                Result.failure("contracts.postcondition.not.satisfied"),
+                                node);
                     }
-
-                } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    checker.report(e.getResult(), node);
                 }
+
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
             }
         }
     }
@@ -435,6 +461,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkConditionalPostcondition(node, a);
             }
         }
+        
+        // Check type-system specific annotations.
+        Class<ConditionalPostconditionAnnotation> metaAnnotation = ConditionalPostconditionAnnotation.class;
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
+                methodElement, metaAnnotation);
+        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
+            AnnotationMirror anno = r.first;
+            AnnotationMirror metaAnno = r.second;
+            String annotationString = AnnotationUtils.elementValueClassName(
+                    metaAnno, "annotation");
+            checkConditionalPostcondition(node, anno, annotationString);
+        }
     }
 
     /**
@@ -444,66 +482,75 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     protected void checkConditionalPostcondition(MethodTree node,
             AnnotationMirror ensuresAnnotationIf) {
         if (ensuresAnnotationIf != null) {
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    ensuresAnnotationIf, "expression");
             String annotation = AnnotationUtils.elementValueClassName(
                     ensuresAnnotationIf, "annotation");
-            boolean result = AnnotationUtils.elementValue(ensuresAnnotationIf,
-                    "result", Boolean.class);
-            AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+            checkConditionalPostcondition(node, ensuresAnnotationIf, annotation);
+        }
+    }
 
-            FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                            atypeFactory.getEnv());
+    /**
+     * Checks a single conditional postcondition {@code ensuresAnnotationIf} on
+     * the method {@code node}, for a given annotation {@code annotation}.
+     */
+    public void checkConditionalPostcondition(MethodTree node,
+            AnnotationMirror ensuresAnnotationIf, String annotation) {
+        List<String> expressions = AnnotationUtils.elementValueArray(
+                ensuresAnnotationIf, "expression");
+        boolean result = AnnotationUtils.elementValue(ensuresAnnotationIf,
+                "result", Boolean.class);
+        AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
 
-            for (String stringExpr : expressions) {
-                FlowExpressions.Receiver expr = null;
-                try {
-                    expr = FlowExpressionParseUtil.parse(stringExpr,
-                            flowExprContext, getCurrentPath());
-                    checkFlowExprParameters(node, stringExpr);
-                    // check return type of method
-                    boolean booleanReturnType = TypesUtils
-                            .isBooleanType(InternalUtils.typeOf(node
-                                    .getReturnType()));
-                    if (!booleanReturnType) {
-                        checker.report(
-                                Result.failure("contracts.conditional.postcondition.invalid.returntype"),
-                                node);
-                        // No reason to go ahead with further checking. The
-                        // annotation is invalid.
-                        continue;
-                    }
+        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                .buildFlowExprContextForDeclaration(node, getCurrentPath(),
+                        atypeFactory.getEnv());
 
-                    // TODO: we should not need to cast here?
-                    AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
-                        (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
-                    List<Pair<ReturnNode, CFStore>> returnStatements = factory
-                            .getReturnStatementStores(node);
-                    for (Pair<ReturnNode, CFStore> r : returnStatements) {
-                        CFStore exitStore = r.second;
-                        ReturnNode returnStmt = r.first;
-                        CFValue value = exitStore.getValue(expr);
-                        // don't check if return statement certainly does not
-                        // match 'result'. at the moment, this means the result
-                        // is a boolean literal
-                        Node retVal = returnStmt.getResult();
-                        if (!(retVal instanceof BooleanLiteralNode)
-                                || ((BooleanLiteralNode) retVal).getValue() == result) {
-                            if (value == null
-                                    || !AnnotationUtils.containsSame(
-                                            value.getAnnotations(), anno)) {
-                                checker.report(
-                                        Result.failure("contracts.conditional.postcondition.not.satisfied"),
-                                        returnStmt.getTree());
-                            }
+        for (String stringExpr : expressions) {
+            FlowExpressions.Receiver expr = null;
+            try {
+                expr = FlowExpressionParseUtil.parse(stringExpr,
+                        flowExprContext, getCurrentPath());
+                checkFlowExprParameters(node, stringExpr);
+                // check return type of method
+                boolean booleanReturnType = TypesUtils
+                        .isBooleanType(InternalUtils.typeOf(node
+                                .getReturnType()));
+                if (!booleanReturnType) {
+                    checker.report(
+                            Result.failure("contracts.conditional.postcondition.invalid.returntype"),
+                            node);
+                    // No reason to go ahead with further checking. The
+                    // annotation is invalid.
+                    continue;
+                }
+
+                // TODO: we should not need to cast here?
+                AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
+                    (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
+                List<Pair<ReturnNode, CFStore>> returnStatements = factory
+                        .getReturnStatementStores(node);
+                for (Pair<ReturnNode, CFStore> r : returnStatements) {
+                    CFStore exitStore = r.second;
+                    ReturnNode returnStmt = r.first;
+                    CFValue value = exitStore.getValue(expr);
+                    // don't check if return statement certainly does not
+                    // match 'result'. at the moment, this means the result
+                    // is a boolean literal
+                    Node retVal = returnStmt.getResult();
+                    if (!(retVal instanceof BooleanLiteralNode)
+                            || ((BooleanLiteralNode) retVal).getValue() == result) {
+                        if (value == null
+                                || !AnnotationUtils.containsSame(
+                                        value.getAnnotations(), anno)) {
+                            checker.report(
+                                    Result.failure("contracts.conditional.postcondition.not.satisfied"),
+                                    returnStmt.getTree());
                         }
                     }
-
-                } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    checker.report(e.getResult(), node);
                 }
+
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
             }
         }
     }
