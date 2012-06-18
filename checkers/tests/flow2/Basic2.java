@@ -154,9 +154,9 @@ class Basic2 {
     }
     
     // self type
-    void t9(@Odd Basic2 this) {
-        @Odd Basic2 l1 = this;
-    }
+//    void t9(@Odd Basic2 this) {
+//        @Odd Basic2 l1 = this;
+//    }
     
     // generics
     public <T extends @Odd String> void t10(T p1, @Odd T p2) {
@@ -185,5 +185,23 @@ class Basic2 {
     // cast without annotations
     void t12(@Odd String p1, String p2, boolean b1) {
         @Odd String l1 = (String) p1;
+    }
+    
+    // final fields
+    class CF {
+        final String f1;
+        CF c;
+        void nonpure() {};
+        CF(@Odd String p1) {
+            f1 = p1;
+            nonpure();
+            @Odd String l1 = f1;
+        }
+        void CF_t1(@Odd String p1, CF o) {
+            if (f1 == p1) {
+                nonpure();
+                @Odd String l1 = f1;
+            }
+        }
     }
 }
