@@ -403,17 +403,13 @@ Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
 7 installation (not the JRE installation).  This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
-(On Unix variants, you can \emph{sometimes} determine a value for
-\<JAVA\_HOME> by running <tt>which java</tt> and then dropping
-<tt>/bin/java</tt> from the end.)
 
-%% This does not work, because "java" might be the version in the JDK or in
-%% the JRE.
-% Here is a command that works in the bash shell, for example:
-% % Can someone give a simpler command?
-% \begin{Verbatim}
-%   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
-% \end{Verbatim}
+In the bash shell, the following command \emph{sometimes} works (it might
+not because \<java> might be the version in the JDK or in the JRE):
+% Can someone give a simpler command?
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+\end{Verbatim}
 
 % # To build your own JDK:
 % mkdir -p /scratch/$USER/jdk7
