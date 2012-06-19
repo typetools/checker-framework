@@ -252,6 +252,23 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{itemize}
 
 
+\subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
+
+An error like this
+
+\begin{Verbatim}
+Unsupported major.minor version 51.0
+\end{Verbatim}
+
+means that you have compiled some files into the Java 7 format (version
+51.0), but you are trying to run them with Java 6.  Run \<java -version> to
+determine the version of Java you are using and use a newer versio,
+and/or use the \<-target>
+command-line option to \<javac> to specify the version of the class files
+that are created, such as \<javac -target 6 ...>.
+
+
+
 %% Commented out because these are not very helpful in terms of helping
 %% a reader understand whether he/she is encountering the specific problem,
 %% and because the issue tracker is a better way to find out about current
@@ -309,7 +326,6 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 % 
 % 
 % \end{itemize}
-
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
