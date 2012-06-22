@@ -61,9 +61,6 @@ public class CFAnalysis extends
                 as.add(a);
             }
         }
-        if (as.size() == 0) {
-            return null;
-        }
         return new CFValue(analysis, as);
     }
 

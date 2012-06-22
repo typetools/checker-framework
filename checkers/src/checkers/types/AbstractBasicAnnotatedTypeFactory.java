@@ -487,10 +487,14 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                  * just return subtypes of the declared type, so something is
                  * going wrong! TODO!
                  */
-                for (AnnotationMirror inf : inferred) {
-                    type.removeAnnotationInHierarchy(inf);
+                if (inferred.size() == 0) {
+                    type.clearAnnotations();
+                } else {
+                    for (AnnotationMirror inf : inferred) {
+                        type.removeAnnotationInHierarchy(inf);
+                    }
+                    type.addAnnotations(inferred);
                 }
-                type.addAnnotations(inferred);
             }
         }
     }
