@@ -177,11 +177,16 @@ Section~\ref{javac-installation}.)
 \begin{enumerate}
 \item
   Use the ``Type Annotations compiler'', which is an updated version of the
-  OpenJDK javac compiler.  If you add directory
-  \code{\$CHECKERS/binary} to your path, then whenever
-  you run \code{javac}, you will use the updated compiler.
-  Alternately, whenever this document tells you to run \code{javac}, you
-  can instead run \code{\$CHECKERS/binary/javac}.
+  OpenJDK javac compiler.  Two ways to do this are:
+  \begin{itemize}
+  \item
+    Add directory
+    \code{\$CHECKERS/binary} to your path.  Now, whenever
+    you run \code{javac}, you will use the updated compiler.
+  \item
+    Whenever this document tells you to run \code{javac}, you
+    can instead run \code{\$CHECKERS/binary/javac}.
+  \end{itemize}
   The Type Annotations compiler is
   backward-compatible, so using it should have no negative consequences.
 
