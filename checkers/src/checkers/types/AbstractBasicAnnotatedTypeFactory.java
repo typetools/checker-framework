@@ -368,6 +368,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 }
                 
                 // Now analyze all methods.
+                // TODO: at this point, we don't have any information about fields of superclasses.
                 for (MethodTree mt : methods) {
                     analyze(queue,
                             new CFGMethod(mt, TreeUtils
