@@ -113,7 +113,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
     @Override
     protected RegexAnalysis createFlowAnalysis(RegexChecker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new RegexAnalysis(this, getEnv(), checker);
+        return new RegexAnalysis(this, getEnv(), checker, fieldValues);
     }
 
     @Override
