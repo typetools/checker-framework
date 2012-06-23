@@ -1,19 +1,23 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
 
 import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.regex.RegexChecker;
+import checkers.util.Pair;
 
 public class RegexAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, RegexTransfer> {
 
     public RegexAnalysis(RegexAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, RegexChecker checker) {
-        super(factory, env, checker);
+            ProcessingEnvironment env, RegexChecker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
+        super(factory, env, checker, fieldValues);
     }
 
     @Override
