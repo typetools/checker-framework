@@ -1,10 +1,15 @@
 package checkers.types;
 
+import java.util.List;
+
+import javax.lang.model.element.VariableElement;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFTransfer;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.util.Pair;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -28,7 +33,8 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker>
     }
 
     @Override
-    protected CFAnalysis createFlowAnalysis(Checker checker) {
-        return new CFAnalysis(this, getEnv(), checker);
+    protected CFAnalysis createFlowAnalysis(Checker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
+        return new CFAnalysis(this, getEnv(), checker, fieldValues);
     }
 }
