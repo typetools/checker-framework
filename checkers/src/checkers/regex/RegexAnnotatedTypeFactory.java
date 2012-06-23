@@ -1,7 +1,10 @@
 package checkers.regex;
 
+import java.util.List;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFStore;
@@ -16,6 +19,7 @@ import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
@@ -107,7 +111,8 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
     }
     
     @Override
-    protected RegexAnalysis createFlowAnalysis(RegexChecker checker) {
+    protected RegexAnalysis createFlowAnalysis(RegexChecker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
         return new RegexAnalysis(this, getEnv(), checker);
     }
 
