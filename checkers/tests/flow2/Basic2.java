@@ -204,4 +204,13 @@ class Basic2 {
             }
         }
     }
+    
+    // final fields with initializer
+    class A {
+        final @Odd String f1 = null;
+        final String f2 = f1;
+        void A_t1() {
+            @Odd String l1 = f2;
+        }
+    }
 }

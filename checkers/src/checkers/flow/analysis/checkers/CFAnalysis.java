@@ -1,14 +1,17 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
+import checkers.util.Pair;
 
 /**
  * The default dataflow analysis used in the Checker Framework.
@@ -23,6 +26,13 @@ public class CFAnalysis extends
             AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
             ProcessingEnvironment env, Checker checker) {
         super(factory, env, checker);
+    }
+
+    public <Checker extends BaseTypeChecker> CFAnalysis(
+            AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
+            ProcessingEnvironment env, Checker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
+        super(factory, env, checker, fieldValues);
     }
 
     @Override
@@ -60,9 +70,6 @@ public class CFAnalysis extends
             if (AnnotationUtils.containsSameIgnoringValues(legalAnnotations, a)) {
                 as.add(a);
             }
-        }
-        if (as.size() == 0) {
-            return null;
         }
         return new CFValue(analysis, as);
     }

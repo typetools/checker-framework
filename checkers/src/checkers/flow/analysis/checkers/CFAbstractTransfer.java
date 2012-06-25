@@ -5,12 +5,15 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
+import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferFunction;
 import checkers.flow.analysis.TransferInput;
@@ -48,6 +51,8 @@ import checkers.quals.RequiresAnnotations;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
@@ -124,6 +129,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
             addInformationFromPreconditions(info, factory, method, methodTree,
                     methodElem);
+            
+            // Add knowledge about final fields.
+            List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
+            for (Pair<VariableElement, V> p : fieldValues) {
+                VariableElement element = p.first;
+                V value = p.second;
+                if (ElementUtils.isFinal(element)) {
+                    TypeMirror type = InternalUtils.typeOf(method.getClassTree());
+                    Receiver field = new FieldAccess(new ThisReference(type), type, element);
+                    info.insertValue(field , value);
+                }
+            }
         }
 
         return info;

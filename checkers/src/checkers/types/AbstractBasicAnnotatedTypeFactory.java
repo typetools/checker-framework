@@ -1,6 +1,7 @@
 package checkers.types;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
@@ -184,7 +186,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return new TypeAnnotator(checker);
     }
     
-    abstract protected FlowAnalysis createFlowAnalysis(Checker checker);
+    abstract protected FlowAnalysis createFlowAnalysis(Checker checker,
+            List<Pair<VariableElement, Value>> fieldValues);
 
     // **********************************************************************
     // Factory Methods for the appropriate annotator classes
@@ -275,7 +278,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public Node getNodeForTree(Tree tree) {
         return flowResult.getNodeForTree(tree);
     }
-
+    
     /**
      * Perform a dataflow analysis over a single class tree and its nested
      * classes.
@@ -312,6 +315,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             visitorState.setMethodTree(null);
 
             try {
+                List<MethodTree> methods = new ArrayList<>();
+                List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
                     switch (m.getKind()) {
                     case METHOD:
@@ -325,16 +330,22 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                             }
                         }
 
-                        analyze(queue,
-                                new CFGMethod(mt, TreeUtils
-                                        .enclosingClass(getPath(mt))));
+                        // Wait with scanning the method until all other members
+                        // have been processed.
+                        methods.add(mt);
                         break;
                     case VARIABLE:
                         VariableTree vt = (VariableTree) m;
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                            analyze(queue, new CFGStatement(initializer));
+                            analyze(queue, new CFGStatement(initializer), fieldValues);
+                            Value value = flowResult.getValue(initializer);
+                            if (value != null) {
+                                // Store the abstract value for the field.
+                                VariableElement element = TreeUtils.elementFromDeclaration(vt);
+                                fieldValues.add(Pair.of(element, value));
+                            }
                         }
                         break;
                     case CLASS:
@@ -348,12 +359,20 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, new CFGStatement(b));
+                        analyze(queue, new CFGStatement(b), fieldValues);
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
                         break;
                     }
+                }
+                
+                // Now analyze all methods.
+                // TODO: at this point, we don't have any information about fields of superclasses.
+                for (MethodTree mt : methods) {
+                    analyze(queue,
+                            new CFGMethod(mt, TreeUtils
+                                    .enclosingClass(getPath(mt))), fieldValues);
                 }
             } finally {
                 visitorState.setClassType(preClassType);
@@ -365,23 +384,25 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             scannedClasses.put(ct, ScanState.FINISHED);
         }
     }
+    
+    // Maintain a deque of analyses to accomodate nested classes.
+    Deque<FlowAnalysis> analyses = new LinkedList<>();
 
     /**
      * Analyze the AST {@code ast} and store the result.
      * 
      * @param queue
      *            The queue to add more things to scan.
+     * @param fieldValues
+     *            The abstract values for all fields of the same class.
      * @param ast
      *            The AST to analyze.
      */
-
-    // Maintain a deque of analyses to accomodate nested classes.
-    Deque<FlowAnalysis> analyses = new LinkedList<>();
-
-    protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast) {
+    protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues) {
         CFGBuilder builder = new CFCFGBuilder(this);
         ControlFlowGraph cfg = builder.run(root, env, ast);
-        FlowAnalysis newAnalysis = createFlowAnalysis(checker);
+        FlowAnalysis newAnalysis = createFlowAnalysis(checker, fieldValues);
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
         AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
@@ -487,10 +508,14 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                  * just return subtypes of the declared type, so something is
                  * going wrong! TODO!
                  */
-                for (AnnotationMirror inf : inferred) {
-                    type.removeAnnotationInHierarchy(inf);
+                if (inferred.size() == 0) {
+                    type.clearAnnotations();
+                } else {
+                    for (AnnotationMirror inf : inferred) {
+                        type.removeAnnotationInHierarchy(inf);
+                    }
+                    type.addAnnotations(inferred);
                 }
-                type.addAnnotations(inferred);
             }
         }
     }

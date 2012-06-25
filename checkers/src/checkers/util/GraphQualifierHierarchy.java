@@ -86,8 +86,13 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        if (lhs.isEmpty() || rhs.isEmpty()) {
-            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+        if (rhs.isEmpty()) {
+            Set<AnnotationMirror> top = getRootAnnotations();
+            return AnnotationUtils.areSame(lhs, top);
+        }
+        if (lhs.isEmpty()) {
+            Set<AnnotationMirror> top = getRootAnnotations();
+            return !AnnotationUtils.areSame(rhs, top);
         }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {
