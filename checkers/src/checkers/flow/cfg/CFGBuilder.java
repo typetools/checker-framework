@@ -1130,6 +1130,7 @@ public class CFGBuilder {
                     ExceptionBlockImpl e = new ExceptionBlockImpl();
                     Node nn = en.getNode();
                     e.setNode(nn);
+                    node.setBlock(e);
                     block.setSuccessor(e);
                     block = new RegularBlockImpl();
 
