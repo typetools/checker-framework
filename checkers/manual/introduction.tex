@@ -181,8 +181,14 @@ Section~\ref{javac-installation}.)
   \begin{itemize}
   \item
     Add directory
-    \code{\$CHECKERS/binary} to your path.  Now, whenever
-    you run \code{javac}, you will use the updated compiler.
+    \code{\$CHECKERS/binary} to your path, \emph{before} any other
+    directory that contains a \<javac> executable.  Now, whenever
+    you run \code{javac}, you will use the updated compiler.  If you are
+    using the bash shell, a way to do this is to add the following to your
+    \<~/.bashrc> file:
+\begin{Verbatim}
+  export PATH=${CHECKERS}/binary:${PATH}
+\end{Verbatim}
   \item
     Whenever this document tells you to run \code{javac}, you
     can instead run \code{\$CHECKERS/binary/javac}.
@@ -212,7 +218,11 @@ Section~\ref{javac-installation}.)
 \end{Verbatim}
 
 The command should be all on one line, and followed by the javac arguments
-such as \code{-processor} and file names.
+such as \code{-processor} and file names.  You might want to create an
+alias, as in (for Unix):
+\begin{Verbatim}
+  alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar -version'
+\end{Verbatim}
 
 \end{enumerate}
 
