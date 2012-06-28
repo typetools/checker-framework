@@ -181,7 +181,11 @@ public interface NodeVisitor<R, P> {
 
     R visitArrayCreation(ArrayCreationNode n, P p);
 
-    // Package and class names
+    // Type, package and class names
+    R visitArrayType(ArrayTypeNode n, P p);
+
+    R visitPrimitiveType(PrimitiveTypeNode n, P p);
+
     R visitClassName(ClassNameNode n, P p);
 
     R visitPackageName(PackageNameNode n, P p);

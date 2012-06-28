@@ -435,7 +435,17 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
-    // Package and class names
+    // Type, package and class names
+    @Override
+    public R visitArrayType(ArrayTypeNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    @Override
+    public R visitPrimitiveType(PrimitiveTypeNode n, P p) {
+        return visitNode(n, p);
+    }
+
     @Override
     public R visitClassName(ClassNameNode n, P p) {
         return visitNode(n, p);
