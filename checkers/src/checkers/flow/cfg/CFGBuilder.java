@@ -44,6 +44,7 @@ import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
 import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.ArrayAccessNode;
 import checkers.flow.cfg.node.ArrayCreationNode;
+import checkers.flow.cfg.node.ArrayTypeNode;
 import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
@@ -107,6 +108,7 @@ import checkers.flow.cfg.node.PostfixDecrementNode;
 import checkers.flow.cfg.node.PostfixIncrementNode;
 import checkers.flow.cfg.node.PrefixDecrementNode;
 import checkers.flow.cfg.node.PrefixIncrementNode;
+import checkers.flow.cfg.node.PrimitiveTypeNode;
 import checkers.flow.cfg.node.ReturnNode;
 import checkers.flow.cfg.node.SignedRightShiftAssignmentNode;
 import checkers.flow.cfg.node.SignedRightShiftNode;
@@ -3642,8 +3644,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitArrayType(ArrayTypeTree tree, Void p) {
-            assert false : "ArrayTypeTree is unexpected in AST to CFG translation";
-            return null;
+            assert !conditionalMode;
+            return extendWithNode(new ArrayTypeNode(tree));
         }
 
         @Override
@@ -3658,8 +3660,8 @@ public class CFGBuilder {
 
         @Override
         public Node visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
-            assert false : "PrimitiveTypeTree is unexpected in AST to CFG translation";
-            return null;
+            assert !conditionalMode;
+            return extendWithNode(new PrimitiveTypeNode(tree));
         }
 
         @Override
