@@ -22,6 +22,8 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.AnalysisResult;
+import checkers.flow.analysis.TransferInput;
+import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
@@ -239,7 +241,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * A mapping from methods to their a list with all return statements and the
      * corresponding store.
      */
-    protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, Store>>> returnStatementStores = null;
+    protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>> returnStatementStores = null;
 
     /**
      * A mapping from methods to their a list with all return statements and the
@@ -259,7 +261,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * @return All return node and store pairs for a given method.
      */
-    public List<Pair<ReturnNode, Store>> getReturnStatementStores(
+    public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
         assert returnStatementStores.containsKey(methodTree);
         return returnStatementStores.get(methodTree);
