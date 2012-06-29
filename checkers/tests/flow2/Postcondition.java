@@ -168,6 +168,19 @@ class Postcondition {
         return "";
     }
     
+    @EnsuresAnnotationIf(result=true, expression="#1", annotation=Odd.class)
+    boolean isOdd(final String p1) {
+        return isOdd(p1, 0);
+    }
+    @EnsuresAnnotationIf(result=true, expression="#1", annotation=Odd.class)
+    boolean isOdd(final String p1, int p2) {
+        return p1 == null;
+    }
+    @EnsuresAnnotationIf(result=false, expression="#1", annotation=Odd.class)
+    boolean isNotOdd(final String p1) {
+        return !isOdd(p1);
+    }
+    
     // basic conditional postcondition test
     void t3(@Odd String p1, String p2) {
         condOddF1(true);
