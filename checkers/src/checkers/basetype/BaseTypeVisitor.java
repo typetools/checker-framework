@@ -19,6 +19,7 @@ import javax.tools.Diagnostic.Kind;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.node.BooleanLiteralNode;
@@ -492,7 +493,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * Checks a single conditional postcondition {@code ensuresAnnotationIf} on
      * the method {@code node}, for a given annotation {@code annotation}.
      */
-    public void checkConditionalPostcondition(MethodTree node,
+    protected void checkConditionalPostcondition(MethodTree node,
             AnnotationMirror ensuresAnnotationIf, String annotation) {
         List<String> expressions = AnnotationUtils.elementValueArray(
                 ensuresAnnotationIf, "expression");
@@ -524,20 +525,26 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 }
 
                 // TODO: we should not need to cast here?
-                AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
-                    (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
-                List<Pair<ReturnNode, CFStore>> returnStatements = factory
+                AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?> factory =
+                    (AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?>) atypeFactory;
+                List<Pair<ReturnNode, TransferResult<CFValue, CFStore>>> returnStatements = factory
                         .getReturnStatementStores(node);
-                for (Pair<ReturnNode, CFStore> r : returnStatements) {
-                    CFStore exitStore = r.second;
+                for (Pair<ReturnNode, TransferResult<CFValue, CFStore>> r : returnStatements) {
                     ReturnNode returnStmt = r.first;
+                    Node retValNode = returnStmt.getResult();
+                    Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
+                            .getValue() : null;
+                    CFStore exitStore;
+                    if (result) {
+                        exitStore = r.second.getThenStore();
+                    } else {
+                        exitStore = r.second.getElseStore();
+                    }
                     CFValue value = exitStore.getValue(expr);
                     // don't check if return statement certainly does not
                     // match 'result'. at the moment, this means the result
                     // is a boolean literal
-                    Node retVal = returnStmt.getResult();
-                    if (!(retVal instanceof BooleanLiteralNode)
-                            || ((BooleanLiteralNode) retVal).getValue() == result) {
+                    if (retVal == null || retVal == result) {
                         if (value == null
                                 || !AnnotationUtils.containsSame(
                                         value.getAnnotations(), anno)) {

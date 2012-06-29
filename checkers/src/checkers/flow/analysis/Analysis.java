@@ -72,7 +72,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * The stores after every return statement.
      */
-    protected Map<ReturnNode, S> storesAtReturnStatements;
+    protected Map<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
 
     /**
      * The stores before every method call.
@@ -136,7 +136,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public Types getTypes() {
         return types;
     }
-    
+
     public ProcessingEnvironment getEnv() {
         return env;
     }
@@ -283,8 +283,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         if (node instanceof ReturnNode) {
             // save a copy of the store to later check if some property held at
             // a given return statement
-            storesAtReturnStatements.put((ReturnNode) node, transferResult
-                    .getRegularStore().copy());
+            storesAtReturnStatements.put((ReturnNode) node, transferResult);
         }
         return transferResult;
     }
@@ -418,10 +417,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         return getValue(nodeCorrespondingToTree);
     }
 
-    public List<Pair<ReturnNode, S>> getReturnStatementStores() {
-        List<Pair<ReturnNode, S>> result = new ArrayList<>();
+    public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
+        List<Pair<ReturnNode, TransferResult<A, S>>> result = new ArrayList<>();
         for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            S store = storesAtReturnStatements.get(returnNode);
+            TransferResult<A, S> store = storesAtReturnStatements
+                    .get(returnNode);
             result.add(Pair.of(returnNode, store));
         }
         return result;
