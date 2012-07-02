@@ -531,6 +531,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         .getReturnStatementStores(node);
                 for (Pair<ReturnNode, TransferResult<CFValue, CFStore>> r : returnStatements) {
                     ReturnNode returnStmt = r.first;
+                    if (r.second == null) {
+                        // Unreachable return statements have no stores, but there
+                        // is no need to check them.
+                        continue;
+                    }
                     Node retValNode = returnStmt.getResult();
                     Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
                             .getValue() : null;
