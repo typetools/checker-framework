@@ -1,6 +1,5 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.nullness.quals.Nullable;
 
 public class SimpleTimeZone extends TimeZone{
     private static final long serialVersionUID = 0L;

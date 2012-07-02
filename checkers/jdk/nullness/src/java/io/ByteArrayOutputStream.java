@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class ByteArrayOutputStream extends OutputStream {
   public ByteArrayOutputStream() { throw new RuntimeException("skeleton method"); }

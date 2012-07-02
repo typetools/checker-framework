@@ -1,17 +1,17 @@
 package com.sun.javadoc;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
-  public abstract @NonNull java.lang.String commentText();
-  public abstract @NonNull com.sun.javadoc.Tag @NonNull [] tags();
-  public abstract @NonNull com.sun.javadoc.Tag @NonNull [] tags(java.lang.String a1);
-  public abstract @NonNull com.sun.javadoc.SeeTag @NonNull [] seeTags();
-  public abstract @NonNull com.sun.javadoc.Tag @NonNull [] inlineTags();
-  public abstract @NonNull com.sun.javadoc.Tag @NonNull [] firstSentenceTags();
-  public abstract @NonNull java.lang.String getRawCommentText();
-  public abstract void setRawCommentText(@NonNull java.lang.String a1);
-  public abstract @NonNull java.lang.String name();
+  public abstract java.lang.String commentText();
+  public abstract com.sun.javadoc.Tag [] tags();
+  public abstract com.sun.javadoc.Tag [] tags(java.lang.String a1);
+  public abstract com.sun.javadoc.SeeTag [] seeTags();
+  public abstract com.sun.javadoc.Tag [] inlineTags();
+  public abstract com.sun.javadoc.Tag [] firstSentenceTags();
+  public abstract java.lang.String getRawCommentText();
+  public abstract void setRawCommentText(java.lang.String a1);
+  public abstract java.lang.String name();
   public abstract int compareTo(java.lang.Object a1);
   public abstract boolean isField();
   public abstract boolean isEnumConstant();

@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.nullness.quals.AssertNonNullIfFalse;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 public class ArrayDeque<E extends @Nullable Object> extends AbstractCollection<E> implements Deque<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;
