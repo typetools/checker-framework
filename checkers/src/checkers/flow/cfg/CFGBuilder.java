@@ -1086,8 +1086,10 @@ public class CFGBuilder {
                     break;
                 case CONDITIONAL_JUMP: {
                     ConditionalJump cj = (ConditionalJump) node;
-                    // no label is supposed to point to a conditional jump
-                    // nodes, thus we do not need to set block for 'node'
+                    // Exception nodes may fall through to conditional jumps,
+                    // so we set the block which is required for the insertion
+                    // of missing edges.
+                    node.setBlock(block);
                     assert block != null;
                     final ConditionalBlockImpl cb = new ConditionalBlockImpl();
                     block.setSuccessor(cb);
