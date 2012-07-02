@@ -127,6 +127,7 @@ import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 import checkers.util.trees.TreeBuilder;
@@ -2047,22 +2048,40 @@ public class CFGBuilder {
             ExpressionTree methodSelect = tree.getMethodSelect();
             assert TreeUtils.isMethodAccess(methodSelect);
 
+            List<? extends ExpressionTree> actualExprs = tree.getArguments();
+
+            List<Node> arguments = convertCallArguments(method, actualExprs);
+
+            // Look up method to invoke and possibly throw NullPointerException
             Node receiver = getReceiver(methodSelect,
                     TreeUtils.enclosingClass(getCurrentPath()));
 
             MethodAccessNode target = new MethodAccessNode(methodSelect,
                     receiver);
-            // TODO: Handle exceptions caused by field access.
-            extendWithNode(target);
 
-            List<? extends ExpressionTree> actualExprs = tree.getArguments();
-
-            List<Node> arguments = convertCallArguments(method, actualExprs);
+            ExecutableElement element = TreeUtils.elementFromUse(tree);
+            if (ElementUtils.isStatic(element) ||
+                receiver instanceof ImplicitThisLiteralNode ||
+                receiver instanceof ExplicitThisLiteralNode) {
+                // No NullPointerException can be thrown, use normal node
+                extendWithNode(target);
+            } else {
+                TypeElement npeElement = elements
+                    .getTypeElement("java.lang.NullPointerException");
+                extendWithNodeWithException(target, npeElement.asType());
+            }
 
             // TODO: lock the receiver for synchronized methods
 
             MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
-            extendWithNode(node);
+            List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+            Set<TypeMirror> thrownSet = new HashSet<>();
+            thrownSet.addAll(thrownTypes);
+            if (thrownTypes.isEmpty()) {
+                extendWithNode(node);
+            } else {
+                extendWithNodeWithExceptions(node, thrownSet);
+            }
 
             conditionalMode = outerConditionalMode;
 
@@ -2106,15 +2125,16 @@ public class CFGBuilder {
                 FieldAccessNode target = new FieldAccessNode(variable, receiver);
                 target.setLValue();
 
-                // TODO: static field access does not throw exception
-                boolean canThrow = !(receiver instanceof ImplicitThisLiteralNode);
-                // TODO: explicit this access does not throw exception
-                if (canThrow) {
-                    TypeElement element = elements
-                            .getTypeElement("java.lang.NullPointerException");
-                    extendWithNodeWithException(target, element.asType());
-                } else {
+                Element element = TreeUtils.elementFromUse(variable);
+                if (ElementUtils.isStatic(element) ||
+                    receiver instanceof ImplicitThisLiteralNode ||
+                    receiver instanceof ExplicitThisLiteralNode) {
+                    // No NullPointerException can be thrown, use normal node
                     extendWithNode(target);
+                } else {
+                    TypeElement npeElement = elements
+                            .getTypeElement("java.lang.NullPointerException");
+                    extendWithNodeWithException(target, npeElement.asType());
                 }
 
                 // add assignment node
@@ -3508,7 +3528,22 @@ public class CFGBuilder {
                     return null;
                 }
             }
-            return extendWithNode(new FieldAccessNode(tree, expr));
+
+            Node node = new FieldAccessNode(tree, expr);
+
+            Element element = TreeUtils.elementFromUse(tree);
+            if (ElementUtils.isStatic(element) ||
+                expr instanceof ImplicitThisLiteralNode ||
+                expr instanceof ExplicitThisLiteralNode) {
+                // No NullPointerException can be thrown, use normal node
+                extendWithNode(node);
+            } else {
+                TypeElement npeElement = elements
+                    .getTypeElement("java.lang.NullPointerException");
+                extendWithNodeWithException(node, npeElement.asType());
+            }
+
+            return node;
         }
 
         @Override
