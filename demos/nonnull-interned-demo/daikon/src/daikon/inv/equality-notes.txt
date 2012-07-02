@@ -1,0 +1,135 @@
+Notes on equality as copied from a draft.  Incomplete.
+
+
+\subsection{Equality optimization}
+
+\authcomment{need figure!}
+
+A major optimization that can be done with Daikon is to handle
+equality specially.  This serves to save space and time in two ways.
+Given $v$ variables that are always equal --- i.e. belong to the same
+equality set: 1) Rather than having $O(v^2)$ two-way equality invariants,
+we have one for the set.  2) We have invariants only on hone member of
+each equality set.
+
+For example, let us say a program point has four variables, $a, b, c,
+d$ and they are all equal.  There is an invariant $f$ that can apply
+over any one of them.  Normally, we would need 10 equality invariants
+to express the equality, and then 4 invariants to show $f$ held on
+each.  The checking of these invariants would require 14 units of
+time.  With the use of equality sets, we have one equality set, which
+requires 4 units of time to check, and one instance of $f(a)$, the
+``leader'' of the equality set.  The total check time drops to 5
+units.
+
+A significant component of this is a form of dynamic suppression.
+Conceptually, $f(b)$ is suppressed by $f(a)$ and $a == b$, and should
+either of these be falsified, $f(b)$ might have to become a regular,
+checked invariant.
+
+The basic equality optimization is summarized as follows:
+
+\begin{enumerate}
+\item
+In the beginning, all comparable variables at a program point are
+placed into the same equality set.  Each equality set has a leader
+and invariants are only created on leaders.
+
+\item
+At every sample during checking, each equality set is first checked to
+see if its members are still equal.  If not, new equality sets are
+budded off by the values seen at the sample.  Each new equality set
+has a leader (who could be its sole member), and the invariants of the
+old leader are copied to each of the new leaders\footnote{Where do I
+talk about pivoting, to ensure that hte PptSliceNs are still sorted by
+index order}.
+
+\item
+For the sample, the other invariants (some of which may now be new)
+are checked after the equality sets have been checked.
+
+\item
+As needed by the user, the equality sets can, at the end of the run
+through the execution data, be ``devolved'' back into regular Daikon
+invariants.  Presently, this postprocessing stage creates regular
+equality invariants between the leader of each equality set and its
+members.
+
+\end{enumerate}
+
+Notice that the keeping of what is suppressed is implicit in the
+invariant copying mechanism: when $b$ no longer equals $a$, we simply
+copy $f$ from $a$.  Depending on how many invariants are equal in the
+end, this optimization can result in substantial space and time
+savings, plus a reduction in clutter for the user.  
+
+There are four details to handle in order to have a correct
+implementation.
+
+
+\subsubsection{Copying vs. instantiation of invariants}
+
+Step 2 above is not entirely correct.  It is not sufficient to simply
+copy invariants from the old leader onto the new leaders, for this
+would leave out some invariants.  Each of the new leaders and the old
+leader also have to instantiate invariants between themselves.  Figure
+X shows this need.  $a$ is the old leader, while $b$ and $c$ are two
+new leaders.  $d$ is a variable that was not in the origial equality
+set ${a, b, c}$ (but is a leader of its own equality set).  The
+invariants are $f$ (unary), $g$ (binary) and $h$ (ternary).  Assume
+the invariants are reflexive for their variables (i.e. $g(a, b)
+\Leftrightarrow g(b, a)$.  Originally, the invariants were:
+
+$f(a), f(d), g(a, d)$.
+
+If we simply copied over the invariants of the old leader onto those
+of the new leaders, we would additionally have:
+
+$f(b), f(c), g(b, d) g(c, d)$
+
+This does not cover all possibilities, so what we have to do is also
+instantiate new invariants:
+
+$g(a, b), g(b, c), h(a, b, c), h(a, b, d), h(a, c, d), h(b, c, d)$
+
+For each old equality set that splits off, we instantiate invariants
+as follows: Let $N$ be the set of new leaders, $o$ be the old leader,
+and $X$ be the leaders outside of the old equality set.  The
+invariants we have to instantiate are all the invariants\footnote{At
+least those that fit the type constraints of the variables} on $\{ o
+\} + N + X$ minus the invariants that were copied, minus the invariants
+that hold on $X$ alone.  Figure \ref{} shows an example of these
+invariants.  We do the subtraction of the invariants on $X$ alone
+because these invariants should already exist.  Let $I$ be the set we
+want to generate.
+
+In implementation, this set can be itereated in $k$ nested loops,
+where $k$ is the maximum arity of the invariants.  We optimize
+this process by realizing the following property:
+
+\paragraph{Lemma:}
+Instantiating all invariants with at least two variables from $\{ o \}
++ N$ generates $I$.
+
+To prove this correct, we just have to show that the invariants we
+leave out are not in the set, since $I$ would otherwise contain all
+$k$-ary invariants.  An invariant with zero variables from this set is
+an invariant purely on $X$, which we exclude by definition of $I$.  An
+invariant with one variable is an invariant that was copied from $o$,
+which we also exclude.
+
+Thus we first have two outer loops on $\{ o \} + N$ (while preventing
+duplication) and then the inner loops go through each variable in $\{
+o \} + N + X$.
+
+Lastly, we have to note that not all instantiated invariants are true.
+If we have known that $a == b$ all along, then it would be unsound to
+instantiate $a > b$.  Thus, every invariant that is potentially
+instantiated is told that all of its variables were equal, and some
+invariants are not instantiated because of this fact.
+
+The copied invariants from step 2 are all true up to their point of
+copy, because the assumption is that $b == a$, and $f(a)$ up to this
+point (and step 3 checks $f(b)$ now).  The invariants purely on $X$
+may or may not be true, but these are handled normally.
+
