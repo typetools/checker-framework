@@ -1916,8 +1916,6 @@ public class CFGBuilder {
                 }
             }
 
-            // TODO: handle null pointer exception for receiver
-
             // Convert arguments
             ArrayList<Node> convertedNodes = new ArrayList<Node>();
             for (int i = 0; i < formals.size(); i++) {
@@ -3043,40 +3041,6 @@ public class CFGBuilder {
                     extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
                         Collections.<Node>emptyList(), getCurrentPath()));
 
-                // If the variable is of reference type, then the target type is equal to it.
-                // Otherwise, the target type is the upper bound of the capture conversion of
-                // the type argument of iterator type, or Object if iterator type is raw.
-                // According to the JLS, a the result of iter.next() should
-                // be cast to the target type, but that changes qualifiers.
-                // TODO: Decide whether we will use this typecast or not
-                //
-                // TypeMirror varType = varDeclNode.getType();
-                // TypeMirror targetType = null;
-                // if (varType instanceof ReferenceType) {
-                //     targetType = varType;
-                // } else {
-                //     List<? extends TypeMirror> localIterArgs =
-                //         elementType.getTypeArguments();
-                //     switch (typeArgs.size()) {
-                //     case 0:
-                //         targetType = elements.getTypeElement("java.lang.Object").asType();
-                //         break;
-                //     case 1:
-                //         targetType = types.capture(localIterArgs.get(0));
-                //         break;
-                //     default:
-                //         assert false : "iterator should have 0 or 1 type arguments";
-                //     }
-                // }
-
-                // TypeCastTree typeCast =
-                //     treeBuilder.buildTypeCast(targetType, nextCall);
-                // System.out.println("typeCast: " + typeCast +
-                //                    " " + InternalUtils.typeOf(typeCast));
-
-                // TypeCastNode targetTypeCast =
-                //     extendWithNode(new TypeCastNode(typeCast, nextCallNode, targetType));
-
                 translateAssignment(variable, 
                                     new LocalVariableNode(variable),
                                     nextCall);
@@ -3313,8 +3277,6 @@ public class CFGBuilder {
         public Node visitIf(IfTree tree, Void p) {
 
             assert !conditionalMode;
-
-            // TODO exceptions
 
             // all necessary labels
             Label thenEntry = new Label();
@@ -3566,7 +3528,6 @@ public class CFGBuilder {
 
             addLabelForNextNode(breakTargetL);
 
-            // TODO: maintain a stack of break target labels, among others
             breakTargetL = oldBreakTargetL;
 
             return null;
