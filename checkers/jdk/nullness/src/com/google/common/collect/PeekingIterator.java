@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtCompatible;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An iterator that supports a one-element lookahead while iterating.

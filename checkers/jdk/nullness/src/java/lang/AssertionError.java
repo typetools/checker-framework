@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public class AssertionError extends Error {
   private static final long serialVersionUID = 0;

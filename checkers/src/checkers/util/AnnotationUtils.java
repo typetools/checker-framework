@@ -538,6 +538,24 @@ public class AnnotationUtils {
             return annotationName(a1).equals(annotationName(a2));
         return a1 == a2;
     }
+    
+    /**
+     * Checks that the annotation {@code am} has the name {@code aname}. Values
+     * are ignored.
+     */
+    public static boolean areSameByName(AnnotationMirror am, String aname) {
+        Name amname = AnnotationUtils.annotationName(am);
+        return amname.toString().equals(aname);
+    }
+
+    /**
+     * Checks that the annotation {@code am} has the name of {@code anno}.
+     * Values are ignored.
+     */
+    public static boolean areSameByClass(AnnotationMirror am,
+            Class<? extends Annotation> anno) {
+        return areSameByName(am, anno.getCanonicalName());
+    }
 
     /**
      * Checks that two collections contain the same annotations.

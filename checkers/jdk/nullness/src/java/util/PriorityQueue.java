@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.nullness.quals.AssertNonNullIfFalse;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // doesn't permit null element
 public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> implements java.io.Serializable {

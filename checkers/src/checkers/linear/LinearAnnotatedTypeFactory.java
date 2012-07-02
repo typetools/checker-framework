@@ -47,11 +47,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
         super.annotateImplicit(elt, type);
     }
 
-    @Override
-    public Flow createFlow(LinearChecker checker, CompilationUnitTree tree,
-            Set<AnnotationMirror> flowQuals) {
-        return new LinearFlow(checker, tree, flowQuals, this);
-    }
+    // TODO: Re-enable flow with the new dataflow framework.
 
     /**
      * Performs flow-sensitive analysis to mark reference types {@code Linear}

@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A high-performance, immutable, random-access {@code List} implementation.

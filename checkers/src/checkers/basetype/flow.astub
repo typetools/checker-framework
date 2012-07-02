@@ -1,0 +1,12 @@
+import checkers.quals.*;
+
+package java.lang;
+
+public final class System {
+    @TerminatesExecution public static void exit(int status);
+
+}
+
+public class Object {
+    @Pure public Object();
+}

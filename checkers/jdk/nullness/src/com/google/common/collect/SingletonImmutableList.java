@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
