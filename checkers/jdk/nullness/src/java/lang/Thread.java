@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.Raw;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public class Thread implements Runnable {
   public enum State {

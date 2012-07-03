@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+import checkers.quals.Pure;
+import checkers.nullness.quals.AssertNonNullIfFalse;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // This permits null element when using a custom comparator which allows null
 public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {

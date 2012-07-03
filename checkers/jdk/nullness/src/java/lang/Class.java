@@ -1,8 +1,11 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.quals.Pure;
+import checkers.nullness.quals.AssertNonNullIfTrue;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}

@@ -579,6 +579,27 @@ public class StubParser {
         }
         m.put(key, value);
     }
+    
+    /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
+    private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
+        if (key == null)
+            return;
+        if (m.containsKey(key)) {
+            AnnotatedTypeMirror value2 = m.get(key);
+            // Are the two values the same?
+            if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
+                return;
+            }
+            // TODO: instead of failing, can we try merging the information from
+            // multiple stub files?
+            CheckerError e = new CheckerError("StubParser: key is already in map: " + LINE_SEPARATOR
+                    + "  " + key + " => " + value2 + LINE_SEPARATOR
+                    + "while adding: " + LINE_SEPARATOR
+                    + "  " + key + " => " + value);
+            throw e;
+        }
+        m.put(key, value);
+    }
 
     /** Just like Map.putAll, but errs if any key is already in the map. */
     private static <K,V> void putAllNew(Map<K,V> m, Map<K,V> m2) {
