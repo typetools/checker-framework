@@ -150,6 +150,8 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-d ${build}"/>
             <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
+            <!-- Implicitly import the Nullness checker -->
+            <env key="jsr308_imports" value="checkers.nullness.quals.*"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
     <!--
@@ -339,6 +341,20 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.FlowTest"/>
+        </antcall>
+    </target>
+
+    <target name="flow2-tests" depends="jar,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.Flow2Test"/>
+        </antcall>
+    </target>
+
+    <target name="all-flow-tests" depends="jar,build-tests"
+      description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AllFlowTests"/>
         </antcall>
     </target>
 
@@ -562,7 +578,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
-	    <arg line="${checker-args}"/>
+            <arg line="${checker-args}"/>
         </java>
     </target>
 

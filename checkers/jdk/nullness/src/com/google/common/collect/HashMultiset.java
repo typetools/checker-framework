@@ -24,7 +24,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Multiset implementation backed by a {@link HashMap}.
