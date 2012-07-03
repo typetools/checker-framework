@@ -1505,6 +1505,7 @@ public class CFGBuilder {
          */
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(Node node,
                 Set<TypeMirror> causes) {
+            addToLookupMap(node);
             Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
             for (TypeMirror cause : causes) {
                 exceptions.put(cause, tryStack.possibleLabels(cause));
