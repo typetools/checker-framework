@@ -10,3 +10,20 @@ public final class System {
 public class Object {
     @Pure public Object();
 }
+
+package java.util;
+
+public interface Map<K, V> {
+    @Pure V get(Object key);
+}
+
+public abstract class TimeZone {
+    @Pure public final String getDisplayName();
+}
+
+package java.util.regex;
+
+public final class Pattern {
+    @Pure public static String quote(String s);
+}
+
