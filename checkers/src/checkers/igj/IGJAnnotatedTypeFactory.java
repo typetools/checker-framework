@@ -125,16 +125,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     }
 
     @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
-    }
-
-    @Override
     protected TreeAnnotator createTreeAnnotator(IGJChecker checker) {
         return new IGJTreePreAnnotator(checker);
     }
@@ -142,6 +132,13 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     @Override
     protected TypeAnnotator createTypeAnnotator(IGJChecker checker) {
         return new IGJTypePostAnnotator(checker);
+    }
+    
+    @Override
+    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
+        Set<Class<? extends Annotation>> result = new HashSet<>();
+        result.add(I.class);
+        return result;
     }
 
     // **********************************************************************

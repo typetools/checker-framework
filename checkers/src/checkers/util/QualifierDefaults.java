@@ -273,7 +273,7 @@ public class QualifierDefaults {
         }
     }
 
-    private static class DefaultApplier
+    private class DefaultApplier
     extends AnnotatedTypeScanner<Void, AnnotationMirror> {
         private final Element elt;
         private final Collection<DefaultLocation> locations;
@@ -295,12 +295,7 @@ public class QualifierDefaults {
 
             if (t == null || t.getKind() == TypeKind.NONE)
                 return null;
-
-            // Skip type variables, but continue to scan their bounds.
-            if (t.getKind() == TypeKind.WILDCARD
-                    || t.getKind() == TypeKind.TYPEVAR)
-                return super.scan(t, p);
-
+            
             // Skip annotating this type if:
             // - the default is "all except (the raw types of) locals"
             // - we are applying defaults to a local
@@ -309,14 +304,26 @@ public class QualifierDefaults {
                     && locations.contains(DefaultLocation.ALL_EXCEPT_LOCALS)
                     && t == type) {
 
+                Set<AnnotationMirror> annos;
                 if (localVarDefaultAnnos != null) {
-                    for (AnnotationMirror anno : localVarDefaultAnnos) {
-                        if (!t.isAnnotatedInHierarchy(anno)) {
-                            t.addAnnotation(anno);
-                        }
+                    annos = localVarDefaultAnnos;
+                } else {
+                    // apply "top" qualifiers
+                    annos = factory.getQualifierHierarchy()
+                            .getRootAnnotations();
+                }
+                for (AnnotationMirror anno : annos) {
+                    if (!t.isAnnotatedInHierarchy(anno)) {
+                        t.addAnnotation(anno);
                     }
                 }
 
+                return super.scan(t, p);
+            }
+            
+            // Skip type variables, but continue to scan their bounds.
+            if (t.getKind() == TypeKind.WILDCARD
+                    || t.getKind() == TypeKind.TYPEVAR) {
                 return super.scan(t, p);
             }
 

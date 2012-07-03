@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
