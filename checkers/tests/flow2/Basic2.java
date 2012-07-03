@@ -154,9 +154,9 @@ class Basic2 {
     }
     
     // self type
-//    void t9(@Odd Basic2 this) {
-//        @Odd Basic2 l1 = this;
-//    }
+    void t9(@Odd Basic2 this) {
+        @Odd Basic2 l1 = this;
+    }
     
     // generics
     public <T extends @Odd String> void t10(T p1, @Odd T p2) {
