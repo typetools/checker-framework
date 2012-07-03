@@ -122,10 +122,10 @@ public class AnnotatedTypeFactory {
     /** Utility class for manipulating annotated types. */
     protected final AnnotatedTypes atypes;
 
-    /** the state of the visitor **/
+    /** The state of the visitor. **/
     final protected VisitorState visitorState;
 
-    /** Represent the annotation relations **/
+    /** Represent the annotation relations. **/
     protected final /*@Nullable*/ QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
@@ -1478,16 +1478,18 @@ public class AnnotatedTypeFactory {
      * @return receiver type of the most enclosing method being visited.
      */
     protected final AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-        AnnotatedDeclaredType cached = visitorState.getMethodReceiver();
-        if (cached != null) {
-            return cached;
+        AnnotatedDeclaredType res = visitorState.getMethodReceiver();
+        if (res == null) {
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+            if (enclosingMethod != null) {
+                AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
+                res = method.getReceiverType();
+                // TODO: three tests fail if one adds the following, which would make
+                // sense, or not?
+                // visitorState.setMethodReceiver(res);
+            }
         }
-
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
-        if (enclosingMethod == null)
-            return null;
-        AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-        return method.getReceiverType();
+        return res;
     }
 
     protected final boolean isWithinConstructor(Tree tree) {
