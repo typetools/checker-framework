@@ -1398,8 +1398,9 @@ public class AnnotatedTypeFactory {
      * @return receiver type of the most enclosing method being visited.
      */
     protected final AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-        if (visitorState.getClassType() != null) {
-            return visitorState.getMethodReceiver();
+        AnnotatedDeclaredType cached = visitorState.getMethodReceiver();
+        if (cached != null) {
+            return cached;
         }
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
