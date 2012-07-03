@@ -198,6 +198,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
+                    store = new TransferInput<>(node, this, transferResult);
                     addStoreBefore(succ, store);
                 }
 
