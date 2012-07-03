@@ -20,14 +20,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -125,9 +123,9 @@ import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
+import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
-import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 import checkers.util.trees.TreeBuilder;
@@ -2074,14 +2072,17 @@ public class CFGBuilder {
             // TODO: lock the receiver for synchronized methods
 
             MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
-            List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
             Set<TypeMirror> thrownSet = new HashSet<>();
+            
+            // Add exceptions explicitly mentioned in the throws clause.
+            List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
             thrownSet.addAll(thrownTypes);
-            if (thrownTypes.isEmpty()) {
-                extendWithNode(node);
-            } else {
-                extendWithNodeWithExceptions(node, thrownSet);
-            }
+            // Add Throwable to account for unchecked exceptions
+            TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+            thrownSet.add(throwableElement.asType());
+            
+            extendWithNodeWithExceptions(node, thrownSet);
 
             conditionalMode = outerConditionalMode;
 
