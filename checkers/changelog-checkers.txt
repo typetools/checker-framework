@@ -1,9 +1,8 @@
-Version 1.3.0, 31 May 2012
+Version 1.3.0, 3 Jul 2012
 
 Framework improvements:
   Adapt to annotation storage changes in jsr308-langtools 1.3.0.
-  Move type validation methods from the BaseTypeChecker to the
-  more suitable BaseTypeVisitor.
+  Move type validation methods from the BaseTypeChecker to BaseTypeVisitor.
 
 ----------------------------------------------------------------------
 Version 1.2.7, 14 May 2012
