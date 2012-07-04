@@ -160,20 +160,30 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
 
 
 \item
-If you get an error such as this:
+An error such as this:
 
 \begin{Verbatim}
 java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
 \end{Verbatim}
 
 \noindent
-then you likely are using the wrong bootclasspath.  (Field
-\<NATIVE\_HEADER\_OUTPUT> was added in JDK 8, but the compiler is executing
-on a JDK that lacks the field.)  If you are using Ant, then one possibility
+means that the compiler is executing on a JDK that lacks the field
+\<NATIVE\_HEADER\_OUTPUT>, which was added in JDK 8.
+Most likely you are using the wrong bootclasspath.
+
+One possibility is that you are not running the Type Annotations compiler
+--- use \<javac -version> to check this, then use the right one.  (Maybe
+the Type Annotations javac is at the end rather than the beginning of your
+path.)
+
+If you are using Ant, then one possibility
 is that the javac compiler is using the same JDK as Ant is using.  You can
 correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
+
+If you are building from source, you might need to rebuild the Annotation
+File Utilities before recompiling or using the Checker Framework.
 
 
 \item
@@ -252,6 +262,23 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 \end{itemize}
 
 
+\subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
+
+An error like this
+
+\begin{Verbatim}
+Unsupported major.minor version 51.0
+\end{Verbatim}
+
+means that you have compiled some files into the Java 7 format (version
+51.0), but you are trying to run them with Java 6.  Run \<java -version> to
+determine the version of Java you are using and use a newer version,
+and/or use the \<-target>
+command-line option to \<javac> to specify the version of the class files
+that are created, such as \<javac -target 6 ...>.
+
+
+
 %% Commented out because these are not very helpful in terms of helping
 %% a reader understand whether he/she is encountering the specific problem,
 %% and because the issue tracker is a better way to find out about current
@@ -309,7 +336,6 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 % 
 % 
 % \end{itemize}
-
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
@@ -399,18 +425,18 @@ in the Checker Framework release.)
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checkers/jdk/Makefile.
-Set the \<JAVA\_HOME> environment variable to the location of your JDK 6 or
-7 installation (not the JRE installation).  This needs to be an Oracle JDK.
+Set the \<JAVA\_HOME> environment variable to the location of your JDK 
+7 installation (not the JRE installation, and not JDK 6).
+This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-%% This does not work, because "java" might be the version in the JDK or in
-%% the JRE.
-% Here is a command that works in the bash shell, for example:
-% % Can someone give a simpler command?
-% \begin{Verbatim}
-%   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
-% \end{Verbatim}
+In the bash shell, the following command \emph{sometimes} works (it might
+not because \<java> might be the version in the JDK or in the JRE):
+% Can someone give a simpler command?
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+\end{Verbatim}
 
 % # To build your own JDK:
 % mkdir -p /scratch/$USER/jdk7
@@ -722,4 +748,6 @@ Checker Framework distribution and is also available on the web at
 % LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
-% LocalWords:  MyFile buildfiles ClassName JRE
+% LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
+%  LocalWords:  extJavac ZipFile AprintErrorStack printAllQualifiers JLint
+%  LocalWords:  Telmo Correa Papi

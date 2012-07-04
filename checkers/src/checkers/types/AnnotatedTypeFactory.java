@@ -122,10 +122,10 @@ public class AnnotatedTypeFactory {
     /** Utility class for manipulating annotated types. */
     protected final AnnotatedTypes atypes;
 
-    /** the state of the visitor **/
+    /** The state of the visitor. **/
     final protected VisitorState visitorState;
 
-    /** Represent the annotation relations **/
+    /** Represent the annotation relations. **/
     protected final /*@Nullable*/ QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
@@ -153,7 +153,7 @@ public class AnnotatedTypeFactory {
      * annotation in the Checker Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
-    
+
     /**
      * A map from the class name (canonical name) of an annotation to the set of
      * class names (canonical names) for annotations with the same meaning
@@ -206,18 +206,18 @@ public class AnnotatedTypeFactory {
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
     }
-    
+
     public ProcessingEnvironment getEnv() {
         return env;
     }
-    
+
     /**
      * Construct an annotation from a class.
      */
     public AnnotationMirror annotationFromClass(Class<? extends Annotation> clazz) {
         return annotations.fromClass(clazz);
     }
-    
+
     /**
      * Construct an annotation from a name.
      */
@@ -1302,22 +1302,21 @@ public class AnnotatedTypeFactory {
     protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
         aliases.put(clazz.getCanonicalName(), type);
     }
-    
+
     /**
-     * Returns the canonical annotation for the passed annotation if it is an
-     * alias of a canonical one in the framework. If it is not an alias, the
-     * method returns null.
-     * 
+     * Returns the canonical annotation for the passed annotation if it is
+     * an alias of a canonical one in the framework.  If it is not an alias,
+     * the method returns null.
+     *
      * Returns an aliased type of the current one
      */
     protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (a == null)
-            return null;
+        if (a==null) return null;
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);
     }
-    
+
     /**
      * Add the annotation {@code alias} as an alias for the declaration
      * annotation {@code annotation}, where the annotation mirror
@@ -1479,15 +1478,18 @@ public class AnnotatedTypeFactory {
      * @return receiver type of the most enclosing method being visited.
      */
     protected final AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-        if (visitorState.getClassType() != null) {
-            return visitorState.getMethodReceiver();
+        AnnotatedDeclaredType res = visitorState.getMethodReceiver();
+        if (res == null) {
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+            if (enclosingMethod != null) {
+                AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
+                res = method.getReceiverType();
+                // TODO: three tests fail if one adds the following, which would make
+                // sense, or not?
+                // visitorState.setMethodReceiver(res);
+            }
         }
-
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
-        if (enclosingMethod == null)
-            return null;
-        AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-        return method.getReceiverType();
+        return res;
     }
 
     protected final boolean isWithinConstructor(Tree tree) {
@@ -1673,13 +1675,11 @@ public class AnnotatedTypeFactory {
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
-        
+
         // stub file for type-system independent annotations
-        InputStream input = BaseTypeChecker.class
-                .getResourceAsStream("flow.astub");
+        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
         if (input != null) {
-            StubParser stubParser = new StubParser("flow.astub", input, this,
-                    env);
+            StubParser stubParser = new StubParser("flow.astub", input, this, env);
             stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
@@ -1755,11 +1755,10 @@ public class AnnotatedTypeFactory {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose
-     * name equals the passed annotationName if one exists, null otherwise.
-     * 
-     * @param anno
-     *            annotation class
+     * Returns the actual annotation mirror used to annotate this type,
+     * whose name equals the passed annotationName if one exists, null otherwise.
+     *
+     * @param anno annotation class
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getDeclAnnotation(Element elt,

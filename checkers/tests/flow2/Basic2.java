@@ -154,16 +154,16 @@ class Basic2 {
     }
     
     // self type
-//    void t9(@Odd Basic2 this) {
-//        @Odd Basic2 l1 = this;
-//    }
+    void t9(@Odd Basic2 this) {
+        @Odd Basic2 l1 = this;
+    }
     
     // generics
     public <T extends @Odd String> void t10(T p1, @Odd T p2) {
-      T l1 = p1;
-      T l2 = p2;
-      @Odd T l3 = p1;
-      @Odd T l4 = p2;
+        T l1 = p1;
+        T l2 = p2;
+        @Odd T l3 = p1;
+        @Odd T l4 = p2;
     }
     
     // for-each loop
