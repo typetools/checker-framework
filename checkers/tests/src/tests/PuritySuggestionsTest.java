@@ -9,12 +9,9 @@ import tests.util.FlowTestChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * Tests for the flow-sensitive part of the framework. These tests complement
- * the tests of {@link FlowTest} and have been written when the dataflow
- * analysis has been completely rewritten.
+ * Tests for the {@code -AsuggestPureMethods} command-line argument.
  * 
  * @author Stefan Heule
- * 
  */
 public class PuritySuggestionsTest extends ParameterizedCheckerTest {
 
