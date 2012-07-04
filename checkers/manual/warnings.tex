@@ -457,6 +457,8 @@ This Unix command removes
 the comment characters, for all Java files in the current
 working directory or any subdirectory.
 
+// TODO: This doesn't handle the >>> comments.  I should adapt it to do so.
+
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
      | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
