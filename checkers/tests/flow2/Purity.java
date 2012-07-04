@@ -135,8 +135,8 @@ class Purity {
         String[] s = new String[1];
         return s[0];
     }
-    /* TODO: activate, as soon as CFGBuilder supports try
-    // :: error: (pure.not.deterministic)
+
+    //:: error: (pure.not.deterministic)
     @Pure String t16() {
         try {
             int i = 1/0;
@@ -155,7 +155,7 @@ class Purity {
         return "";
     }
     
-    // :: error: (pure.not.deterministic)
+    //:: error: (pure.not.deterministic)
     @Pure(Kind.DETERMINISTIC) String t16c() {
         try {
             int i = 1/0;
@@ -163,7 +163,7 @@ class Purity {
             // ..
         }
         return "";
-    }*/
+    }
     
     //:: warning: (pure.annotation.with.emtpy.kind)
     @Pure({}) String t17() {
