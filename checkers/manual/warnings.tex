@@ -349,10 +349,25 @@ already contains comments of the form \</*@...*/> that look like type
 annotations, and you want the Type Annotations compiler not to try to
 interpret them, then you can add spaces to the comments.
 
-This mechanism permits annotations to be written in comments, but it does
-not permit Java 8's new receiver (``\<this>'') syntax to be written in
-comments.  That means that it is not generally possible to write
-annotations on receivers in a forward-compatible way.
+There is a more powerful mechanism that permits arbitrary code to be
+written in a comment that is formatted as ``\code{/*>>>}\ldots\code{*/}'',
+with the first three characters of the comment being greater-than signs. As
+with annotations in comments, the commented code is ignored by ordinary
+compilers but is treated like ordinary code by the UW Type Annotations
+compiler.  This mechanism is intended only to support writing import
+statements and the new receiver (“this”) syntax, as in
+
+\begin{Verbatim}
+public boolean getResult(/*>>> @ReadOnly MyClass this*/) { ... }
+public boolean getResult(/*>>> @ReadOnly MyClass this, */ String argument) { ... }
+\end{Verbatim}
+
+\noindent
+for a method that does not modify its receiver.
+
+It would be possible to abuse this mechanism to inject code only when using
+the Type Annotations compiler.  Doing so is not a sanctioned use of the
+mechanism.
 
 
 \subsection{Implicit import statements\label{implicit-import-statements}}
@@ -412,7 +427,7 @@ Three ways to set an environment variable are:
   prefix the \code{javac} command by
   \code{jsr308\_imports='checkers.nullness.quals.*'}.
 \item
-  Set the environment variable for a single comamnd, via a \code{javac}
+  Set the environment variable for a single command, via a \code{javac}
   argument.  Use the \code{javac} command-line argument
   \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
 \end{itemize}
@@ -498,5 +513,5 @@ comments.
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
-% LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
-% LocalWords:  AskipDefs mypackage
+% LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
+% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP
