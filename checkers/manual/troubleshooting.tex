@@ -160,16 +160,18 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
 
 
 \item
-An error such as this:
+A \<NoSuchFieldError> such as this:
 
 \begin{Verbatim}
 java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
 \end{Verbatim}
 
 \noindent
-means that the compiler is executing on a JDK that lacks the field
-\<NATIVE\_HEADER\_OUTPUT>, which was added in JDK 8.
-Most likely you are using the wrong bootclasspath.
+Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
+The error message suggests that
+you're not executing with the right bootclasspath: some classes were
+compiled with the JDK 8 version and expect the field, but you're
+executing the compiler on a JDK without the field.
 
 One possibility is that you are not running the Type Annotations compiler
 --- use \<javac -version> to check this, then use the right one.  (Maybe
