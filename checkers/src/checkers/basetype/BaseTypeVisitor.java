@@ -277,7 +277,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            if (PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
+            boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
+            boolean checkPurityAlways = false;
+            if (hasPurityAnnotation || checkPurityAlways) {
                 // check "no" purity
                 List<checkers.quals.Pure.Kind> kinds = PurityUtils
                         .getPurityKinds(atypeFactory, node);
@@ -299,9 +301,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         checker.report(Result.warning("pure.void.method"), node);
                     }
                 }
-                PurityResult r = PurityChecker.checkPurity(node, atypeFactory);
-                if (!r.isPure()) {
-                    r.reportErrors(checker, node);
+                PurityResult r = PurityChecker.checkPurity(node.getBody(), atypeFactory);
+                if (!r.isPure(kinds)) {
+                    r.reportErrors(checker, node, kinds);
                 }
             }
 
