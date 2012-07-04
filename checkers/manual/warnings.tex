@@ -305,7 +305,7 @@ on which it is built.)
 \subsection{Annotations in comments\label{annotations-in-comments}}
 
 A Java 4 compiler does not permit use of
-annotations, and a Java 5 compiler only permits annotations on
+annotations, and a Java 5/6/7 compiler only permits annotations on
 declarations (but not on generic arguments, casts, \<extends> clauses, method receiver, etc.).
 
 So that your code can be compiled by any Java compiler (for any version of
@@ -321,7 +321,7 @@ argument to \code{javac}, or if the \code{-source} argument is \code{1.8}
 or \code{8}.
 
 In a single program, you may write some annotations in comments, and others
-without comments.
+outside of comments.
 
 By default, the compiler ignores any comment that contains spaces at the
 beginning or end, or between the \code{@} and the annotation name.
