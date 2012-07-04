@@ -110,6 +110,10 @@ public class PurityChecker {
             notBothReasons = new ArrayList<>();
             types = EnumSet.allOf(Pure.Kind.class);
         }
+        
+        public EnumSet<Pure.Kind> getTypes() {
+            return types;
+        }
 
         /** Is the method pure w.r.t. a given set of types? */
         public boolean isPure(Collection<Kind> kinds) {
@@ -397,16 +401,13 @@ public class PurityChecker {
                 p.addNotBothReason("object creation with non-pure constructor");
             }
             PurityResult r = scan(node.getEnclosingExpression(), p);
-            r = scan(node.getIdentifier(), r);
-            r = scan(node.getTypeArguments(), r);
             r = scan(node.getArguments(), r);
             r = scan(node.getClassBody(), r);
             return r;
         }
 
         public PurityResult visitNewArray(NewArrayTree node, PurityResult p) {
-            PurityResult r = scan(node.getType(), p);
-            r = scan(node.getDimensions(), r);
+            PurityResult r = scan(node.getDimensions(), p);
             r = scan(node.getInitializers(), r);
             return r;
         }
