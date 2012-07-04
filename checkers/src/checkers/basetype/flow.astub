@@ -2,6 +2,20 @@ import checkers.quals.*;
 
 package java.lang;
 
+public final class Class {
+    @Pure public String getName();
+}
+
+public class Object {
+    @Pure public final Class<?> getClass();
+}
+
+public final class String {
+    @Pure public String intern();
+    @Pure public int lastIndexOf(int ch);
+    @Pure public String substring(int beginIndex);
+}
+
 public final class System {
     @TerminatesExecution public static void exit(int status);
 
