@@ -106,7 +106,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 							(ExpressionTree) varTree);
 			// receiverType is null for static field accesses
 			AnnotatedTypeMirror receiverType = atypeFactory
-					.getReceiver((ExpressionTree) varTree);
+					.getReceiverType((ExpressionTree) varTree);
 			if (receiverType != null && (receiverType.hasAnnotation(FREE)
 					|| receiverType.hasAnnotation(UNCLASSIFIED))) {
 				if (annos.hasAnnotation(NONNULL) && !valueType.hasAnnotation(NONNULL)) {
@@ -272,7 +272,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 	 *            the tree where the error is to reported
 	 */
 	private void checkForNullability(ExpressionTree tree,
-			@CompilerMessageKey String errMsg) {
+			/*@CompilerMessageKey*/ String errMsg) {
 		AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
 		if (!type.hasAnnotation(NONNULL))
 			checker.report(Result.failure(errMsg, tree), tree);
@@ -282,7 +282,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 	protected boolean checkMethodInvocability(AnnotatedExecutableType method,
 			MethodInvocationTree node) {
 		if (!TreeUtils.isSelfAccess(node)) {
-			Set<AnnotationMirror> recvAnnos = atypeFactory.getReceiver(node)
+			Set<AnnotationMirror> recvAnnos = atypeFactory.getReceiverType(node)
 					.getAnnotations();
 			// if receiver is Nullable, then we don't want to issue a warning
 			// about method invocability (we'd rather have only the

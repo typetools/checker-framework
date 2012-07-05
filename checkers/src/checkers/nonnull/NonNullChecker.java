@@ -2,7 +2,6 @@ package checkers.nonnull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -17,7 +16,6 @@ import checkers.nonnull.quals.Nullable;
 import checkers.nullness.quals.LazyNonNull;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
 
@@ -78,25 +76,6 @@ public class NonNullChecker extends CommitmentChecker {
 	@Override
 	public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
 		return new NonNullAnnotatedTypeFactory(this, root);
-	}
-
-	@Override
-	public boolean isValidUse(AnnotatedDeclaredType declarationType,
-			AnnotatedDeclaredType useType) {
-		Set<AnnotationMirror> annotations = useType.getAnnotations();
-		boolean ok = false;
-
-		// there needs to be exactly one non-null annotation
-		for (AnnotationMirror a : getNonNullAnnotations()) {
-			if (annotations.contains(a)) {
-				if (ok) {
-					return false;
-				}
-				ok = true;
-			}
-		}
-
-		return ok && super.isValidUse(declarationType, useType);
 	}
 
 	/**
