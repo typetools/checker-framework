@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import tests.ParameterizedCheckerTest;
+import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * JUnit tests for the NonNull checker.
