@@ -1,13 +1,12 @@
 package checkers.flow.analysis;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
+import java.util.PriorityQueue;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
@@ -21,6 +20,7 @@ import checkers.flow.cfg.block.Block;
 import checkers.flow.cfg.block.ConditionalBlock;
 import checkers.flow.cfg.block.ExceptionBlock;
 import checkers.flow.cfg.block.RegularBlock;
+import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
@@ -80,7 +80,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected Map<MethodInvocationNode, S> storesBeforeMethodInvocation;
 
     /** The worklist used for the fix-point iteration. */
-    protected Queue<Block> worklist;
+    protected Worklist worklist;
 
     /** Abstract values of nodes. */
     protected Map<Node, A> nodeValues;
@@ -198,6 +198,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
+                    store = new TransferInput<>(node, this, transferResult);
                     addStoreBefore(succ, store);
                 }
 
@@ -294,7 +295,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         stores = new HashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         storesBeforeMethodInvocation = new IdentityHashMap<>();
-        worklist = new ArrayDeque<>();
+        worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
         worklist.add(cfg.getEntryBlock());
 
@@ -342,6 +343,123 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         stores.put(b, newStoreBefore);
         if (storeBefore == null || !storeBefore.equals(newStoreBefore)) {
             addToWorklist(b);
+        }
+    }
+
+    /**
+     * A worklist that keeps track of blocks that still needs to be processed.
+     * The object implements a priority queue where blocks with the smallest
+     * number of incoming edges (from blocks that are also in the queue) are
+     * processed first. If the number of incoming edges is the same, then the
+     * block added to the worklist first is processed first.
+     */
+    protected static class Worklist {
+
+        /**
+         * A wrapper class for a block that tracks the in-edge count as well as
+         * an index (i.e., the creation time) for sorting in the priority queue.
+         */
+        protected static class Item implements Comparable<Item> {
+
+            public final Block block;
+            public int inEdgeCount = 0;
+            public final int index;
+            /** Static variable holding the index of the next item. */
+            protected static int currentIndex = 0;
+
+            public Item(Block block) {
+                this.block = block;
+                index = (currentIndex++);
+            }
+
+            @Override
+            public int compareTo(Item o) {
+                if (inEdgeCount == o.inEdgeCount) {
+                    return index - o.index;
+                }
+                return inEdgeCount - o.inEdgeCount;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof Item)) {
+                    return false;
+                }
+                return block.equals(((Item) obj).block);
+            }
+
+            @Override
+            public int hashCode() {
+                return block.hashCode();
+            }
+        }
+
+        /** The backing priority queue. */
+        protected PriorityQueue<Item> queue = new PriorityQueue<Item>();
+
+        /** Map for all blocks in the worklist to their item. */
+        protected Map<Block, Item> lookupMap = new IdentityHashMap<>();
+
+        public boolean isEmpty() {
+            return queue.isEmpty();
+        }
+
+        public boolean contains(Block o) {
+            return lookupMap.containsKey(o);
+        }
+
+        public void add(Block block) {
+            Item item = new Item(block);
+            lookupMap.put(block, item);
+            // Update inEdgeCounts.
+            for (Block succ : successors(block)) {
+                if (lookupMap.containsKey(succ)) {
+                    Item i = lookupMap.get(succ);
+                    // Remove and re-add the object to let the priority queue
+                    // know about the inEdgeCount update.
+                    queue.remove(i);
+                    i.inEdgeCount++;
+                    queue.add(i);
+                }
+            }
+            queue.add(item);
+        }
+
+        public Block poll() {
+            Item head = queue.poll();
+            if (head == null) {
+                return null;
+            }
+            Block block = head.block;
+            lookupMap.remove(block);
+            // Update inEdgeCounts.
+            for (Block succ : successors(block)) {
+                if (lookupMap.containsKey(succ)) {
+                    Item item = lookupMap.get(succ);
+                    // Remove and re-add the object to let the priority queue
+                    // know about the inEdgeCount update.
+                    queue.remove(item);
+                    item.inEdgeCount--;
+                    queue.add(item);
+                }
+            }
+            return block;
+        }
+
+        /** Returns the list of all successors of a given {@link Block}. */
+        public static List<Block> successors(Block block) {
+            List<Block> result = new ArrayList<>();
+            if (block instanceof ConditionalBlock) {
+                result.add(((ConditionalBlock) block).getThenSuccessor());
+                result.add(((ConditionalBlock) block).getElseSuccessor());
+            } else if (block instanceof SingleSuccessorBlock) {
+                result.add(((SingleSuccessorBlock) block).getSuccessor());
+            } else if (block instanceof ExceptionBlock) {
+                result.add(((ExceptionBlock) block).getSuccessor());
+                result.addAll(((ExceptionBlock) block)
+                        .getExceptionalSuccessors().values());
+            }
+            return result;
         }
     }
 
