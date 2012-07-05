@@ -8,7 +8,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.CommitmentAnnotatedTypeFactory;
@@ -21,25 +20,18 @@ import checkers.nonnull.quals.LazyNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.NonNullOnEntry;
 import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.Pure;
 import checkers.nullness.quals.Primitive;
 import checkers.quals.DefaultLocation;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypes;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
-import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 public class NonNullAnnotatedTypeFactory extends
         CommitmentAnnotatedTypeFactory<NonNullChecker> {
@@ -59,21 +51,31 @@ public class NonNullAnnotatedTypeFactory extends
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
 
-        addOurAlias(checkers.nullness.quals.AssertNonNullAfter.class,
-                AssertNonNullAfter.class);
-        addOurAlias(checkers.nullness.quals.AssertNonNullIfFalse.class,
-                AssertNonNullIfFalse.class);
-        addOurAlias(checkers.nullness.quals.AssertNonNullIfTrue.class,
-                AssertNonNullIfTrue.class);
-        addOurAlias(checkers.nullness.quals.AssertNonNullIfNonNull.class,
-                AssertNonNullIfNonNull.class);
-        addOurAlias(checkers.nullness.quals.AssertParametersNonNull.class,
-                AssertParametersNonNull.class);
-        addOurAlias(checkers.nullness.quals.Pure.class, Pure.class);
-        addOurAlias(checkers.nullness.quals.NonNullOnEntry.class,
-                NonNullOnEntry.class);
-        addOurAlias(checkers.nullness.quals.LazyNonNull.class,
-                LazyNonNull.class);
+        addAliasedDeclAnnotation(
+                checkers.nullness.quals.AssertNonNullAfter.class,
+                AssertNonNullAfter.class,
+                annotations.fromClass(AssertNonNullAfter.class));
+        addAliasedDeclAnnotation(
+                checkers.nullness.quals.AssertNonNullIfFalse.class,
+                AssertNonNullIfFalse.class,
+                annotations.fromClass(AssertNonNullIfFalse.class));
+        addAliasedDeclAnnotation(
+                checkers.nullness.quals.AssertNonNullIfTrue.class,
+                AssertNonNullIfTrue.class,
+                annotations.fromClass(AssertNonNullIfTrue.class));
+        addAliasedDeclAnnotation(
+                checkers.nullness.quals.AssertNonNullIfNonNull.class,
+                AssertNonNullIfNonNull.class,
+                annotations.fromClass(AssertNonNullIfNonNull.class));
+        addAliasedDeclAnnotation(
+                checkers.nullness.quals.AssertParametersNonNull.class,
+                AssertParametersNonNull.class,
+                annotations.fromClass(AssertParametersNonNull.class));
+        addAliasedDeclAnnotation(checkers.nullness.quals.NonNullOnEntry.class,
+                NonNullOnEntry.class,
+                annotations.fromClass(NonNullOnEntry.class));
+        addAliasedDeclAnnotation(checkers.nullness.quals.LazyNonNull.class,
+                LazyNonNull.class, annotations.fromClass(LazyNonNull.class));
 
         // aliases borrowed from NullnessAnnotatedTypeFactory
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
@@ -117,7 +119,7 @@ public class NonNullAnnotatedTypeFactory extends
         Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
         flowQuals.add(NONNULL);
         flowQuals.add(PRIMITIVE);
-        
+
         postInit();
     }
 
@@ -150,7 +152,7 @@ public class NonNullAnnotatedTypeFactory extends
                 // memberselects
                 el = TreeUtils.elementFromUse((MemberSelectTree) tree);
             }
-            if (getAliasedDeclAnnotation(el, LazyNonNull.class) != null) {
+            if (getDeclAnnotation(el, LazyNonNull.class) != null) {
                 changeAnnotationInOneHierarchy(type, NULLABLE);
             }
         }
@@ -209,7 +211,7 @@ public class NonNullAnnotatedTypeFactory extends
         }
     }
 
-    private boolean isSystemField(Element elt) {
+    private static boolean isSystemField(Element elt) {
         if (!elt.getKind().isField())
             return false;
 
@@ -228,7 +230,7 @@ public class NonNullAnnotatedTypeFactory extends
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    private boolean isExceptionParameter(IdentifierTree node) {
+    private static boolean isExceptionParameter(IdentifierTree node) {
         Element elt = TreeUtils.elementFromUse(node);
         assert elt != null;
         return elt.getKind() == ElementKind.EXCEPTION_PARAMETER;
