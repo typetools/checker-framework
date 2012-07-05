@@ -1,9 +1,7 @@
 package checkers.commitment;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,39 +41,12 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
 
     public CommitmentAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root) {
-        super(checker, root, false);
+        super(checker, root, true);
 
         COMMITTED = checker.COMMITTED;
         FREE = checker.FREE;
         UNCLASSIFIED = checker.UNCLASSIFIED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected void addOurAlias(Class<? extends Annotation> alias,
-            Class<? extends Annotation> canonical) {
-        if (!ourAliases.containsKey(canonical)) {
-            ourAliases.put(canonical, new HashSet<Class>());
-        }
-        ourAliases.get(canonical).add(alias);
-    }
-
-    public AnnotationMirror getAliasedDeclAnnotation(Element elt,
-            Class<? extends Annotation> annotationClass) {
-        AnnotationMirror anno = getDeclAnnotation(elt, annotationClass);
-        if (anno != null) {
-            return anno;
-        }
-        @SuppressWarnings("rawtypes")
-        Set<Class> set = ourAliases.get(annotationClass);
-        if (set != null) {
-            for (Class<? extends Annotation> alias : set) {
-                anno = getDeclAnnotation(elt, alias);
-                if (anno != null)
-                    break;
-            }
-        }
-        return anno;
     }
 
     public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
@@ -111,7 +82,7 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
             VariableTree var = (VariableTree) member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
             // var is not committed-only
-            if (getAliasedDeclAnnotation(varElt, NotOnlyCommitted.class) != null) {
+            if (getDeclAnnotation(varElt, NotOnlyCommitted.class) != null) {
                 // var is not static -- need a check of initializer blocks,
                 // not of constructor which is where this is used
                 if (!varElt.getModifiers().contains(Modifier.STATIC)) {
