@@ -14,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.NotOnlyCommitted;
-import checkers.nonnull.NonNullFlow;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -33,240 +32,234 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
-		extends BasicAnnotatedTypeFactory<Checker> {
+        extends BasicAnnotatedTypeFactory<Checker> {
 
-	/** The annotations */
-	public final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED,
-			NOT_ONLY_COMMITTED;
+    /** The annotations */
+    public final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED,
+            NOT_ONLY_COMMITTED;
 
-	protected NonNullFlow nnFlow;
+    @SuppressWarnings("rawtypes")
+    protected Map<Class, Set<Class>> ourAliases = new HashMap<>();
 
-	@SuppressWarnings("rawtypes")
-	protected Map<Class, Set<Class>> ourAliases = new HashMap<>();
+    public CommitmentAnnotatedTypeFactory(Checker checker,
+            CompilationUnitTree root) {
+        super(checker, root, false);
 
-	public CommitmentAnnotatedTypeFactory(Checker checker,
-			CompilationUnitTree root) {
-		super(checker, root, false);
+        COMMITTED = checker.COMMITTED;
+        FREE = checker.FREE;
+        UNCLASSIFIED = checker.UNCLASSIFIED;
+        NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
+    }
 
-		COMMITTED = checker.COMMITTED;
-		FREE = checker.FREE;
-		UNCLASSIFIED = checker.UNCLASSIFIED;
-		NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
-	}
+    @SuppressWarnings("rawtypes")
+    protected void addOurAlias(Class<? extends Annotation> alias,
+            Class<? extends Annotation> canonical) {
+        if (!ourAliases.containsKey(canonical)) {
+            ourAliases.put(canonical, new HashSet<Class>());
+        }
+        ourAliases.get(canonical).add(alias);
+    }
 
-	@SuppressWarnings("rawtypes")
-	protected void addOurAlias(Class<? extends Annotation> alias,
-			Class<? extends Annotation> canonical) {
-		if (!ourAliases.containsKey(canonical)) {
-			ourAliases.put(canonical, new HashSet<Class>());
-		}
-		ourAliases.get(canonical).add(alias);
-	}
+    public AnnotationMirror getAliasedDeclAnnotation(Element elt,
+            Class<? extends Annotation> annotationClass) {
+        AnnotationMirror anno = getDeclAnnotation(elt, annotationClass);
+        if (anno != null) {
+            return anno;
+        }
+        @SuppressWarnings("rawtypes")
+        Set<Class> set = ourAliases.get(annotationClass);
+        if (set != null) {
+            for (Class<? extends Annotation> alias : set) {
+                anno = getDeclAnnotation(elt, alias);
+                if (anno != null)
+                    break;
+            }
+        }
+        return anno;
+    }
 
-	public AnnotationMirror getAliasedDeclAnnotation(Element elt,
-			Class<? extends Annotation> annotationClass) {
-		AnnotationMirror anno = getDeclAnnotation(elt, annotationClass);
-		if (anno != null) {
-			return anno;
-		}
-		@SuppressWarnings("rawtypes")
-		Set<Class> set = ourAliases.get(annotationClass);
-		if (set != null) {
-			for (Class<? extends Annotation> alias : set) {
-				anno = getDeclAnnotation(elt, alias);
-				if (anno != null)
-					break;
-			}
-		}
-		return anno;
-	}
+    public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
+        return super.getAnnotatedType(tree);
+    }
 
-	public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
-		return super.getAnnotatedType(tree);
-	}
+    @Override
+    public AnnotatedDeclaredType getSelfType(Tree tree) {
+        AnnotatedDeclaredType selfType = super.getSelfType(tree);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+        // TODO: handle the case where 'this' is used in field initializer
+        if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
+            // NonNullFlow nonNullFlow = getFlow();
+            // if (nonNullFlow.doAllFieldsSatisfyInvariant(tree)
+            // && areAllFieldsCommittedOnly(tree)) {
+            // TODO add class frame type
+            // } else {
+            changeAnnotationInOneHierarchy(selfType, FREE);
+            // }
+        }
+        return selfType;
+    }
 
-	public NonNullFlow getFlow() {
-		return nnFlow;
-	}
+    // left in because it may be useful in the future for determining if you can
+    // safely apply class frame types
+    @SuppressWarnings("unused")
+    private boolean areAllFieldsCommittedOnly(Tree tree) {
+        ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
 
-	@Override
-	public AnnotatedDeclaredType getSelfType(Tree tree) {
-		AnnotatedDeclaredType selfType = super.getSelfType(tree);
-		MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
-		// TODO: handle the case where 'this' is used in field initializer
-		if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
-			// NonNullFlow nonNullFlow = getFlow();
-			// if (nonNullFlow.doAllFieldsSatisfyInvariant(tree)
-			// && areAllFieldsCommittedOnly(tree)) {
-			// TODO add class frame type
-			// } else {
-			changeAnnotationInOneHierarchy(selfType, FREE);
-			// }
-		}
-		return selfType;
-	}
+        for (Tree member : classTree.getMembers()) {
+            if (!member.getKind().equals(Tree.Kind.VARIABLE))
+                continue;
+            VariableTree var = (VariableTree) member;
+            VariableElement varElt = TreeUtils.elementFromDeclaration(var);
+            // var is not committed-only
+            if (getAliasedDeclAnnotation(varElt, NotOnlyCommitted.class) != null) {
+                // var is not static -- need a check of initializer blocks,
+                // not of constructor which is where this is used
+                if (!varElt.getModifiers().contains(Modifier.STATIC)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
-	// left in because it may be useful in the future for determining if you can
-	// safely apply class frame types
-	@SuppressWarnings("unused")
-	private boolean areAllFieldsCommittedOnly(Tree tree) {
-		ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>
+     * 
+     * In most cases, subclasses want to call this method first because it may
+     * clear all annotations and use the hierarchy's root annotations (as part
+     * of the call to postAsMemberOf).
+     * 
+     */
+    @Override
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        super.annotateImplicit(tree, type);
+    }
 
-		for (Tree member : classTree.getMembers()) {
-			if (!member.getKind().equals(Tree.Kind.VARIABLE))
-				continue;
-			VariableTree var = (VariableTree) member;
-			VariableElement varElt = TreeUtils.elementFromDeclaration(var);
-			// var is not committed-only
-			if (getAliasedDeclAnnotation(varElt, NotOnlyCommitted.class) != null) {
-				// var is not static -- need a check of initializer blocks,
-				// not of constructor which is where this is used
-				if (!varElt.getModifiers().contains(Modifier.STATIC)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+    /**
+     * {@inheritDoc}
+     * 
+     * <p>
+     * 
+     * In most cases, subclasses want to call this method first because it may
+     * clear all annotations and use the hierarchy's root annotations.
+     * 
+     */
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * <p>
-	 * 
-	 * In most cases, subclasses want to call this method first because it may
-	 * clear all annotations and use the hierarchy's root annotations (as part
-	 * of the call to postAsMemberOf).
-	 * 
-	 */
-	@Override
-	protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-		super.annotateImplicit(tree, type);
-	}
+    protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * <p>
-	 * 
-	 * In most cases, subclasses want to call this method first because it may
-	 * clear all annotations and use the hierarchy's root annotations.
-	 * 
-	 */
+    @Override
+    protected void postAsMemberOf(AnnotatedTypeMirror type,
+            AnnotatedTypeMirror owner, Element element) {
+        super.postAsMemberOf(type, owner, element);
 
-	protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
+        if (!HACK_DONT_CALL_POST_AS_MEMBER) {
+            if (element.getKind().isField()) {
+                Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
+                computeFieldAccessType(type, declaredFieldAnnotations, owner);
+            }
+        }
+    }
 
-	@Override
-	protected void postAsMemberOf(AnnotatedTypeMirror type,
-			AnnotatedTypeMirror owner, Element element) {
-		super.postAsMemberOf(type, owner, element);
+    /**
+     * Determine the type of a field access (implicit or explicit) based on the
+     * receiver type and the declared annotations for the field
+     * (committed-only).
+     * 
+     * @param type
+     *            Type of the field access expression.
+     * @param declaredFieldAnnotations
+     *            Annotations on the element.
+     * @param receiverType
+     *            Inferred annotations of the receiver.
+     */
+    private void computeFieldAccessType(AnnotatedTypeMirror type,
+            Collection<? extends AnnotationMirror> declaredFieldAnnotations,
+            AnnotatedTypeMirror receiverType) {
+        if (receiverType.hasAnnotation(UNCLASSIFIED)
+                || receiverType.hasAnnotation(FREE)) {
 
-		if (!HACK_DONT_CALL_POST_AS_MEMBER) {
-			if (element.getKind().isField()) {
-				Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
-				computeFieldAccessType(type, declaredFieldAnnotations, owner);
-			}
-		}
-	}
+            type.clearAnnotations();
+            type.addAnnotations(qualHierarchy.getRootAnnotations());
 
-	/**
-	 * Determine the type of a field access (implicit or explicit) based on the
-	 * receiver type and the declared annotations for the field
-	 * (committed-only).
-	 * 
-	 * @param type
-	 *            Type of the field access expression.
-	 * @param declaredFieldAnnotations
-	 *            Annotations on the element.
-	 * @param receiverType
-	 *            Inferred annotations of the receiver.
-	 */
-	private void computeFieldAccessType(AnnotatedTypeMirror type,
-			Collection<? extends AnnotationMirror> declaredFieldAnnotations,
-			AnnotatedTypeMirror receiverType) {
-		if (receiverType.hasAnnotation(UNCLASSIFIED)
-				|| receiverType.hasAnnotation(FREE)) {
+            if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
+                    NOT_ONLY_COMMITTED)) {
+                // add root annotation for all other hierarchies, and
+                // Committed for the commitment hierarchy
+                type.removeAnnotation(UNCLASSIFIED);
+                type.addAnnotation(COMMITTED);
+            }
+        }
+    }
 
-			type.clearAnnotations();
-			type.addAnnotations(qualHierarchy.getRootAnnotations());
+    @Override
+    protected TypeAnnotator createTypeAnnotator(Checker checker) {
+        return new CommitmentTypeAnnotator(checker);
+    }
 
-			if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
-					NOT_ONLY_COMMITTED)) {
-				// add root annotation for all other hierarchies, and
-				// Committed for the commitment hierarchy
-				type.removeAnnotation(UNCLASSIFIED);
-				type.addAnnotation(COMMITTED);
-			}
-		}
-	}
+    @Override
+    protected TreeAnnotator createTreeAnnotator(Checker checker) {
+        return new CommitmentTreeAnnotator(checker);
+    }
 
-	@Override
-	protected TypeAnnotator createTypeAnnotator(Checker checker) {
-		return new CommitmentTypeAnnotator(checker);
-	}
+    protected class CommitmentTypeAnnotator extends TypeAnnotator {
+        public CommitmentTypeAnnotator(BaseTypeChecker checker) {
+            super(checker);
+        }
+    }
 
-	@Override
-	protected TreeAnnotator createTreeAnnotator(Checker checker) {
-		return new CommitmentTreeAnnotator(checker);
-	}
+    protected class CommitmentTreeAnnotator extends TreeAnnotator {
 
-	protected class CommitmentTypeAnnotator extends TypeAnnotator {
-		public CommitmentTypeAnnotator(BaseTypeChecker checker) {
-			super(checker);
-		}
-	}
+        public CommitmentTreeAnnotator(BaseTypeChecker checker) {
+            super(checker, CommitmentAnnotatedTypeFactory.this);
+        }
 
-	protected class CommitmentTreeAnnotator extends TreeAnnotator {
+        @Override
+        public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
+            Void result = super.visitMethod(node, p);
+            if (TreeUtils.isConstructor(node)) {
+                assert p instanceof AnnotatedExecutableType;
+                AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
+                changeAnnotationInOneHierarchy(exeType.getReceiverType(), FREE);
+                // TODO: find out why this doesn't allow for this() constructor
+                // to be called from another constructor (the @Free annotation
+                // doesn't stay?)
+            }
+            return result;
+        }
 
-		public CommitmentTreeAnnotator(BaseTypeChecker checker) {
-			super(checker, CommitmentAnnotatedTypeFactory.this);
-		}
+        @Override
+        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
+            super.visitNewClass(node, p);
+            boolean allCommitted = true;
+            for (ExpressionTree a : node.getArguments()) {
+                allCommitted = allCommitted
+                        && getAnnotatedType(a).hasAnnotation(COMMITTED);
+            }
+            if (!allCommitted) {
+                changeAnnotationInOneHierarchy(p, FREE);
+            }
+            return null;
+        }
 
-		@Override
-		public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
-			Void result = super.visitMethod(node, p);
-			if (TreeUtils.isConstructor(node)) {
-				assert p instanceof AnnotatedExecutableType;
-				AnnotatedExecutableType exeType = (AnnotatedExecutableType)p;
-				changeAnnotationInOneHierarchy(exeType.getReceiverType(), FREE);
-				// TODO: find out why this doesn't allow for this() constructor 
-				// to be called from another constructor (the @Free annotation 
-				// doesn't stay?)
-			}
-			return result;
-		}
-		
-		@Override
-		public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-			super.visitNewClass(node, p);
-			boolean allCommitted = true;
-			for (ExpressionTree a : node.getArguments()) {
-				allCommitted = allCommitted
-						&& getAnnotatedType(a).hasAnnotation(COMMITTED);
-			}
-			if (!allCommitted) {
-				changeAnnotationInOneHierarchy(p, FREE);
-			}
-			return null;
-		}
+    }
 
-	}
-
-	/**
-	 * Replace the currently present annotation from the type hierarchy of a
-	 * from type and add a instead.
-	 * 
-	 * @param type
-	 *            The type to modify.
-	 * @param a
-	 *            The annotation that should be present afterwards.
-	 */
-	private void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
-			AnnotationMirror a) {
-		for (AnnotationMirror other : checker.getCommitmentAnnotations()) {
-			type.removeAnnotation(other);
-		}
-		type.addAnnotation(a);
-	}
+    /**
+     * Replace the currently present annotation from the type hierarchy of a
+     * from type and add a instead.
+     * 
+     * @param type
+     *            The type to modify.
+     * @param a
+     *            The annotation that should be present afterwards.
+     */
+    private void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
+            AnnotationMirror a) {
+        for (AnnotationMirror other : checker.getCommitmentAnnotations()) {
+            type.removeAnnotation(other);
+        }
+        type.addAnnotation(a);
+    }
 
 }
