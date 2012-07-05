@@ -115,12 +115,6 @@ public class NonNullAnnotatedTypeFactory extends
         localdef.add(NULLABLE);
         localdef.add(COMMITTED);
         defaults.setLocalVariableDefault(localdef);
-
-        Set<AnnotationMirror> flowQuals = new HashSet<AnnotationMirror>();
-        flowQuals.add(NONNULL);
-        flowQuals.add(PRIMITIVE);
-
-        postInit();
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
