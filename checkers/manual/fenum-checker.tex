@@ -28,10 +28,10 @@ doing so would break existing clients.  For example, Java's JDK still uses
 \code{int} constants in the AWT and Swing frameworks.
 %
 Another reason is performance, especially in environments with limited
-resources.  For example, the Android mobile phone platform
-\ahref{http://developer.android.com/guide/practices/design/performance.html\#avoid\_enums}{recommends}
-use of fake enums when only an integer value is needed, in order to reduce
-code size and run time.
+resources.  Use of an int instead of an object can 
+reduce memory requirements and run time.
+% Android no longer recommends use of ints instead of enums:  see
+% http://stackoverflow.com/questions/5143256/why-was-avoid-enums-where-you-only-need-ints-removed-from-androids-performanc
 
 In cases when code has to use the fake enum pattern, the fake enum (Fenum)
 checker gives the same safety guarantees as a true enumeration type. 
@@ -198,9 +198,6 @@ class FenumUser {
 
 \item Typesafe enum pattern:\\
   \ahrefurl{http://www.oracle.com/technetwork/java/page1-139488.html}
-
-\item Avoiding enums for performance:\\
-  \ahrefurl{http://developer.android.com/guide/practices/design/performance.html\#avoid\_enums}
 
 \item Java Tip 122: Beware of Java typesafe enumerations:\\
   \ahrefurl{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}
