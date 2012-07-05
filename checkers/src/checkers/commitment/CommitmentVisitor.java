@@ -190,7 +190,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             }
 
             // check that all fields satisfy invariant
-            Set<VariableElement> violatingFields = null; // TODO:nc
+            Set<VariableElement> violatingFields = Collections.emptySet(); // TODO:nc
             if (!violatingFields.isEmpty()) {
                 System.err.println("Uninitialized fields in "
                         + TreeUtils.enclosingClass(atypeFactory.getPath(node))
@@ -208,8 +208,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         if (TreeUtils.isConstructor(TreeUtils.enclosingMethod(atypeFactory
                 .getPath(node)))) {
             // check that all fields satisfy invariant
-            @SuppressWarnings("unchecked")
-            Set<VariableElement> violatingFields = null; // TODO:nc
+            Set<VariableElement> violatingFields = Collections.emptySet(); // TODO:nc
             if (!violatingFields.isEmpty()) {
                 System.err
                         .println("Uninitialized fields at return statement in "
