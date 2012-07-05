@@ -1,6 +1,8 @@
 package checkers.basetype;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -85,13 +87,10 @@ public class PurityChecker {
      * Check the method {@code method} whether it is pure of the type
      * {@code type}.
      */
-    public static PurityResult checkPurity(MethodTree method,
+    public static PurityResult checkPurity(Tree statement,
             AnnotatedTypeFactory atypeFactory) {
-        PurityCheckerHelper helper = new PurityCheckerHelper(method,
-                atypeFactory);
-        List<Kind> types = PurityUtils.getPurityKinds(atypeFactory, method);
-        PurityResult res = helper.scan(method.getBody(),
-                new PurityResult(types));
+        PurityCheckerHelper helper = new PurityCheckerHelper(atypeFactory);
+        PurityResult res = helper.scan(statement, new PurityResult());
         return res;
     }
 
@@ -103,72 +102,76 @@ public class PurityChecker {
         protected final List<String> notSeFreeReasons;
         protected final List<String> notDetReasons;
         protected final List<String> notBothReasons;
-        protected final List<Kind> types;
+        protected EnumSet<Pure.Kind> types;
 
-        public PurityResult(List<Kind> types) {
+        public PurityResult() {
             notSeFreeReasons = new ArrayList<>();
             notDetReasons = new ArrayList<>();
             notBothReasons = new ArrayList<>();
-            this.types = types;
+            types = EnumSet.allOf(Pure.Kind.class);
+        }
+        
+        public EnumSet<Pure.Kind> getTypes() {
+            return types;
         }
 
-        /** Is the method pure? */
-        public boolean isPure() {
-            return notSeFreeReasons.size() + notDetReasons.size()
-                    + notBothReasons.size() == 0;
+        /** Is the method pure w.r.t. a given set of types? */
+        public boolean isPure(Collection<Kind> kinds) {
+            return types.containsAll(kinds);
         }
 
         /**
-         * Add {@code reason} as a reason why the method is not side-effect free
-         * (if applicable).
+         * Add {@code reason} as a reason why the method is not side-effect
+         * free.
          */
         public void addNotSeFreeReason(String reason) {
-            if (types.contains(Kind.SIDE_EFFECT_FREE)) {
-                notSeFreeReasons.add(reason);
-            }
+            notSeFreeReasons.add(reason);
+            types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
-         * Add {@code reason} as a reason why the method is not deterministic
-         * (if applicable).
+         * Add {@code reason} as a reason why the method is not deterministic.
          */
         public void addNotDetReason(String reason) {
-            if (types.contains(Kind.DETERMINISTIC)) {
-                notDetReasons.add(reason);
-            }
+            notDetReasons.add(reason);
+            types.remove(Kind.DETERMINISTIC);
         }
 
         /**
          * Add {@code reason} as a reason why the method is not both side-effect
-         * free and deterministic (if applicable).
+         * free and deterministic.
          */
         public void addNotBothReason(String reason) {
-            if (types.contains(Kind.DETERMINISTIC)
-                    && types.contains(Kind.SIDE_EFFECT_FREE)) {
-                notBothReasons.add(reason);
-            } else {
-                addNotSeFreeReason(reason);
-                addNotDetReason(reason);
-            }
+            notBothReasons.add(reason);
+            types.remove(Kind.DETERMINISTIC);
+            types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
          * Report all errors encountered.
          */
-        public void reportErrors(BaseTypeChecker checker, MethodTree node) {
-            assert !isPure();
-            if (!notBothReasons.isEmpty()) {
+        public void reportErrors(BaseTypeChecker checker, MethodTree node,
+                Collection<Pure.Kind> expectedTypes) {
+            assert !isPure(expectedTypes);
+            Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);  
+            t.removeAll(types);
+            if (t.contains(Kind.DETERMINISTIC)
+                    && t.contains(Kind.SIDE_EFFECT_FREE)) {
                 checker.report(Result.failure(
                         "pure.not.deterministic.and.sideeffect.free",
                         errorList(notBothReasons)), node);
             }
-            if (!notSeFreeReasons.isEmpty()) {
+            else if (t.contains(Kind.SIDE_EFFECT_FREE)) {
+                List<String> errors = new ArrayList<>(notSeFreeReasons);
+                errors.addAll(notBothReasons);
                 checker.report(Result.failure("pure.not.sideeffect.free",
-                        errorList(notSeFreeReasons)), node);
+                        errorList(errors)), node);
             }
-            if (!notDetReasons.isEmpty()) {
+            else if (t.contains(Kind.DETERMINISTIC)) {
+                List<String> errors = new ArrayList<>(notDetReasons);
+                errors.addAll(notBothReasons);
                 checker.report(Result.failure("pure.not.deterministic",
-                        errorList(notDetReasons)), node);
+                        errorList(errors)), node);
             }
         }
 
@@ -197,13 +200,10 @@ public class PurityChecker {
             TreeVisitor<PurityResult, PurityResult> {
 
         protected final AnnotatedTypeFactory atypeFactory;
-        protected final MethodTree method;
         protected/* @Nullable */List<Element> methodParameter;
 
-        public PurityCheckerHelper(MethodTree method,
-                AnnotatedTypeFactory atypeFactory) {
+        public PurityCheckerHelper(AnnotatedTypeFactory atypeFactory) {
             this.atypeFactory = atypeFactory;
-            this.method = method;
         }
 
         /**
@@ -401,16 +401,13 @@ public class PurityChecker {
                 p.addNotBothReason("object creation with non-pure constructor");
             }
             PurityResult r = scan(node.getEnclosingExpression(), p);
-            r = scan(node.getIdentifier(), r);
-            r = scan(node.getTypeArguments(), r);
             r = scan(node.getArguments(), r);
             r = scan(node.getClassBody(), r);
             return r;
         }
 
         public PurityResult visitNewArray(NewArrayTree node, PurityResult p) {
-            PurityResult r = scan(node.getType(), p);
-            r = scan(node.getDimensions(), r);
+            PurityResult r = scan(node.getDimensions(), p);
             r = scan(node.getInitializers(), r);
             return r;
         }
