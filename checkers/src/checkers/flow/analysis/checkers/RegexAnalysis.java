@@ -26,8 +26,8 @@ public class RegexAnalysis extends
     }
 
     @Override
-    protected CFStore createEmptyStore() {
-        return new CFStore(this);
+    protected CFStore createEmptyStore(boolean sequentialSemantics) {
+        return new CFStore(this, sequentialSemantics);
     }
 
     @Override
