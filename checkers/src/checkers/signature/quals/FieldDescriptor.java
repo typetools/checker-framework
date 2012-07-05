@@ -9,7 +9,7 @@ import checkers.quals.TypeQualifier;
 
 /**
  * Represents a field descriptor (JVM type format) as defined in the <a
- * href="http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#14152">Java Virtual Machine Specification, section 4.3.2</a>.
+ * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2">Java Virtual Machine Specification, section 4.3.2</a>.
  * <p>
  * For example, in
  * <pre>
