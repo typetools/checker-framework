@@ -1,6 +1,9 @@
 package checkers.basetype;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -277,31 +280,48 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            if (PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
+            boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
+            boolean checkPurityAlways = atypeFactory.getEnv().getOptions().containsKey("suggestPureMethods");
+            if (hasPurityAnnotation || checkPurityAlways) {
                 // check "no" purity
                 List<checkers.quals.Pure.Kind> kinds = PurityUtils
                         .getPurityKinds(atypeFactory, node);
-                if (kinds.isEmpty()) {
+                if (kinds.isEmpty() && hasPurityAnnotation) {
                     checker.report(
                             Result.warning("pure.annotation.with.emtpy.kind"),
                             node);
                 }
                 if (TreeUtils.isConstructor(node)) {
                     // constructors cannot be deterministic
-                    if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
+                    if (kinds.contains(Pure.Kind.DETERMINISTIC) && hasPurityAnnotation) {
                         checker.report(
                                 Result.failure("pure.determinstic.constructor"),
                                 node);
                     }
                 } else {
                     // check return type
-                    if (node.getReturnType().toString().equals("void")) {
+                    if (node.getReturnType().toString().equals("void") && hasPurityAnnotation) {
                         checker.report(Result.warning("pure.void.method"), node);
                     }
                 }
-                PurityResult r = PurityChecker.checkPurity(node, atypeFactory);
-                if (!r.isPure()) {
-                    r.reportErrors(checker, node);
+                // Report errors if necessary.
+                PurityResult r = PurityChecker.checkPurity(node.getBody(), atypeFactory);
+                if (!r.isPure(kinds)) {
+                    r.reportErrors(checker, node, kinds);
+                }
+                // Issue a warning if the method is pure, but not annotated as such (if the feature is activated).
+                if (checkPurityAlways) {
+                    Collection<Pure.Kind> additionalKinds = new HashSet<>(
+                            r.getTypes());
+                    additionalKinds.removeAll(kinds);
+                    if (TreeUtils.isConstructor(node)) {
+                        additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                    }
+                    if (additionalKinds.size() > 0) {
+                        checker.report(Result.warning("pure.more.pure",
+                                node.getName(), additionalKinds.toString()),
+                                node);
+                    }
                 }
             }
 
