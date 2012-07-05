@@ -11,7 +11,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
-import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.AssertNonNullIfFalse;
 import checkers.nonnull.quals.AssertNonNullIfTrue;
 import checkers.nonnull.quals.LazyNonNull;
@@ -92,7 +91,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 				el = TreeUtils.elementFromUse((MemberSelectTree) varTree);
 			}
 			// special case writing to LazyNonNull
-			if (getNonNullFactory().getAliasedDeclAnnotation(el,
+			if (getNonNullFactory().getDeclAnnotation(el,
 					LazyNonNull.class) != null) {
 				if (!valueType.hasAnnotation(NONNULL)) {
 					checker.report(Result.failure(LAZYNONNULL_NULL_ASSIGNMENT,
@@ -174,14 +173,14 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 	@Override
 	public Void visitMethod(MethodTree node, Void p) {
 		ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
-		if (getNonNullFactory().getAliasedDeclAnnotation(elt,
+		if (getNonNullFactory().getDeclAnnotation(elt,
 				AssertNonNullIfTrue.class) != null
 				&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
 			checker.report(Result.failure(ASSERTIFTRUE_ONLY_ON_BOOLEAN), node);
 		}
 
-		if (getNonNullFactory().getAliasedDeclAnnotation(elt,
+		if (getNonNullFactory().getDeclAnnotation(elt,
 				AssertNonNullIfFalse.class) != null
 				&& elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
 
@@ -322,7 +321,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 	/**
 	 * @return true if the type of the tree is a primitive
 	 */
-	private final boolean isPrimitive(ExpressionTree tree) {
+	private static final boolean isPrimitive(ExpressionTree tree) {
 		return InternalUtils.typeOf(tree).getKind().isPrimitive();
 	}
 
