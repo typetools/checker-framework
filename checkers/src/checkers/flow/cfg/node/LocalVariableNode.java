@@ -20,9 +20,9 @@ import com.sun.source.tree.VariableTree;
  *   <em>identifier</em>
  * </pre>
  * 
- * We allow local variable uses introduced by the {@link CFGBuilder}
- * without corresponding AST {@link Tree}s.
- *
+ * We allow local variable uses introduced by the {@link CFGBuilder} without
+ * corresponding AST {@link Tree}s.
+ * 
  * @author Stefan Heule
  * 
  */
@@ -70,11 +70,7 @@ public class LocalVariableNode extends Node {
 
     @Override
     public String toString() {
-        if (lvalue) {
-            return getName().toString() + " (lval)";
-        } else {
-            return getName().toString();
-        }
+        return getName().toString();
     }
 
     @Override
