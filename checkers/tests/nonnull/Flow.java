@@ -32,7 +32,7 @@ public class Flow {
 		}
 	}
 	
-	void foo() @Unclassified {}
+	void foo(@Unclassified Flow this) {}
 	
 	// TODO Pure, etc.
 }
