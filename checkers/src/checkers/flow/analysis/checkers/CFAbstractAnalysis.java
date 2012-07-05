@@ -112,7 +112,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return An empty store of the appropriate type.
      */
-    protected abstract S createEmptyStore();
+    protected abstract S createEmptyStore(boolean sequentialSemantics);
 
     /**
      * @return An identical copy of the store {@code s}.

@@ -49,14 +49,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected Map<FlowExpressions.FieldAccess, V> fieldValues;
 
+    /**
+     * Should the analysis use sequential Java semantics (i.e., assume that only
+     * one thread is running at all times)?
+     */
+    protected final boolean sequentialSemantics;
+
     /* --------------------------------------------------------- */
     /* Initialization */
     /* --------------------------------------------------------- */
 
-    public CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis) {
+    public CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis,
+            boolean sequentialSemantics) {
         this.analysis = analysis;
         localVariableValues = new HashMap<>();
         fieldValues = new HashMap<>();
+        this.sequentialSemantics = sequentialSemantics;
     }
 
     /** Copy constructor. */
@@ -64,6 +72,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         this.analysis = other.analysis;
         localVariableValues = new HashMap<>(other.localVariableValues);
         fieldValues = new HashMap<>(other.fieldValues);
+        sequentialSemantics = other.sequentialSemantics;
     }
 
     /**
@@ -155,11 +164,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
-            V oldValue = fieldValues.get(fieldAcc);
-            if (oldValue == null || value.isSubtypeOf(oldValue)) {
-                fieldValues.put(fieldAcc, value);
-            } else {
-                fieldValues.put(fieldAcc, oldValue);
+            // Only store information about final fields (where the receiver is
+            // also fixed) if concurrent semantics are enabled.
+            if (sequentialSemantics || fieldAcc.isUnmodifiableByOtherCode()) {
+                V oldValue = fieldValues.get(fieldAcc);
+                if (oldValue == null || value.isSubtypeOf(oldValue)) {
+                    fieldValues.put(fieldAcc, value);
+                } else {
+                    fieldValues.put(fieldAcc, oldValue);
+                }
             }
         } else {
             assert false;
@@ -208,7 +221,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 .internalReprOfFieldAccess(n);
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
-            fieldValues.put(fieldAccess, val);
+            // Only store information about final fields (where the receiver is
+            // also fixed) if concurrent semantics are enabled.
+            if (sequentialSemantics || fieldAccess.isUnmodifiableByOtherCode()) {
+                fieldValues.put(fieldAccess, val);
+            }
         }
     }
 
@@ -377,7 +394,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     @Override
     public S leastUpperBound(S other) {
-        S newStore = analysis.createEmptyStore();
+        S newStore = analysis.createEmptyStore(sequentialSemantics);
 
         for (Entry<Element, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
