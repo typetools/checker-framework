@@ -732,14 +732,25 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         boolean success = checker.isSubtype(valueType, varType);
 
         if (options.containsKey("showchecks")) {
+            // In case of failure, if both types as strings are the same, try outputting
+            // the type including also invisible qualifiers.
+            // This usually means there is a mistake in type defaulting.
+            // This code is therefore not covered by a test.
+            String valueTypeString = valueType.toString();
+            String varTypeString = varType.toString();
+            if (!success && valueTypeString.equals(varTypeString)) {
+                valueTypeString = valueType.toString(true);
+                varTypeString = varType.toString(true);
+            }
+
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     (success ? "success: actual is subtype of expected" : "FAILURE: actual is not subtype of expected"),
                     root.getLineMap().getLineNumber(valuePos),
                     valueTree.getKind(), valueTree,
-                    valueType.getKind(), valueType,
-                    varType.getKind(), varType);
+                    valueType.getKind(), valueTypeString,
+                    varType.getKind(), varTypeString);
         }
 
         // Use an error key only if it's overridden by a checker.

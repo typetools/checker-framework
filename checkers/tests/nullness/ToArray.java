@@ -18,8 +18,9 @@ public class ToArray {
         for (@Nullable String o : nullableList.toArray(new @Nullable String[0]));
         //:: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableList.toArray(new @Nullable String[0]));    // error
+        //:: error: (argument.type.incompatible)
         for (@Nullable String o : nullableList.toArray(new @NonNull String[0]));
-        //:: error: (enhancedfor.type.incompatible)
+        //:: error: (enhancedfor.type.incompatible) :: error: (argument.type.incompatible)
         for (@NonNull String o : nullableList.toArray(new @NonNull String[0]));
 
         for (@Nullable String o : nonnullList.toArray(new String[0]));
@@ -46,8 +47,9 @@ public class ToArray {
         for (@Nullable String o : nullableCol.toArray(new @Nullable String[0]));
         //:: error: (enhancedfor.type.incompatible)
         for (@NonNull String o : nullableCol.toArray(new @Nullable String[0])); // error
+        //:: error: (argument.type.incompatible)
         for (@Nullable String o : nullableCol.toArray(new @NonNull String[0]));
-        //:: error: (enhancedfor.type.incompatible)
+        //:: error: (enhancedfor.type.incompatible) :: error: (argument.type.incompatible)
         for (@NonNull String o : nullableCol.toArray(new @NonNull String[0]));  // error
 
         for (@Nullable String o : nonnullCol.toArray(new String[0]));
