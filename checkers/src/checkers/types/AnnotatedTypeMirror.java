@@ -588,13 +588,16 @@ public abstract class AnnotatedTypeMirror {
     }
 
     // A Helper method to print annotations separated with a space
-    protected final static String formatAnnotationString(ProcessingEnvironment env, Collection<? extends AnnotationMirror> lst) {
+    protected final static String formatAnnotationString(ProcessingEnvironment env,
+            Collection<? extends AnnotationMirror> lst,
+            boolean printInvisible) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : lst) {
             if (obj==null) {
                 throw new SourceChecker.CheckerError("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
             if (isInvisibleQualified(obj) &&
+                    !printInvisible &&
                     !env.getOptions().containsKey("printAllQualifiers")) {
                 continue;
             }
@@ -615,13 +618,24 @@ public abstract class AnnotatedTypeMirror {
     }
 
     @Override
-    public String toString() {
-        return formatAnnotationString(env, getAnnotations())
+    public final String toString() {
+        return toString(false);
+    }
+
+    /**
+     * A version of toString() that optionally outputs all type qualifiers,
+     * including @InvisibleQualifier's.
+     *
+     * @param invisible Whether to always output invisible qualifiers.
+     * @return A string representation of the current type containing all qualifiers.
+     */
+    public String toString(boolean invisible) {
+        return formatAnnotationString(env, getAnnotations(), invisible)
                 + this.actualType;
     }
 
     public String toStringDebug() {
-        return toString() + " " + getClass().getSimpleName() + "#" + uid;
+        return toString(true) + " " + getClass().getSimpleName() + "#" + uid;
     }
 
     /**
@@ -739,12 +753,12 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public String toString() {
+        public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (!smpl.isEmpty()) {
-                sb.append(formatAnnotationString(env, getAnnotations()));
+                sb.append(formatAnnotationString(env, getAnnotations(), printInvisible));
                 sb.append(smpl);
             } else {
                 // The simple name is empty for multiple upper bounds.
@@ -1198,7 +1212,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public String toString() {
+        public String toString(boolean printInvisible) {
+            // TODO: pass printInvisible to all components
             return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
                 + getReturnType()
                 + (getParameterTypes().isEmpty() ? " ()" : " (" + getParameterTypes() + ")")
@@ -1288,7 +1303,7 @@ public abstract class AnnotatedTypeMirror {
 
         }
 
-        public String toStringAsCanonical() {
+        public String toStringAsCanonical(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
 
             AnnotatedArrayType array = this;
@@ -1297,12 +1312,12 @@ public abstract class AnnotatedTypeMirror {
                 component = array.getComponentType();
                 if (array.getAnnotations().size() > 0) {
                     sb.append(' ');
-                    sb.append(formatAnnotationString(env, array.getAnnotations()).trim());
+                    sb.append(formatAnnotationString(env, array.getAnnotations(), printInvisible).trim());
                     sb.append(' ');
                 }
                 sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
-                    sb.insert(0, component.toString());
+                    sb.insert(0, component.toString(printInvisible));
                     break;
                 }
                 array = (AnnotatedArrayType) component;
@@ -1311,8 +1326,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public String toString() {
-            return toStringAsCanonical();
+        public String toString(boolean printInvisible) {
+            return toStringAsCanonical(printInvisible);
         }
     }
 
@@ -1653,9 +1668,9 @@ public abstract class AnnotatedTypeMirror {
         // Style taken from Type
         boolean isPrintingBound = false;
         @Override
-        public String toString() {
+        public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(env, annotations));
+            sb.append(formatAnnotationString(env, annotations, printInvisible));
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
@@ -1786,10 +1801,12 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public String toString() {
-            // This output is not helpful if there is a (non-default) annotation.
-            // return formatAnnotationString(getAnnotations()) + "null";
-            return "null";
+        public String toString(boolean printInvisible) {
+            if (printInvisible) {
+                return formatAnnotationString(env, getAnnotations(), printInvisible) + " null";
+            } else {
+                return "null";
+            }
         }
     }
 
@@ -2021,9 +2038,9 @@ public abstract class AnnotatedTypeMirror {
 
         boolean isPrintingBound = false;
         @Override
-        public String toString() {
+        public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(env, annotations));
+            sb.append(formatAnnotationString(env, annotations, printInvisible));
             sb.append("?");
             if (!isPrintingBound) {
                 try {
