@@ -28,8 +28,9 @@ class UnannoPrimitives {
     String strDate = "/" + year;
   }
 
-  //:: error: (type.invalid)
+  //:: error: (type.invalid) :: error: (assignment.type.incompatible)
   @Nullable byte[] d1 = {4};
+  byte @Nullable [] d1b = {4};
 
   @SuppressWarnings("ha!") byte[] d2 = {4};
 }
