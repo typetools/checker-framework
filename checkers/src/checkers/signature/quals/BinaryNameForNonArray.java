@@ -9,7 +9,7 @@ import checkers.quals.TypeQualifier;
 
 /**
  * Represents a {@link BinaryName binary name} as defined in the <a
- * href="http://java.sun.com/docs/books/jls/third_edition/html/binaryComp.html#13.1">Java
+ * href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1">Java
  * Language Specification, section 13.1</a>, but only for a non-array type.
  * <p>
  * Not to be used by the programmer, only used internally.
