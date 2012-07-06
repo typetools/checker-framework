@@ -667,11 +667,11 @@ public class TypeFromElement {
 
     // Dealing with arrays requires much testing
     private static AnnotatedTypeMirror getLocationTypeAAT(AnnotatedArrayType type, List<Integer> location) {
-        if (location.size() == 1) {
+        if (location.size() >= 1) {
             int arrayIndex = location.get(0);
             List<AnnotatedTypeMirror> arrays = createArraysList(type);
             if (arrayIndex < arrays.size()) {
-                return arrays.get(arrayIndex);
+                return getLocationTypeATM(arrays.get(arrayIndex), tail(location));
             } else {
                 throw new CheckerError("TypeFromElement.annotateAAT: " +
                         "invalid location " + location + " for type: " + type);
