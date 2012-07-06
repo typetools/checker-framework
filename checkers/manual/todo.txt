@@ -54,6 +54,20 @@ practical:
    would be undesirable to mimic a feature that is sound only in the
    presence of run-time checking.
 
+-----
+An example issue with un-annotated code, for the Regex Checker:
+
+String[] sa = {"hi"};
+
+We infer that "hi" is a "@Regex String" and therefore the RHS has type
+"@Regex String[]". With invariant subtyping, the assignment is now
+invalid.
+The solution is to change the declared type to:
+
+@Regex String[] sa = ...;
+
+Explain this issue in the manual.
+
 ===========================================================================
 
 Concurrency:
