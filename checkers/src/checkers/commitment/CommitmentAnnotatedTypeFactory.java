@@ -225,8 +225,16 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
      * @param a
      *            The annotation that should be present afterwards.
      */
-    private void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
+    protected void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
             AnnotationMirror a) {
+        // Is this different from
+        //   type.removeAnnotationInHierarchy(a)
+        //   type.addAnnotation(a)
+        // Instead of these two steps, should we introduce
+        //   type.replaceAnnotation(a)
+        // ?
+        // Also, this code only removes commitment annotations, which
+        // is not clear from the documentation.
         for (AnnotationMirror other : checker.getCommitmentAnnotations()) {
             type.removeAnnotation(other);
         }
