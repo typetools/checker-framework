@@ -1,9 +1,6 @@
 package checkers.commitment;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -13,7 +10,6 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.NotOnlyCommitted;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -36,9 +32,6 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
     public final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED,
             NOT_ONLY_COMMITTED;
 
-    @SuppressWarnings("rawtypes")
-    protected Map<Class, Set<Class>> ourAliases = new HashMap<>();
-
     public CommitmentAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root) {
         super(checker, root, true);
@@ -51,23 +44,6 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
 
     public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
         return super.getAnnotatedType(tree);
-    }
-
-    @Override
-    public AnnotatedDeclaredType getSelfType(Tree tree) {
-        AnnotatedDeclaredType selfType = super.getSelfType(tree);
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
-        // TODO: handle the case where 'this' is used in field initializer
-        if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
-            // NonNullFlow nonNullFlow = getFlow();
-            // if (nonNullFlow.doAllFieldsSatisfyInvariant(tree)
-            // && areAllFieldsCommittedOnly(tree)) {
-            // TODO add class frame type
-            // } else {
-            changeAnnotationInOneHierarchy(selfType, FREE);
-            // }
-        }
-        return selfType;
     }
 
     // left in because it may be useful in the future for determining if you can
@@ -227,18 +203,7 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
      */
     protected void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
             AnnotationMirror a) {
-        // Is this different from
-        //   type.removeAnnotationInHierarchy(a)
-        //   type.addAnnotation(a)
-        // Instead of these two steps, should we introduce
-        //   type.replaceAnnotation(a)
-        // ?
-        // Also, this code only removes commitment annotations, which
-        // is not clear from the documentation.
-        for (AnnotationMirror other : checker.getCommitmentAnnotations()) {
-            type.removeAnnotation(other);
-        }
+        type.removeAnnotationInHierarchy(a);
         type.addAnnotation(a);
     }
-
 }
