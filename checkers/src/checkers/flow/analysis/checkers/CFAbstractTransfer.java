@@ -78,8 +78,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected CFAbstractAnalysis<V, S, T> analysis;
 
+    /**
+     * Should the analysis use sequential Java semantics (i.e., assume that only
+     * one thread is running at all times)?
+     */
+    protected final boolean sequentialSemantics;
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
+        this.sequentialSemantics = !analysis.factory.getEnv().getOptions()
+                .containsKey("concurrentSemantics");
     }
 
     /**
@@ -112,7 +120,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     @Override
     public S initialStore(UnderlyingAST underlyingAST, /* @Nullable */
             List<LocalVariableNode> parameters) {
-        S info = analysis.createEmptyStore();
+        S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {
             AnnotatedTypeFactory factory = analysis.getFactory();
@@ -129,16 +137,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
             addInformationFromPreconditions(info, factory, method, methodTree,
                     methodElem);
-            
+
             // Add knowledge about final fields.
-            List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
+            List<Pair<VariableElement, V>> fieldValues = analysis
+                    .getFieldValues();
             for (Pair<VariableElement, V> p : fieldValues) {
                 VariableElement element = p.first;
                 V value = p.second;
                 if (ElementUtils.isFinal(element)) {
-                    TypeMirror type = InternalUtils.typeOf(method.getClassTree());
-                    Receiver field = new FieldAccess(new ThisReference(type), type, element);
-                    info.insertValue(field , value);
+                    TypeMirror type = InternalUtils.typeOf(method
+                            .getClassTree());
+                    Receiver field = new FieldAccess(new ThisReference(type),
+                            type, element);
+                    info.insertValue(field, value);
                 }
             }
         }

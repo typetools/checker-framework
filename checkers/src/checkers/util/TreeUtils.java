@@ -74,6 +74,55 @@ public final class TreeUtils {
 
         return false;
     }
+    
+    /**
+     * Returns true if the tree is a tree that 'looks like' either an access
+     * of a field or an invokation of a method that are owned by the same
+     * accessing instance.
+     *
+     * It would only return true if the access tree is of the form:
+     * <pre>
+     *   field
+     *   this.field
+     *
+     *   method()
+     *   this.method()
+     * </pre>
+     *
+     * It does not perform any semantical check to differentiate between
+     * fields and local variables; local methods or imported static methods.
+     *
+     * @param tree  expression tree representing an access to object member
+     * @return {@code true} iff the member is a member of {@code this} instance
+     */
+    public static boolean isSelfAccess(final ExpressionTree tree) {
+        ExpressionTree tr = TreeUtils.skipParens(tree);
+        // If method invocation check the method select
+        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
+            return false;
+
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            tr = ((MethodInvocationTree)tree).getMethodSelect();
+        }
+        tr = TreeUtils.skipParens(tr);
+        if (tr.getKind() == Tree.Kind.TYPE_CAST)
+            tr = ((TypeCastTree)tr).getExpression();
+        tr = TreeUtils.skipParens(tr);
+
+        if (tr.getKind() == Tree.Kind.IDENTIFIER)
+            return true;
+
+        if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
+            tr = ((MemberSelectTree)tr).getExpression();
+            if (tr.getKind() == Tree.Kind.IDENTIFIER) {
+                Name ident = ((IdentifierTree)tr).getName();
+                return ident.contentEquals("this") ||
+                        ident.contentEquals("super");
+            }
+        }
+
+        return false;
+    }
 
 
     /**
