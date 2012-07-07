@@ -155,23 +155,6 @@ public class NonNullAnnotatedTypeFactory extends
         super.annotateImplicit(tree, type);
     }
 
-    /**
-     * Replace the currently present annotation from the type hierarchy of a
-     * from type and add a instead.
-     * 
-     * @param type
-     *            The type to modify.
-     * @param a
-     *            The annotation that should be present afterwards.
-     */
-    private void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
-            AnnotationMirror a) {
-        for (AnnotationMirror other : checker.getNonNullAnnotations()) {
-            type.removeAnnotation(other);
-        }
-        type.addAnnotation(a);
-    }
-
     @Override
     protected TypeAnnotator createTypeAnnotator(NonNullChecker checker) {
         return new NonNullTypeAnnotator(checker);
