@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.AssertNonNullIfFalse;
 import checkers.nonnull.quals.AssertNonNullIfTrue;
 import checkers.nonnull.quals.LazyNonNull;
