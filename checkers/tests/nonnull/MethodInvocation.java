@@ -32,9 +32,8 @@ class MethodInvocation {
 		s.hashCode();
 	}
 	
-	public void c() {
+	public void c(@Unclassified MethodInvocation this) {
 		//:: error: (dereference.of.nullable)
-		s.hashCode(@Unclassified MethodInvocation this);
+		s.hashCode();
 	}
-	
 }
