@@ -62,6 +62,12 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         // check is necessary
         return true;
     }
+    
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        return true;
+    }
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
