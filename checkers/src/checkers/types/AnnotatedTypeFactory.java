@@ -256,7 +256,7 @@ public class AnnotatedTypeFactory {
     // **********************************************************************
 
     /** Should results be cached? Disable for better debugging. */
-    private final static boolean SHOULD_CACHE = true;
+    protected static boolean SHOULD_CACHE = true;
 
     /** Size of LRU cache. */
     private final static int CACHE_SIZE = 300;
@@ -1812,6 +1812,26 @@ public class AnnotatedTypeFactory {
 
         // Not found in either location
         return null;
+    }
+    
+    /**
+     * Returns all of the actual annotation mirrors used to annotate this type
+     * (includes stub files).
+     */
+    public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
+        Set<AnnotationMirror> results = new HashSet<AnnotationMirror>();
+
+        // First look in the stub files.
+        String eltName = ElementUtils.getVerboseName(elt);
+        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (stubAnnos != null) {
+            results.addAll(stubAnnos);
+        }
+
+        // Then look at the real annotations.
+        results.addAll(elt.getAnnotationMirrors());
+
+        return results;
     }
 
     /**

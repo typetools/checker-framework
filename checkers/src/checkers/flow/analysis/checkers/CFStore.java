@@ -8,8 +8,8 @@ package checkers.flow.analysis.checkers;
  */
 public class CFStore extends CFAbstractStore<CFValue, CFStore> {
 
-    public CFStore(CFAbstractAnalysis<CFValue, CFStore, ?> analysis) {
-        super(analysis);
+    public CFStore(CFAbstractAnalysis<CFValue, CFStore, ?> analysis, boolean sequentialSemantics) {
+        super(analysis, sequentialSemantics);
     }
 
     public CFStore(CFAbstractAnalysis<CFValue, CFStore, ?> analysis,

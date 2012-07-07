@@ -2967,7 +2967,7 @@ public class CFGBuilder {
 
                 assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
                 DeclaredType declaredExprType = (DeclaredType) exprType;
-                List<? extends TypeMirror> typeArgs = declaredExprType.getTypeArguments();
+                declaredExprType.getTypeArguments();
 
                 MemberSelectTree iteratorSelect =
                     treeBuilder.buildIteratorMethodAccess(expression);
@@ -2985,8 +2985,7 @@ public class CFGBuilder {
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
 
-                VariableDeclarationNode iteratorDeclNode =
-                    extendWithNode(new VariableDeclarationNode(iteratorVariable));
+                extendWithNode(new VariableDeclarationNode(iteratorVariable));
 
                 Node expressionNode = scan(expression, p);
 
@@ -3023,8 +3022,7 @@ public class CFGBuilder {
 
                 // Loop body, starting with declaration of the loop iteration variable
                 addLabelForNextNode(loopEntry);
-                VariableDeclarationNode varDeclNode =
-                    extendWithNode(new VariableDeclarationNode(variable));
+                extendWithNode(new VariableDeclarationNode(variable));
 
                 IdentifierTree iteratorUse2 =
                     treeBuilder.buildVariableUse(iteratorVariable);
@@ -3041,9 +3039,8 @@ public class CFGBuilder {
                 MethodInvocationTree nextCall =
                     treeBuilder.buildMethodInvocation(nextSelect);
 
-                MethodInvocationNode nextCallNode =
-                    extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
-                        Collections.<Node>emptyList(), getCurrentPath()));
+                extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
+                    Collections.<Node>emptyList(), getCurrentPath()));
 
                 translateAssignment(variable, 
                                     new LocalVariableNode(variable),
@@ -3070,8 +3067,7 @@ public class CFGBuilder {
                                                   uniqueName("array"),
                                                   variableElement.getEnclosingElement(),
                                                   expression);
-                VariableDeclarationNode arrayVarNode =
-                    extendWithNode(new VariableDeclarationNode(arrayVariable));
+                extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
 
                 translateAssignment(arrayVariable,
@@ -3089,8 +3085,7 @@ public class CFGBuilder {
                                                   uniqueName("index"),
                                                   variableElement.getEnclosingElement(),
                                                   zero);
-                VariableDeclarationNode indexVarNode =
-                    extendWithNode(new VariableDeclarationNode(indexVariable));
+                extendWithNode(new VariableDeclarationNode(indexVariable));
                 IntegerLiteralNode zeroNode =
                     extendWithNode(new IntegerLiteralNode(zero));
 
@@ -3157,8 +3152,7 @@ public class CFGBuilder {
 
                 UnaryTree postfixIncrement =
                     treeBuilder.buildPostfixIncrement(indexUse3);
-                PostfixIncrementNode postfixIncrementNode =
-                    extendWithNode(new PostfixIncrementNode(postfixIncrement,
+                extendWithNode(new PostfixIncrementNode(postfixIncrement,
                                                             indexNode3));
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
