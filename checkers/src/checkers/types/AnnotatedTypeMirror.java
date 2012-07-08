@@ -1189,23 +1189,23 @@ public abstract class AnnotatedTypeMirror {
 
             // Method type variables
             {
-            	List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
-            	for (AnnotatedTypeVariable t : getTypeVariables()) {
-            	    // Substitute upper and lower bound of the type variable.
-            		AnnotatedTypeVariable newtv = (AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t);
-            		AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
-            		if (bnd!=null) {
-            		    bnd = bnd.substitute(mappings);
-            		    newtv.setUpperBound(bnd);
-            		}
-            		bnd = newtv.getLowerBoundField();
-            		if (bnd!=null) {
-            		    bnd = bnd.substitute(mappings);
-            		    newtv.setLowerBound(bnd);
-            		}
-            		mtvs.add(newtv);
-            	}
-            	type.setTypeVariables(mtvs);
+                List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
+                for (AnnotatedTypeVariable t : getTypeVariables()) {
+                    // Substitute upper and lower bound of the type variable.
+                    AnnotatedTypeVariable newtv = (AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t);
+                    AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
+                    if (bnd!=null) {
+                        bnd = bnd.substitute(mappings);
+                        newtv.setUpperBound(bnd);
+                    }
+                    bnd = newtv.getLowerBoundField();
+                    if (bnd!=null) {
+                        bnd = bnd.substitute(mappings);
+                        newtv.setLowerBound(bnd);
+                    }
+                    mtvs.add(newtv);
+                }
+                type.setTypeVariables(mtvs);
             }
 
             return type;
@@ -1427,8 +1427,15 @@ public abstract class AnnotatedTypeMirror {
             Set<AnnotationMirror> result = annotations;
             if (result.isEmpty()) {
                 AnnotatedTypeMirror lb = getLowerBound();
-                if (lb != null)
-                    result = lb.getAnnotations();
+                if (lb != null) {
+                    result = lb.getEffectiveAnnotations();
+                }
+                if (result.isEmpty()) {
+                    // TODO: ensure that there is one bottom per type hierarchy, in
+                    // the QualifierHierarchy subclasses.
+                    // TODO: rename Root to Top, to be consistent with Bottom.
+                    result = this.typeFactory.getQualifierHierarchy().getBottomAnnotations();
+                }
             }
             return Collections.unmodifiableSet(result);
         }
@@ -1460,6 +1467,10 @@ public abstract class AnnotatedTypeMirror {
                 upperBound = upperBound.getCopy(false);
                 upperBound.clearAnnotations();
                 upperBound.addAnnotations(annotations);
+            }
+            if (upperBound!=null && upperBound.getAnnotations().isEmpty()) {
+           // 	new Throwable().printStackTrace();
+             //   upperBound.addAnnotations(typeFactory.qualHierarchy.getRootAnnotations());
             }
             if (actualType.getLowerBound() instanceof NullType &&
                     lowerBound!=null && upperBound!=null) {
