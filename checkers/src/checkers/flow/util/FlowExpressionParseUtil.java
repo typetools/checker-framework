@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
@@ -18,6 +17,7 @@ import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.source.Result;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.util.InternalUtils;
 import checkers.util.Resolver;
 import checkers.util.TreeUtils;
@@ -95,7 +95,7 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             // field access
             try {
-                Resolver resolver = new Resolver(context.env);
+                Resolver resolver = new Resolver(context.factory.getEnv());
                 Element fieldElement = resolver.findVariable(s, path);
                 return new FieldAccess(context.receiver, context.receiverType,
                         fieldElement);
@@ -128,7 +128,8 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
-            return parse(remainingString, newContext, path, false, true, false, true);
+            return parse(remainingString, newContext, path, false, true, false,
+                    true);
         } else {
             throw new FlowExpressionParseException(Result.failure(
                     "flowexpr.parse.error", s));
@@ -142,16 +143,16 @@ public class FlowExpressionParseUtil {
         public final TypeMirror receiverType;
         public final Receiver receiver;
         public final List<Receiver> arguments;
-        public final ProcessingEnvironment env;
+        public final AnnotatedTypeFactory factory;
 
         public FlowExpressionContext(TypeMirror receiverType,
                 Receiver receiver, List<Receiver> arguments,
-                ProcessingEnvironment env) {
-            assert env != null;
+                AnnotatedTypeFactory factory) {
+            assert factory != null;
             this.receiverType = receiverType;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.env = env;
+            this.factory = factory;
         }
 
         /**
@@ -160,7 +161,7 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext changeReceiver(Receiver receiver) {
             return new FlowExpressionContext(receiver.getType(), receiver,
-                    arguments, env);
+                    arguments, factory);
         }
     }
 
@@ -201,17 +202,19 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, Tree classTree, ProcessingEnvironment env) {
+            MethodTree node, Tree classTree, AnnotatedTypeFactory factory) {
         Node receiver = new ImplicitThisLiteralNode(
                 InternalUtils.typeOf(classTree));
-        Receiver internalReceiver = FlowExpressions.internalReprOf(receiver);
+        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+                receiver);
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : node.getParameters()) {
-            internalArguments.add(FlowExpressions
-                    .internalReprOf(new LocalVariableNode(arg)));
+            internalArguments.add(FlowExpressions.internalReprOf(factory,
+                    new LocalVariableNode(arg)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                receiver.getType(), internalReceiver, internalArguments, env);
+                receiver.getType(), internalReceiver, internalArguments,
+                factory);
         return flowExprContext;
     }
 
@@ -220,9 +223,9 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, TreePath currentPath, ProcessingEnvironment env) {
+            MethodTree node, TreePath currentPath, AnnotatedTypeFactory factory) {
         Tree classTree = TreeUtils.enclosingClass(currentPath);
-        return buildFlowExprContextForDeclaration(node, classTree, env);
+        return buildFlowExprContextForDeclaration(node, classTree, factory);
     }
 
     /**
@@ -231,15 +234,17 @@ public class FlowExpressionParseUtil {
      *         at a method call site).
      */
     public static FlowExpressionContext buildFlowExprContextForUse(
-            MethodInvocationNode n, ProcessingEnvironment env) {
+            MethodInvocationNode n, AnnotatedTypeFactory factory) {
         Node receiver = n.getTarget().getReceiver();
-        Receiver internalReceiver = FlowExpressions.internalReprOf(receiver);
+        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+                receiver);
         List<Receiver> internalArguments = new ArrayList<>();
         for (Node arg : n.getArguments()) {
-            internalArguments.add(FlowExpressions.internalReprOf(arg));
+            internalArguments.add(FlowExpressions.internalReprOf(factory, arg));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                receiver.getType(), internalReceiver, internalArguments, env);
+                receiver.getType(), internalReceiver, internalArguments,
+                factory);
         return flowExprContext;
     }
 }
