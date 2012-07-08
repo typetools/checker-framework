@@ -12,6 +12,6 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ Flow2Test.class, RegexTest.class, I18nTest.class,
-        PuritySuggestionsTest.class })
+        PuritySuggestionsTest.class, FlowTest.class })
 public class AllFlowTests {
 }
