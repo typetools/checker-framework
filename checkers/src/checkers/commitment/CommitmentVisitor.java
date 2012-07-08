@@ -1,29 +1,34 @@
 package checkers.commitment;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.flow.analysis.FlowExpressions.FieldAccess;
+import checkers.flow.analysis.FlowExpressions.ThisReference;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
@@ -34,7 +39,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
     // Error message keys
     private static final String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
-    private static final String FIELDS_UNINITIALIZED = "fields.uninitialized";
+    private static final String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
     private static final String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
     private static final String CONSTRUCTOR_RETURN_TYPE_FORBIDDEN = "constructor.return.type.forbidden";
     private static final String COMMITMENT_REDUNDANT_CONSTRUCTOR_RETURN_TYPE = "commitment.redundant.constructor.return.type";
@@ -47,7 +52,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
     public CommitmentVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
-
         COMMITTED = checker.COMMITTED;
         FREE = checker.FREE;
         UNCLASSIFIED = checker.UNCLASSIFIED;
@@ -176,7 +180,8 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     .getAnnotatedType(node).getReturnType()
                     .getExplicitAnnotations();
             // check for invalid constructor return type
-            for (AnnotationMirror a : checker.getInvalidConstructorReturnTypeAnnotations()) {
+            for (AnnotationMirror a : checker
+                    .getInvalidConstructorReturnTypeAnnotations()) {
                 if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
                     checker.report(Result.failure(
                             CONSTRUCTOR_RETURN_TYPE_FORBIDDEN, node), node);
@@ -195,38 +200,64 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                         node);
             }
 
-            // check that all fields satisfy invariant
-            Set<VariableElement> violatingFields = Collections.emptySet(); // TODO:nc
+            // Check that all fields satisfy the invariant at the end of the
+            // constructor.
+            ClassTree currentClass = TreeUtils.enclosingClass(getCurrentPath());
+            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
+            Set<VariableTree> fields = getAllFields(currentClass);
+            Set<VariableTree> violatingFields = new HashSet<>();
+            // TODO: we should not need to cast here?
+            @SuppressWarnings("unchecked")
+            AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
+            for (VariableTree field : fields) {
+                TypeMirror type = InternalUtils.typeOf(field);
+                CFStore store = factory.getRegularExitStore(node);
+                // Does this field need to satisfy the invariant?
+                if (factory.getAnnotatedType(field).hasAnnotation(invariant)) {
+                    // Does the field satisfy its invariant?
+                    FieldAccess f = new FieldAccess(new ThisReference(
+                            InternalUtils.typeOf(currentClass)), type,
+                            TreeUtils.elementFromDeclaration(field));
+                    CFValue value = store.getValue(f);
+                    if (value == null
+                            || !AnnotationUtils.containsSame(
+                                    value.getAnnotations(), invariant)) {
+                        violatingFields.add(field);
+                    }
+                }
+            }
             if (!violatingFields.isEmpty()) {
+                StringBuilder fieldsString = new StringBuilder();
+                boolean first = true;
+                for (VariableTree f : violatingFields) {
+                    if (!first) {
+                        fieldsString.append(", ");
+                    }
+                    first = false;
+                    fieldsString.append(f.getName());
+                }
                 System.err.println("Uninitialized fields in "
                         + TreeUtils.enclosingClass(atypeFactory.getPath(node))
-                                .getSimpleName() + ": " + violatingFields);
+                                .getSimpleName() + ": " + fieldsString);
                 checker.report(
-                        Result.failure(FIELDS_UNINITIALIZED, violatingFields),
+                        Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
                         node);
             }
         }
         return super.visitMethod(node, p);
     }
 
-    @Override
-    public Void visitReturn(ReturnTree node, Void p) {
-        if (TreeUtils.isConstructor(TreeUtils.enclosingMethod(atypeFactory
-                .getPath(node)))) {
-            // check that all fields satisfy invariant
-            Set<VariableElement> violatingFields = Collections.emptySet(); // TODO:nc
-            if (!violatingFields.isEmpty()) {
-                System.err
-                        .println("Uninitialized fields at return statement in "
-                                + TreeUtils.enclosingClass(
-                                        atypeFactory.getPath(node))
-                                        .getSimpleName() + ": "
-                                + violatingFields);
-                checker.report(
-                        Result.failure(FIELDS_UNINITIALIZED, violatingFields),
-                        node);
+    /**
+     * Returns a list of all fields of the given class
+     */
+    protected Set<VariableTree> getAllFields(ClassTree clazz) {
+        Set<VariableTree> fields = new HashSet<>();
+        for (Tree t : clazz.getMembers()) {
+            if (t.getKind().equals(Tree.Kind.VARIABLE)) {
+                VariableTree vt = (VariableTree) t;
+                fields.add(vt);
             }
         }
-        return super.visitReturn(node, p);
+        return fields;
     }
 }

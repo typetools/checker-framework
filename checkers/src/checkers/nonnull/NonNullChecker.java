@@ -1,6 +1,5 @@
 package checkers.nonnull;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -98,7 +97,7 @@ public class NonNullChecker extends CommitmentChecker {
     }
 
     @Override
-    protected Set<AnnotationMirror> getFieldInvariantAnnotations() {
-        return Collections.singleton(NONNULL);
+    protected AnnotationMirror getFieldInvariantAnnotations() {
+        return NONNULL;
     }
 }
