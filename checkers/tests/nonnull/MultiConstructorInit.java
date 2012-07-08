@@ -22,5 +22,4 @@ class MultiConstructorInit {
 	public static void main(String[] args) {
 		new MultiConstructorInit();
 	}
-	
 }
