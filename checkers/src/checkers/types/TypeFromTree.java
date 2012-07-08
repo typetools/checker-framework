@@ -422,7 +422,12 @@ abstract class TypeFromTree extends
                     !((AnnotatedTypeVariable)type).getUpperBound().isAnnotated()) {
                 ((AnnotatedTypeVariable)type).getUpperBound().addAnnotations(annos);
             }
-            // TODO: wildcards
+
+            if (type.getKind() == TypeKind.WILDCARD &&
+                    !((AnnotatedWildcardType)type).getExtendsBound().isAnnotated()) {
+                ((AnnotatedWildcardType)type).getExtendsBound().addAnnotations(annos);
+            }
+
             return type;
         }
 
