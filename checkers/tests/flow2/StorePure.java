@@ -12,6 +12,7 @@ class StorePure {
     
     @Pure String pure1() { return null; }
     @Pure String pure1b() { return null; }
+    @Pure(Pure.Kind.SIDE_EFFECT_FREE) String pure1c() { return null; }
     @Pure String pure2(int i) { return null; }
     @Pure String pure3(boolean b) { return null; }
     @Pure String pure4(String o) { return null; }
@@ -28,6 +29,14 @@ class StorePure {
             nonpure(); // non-pure method call might change the return value of pure1
             //:: error: (assignment.type.incompatible)
             @Odd String l3 = pure1();
+        }
+    }
+    
+    // check that it only works for deterministic methods
+    void t1b(@Odd String p1, String p2, boolean b1) {
+        if (pure1c() == p1) {
+            //:: error: (assignment.type.incompatible)
+            @Odd String l1 = pure1c();
         }
     }
     
