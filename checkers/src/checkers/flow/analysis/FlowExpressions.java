@@ -77,7 +77,7 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
                     .getTree());
-            if (PurityUtils.hasPurityAnnotation(factory, invokedMethod)) {
+            if (PurityUtils.isDeterministic(factory, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(factory, p));
