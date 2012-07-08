@@ -314,7 +314,7 @@ public final class ArraysMDE {
    *    or -1 if no such element is found in the array.
    * @see java.util.List#indexOf(java.lang.Object)
    **/
-  public static int indexOf(Object[] a, Object elt) {
+  public static <T> int indexOf(T[] a, Object elt) {
     for (int i=0; i<a.length; i++)
       if (elt.equals(a[i]))
         return i;
@@ -329,7 +329,7 @@ public final class ArraysMDE {
    *    or -1 if the element is not found in that section of the array.
    * @see java.util.List#indexOf(java.lang.Object)
    **/
-  public static int indexOf(Object[] a, Object elt, int minindex, int indexlimit) {
+  public static <T> int indexOf(T[] a, Object elt, int minindex, int indexlimit) {
     for (int i=minindex; i<indexlimit; i++)
       if (elt.equals(a[i]))
         return i;
