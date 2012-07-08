@@ -62,7 +62,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         // check is necessary
         return true;
     }
-    
+
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
@@ -112,11 +112,11 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     public Void visitVariable(VariableTree node, Void p) {
         // is this a field (and not a local variable)?
         if (TreeUtils.elementFromDeclaration(node).getKind().isField()) {
-            VariableElement el = TreeUtils.elementFromDeclaration(node);
-            Collection<? extends AnnotationMirror> am = atypeFactory
-                    .getDeclAnnotations(el);
+            Set<AnnotationMirror> annotationMirrors = atypeFactory
+                    .getAnnotatedType(node).getExplicitAnnotations();
+            // Fields cannot have commitment annotations.
             for (AnnotationMirror a : checker.getCommitmentAnnotations()) {
-                if (AnnotationUtils.containsSame(am, a)) {
+                if (AnnotationUtils.containsSame(annotationMirrors, a)) {
                     checker.report(Result.failure(
                             COMMITMENT_INVALID_FIELD_ANNOTATION, node), node);
                     break;
@@ -172,9 +172,9 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
-            ExecutableElement el = TreeUtils.elementFromDeclaration(node);
             Collection<? extends AnnotationMirror> returnTypeAnnotations = atypeFactory
-                    .getDeclAnnotations(el);
+                    .getAnnotatedType(node).getReturnType()
+                    .getExplicitAnnotations();
             // check for invalid constructor return type
             for (AnnotationMirror a : getInvalidConstructorReturnTypeAnnotations()) {
                 if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
