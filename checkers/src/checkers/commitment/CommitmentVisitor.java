@@ -176,7 +176,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     .getAnnotatedType(node).getReturnType()
                     .getExplicitAnnotations();
             // check for invalid constructor return type
-            for (AnnotationMirror a : getInvalidConstructorReturnTypeAnnotations()) {
+            for (AnnotationMirror a : checker.getInvalidConstructorReturnTypeAnnotations()) {
                 if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
                     checker.report(Result.failure(
                             CONSTRUCTOR_RETURN_TYPE_FORBIDDEN, node), node);
@@ -229,13 +229,4 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         }
         return super.visitReturn(node, p);
     }
-
-    /**
-     * @return The list of annotations that is forbidden for the constructor
-     *         return type.
-     */
-    protected List<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
-        return Collections.emptyList();
-    }
-
 }

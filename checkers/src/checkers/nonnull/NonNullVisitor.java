@@ -1,7 +1,5 @@
 package checkers.nonnull;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -67,14 +65,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         NULLABLE = checker.NULLABLE;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
-    }
-
-    @Override
-    protected List<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
-        List<AnnotationMirror> l = new LinkedList<AnnotationMirror>(
-                super.getInvalidConstructorReturnTypeAnnotations());
-        l.addAll(checker.getNonNullAnnotations());
-        return l;
     }
 
     @Override
