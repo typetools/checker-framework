@@ -21,12 +21,12 @@ public class Commitment2 {
 		return new Commitment2();
 	}
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Commitment2() {
 		
 	}
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Commitment2(@Free Commitment2 likeAnEagle) {
 		//:: error: (assignment.type.incompatible)
 		h = likeAnEagle;
