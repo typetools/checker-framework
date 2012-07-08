@@ -422,7 +422,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             AnnotationMirror anno) {
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                        atypeFactory.getEnv());
+                        atypeFactory);
 
         for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;
@@ -523,7 +523,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                        atypeFactory.getEnv());
+                        atypeFactory);
 
         for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;
@@ -780,7 +780,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         Node nodeNode = factory.getNodeForTree(tree);
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForUse((MethodInvocationNode) nodeNode,
-                        atypeFactory.getEnv());
+                        atypeFactory);
 
         for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;

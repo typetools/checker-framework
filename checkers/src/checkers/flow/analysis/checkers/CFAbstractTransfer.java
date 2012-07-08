@@ -233,7 +233,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForDeclaration(methodTree,
-                        method.getClassTree(), analysis.getEnv());
+                        method.getClassTree(), analysis.getFactory());
 
         // store all expressions in the store
         for (String stringExpr : expressions) {
@@ -406,8 +406,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             V secondValue, boolean notEqualTo) {
         if (firstValue != null
                 && (secondValue == null || firstValue.isSubtypeOf(secondValue))) {
-            Receiver secondInternal = FlowExpressions
-                    .internalReprOf(secondNode);
+            Receiver secondInternal = FlowExpressions.internalReprOf(
+                    analysis.getFactory(), secondNode);
             if (!secondInternal.containsUnknown()) {
                 S thenStore = res.getRegularStore();
                 S elseStore = thenStore.copy();
@@ -493,15 +493,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         S store = in.getRegularStore();
         ExecutableElement method = n.getTarget().getMethod();
 
-        V resValue = null;
+        V factoryValue = null;
 
         Tree tree = n.getTree();
         if (tree != null) {
-            // use value from factory (no flowsensitive information available)
-            resValue = getValueFromFactory(tree);
+            // look up the value from factory
+            factoryValue = getValueFromFactory(tree);
         }
+        // look up the value in the store (if possible)
+        V storeValue = store.getValue(n);
+        V resValue = moreSpecificValue(factoryValue, storeValue);
 
-        store.updateForMethodCall(n, analysis.factory);
+        store.updateForMethodCall(n, analysis.factory, resValue);
 
         // add new information based on postcondition
         processPostconditions(n, store, method, tree);
@@ -577,7 +580,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         AnnotationMirror anno = analysis.factory.annotationFromName(annotation);
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForUse(n, analysis.getEnv());
+                .buildFlowExprContextForUse(n, analysis.getFactory());
 
         for (String exp : expressions) {
             try {
@@ -660,7 +663,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         AnnotationMirror anno = analysis.factory.annotationFromName(annotation);
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForUse(n, analysis.getEnv());
+                .buildFlowExprContextForUse(n, analysis.getFactory());
 
         for (String exp : expressions) {
             try {

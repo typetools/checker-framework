@@ -12,6 +12,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions.PureMethodCall;
+import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
@@ -44,10 +46,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected final Map<Element, V> localVariableValues;
 
     /**
-     * Information collected about fields, using the interal representation
+     * Information collected about fields, using the internal representation
      * {@link FlowExpressions.FieldAccess}.
      */
     protected Map<FlowExpressions.FieldAccess, V> fieldValues;
+
+    /**
+     * Information collected about pure method calls, using the internal
+     * representation {@link FlowExpressions.PureMethodCall}.
+     */
+    protected Map<FlowExpressions.PureMethodCall, V> methodValues;
 
     /**
      * Should the analysis use sequential Java semantics (i.e., assume that only
@@ -64,6 +72,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         this.analysis = analysis;
         localVariableValues = new HashMap<>();
         fieldValues = new HashMap<>();
+        methodValues = new HashMap<>();
         this.sequentialSemantics = sequentialSemantics;
     }
 
@@ -72,6 +81,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         this.analysis = other.analysis;
         localVariableValues = new HashMap<>(other.localVariableValues);
         fieldValues = new HashMap<>(other.fieldValues);
+        methodValues = new HashMap<>(other.methodValues);
         sequentialSemantics = other.sequentialSemantics;
     }
 
@@ -102,13 +112,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (e.g., if {@code a} is a local variable or {@code this}, and {@code f} is
      * final).
      * </ol>
+     * 
+     * Furthermore, if the method is deterministic, we store its result
+     * {@code val} in the store.
      */
     public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory factory) {
+            AnnotatedTypeFactory factory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
         // remove information if necessary
         if (!PurityUtils.isSideEffectFree(factory, method)) {
+            // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
                     .entrySet()) {
@@ -121,6 +135,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 newFieldValues.put(fieldAccess, otherVal);
             }
             fieldValues = newFieldValues;
+
+            // update method values
+            methodValues = new HashMap<>();
+        }
+
+        // store information about method call if possible
+        Receiver methodCall = FlowExpressions.internalReprOf(
+                analysis.getFactory(), n);
+        if (methodCall != null && !methodCall.containsUnknown()) {
+            insertValue(methodCall, val);
         }
     }
 
@@ -128,6 +152,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Add the annotation {@code a} for the expression {@code r} (correctly
      * deciding where to store the information depending on the type of the
      * expression {@code r}).
+     * 
+     * <p>
+     * This method does not take care of removing other information that might
+     * be influenced by changes to certain parts of the state.
      * 
      * <p>
      * If there is already a value {@code v} present for {@code r}, then the
@@ -142,6 +170,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Add the abstract value {@code value} for the expression {@code r}
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
+     * 
+     * <p>
+     * This method does not take care of removing other information that might
+     * be influenced by changes to certain parts of the state.
      * 
      * <p>
      * If there is already a value {@code v} present for {@code r}, then the
@@ -174,6 +206,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     fieldValues.put(fieldAcc, oldValue);
                 }
             }
+        } else if (r instanceof FlowExpressions.PureMethodCall) {
+            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
+            // Don't store any information if concurrent semantics are enabled.
+            if (sequentialSemantics) {
+                V oldValue = methodValues.get(method);
+                if (oldValue == null || value.isSubtypeOf(oldValue)) {
+                    methodValues.put(method, value);
+                } else {
+                    methodValues.put(method, oldValue);
+                }
+            }
         } else {
             assert false;
         }
@@ -191,6 +234,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (expr instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
             return fieldValues.get(fieldAcc);
+        } else if (expr instanceof FlowExpressions.PureMethodCall) {
+            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) expr;
+            return methodValues.get(method);
         } else {
             assert false;
             return null;
@@ -203,8 +249,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public/* @Nullable */V getValue(FieldAccessNode n) {
         FlowExpressions.FieldAccess fieldAccess = FlowExpressions
-                .internalReprOfFieldAccess(n);
+                .internalReprOfFieldAccess(analysis.getFactory(), n);
         return fieldValues.get(fieldAccess);
+    }
+    
+    /**
+     * @return Current abstract value of a method call, or {@code null} if no
+     *         information is available.
+     */
+    public/* @Nullable */V getValue(MethodInvocationNode n) {
+        Receiver method = FlowExpressions.internalReprOf(analysis.getFactory(),
+                n);
+        if (method == null) {
+            return null;
+        }
+        return methodValues.get(method);
     }
 
     /**
@@ -218,7 +277,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
         FlowExpressions.FieldAccess fieldAccess = FlowExpressions
-                .internalReprOfFieldAccess(n);
+                .internalReprOfFieldAccess(analysis.getFactory(), n);
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -236,7 +295,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * 
      * <ol>
      * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
-     * where {@code n} might alias any expression in the receiver <em>b</em>.</li>
+     * where {@code n} might alias any expression in the receiver <em>b</em>.
+     * <li value="2">Remove any information about pure method calls.
      * </ol>
      */
     public void updateForUnknownAssignment(Node n) {
@@ -253,6 +313,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             newFieldValues.put(otherFieldAccess, otherVal);
         }
         fieldValues = newFieldValues;
+
+        // case 2:
+        methodValues = new HashMap<>();
     }
 
     /**
@@ -268,11 +331,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <em>a</em>. This update will raise the abstract value for such field
      * accesses to at least {@code val} (or the old value, if that was less
      * precise). However, this is only necessary if the field <em>g</em> is not
-     * final.</li>
+     * final.
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code fieldAccess} is the same (i.e., <em>a=b</em> and
      * <em>f=g</em>), or where {@code fieldAccess} might alias any expression in
-     * the receiver <em>b</em>.</li>
+     * the receiver <em>b</em>.
+     * <li value="3">Remove any information about pure method calls.
      * </ol>
      * 
      * @param val
@@ -313,6 +377,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             newFieldValues.put(otherFieldAccess, otherVal);
         }
         fieldValues = newFieldValues;
+
+        // case 3:
+        methodValues = new HashMap<>();
     }
 
     /**
@@ -323,7 +390,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <ol>
      * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code localVar} might alias any expression in the receiver
-     * <em>b</em>.</li>
+     * <em>b</em>.
+     * <li value="2">Remove any information about pure method calls where the
+     * receiver or any of the parameters contains {@code localVar}.
      * </ol>
      */
     protected void removeConflicting(LocalVariableNode localVar) {
@@ -339,6 +408,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             newFieldValues.put(otherFieldAccess, e.getValue());
         }
         fieldValues = newFieldValues;
+
+        Map<FlowExpressions.PureMethodCall, V> newMethodValues = new HashMap<>();
+        for (Entry<FlowExpressions.PureMethodCall, V> e : methodValues
+                .entrySet()) {
+            FlowExpressions.PureMethodCall otherMethodAccess = e.getKey();
+            // case 1:
+            if (otherMethodAccess.containsSyntacticEqualReceiver(var)
+                    || otherMethodAccess.containsSyntacticEqualParameter(var)) {
+                continue;
+            }
+            newMethodValues.put(otherMethodAccess, e.getValue());
+        }
+        methodValues = newMethodValues;
     }
 
     /**
@@ -405,7 +487,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
                 V thisVal = localVariableValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
-                newStore.localVariableValues.put(el, mergedVal);
+                if (mergedVal != null) {
+                    newStore.localVariableValues.put(el, mergedVal);
+                }
             }
         }
         for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
@@ -418,7 +502,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
                 V thisVal = fieldValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
-                newStore.fieldValues.put(el, mergedVal);
+                if (mergedVal != null) {
+                    newStore.fieldValues.put(el, mergedVal);
+                }
+            }
+        }
+        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
+            // information about methods that are only part of one store, but
+            // not the other are discarded, as one store implicitly contains
+            // 'top' for that field.
+            FlowExpressions.PureMethodCall el = e.getKey();
+            if (methodValues.containsKey(el)) {
+                V otherVal = e.getValue();
+                V thisVal = methodValues.get(el);
+                V mergedVal = thisVal.leastUpperBound(otherVal);
+                if (mergedVal != null) {
+                    newStore.methodValues.put(el, mergedVal);
+                }
             }
         }
 
@@ -445,6 +545,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess key = e.getKey();
             if (!fieldValues.containsKey(key)
                     || !fieldValues.get(key).equals(e.getValue())) {
+                return false;
+            }
+        }
+        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
+            FlowExpressions.PureMethodCall key = e.getKey();
+            if (!methodValues.containsKey(key)
+                    || !methodValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
@@ -479,6 +586,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues
                 .entrySet()) {
+            result.append("  " + entry.getKey() + " > " + entry.getValue()
+                    + "\\n");
+        }
+        for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
