@@ -14,7 +14,7 @@ class MultiConstructorInit {
 		this(true);
 	}
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public MultiConstructorInit(int t) {
 		new MultiConstructorInit();
 	}
