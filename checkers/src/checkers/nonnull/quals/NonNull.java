@@ -1,12 +1,15 @@
 package checkers.nonnull.quals;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
 
 import checkers.nullness.NullnessChecker;
+import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
@@ -37,18 +40,18 @@ import com.sun.source.tree.Tree;
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(Nullable.class)
-//@DefaultQualifierInHierarchy
+@DefaultQualifierInHierarchy
+@Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(types = { TypeKind.PACKAGE }, typeClasses = { AnnotatedPrimitiveType.class }, trees = {
-		Tree.Kind.NEW_CLASS,
-		Tree.Kind.NEW_ARRAY,
-		Tree.Kind.PLUS, // for String concatenation
-		// All literals except NULL_LITERAL:
-		Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL,
-		Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
-		Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
+        Tree.Kind.NEW_CLASS,
+        Tree.Kind.NEW_ARRAY,
+        Tree.Kind.PLUS, // for String concatenation
+        // All literals except NULL_LITERAL:
+        Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL,
+        Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
+        Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface NonNull {
 }
