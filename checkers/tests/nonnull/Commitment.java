@@ -15,23 +15,25 @@ public class Commitment {
 	//:: warning: (commitment.redundant.constructor.return.type) :: error: (commitment.fields.uninitialized)
 	public @Free Commitment(int i) {
 		t = "";
-		b = "";
 	}
 
 	//:: error: (commitment.invalid.constructor.return.type)
 	public @Committed Commitment(int i, int j) {
+	    a = "";
 		t = "";
 		b = "";
 	}
 	
 	//:: error: (constructor.return.type.forbidden)
 	public @Committed @NonNull Commitment(boolean i) {
+	    a = "";
 		t = "";
 		b = "";
 	}
 	
 	//:: error: (constructor.return.type.forbidden)
 	public @Nullable Commitment(char i) {
+	    a = "";
 		t = "";
 		b = "";
 	}

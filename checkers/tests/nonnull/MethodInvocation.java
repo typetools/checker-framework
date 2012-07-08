@@ -9,19 +9,15 @@ class MethodInvocation {
 	public MethodInvocation() {
 		//:: error: (method.invocation.invalid)
 		a();
-		
 		b();
-		
 		c();
-		
 		s = "abc";
 	}
 	
 	public MethodInvocation(boolean p) {
+	    //:: error: (method.invocation.invalid)
+	    a(); // still not okay to be committed
 		s = "abc";
-		
-		//:: error: (method.invocation.invalid)
-		a(); // still not okay to be committed
 	}
 	
 	public void a() {

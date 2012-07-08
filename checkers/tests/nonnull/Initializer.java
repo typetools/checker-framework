@@ -19,12 +19,10 @@ class Initializer {
 	
 	//:: error: (commitment.fields.uninitialized)
 	public Initializer(boolean foo) {
-		
 	}
 	
 	public Initializer(int foo) {
 		a = "";
-		b.hashCode();
 		c = "";
 	}
 	
