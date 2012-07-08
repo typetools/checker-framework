@@ -1,6 +1,10 @@
 package checkers.flow.analysis;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
@@ -9,9 +13,14 @@ import checkers.flow.cfg.node.ExplicitThisLiteralNode;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.util.HashCodeUtils;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.util.ElementUtils;
+import checkers.util.PurityUtils;
+import checkers.util.TreeUtils;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -34,10 +43,11 @@ public class FlowExpressions {
      * @return The internal representation (as {@link FieldAccess}) of a
      *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
-    public static FieldAccess internalReprOfFieldAccess(FieldAccessNode node) {
+    public static FieldAccess internalReprOfFieldAccess(
+            AnnotatedTypeFactory factory, FieldAccessNode node) {
         Receiver receiver;
         Node receiverNode = node.getReceiver();
-        receiver = internalReprOf(receiverNode);
+        receiver = internalReprOf(factory, receiverNode);
         return new FieldAccess(receiver, node);
     }
 
@@ -45,10 +55,12 @@ public class FlowExpressions {
      * @return The internal representation (as {@link Receiver}) of any
      *         {@link Node}. Can contain {@link Unknown} as receiver.
      */
-    public static Receiver internalReprOf(Node receiverNode) {
-        Receiver receiver;
+    public static Receiver internalReprOf(AnnotatedTypeFactory factory,
+            Node receiverNode) {
+        Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
-            receiver = internalReprOfFieldAccess((FieldAccessNode) receiverNode);
+            receiver = internalReprOfFieldAccess(factory,
+                    (FieldAccessNode) receiverNode);
         } else if (receiverNode instanceof ImplicitThisLiteralNode
                 || receiverNode instanceof ExplicitThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
@@ -58,7 +70,26 @@ public class FlowExpressions {
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType(), cn.getElement());
-        } else {
+        } else if (receiverNode instanceof ValueLiteralNode) {
+            ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
+            receiver = new ValueLiteral(vn.getType(), vn);
+        } else if (receiverNode instanceof MethodInvocationNode) {
+            MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
+            ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
+                    .getTree());
+            if (PurityUtils.isDeterministic(factory, invokedMethod)) {
+                List<Receiver> parameters = new ArrayList<>();
+                for (Node p : mn.getArguments()) {
+                    parameters.add(internalReprOf(factory, p));
+                }
+                Receiver methodReceiver = internalReprOf(factory, mn
+                        .getTarget().getReceiver());
+                receiver = new PureMethodCall(mn.getType(), invokedMethod,
+                        methodReceiver, parameters);
+            }
+        }
+
+        if (receiver == null) {
             receiver = new Unknown(receiverNode.getType());
         }
         return receiver;
@@ -388,23 +419,172 @@ public class FlowExpressions {
             return true;
         }
     }
+    
+    public static class ValueLiteral extends Receiver {
 
-    // TODO: add pure method calls later
-    public static class PureMethodCall extends Receiver {
+        protected final Object value;
 
-        public PureMethodCall(TypeMirror type) {
+        public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
             super(type);
+            value = node.getValue();
         }
 
         @Override
         public boolean containsUnknown() {
-            return false; // TODO: correct implementation
+            return false;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof ValueLiteral)) {
+                return false;
+            }
+            ValueLiteral other = (ValueLiteral) obj;
+            return value.equals(other.value);
+        }
+        
+        @Override
+        public int hashCode() {
+            return HashCodeUtils.hash(value);
+        }
+        
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return this.equals(other);
+        }
+    }
+
+    public static class PureMethodCall extends Receiver {
+
+        protected final Receiver receiver;
+        protected final List<Receiver> parameters;
+        protected final Element method;
+
+        public PureMethodCall(TypeMirror type, Element method,
+                Receiver receiver, List<Receiver> parameters) {
+            super(type);
+            this.receiver = receiver;
+            this.parameters = parameters;
+            this.method = method;
+        }
+
+        @Override
+        public boolean containsUnknown() {
+            if (receiver.containsUnknown()) {
+                return true;
+            }
+            for (Receiver p : parameters) {
+                if (p.containsUnknown()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
             return false;
         }
-    }
 
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other) || receiver.syntacticEquals(other);
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof PureMethodCall)) {
+                return false;
+            }
+            PureMethodCall otherMethod = (PureMethodCall) other;
+            if (!receiver.syntacticEquals(otherMethod.receiver)) {
+                return false;
+            }
+            if (parameters.size() != otherMethod.parameters.size()) {
+                return false;
+            }
+            int i = 0;
+            for (Receiver p : parameters) {
+                if (!p.syntacticEquals(otherMethod.parameters.get(i))) {
+                    return false;
+                }
+                i++;
+            }
+            return method.equals(otherMethod.method);
+        }
+
+        public boolean containsSyntacticEqualParameter(LocalVariable var) {
+            for (Receiver p : parameters) {
+                if (p.containsSyntacticEqualReceiver(var)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+                Receiver other) {
+            if (receiver.containsAliasOf(store, other)) {
+                return true;
+            }
+            for (Receiver p : parameters) {
+                if (p.containsAliasOf(store, other)) {
+                    return true;
+                }
+            }
+            return super.containsAliasOf(store, other);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof PureMethodCall)) {
+                return false;
+            }
+            PureMethodCall other = (PureMethodCall) obj;
+            int i = 0;
+            for (Receiver p : parameters) {
+                if (!p.equals(other.parameters.get(i))) {
+                    return false;
+                }
+                i++;
+            }
+            return receiver.equals(other.receiver)
+                    && method.equals(other.method);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = HashCodeUtils.hash(method, receiver);
+            for (Receiver p : parameters) {
+                hash = HashCodeUtils.hash(hash, p);
+            }
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            result.append(receiver.toString());
+            result.append(".");
+            String methodName = method.toString();
+            result.append(methodName.substring(0, methodName.length() - 2));
+            result.append("(");
+            boolean first = true;
+            for (Receiver p : parameters) {
+                if (!first) {
+                    result.append(", ");
+                }
+                result.append(p.toString());
+                first = false;
+            }
+            result.append(")");
+            return result.toString();
+        }
+    }
 }

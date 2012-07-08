@@ -1,8 +1,10 @@
 package checkers.nonnull.quals;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import checkers.nullness.NullnessChecker;
 import checkers.quals.ImplicitFor;
@@ -36,10 +38,10 @@ import com.sun.source.tree.Tree;
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf({})
+@TypeQualifier
+@Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Nullable {
 }

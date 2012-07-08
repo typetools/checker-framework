@@ -1,7 +1,7 @@
 package checkers.nonnull;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -47,41 +47,57 @@ import com.sun.source.tree.CompilationUnitTree;
 //			see Checker Manual 20.2.1, added "Suppression" test case to show that it works
 
 @TypeQualifiers({ Nullable.class, NonNull.class, Free.class, Committed.class,
-		Unclassified.class })
+        Unclassified.class })
 public class NonNullChecker extends CommitmentChecker {
 
-	/** Annotation constants */
-	public AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL;
+    /** Annotation constants */
+    public AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL;
 
-	@Override
-	public void initChecker(ProcessingEnvironment processingEnv) {
-		super.initChecker(processingEnv);
-		AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    @Override
+    public void initChecker(ProcessingEnvironment processingEnv) {
+        super.initChecker(processingEnv);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
-		NONNULL = annoFactory.fromClass(NonNull.class);
-		NULLABLE = annoFactory.fromClass(Nullable.class);
-		LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
-	}
+        NONNULL = annoFactory.fromClass(NonNull.class);
+        NULLABLE = annoFactory.fromClass(Nullable.class);
+        LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
+    }
 
-	@Override
-	protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-		return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-	}
+    @Override
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    }
 
-	@Override
-	protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
-		return new NonNullVisitor(this, root);
-	}
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+        return new NonNullVisitor(this, root);
+    }
 
-	@Override
-	public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-		return new NonNullAnnotatedTypeFactory(this, root);
-	}
+    @Override
+    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+        return new NonNullAnnotatedTypeFactory(this, root);
+    }
 
-	/**
-	 * @return The list of annotations of the non-null type system.
-	 */
-	public List<AnnotationMirror> getNonNullAnnotations() {
-		return Arrays.asList(new AnnotationMirror[] { NONNULL, NULLABLE });
-	}
+    /**
+     * @return The list of annotations of the non-null type system.
+     */
+    public Set<AnnotationMirror> getNonNullAnnotations() {
+        Set<AnnotationMirror> result = new HashSet<>();
+        result.add(NONNULL);
+        result.add(NULLABLE);
+        return result;
+    }
+
+    @Override
+    protected Set<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
+        Set<AnnotationMirror> l = new HashSet<>(
+                super.getInvalidConstructorReturnTypeAnnotations());
+        l.addAll(getNonNullAnnotations());
+        return l;
+    }
+
+    @Override
+    protected AnnotationMirror getFieldInvariantAnnotations() {
+        return NONNULL;
+    }
 }
