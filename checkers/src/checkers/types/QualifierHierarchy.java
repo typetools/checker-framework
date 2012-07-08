@@ -37,19 +37,19 @@ public abstract class QualifierHierarchy {
     /**
      * @return  the root (ultimate super) type qualifier in the hierarchy
      */
-	public abstract Set<AnnotationMirror> getRootAnnotations();
-	
-	/**
-	 * Return the root for the given qualifier, that is, the qualifier that is a
-	 * supertype of start but no further supertypes exist. 
-	 */
-	public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+    public abstract Set<AnnotationMirror> getRootAnnotations();
 
-	/**
-	 * Return the bottom for the given qualifier, that is, the qualifier that is a
-	 * subtype of start but no further subtypes exist. 
-	 */	
-	public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
+    /**
+     * Return the root for the given qualifier, that is, the qualifier that is a
+     * supertype of start but no further supertypes exist. 
+     */
+    public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+
+    /**
+     * Return the bottom for the given qualifier, that is, the qualifier that is a
+     * subtype of start but no further subtypes exist. 
+     */	
+    public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
      * @return the bottom type qualifier in the hierarchy
