@@ -15,6 +15,7 @@ import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.ElementUtils;
@@ -69,6 +70,9 @@ public class FlowExpressions {
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType(), cn.getElement());
+        } else if (receiverNode instanceof ValueLiteralNode) {
+            ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
+            receiver = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
@@ -413,6 +417,45 @@ public class FlowExpressions {
         @Override
         public boolean isUnmodifiableByOtherCode() {
             return true;
+        }
+    }
+    
+    public static class ValueLiteral extends Receiver {
+
+        protected final Object value;
+
+        public ValueLiteral(TypeMirror type, ValueLiteralNode node) {
+            super(type);
+            value = node.getValue();
+        }
+
+        @Override
+        public boolean containsUnknown() {
+            return false;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return true;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof ValueLiteral)) {
+                return false;
+            }
+            ValueLiteral other = (ValueLiteral) obj;
+            return value.equals(other.value);
+        }
+        
+        @Override
+        public int hashCode() {
+            return HashCodeUtils.hash(value);
+        }
+        
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return this.equals(other);
         }
     }
 
