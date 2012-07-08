@@ -11,7 +11,7 @@ class SuperConstructorInit {
 	
 	public static class B extends SuperConstructorInit {
 		String b;
-		//:: error: (fields.uninitialized)
+		//:: error: (commitment.fields.uninitialized)
 		public B() {
 			super();
 			a.toString();

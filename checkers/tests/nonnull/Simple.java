@@ -7,7 +7,7 @@ public class Simple {
 	Simple f;
 	@NotOnlyCommitted Simple g;
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Simple(String arg) {
 		
 	}

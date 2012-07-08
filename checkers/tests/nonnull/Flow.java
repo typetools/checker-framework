@@ -18,6 +18,7 @@ public class Flow {
 		f.toLowerCase();
 		//:: error: (method.invocation.invalid)
 		g.toLowerCase();
+		f = arg;
 	}
 	
 	void test() {

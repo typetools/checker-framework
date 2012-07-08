@@ -12,31 +12,33 @@ public class Commitment {
 	//:: error: (commitment.invalid.field.annotation)
 	@Unclassified @Nullable String c;
 	
-	//:: warning: (commitment.redundant.constructor.return.type) :: error: (fields.uninitialized)
+	//:: warning: (commitment.redundant.constructor.return.type) :: error: (commitment.fields.uninitialized)
 	public @Free Commitment(int i) {
 		t = "";
-		b = "";
 	}
 
 	//:: error: (commitment.invalid.constructor.return.type)
 	public @Committed Commitment(int i, int j) {
+	    a = "";
 		t = "";
 		b = "";
 	}
 	
 	//:: error: (constructor.return.type.forbidden)
 	public @Committed @NonNull Commitment(boolean i) {
+	    a = "";
 		t = "";
 		b = "";
 	}
 	
 	//:: error: (constructor.return.type.forbidden)
 	public @Nullable Commitment(char i) {
+	    a = "";
 		t = "";
 		b = "";
 	}
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Commitment() {
 		//:: error: (dereference.of.nullable)
 		t.toLowerCase();
@@ -51,7 +53,7 @@ public class Commitment {
 		@Committed @NonNull Commitment c2 = this;
 	}
 
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Commitment(@Unclassified Commitment arg) {
 		t = "";
 		
@@ -64,7 +66,7 @@ public class Commitment {
 		@Free Commitment t2 = new Commitment(this);
 	}
 	
-	//:: error: (fields.uninitialized)
+	//:: error: (commitment.fields.uninitialized)
 	public Commitment(Commitment arg, int i) {
 
 	}
