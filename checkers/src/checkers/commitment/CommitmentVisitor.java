@@ -236,9 +236,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     first = false;
                     fieldsString.append(f.getName());
                 }
-                System.err.println("Uninitialized fields in "
-                        + TreeUtils.enclosingClass(atypeFactory.getPath(node))
-                                .getSimpleName() + ": " + fieldsString);
                 checker.report(
                         Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
                         node);
