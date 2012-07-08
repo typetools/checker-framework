@@ -58,8 +58,8 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
     }
 
     /**
-     * Returns a list of annotations that make up the invariant of this
-     * commitment type system.
+     * Returns the annotation that makes up the invariant of this commitment
+     * type system.
      */
-    abstract protected Set<AnnotationMirror> getFieldInvariantAnnotations();
+    abstract protected AnnotationMirror getFieldInvariantAnnotations();
 }
