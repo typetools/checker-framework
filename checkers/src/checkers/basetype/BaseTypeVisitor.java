@@ -1,7 +1,6 @@
 package checkers.basetype;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +16,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.basetype.PurityChecker.PurityResult;
@@ -430,6 +428,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkFlowExprParameters(node, stringExpr);
 
                 // TODO: we should not need to cast here?
+                @SuppressWarnings("unchecked")
                 AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
                     (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
                 CFStore exitStore = factory.getRegularExitStore(node);
@@ -539,6 +538,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 }
 
                 // TODO: we should not need to cast here?
+                @SuppressWarnings("unchecked")
                 AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?> factory =
                     (AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?>) atypeFactory;
                 List<Pair<ReturnNode, TransferResult<CFValue, CFStore>>> returnStatements = factory
@@ -766,6 +766,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     protected void checkPrecondition(MethodInvocationTree tree,
             AnnotationMirror requiredAnnotation, List<String> expressions) {
         // TODO: we should not need to cast here?
+        @SuppressWarnings("unchecked")
         AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
             (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
 
@@ -1136,7 +1137,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *
      * @param varTree the AST node for the variable
      * @param valueExp the AST node for the value
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
@@ -1152,7 +1154,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *
      * @param varType the annotated type of the variable
      * @param valueExp the AST node for the value
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
@@ -1179,7 +1182,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
@@ -2018,12 +2022,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 }
 
                 if (!foundNN) {
-                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
-                        "You do not seem to be using the distributed annotated JDK.  To fix the" +
-                        System.getProperty("line.separator") +
-                        "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
-                        System.getProperty("line.separator") +
-                        "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
+//                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+//                        "You do not seem to be using the distributed annotated JDK.  To fix the" +
+//                        System.getProperty("line.separator") +
+//                        "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
+//                        System.getProperty("line.separator") +
+//                        "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
                 }
             }
         }
