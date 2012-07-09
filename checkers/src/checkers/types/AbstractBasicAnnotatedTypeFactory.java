@@ -22,7 +22,6 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.AnalysisResult;
-import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
@@ -499,24 +498,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations()
                 : null;
         if (inferred != null) {
-            if (!type.isAnnotated()
-                    || this.qualHierarchy.isSubtype(inferred,
-                            type.getAnnotations())) {
-                /*
-                 * TODO: The above check should NOT be necessary. However, for
-                 * the InterningChecker test case Arrays fails without it. It
-                 * only fails if Unqualified is one of the supported type
-                 * qualifiers, which it should. Flow inference should always
-                 * just return subtypes of the declared type, so something is
-                 * going wrong! TODO!
-                 */
-                if (inferred.size() == 0) {
-                    type.clearAnnotations();
-                } else {
-                    for (AnnotationMirror inf : inferred) {
-                        type.removeAnnotationInHierarchy(inf);
+            for (AnnotationMirror inf : inferred) {
+                AnnotationMirror present = type.getAnnotationInHierarchy(inf);
+                if (present!=null) {
+                    if (this.qualHierarchy.isSubtype(inf, present)) {
+                        // TODO: why is the above check needed? Shouldn't inferred
+                        // qualifiers always be subtypes?
+                        type.replaceAnnotation(inf);
                     }
-                    type.addAnnotations(inferred);
+                } else {
+                    type.addAnnotation(inf);
                 }
             }
         }
@@ -535,7 +526,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
-        poly.annotate(method.getElement(), method);
         return mfuPair;
     }
 }
