@@ -135,7 +135,7 @@ public class UnitsChecker extends BaseTypeChecker {
         AnnotationMirror am = annoUtils.fromClass(qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
-            if (ama.getAnnotationType().toString().equals("checkers.units.quals.UnitsRelations")) {
+            if (ama.getAnnotationType().toString().equals(UnitsRelations.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
                     AnnotationUtils.parseTypeValue(ama, "value");
