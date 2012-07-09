@@ -490,6 +490,17 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Adds an annotation to this type, removing any existing annotation from the
+     * same qualifier hierarchy first.
+     *
+     * @param a the annotation to add
+     */
+    public void replaceAnnotation(AnnotationMirror a) {
+        this.removeAnnotationInHierarchy(a);
+        this.addAnnotation(a);
+    }
+
+    /**
      * Adds an annotation to this type. If the annotation does not have the
      * {@link TypeQualifier} meta-annotation, this method has no effect.
      *
@@ -507,6 +518,19 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotations(Iterable<? extends AnnotationMirror> annotations) {
         for (AnnotationMirror a : annotations) {
+            this.addAnnotation(a);
+        }
+    }
+
+    /**
+     * Adds multiple annotations to this type, removing any existing annotations from the
+     * same qualifier hierarchy first.
+     *
+     * @param annotations the annotations to add
+     */
+    public void replaceAnnotations(Iterable<? extends AnnotationMirror> annotations) {
+        for (AnnotationMirror a : annotations) {
+            this.removeAnnotationInHierarchy(a);
             this.addAnnotation(a);
         }
     }
