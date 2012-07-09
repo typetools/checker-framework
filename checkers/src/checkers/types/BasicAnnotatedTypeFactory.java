@@ -221,7 +221,6 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
-        poly.annotate(method.getElement(), method);
         return mfuPair;
     }
 

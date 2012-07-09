@@ -233,7 +233,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
-//        poly.annotate(method.getElement(), method);
 
         TreePath path = this.getPath(tree);
         if (path!=null) {
