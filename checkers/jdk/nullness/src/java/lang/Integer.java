@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public final class Integer extends Number implements Comparable<Integer> {
   private static final long serialVersionUID = 0;

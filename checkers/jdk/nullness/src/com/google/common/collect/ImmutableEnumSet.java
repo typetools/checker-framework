@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of {@link ImmutableSet} backed by a non-empty {@link

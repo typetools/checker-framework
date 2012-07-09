@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 
 public abstract class InputStream implements Closeable {
   public InputStream() { throw new RuntimeException("skeleton method"); }

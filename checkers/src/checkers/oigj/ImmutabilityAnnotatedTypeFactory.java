@@ -1,7 +1,13 @@
 package checkers.oigj;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -14,17 +20,30 @@ import checkers.oigj.quals.I;
 import checkers.oigj.quals.Immutable;
 import checkers.oigj.quals.Mutable;
 import checkers.oigj.quals.ReadOnly;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.AnnotatedTypes;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 
 /**
  * Adds implicit and default OIGJ annotations, only if the user does not
@@ -119,16 +138,6 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     }
 
     @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(ImmutabilitySubchecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
-    }
-
-    @Override
     protected TreeAnnotator createTreeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTreePreAnnotator(checker);
     }
@@ -136,6 +145,13 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     @Override
     protected TypeAnnotator createTypeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTypePostAnnotator(checker);
+    }
+    
+    @Override
+    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
+        Set<Class<? extends Annotation>> result = new HashSet<>();
+        result.add(I.class);
+        return result;
     }
 
     // **********************************************************************
