@@ -43,8 +43,10 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
                     }
                 }
 
-                if (this.polyQualifier!=null) {
-                    addSubtype(bottom, polyQualifier);
+                if (!this.polyQualifiers.isEmpty()) {
+                    for (AnnotationMirror poly : polyQualifiers.values()) {
+                        addSubtype(bottom, poly);
+                    }
                 }
             }
 
