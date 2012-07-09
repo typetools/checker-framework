@@ -171,13 +171,12 @@ Section~\ref{javac-installation}.)
 \item
   Optionally, update your execution path.
 
-  When doing pluggable type-checking, you need to use a compiler that
-  understands type annotations.  You can do this in two ways:
+  When doing pluggable type-checking, you need to use the ``Type Annotations compiler'', an updated version of the
+  OpenJDK javac compiler that
+  understands type annotations.    The Type Annotations compiler is
+  backward-compatible, so using it as your Java compiler should have no negative consequences.
+  You can do this in three ways:
 
-\begin{enumerate}
-\item
-  Use the ``Type Annotations compiler'', which is an updated version of the
-  OpenJDK javac compiler.  Two ways to do this are:
   \begin{itemize}
   \item
     Add directory
@@ -185,56 +184,48 @@ Section~\ref{javac-installation}.)
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
-    \<~/.bashrc> file:
+    \verb|~/.bashrc| file:
 \begin{Verbatim}
   export PATH=${CHECKERS}/binary:${PATH}
 \end{Verbatim}
   \item
     Whenever this document tells you to run \code{javac}, you
     can instead run \code{\$CHECKERS/binary/javac}.
+  \item
+    Introduce an alias, and 
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  Here is the syntax for your 
+    \verb|~/.bashrc| file:
+\begin{Verbatim}
+  alias javacheck='$CHECKERS/binary/javac'
+\end{Verbatim}
   \end{itemize}
-  The Type Annotations compiler is
-  backward-compatible, so using it should have no negative consequences.
 
-%   Or, you can
-%   install the compiler (from \url{http://types.cs.washington.edu/jsr308/})
-%   using its own
-%   \ahref{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}{installation
-%     instructions}.
-
-\item
-  Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
-  \code{-jar} argument.  For
-  example:
-
-\begin{Verbatim}
-  # Unix
-  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
-       -jar $CHECKERS/binary/jsr308-all.jar -version
-
-  # Windows
-  java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar
-       -jar %CHECKERS%\binary\jsr308-all.jar -version
-\end{Verbatim}
-
-The command should be all on one line, and followed by the javac arguments
-such as \code{-processor} and file names.  You might want to create an
-alias, as in (for Unix):
-\begin{Verbatim}
-  alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar -version'
-\end{Verbatim}
+%% Too complicated.  But, used in the ant target.
+% \item
+%   Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
+%   \code{-jar} argument.  For
+%   example:
+% 
+% \begin{Verbatim}
+%   # Unix
+%   java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
+%        -jar $CHECKERS/binary/jsr308-all.jar -version
+% 
+%   # Windows
+%   java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar
+%        -jar %CHECKERS%\binary\jsr308-all.jar -version
+% \end{Verbatim}
 
 \end{enumerate}
 
-\end{enumerate}
-
-To ensure that it was installed properly, run \<javac -version> (using the
-full pathname to \<javac> if you did not add it to your path).
+To ensure that it was installed properly, run \<javac -version> (possibly using the
+full pathname to \<javac> or the alias, if you did not add the Type Annotations \<javac> to your path).
 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.2.7
+  javac 1.7.0-jsr308-1.3.0
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -429,7 +420,7 @@ To compile the code:
 \begin{itemize}
 \item
   If you wrote annotations in comments (see
-  Section~\ref{annotations-in-comments}) and used implicit import
+  Section~\ref{annotations-in-comments}) and/or used implicit import
   statements (see Section~\ref{implicit-import-statements}), then the code
   can be compiled by any Java compiler, without needing declarations of the
   annotations.

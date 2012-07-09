@@ -8,7 +8,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * Represents a fully-qualified name as defined in the <a href="http://java.sun.com/docs/books/jls/third_edition/html/names.html#6.7">Java Language Specification, section 6.7</a>.
+ * Represents a fully-qualified name as defined in the <a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-6.html#jls-6.7">Java Language Specification, section 6.7</a>.
  * <p>
  * For example, in
  * <pre>
