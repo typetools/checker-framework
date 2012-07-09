@@ -123,6 +123,7 @@ import checkers.flow.cfg.node.UnsignedRightShiftNode;
 import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
@@ -233,27 +234,30 @@ public class CFGBuilder {
     /**
      * Build the control flow graph of some code.
      */
-    public static ControlFlowGraph build(CompilationUnitTree root,
-            ProcessingEnvironment env, UnderlyingAST underlyingAST) {
-        return new CFGBuilder().run(root, env, underlyingAST);
+    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+            CompilationUnitTree root, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        return new CFGBuilder().run(factory, root, env, underlyingAST);
     }
 
     /**
      * Build the control flow graph of a method.
      */
-    public static ControlFlowGraph build(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree tree, Tree classTree) {
-        return new CFGBuilder().run(root, env, tree, classTree);
+    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+            CompilationUnitTree root, ProcessingEnvironment env,
+            MethodTree tree, Tree classTree) {
+        return new CFGBuilder().run(factory, root, env, tree, classTree);
     }
 
     /**
      * Build the control flow graph of some code.
      */
-    public ControlFlowGraph run(CompilationUnitTree root,
-            ProcessingEnvironment env, UnderlyingAST underlyingAST) {
+    public ControlFlowGraph run(AnnotatedTypeFactory factory,
+            CompilationUnitTree root, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                root, env, underlyingAST, exceptionalExitLabel);
+                factory, root, env, underlyingAST, exceptionalExitLabel);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -264,10 +268,11 @@ public class CFGBuilder {
     /**
      * Build the control flow graph of a method.
      */
-    public ControlFlowGraph run(CompilationUnitTree root,
-            ProcessingEnvironment env, MethodTree tree, Tree classTree) {
+    public ControlFlowGraph run(AnnotatedTypeFactory factory,
+            CompilationUnitTree root, ProcessingEnvironment env,
+            MethodTree tree, Tree classTree) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
-        return run(root, env, underlyingAST);
+        return run(factory, root, env, underlyingAST);
     }
 
     /* --------------------------------------------------------- */
@@ -1294,6 +1299,12 @@ public class CFGBuilder {
         protected TreeBuilder treeBuilder;
 
         /**
+         * Annotated type factory used to get flow-insensitive annotations
+         * during CFG construction.
+         */
+        protected AnnotatedTypeFactory factory;
+
+        /**
          * The translation starts in regular mode, that is
          * <code>conditionalMode</code> is false. In this case, no conditional
          * jump nodes are generated.
@@ -1384,6 +1395,8 @@ public class CFGBuilder {
         /**
          * Performs the actual work of phase one.
          * 
+         * @param factory
+         *            factory for flow-insensitive type annotations
          * @param root
          *            compilation unit tree containing the method
          * @param env
@@ -1393,9 +1406,10 @@ public class CFGBuilder {
          *            A method (identified by its AST element).
          * @return The result of phase one.
          */
-        public PhaseOneResult process(CompilationUnitTree root,
-                ProcessingEnvironment env, UnderlyingAST underlyingAST,
-                Label exceptionalExitLabel) {
+        public PhaseOneResult process(AnnotatedTypeFactory factory,
+                CompilationUnitTree root, ProcessingEnvironment env,
+                UnderlyingAST underlyingAST, Label exceptionalExitLabel) {
+            this.factory = factory;
             this.env = env;
             this.tryStack = new TryStack(exceptionalExitLabel);
             elements = env.getElementUtils();

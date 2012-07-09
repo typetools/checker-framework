@@ -23,22 +23,16 @@ import com.sun.source.tree.MethodInvocationTree;
  * @author Stefan Heule
  */
 public class CFCFGBuilder extends CFGBuilder {
-
-    protected AnnotatedTypeFactory factory;
-
-    public CFCFGBuilder(AnnotatedTypeFactory factory) {
-        this.factory = factory;
-    }
-
     /**
      * Build the control flow graph of some code.
      */
     @Override
-    public ControlFlowGraph run(CompilationUnitTree root,
-            ProcessingEnvironment env, UnderlyingAST underlyingAST) {
+        public ControlFlowGraph run(AnnotatedTypeFactory factory,
+            CompilationUnitTree root, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(
-                 root, env, underlyingAST, exceptionalExitLabel);
+                factory, root, env, underlyingAST, exceptionalExitLabel);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
