@@ -113,17 +113,6 @@ public class QualifierPolymorphism {
     /**
      * Resolves polymorphism annotations for the given type.
      *
-     * @param elt the element associated with the type
-     * @param type the type to annotate
-     */
-    public void annotate(Element elt, AnnotatedTypeMirror type) {
-        if (polyQuals.isEmpty()) return;
-        completer.visit(type);
-    }
-
-    /**
-     * Resolves polymorphism annotations for the given type.
-     *
      * @param tree the tree associated with the type
      * @param type the type to annotate
      */
@@ -137,6 +126,8 @@ public class QualifierPolymorphism {
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
+        } else {
+            completer.visit(type);
         }
     }
 
