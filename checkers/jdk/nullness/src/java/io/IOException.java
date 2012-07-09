@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public class IOException extends Exception {
     private static final long serialVersionUID = 0L;

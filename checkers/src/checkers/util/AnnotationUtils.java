@@ -538,13 +538,31 @@ public class AnnotationUtils {
             return annotationName(a1).equals(annotationName(a2));
         return a1 == a2;
     }
+    
+    /**
+     * Checks that the annotation {@code am} has the name {@code aname}. Values
+     * are ignored.
+     */
+    public static boolean areSameByName(AnnotationMirror am, String aname) {
+        Name amname = AnnotationUtils.annotationName(am);
+        return amname.toString().equals(aname);
+    }
+
+    /**
+     * Checks that the annotation {@code am} has the name of {@code anno}.
+     * Values are ignored.
+     */
+    public static boolean areSameByClass(AnnotationMirror am,
+            Class<? extends Annotation> anno) {
+        return areSameByName(am, anno.getCanonicalName());
+    }
 
     /**
      * Checks that two collections contain the same annotations.
      *
      * @return true iff c1 and c2 contain the same annotations
      */
-    public static boolean areSame(Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
+    public static boolean areSame(Collection<? extends AnnotationMirror> c1, Collection<? extends AnnotationMirror> c2) {
         if (c1.size() != c2.size())
             return false;
         if (c1.size() == 1)
@@ -575,7 +593,7 @@ public class AnnotationUtils {
      *
      * @return true iff c contains anno, according to areSame.
      */
-    public static boolean containsSame(Collection<AnnotationMirror> c, AnnotationMirror anno) {
+    public static boolean containsSame(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for(AnnotationMirror an : c) {
             if(AnnotationUtils.areSame(an, anno)) {
                 return true;
@@ -591,7 +609,7 @@ public class AnnotationUtils {
      *
      * @return true iff c contains anno, according to areSameIgnoringValues.
      */
-    public static boolean containsSameIgnoringValues(Collection<AnnotationMirror> c, AnnotationMirror anno) {
+    public static boolean containsSameIgnoringValues(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for(AnnotationMirror an : c) {
             if(AnnotationUtils.areSameIgnoringValues(an, anno)) {
                 return true;

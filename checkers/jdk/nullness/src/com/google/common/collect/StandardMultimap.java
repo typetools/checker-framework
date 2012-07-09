@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Basic implementation of the {@link Multimap} interface. This class represents
