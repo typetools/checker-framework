@@ -21,6 +21,13 @@ import checkers.interning.quals.PolyInterned;
  * @see PolyInterned
  * @see QualifierPolymorphism
  */
+@Documented
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PolymorphicQualifier {}
+public @interface PolymorphicQualifier {
+    // To which sub-hierarchy does this polymorphic qualifier belong.
+    // Pass a qualifier from the given hierarchy, typically the top qualifier.
+    // We use the meaningless PolymorphicQualifier.class as default value and
+    // then ensure there is a single top qualifier to use.
+    Class<? extends Annotation> value() default PolymorphicQualifier.class;
+}
