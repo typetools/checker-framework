@@ -408,7 +408,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 && (secondValue == null || firstValue.isSubtypeOf(secondValue))) {
             Receiver secondInternal = FlowExpressions.internalReprOf(
                     analysis.getFactory(), secondNode);
-            if (!secondInternal.containsUnknown()) {
+            if (!secondInternal.containsUnknown() &&
+                !(secondInternal instanceof FlowExpressions.ValueLiteral)) {
                 S thenStore = res.getRegularStore();
                 S elseStore = thenStore.copy();
                 if (notEqualTo) {
