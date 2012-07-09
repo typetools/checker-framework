@@ -145,12 +145,11 @@ public class JavaSource2CFGDOT {
             System.exit(1);
         }
 
-        // TODO: In general, CFG building will require type information, which
-        // will
-        // require a ProcessingEnvironment in place of the null argument below.
-        // Can
-        // we supply an environment for this example?
-        ControlFlowGraph cfg = CFGBuilder.build(r, null, m, null);
+        // TODO: In general, CFG building will require type
+        // information, which will require an AnnotatedTypeFactory and
+        // a ProcessingEnvironment in place of the null argument
+        // below.  Can we supply an environment for this example?
+        ControlFlowGraph cfg = CFGBuilder.build(null, r, null, m, null);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
         }
