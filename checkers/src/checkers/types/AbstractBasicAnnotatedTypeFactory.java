@@ -402,8 +402,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues) {
-        CFGBuilder builder = new CFCFGBuilder(this);
-        ControlFlowGraph cfg = builder.run(root, env, ast);
+        CFGBuilder builder = new CFCFGBuilder();
+        ControlFlowGraph cfg = builder.run(this, root, env, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(checker, fieldValues);
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
