@@ -38,9 +38,9 @@ import checkers.nullness.quals.Nullable;
  *
  * More information about enums, including descriptions of the
  * implicitly declared methods synthesized by the compiler, can be
- * found in <i>The Java&trade; Language Specification, Third
+ * found in <i>The Java&trade; Language Specification, Java SE
  * Edition</i>, <a
- * href="http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.9">&sect;8.9</a>.
+ * href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9">&sect;8.9</a>.
  *
  * @param <E> The enum type subclass
  * @author  Josh Bloch

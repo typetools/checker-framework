@@ -404,6 +404,13 @@ public class TypeHierarchy {
         }
         // End of copied code.
 
+        // The main array component annotations must be equal.
+        if (!AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
+            return false;
+        }
+
+        // In addition, check that the full types are subtypes, to ensure that the
+        // remaining qualifiers are correct.
         // TODO: go back to the type checker and invoke isSubtype from there.
         // Should we do this more consistently, e.g. also for type arguments?
         // The problem is that I was overriding isSubtype in the checker, but then

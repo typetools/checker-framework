@@ -128,8 +128,7 @@ public class CollectionToArrayHeuristics {
     private void setComponentNullness(boolean isNonNull, AnnotatedTypeMirror type) {
         assert type.getKind() == TypeKind.ARRAY;
         AnnotatedTypeMirror compType = ((AnnotatedArrayType)type).getComponentType();
-        compType.removeAnnotationInHierarchy(factory.NULLABLE);
-        compType.addAnnotation(isNonNull ? factory.NONNULL : factory.NULLABLE);
+        compType.replaceAnnotation(isNonNull ? factory.NONNULL : factory.NULLABLE);
     }
 
     /**
