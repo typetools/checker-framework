@@ -14,6 +14,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
+import checkers.units.quals.UnitsMultiple;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
 
@@ -60,7 +61,7 @@ public class UnitsAnnotatedTypeFactory extends
         }
         for (AnnotationMirror aa : a.getAnnotationType().asElement().getAnnotationMirrors() ) {
             // TODO: Is using toString the best way to go?
-            if (aa.getAnnotationType().toString().equals("checkers.units.quals.UnitsMultiple")) {
+            if (aa.getAnnotationType().toString().equals(UnitsMultiple.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends Annotation> theclass = (Class<? extends Annotation>)
                                                     AnnotationUtils.parseTypeValue(aa, "quantity");

@@ -168,7 +168,7 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
             if (TreeUtils.isConstructor(node)) {
                 assert p instanceof AnnotatedExecutableType;
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
-                changeAnnotationInOneHierarchy(exeType.getReceiverType(), FREE);
+                exeType.getReceiverType().replaceAnnotation(FREE);
                 // TODO: find out why this doesn't allow for this() constructor
                 // to be called from another constructor (the @Free annotation
                 // doesn't stay?)
@@ -185,25 +185,10 @@ public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
                         && getAnnotatedType(a).hasAnnotation(COMMITTED);
             }
             if (!allCommitted) {
-                changeAnnotationInOneHierarchy(p, FREE);
+                p.replaceAnnotation(FREE);
             }
             return null;
         }
 
-    }
-
-    /**
-     * Replace the currently present annotation from the type hierarchy of a
-     * from type and add a instead.
-     * 
-     * @param type
-     *            The type to modify.
-     * @param a
-     *            The annotation that should be present afterwards.
-     */
-    protected void changeAnnotationInOneHierarchy(AnnotatedTypeMirror type,
-            AnnotationMirror a) {
-        type.removeAnnotationInHierarchy(a);
-        type.addAnnotation(a);
     }
 }

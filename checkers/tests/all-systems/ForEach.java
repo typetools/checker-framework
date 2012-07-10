@@ -1,6 +1,11 @@
 import java.util.*;
+
+import org.junit.Ignore;
+
 import checkers.nullness.quals.*;
 
+// @skip-test
+// temporarily disabled until generics work properly
 public class ForEach {
   void m1() {
     Set<? extends CharSequence> s = new HashSet<CharSequence>( );

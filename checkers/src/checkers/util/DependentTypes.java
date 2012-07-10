@@ -59,8 +59,7 @@ public class DependentTypes {
         AnnotationMirror ifpresent = getWhen(dependentInfo);
         if (receiver.hasAnnotation(ifpresent)) {
             AnnotationMirror then = getResult(dependentInfo);
-            type.removeAnnotationInHierarchy(then);
-            type.addAnnotation(then);
+            type.replaceAnnotation(then);
         }
     }
 

@@ -66,4 +66,13 @@ public class PolyRegexTests {
     //:: error: (assignment.type.incompatible)
     @PolyRegex String test5 = str + str; // error
   }
+
+  public static @PolyRegex String slice(@PolyRegex String seq, int start, int end) {
+    if (seq == null) { return null; }
+      return seq;
+  }
+
+  public static @PolyRegex String slice(@PolyRegex String seq, long start, int end) {
+    return slice(seq, (int)start, end);
+  }
 }

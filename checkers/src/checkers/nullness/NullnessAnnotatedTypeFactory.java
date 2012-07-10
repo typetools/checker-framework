@@ -191,10 +191,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         final Set<AnnotationMirror> inferred = flow.test(tree);
         if (inferred != null) {
             // case 7: flow analysis
-            for (AnnotationMirror inf : inferred) {
-                type.removeAnnotationInHierarchy(inf);
-            }
-            type.addAnnotations(inferred);
+            type.replaceAnnotations(inferred);
         }
         dependentTypes.handle(tree, type);
         completer.visit(type);
@@ -205,8 +202,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         AnnotatedDeclaredType type = super.getSelfType(tree);
         // 'this' should always be nonnull
         if (type != null) {
-            type.removeAnnotationInHierarchy(NONNULL);
-            type.addAnnotation(NONNULL);
+            type.replaceAnnotation(NONNULL);
         }
         return type;
     }
@@ -215,8 +211,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     public final AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         AnnotatedDeclaredType dt = super.getEnclosingType(element, tree);
         if (dt != null && dt.hasEffectiveAnnotation(NULLABLE)) {
-            dt.removeAnnotation(NULLABLE);
-            dt.addAnnotation(NONNULL);
+            dt.replaceAnnotation(NONNULL);
         }
         return dt;
     }
@@ -238,7 +233,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
-//        poly.annotate(method.getElement(), method);
 
         TreePath path = this.getPath(tree);
         if (path!=null) {
@@ -315,8 +309,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 return false;
             }
         }
-        type.removeAnnotationInHierarchy(NULLABLE);
-        type.addAnnotation(NULLABLE);
+        type.replaceAnnotation(NULLABLE);
         return true;
     }
 
@@ -370,8 +363,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 && !type.hasEffectiveAnnotation(NULLABLE)
                 && !type.getKind().isPrimitive()) {
             boolean wasNN = type.hasEffectiveAnnotation(NONNULL);
-            type.removeAnnotationInHierarchy(LAZYNONNULL);
-            type.addAnnotation(LAZYNONNULL);
+            type.replaceAnnotation(LAZYNONNULL);
             return wasNN;
         }
         return false;
@@ -393,8 +385,7 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
                 // Workaround for System.{out,in,err} issue: assume all static
                 // fields in java.lang.System are nonnull.
                 || isSystemField(elt)) {
-            type.removeAnnotationInHierarchy(NONNULL);
-            type.addAnnotation(NONNULL);
+            type.replaceAnnotation(NONNULL);
         }
     }
 
