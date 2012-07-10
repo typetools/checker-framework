@@ -143,7 +143,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         // store information about method call if possible
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getFactory(), n);
-        if (methodCall != null && !methodCall.containsUnknown()) {
+        if (methodCall != null && canInsertReceiver(methodCall)) {
             insertValue(methodCall, val);
         }
     }
@@ -167,6 +167,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
+     * Returns true if the receiver {@code r} can be stored in this store.
+     */
+    public boolean canInsertReceiver(Receiver r) {
+        if (r instanceof FlowExpressions.FieldAccess
+                || r instanceof FlowExpressions.LocalVariable
+                || r instanceof FlowExpressions.PureMethodCall) {
+            return !r.containsUnknown();
+        }
+
+        return false;
+    }
+
+    /**
      * Add the abstract value {@code value} for the expression {@code r}
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
@@ -184,6 +197,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
+            return;
+        }
+        if (r.containsUnknown()) {
+            // Expressions containing unknown expressions are not stored.
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
@@ -218,7 +235,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         } else {
-            assert false;
+            // No other types of expressions need to be stored.
         }
     }
 
@@ -252,7 +269,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 .internalReprOfFieldAccess(analysis.getFactory(), n);
         return fieldValues.get(fieldAccess);
     }
-    
+
     /**
      * @return Current abstract value of a method call, or {@code null} if no
      *         information is available.
