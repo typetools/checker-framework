@@ -147,7 +147,7 @@ public class NonNullAnnotatedTypeFactory extends
                 el = TreeUtils.elementFromUse((MemberSelectTree) tree);
             }
             if (getDeclAnnotation(el, LazyNonNull.class) != null) {
-                changeAnnotationInOneHierarchy(type, NULLABLE);
+                type.replaceAnnotation(NULLABLE);
             }
         }
 
@@ -184,7 +184,7 @@ public class NonNullAnnotatedTypeFactory extends
         // fields in java.lang.System are nonnull.
                 || isSystemField(elt)) {
 
-            changeAnnotationInOneHierarchy(type, NONNULL);
+            type.replaceAnnotation(NONNULL);
         }
     }
 

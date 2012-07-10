@@ -9,7 +9,7 @@ import checkers.quals.TypeQualifier;
 /**
  * Represents a method descriptor (JVM representation of method signature)
  * as defined in the <a
- * href="http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#7035">Java Virtual Machine Specification, section 4.3.3</a>.
+ * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3">Java Virtual Machine Specification, section 4.3.3</a>.
  * <p>
  * Example:
  * <pre>

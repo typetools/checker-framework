@@ -80,8 +80,7 @@ import com.sun.source.tree.*;
                 String literal = (String) ((LiteralTree) arg).getValue();
                 if (systemProperties.contains(literal)) {
                     AnnotatedTypeMirror type = method.getReturnType();
-                    type.removeAnnotationInHierarchy(factory.NONNULL);
-                    type.addAnnotation(factory.NONNULL);
+                    type.replaceAnnotation(factory.NONNULL);
                 }
             }
         }
