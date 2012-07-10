@@ -160,16 +160,18 @@ You can solve the problem by re-generating \code{jdk/jdk.jar} and
 
 
 \item
-An error such as this:
+A \<NoSuchFieldError> such as this:
 
 \begin{Verbatim}
 java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
 \end{Verbatim}
 
 \noindent
-means that the compiler is executing on a JDK that lacks the field
-\<NATIVE\_HEADER\_OUTPUT>, which was added in JDK 8.
-Most likely you are using the wrong bootclasspath.
+Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
+The error message suggests that
+you're not executing with the right bootclasspath: some classes were
+compiled with the JDK 8 version and expect the field, but you're
+executing the compiler on a JDK without the field.
 
 One possibility is that you are not running the Type Annotations compiler
 --- use \<javac -version> to check this, then use the right one.  (Maybe
@@ -667,7 +669,7 @@ A pluggable type-checker, such as those created by the Checker Framework,
 aims to help you prevent or detect all errors of a given variety.  An
 alternate approach is to use a bug detector such as
 \ahref{http://findbugs.sourceforge.net/}{FindBugs},
-\ahref{http://artho.com/jlint/}{JLint}, or
+\ahref{http://jlint.sourceforge.net/}{Jlint}, or
 \ahref{http://pmd.sourceforge.net/}{PMD}.
 
 A pluggable type-checker
@@ -704,7 +706,7 @@ differs from a bug detector in several ways:
 \end{itemize}
 
 A case study~\cite[\S6]{PapiACPE2008} compared the Checker Framework's nullness
-checker with those of FindBugs, JLint, and PMD\@.  The case study was on a
+checker with those of FindBugs, Jlint, and PMD\@.  The case study was on a
 well-tested program in daily use.  The Checker Framework tool found 8
 nullness errors (that is, null pointer dereferences).  None of the other
 tools found any errors.
@@ -749,5 +751,5 @@ Checker Framework distribution and is also available on the web at
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
-%  LocalWords:  extJavac ZipFile AprintErrorStack printAllQualifiers JLint
+%  LocalWords:  extJavac ZipFile AprintErrorStack printAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi

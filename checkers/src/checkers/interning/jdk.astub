@@ -53,6 +53,21 @@ public final class Locale implements Cloneable, Serializable {
   public @Interned String getVariant();
 }
 
+public class Arrays{
+  public static void sort(@PolyInterned Object[] a1);
+  public static void sort(@PolyInterned Object[] a1, int a2, int a3);
+  public static int binarySearch(@PolyInterned Object[] a1, @PolyInterned Object a2);
+  public static int binarySearch(@PolyInterned Object[] a1, int a2, int a3, @PolyInterned Object a4);
+  public static boolean equals(@PolyInterned Object [] a1, @PolyInterned Object [] a2);
+  public static void fill(@PolyInterned Object[] a1, @PolyInterned Object a2);
+  public static void fill(@PolyInterned Object[] a1, int a2, int a3, @PolyInterned Object a4);
+  public static int hashCode(@PolyInterned Object [] a1);
+  public static int deepHashCode(@PolyInterned Object [] a1);
+  public static boolean deepEquals(@PolyInterned Object [] a1, @PolyInterned Object [] a2);
+  public static String toString(@PolyInterned Object [] a1);
+  public static String deepToString(@PolyInterned Object [] a1);
+}
+
 package java.util.jar;
 
 public class Attributes implements Map<Object,Object>, Cloneable {

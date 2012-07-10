@@ -7,7 +7,7 @@ import java.lang.annotation.*;
  * TODO: doc.
  * A marker annotation to signify that the type argument corresponding to the annotated
  * type variable can safely ignore KeyFor annotations.
- * The prime example is Map.Entry<K>.
+ * The prime example is Map.Entry&lt;K&gt;.
  * It is not checked whether the annotated class is immutable.
  * The value is the set of zero-based indices of the type parameters that should be covariant.
  *
