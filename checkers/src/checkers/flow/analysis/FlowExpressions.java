@@ -53,7 +53,7 @@ public class FlowExpressions {
 
     /**
      * @return The internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Can contain {@link Unknown} as receiver.
+     *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotatedTypeFactory factory,
             Node receiverNode) {
