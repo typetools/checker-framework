@@ -387,12 +387,12 @@ can also write annotations to indicate type qualifiers for array levels and
 receivers.  Here are a few examples:
 
 \begin{alltt}
-  \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}             // return value
-  int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}  // parameter
-  String toString() \underline{@ReadOnly} \ttlcb{} ... \ttrcb{}           // receiver ("this" parameter)
-  \underline{@NonNull} List<\underline{@Interned} String> messages;     // generics:  non-null list of interned Strings
-  \underline{@Interned} String \underline{@NonNull} [] messages;        // arrays:  non-null array of interned Strings
-  myDate = (\underline{@ReadOnly} Date) readonlyObject;     // cast
+  \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}               // return value
+  int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}    // parameter
+  String toString(\underline{@ReadOnly} MyClass this) \ttlcb{} ... \ttrcb{} // receiver ("this" parameter)
+  \underline{@NonNull} List<\underline{@Interned} String> messages;       // generics:  non-null list of interned Strings
+  \underline{@Interned} String \underline{@NonNull} [] messages;          // arrays:  non-null array of interned Strings
+  myDate = (\underline{@ReadOnly} Date) readonlyObject;       // cast
 \end{alltt}
 
 You can also write the annotations within comments, as in
