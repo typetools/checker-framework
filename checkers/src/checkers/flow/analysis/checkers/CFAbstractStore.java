@@ -143,7 +143,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         // store information about method call if possible
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getFactory(), n);
-        if (methodCall != null && canInsertReceiver(methodCall)) {
+        if (canInsertReceiver(methodCall)) {
             insertValue(methodCall, val);
         }
     }
