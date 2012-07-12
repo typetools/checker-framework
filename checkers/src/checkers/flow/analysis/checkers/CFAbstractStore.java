@@ -161,7 +161,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
      */
-    protected void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
+    public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         V value = analysis.createAbstractValue(Collections.singleton(a));
         insertValue(r, value);
     }
@@ -192,7 +192,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
      */
-    protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */
+    public void insertValue(FlowExpressions.Receiver r, /* @Nullable */
             V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
