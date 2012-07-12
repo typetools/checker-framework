@@ -12,7 +12,6 @@ import javax.lang.model.type.TypeMirror;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
@@ -208,10 +207,10 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             Set<VariableTree> violatingFields = new HashSet<>();
             // TODO: we should not need to cast here?
             @SuppressWarnings("unchecked")
-            AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
+            AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?>) atypeFactory;
             for (VariableTree field : fields) {
                 TypeMirror type = InternalUtils.typeOf(field);
-                CFStore store = factory.getRegularExitStore(node);
+                CommitmentStore store = factory.getRegularExitStore(node);
                 // Does this field need to satisfy the invariant?
                 if (factory.getAnnotatedType(field).hasAnnotation(invariant)) {
                     // Does the field satisfy its invariant?
@@ -236,9 +235,8 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     first = false;
                     fieldsString.append(f.getName());
                 }
-                checker.report(
-                        Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
-                        node);
+                checker.report(Result.failure(COMMITMENT_FIELDS_UNINITIALIZED,
+                        fieldsString), node);
             }
         }
         return super.visitMethod(node, p);
