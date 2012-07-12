@@ -596,7 +596,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         such as "\n").
      */
     public String toDOToutput() {
-        StringBuilder result = new StringBuilder("CFStore (\\n");
+        StringBuilder result = new StringBuilder(this.getClass().getCanonicalName() + " (\\n");
+        internalDotOutput(result);
+        result.append(")");
+        return result.toString();
+    }
+
+    /**
+     * Adds a DOT representation of the internal information of this store to
+     * {@code result}.
+     */
+    protected void internalDotOutput(StringBuilder result) {
         for (Entry<Element, V> entry : localVariableValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
@@ -610,7 +620,5 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
-        result.append(")");
-        return result.toString();
     }
 }
