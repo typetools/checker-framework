@@ -1,0 +1,35 @@
+;;;; Emacs Bookmark Format Version 1 ;;;;
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("1 framework"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/checkers/src/checkers/types/InternalAnnotationScanner.java")
+   (front-context-string . "        Element ")
+   (rear-context-string . "th(root, node);\n")
+   (position . 7235)))
+ ("2 JUnit test"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/junit/tests/JUnitTests.java")
+   (front-context-string . "		Assert.assertE")
+   (rear-context-string . "estEquality() {\n")
+   (position . 193)))
+ ("3 junit"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/junit/src/org/junit/Assert.java")
+   (front-context-string . "package org.juni")
+   (rear-context-string)
+   (position . 1)))
+ ("4 AnnotationLocation"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/IGJChecker/src/checkers/types/AnnotationLocation.java")
+   (front-context-string . "@Immutable\npubli")
+   (rear-context-string . "</table>\n *\n */\n")
+   (position . 1287)))
+ ("5 AnnotatedTypeFactory"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/IGJChecker/src/checkers/types/AnnotatedTypeFactory.java")
+   (front-context-string . "    private Map<")
+   (rear-context-string . "he(CACHE_SIZE);\n")
+   (position . 2230)))
+ ("6 taintness"
+  ((filename . "~/research/types/checker-framework/demos/nonnull-interned-demo/personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java")
+   (front-context-string . "    private <T> ")
+   (rear-context-string . "({\"unchecked\"})\n")
+   (position . 6750)))
+)

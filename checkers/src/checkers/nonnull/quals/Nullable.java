@@ -1,0 +1,47 @@
+package checkers.nonnull.quals;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import checkers.nullness.NullnessChecker;
+import checkers.quals.ImplicitFor;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+
+import com.sun.source.tree.Tree;
+
+/**
+ * {@code @Nullable} is a type annotation that indicates that the value is not
+ * known to be non-null (see {@link NonNull}). Another perspective is that if a
+ * type is annotated with {@code Nullable}, then it can be legal/expected for a
+ * value of that type to be null.
+ * <p>
+ * 
+ * For example, if a method parameter's type is annotated with {@code @Nullable}
+ * , then passing {@code null} as an argument should not by itself cause the
+ * method to throw an exception, including a {@code NullPointerException}.
+ * Similarly, if a field's type is {@code @Nullable}, then setting it to null
+ * should not by itself cause a run-time exception.
+ * <p>
+ * 
+ * No more than one of {@link Nullable} and {@code NonNull} may be written on a
+ * given type.
+ * <p>
+ * 
+ * This annotation is associated with the {@link NullnessChecker}.
+ * 
+ * @see NonNull
+ * @see NullnessChecker
+ * @checker.framework.manual #nullness-checker Nullness Checker
+ */
+@Documented
+@SubtypeOf({})
+@TypeQualifier
+@Retention(RetentionPolicy.RUNTIME)
+@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+public @interface Nullable {
+}
