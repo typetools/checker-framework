@@ -9,9 +9,11 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.NotOnlyCommitted;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFValue;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.AnnotationUtils;
@@ -25,8 +27,9 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
-public class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker>
-        extends BasicAnnotatedTypeFactory<Checker> {
+public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker, Transfer extends CommitmentTransfer<Transfer>, Flow extends CFAbstractAnalysis<CFValue, CommitmentStore, Transfer>>
+        extends
+        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CommitmentStore, Transfer, Flow> {
 
     /** The annotations */
     public final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED,

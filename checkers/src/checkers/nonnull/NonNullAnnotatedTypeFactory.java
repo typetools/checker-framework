@@ -2,6 +2,7 @@ package checkers.nonnull;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -11,6 +12,7 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.CommitmentAnnotatedTypeFactory;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.nonnull.quals.AssertNonNullAfter;
 import checkers.nonnull.quals.AssertNonNullIfFalse;
 import checkers.nonnull.quals.AssertNonNullIfNonNull;
@@ -26,6 +28,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.ElementUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -33,8 +36,9 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
-public class NonNullAnnotatedTypeFactory extends
-        CommitmentAnnotatedTypeFactory<NonNullChecker> {
+public class NonNullAnnotatedTypeFactory
+        extends
+        CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
@@ -115,6 +119,12 @@ public class NonNullAnnotatedTypeFactory extends
         localdef.add(NULLABLE);
         localdef.add(COMMITTED);
         defaults.setLocalVariableDefault(localdef);
+    }
+
+    @Override
+    protected NonNullAnalysis createFlowAnalysis(NonNullChecker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
+        return new NonNullAnalysis(this, env, checker, fieldValues);
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
@@ -215,7 +225,7 @@ public class NonNullAnnotatedTypeFactory extends
 
     protected class NonNullTreeAnnotator
             extends
-            CommitmentAnnotatedTypeFactory<NonNullChecker>.CommitmentTreeAnnotator {
+            CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTreeAnnotator {
         public NonNullTreeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
@@ -256,10 +266,9 @@ public class NonNullAnnotatedTypeFactory extends
 
     protected class NonNullTypeAnnotator
             extends
-            CommitmentAnnotatedTypeFactory<NonNullChecker>.CommitmentTypeAnnotator {
+            CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTypeAnnotator {
         public NonNullTypeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
-
     }
 }
