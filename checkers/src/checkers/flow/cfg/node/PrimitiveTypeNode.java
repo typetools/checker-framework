@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
