@@ -1,0 +1,29 @@
+#if 0
+Do not attempt to compile this file with a Java compiler such as javac.
+You first need to preprocess it with cpp, the C preprocessor.
+The correct way to build the system is to run 'make'.
+#endif
+
+#if defined(PARAM_INT)
+  #define INT int
+  #define INTEGER Integer
+  #define INTValue intValue
+  #define modulus_INT modulus_int
+  #define modulus_strict_INT modulus_strict_int
+  #define nonmodulus_strict_INT nonmodulus_strict_int
+  #define nonmodulus_strict_INT_internal nonmodulus_strict_int_internal
+  #define MissingNumbersIteratorINT MissingNumbersIteratorInt
+  #define CastToInt(expr) expr
+#elif defined(PARAM_LONG)
+  #define INT long
+  #define INTEGER Long
+  #define INTValue longValue
+  #define modulus_INT modulus_long
+  #define modulus_strict_INT modulus_strict_long
+  #define nonmodulus_strict_INT nonmodulus_strict_long
+  #define nonmodulus_strict_INT_internal nonmodulus_strict_long_internal
+  #define MissingNumbersIteratorINT MissingNumbersIteratorLong
+  #define CastToInt(expr) new Long(expr).intValue()
+#else
+  #error "One of PARAM_INT or PARAM_LONG must be defined"
+#endif
