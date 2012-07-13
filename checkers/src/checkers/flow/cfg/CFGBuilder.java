@@ -124,6 +124,7 @@ import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
@@ -2975,6 +2976,7 @@ public class CFGBuilder {
             StatementTree statement = tree.getStatement();
 
             TypeMirror exprType = InternalUtils.typeOf(expression);
+
             if (types.isSubtype(exprType, iterableType)) {
                 // Take the upper bound of a type variable or wildcard
                 exprType = TypesUtils.upperBound(exprType);
@@ -2989,15 +2991,25 @@ public class CFGBuilder {
                 MethodInvocationTree iteratorCall =
                     treeBuilder.buildMethodInvocation(iteratorSelect);
 
-                DeclaredType elementType =
-                    (DeclaredType)InternalUtils.typeOf(iteratorCall);
+                AnnotatedTypeMirror annotatedIteratorType =
+                    factory.getAnnotatedType(iteratorCall);
+
+                DeclaredType iteratorType =
+                    (DeclaredType)annotatedIteratorType.getUnderlyingType();
+                // (DeclaredType)InternalUtils.typeOf(iteratorCall);
+
+                System.out.println("Annotated iterator type: " + annotatedIteratorType);
+
+                // TODO: Create an actual Type Tree with annotations in it!!!!
 
                 // Declare and initialize a new, unique iterator variable
                 VariableTree iteratorVariable =
-                    treeBuilder.buildVariableDecl(elementType,
+                    treeBuilder.buildVariableDecl(iteratorType,
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
+
+                System.out.println("Iterator variable: " + iteratorVariable);
 
                 extendWithNode(new VariableDeclarationNode(iteratorVariable));
 
@@ -3075,12 +3087,36 @@ public class CFGBuilder {
                 // TODO: Shift any labels after the initialization of the
                 // temporary array variable.
 
+                AnnotatedTypeMirror annotatedArrayType =
+                    factory.getAnnotatedType(expression);
+                
+                assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType) :
+                    "ArrayType must be represented by AnnotatedArrayType";
+
+                AnnotatedTypeMirror annotatedElementType =
+                    ((AnnotatedTypeMirror.AnnotatedArrayType)annotatedArrayType).getComponentType();
+
+                System.out.println("Annotated array component type: " + annotatedElementType);
+
+                Tree annotatedElementTypeTree =
+                    treeBuilder.buildAnnotatedType(annotatedElementType);
+                System.out.println("Annotated element type tree: " +
+                                   annotatedElementTypeTree);
+
+                Tree annotatedArrayTypeTree =
+                    treeBuilder.buildAnnotatedType(annotatedArrayType);
+                System.out.println("Annotated array type tree: " +
+                                   annotatedArrayTypeTree);
+
                 // Declare and initialize a temporary array variable
                 VariableTree arrayVariable =
-                    treeBuilder.buildVariableDecl(arrayType,
+                    treeBuilder.buildVariableDecl(annotatedArrayTypeTree,
                                                   uniqueName("array"),
                                                   variableElement.getEnclosingElement(),
                                                   expression);
+
+                System.out.println("Array variable: " + arrayVariable);
+
                 extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
 
