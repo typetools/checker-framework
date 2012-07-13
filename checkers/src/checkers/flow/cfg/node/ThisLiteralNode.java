@@ -6,7 +6,7 @@ import java.util.Collections;
 import checkers.flow.util.HashCodeUtils;
 
 /**
- * A node for a reference to 'this'.
+ * A node for a reference to 'this', either implicit or explicit.
  * 
  * <pre>
  *   <em>this</em>
