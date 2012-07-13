@@ -13,7 +13,7 @@ import com.sun.source.tree.Tree;
  * A node for a reference to 'super'.
  * 
  * <pre>
- *   <em>this</em>
+ *   <em>super</em>
  * </pre>
  * 
  * @author Stefan Heule
