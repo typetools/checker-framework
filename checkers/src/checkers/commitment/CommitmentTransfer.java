@@ -1,7 +1,11 @@
 package checkers.commitment;
 
+import java.util.Collections;
+import java.util.Set;
+
 import javax.lang.model.element.Element;
 
+import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
@@ -13,6 +17,7 @@ import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.MethodInvocationNode;
 
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks
@@ -51,10 +56,34 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
                 FieldAccess fa = (FieldAccess) expr;
                 if (fa.getReceiver() instanceof ThisReference) {
                     Element field = fa.getField();
-                    in.getRegularStore().addInitializedField(field);
+                    result.getRegularStore().addInitializedField(field);
                 }
             }
         }
         return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, CommitmentStore> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, CommitmentStore> in) {
+        TransferResult<CFValue, CommitmentStore> result = super
+                .visitMethodInvocation(n, in);
+        assert result instanceof ConditionalTransferResult;
+        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n);
+        if (newlyInitializedFields.size() > 0) {
+            for (Element f : newlyInitializedFields) {
+                result.getThenStore().addInitializedField(f);
+                result.getElseStore().addInitializedField(f);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the set of fields that can safely be considered initialized after
+     * the method call {@code node}.
+     */
+    protected Set<Element> initializedFieldsAfterCall(MethodInvocationNode node) {
+        return Collections.emptySet();
     }
 }
