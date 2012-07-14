@@ -12,6 +12,7 @@ import javax.lang.model.element.ExecutableElement;
 import checkers.commitment.CommitmentChecker;
 import checkers.commitment.CommitmentStore;
 import checkers.commitment.CommitmentTransfer;
+import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.analysis.checkers.CFValue;
@@ -55,25 +56,18 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
     public CommitmentStore initialStore(UnderlyingAST underlyingAST,
             List<LocalVariableNode> parameters) {
         CommitmentStore result = super.initialStore(underlyingAST, parameters);
-        Map<FieldAccess, CFValue> fieldValues = result.getFieldValues();
-
         // Case 3: all non-null fields that have an initializer are part of
         // 'fieldValues', and can be considered initialized.
-        for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
-            FieldAccess field = e.getKey();
-            if (field.getReceiver() instanceof ThisReference) {
-                // There is no need to check what CFValue the field has, as any
-                // value means that is has been initialized.
-                result.addInitializedField(field.getField());
-            }
-        }
+        addInitializedFields(result);
         return result;
     }
 
     @Override
-    protected Set<Element> initializedFieldsAfterCall(MethodInvocationNode node) {
-        Set<Element> result = new HashSet<>(
-                super.initializedFieldsAfterCall(node));
+    protected Set<Element> initializedFieldsAfterCall(
+            MethodInvocationNode node,
+            ConditionalTransferResult<CFValue, CommitmentStore> transferResult) {
+        Set<Element> result = new HashSet<>(super.initializedFieldsAfterCall(
+                node, transferResult));
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         boolean isConstructor = method.getSimpleName().contentEquals("<init>");
@@ -95,6 +89,28 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
                 }
             }
         }
+
+        // Case 2: After a method call that has some postcondition ensuring some
+        // properties about fields, these fields can be known to be initialized.
+        addInitializedFields(transferResult.getThenStore());
+        addInitializedFields(transferResult.getElseStore());
         return result;
+    }
+
+    /**
+     * For the given store {@code store}, add all fields for which we know some
+     * property (by looking at 'fieldValues' in the store) to the set of
+     * initialized fields.
+     */
+    protected void addInitializedFields(CommitmentStore store) {
+        Map<FieldAccess, CFValue> fieldValues = store.getFieldValues();
+        for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
+            FieldAccess field = e.getKey();
+            if (field.getReceiver() instanceof ThisReference) {
+                // There is no need to check what CFValue the field has, as any
+                // value means that is has been initialized.
+                store.addInitializedField(field.getField());
+            }
+        }
     }
 }
