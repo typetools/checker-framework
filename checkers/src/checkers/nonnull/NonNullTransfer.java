@@ -1,13 +1,22 @@
 package checkers.nonnull;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.commitment.CommitmentChecker;
+import checkers.commitment.CommitmentStore;
 import checkers.commitment.CommitmentTransfer;
+import checkers.flow.analysis.FlowExpressions.FieldAccess;
+import checkers.flow.analysis.FlowExpressions.ThisReference;
+import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.cfg.UnderlyingAST;
+import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ThisLiteralNode;
@@ -27,6 +36,7 @@ import com.sun.source.tree.VariableTree;
  * the current class can safely be considered initialized.
  * <li>TODO: After a method call with a postcondition that ensures a field to be
  * non-null, that field can safely be considered initialized.
+ * <li>All non-null fields with an initializer can be considered initialized.
  * </ol>
  * 
  * @author Stefan Heule
@@ -39,6 +49,25 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
     public NonNullTransfer(NonNullAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
+    }
+
+    @Override
+    public CommitmentStore initialStore(UnderlyingAST underlyingAST,
+            List<LocalVariableNode> parameters) {
+        CommitmentStore result = super.initialStore(underlyingAST, parameters);
+        Map<FieldAccess, CFValue> fieldValues = result.getFieldValues();
+
+        // Case 3: all non-null fields that have an initializer are part of
+        // 'fieldValues', and can be considered initialized.
+        for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
+            FieldAccess field = e.getKey();
+            if (field.getReceiver() instanceof ThisReference) {
+                // There is no need to check what CFValue the field has, as any
+                // value means that is has been initialized.
+                result.addInitializedField(field.getField());
+            }
+        }
+        return result;
     }
 
     @Override
