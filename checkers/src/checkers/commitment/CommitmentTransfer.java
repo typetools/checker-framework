@@ -69,7 +69,8 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         TransferResult<CFValue, CommitmentStore> result = super
                 .visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n);
+        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
+                (ConditionalTransferResult<CFValue, CommitmentStore>) result);
         if (newlyInitializedFields.size() > 0) {
             for (Element f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
@@ -82,8 +83,12 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     /**
      * Returns the set of fields that can safely be considered initialized after
      * the method call {@code node}.
+     * 
+     * @param result
      */
-    protected Set<Element> initializedFieldsAfterCall(MethodInvocationNode node) {
+    protected Set<Element> initializedFieldsAfterCall(
+            MethodInvocationNode node,
+            ConditionalTransferResult<CFValue, CommitmentStore> result) {
         return Collections.emptySet();
     }
 }
