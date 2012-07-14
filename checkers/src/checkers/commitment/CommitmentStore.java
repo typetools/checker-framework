@@ -1,10 +1,12 @@
 package checkers.commitment;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
 
+import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
@@ -77,5 +79,9 @@ public class CommitmentStore extends CFAbstractStore<CFValue, CommitmentStore> {
     protected void internalDotOutput(StringBuilder result) {
         super.internalDotOutput(result);
         result.append("  initialized fields = " + initializedFields + "\\n");
+    }
+    
+    public Map<FieldAccess, CFValue> getFieldValues() {
+        return fieldValues;
     }
 }
