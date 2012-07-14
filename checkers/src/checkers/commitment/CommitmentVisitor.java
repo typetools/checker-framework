@@ -7,12 +7,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeVisitor;
-import checkers.flow.analysis.FlowExpressions.FieldAccess;
-import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -20,7 +16,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -199,28 +194,23 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                         node);
             }
 
-            // Check that all fields satisfy the invariant at the end of the
+            // Check that all fields have been initialized at the end of the
             // constructor.
             ClassTree currentClass = TreeUtils.enclosingClass(getCurrentPath());
-            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
-            Set<VariableTree> fields = getAllFields(currentClass);
+            Set<VariableTree> fields = CommitmentChecker
+                    .getAllFields(currentClass);
             Set<VariableTree> violatingFields = new HashSet<>();
+            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
             // TODO: we should not need to cast here?
             @SuppressWarnings("unchecked")
             AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?>) atypeFactory;
+            CommitmentStore store = factory.getRegularExitStore(node);
             for (VariableTree field : fields) {
-                TypeMirror type = InternalUtils.typeOf(field);
-                CommitmentStore store = factory.getRegularExitStore(node);
                 // Does this field need to satisfy the invariant?
                 if (factory.getAnnotatedType(field).hasAnnotation(invariant)) {
-                    // Does the field satisfy its invariant?
-                    FieldAccess f = new FieldAccess(new ThisReference(
-                            InternalUtils.typeOf(currentClass)), type,
-                            TreeUtils.elementFromDeclaration(field));
-                    CFValue value = store.getValue(f);
-                    if (value == null
-                            || !AnnotationUtils.containsSame(
-                                    value.getAnnotations(), invariant)) {
+                    // Has the field been initialized?
+                    if (!store.isFieldInitialized(TreeUtils
+                            .elementFromDeclaration(field))) {
                         violatingFields.add(field);
                     }
                 }
@@ -240,19 +230,5 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             }
         }
         return super.visitMethod(node, p);
-    }
-
-    /**
-     * Returns a list of all fields of the given class
-     */
-    protected Set<VariableTree> getAllFields(ClassTree clazz) {
-        Set<VariableTree> fields = new HashSet<>();
-        for (Tree t : clazz.getMembers()) {
-            if (t.getKind().equals(Tree.Kind.VARIABLE)) {
-                VariableTree vt = (VariableTree) t;
-                fields.add(vt);
-            }
-        }
-        return fields;
     }
 }
