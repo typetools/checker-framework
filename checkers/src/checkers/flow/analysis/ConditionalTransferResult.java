@@ -95,5 +95,19 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
     public boolean containsTwoStores() {
         return true;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append("RegularTransferResult(");
+        result.append(System.getProperty("line.separator"));
+        result.append("resultValue = " + resultValue);
+        result.append(System.getProperty("line.separator"));
+        result.append("thenStore = " + thenStore);
+        result.append("elseStore = " + elseStore);
+        result.append(System.getProperty("line.separator"));
+        result.append(")");
+        return result.toString();
+    }
 
 }

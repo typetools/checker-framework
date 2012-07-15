@@ -3,9 +3,6 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
