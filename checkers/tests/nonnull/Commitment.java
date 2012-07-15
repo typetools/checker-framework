@@ -12,9 +12,11 @@ public class Commitment {
     //:: error: (commitment.invalid.field.annotation)
     @Unclassified @Nullable String c;
     
-    //:: error: (commitment.invalid.constructor.return.type) :: error: (commitment.fields.uninitialized)
+    //:: error: (commitment.invalid.constructor.return.type)
     public @Free Commitment(int i) {
+        a = "";
         t = "";
+        b = "";
     }
 
     //:: error: (commitment.invalid.constructor.return.type)
