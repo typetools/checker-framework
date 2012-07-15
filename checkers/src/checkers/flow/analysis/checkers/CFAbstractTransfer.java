@@ -142,10 +142,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             // if we are inside a constructor.
             List<Pair<VariableElement, V>> fieldValues = analysis
                     .getFieldValues();
+            boolean isConstructor = TreeUtils.isConstructor(methodTree);
             for (Pair<VariableElement, V> p : fieldValues) {
                 VariableElement element = p.first;
                 V value = p.second;
-                boolean isConstructor = TreeUtils.isConstructor(methodTree);
                 if (ElementUtils.isFinal(element) || isConstructor) {
                     TypeMirror type = InternalUtils.typeOf(method
                             .getClassTree());
