@@ -38,7 +38,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     protected boolean areValidAnnotations(Set<AnnotationMirror> annotations) {
         for (AnnotationMirror a : annotations) {
-            if (!AnnotationUtils.containsSameIgnoringValues(analysis.supportedAnnotations, a)) {
+            if (!AnnotationUtils.containsSameIgnoringValues(
+                    analysis.supportedAnnotations, a)) {
                 return false;
             }
         }
@@ -63,11 +64,33 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     }
 
     /**
-     * Return whether this Value is a proper subtype of the argument Value.
+     * Returns whether this value is a proper subtype of the argument
+     * {@code other}. The annotations are compared per hierarchy, and missing
+     * annotations are treated as 'top'.
      */
     public boolean isSubtypeOf(CFAbstractValue<V> other) {
-        return analysis.qualifierHierarchy.isSubtype(annotations,
-                other.annotations);
+        boolean result = true;
+        for (AnnotationMirror otherAnno : other.annotations) {
+            AnnotationMirror anno = getAnnotationInHierarchy(otherAnno);
+            if (anno == null) {
+                result &= true; // 'null' means 'top'
+            } else {
+                result &= analysis.qualifierHierarchy
+                        .isSubtype(anno, otherAnno);
+            }
+        }
+        return result;
+    }
+
+    public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+        AnnotationMirror root = analysis.qualifierHierarchy
+                .getRootAnnotation(p);
+        for (AnnotationMirror anno : annotations) {
+            if (analysis.qualifierHierarchy.isSubtype(anno, root)) {
+                return anno;
+            }
+        }
+        return null;
     }
 
     @Override
