@@ -37,8 +37,9 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
     }
 
     /**
-     * @return The list of annotations of the commitment type system (not
-     *         including {@link CommmittedOnly} and {@link NotOnlyCommitted}.
+     * @return The list of type annotations of the commitment type system (i.e.,
+     *         not including declaration annotations like {@link CommmittedOnly}
+     *         or {@link NotOnlyCommitted}).
      */
     public Set<AnnotationMirror> getCommitmentAnnotations() {
         Set<AnnotationMirror> result = new HashSet<>();
