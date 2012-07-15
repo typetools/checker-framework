@@ -1,7 +1,6 @@
 import checkers.commitment.quals.*;
 import checkers.nonnull.quals.*;
 
-@SuppressWarnings("nonnull") // Commitment flow not implemented yet
 public class CommitmentFlow {
     
     @NonNull CommitmentFlow t;
