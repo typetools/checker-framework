@@ -98,8 +98,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         if (obj == null || !(obj instanceof CFAbstractValue)) {
             return false;
         }
-        @SuppressWarnings("unchecked")
-        CFAbstractValue<V> other = (CFAbstractValue<V>) obj;
+        CFAbstractValue<?> other = (CFAbstractValue<?>) obj;
         return AnnotationUtils
                 .areSame(getAnnotations(), other.getAnnotations());
     }
