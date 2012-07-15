@@ -5,7 +5,7 @@ public class Defaults {
 
     // local variable defaults
     void test(@Unclassified Defaults para, @Committed Defaults comm) {
-        // @Nullable @Committed by default
+        // @Nullable @Unclassified by default
         String s = "abc";
         
         s = null;
@@ -15,8 +15,5 @@ public class Defaults {
         
         d = comm; // committed okay (default == @Committed)
         d.hashCode();
-        
-        //:: error: (assignment.type.incompatible)
-        d = para;
     }
 }
