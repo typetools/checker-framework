@@ -9,7 +9,6 @@ import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -174,13 +173,12 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     .getAllFields(currentClass);
             Set<VariableTree> violatingFields = new HashSet<>();
             AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
-            // TODO: we should not need to cast here?
-            @SuppressWarnings("unchecked")
-            AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CommitmentStore, ?, ?>) atypeFactory;
-            CommitmentStore store = factory.getRegularExitStore(node);
+            CommitmentStore store = (CommitmentStore) atypeFactory
+                    .getRegularExitStore(node);
             for (VariableTree field : fields) {
                 // Does this field need to satisfy the invariant?
-                if (factory.getAnnotatedType(field).hasAnnotation(invariant)) {
+                if (atypeFactory.getAnnotatedType(field).hasAnnotation(
+                        invariant)) {
                     // Has the field been initialized?
                     if (!store.isFieldInitialized(TreeUtils
                             .elementFromDeclaration(field))) {
