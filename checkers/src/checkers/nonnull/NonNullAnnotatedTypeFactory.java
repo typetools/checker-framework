@@ -117,7 +117,7 @@ public class NonNullAnnotatedTypeFactory
         // Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         Set<AnnotationMirror> localdef = new HashSet<AnnotationMirror>();
         localdef.add(NULLABLE);
-        localdef.add(COMMITTED);
+        localdef.add(UNCLASSIFIED);
         defaults.setLocalVariableDefault(localdef);
     }
 
