@@ -35,8 +35,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     private static final String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
     private static final String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
     private static final String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
-    private static final String CONSTRUCTOR_RETURN_TYPE_FORBIDDEN = "constructor.return.type.forbidden";
-    private static final String COMMITMENT_REDUNDANT_CONSTRUCTOR_RETURN_TYPE = "commitment.redundant.constructor.return.type";
     private static final String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
@@ -170,28 +168,16 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
-            Collection<? extends AnnotationMirror> returnTypeAnnotations = atypeFactory
-                    .getAnnotatedType(node).getReturnType()
-                    .getExplicitAnnotations();
+            Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
             // check for invalid constructor return type
             for (AnnotationMirror a : checker
                     .getInvalidConstructorReturnTypeAnnotations()) {
                 if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
                     checker.report(Result.failure(
-                            CONSTRUCTOR_RETURN_TYPE_FORBIDDEN, node), node);
+                            COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE, node),
+                            node);
                     break;
                 }
-            }
-            if (AnnotationUtils.containsSame(returnTypeAnnotations, COMMITTED)
-                    || AnnotationUtils.containsSame(returnTypeAnnotations,
-                            UNCLASSIFIED)) {
-                checker.report(Result.failure(
-                        COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE, node), node);
-            }
-            if (AnnotationUtils.containsSame(returnTypeAnnotations, FREE)) {
-                checker.report(Result.warning(
-                        COMMITMENT_REDUNDANT_CONSTRUCTOR_RETURN_TYPE, node),
-                        node);
             }
 
             // Check that all fields have been initialized at the end of the
@@ -230,5 +216,13 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             }
         }
         return super.visitMethod(node, p);
+    }
+
+    public Set<AnnotationMirror> getExplicitReturnTypeAnnotations(
+            MethodTree node) {
+        AnnotatedTypeMirror t = atypeFactory.fromMember(node);
+        assert t instanceof AnnotatedExecutableType;
+        AnnotatedExecutableType type = (AnnotatedExecutableType) t;
+        return type.getReturnType().getAnnotations();
     }
 }

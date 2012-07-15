@@ -12,7 +12,7 @@ public class Commitment {
     //:: error: (commitment.invalid.field.annotation)
     @Unclassified @Nullable String c;
     
-    //:: warning: (commitment.redundant.constructor.return.type) :: error: (commitment.fields.uninitialized)
+    //:: error: (commitment.invalid.constructor.return.type) :: error: (commitment.fields.uninitialized)
     public @Free Commitment(int i) {
         t = "";
     }
@@ -24,14 +24,14 @@ public class Commitment {
         b = "";
     }
     
-    //:: error: (constructor.return.type.forbidden)
+    //:: error: (commitment.invalid.constructor.return.type)
     public @Committed @NonNull Commitment(boolean i) {
         a = "";
         t = "";
         b = "";
     }
     
-    //:: error: (constructor.return.type.forbidden)
+    //:: error: (commitment.invalid.constructor.return.type)
     public @Nullable Commitment(char i) {
         a = "";
         t = "";
