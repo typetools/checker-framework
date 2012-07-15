@@ -137,8 +137,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                     NOT_ONLY_COMMITTED)) {
                 // add root annotation for all other hierarchies, and
                 // Committed for the commitment hierarchy
-                type.removeAnnotation(UNCLASSIFIED);
-                type.addAnnotation(COMMITTED);
+                type.replaceAnnotation(COMMITTED);
             }
         }
     }
