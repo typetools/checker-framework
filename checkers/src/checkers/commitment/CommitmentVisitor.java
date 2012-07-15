@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
@@ -21,7 +20,6 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -91,17 +89,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             }
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
-    }
-
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        // TODO: this is a hack, it seems like this could be done at the
-        // TypeFactory level.
-        ExecutableElement elt = TreeUtils.elementFromUse(node);
-        if (elt.getSimpleName().toString().equals("<init>")) {
-            return p;
-        }
-        return super.visitMethodInvocation(node, p);
     }
 
     @Override
