@@ -18,7 +18,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.source.SourceChecker.CheckerError;
+import checkers.source.SourceChecker;
 
 /**
  * Utility class for skeleton files
@@ -168,7 +168,8 @@ public class StubUtil {
             if (type.getKind().isPrimitive())
                 return type.toString();
         }
-        throw new CheckerError("StubUtil: unhandled type: " + type);
+        SourceChecker.errorAbort("StubUtil: unhandled type: " + type);
+        return null; // dead code
     }
 
     private final static class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -222,7 +223,7 @@ public class StubUtil {
         @Override
         public void visit(Parameter n, Void arg) {
             if (n.getId().getArrayCount() > 0) {
-                throw new CheckerError("StubUtil: put array brackets on the type, not the variable: " + n);
+                SourceChecker.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
             }
             n.getType().accept(this, arg);
         }
@@ -261,7 +262,7 @@ public class StubUtil {
                 sb.append("short");
                 break;
             default:
-                throw new CheckerError("StubUtil: unknown type: " + n.getType());
+                SourceChecker.errorAbort("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -281,7 +282,7 @@ public class StubUtil {
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             // TODO: Why?
-            throw new CheckerError("StubUtil: don't print type args!");
+            SourceChecker.errorAbort("StubUtil: don't print type args!");
         }
     }
 
