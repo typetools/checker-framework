@@ -22,8 +22,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 
 /**
  * A utility class made for helping to analyze a given {@code Tree}.
@@ -691,8 +689,9 @@ public final class TreeUtils {
         } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
             // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
-            // The field "super" is also a legal method
-            if (ident.getName().contentEquals("super")) {
+            // The field "super" and "this" are also legal methods
+            if (ident.getName().contentEquals("super")
+                    || ident.getName().contentEquals("this")) {
                 return true;
             }
             Element el = TreeUtils.elementFromUse(ident);

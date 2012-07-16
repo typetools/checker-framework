@@ -17,12 +17,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
-import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.TransferResult;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
@@ -157,6 +157,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
     /** For storing visitor state **/
     protected final VisitorState visitorState;
+    
+    /** The annoated-type factory (with a more specific type than super.atypeFactory). */
+    protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
 
     /**
      * @param checker the typechecker associated with this visitor (for
@@ -166,6 +169,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
         this.checker = checker;
+        
+        assert super.atypeFactory instanceof AbstractBasicAnnotatedTypeFactory;
+        atypeFactory = (AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>) super.atypeFactory;
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.annoFactory = AnnotationUtils.getInstance(env);
@@ -427,17 +433,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         flowExprContext, getCurrentPath());
                 checkFlowExprParameters(node, stringExpr);
 
-                // TODO: we should not need to cast here?
-                @SuppressWarnings("unchecked")
-                AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
-                    (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
-                CFStore exitStore = factory.getRegularExitStore(node);
+                CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
                 if (exitStore == null) {
                     // if there is no regular exitStore, then the method
                     // cannot reach the regular exit and there is no need to
                     // check anything
                 } else {
-                    CFValue value = exitStore.getValue(expr);
+                    CFAbstractValue<?> value = exitStore.getValue(expr);
                     if (value == null
                             || !AnnotationUtils.containsSame(
                                     value.getAnnotations(), anno)) {
@@ -537,13 +539,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     continue;
                 }
 
-                // TODO: we should not need to cast here?
-                @SuppressWarnings("unchecked")
-                AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?> factory =
-                    (AbstractBasicAnnotatedTypeFactory<?, CFValue, CFStore, ?, ?>) atypeFactory;
-                List<Pair<ReturnNode, TransferResult<CFValue, CFStore>>> returnStatements = factory
-                        .getReturnStatementStores(node);
-                for (Pair<ReturnNode, TransferResult<CFValue, CFStore>> r : returnStatements) {
+                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
+                for (Object rt : returnStatements) {
+                    @SuppressWarnings("unchecked")
+                    Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>> r = (Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>>) rt;
                     ReturnNode returnStmt = r.first;
                     if (r.second == null) {
                         // Unreachable return statements have no stores, but there
@@ -553,13 +552,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     Node retValNode = returnStmt.getResult();
                     Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
                             .getValue() : null;
-                    CFStore exitStore;
+                    CFAbstractStore<?, ?> exitStore;
                     if (result) {
                         exitStore = r.second.getThenStore();
                     } else {
                         exitStore = r.second.getElseStore();
                     }
-                    CFValue value = exitStore.getValue(expr);
+                    CFAbstractValue<?> value = exitStore.getValue(expr);
                     // don't check if return statement certainly does not
                     // match 'result'. at the moment, this means the result
                     // is a boolean literal
@@ -765,12 +764,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void checkPrecondition(MethodInvocationTree tree,
             AnnotationMirror requiredAnnotation, List<String> expressions) {
-        // TODO: we should not need to cast here?
-        @SuppressWarnings("unchecked")
-        AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory =
-            (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
 
-        Node nodeNode = factory.getNodeForTree(tree);
+        Node nodeNode = atypeFactory.getNodeForTree(tree);
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForUse((MethodInvocationNode) nodeNode,
                         atypeFactory);
@@ -781,8 +776,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 expr = FlowExpressionParseUtil.parse(stringExpr,
                         flowExprContext, getCurrentPath());
 
-                CFStore store = factory.getStoreBefore(tree);
-                CFValue value = store.getValue(expr);
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
+                CFAbstractValue<?> value = store.getValue(expr);
                 if (value == null
                         || !AnnotationUtils.containsSame(
                                 value.getAnnotations(), requiredAnnotation)) {
@@ -798,7 +793,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
     // Handle case Vector.copyInto()
     private final AnnotatedDeclaredType vectorType =
-        atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        super.atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
     /**
      * Returns true if the method symbol represents {@code Vector.copyInto}

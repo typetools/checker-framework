@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;

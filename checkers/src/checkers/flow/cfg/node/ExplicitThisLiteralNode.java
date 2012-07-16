@@ -1,9 +1,5 @@
 package checkers.flow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
 import com.sun.source.tree.IdentifierTree;
@@ -20,7 +16,7 @@ import com.sun.source.tree.Tree;
  * @author Charlie Garrett
  * 
  */
-public class ExplicitThisLiteralNode extends Node {
+public class ExplicitThisLiteralNode extends ThisLiteralNode {
 
     protected Tree tree;
 
@@ -41,30 +37,8 @@ public class ExplicitThisLiteralNode extends Node {
         return visitor.visitExplicitThisLiteral(this, p);
     }
 
-    public String getName() {
-        return "this";
-    }
-
     @Override
     public String toString() {
         return getName();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof ExplicitThisLiteralNode)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeUtils.hash(getName());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.emptyList();
     }
 }

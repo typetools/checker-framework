@@ -115,6 +115,7 @@ import checkers.flow.cfg.node.StringConcatenateNode;
 import checkers.flow.cfg.node.StringConversionNode;
 import checkers.flow.cfg.node.StringLiteralNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
+import checkers.flow.cfg.node.ThisLiteralNode;
 import checkers.flow.cfg.node.ThrowNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.UnboxingNode;
@@ -2075,8 +2076,7 @@ public class CFGBuilder {
 
             ExecutableElement element = TreeUtils.elementFromUse(tree);
             if (ElementUtils.isStatic(element) ||
-                receiver instanceof ImplicitThisLiteralNode ||
-                receiver instanceof ExplicitThisLiteralNode) {
+                receiver instanceof ThisLiteralNode) {
                 // No NullPointerException can be thrown, use normal node
                 extendWithNode(target);
             } else {
@@ -2144,8 +2144,7 @@ public class CFGBuilder {
 
                 Element element = TreeUtils.elementFromUse(variable);
                 if (ElementUtils.isStatic(element) ||
-                    receiver instanceof ImplicitThisLiteralNode ||
-                    receiver instanceof ExplicitThisLiteralNode) {
+                    receiver instanceof ThisLiteralNode) {
                     // No NullPointerException can be thrown, use normal node
                     extendWithNode(target);
                 } else {
