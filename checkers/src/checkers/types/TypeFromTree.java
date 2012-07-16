@@ -7,7 +7,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.source.SourceChecker.CheckerError;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -32,10 +32,12 @@ abstract class TypeFromTree extends
 
     @Override
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
-        if (node == null)
-            throw new IllegalArgumentException("null tree");
-        throw new UnsupportedOperationException(this.getClass() +
-                ": conversion undefined for tree type " + node.getKind());
+        if (node == null) {
+            SourceChecker.errorAbort("TypeFromTree.defaultAction: null tree");
+            return null; // dead code
+        }
+        SourceChecker.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
+        return null; // dead code
     }
 
     /** The singleton TypeFromExpression instance. */
@@ -530,7 +532,8 @@ abstract class TypeFromTree extends
         private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type,
                 AnnotatedTypeFactory f) {
             if (type.getKind() != TypeKind.TYPEVAR) {
-                throw new CheckerError("TypeFromTree.forTypeVariable: should only be called on type variables");
+                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
+                return null; // dead code
             }
 
             TypeParameterElement tpe = (TypeParameterElement)
@@ -549,7 +552,8 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                throw new CheckerError("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                return null; // dead code
             }
         }
 
