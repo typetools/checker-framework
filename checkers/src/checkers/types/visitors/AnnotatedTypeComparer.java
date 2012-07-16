@@ -3,6 +3,7 @@ package checkers.types.visitors;
 import java.util.*;
 import java.lang.UnsupportedOperationException;
 
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 
@@ -43,7 +44,8 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
 
     @Override
     protected R scanAndReduce(Iterable<? extends AnnotatedTypeMirror> types, AnnotatedTypeMirror p, R r) {
-        throw new UnsupportedOperationException(p + "is not Iterable<? extends AnnotatedTypeMirror>");
+        SourceChecker.errorAbort("AnnotatedTypeComparer.scanAndReduce: " + p + "is not Iterable<? extends AnnotatedTypeMirror>");
+        return null;
     }
 
 

@@ -731,13 +731,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         boolean success = checker.isSubtype(valueType, varType);
 
+        String valueTypeString = valueType.toString();
+        String varTypeString = varType.toString();
+
         if (options.containsKey("showchecks")) {
             // In case of failure, if both types as strings are the same, try outputting
             // the type including also invisible qualifiers.
             // This usually means there is a mistake in type defaulting.
             // This code is therefore not covered by a test.
-            String valueTypeString = valueType.toString();
-            String varTypeString = varType.toString();
             if (!success && valueTypeString.equals(varTypeString)) {
                 valueTypeString = valueType.toString(true);
                 varTypeString = varType.toString(true);
@@ -756,7 +757,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Use an error key only if it's overridden by a checker.
         if (!success) {
             checker.report(Result.failure(errorKey,
-                    valueType.toString(), varType.toString()), valueTree);
+                    valueTypeString, varTypeString), valueTree);
         }
     }
 
@@ -1399,13 +1400,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     }
                 }
             }
-
-            /* TODO:
-             * This should not be necessary and should be correctly done in the ATF.
-             * However, without it two test cases fail. It is related to how
-             * ATM.substitute replaces upper bounds and when they get initialized.
-             */
-            atypeFactory.annotateImplicitHack(tree, type);
 
             return super.visitTypeVariable(type, tree);
         }

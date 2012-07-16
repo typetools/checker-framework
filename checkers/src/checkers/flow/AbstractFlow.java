@@ -210,6 +210,7 @@ implements Flow {
     }
 
     public static void addFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
+        // This method doesn't handle multiple annotations from one hierarchy correctly.
         Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
         if (flowResults.containsKey(tree)) {
             set.addAll(flowResults.get(tree));

@@ -6,10 +6,9 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
+import checkers.quals.PolyAll;
 import checkers.source.*;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -21,7 +20,8 @@ import checkers.util.AnnotationUtils;
  * @see Raw
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, PolyNull.class, Primitive.class })
+@TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, Primitive.class,
+    PolyNull.class, PolyAll.class})
 @SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
 public class NullnessSubchecker extends BaseTypeChecker {
 

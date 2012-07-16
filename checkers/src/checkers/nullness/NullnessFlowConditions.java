@@ -348,17 +348,28 @@ public class NullnessFlowConditions extends SimpleTreeVisitor<Void, Void> {
             mark(var, false);
 
             if (var != null) {
-                if (typefactory.getAnnotatedType(var).getAnnotation(PolyNull.class.getName()) != null)
+                if (typefactory.getAnnotatedType(var).hasAnnotation(typefactory.POLYNULL) ||
+                        typefactory.getAnnotatedType(var).hasAnnotation(typefactory.POLYALL))
                     isNullPolyNull = true;
             } else {
                 AnnotatedTypeMirror leftType = typefactory.getAnnotatedType(left);
                 AnnotatedTypeMirror rightType = typefactory.getAnnotatedType(right);
+
                 if (leftType.hasAnnotation(typefactory.NONNULL)
                         && !rightType.hasAnnotation(typefactory.NONNULL))
                     mark(var(right), true);
                 if (rightType.hasAnnotation(typefactory.NONNULL)
                         && !leftType.hasAnnotation(typefactory.NONNULL))
                     mark(var(left), true);
+                if ((leftType.hasAnnotation(typefactory.POLYNULL) ||
+                        leftType.hasAnnotation(typefactory.POLYALL)) &&
+                        isNull(right)) {
+                    isNullPolyNull = true;
+                } else if ((rightType.hasAnnotation(typefactory.POLYNULL) ||
+                        rightType.hasAnnotation(typefactory.POLYALL)) &&
+                        isNull(left)) {
+                    isNullPolyNull = true;
+                }
             }
 
             if (isNull(right) && nullnessFlow.isPure(left))

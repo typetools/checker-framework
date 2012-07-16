@@ -49,6 +49,8 @@ public class UnitsAnnotatedTypeFactory extends
         mixedUnits = annoUtils.fromClass(MixedUnits.class);
         AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+
+        this.postInit();
     }
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();

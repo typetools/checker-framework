@@ -8,7 +8,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.WildcardType;
 
-import checkers.source.SourceChecker.CheckerError;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -46,7 +46,7 @@ public class TypeFromElement {
     public static void annotate(AnnotatedTypeMirror type, Element element) {
         // System.out.println("TypeFromElement::annotate: type: " + type + " element: " + element);
         if (element == null) {
-            throw new CheckerError("TypeFromElement.annotate: element cannot be null");
+            SourceChecker.errorAbort("TypeFromElement.annotate: element cannot be null");
         } else if (element.getKind().isField()) {
             annotateField(type, (VariableElement) element);
         } else if (element.getKind() == ElementKind.LOCAL_VARIABLE) {
@@ -73,7 +73,7 @@ public class TypeFromElement {
                         " [" + element.getKind() + "]");
             }
         } else {
-            throw new CheckerError("TypeFromElement.annotate: illegal argument: " + element +
+            SourceChecker.errorAbort("TypeFromElement.annotate: illegal argument: " + element +
                     " [" + element.getKind() + "]");
         }
     }
@@ -93,7 +93,7 @@ public class TypeFromElement {
                         if (typeAnno.position.parameter_index == param_index) {
                             annotatePossibleBound(type, typeAnno);
                         } /*else if (strict) {
-                            throw new CheckerError("TypeFromElement.annotateTypeParam(class): " +
+                            SourceChecker.errorAbort("TypeFromElement.annotateTypeParam(class): " +
                                     "invalid type paramter index " + typeAnno.position.parameter_index + " for annotation: " + typeAnno + " in class: " + clsElt);
                         }*/
                         break;
@@ -102,7 +102,7 @@ public class TypeFromElement {
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateTypeParam(class): " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateTypeParam(class): " +
                                 "invalid position " + typeAnno.position +
                                 " for annotation: " + typeAnno +
                                 " for element: " + ElementUtils.getVerboseName(element));
@@ -110,7 +110,7 @@ public class TypeFromElement {
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateTypeParam(class): " +
+                SourceChecker.errorAbort("TypeFromElement.annotateTypeParam(class): " +
                         "not found in enclosing element: "  + ElementUtils.getVerboseName(element));
             }
         } else if (enclosing instanceof ExecutableElement) {
@@ -126,7 +126,7 @@ public class TypeFromElement {
                         if (typeAnno.position.parameter_index == param_index) {
                             annotatePossibleBound(type, typeAnno);
                         }/* else if (strict) {
-                            throw new CheckerError("TypeFromElement.annotate: " +
+                            SourceChecker.errorAbort("TypeFromElement.annotate: " +
                                     "invalid method type parameter index " + typeAnno.position.parameter_index + " for annotation: " + typeAnno);
                         }*/
                         break;
@@ -145,7 +145,7 @@ public class TypeFromElement {
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateTypeParam(method): " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateTypeParam(method): " +
                                 "invalid position " + typeAnno.position +
                                 " for annotation: " + typeAnno +
                                 " for element: " + ElementUtils.getVerboseName(element));
@@ -153,11 +153,11 @@ public class TypeFromElement {
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateTypeParam(method): " + 
+                SourceChecker.errorAbort("TypeFromElement.annotateTypeParam(method): " + 
                         "not found in enclosing element: " + ElementUtils.getVerboseName(element));
             }
         } else if (strict) {
-            throw new CheckerError("TypeFromElement.annotateTypeParam: enclosing element not a type or executable: " +
+            SourceChecker.errorAbort("TypeFromElement.annotateTypeParam: enclosing element not a type or executable: " +
                     enclosing + " [" + enclosing.getKind() + ", " + enclosing.getClass() + "]");
         }
     }
@@ -193,7 +193,7 @@ public class TypeFromElement {
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateParam: " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateParam: " +
                                 "invalid position " + typeAnno.position +
                                 " for annotation: " + typeAnno +
                                 " for element: " + ElementUtils.getVerboseName(element));
@@ -226,7 +226,7 @@ public class TypeFromElement {
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateParam: " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateParam: " +
                                 "invalid position " + typeAnno.position +
                                 " for annotation: " + typeAnno +
                                 " for element: " + ElementUtils.getVerboseName(element));
@@ -234,11 +234,11 @@ public class TypeFromElement {
                     }
                 }
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotateParam: element: " + element +
+                SourceChecker.errorAbort("TypeFromElement.annotateParam: element: " + element +
                         " not found in enclosing executable: " + enclosing);
             }
         } else if (strict) {
-            throw new CheckerError("TypeFromElement.annotateParam: enclosing element not an executable: " + enclosing);
+            SourceChecker.errorAbort("TypeFromElement.annotateParam: enclosing element not an executable: " + enclosing);
         }
     }
 
@@ -253,7 +253,7 @@ public class TypeFromElement {
      */
     private static void annotateField(AnnotatedTypeMirror type, VariableElement element) {
         if (!element.getKind().isField()) {
-            throw new CheckerError("TypeFromElement.annotateField: " +
+            SourceChecker.errorAbort("TypeFromElement.annotateField: " +
                     "invalid non-field element " + element + " [" + element.getKind() + "]");
         }
 
@@ -274,7 +274,7 @@ public class TypeFromElement {
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
-                throw new CheckerError("TypeFromElement.annotateField: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateField: " +
                         "invalid position " + pos.type +
                         " for annotation: " + anno +
                         " for element: " + ElementUtils.getVerboseName(element));
@@ -294,7 +294,7 @@ public class TypeFromElement {
      */
     private static void annotateLocal(AnnotatedTypeMirror type, VariableElement element) {
         if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
-            throw new CheckerError("TypeFromElement.annotateLocal: " +
+            SourceChecker.errorAbort("TypeFromElement.annotateLocal: " +
                     "invalid non-local-variable element " + element + " [" + element.getKind() + "]");
         }
 
@@ -317,7 +317,7 @@ public class TypeFromElement {
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
-                throw new CheckerError("TypeFromElement.annotateLocal: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateLocal: " +
                         "invalid position " + pos.type +
                         " for annotation: " + anno +
                         " for element: " + ElementUtils.getVerboseName(element));
@@ -354,11 +354,11 @@ public class TypeFromElement {
                         // Add an annotation on the type parameter also to the upper bound
                         ((AnnotatedTypeVariable) typeParam).getUpperBound().addAnnotation(anno);
                     } else {
-                        throw new CheckerError("TypeFromElement.annotateType: " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateType: " +
                                 "type parameter: " + typeParam + " is not a type variable");
                     }
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateType: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateType: " +
                             "invalid parameter index " + pos.parameter_index +
                             " for annotation: " + anno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -375,13 +375,13 @@ public class TypeFromElement {
                     if (boundIndex >= 0 && boundIndex < bounds.size()) {
                         annotate(bounds.get(boundIndex), anno);
                     } else if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateType: " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateType: " +
                                 "invalid bound index " + pos.bound_index +
                                 " for annotation: " + anno +
                                 " for element: " + ElementUtils.getVerboseName(element));
                     }
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateType: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateType: " +
                             "invalid parameter index " + pos.parameter_index +
                             " for annotation: " + anno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -398,7 +398,7 @@ public class TypeFromElement {
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
-                throw new CheckerError("TypeFromElement.annotateType: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateType: " +
                         "invalid position " + pos.type +
                         " for annotation: " + anno +
                         " for element: " + ElementUtils.getVerboseName(element));
@@ -424,7 +424,7 @@ public class TypeFromElement {
                 } else if (pos.type_index >= 0 && pos.type_index < superInterfaces.size()) {
                     annotate(superInterfaces.get(pos.type_index), anno);
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateSupers: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateSupers: " +
                             "invalid type index " + pos.type_index +
                             " for annotation: " + anno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -436,7 +436,7 @@ public class TypeFromElement {
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
-                throw new CheckerError("TypeFromElement.annotateSupers: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateSupers: " +
                         "invalid position " + pos.type +
                         " for annotation: " + anno +
                         " for element: " + ElementUtils.getVerboseName(element));
@@ -488,7 +488,7 @@ public class TypeFromElement {
                 if (pos.parameter_index >= 0 && pos.parameter_index < params.size()) {
                     annotate(params.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateExec: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                             "invalid parameter index " + pos.parameter_index +
                             " for annotation: " + typeAnno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -501,7 +501,7 @@ public class TypeFromElement {
                 if (pos.type_index >= 0 && pos.type_index < thrown.size()) {
                     annotate(thrown.get(pos.type_index), typeAnno);
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateExec: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                             "invalid throws index " + pos.type_index +
                             " for annotation: " + typeAnno+
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -513,7 +513,7 @@ public class TypeFromElement {
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     annotate(typeParams.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
-                    throw new CheckerError("TypeFromElement.annotateExec: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                             "invalid method type parameter index " + pos.parameter_index +
                             " for annotation: " + typeAnno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -531,7 +531,7 @@ public class TypeFromElement {
                     if (boundIndex >= 0 && boundIndex < bounds.size()) {
                         annotate(bounds.get(boundIndex), typeAnno);
                     } else if (strict) {
-                        throw new CheckerError("TypeFromElement.annotateExec: " +
+                        SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                                 "invalid method type parameter bound index " + pos.bound_index +
                                 " for annotation: " + typeAnno +
                                 " for element: " + ElementUtils.getVerboseName(element));
@@ -540,7 +540,7 @@ public class TypeFromElement {
                     // TODO: parameter_index is -1 a few times in Daikon. What does that mean?
                     // I think that's an incorrect wildcard bound, e.g. also see ThrowableExample.
                     // System.out.println("element: " + element);
-                    throw new CheckerError("TypeFromElement.annotateExec: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                             "invalid method type parameter index (bound) " + pos.parameter_index +
                             " for annotation: " + typeAnno +
                             " for element: " + ElementUtils.getVerboseName(element));
@@ -555,7 +555,7 @@ public class TypeFromElement {
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
-                throw new CheckerError("TypeFromElement.annotateExec: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateExec: " +
                         "invalid position " + pos.type +
                         " for annotation: " + typeAnno +
                         " for element: " + ElementUtils.getVerboseName(element));
@@ -591,7 +591,7 @@ public class TypeFromElement {
             if (type.getKind() != TypeKind.TYPEVAR
                     && type.getKind() != TypeKind.WILDCARD) {
                 if (strict) {
-                    throw new CheckerError("TypeFromElement.annotatePossibleBound: " +
+                    SourceChecker.errorAbort("TypeFromElement.annotatePossibleBound: " +
                             "trying to add a bound annotation: " + anno +
                             "to something that is not a type variable or wildcard: " + type);
                 }
@@ -605,7 +605,7 @@ public class TypeFromElement {
             if (boundIndex >= 0 && boundIndex < bounds.size()) {
                 annotate(bounds.get(boundIndex), anno);
             } else if (strict) {
-                throw new CheckerError("TypeFromElement.annotatePossibleBound: " +
+                SourceChecker.errorAbort("TypeFromElement.annotatePossibleBound: " +
                         "invalid boundIndex " + boundIndex + " for annotation: " + anno);
             }
         }
@@ -627,8 +627,9 @@ public class TypeFromElement {
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType)type, location);
         } else {
-            throw new CheckerError("TypeFromElement.getLocationTypeATM: only declared types and arrays can have annotations with location; " +
+            SourceChecker.errorAbort("TypeFromElement.getLocationTypeATM: only declared types and arrays can have annotations with location; " +
                     "found type: " + type + " location: " + location);
+            return null; // dead code
         }
     }
 
@@ -639,7 +640,7 @@ public class TypeFromElement {
             return getLocationTypeATM(type.getTypeArguments().get(location.get(0)), tail(location));
         } else {
             // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not handled yet
-            // throw new CheckerError("TypeFromElement.getLocationTypeADT: " +
+            // SourceChecker.errorAbort("TypeFromElement.getLocationTypeADT: " +
             //        "invalid locations " + location + " for type: " + type);
             if (strict) {
                 System.out.println("TypeFromElement.getLocationTypeADT: something is wrong!\n" +
@@ -673,12 +674,14 @@ public class TypeFromElement {
             if (arrayIndex < arrays.size()) {
                 return getLocationTypeATM(arrays.get(arrayIndex), tail(location));
             } else {
-                throw new CheckerError("TypeFromElement.annotateAAT: " +
+                SourceChecker.errorAbort("TypeFromElement.annotateAAT: " +
                         "invalid location " + location + " for type: " + type);
+                return null; // dead code
             }
         } else {
-            throw new CheckerError("TypeFromElement.annotateAAT: " +
+            SourceChecker.errorAbort("TypeFromElement.annotateAAT: " +
                     "invalid location " + location + " for type: " + type);
+            return null; // dead code
         }
     }
 
@@ -700,7 +703,7 @@ public class TypeFromElement {
         if (type != null) {
             arrays.addLast(type);
         } else if (strict) {
-            throw new CheckerError("TypeFromElement.createArraysList: " +
+            SourceChecker.errorAbort("TypeFromElement.createArraysList: " +
                     "null component type for array: " + array);
         }
 
@@ -738,7 +741,7 @@ public class TypeFromElement {
                 bound = wt.getExtendsBound();
             }
         } else {
-            throw new CheckerError("TypeFromElement.getBounds: " +
+            SourceChecker.errorAbort("TypeFromElement.getBounds: " +
                     "type has no bounds: " + type + " [" + type.getKind() + "]");
         }
 
