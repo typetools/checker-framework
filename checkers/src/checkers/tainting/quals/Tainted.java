@@ -6,7 +6,7 @@ import checkers.tainting.TaintingChecker;
 import checkers.quals.*;
 
 /**
- * The root of the tainting checker.
+ * The top qualifier of the tainting type system.
  * This annotation is associated with the {@link TaintingChecker}.
  *
  * @see Untainted
