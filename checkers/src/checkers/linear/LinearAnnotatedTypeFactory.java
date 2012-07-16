@@ -23,7 +23,7 @@ import checkers.util.TreeUtils;
  *
  * <ol>
  * <li value="1">Class declaration tree/element.  Such a construct usually
- * requires the root qualifier.</li>
+ * requires the top qualifier.</li>
  *
  * <li value="2">{@code Linear} reference once it is "used up"</li>
  * </ol>
@@ -34,6 +34,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
     public LinearAnnotatedTypeFactory(LinearChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+        this.postInit();
     }
 
     /**
