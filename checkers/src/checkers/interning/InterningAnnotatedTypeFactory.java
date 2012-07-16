@@ -53,6 +53,8 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
+
+        this.postInit();
     }
 
     @Override

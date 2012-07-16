@@ -122,6 +122,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work. Also see NullnessAnnotatedTypeFactory.
+
+        this.postInit();
     }
 
     @Override
