@@ -9,12 +9,11 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.ExplicitThisLiteralNode;
 import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
+import checkers.flow.cfg.node.ThisLiteralNode;
 import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.AnnotatedTypeFactory;
@@ -53,7 +52,7 @@ public class FlowExpressions {
 
     /**
      * @return The internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Can contain {@link Unknown} as receiver.
+     *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotatedTypeFactory factory,
             Node receiverNode) {
@@ -61,8 +60,7 @@ public class FlowExpressions {
         if (receiverNode instanceof FieldAccessNode) {
             receiver = internalReprOfFieldAccess(factory,
                     (FieldAccessNode) receiverNode);
-        } else if (receiverNode instanceof ImplicitThisLiteralNode
-                || receiverNode instanceof ExplicitThisLiteralNode) {
+        } else if (receiverNode instanceof ThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;

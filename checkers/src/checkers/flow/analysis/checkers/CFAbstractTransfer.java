@@ -138,13 +138,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             addInformationFromPreconditions(info, factory, method, methodTree,
                     methodElem);
 
-            // Add knowledge about final fields.
+            // Add knowledge about final fields, or values of non-final fields
+            // if we are inside a constructor.
             List<Pair<VariableElement, V>> fieldValues = analysis
                     .getFieldValues();
+            boolean isConstructor = TreeUtils.isConstructor(methodTree);
             for (Pair<VariableElement, V> p : fieldValues) {
                 VariableElement element = p.first;
                 V value = p.second;
-                if (ElementUtils.isFinal(element)) {
+                if (ElementUtils.isFinal(element) || isConstructor) {
                     TypeMirror type = InternalUtils.typeOf(method
                             .getClassTree());
                     Receiver field = new FieldAccess(new ThisReference(type),

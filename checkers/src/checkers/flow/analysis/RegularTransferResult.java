@@ -91,4 +91,17 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
     public boolean containsTwoStores() {
         return false;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append("RegularTransferResult(");
+        result.append(System.getProperty("line.separator"));
+        result.append("resultValue = " + resultValue);
+        result.append(System.getProperty("line.separator"));
+        result.append("store = " + store);
+        result.append(System.getProperty("line.separator"));
+        result.append(")");
+        return result.toString();
+    }
 }

@@ -6,6 +6,10 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.Committed;
 import checkers.commitment.quals.Free;
@@ -33,8 +37,9 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
     }
 
     /**
-     * @return The list of annotations of the commitment type system (not
-     *         including {@link CommmittedOnly} and {@link NotOnlyCommitted}.
+     * @return The list of type annotations of the commitment type system (i.e.,
+     *         not including declaration annotations like {@link CommmittedOnly}
+     *         or {@link NotOnlyCommitted}).
      */
     public Set<AnnotationMirror> getCommitmentAnnotations() {
         Set<AnnotationMirror> result = new HashSet<>();
@@ -62,4 +67,18 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
      * type system.
      */
     abstract protected AnnotationMirror getFieldInvariantAnnotations();
+
+    /**
+     * Returns a list of all fields of the given class
+     */
+    public static Set<VariableTree> getAllFields(ClassTree clazz) {
+        Set<VariableTree> fields = new HashSet<>();
+        for (Tree t : clazz.getMembers()) {
+            if (t.getKind().equals(Tree.Kind.VARIABLE)) {
+                VariableTree vt = (VariableTree) t;
+                fields.add(vt);
+            }
+        }
+        return fields;
+    }
 }
