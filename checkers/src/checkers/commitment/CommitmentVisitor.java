@@ -6,28 +6,19 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeVisitor;
-import checkers.flow.analysis.FlowExpressions.FieldAccess;
-import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -41,8 +32,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     private static final String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
     private static final String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
     private static final String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
-    private static final String CONSTRUCTOR_RETURN_TYPE_FORBIDDEN = "constructor.return.type.forbidden";
-    private static final String COMMITMENT_REDUNDANT_CONSTRUCTOR_RETURN_TYPE = "commitment.redundant.constructor.return.type";
     private static final String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
@@ -99,17 +88,6 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             }
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
-    }
-
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        // TODO: this is a hack, it seems like this could be done at the
-        // TypeFactory level.
-        ExecutableElement elt = TreeUtils.elementFromUse(node);
-        if (elt.getSimpleName().toString().equals("<init>")) {
-            return p;
-        }
-        return super.visitMethodInvocation(node, p);
     }
 
     @Override
@@ -176,52 +154,34 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
-            Collection<? extends AnnotationMirror> returnTypeAnnotations = atypeFactory
-                    .getAnnotatedType(node).getReturnType()
-                    .getExplicitAnnotations();
+            Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
             // check for invalid constructor return type
             for (AnnotationMirror a : checker
                     .getInvalidConstructorReturnTypeAnnotations()) {
                 if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
                     checker.report(Result.failure(
-                            CONSTRUCTOR_RETURN_TYPE_FORBIDDEN, node), node);
+                            COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE, node),
+                            node);
                     break;
                 }
             }
-            if (AnnotationUtils.containsSame(returnTypeAnnotations, COMMITTED)
-                    || AnnotationUtils.containsSame(returnTypeAnnotations,
-                            UNCLASSIFIED)) {
-                checker.report(Result.failure(
-                        COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE, node), node);
-            }
-            if (AnnotationUtils.containsSame(returnTypeAnnotations, FREE)) {
-                checker.report(Result.warning(
-                        COMMITMENT_REDUNDANT_CONSTRUCTOR_RETURN_TYPE, node),
-                        node);
-            }
 
-            // Check that all fields satisfy the invariant at the end of the
+            // Check that all fields have been initialized at the end of the
             // constructor.
             ClassTree currentClass = TreeUtils.enclosingClass(getCurrentPath());
-            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
-            Set<VariableTree> fields = getAllFields(currentClass);
+            Set<VariableTree> fields = CommitmentChecker
+                    .getAllFields(currentClass);
             Set<VariableTree> violatingFields = new HashSet<>();
-            // TODO: we should not need to cast here?
-            @SuppressWarnings("unchecked")
-            AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?> factory = (AbstractBasicAnnotatedTypeFactory<?, ?, CFStore, ?, ?>) atypeFactory;
+            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
+            CommitmentStore store = (CommitmentStore) atypeFactory
+                    .getRegularExitStore(node);
             for (VariableTree field : fields) {
-                TypeMirror type = InternalUtils.typeOf(field);
-                CFStore store = factory.getRegularExitStore(node);
                 // Does this field need to satisfy the invariant?
-                if (factory.getAnnotatedType(field).hasAnnotation(invariant)) {
-                    // Does the field satisfy its invariant?
-                    FieldAccess f = new FieldAccess(new ThisReference(
-                            InternalUtils.typeOf(currentClass)), type,
-                            TreeUtils.elementFromDeclaration(field));
-                    CFValue value = store.getValue(f);
-                    if (value == null
-                            || !AnnotationUtils.containsSame(
-                                    value.getAnnotations(), invariant)) {
+                if (atypeFactory.getAnnotatedType(field).hasAnnotation(
+                        invariant)) {
+                    // Has the field been initialized?
+                    if (!store.isFieldInitialized(TreeUtils
+                            .elementFromDeclaration(field))) {
                         violatingFields.add(field);
                     }
                 }
@@ -236,25 +196,18 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
                     first = false;
                     fieldsString.append(f.getName());
                 }
-                checker.report(
-                        Result.failure(COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
-                        node);
+                checker.report(Result.failure(COMMITMENT_FIELDS_UNINITIALIZED,
+                        fieldsString), node);
             }
         }
         return super.visitMethod(node, p);
     }
 
-    /**
-     * Returns a list of all fields of the given class
-     */
-    protected Set<VariableTree> getAllFields(ClassTree clazz) {
-        Set<VariableTree> fields = new HashSet<>();
-        for (Tree t : clazz.getMembers()) {
-            if (t.getKind().equals(Tree.Kind.VARIABLE)) {
-                VariableTree vt = (VariableTree) t;
-                fields.add(vt);
-            }
-        }
-        return fields;
+    public Set<AnnotationMirror> getExplicitReturnTypeAnnotations(
+            MethodTree node) {
+        AnnotatedTypeMirror t = atypeFactory.fromMember(node);
+        assert t instanceof AnnotatedExecutableType;
+        AnnotatedExecutableType type = (AnnotatedExecutableType) t;
+        return type.getReturnType().getAnnotations();
     }
 }

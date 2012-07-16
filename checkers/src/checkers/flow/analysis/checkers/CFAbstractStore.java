@@ -143,9 +143,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         // store information about method call if possible
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getFactory(), n);
-        if (methodCall != null && canInsertReceiver(methodCall)) {
-            insertValue(methodCall, val);
-        }
+        insertValue(methodCall, val);
     }
 
     /**
@@ -161,7 +159,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
      */
-    protected void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
+    public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         V value = analysis.createAbstractValue(Collections.singleton(a));
         insertValue(r, value);
     }
@@ -192,7 +190,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
      */
-    protected void insertValue(FlowExpressions.Receiver r, /* @Nullable */
+    public void insertValue(FlowExpressions.Receiver r, /* @Nullable */
             V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
@@ -596,7 +594,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         such as "\n").
      */
     public String toDOToutput() {
-        StringBuilder result = new StringBuilder("CFStore (\\n");
+        StringBuilder result = new StringBuilder(this.getClass().getCanonicalName() + " (\\n");
+        internalDotOutput(result);
+        result.append(")");
+        return result.toString();
+    }
+
+    /**
+     * Adds a DOT representation of the internal information of this store to
+     * {@code result}.
+     */
+    protected void internalDotOutput(StringBuilder result) {
         for (Entry<Element, V> entry : localVariableValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
@@ -610,7 +618,5 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
-        result.append(")");
-        return result.toString();
     }
 }
