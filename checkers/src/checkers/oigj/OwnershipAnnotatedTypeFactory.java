@@ -15,6 +15,7 @@ public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Own
     public OwnershipAnnotatedTypeFactory(OwnershipSubchecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+        this.postInit();
     }
 
 
