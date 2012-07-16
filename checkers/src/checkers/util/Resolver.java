@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
+import checkers.source.SourceChecker;
+
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
@@ -35,35 +37,39 @@ public class Resolver {
         this.resolve = Resolve.instance(context);
         this.names = Names.instance(context);
         this.trees = Trees.instance(env);
-
+        Method fi, fiip, fmt, fiit;
+        fi = fiip = fmt = fiit = null;
         try {
-            this.FIND_IDENT = Resolve.class.getDeclaredMethod(
+            fi = Resolve.class.getDeclaredMethod(
                     "findIdent",
                     Env.class, Name.class, int.class);
-            FIND_IDENT.setAccessible(true);
+            fi.setAccessible(true);
 
-            this.FIND_IDENT_IN_PACKAGE = Resolve.class.getDeclaredMethod(
+            fiip = Resolve.class.getDeclaredMethod(
                     "findIdentInPackage",
                     Env.class, TypeSymbol.class, Name.class, int.class);
-            FIND_IDENT_IN_PACKAGE.setAccessible(true);
+            fiip.setAccessible(true);
 
-            this.FIND_MEMBER_TYPE = Resolve.class.getDeclaredMethod(
+            fmt = Resolve.class.getDeclaredMethod(
                     "findMemberType",
                     Env.class,
                     Type.class,
                     Name.class,
                     TypeSymbol.class);
-            FIND_MEMBER_TYPE.setAccessible(true);
+            fmt.setAccessible(true);
 
-            this.FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
+            fiit = Resolve.class.getDeclaredMethod(
                     "findIdentInType",
                     Env.class, Type.class, Name.class, int.class);
-            this.FIND_IDENT_IN_TYPE.setAccessible(true);
+            fiit.setAccessible(true);
         } catch (Exception e) {
-            Error err = new AssertionError("Compiler 'Resolve' class doesn't contain required 'findXXX' method");
-            err.initCause(e);
-            throw err;
+            SourceChecker.errorAbort("Compiler 'Resolve' class doesn't contain required 'findXXX' method", e);
+            // Need the local fi, fiip, fmt, and fiit variables to keep def assignment happy
         }
+        this.FIND_IDENT = fi;
+        this.FIND_IDENT_IN_PACKAGE = fiip;
+        this.FIND_MEMBER_TYPE = fmt;
+        this.FIND_IDENT_IN_TYPE = fiit;
     }
 
     /**
@@ -139,17 +145,12 @@ public class Resolver {
         try {
             return (Symbol)method.invoke(resolve, args);
         } catch (IllegalAccessException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(e);
-            throw err;
+            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         } catch (IllegalArgumentException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(e);
-            throw err;
+            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         } catch (InvocationTargetException e) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(e);
-            throw err;
+            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         }
+        return null; // dead code
     }
 }
