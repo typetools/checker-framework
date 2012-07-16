@@ -6,7 +6,14 @@ public class PolymorphismArrays {
         this.elts = elts;
     }
 
+    public static boolean @PolyNull [] bad(boolean @PolyNull [] seq) {
+        // Cannot directly return null;
+        //:: error: (return.type.incompatible)
+        return null;
+    }
+
     public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, int start, int end) {
+        // Know from comparison that argument is nullable -> also return is nullable.
         if (seq == null) { return null; }
         return new boolean[] { };
     }
