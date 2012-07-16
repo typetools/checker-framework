@@ -37,6 +37,8 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         // null literal.
         AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+
+        this.postInit();
     }
 
     @Override
@@ -55,7 +57,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         Class<? extends Annotation> theAnnot;
 
         public KeyLookupTreeAnnotator(BaseTypeChecker checker,
-                AnnotatedTypeFactory tf, Class<? extends Annotation> annot) {
+                BasicAnnotatedTypeFactory<?> tf, Class<? extends Annotation> annot) {
             super(checker, tf);
             theAnnot = annot;
         }
