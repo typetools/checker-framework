@@ -120,6 +120,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 continue;
             }
         }
+
+        this.postInit();
     }
 
     /**
