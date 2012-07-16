@@ -16,7 +16,8 @@ import os
 import pwd
 
 DEFAULT_SITE = "http://types.cs.washington.edu/jsr308/"
-OPENJDK_RELEASE_SITE = 'http://download.java.net/openjdk/jdk7/'
+# OPENJDK_RELEASE_SITE = 'http://download.java.net/openjdk/jdk7/'
+OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 def current_distribution(site=DEFAULT_SITE):
     """
