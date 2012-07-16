@@ -6,7 +6,6 @@ import java.util.Collection;
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 /**
  * A typechecker that is part of the Nullness type system.
