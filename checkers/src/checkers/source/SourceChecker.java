@@ -132,8 +132,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Provides the {@link SourceVisitor} that the checker should use to scan
      * input source trees.
      *
-     * @param root
-     *            the AST root
+     * @param root the AST root
      * @return a {@link SourceVisitor} to use to scan source trees
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root);
@@ -221,23 +220,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /**
      * Exception type used only internally to abort
      * processing.
+     * Only public to allow {@link tests.AnnotationBuilderTest};
+     * this class should be private. TODO: nicer way?
      */
     public static class CheckerError extends RuntimeException {
-        String msg;
-        Throwable cause;
-
-        public CheckerError() {
-            this.cause = new Throwable();
-        }
-
-        public CheckerError(String msg) {
-            this.msg = msg;
-            this.cause = new Throwable();
-        }
-
         public CheckerError(String msg, Throwable cause) {
-            this.msg = msg;
-            this.cause = cause;
+            super(msg, cause);
         }
     }
 
@@ -247,29 +235,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * 
      * @param msg The error message to log.
      */
-    public void errorAbort(String msg) {
-        String expmsg;
+    public static void errorAbort(String msg) {
+        throw new CheckerError(msg, new Throwable());
+    }
 
-        if (processingEnv.getOptions().containsKey("printErrorStack")) {
-            StringBuilder bf = new StringBuilder(msg + "\n");
-            StackTraceElement[] stks = new Throwable().getStackTrace();
-            boolean first = true;
-            for (StackTraceElement s : stks) {
-                if (first) {
-                    // The errorAbort method is first on the stack trace.
-                    // Hide it.
-                    first = false;
-                } else {
-                    bf.append(s + "\n");
-                }
+    public static void errorAbort(String msg, Throwable cause) {
+        throw new CheckerError(msg, cause);
+    }
+
+    private void logCheckerError(CheckerError ce) {
+        StringBuilder msg = new StringBuilder(ce.getMessage());
+        if (processingEnv.getOptions().containsKey("printErrorStack") &&
+                ce.getCause()!=null) {
+            msg.append("\nException: " +
+                            ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
+            Throwable cause = ce.getCause().getCause();
+            while (cause!=null) {
+                msg.append("\nUnderlying Exception: " +
+                                (cause.toString() + ": " +
+                                        formatStackTrace(cause.getStackTrace())));
+                cause = cause.getCause();
             }
-            expmsg = bf.toString();
-        } else {
-            expmsg = msg;
         }
-
-        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, expmsg);
-        throw new CheckerError();
+        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
     }
 
     /**
@@ -308,6 +296,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             }
         } catch (CheckerError ce) {
             errorInInit = true;
+            logCheckerError(ce);
+        } catch (Throwable t) {
+            errorInInit = true;
+            logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable", t));
         }
     }
 
@@ -362,7 +354,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             return;
         }
         if(errorInInit) {
-            // Nothing to do, message will be output by javac.
+            // Nothing to do, message output already.
             return;
         }
 
@@ -388,30 +380,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
         } catch (CheckerError ce) {
-            // Only print something if there is a message attached.
-            // If there is no additional message, the error was already output earlier.
-            // TODO: should we always attach a message instead of printing it in errorAbort?
-            // TODO: for an InvocationTargetException we want an additional cause.
-            if (ce.msg!=null) {
-                String msg = ce.msg;
-                if (processingEnv.getOptions().containsKey("printErrorStack")) {
-                    if (ce.cause!=null) {
-                        msg += "\nException: " +
-                                ce.cause.toString() + ": " + formatStackTrace(ce.cause.getStackTrace());
-                        if (ce.cause.getCause()!=null) {
-                            msg += "\nUnderlying Exception: " +
-                                    (ce.cause.getCause().toString() + ": " +
-                                            formatStackTrace(ce.cause.getCause().getStackTrace()));
-                            if (ce.cause.getCause().getCause()!=null) {
-                                msg += "\nUnderlying Exception: " +
-                                        (ce.cause.getCause().getCause().toString() + ": " +
-                                                formatStackTrace(ce.cause.getCause().getCause().getStackTrace()));
-                            }
-                        }
-                    }
-                }
-                this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
-            }
+            logCheckerError(ce);
         } catch (Throwable exception) {
             String message = getClass().getSimpleName().replaceAll("Checker", "")
             + " processor threw unexpected exception when processing "
@@ -535,7 +504,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             Trees.instance(env).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
         else
-            throw new IllegalArgumentException("invalid position source: "
+            SourceChecker.errorAbort("invalid position source: "
                     + source.getClass().getName());
     }
 
