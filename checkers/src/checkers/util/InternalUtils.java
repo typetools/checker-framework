@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import checkers.nullness.quals.*;
+import checkers.source.SourceChecker;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -37,11 +38,15 @@ public class InternalUtils {
      *         could not be found
      */
     public static /*@Nullable*/ Element symbol(/*@Nullable*/ Tree tree) {
-        if (tree == null)
-            throw new IllegalArgumentException("tree is null");
+        if (tree == null) {
+            SourceChecker.errorAbort("InternalUtils.symbol: tree is null");
+            return null; // dead code
+        }
 
-        if (!(tree instanceof JCTree))
-            throw new IllegalArgumentException("tree is not a valid Javac tree");
+        if (!(tree instanceof JCTree)) {
+            SourceChecker.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
+            return null; // dead code
+        }
 
         if (TreeUtils.isExpressionTree(tree)) {
             tree = TreeUtils.skipParens((ExpressionTree)tree);
@@ -116,8 +121,10 @@ public class InternalUtils {
      */
     public static ExecutableElement constructor(NewClassTree tree) {
 
-        if (!(tree instanceof JCTree.JCNewClass))
-            throw new IllegalArgumentException("not a javac internal tree");
+        if (!(tree instanceof JCTree.JCNewClass)) {
+            SourceChecker.errorAbort("InternalUtils.constructor: not a javac internal tree");
+            return null; // dead code
+        }
 
         JCNewClass newClassTree = (JCNewClass)tree;
 
