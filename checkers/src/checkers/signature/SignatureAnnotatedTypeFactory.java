@@ -18,6 +18,7 @@ public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Sig
     public SignatureAnnotatedTypeFactory(SignatureChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+        this.postInit();
     }
 
     /*
