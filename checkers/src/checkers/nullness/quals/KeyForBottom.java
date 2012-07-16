@@ -13,6 +13,7 @@ import checkers.quals.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf(KeyFor.class)
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
 public @interface KeyForBottom {}
