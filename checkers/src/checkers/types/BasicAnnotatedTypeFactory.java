@@ -27,6 +27,7 @@ import checkers.util.*;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
@@ -58,7 +59,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     /** Should use flow analysis? */
     protected boolean useFlow;
     /** Flow sensitive instance */
-    protected final Flow flow;
+    protected Flow flow;
 
     /**
      * Creates a type factory for checking the given compilation unit with
@@ -75,8 +76,6 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
-        Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
-        this.flow = useFlow ? createFlow(checker, root, flowQuals) : null;
 
         this.defaults = new QualifierDefaults(this, this.annotations);
         boolean foundDefault = false;
@@ -94,8 +93,27 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                     Collections.singleton(DefaultLocation.ALL));
         }
 
-        // This also gets called by subclasses.  Is that a problem?
-        postInit();
+        // every subclass must call postInit!
+        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
+            this.postInit();
+        }
+    }
+
+    @Override
+    protected void postInit() {
+        super.postInit();
+
+        /*
+         * Create the flow instance here, as subclasses might need to
+         * initialize additional fields first.
+         * For example, in NullnessATF, the rawnessFactory needs to be
+         * initialized before calling scan.
+         */
+        Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
+        this.flow = useFlow ? createFlow(checker, root, flowQuals) : null;
+        if (flow!=null) {
+            flow.scan(root);
+        }
     }
 
     /**
@@ -167,24 +185,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
     }
 
-    // Indicate whether flow has performed the analysis or not
-    boolean scanned = false;
-    boolean finishedScanning = false;
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
+            boolean iUseFlow) {
         assert root != null : "root needs to be set when used on trees";
-        if (useFlow && !scanned) {
-            // Perform the flow analysis at the first invocation of
-            // annotateImplicit.  note that flow may call .getAnnotatedType
-            // so scanned is set to true before flow.scan
-            scanned = true;
-            // Apply flow-sensitive qualifier inference.
-            flow.scan(root);
-            super.fromTreeCache.clear();
-            finishedScanning = true;
-        }
         treeAnnotator.visit(tree, type);
-        if (useFlow) {
+        Element elt = InternalUtils.symbol(tree);
+        typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
+        defaults.annotate(tree, type);
+
+        if (iUseFlow) {
             final Set<AnnotationMirror> inferred = flow.test(tree);
             if (inferred != null) {
                 for (AnnotationMirror inf : inferred) {
@@ -201,13 +210,18 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 }
             }
         }
-        // TODO: This is quite ugly
-        if (!useFlow || finishedScanning
-                || type.getKind() != TypeKind.TYPEVAR) {
-            Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
-            defaults.annotate(tree, type);
-        }
+    }
+
+    @Override
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        annotateImplicit(tree, type, this.useFlow);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
+        AnnotatedTypeMirror res = this.fromMember(tree);
+        this.annotateImplicit(tree.getType(), res, false);
+        return res;
     }
 
     @Override
