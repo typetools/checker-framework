@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import checkers.nullness.quals.*;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 
 import javax.lang.model.element.Element;
@@ -359,7 +360,8 @@ public final class TreeUtils {
             return ((IdentifierTree)expr).getName();
         else if (expr.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)expr).getIdentifier();
-        throw new AssertionError("cannot be here: " + node);
+        SourceChecker.errorAbort("TreeUtils.methodName: cannot be here: " + node);
+        return null; // dead code
     }
 
     /**
@@ -571,7 +573,8 @@ public final class TreeUtils {
                     && exec.getParameters().size() == params)
                 return exec;
         }
-        throw new RuntimeException("Shouldn't be here!");
+        SourceChecker.errorAbort("TreeUtils.getMethod: shouldn't be here!");
+        return null; // dead code
     }
 
     /**
@@ -601,7 +604,8 @@ public final class TreeUtils {
                 return var;
             }
         }
-        throw new RuntimeException("Shouldn't be here!");
+        SourceChecker.errorAbort("TreeUtils.getField: shouldn't be here!");
+        return null; // dead code
     }
 
     /** Determine whether the given tree represents an ExpressionTree.
