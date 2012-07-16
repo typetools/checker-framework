@@ -36,31 +36,8 @@ public class FenumAnnotatedTypeFactory extends
                                  Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
     defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
 
+    this.postInit();
     // flow.setDebug(System.err);
-    flow.scan(root);
-  }
-
-  @Override
-  protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-    if (flow == null) {
-      // If the flow field is null, the flow inference is turned off.
-      // Just do what the superclass did.
-      super.annotateImplicit(tree, type);
-    } else {
-      treeAnnotator.visit(tree, type);
-      // typeAnnotator.visit(type);
-
-      defaults.annotate(tree, type);
-
-      final Set<AnnotationMirror> inferred = flow.test(tree);
-      if (inferred != null && type.getKind()!=TypeKind.TYPEVAR) {
-        // TODO: Flow incorrectly infers an annotation for type variables
-        type.clearAnnotations();
-        type.addAnnotations(inferred);
-        // System.out.println("Inferred: " + type);
-      }
-      // completer.visit(type);
-    }
   }
 
   @Override
@@ -88,7 +65,7 @@ public class FenumAnnotatedTypeFactory extends
       ExpressionTree expr = node.getExpression();
       AnnotatedTypeMirror varType = getAnnotatedType(var);
       AnnotatedTypeMirror exprType = getAnnotatedType(expr);
-      Set<AnnotationMirror> lub = qualHierarchy.leastUpperBound(varType.getAnnotations(), exprType.getAnnotations());
+      Set<AnnotationMirror> lub = qualHierarchy.leastUpperBounds(varType.getAnnotations(), exprType.getAnnotations());
       type.clearAnnotations();
       type.addAnnotations(lub);
       return super.visitCompoundAssignment(node, type);
