@@ -235,6 +235,7 @@ ${build.version} of the 'javac.jar' library."/>
                 <fileset dir="${tests}">
                     <include name="src/tests/**/*.java"/>
                     <include name="test-lubglb/**/*.java"/>
+                    <include name="test-polyall/**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -374,6 +375,13 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the lubglb checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LubGlbTest"/>
+        </antcall>
+    </target>
+
+    <target name="polyall-tests" depends="jar,build-tests"
+      description="Run tests for the polyall checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.PolyAllTest"/>
         </antcall>
     </target>
 
