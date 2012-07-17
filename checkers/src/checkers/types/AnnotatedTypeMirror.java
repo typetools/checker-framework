@@ -1239,10 +1239,11 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             // TODO: pass printInvisible to all components
+            boolean noParams = getParameterTypes().isEmpty();
             return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
                 + getReturnType()
-                + (getParameterTypes().isEmpty() ? " ()" : " (" + getParameterTypes() + ")")
-                + " " + getReceiverType()
+                + " (" + getReceiverType() + " this"
+                + (noParams ? "" : ", " + getParameterTypes()) + ")"
                 + (getThrownTypes().isEmpty() ? "" : " throws " + getThrownTypes());
         }
     }
