@@ -46,6 +46,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
     /** to annotate types based on the given tree */
     protected final TypeAnnotator typeAnnotator;
+
     /** to annotate types based on the given un-annotated types */
     protected final TreeAnnotator treeAnnotator;
 
@@ -58,6 +59,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     //// Flow related fields
     /** Should use flow analysis? */
     protected boolean useFlow;
+
     /** Flow sensitive instance */
     protected Flow flow;
 
