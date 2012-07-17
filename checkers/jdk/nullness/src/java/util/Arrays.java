@@ -48,7 +48,7 @@ public class Arrays{
   public static boolean equals(boolean @Nullable [] a1, boolean @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static boolean equals(double @Nullable [] a1, double @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static boolean equals(float @Nullable [] a1, float @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
-  public static boolean equals(@Nullable Object @Nullable [] a1, @Nullable Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
+  public static boolean equals(@PolyNull Object @Nullable [] a1, @PolyNull Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(long[] a1, long a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(long[] a1, int a2, int a3, long a4) { throw new RuntimeException("skeleton method"); }
   public static void fill(int[] a1, int a2) { throw new RuntimeException("skeleton method"); }
@@ -98,9 +98,9 @@ public class Arrays{
   public static int hashCode(boolean @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static int hashCode(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static int hashCode(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static int deepHashCode(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static boolean deepEquals(@Nullable Object @Nullable [] a1, @Nullable Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
+  public static int hashCode(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  public static int deepHashCode(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  public static boolean deepEquals(@PolyNull Object @Nullable [] a1, @PolyNull Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static String toString(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static String toString(int @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static String toString(short @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
@@ -109,6 +109,6 @@ public class Arrays{
   public static String toString(boolean @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static String toString(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   public static String toString(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static String toString(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static String deepToString(@Nullable Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  public static String toString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  public static String deepToString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
 }
