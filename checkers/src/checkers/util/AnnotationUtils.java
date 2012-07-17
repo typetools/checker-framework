@@ -1253,10 +1253,9 @@ public class AnnotationUtils {
      * @param newQual The value to add.
      * @return Whether there was a qualifier hierarchy collision.
      */
-    public static <T> boolean updateMapping(QualifierHierarchy qualHierarchy,
+    public static <T> boolean updateMappingToMutableSet(QualifierHierarchy qualHierarchy,
             Map<T, Set<AnnotationMirror>> map,
-            T key, AnnotationMirror newQual,
-            boolean onePerTop) {
+            T key, AnnotationMirror newQual) {
 
         if (!map.containsKey(key)) {
             Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
@@ -1264,7 +1263,6 @@ public class AnnotationUtils {
             map.put(key, set);
         } else {
             Set<AnnotationMirror> prevs = map.get(key);
-            if (onePerTop) // then loop
             for (AnnotationMirror p : prevs) {
                 if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
                         qualHierarchy.getTopAnnotation(newQual))) {
@@ -1278,30 +1276,20 @@ public class AnnotationUtils {
     }
 
     /**
-     * @see #updateMapping(QualifierHierarchy, Map, Object, AnnotationMirror, boolean)
+     * 
+     * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror, boolean)
      */
-    public static boolean updateMapping(QualifierHierarchy qualHierarchy,
-            Map<AnnotationMirror, Set<AnnotationMirror>> map,
-            AnnotationMirror key, AnnotationMirror newQual,
-            boolean onePerTop) {
+    public static <T> void updateMappingToImmutableSet(Map<T, Set<AnnotationMirror>> map,
+            T key, Set<AnnotationMirror> newQual) {
 
-        // Only difference is comparison of qualifiers.
-        if (!containsSame(map.keySet(), key)) {
-            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-            set.add(newQual);
-            map.put(key, set);
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        // TODO: if T is also an AnnotationMirror, should we use areSame?
+        if (!map.containsKey(key)) {
+            result.addAll(newQual);
         } else {
-            Set<AnnotationMirror> prevs = map.get(key);
-            if (onePerTop) // then loop
-            for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
-                        qualHierarchy.getTopAnnotation(newQual))) {
-                    return false;
-                }
-            }
-            prevs.add(newQual);
-            map.put(key, prevs);
+            result.addAll(map.get(key));
+            result.addAll(newQual);
         }
-        return true;
+        map.put(key, Collections.unmodifiableSet(result));
     }
 }

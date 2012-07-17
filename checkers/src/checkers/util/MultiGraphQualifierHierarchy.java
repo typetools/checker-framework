@@ -415,7 +415,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *
      * Field supertypesMap is not set yet when this method is called - use fullMap instead.
      */
-    // TODO: put the common code into a helper method.
     // TODO: document
     protected static void addPolyRelations(SourceChecker checker,
             AnnotationUtils annoFactory,
@@ -433,25 +432,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 AnnotationUtils.areSame(declTop, annoFactory.fromClass(PolymorphicQualifier.class))) {
                 if (declTop == null || // PolyAll
                         tops.size() == 1) { // un-ambigous single top
-                    {
-                        Set<AnnotationMirror> oldsupers = fullMap.get(polyQualifier);
-                        if (oldsupers==null) {
-                            oldsupers=AnnotationUtils.createAnnotationSet();
-                        }
-                        Set<AnnotationMirror> newsupers = AnnotationUtils.createAnnotationSet();
-                        newsupers.addAll(oldsupers);
-                        newsupers.addAll(tops);
-                        fullMap.put(polyQualifier, Collections.unmodifiableSet(newsupers));
-                    }
-
+                    AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, tops);
                     for (AnnotationMirror bottom : bottoms) {
                         // Add the polyqualifier as a supertype
                         // Need to copy over the set as it is unmodifiable.
-                        Set<AnnotationMirror> oldsupers = fullMap.get(bottom);
-                        Set<AnnotationMirror> newsupers = AnnotationUtils.createAnnotationSet();
-                        newsupers.addAll(oldsupers);
-                        newsupers.add(polyQualifier);
-                        fullMap.put(bottom, Collections.unmodifiableSet(newsupers));
+                        AnnotationUtils.updateMappingToImmutableSet(fullMap, bottom, Collections.singleton(polyQualifier));
                     }
                     if (declTop==null) { // PolyAll
                         // Make all other polymorphic qualifiers a subtype of PolyAll
@@ -459,16 +444,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                             AnnotationMirror otherTop = otherpolyKV.getKey();
                             AnnotationMirror otherPoly = otherpolyKV.getValue();
                             if (otherTop!=null) {
-                                Set<AnnotationMirror> oldsupers = fullMap.get(otherPoly);
-                                if (oldsupers==null) {
-                                    oldsupers=AnnotationUtils.createAnnotationSet();
-                                }
-                                Set<AnnotationMirror> newsupers = AnnotationUtils.createAnnotationSet();
-                                newsupers.addAll(oldsupers);
-                                newsupers.add(polyQualifier);
-                                fullMap.put(otherPoly, Collections.unmodifiableSet(newsupers));
+                                AnnotationUtils.updateMappingToImmutableSet(fullMap, otherPoly, Collections.singleton(polyQualifier));
                             }
-                    	}
+                        }
                     }
                 } else {
                     SourceChecker.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
@@ -490,14 +468,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 }
                 boolean found = (polyTop!=null);
                 if (found) {
-                    Set<AnnotationMirror> oldsupers = fullMap.get(polyQualifier);
-                    if (oldsupers==null) {
-                        oldsupers=AnnotationUtils.createAnnotationSet();
-                    }
-                    Set<AnnotationMirror> newsupers = AnnotationUtils.createAnnotationSet();
-                    newsupers.addAll(oldsupers);
-                    newsupers.add(polyTop);
-                    fullMap.put(polyQualifier, Collections.unmodifiableSet(newsupers));
+                    AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, Collections.singleton(polyTop));
                 } else {
                     SourceChecker.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
                             "incorrect top qualifier given in polymorphic qualifier: " + polyQualifier +
@@ -506,25 +477,22 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
                 found = false;
                 AnnotationMirror bottom = null;
-                for (AnnotationMirror btm : bottoms) {
+                outer: for (AnnotationMirror btm : bottoms) {
                     for (AnnotationMirror btmsuper : fullMap.get(btm)) {
                         if (AnnotationUtils.areSameIgnoringValues(btmsuper, polyTop)) {
                             found = true;
                             bottom = btm;
-                            break;
+                            break outer;
                         }
                     }
                 }
                 if (found) {
-                    Set<AnnotationMirror> oldsupers = fullMap.get(bottom);
-                    Set<AnnotationMirror> newsupers = AnnotationUtils.createAnnotationSet();
-                    newsupers.addAll(oldsupers);
-                    newsupers.add(polyQualifier);
-                    fullMap.put(bottom, Collections.unmodifiableSet(newsupers));
+                    AnnotationUtils.updateMappingToImmutableSet(fullMap, bottom, Collections.singleton(polyQualifier));
                 } else {
-                    SourceChecker.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
-                            "incorrect top qualifier given in polymorphic qualifier: " + polyQualifier +
-                            " could not find: " + polyTop);
+                    // TODO: in a type system with a single qualifier this check will fail.
+                    //SourceChecker.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
+                    //        "incorrect top qualifier given in polymorphic qualifier: " + polyQualifier +
+                    //        " could not find bottom for: " + polyTop);
                 }
             }
         }

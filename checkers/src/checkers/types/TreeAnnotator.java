@@ -79,7 +79,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
             boolean res;
             AnnotationMirror theQual = annoFactory.fromClass(qual);
             for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
-                res = AnnotationUtils.updateMapping(qualHierarchy, treeClasses, treeClass, theQual, true);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeClasses " +
                             treeClasses + " at " + treeClass + " with " + theQual);
@@ -87,7 +87,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
             }
 
             for (Tree.Kind treeKind : implicit.trees()) {
-                res = AnnotationUtils.updateMapping(qualHierarchy, treeKinds, treeKind, theQual, true);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                             treeKinds + " at " + treeKind + " with " + theQual);
@@ -95,7 +95,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
             }
 
             for (String pattern : implicit.stringPatterns()) {
-                res = AnnotationUtils.updateMapping(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual, true);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                             stringPatterns + " at " + pattern + " with " + theQual);
@@ -105,7 +105,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
     }
 
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMapping(qualHierarchy, treeClasses, treeClass, theQual, true);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of map " +
                     treeClasses + " at " + treeClass + " with " +theQual);
@@ -113,7 +113,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
     }
 
     public void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMapping(qualHierarchy, treeKinds, treeKind, theQual, true);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                     treeKinds + " at " + treeKind + " with " + theQual);
@@ -121,7 +121,7 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
     }
 
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMapping(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual, true);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                     stringPatterns + " at " + pattern + " with " + theQual);
