@@ -2,7 +2,6 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -13,10 +12,8 @@ import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
+import checkers.source.SourceVisitor;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -93,7 +90,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     public void initChecker(ProcessingEnvironment processingEnv) {
         super.initChecker(processingEnv);
         this.supportedQuals = this.createSupportedTypeQualifiers();
-        this.qualHierarchy = this.createQualifierHierarchy();
+        this.qualHierarchy = this.getQualifierHierarchy();
         this.typeHierarchy = this.createTypeHierarchy();
     }
 
@@ -245,7 +242,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
