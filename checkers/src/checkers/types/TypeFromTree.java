@@ -533,8 +533,8 @@ abstract class TypeFromTree extends
                 throw new CheckerError("TypeFromTree.forTypeVariable: should only be called on type variables");
             }
 
-            TypeParameterElement tpe = (TypeParameterElement)
-                    ((TypeVariable)type.getUnderlyingType()).asElement();
+            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
+            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
@@ -549,7 +549,13 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                throw new CheckerError("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                // Captured types can have a generic element (owner) that is
+                // not an element at all, namely Symtab.noSymbol.
+                if (InternalUtils.isCaptured(typeVar)) {
+                    return type;
+                } else {
+                    throw new CheckerError("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                }
             }
         }
 

@@ -3088,12 +3088,6 @@ public class CFGBuilder {
                 assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType) :
                     "ArrayType must be represented by AnnotatedArrayType";
 
-                AnnotatedTypeMirror annotatedElementType =
-                    ((AnnotatedTypeMirror.AnnotatedArrayType)annotatedArrayType).getComponentType();
-
-                Tree annotatedElementTypeTree =
-                    treeBuilder.buildAnnotatedType(annotatedElementType);
-
                 Tree annotatedArrayTypeTree =
                     treeBuilder.buildAnnotatedType(annotatedArrayType);
 
