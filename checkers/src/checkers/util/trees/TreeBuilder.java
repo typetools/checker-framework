@@ -466,15 +466,17 @@ public class TreeBuilder {
             break;
         case TYPEVAR: {
             // No recursive annotations.
+            AnnotatedTypeMirror.AnnotatedTypeVariable variable =
+                (AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType;
             TypeVariable underlyingTypeVar = 
-                (TypeVariable)annotatedType.getUnderlyingType();
+                (TypeVariable)variable.getUnderlyingType();
             underlyingTypeTree =
                 maker.Ident((Symbol.TypeSymbol)(underlyingTypeVar).asElement());
             break;
         }
         case WILDCARD: {
             AnnotatedTypeMirror.AnnotatedWildcardType wildcard =
-                ((AnnotatedTypeMirror.AnnotatedWildcardType) annotatedType);
+                (AnnotatedTypeMirror.AnnotatedWildcardType) annotatedType;
             if (wildcard.getExtendsBound() != null) {
                 Tree annotatedExtendsBound = AnnotatedType(wildcard.getExtendsBound());
                 underlyingTypeTree =
