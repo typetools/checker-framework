@@ -158,24 +158,32 @@ Section~\ref{javac-installation}.)
 \item 
   Unzip it to create a \code{checker-framework} directory.
 
-  Then, set the
-  \code{CHECKERS} environment variable to the
-  \code{checker-framework/checkers} directory.  For instance, if you use
-  the bash shell, then add this to your \code{.bashrc} file (don't forget
-  to replace the ``\code{...}''!):
-\begin{Verbatim}
-  export CHECKERS=.../checker-framework/checkers
-\end{Verbatim}
-  Also execute it on the command line, or log out and back in.
+%% Not needed any more.
+%   Then, set the
+%   \code{CHECKERS} environment variable to the
+%   \code{checker-framework/checkers} directory.  For instance, if you use
+%   the bash shell, then add this to your \code{.bashrc} file (don't forget
+%   to replace the ``\code{...}''!):
+% \begin{Verbatim}
+%   export CHECKERS=.../checker-framework/checkers
+% \end{Verbatim}
+%   Also execute it on the command line, or log out and back in.
 
 \item
-  Optionally, update your execution path.
+  Optionally, update your execution path or create an alias.
 
   When doing pluggable type-checking, you need to use the ``Type Annotations compiler'', an updated version of the
   OpenJDK javac compiler that
   understands type annotations.    The Type Annotations compiler is
   backward-compatible, so using it as your Java compiler should have no negative consequences.
-  You can do this in three ways:
+
+  You can do this in four ways.  You can use any one of them.  However, if
+  you are using the Windows command shell, you must use the last one.  The
+  instructions assume an \code{CHECKERS} environment variable that is set
+  to the \code{.../checker-framework/checkers} directory, but you can just
+  use an absolute path if you prefer.
+
+  % Is the last one required for Cygwin, as well as for the Windows command shell?
 
   \begin{itemize}
   \item
@@ -199,25 +207,24 @@ Section~\ref{javac-installation}.)
 \begin{Verbatim}
   alias javacheck='$CHECKERS/binary/javac'
 \end{Verbatim}
-  \end{itemize}
+% Unconfuse Emacs LaTeX mode:  $
 
-%% Too complicated.  But, used in the ant target.
-% \item
-%   Use any version of javac, but pass an extra \code{-Xbootclasspath/p} and
-%   \code{-jar} argument.  For
-%   example:
-% 
-% \begin{Verbatim}
-%   # Unix
-%   java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
-%        -jar $CHECKERS/binary/jsr308-all.jar -version
-% 
-%   # Windows
-%   java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar
-%        -jar %CHECKERS%\binary\jsr308-all.jar -version
-% \end{Verbatim}
+ \item
+   Introduce an alias that 
+   uses any version of javac, but passes an extra \code{-Xbootclasspath/p:} and
+   \code{-jar} argument.  For example:
+ 
+ \begin{Verbatim}
+   # Unix
+   alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar'
+ 
+   # Windows
+   doskey javacheck=java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar %CHECKERS%\binary\jsr308-all.jar $*
+ \end{Verbatim}
+\end{itemize}
 
 \end{enumerate}
+
 
 To ensure that it was installed properly, run \<javac -version> (possibly using the
 full pathname to \<javac> or the alias, if you did not add the Type Annotations \<javac> to your path).
