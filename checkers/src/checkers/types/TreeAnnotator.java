@@ -237,7 +237,6 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                             if (!type.isAnnotated()) {
                                 type.addAnnotations(qualHierarchy.getBottomAnnotations());
                             }
-                            typeFactory.addToCache(tree, type);
                         } else {
                             // The type of the array initializers is incompatible with the
                             // context type!
@@ -258,7 +257,6 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                     if (!type.isAnnotated()) {
                         type.addAnnotations(qualHierarchy.getBottomAnnotations());
                     }
-                    typeFactory.addToCache(tree, type);
                 }
             }
         }
