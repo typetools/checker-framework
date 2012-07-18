@@ -253,9 +253,6 @@ public class AnnotatedTypeFactory {
      *
      * @param tree the AST node
      * @return the annotated type of {@code tree}
-     * @throws UnsupportedOperationException if an annotated type cannot be
-     *         obtained from {@code tree}
-     * @throws IllegalArgumentException if {@code tree} is null
      *
      * @see #fromClass(ClassTree)
      * @see #fromMember(Tree)
