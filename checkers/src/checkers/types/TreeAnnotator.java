@@ -13,10 +13,12 @@ import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SimpleTreeVisitor;
 
 
 /**
@@ -32,7 +34,7 @@ import com.sun.source.tree.Tree.Kind;
  *
  * {@link TreeAnnotator} does not traverse trees deeply by default.
  */
-public class TreeAnnotator extends AssignmentContextTreeVisitor {
+public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
     /* The following three fields are mappings from a particular AST kind,
      * AST Class, or String literal pattern to the set of AnnotationMirrors
@@ -209,10 +211,19 @@ public class TreeAnnotator extends AssignmentContextTreeVisitor {
             assert type.getKind() == TypeKind.ARRAY;
             if (lubs != null) {
                 AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
+                Tree context = typeFactory.getVisitorState().getAssignmentContextTree();
+
                 if (context!=null) {
                     AnnotatedTypeMirror contextType = null;
                     if (context instanceof VariableTree) {
                         contextType = typeFactory.getDefaultedAnnotatedType((VariableTree)context);
+                    }
+                    if (context instanceof IdentifierTree) {
+                        // Within annotations
+                        contextType = typeFactory.getAnnotatedType(context);
+                        if (contextType instanceof AnnotatedExecutableType) {
+                            contextType = ((AnnotatedExecutableType)contextType).getReturnType();
+                        }
                     }
                     if (contextType!=null && contextType instanceof AnnotatedArrayType) {
                         AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) contextType).getComponentType();

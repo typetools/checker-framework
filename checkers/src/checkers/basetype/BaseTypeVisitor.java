@@ -137,11 +137,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
+        Tree preAssCtxt = visitorState.getAssignmentContextTree();
 
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
+        visitorState.setAssignmentContextTree(null);
 
         try {
             if (!TreeUtils.hasExplicitConstructor(node)) {
@@ -170,6 +172,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             this.visitorState.setClassTree(preCT);
             this.visitorState.setMethodReceiver(preAMT);
             this.visitorState.setMethodTree(preMT);
+            this.visitorState.setAssignmentContextTree(preAssCtxt);
         }
     }
 
@@ -246,10 +249,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-        validateTypeOf(node);
-        // If there's no assignment in this variable declaration, skip it.
-        if (node.getInitializer() != null) {
-            commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
+        Tree preAssCtxt = visitorState.getAssignmentContextTree();
+        visitorState.setAssignmentContextTree(node);
+
+        try {
+            validateTypeOf(node);
+            // If there's no assignment in this variable declaration, skip it.
+            if (node.getInitializer() != null) {
+                commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
+            }
+        } finally {
+            visitorState.setAssignmentContextTree(preAssCtxt);
         }
         return super.visitVariable(node, p);
     }
@@ -262,8 +272,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
-        commonAssignmentCheck(node.getVariable(), node.getExpression(),
-                "assignment.type.incompatible");
+        Tree preAssCtxt = visitorState.getAssignmentContextTree();
+        visitorState.setAssignmentContextTree(node);
+        try {
+            commonAssignmentCheck(node.getVariable(), node.getExpression(),
+                    "assignment.type.incompatible");
+        } finally {
+            visitorState.setAssignmentContextTree(preAssCtxt);
+        }
         return super.visitAssignment(node, p);
     }
 
@@ -504,6 +520,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             }
 
             AnnotatedTypeMirror expected = annoTypes.get(at.getVariable().toString());
+            Tree preAssCtxt = visitorState.getAssignmentContextTree();
+            visitorState.setAssignmentContextTree(at.getVariable());
+
+            try {
             AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
             if (expected.getKind()!=TypeKind.ARRAY) {
                 // Expected is not an array -> direct comparison.
@@ -520,6 +540,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                             actual, at.getExpression(),
                             "annotation.type.incompatible");
                 }
+            }
+            } finally {
+                visitorState.setAssignmentContextTree(preAssCtxt);
             }
         }
         return null;
