@@ -1,21 +1,34 @@
 package checkers.util;
 
-import static com.sun.tools.javac.code.Kinds.*;
+import static com.sun.tools.javac.code.Kinds.ERR;
+import static com.sun.tools.javac.code.Kinds.PCK;
+import static com.sun.tools.javac.code.Kinds.TYP;
+import static com.sun.tools.javac.code.Kinds.VAR;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
-import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.code.Symbol.*;
-import com.sun.tools.javac.comp.*;
+import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.*;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 
 /**
  * A Utility class to find symbols corresponding to string references
@@ -26,6 +39,7 @@ public class Resolver {
     private final Trees trees;
 
     private final Method FIND_IDENT;
+    private final Method FIND_METHOD;
     private final Method FIND_IDENT_IN_PACKAGE;
     private final Method FIND_MEMBER_TYPE;
     private final Method FIND_IDENT_IN_TYPE;
@@ -41,6 +55,11 @@ public class Resolver {
                     "findIdent",
                     Env.class, Name.class, int.class);
             FIND_IDENT.setAccessible(true);
+            
+            this.FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
+                    Env.class, Type.class, Name.class, List.class, List.class,
+                    boolean.class, boolean.class, boolean.class);
+            FIND_METHOD.setAccessible(true);
 
             this.FIND_IDENT_IN_PACKAGE = Resolve.class.getDeclaredMethod(
                     "findIdentInPackage",
@@ -103,7 +122,38 @@ public class Resolver {
                     FIND_IDENT_IN_TYPE,
                     env, site.asType(), ident, VAR);
         }
+    }
+    
+    /**
+     * Finds the method element for a given name and list of expected parameter
+     * types.
+     * 
+     * <p>
+     * The method adheres to all the rules of Java's scoping (while also
+     * considering the imports) for name resolution.
+     * 
+     * @param methodName
+     *            Name of the method to find.
+     * @param receiverType
+     *            Type of the receiver of the method
+     * @param path
+     *            Tree path.
+     * @return The method element (if found).
+     */
+    public Element findMethod(String methodName, TypeMirror receiverType,
+            TreePath path) {
+        JavacScope scope = (JavacScope) trees.getScope(path);
+        Env<AttrContext> env = scope.getEnv();
 
+        Type site = (Type) receiverType;
+        Name name = names.fromString(methodName);
+        List<Type> argtypes = List.nil();
+        List<Type> typeargtypes = List.nil();
+        boolean allowBoxing = true;
+        boolean useVarargs = false;
+        boolean operator = true;
+        return wrapInvocation(FIND_METHOD, env, site, name, argtypes,
+                typeargtypes, allowBoxing, useVarargs, operator);
     }
 
     private Element findType(String reference, Env<AttrContext> env) {
