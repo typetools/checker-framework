@@ -269,10 +269,12 @@ public class TreeBuilder {
                                           String name,
                                           Element owner,
                                           ExpressionTree initializer) {
-        Symbol.VarSymbol sym =
-            new Symbol.VarSymbol(0, names.fromString(name),
-                                 (Type)type, (Symbol)owner);
-        return maker.VarDef(sym, (JCTree.JCExpression)initializer);
+        DetachedVarSymbol sym =
+            new DetachedVarSymbol(0, names.fromString(name),
+                                  (Type)type, (Symbol)owner);
+        VariableTree tree = maker.VarDef(sym, (JCTree.JCExpression)initializer);
+        sym.setDeclaration(tree);
+        return tree;
     }
 
     /**
@@ -290,15 +292,16 @@ public class TreeBuilder {
                                           Element owner,
                                           ExpressionTree initializer) {
         Type typeMirror = (Type)InternalUtils.typeOf(type);
-        Symbol.VarSymbol sym =
-            new Symbol.VarSymbol(0, names.fromString(name),
-                                 typeMirror, (Symbol)owner);
+        DetachedVarSymbol sym =
+            new DetachedVarSymbol(0, names.fromString(name),
+                                  typeMirror, (Symbol)owner);
         JCTree.JCModifiers mods = maker.Modifiers(0);
         JCTree.JCVariableDecl decl = maker.VarDef(mods, sym.name,
                                                   (JCTree.JCExpression)type,
                                                   (JCTree.JCExpression)initializer);
         decl.setType(typeMirror);
         decl.sym = sym;
+        sym.setDeclaration(decl);
         return decl;
     }
 
@@ -418,6 +421,13 @@ public class TreeBuilder {
                 JCTree.JCTypeAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(annotationTree.getAnnotationType(),
                                          annotationTree.getArguments());
+                
+                if (am instanceof Attribute.TypeCompound) {
+                    typeAnnotationTree.attribute_field = (Attribute.TypeCompound)am;
+                } else {
+                    throw new RuntimeException("Bad annotation: " + am);
+                }
+
                 annotationTrees = annotationTrees.append(typeAnnotationTree);
             }
         }
@@ -518,6 +528,7 @@ public class TreeBuilder {
             break;
         }
 
+        ((JCTree)underlyingTypeTree).setType((Type)annotatedType.getUnderlyingType());
         JCTree.JCAnnotatedType annotatedTypeTree =
             maker.AnnotatedType(annotationTrees,
                                 (JCTree.JCExpression)underlyingTypeTree);
