@@ -501,8 +501,17 @@ implements Flow {
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror type = factory.fromMember(node);
             if (!isNonFinalField(elem) && !type.isAnnotated()) {
-                propagate(node, init);
-                recordBits(getCurrentPath());
+                // Set the assignment context for array component type inference.
+                // Note that flow is performed before the BaseTypeVisitor could set this
+                // information.
+                Tree preAssCtxt = visitorState.getAssignmentContextTree();
+                factory.getVisitorState().setAssignmentContextTree(node);
+                try {
+                    propagate(node, init);
+                    recordBits(getCurrentPath());
+                } finally {
+                    factory.getVisitorState().setAssignmentContextTree(preAssCtxt);
+                }
             }
         }
         return null;
