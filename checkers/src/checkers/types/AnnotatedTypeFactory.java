@@ -336,20 +336,6 @@ public class AnnotatedTypeFactory {
         return type;
     }
 
-    /**
-     * Add a mapping to the tree-type cache.
-     * This should rarely be required. The current use is for the type 
-     * of new array expressions, which depend on the assignment context.
-     * The result of the assignment context must be stored, as later checks might
-     * ask for the type of the tree outside of the assignment context.
-     *
-     * @param tree the Tree to store
-     * @param type the corresponding type
-     */
-    public void addToCache(Tree tree, AnnotatedTypeMirror type) {
-        treeCache.put(tree, AnnotatedTypes.deepCopy(type));
-    }
-
 
     // **********************************************************************
     // Factories for annotated types that do not account for implicit qualifiers.
