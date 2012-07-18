@@ -9,6 +9,10 @@ class Postcondition {
     String f1, f2, f3;
     Postcondition p;
     
+    @Pure String p1() {
+        return null;
+    }
+    
     /***** normal postcondition ******/
     
     @EnsuresAnnotation(expression="f1", annotation=Odd.class)
@@ -24,6 +28,14 @@ class Postcondition {
     @EnsuresAnnotation(expression="#1.f1", annotation=Odd.class)
     void oddF1_2(final Postcondition param) {
         param.f1 = null;
+    }
+    
+    @EnsuresAnnotation(expression="p.p1()", annotation=Odd.class)
+    void oddF1_3() {
+        if (p.p1() == null) {
+            return;
+        }
+        throw new RuntimeException();
     }
     
     @EnsuresAnnotation(expression="f1", annotation=Value.class)
@@ -89,6 +101,14 @@ class Postcondition {
         @Odd String l1 = param.f1;
         oddF1_2(param);
         @Odd String l2 = param.f1;
+    }
+    
+    // postcondition with more complex flow expression
+    void tn3(boolean b) {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p.p1();
+        oddF1_3();
+        @Odd String l2 = p.p1();
     }
     
     /***** many postcondition ******/
