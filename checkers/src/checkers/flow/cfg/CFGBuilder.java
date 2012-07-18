@@ -2995,20 +2995,16 @@ public class CFGBuilder {
 
                 DeclaredType iteratorType =
                     (DeclaredType)annotatedIteratorType.getUnderlyingType();
-                // (DeclaredType)InternalUtils.typeOf(iteratorCall);
 
-                System.out.println("Annotated iterator type: " + annotatedIteratorType);
-
-                // TODO: Create an actual Type Tree with annotations in it!!!!
+                Tree annotatedIteratorTypeTree =
+                    treeBuilder.buildAnnotatedType(annotatedIteratorType);
 
                 // Declare and initialize a new, unique iterator variable
                 VariableTree iteratorVariable =
-                    treeBuilder.buildVariableDecl(iteratorType,
+                    treeBuilder.buildVariableDecl(annotatedIteratorTypeTree,
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
-
-                System.out.println("Iterator variable: " + iteratorVariable);
 
                 extendWithNode(new VariableDeclarationNode(iteratorVariable));
 
@@ -3095,17 +3091,11 @@ public class CFGBuilder {
                 AnnotatedTypeMirror annotatedElementType =
                     ((AnnotatedTypeMirror.AnnotatedArrayType)annotatedArrayType).getComponentType();
 
-                System.out.println("Annotated array component type: " + annotatedElementType);
-
                 Tree annotatedElementTypeTree =
                     treeBuilder.buildAnnotatedType(annotatedElementType);
-                System.out.println("Annotated element type tree: " +
-                                   annotatedElementTypeTree);
 
                 Tree annotatedArrayTypeTree =
                     treeBuilder.buildAnnotatedType(annotatedArrayType);
-                System.out.println("Annotated array type tree: " +
-                                   annotatedArrayTypeTree);
 
                 // Declare and initialize a temporary array variable
                 VariableTree arrayVariable =
@@ -3113,8 +3103,6 @@ public class CFGBuilder {
                                                   uniqueName("array"),
                                                   variableElement.getEnclosingElement(),
                                                   expression);
-
-                System.out.println("Array variable: " + arrayVariable);
 
                 extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
