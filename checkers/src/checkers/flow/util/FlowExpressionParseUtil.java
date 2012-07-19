@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
+import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
@@ -96,6 +97,8 @@ public class FlowExpressionParseUtil {
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
+        
+        ProcessingEnvironment env = context.factory.getEnv();
 
         // this literal
         if (selfMatcher.matches() && allowSelf) {
@@ -103,7 +106,7 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             // field access
             try {
-                Resolver resolver = new Resolver(context.factory.getEnv());
+                Resolver resolver = new Resolver(env);
                 Element fieldElement = resolver.findVariable(s, path);
                 return new FieldAccess(context.receiver, context.receiverType,
                         fieldElement);
@@ -134,7 +137,7 @@ public class FlowExpressionParseUtil {
                         Result.failure("flowexpr.parse.nonempty.parameter"));
             }
             try {
-                Resolver resolver = new Resolver(context.factory.getEnv());
+                Resolver resolver = new Resolver(env);
                 Element methodElement = resolver.findMethod(methodName, context.receiverType, path);
                 System.out.println(methodElement);
                 List<Receiver> parameters = new ArrayList<>();
