@@ -233,20 +233,20 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     @Override
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        super.postDirectSuperTypes(type, supertypes);
         for (AnnotatedTypeMirror supertype : supertypes) {
             typeAnnotator.visit(supertype);
             if (supertype.getKind() == TypeKind.DECLARED)
                 defaults.annotateTypeElement((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
             completer.visit(supertype);
         }
+        // Apply supertype operations last.
+        super.postDirectSuperTypes(type, supertypes);
     }
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
-        poly.annotate(tree, method);
 
         TreePath path = this.getPath(tree);
         if (path!=null) {
