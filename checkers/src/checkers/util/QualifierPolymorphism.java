@@ -80,7 +80,7 @@ public class QualifierPolymorphism {
         Map<AnnotationMirror, AnnotationMirror> polys = new HashMap<AnnotationMirror, AnnotationMirror>();
         for (Class<? extends Annotation> a : checker.getSupportedTypeQualifiers()) {
             final AnnotationMirror aam = annoFactory.fromClass(a);
-            if (aam.getAnnotationType().toString().equals(PolyAll.class.getCanonicalName())) {
+            if (isPolyAll(aam)) {
                 polys.put(null, aam);
                 continue;
             }
@@ -133,6 +133,10 @@ public class QualifierPolymorphism {
 
     public static boolean isPolymorphicQualified(AnnotationMirror qual) {
         return getPolymorphicQualifier(qual)!=null;
+    }
+
+    public static boolean isPolyAll(AnnotationMirror qual) {
+        return qual.getAnnotationType().toString().equals(PolyAll.class.getCanonicalName());
     }
 
     // Returns null if the qualifier is not polymorphic.
