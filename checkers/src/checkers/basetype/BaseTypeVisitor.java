@@ -23,6 +23,7 @@ import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
@@ -440,9 +441,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    if (value == null
-                            || !AnnotationUtils.containsSame(
-                                    value.getAnnotations(), anno)) {
+                    InferredAnnotation inferredAnno = value == null ? null
+                            : value.getAnnotationInHierarchy(anno);
+                    if (inferredAnno == null
+                            || inferredAnno.isNoInferredAnnotation()
+                            || !AnnotationUtils.areSame(
+                                    inferredAnno.getAnnotation(), anno)) {
                         checker.report(
                                 Result.failure("contracts.postcondition.not.satisfied"),
                                 node);
@@ -563,9 +567,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // match 'result'. at the moment, this means the result
                     // is a boolean literal
                     if (retVal == null || retVal == result) {
-                        if (value == null
-                                || !AnnotationUtils.containsSame(
-                                        value.getAnnotations(), anno)) {
+                        InferredAnnotation inferredAnno = value == null ? null
+                                : value.getAnnotationInHierarchy(anno);
+                        if (inferredAnno == null
+                                || inferredAnno.isNoInferredAnnotation()
+                                || !AnnotationUtils.areSame(
+                                        inferredAnno.getAnnotation(), anno)) {
                             checker.report(
                                     Result.failure("contracts.conditional.postcondition.not.satisfied"),
                                     returnStmt.getTree());
@@ -778,9 +785,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
                 CFAbstractValue<?> value = store.getValue(expr);
-                if (value == null
-                        || !AnnotationUtils.containsSame(
-                                value.getAnnotations(), requiredAnnotation)) {
+                InferredAnnotation inferredAnno = value == null ? null : value
+                        .getAnnotationInHierarchy(requiredAnnotation);
+                if (inferredAnno == null
+                        || inferredAnno.isNoInferredAnnotation()
+                        || !AnnotationUtils.areSame(
+                                inferredAnno.getAnnotation(),
+                                requiredAnnotation)) {
                     checker.report(Result
                             .failure("contracts.precondition.not.satisfied"),
                             tree);

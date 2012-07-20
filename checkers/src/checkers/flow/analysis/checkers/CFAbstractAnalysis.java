@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.Analysis;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.CFGDOTVisualizer;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
@@ -47,6 +49,12 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     protected final QualifierHierarchy qualifierHierarchy;
 
     /**
+     * The 'top' annotations in all hierarchies. This is used in the abstract
+     * values to determine the index at which to store various annotations.
+     */
+    protected final AnnotationMirror[] tops;
+
+    /**
      * A type factory that can provide static type annotations for AST Trees.
      */
     protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory;
@@ -72,6 +80,10 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this.factory = factory;
         transferFunction = createTransferFunction();
         this.checker = checker;
+        Set<AnnotationMirror> topAnnotations = factory.getQualifierHierarchy()
+                .getRootAnnotations();
+        tops = new ArrayList<>(topAnnotations)
+                .toArray(new AnnotationMirror[topAnnotations.size()]);
 
         // Build the set of supported annotations.
         supportedAnnotations = AnnotationUtils.createAnnotationSet();
@@ -88,7 +100,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
                 supportedAnnotations.add(a);
             }
         }
-        
+
         fieldValues = Collections.emptyList();
     }
 
@@ -99,7 +111,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this(factory, env, checker);
         this.fieldValues = fieldValues;
     }
-    
+
     public List<Pair<VariableElement, V>> getFieldValues() {
         return fieldValues;
     }
@@ -121,10 +133,17 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 
     /**
      * @return An abstract value containing the valid subset of annotations of
-     *         {@code annotations} (or {@code null} if that set is empty).
+     *         {@code annotations}.
      */
     protected abstract/* @Nullable */V createAbstractValue(
             Set<AnnotationMirror> annotations);
+
+    /**
+     * Creates an abstract value given.
+     */
+    protected V createAbstractValue(InferredAnnotation[] resultAnnotations) {
+        return null;
+    }
 
     public QualifierHierarchy getTypeHierarchy() {
         return qualifierHierarchy;
