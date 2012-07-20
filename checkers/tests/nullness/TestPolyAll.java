@@ -1,5 +1,6 @@
 import checkers.quals.PolyAll;
 import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.NonNull;
 
 // Same test as TestPolyNull, just using PolyAll as qualifier.
 // Behavior must be the same.
@@ -19,6 +20,17 @@ class TestPolyAll {
       }
     }
     return retval;
+  }
+
+
+  // @PolyAll should apply to every type that has no explicit qualifier
+
+  public static boolean noDuplicates1 (/*@PolyAll*/ /*@NonNull*/ String[] a) {
+    return true;
+  }
+
+  public static boolean noDuplicates2 (/*@PolyAll*/ /*@Nullable*/ String[] a) {
+    return true;
   }
 
 }
