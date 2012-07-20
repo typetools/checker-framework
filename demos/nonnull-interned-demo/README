@@ -1,3 +1,14 @@
+[
+IMPORTANT:
+
+As of July 2012, the demos are not working.
+Fixing them requires updating annotations in daikon.jar.  We can't simply
+use a new version of daikon.jar because some methods (that are used by the
+version of the code in the demo) have been removed.
+So, the best approach will be to take a current version of the Daikon
+codebase and re-insert the errors in it.
+]
+
 [This file needs to say what to do if the favorites for the run targets
 don't appear in your Eclipse.]
 
