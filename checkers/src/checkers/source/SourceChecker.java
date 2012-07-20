@@ -220,7 +220,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /**
      * Exception type used only internally to abort
      * processing.
-     * Only public to allow {@link tests.AnnotationBuilderTest};
+     * Only public to allow tests.AnnotationBuilderTest;
      * this class should be private. TODO: nicer way?
      */
     public static class CheckerError extends RuntimeException {
