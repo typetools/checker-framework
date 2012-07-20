@@ -405,7 +405,8 @@ public class TypeHierarchy {
         // End of copied code.
 
         // The main array component annotations must be equal.
-        if (!AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
+        if (checker.getLintOption("arrays:invariant", false) &&
+                !AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
             return false;
         }
 

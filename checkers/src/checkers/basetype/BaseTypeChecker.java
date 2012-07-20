@@ -360,6 +360,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
         lintSet.add("flow:inferFromAsserts");
+        // Temporary option to make array subtyping invariant,
+        // which will be the new default soon.
+        lintSet.add("arrays:invariant");
+
         return lintSet;
     }
 
