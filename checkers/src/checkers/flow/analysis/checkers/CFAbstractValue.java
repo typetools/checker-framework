@@ -49,11 +49,26 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     protected final InferredAnnotation[] annotations;
 
     public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis,
-            Set<AnnotationMirror> annotations) {
+            Set<AnnotationMirror> annotationSet) {
         this.analysis = analysis;
-        assert areValidAnnotations(annotations);
+        assert areValidAnnotations(annotationSet);
         tops = analysis.tops;
-        this.annotations = new InferredAnnotation[tops.length];
+        annotations = new InferredAnnotation[tops.length];
+        for (int i = 0; i < tops.length; i++) {
+            annotations[i] = NoInferredAnnotation.INSTANCE;
+        }
+        for (AnnotationMirror anno : annotationSet) {
+            AnnotationMirror top = analysis.qualifierHierarchy
+                    .getRootAnnotation(anno);
+            annotations[getIndex(top)] = new InferredAnnotation(anno);
+        }
+    }
+
+    public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis,
+            InferredAnnotation[] annotations) {
+        this.analysis = analysis;
+        this.tops = analysis.tops;
+        this.annotations = annotations;
     }
 
     /**

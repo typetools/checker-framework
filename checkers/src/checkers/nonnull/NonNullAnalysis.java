@@ -11,6 +11,7 @@ import checkers.commitment.CommitmentStore;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.util.Pair;
 
 /**
@@ -48,5 +49,10 @@ public class NonNullAnalysis extends
             Set<AnnotationMirror> annotations) {
         return CFAnalysis.defaultCreateAbstractValue(annotations,
                 supportedAnnotations, this);
+    }
+    
+    @Override
+    protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
     }
 }

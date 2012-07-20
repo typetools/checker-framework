@@ -4,6 +4,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
+
 /**
  * The default abstract value used in the Checker Framework.
  * 
@@ -14,6 +16,11 @@ public class CFValue extends CFAbstractValue<CFValue> {
 
     public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations) {
+        super(analysis, annotations);
+    }
+
+    public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
+            InferredAnnotation[] annotations) {
         super(analysis, annotations);
     }
 
