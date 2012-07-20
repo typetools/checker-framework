@@ -1,0 +1,18 @@
+; -*- lisp -*- style
+
+(BG_PUSH (EQ (typeof null) |T_null|))
+(BG_PUSH (FORALL (x) (IMPLIES (EQ (hash x) null) (EQ (typeof x) |T_null|))))
+(BG_PUSH (EQ (hash this) (hash |__orig__this|)))
+(BG_PUSH (FORALL (a) (>= (arrayLength a) 0)))
+(BG_PUSH (FORALL (x y)
+		 (IFF (EQ (|java-&&| x y) 1)
+		      (AND (NEQ x 0) (NEQ y 0)))))
+(BG_PUSH (FORALL (x y)
+		 (IFF (EQ (|java-&&| x y) 0)
+		      (NOT (AND (NEQ x 0) (NEQ y 0))))))
+(BG_PUSH (FORALL (x y)
+		 (IFF (EQ (|java-logical-or| x y) 1)
+		      (OR (NEQ x 0) (NEQ y 0)))))
+(BG_PUSH (FORALL (x y)
+		 (IFF (EQ (|java-logical-or| x y) 0)
+		      (NOT (OR (NEQ x 0) (NEQ y 0))))))
