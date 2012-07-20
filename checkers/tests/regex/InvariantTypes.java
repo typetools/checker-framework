@@ -19,7 +19,7 @@ public class InvariantTypes {
 
   void recalls() {
     unqm(new String[] {"a"});
-    //:: error: (argument.type.incompatible)
+    //TODOINVARR:: error: (argument.type.incompatible)
     unqm(new @Regex String[] {"a"});
     // TODO: would we want the following to work?
     //:: error: (argument.type.incompatible)
@@ -29,7 +29,8 @@ public class InvariantTypes {
 
   void unqcalls() {
     unqm(new String[] {"a("});
-    //:: error: (argument.type.incompatible) :: error: (type.incompatible)
+    //TODOINVARR:: error: (argument.type.incompatible)
+    //:: error: (type.incompatible)
     unqm(new @Regex String[] {"a("});
     //:: error: (argument.type.incompatible)
     rem(new String[] {"a("});
