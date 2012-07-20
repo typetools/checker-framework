@@ -1322,7 +1322,7 @@ public class AnnotatedTypeFactory {
      * For IGJ, unify('Immutable', 'Mutable') ==> ReadOnly
      *
      * Delegates the call to
-     * {@link QualifierHierarchy#leastUpperBound(Collection, Collection)}.
+     * {@link QualifierHierarchy#leastUpperBounds(Collection, Collection)}.
      *
      * @param c1    type qualifiers for the first type
      * @param c2    type qualifiers for the second type
