@@ -9,11 +9,11 @@ class InvariantArrays {
     @Encrypted String[] esa;
 
     void tests() {
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         oa = eoa;
         //:: error: (assignment.type.incompatible)
         eoa = oa;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         oa = esa;
         // OK
         oa = sa;
@@ -38,13 +38,13 @@ class InvariantArrays {
         leoa = llera;
         eloa = ellera;
 
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         loa = eloa;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         loa = ellra;
         //:: error: (assignment.type.incompatible)
         eleoa = eloa;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         leoa = eleoa;
     }
 }

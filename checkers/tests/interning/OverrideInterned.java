@@ -37,7 +37,7 @@ class OverrideInterned {
 
   /* Changing the array component type in the overriding method is illegal. */
   public class PairwiseStringEqualBad extends TwoSequenceString {
-    //:: error: (override.param.invalid)
+    //TODOINVARR:: error: (override.param.invalid)
     public Object check_modified1(String /*@Interned*/ [] a1) {
       return new Object();
     }
