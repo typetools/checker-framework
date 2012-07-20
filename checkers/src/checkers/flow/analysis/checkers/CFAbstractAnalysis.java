@@ -141,9 +141,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * Creates an abstract value given.
      */
-    protected V createAbstractValue(InferredAnnotation[] resultAnnotations) {
-        return null;
-    }
+    protected abstract V createAbstractValue(InferredAnnotation[] resultAnnotations);
 
     public QualifierHierarchy getTypeHierarchy() {
         return qualifierHierarchy;

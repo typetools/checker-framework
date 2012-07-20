@@ -7,6 +7,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.regex.RegexChecker;
 import checkers.util.Pair;
@@ -42,4 +43,8 @@ public class RegexAnalysis extends
                 supportedAnnotations, this);
     }
 
+    @Override
+    protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
+    }
 }
