@@ -1,7 +1,8 @@
 import checkers.interning.quals.Interned;
 
-// This code is extracted from FreePastry
 class OverrideInterned {
+
+  // This code is extracted from FreePastry
 
   @Interned class NodeHandle { }
 
@@ -27,4 +28,21 @@ class OverrideInterned {
     };
   }
 
+  // This code is from Daikon
+
+  public abstract class TwoSequenceString {
+    public abstract Object check_modified1(/*@Interned*/ String /*@Interned*/ [] v1);
+    public abstract Object check_modified1(String /*@Interned*/ [] v1);
+  }
+
+  public class PairwiseStringEqual extends TwoSequenceString {
+    public Object check_modified1(String /*@Interned*/ [] a1) {
+      return new Object();
+    }
+    public Object check_modified2(Interned*/ String /*@Interned*/ [] a1) {
+      return new Object();
+    }
+  }  
+
 }
+
