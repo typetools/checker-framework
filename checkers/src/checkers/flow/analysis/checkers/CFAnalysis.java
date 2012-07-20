@@ -57,15 +57,16 @@ public class CFAnalysis extends
         return defaultCreateAbstractValue(annotations, supportedAnnotations,
                 this);
     }
-    
+
     @Override
     protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
         return defaultCreateAbstractValue(annotations, this);
     }
-    
+
     /**
-     * Only uses the legal annotations in {@code annotations} and
-     * {@code effectiveAnnotations}, and creates a {@link CFValue}.
+     * Creates a {@link CFValue} from a given array of
+     * {@link InferredAnnotation}s. This allows the creation of {@link CFValue}
+     * objects where annotations are only available for some of the hierarchies.
      */
     public static CFValue defaultCreateAbstractValue(
             InferredAnnotation[] annotations,
@@ -75,7 +76,10 @@ public class CFAnalysis extends
 
     /**
      * Only uses the legal annotations in {@code annotations} and
-     * {@code effectiveAnnotations}, and creates a {@link CFValue}.
+     * {@code effectiveAnnotations}, and creates a {@link CFValue}. It is
+     * assumed that information for all hierarchies is available. If for a given
+     * hierarchy, the set does not contain an annotation, then it is assumed
+     * that "no annotation" is the correct information for that hierarchy.
      */
     public static CFValue defaultCreateAbstractValue(
             Set<AnnotationMirror> annotations,
