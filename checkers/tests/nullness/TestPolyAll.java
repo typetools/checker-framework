@@ -22,15 +22,4 @@ class TestPolyAll {
     return retval;
   }
 
-
-  // @PolyAll should apply to every type that has no explicit qualifier
-
-  public static boolean noDuplicates1 (/*@PolyAll*/ /*@NonNull*/ String[] a) {
-    return true;
-  }
-
-  public static boolean noDuplicates2 (/*@PolyAll*/ /*@Nullable*/ String[] a) {
-    return true;
-  }
-
 }
