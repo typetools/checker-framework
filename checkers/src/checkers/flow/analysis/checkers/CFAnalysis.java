@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
 import checkers.util.Pair;
@@ -56,6 +57,21 @@ public class CFAnalysis extends
         return defaultCreateAbstractValue(annotations, supportedAnnotations,
                 this);
     }
+    
+    @Override
+    protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
+        return defaultCreateAbstractValue(annotations, this);
+    }
+    
+    /**
+     * Only uses the legal annotations in {@code annotations} and
+     * {@code effectiveAnnotations}, and creates a {@link CFValue}.
+     */
+    public static CFValue defaultCreateAbstractValue(
+            InferredAnnotation[] annotations,
+            CFAbstractAnalysis<CFValue, ?, ?> analysis) {
+        return new CFValue(analysis, annotations);
+    }
 
     /**
      * Only uses the legal annotations in {@code annotations} and
@@ -73,5 +89,4 @@ public class CFAnalysis extends
         }
         return new CFValue(analysis, as);
     }
-
 }
