@@ -47,7 +47,7 @@ class OverrideInterned {
     }
   }
 
-  /** Changing the main reference type is allowed, if it is a supertype. */
+  /* Changing the main reference type is allowed, if it is a supertype. */
   public class PairwiseStringEqualGood extends TwoSequenceString {
     public Object check_modified1(/*@Interned*/ String [] a1) {
       return new Object();
