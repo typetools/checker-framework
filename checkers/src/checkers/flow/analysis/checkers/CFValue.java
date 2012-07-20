@@ -4,8 +4,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
-
 /**
  * The default abstract value used in the Checker Framework.
  * 
