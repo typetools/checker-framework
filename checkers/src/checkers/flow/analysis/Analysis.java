@@ -35,9 +35,9 @@ import com.sun.source.tree.VariableTree;
 /**
  * An implementation of an iterative algorithm to solve a dataflow problem,
  * given a control flow graph and a transfer function.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <A>
  *            The abstract value type to be tracked by the analysis.
  * @param <S>
@@ -88,7 +88,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * The node that is currently handled in the analysis (if it is running).
      * The following invariant holds:
-     * 
+     *
      * <pre>
      *   !isRunning ==> (currentNode == null)
      * </pre>
@@ -144,7 +144,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * Perform the actual analysis. Should only be called once after the object
      * has been created.
-     * 
+     *
      * @param cfg
      */
     public void performAnalysis(ControlFlowGraph cfg) {
@@ -547,7 +547,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        return new AnalysisResult<>(nodeValues, storesBeforeMethodInvocation,
+        return new AnalysisResult<>(nodeValues, stores,
                 cfg.getTreeLookup());
     }
 
