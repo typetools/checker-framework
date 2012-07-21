@@ -1,5 +1,7 @@
 
 import checkers.nonnull.quals.*;
+import checkers.commitment.quals.*;
+import checkers.quals.*;
 
 public class FlowInitialization {
     
@@ -38,8 +40,12 @@ public class FlowInitialization {
         f = "";
     }
     
-    @EnsuresAnnotation(expression="a", annotation=NonNull.class)
-    public void setField(@Unclassified Initializer this) {
-        a = "";
+    public FlowInitialization(double d) {
+        setField();
+    }
+    
+    @EnsuresAnnotation(expression="f", annotation=NonNull.class)
+    public void setField(@Unclassified FlowInitialization this) {
+        f = "";
     }
 }
