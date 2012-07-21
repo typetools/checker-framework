@@ -3,8 +3,6 @@ package checkers.quals;
 import java.lang.annotation.*;
 
 import checkers.util.QualifierPolymorphism;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.PolyNull;
 import checkers.interning.quals.PolyInterned;
 
@@ -12,7 +10,7 @@ import checkers.interning.quals.PolyInterned;
  * A polymorphic type qualifier that varies over all type hierarchies.
  * <p>
  *
- * Writing <tt>@PolyAll</tt> is equivalent to writing a polynomial
+ * Writing <tt>@PolyAll</tt> is equivalent to writing a polymorphic
  * qualifier for every type system (whether such a qualifier has been
  * declared or not).
  * <p>
@@ -29,6 +27,9 @@ import checkers.interning.quals.PolyInterned;
  * multiple occurrences of a single polymorphic qualifier (all of them have
  * no argument or the same argument), all of those occurrences vary
  * together.
+ * 
+ * To support <tt>@PolyAll</tt> in a type system, simply add it to the
+ * list of <tt>@TypeQualifiers</tt>.
  *
  * @see PolyNull
  * @see PolyInterned
