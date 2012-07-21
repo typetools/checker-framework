@@ -1,0 +1,16 @@
+import checkers.propkey.quals.*;
+
+package java.util;
+
+class Properties {
+  String getProperty(@PropertyKey String key);
+  String getProperty(@PropertyKey String key, String defaultValue);
+  Object setProperty(@PropertyKey String key, String value); 
+}
+
+class ResourceBundle {
+  Object getObject(@PropertyKey String key);
+  String getString(@PropertyKey String key);
+  String[] getStringArray(@PropertyKey String key);
+  Set<@PropertyKey String> keySet();
+}
