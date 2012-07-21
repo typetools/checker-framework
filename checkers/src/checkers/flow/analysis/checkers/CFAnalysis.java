@@ -87,7 +87,7 @@ public class CFAnalysis extends
         }
         for (AnnotationMirror anno : annotationSet) {
             AnnotationMirror top = analysis.qualifierHierarchy
-                    .getRootAnnotation(anno);
+                    .getTopAnnotation(anno);
             annotations[CFAbstractValue.getIndex(top, analysis)] = new InferredAnnotation(
                     anno);
         }

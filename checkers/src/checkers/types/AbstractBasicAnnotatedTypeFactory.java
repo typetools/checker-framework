@@ -136,8 +136,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 checkers.nullness.quals.Pure.class,
                 annotations.fromClass(Pure.class));
 
-        // This also gets called by subclasses. Is that a problem?
-        postInit();
+        // every subclass must call postInit!
+        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
+            this.postInit();
+        }
     }
 
     /**
@@ -456,10 +458,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return null;
     }
 
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         assert root != null : "root needs to be set when used on trees";
-        if (useFlow) {
+        if (iUseFlow) {
             annotateImplicitWithFlow(tree, type);
         } else {
             treeAnnotator.visit(tree, type);
@@ -468,6 +469,18 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                     : ElementKind.OTHER);
             defaults.annotate(tree, type);
         }
+    }
+
+    @Override
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        annotateImplicit(tree, type, this.useFlow);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
+        AnnotatedTypeMirror res = this.fromMember(tree);
+        this.annotateImplicit(tree.getType(), res, false);
+        return res;
     }
 
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
@@ -504,7 +517,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             as = flowResult.getValue(tree);
         }
         if (as != null) {
-            for (AnnotationMirror top : qualHierarchy.getRootAnnotations()) {
+            for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
                 InferredAnnotation inferredAnnotation = as.getAnnotation(top);
                 // Check that we actually inferred information.
                 if (inferredAnnotation != null) {

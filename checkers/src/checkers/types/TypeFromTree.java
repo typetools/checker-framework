@@ -35,7 +35,7 @@ abstract class TypeFromTree extends
         if (node == null) {
             SourceChecker.errorAbort("TypeFromTree.defaultAction: null tree");
             return null; // dead code
-    }
+        }
         SourceChecker.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
         return null; // dead code
     }
@@ -337,7 +337,7 @@ abstract class TypeFromTree extends
                 AnnotatedTypeFactory f) {
 
             AnnotatedTypeMirror result = f.fromTypeTree(node.getType());
-            // I would like to use this line: 
+            // I would like to use this line:
             // AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
             // Instead of the above, but the typeAnnotations are not filled into
             // the VarSymbol of a local variable :-(
@@ -536,8 +536,8 @@ abstract class TypeFromTree extends
                 return null; // dead code
             }
 
-            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
-            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
+            TypeParameterElement tpe = (TypeParameterElement)
+                    ((TypeVariable)type.getUnderlyingType()).asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
@@ -554,7 +554,6 @@ abstract class TypeFromTree extends
             } else {
                 SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
                 return null; // dead code
-                }
             }
         }
 

@@ -22,7 +22,7 @@ import checkers.util.AnnotationUtils;
 public abstract class QualifierHierarchy {
 
     /* The checker to use for error reporting.
-     * The field should be final, 
+     * The field should be final,
      */
     protected final SourceChecker checker;
 
@@ -41,14 +41,14 @@ public abstract class QualifierHierarchy {
 
     /**
      * Return the top qualifier for the given qualifier, that is, the qualifier
-     * that is a supertype of start but no further supertypes exist. 
+     * that is a supertype of start but no further supertypes exist.
      */
     public abstract AnnotationMirror getTopAnnotation(AnnotationMirror start);
 
     /**
      * Return the bottom for the given qualifier, that is, the qualifier that is a
-     * subtype of start but no further subtypes exist. 
-     */	
+     * subtype of start but no further subtypes exist.
+     */
     public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
@@ -108,7 +108,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @return  the least restrictive qualifiers for both types
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
@@ -118,7 +118,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @param a1 First annotation
      * @param a2 Second annotation
      * @return Greatest lower bound of the two annotations
@@ -145,9 +145,9 @@ public abstract class QualifierHierarchy {
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
-        assert annos1.size() == annos2.size() && annos1.size()!=0 :
-            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
-                    "    Set 1: " + annos1 + " Set 2: " + annos2;
+//        assert annos1.size() == annos2.size() && annos1.size()!=0 :
+//            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
+//                    "    Set 1: " + annos1 + " Set 2: " + annos2;
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {
@@ -159,8 +159,8 @@ public abstract class QualifierHierarchy {
             }
         }
 
-        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
-                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+//        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
+//                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
 
         return result;
     }
@@ -171,7 +171,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @param annos1 First collection of qualifiers
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers

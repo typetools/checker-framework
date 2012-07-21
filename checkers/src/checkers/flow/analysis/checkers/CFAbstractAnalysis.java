@@ -81,7 +81,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this.checker = checker;
         transferFunction = createTransferFunction();
         Set<AnnotationMirror> topAnnotations = factory.getQualifierHierarchy()
-                .getRootAnnotations();
+                .getTopAnnotations();
         tops = new ArrayList<>(topAnnotations)
                 .toArray(new AnnotationMirror[topAnnotations.size()]);
 
