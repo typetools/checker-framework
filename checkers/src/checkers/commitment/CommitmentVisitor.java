@@ -172,7 +172,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             Set<VariableTree> fields = CommitmentChecker
                     .getAllFields(currentClass);
             Set<VariableTree> violatingFields = new HashSet<>();
-            AnnotationMirror invariant = checker.getFieldInvariantAnnotations();
+            AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
             CommitmentStore store = (CommitmentStore) atypeFactory
                     .getRegularExitStore(node);
             for (VariableTree field : fields) {

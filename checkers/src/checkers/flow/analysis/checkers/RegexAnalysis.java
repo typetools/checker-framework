@@ -7,6 +7,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.regex.RegexChecker;
 import checkers.util.Pair;
@@ -21,25 +22,28 @@ public class RegexAnalysis extends
     }
 
     @Override
-    protected RegexTransfer createTransferFunction() {
+    public RegexTransfer createTransferFunction() {
         return new RegexTransfer(this);
     }
 
     @Override
-    protected CFStore createEmptyStore(boolean sequentialSemantics) {
+    public CFStore createEmptyStore(boolean sequentialSemantics) {
         return new CFStore(this, sequentialSemantics);
     }
 
     @Override
-    protected CFStore createCopiedStore(CFStore s) {
+    public CFStore createCopiedStore(CFStore s) {
         return new CFStore(this, s);
     }
 
     @Override
-    protected/* @Nullable */CFValue createAbstractValue(
+    public/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations,
-                supportedAnnotations, this);
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
     }
 
+    @Override
+    public CFValue createAbstractValue(InferredAnnotation[] annotations) {
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
+    }
 }

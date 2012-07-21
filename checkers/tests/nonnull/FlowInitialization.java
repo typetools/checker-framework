@@ -38,24 +38,8 @@ public class FlowInitialization {
         f = "";
     }
     
-    public static void main(String[] args) {
-        try {
-            FlowInitialization t = new FlowInitialization(false);
-            t.f.toLowerCase();
-        } catch (NullPointerException e) {
-            System.err.println("NullPointerException 1");
-        }
-        try {
-            FlowInitialization t = new FlowInitialization(1);
-            t.f.toLowerCase();
-        } catch (NullPointerException e) {
-            System.err.println("NullPointerException 2");
-        }
-        try {
-            FlowInitialization t = new FlowInitialization('c');
-            t.f.toLowerCase();
-        } catch (NullPointerException e) {
-            System.err.println("NullPointerException 3");
-        }
+    @EnsuresAnnotation(expression="a", annotation=NonNull.class)
+    public void setField(@Unclassified Initializer this) {
+        a = "";
     }
 }

@@ -27,6 +27,7 @@ import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
 import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.analysis.checkers.CFCFGBuilder;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
@@ -94,7 +95,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
-     * 
+     *
      * @param checker
      *            the checker to which this type factory belongs
      * @param root
@@ -129,7 +130,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             defaults.addAbsoluteDefault(unqualified,
                     Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         }
-        
+
         // Add common aliases.
         addAliasedDeclAnnotation(Pure.class,
                 checkers.nullness.quals.Pure.class,
@@ -142,7 +143,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
-     * 
+     *
      * @param checker
      *            the checker to which this type factory belongs
      * @param root
@@ -151,7 +152,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
     }
-    
+
     /**
      * Returns the set of annotations for which no flow inference should be
      * performed. This defaults to the empty set.
@@ -167,10 +168,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Returns a {@link TreeAnnotator} that adds annotations to a type based on
      * the contents of a tree.
-     * 
+     *
      * Subclasses may override this method to specify more appriopriate
      * {@link TreeAnnotator}
-     * 
+     *
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator(Checker checker) {
@@ -180,13 +181,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Returns a {@link TypeAnnotator} that adds annotations to a type based on
      * the content of the type itself.
-     * 
+     *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
         return new TypeAnnotator(checker);
     }
-    
+
     abstract protected FlowAnalysis createFlowAnalysis(Checker checker,
             List<Pair<VariableElement, Value>> fieldValues);
 
@@ -220,11 +221,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     /**
      * The result of the flow analysis. Invariant:
-     * 
+     *
      * <pre>
      *  scannedClasses.get(c) == FINISHED for some class c ==> flowResult != null
      * </pre>
-     * 
+     *
      * Note that flowResult contains analysis results for Trees from multiple
      * classes which are produced by multiple calls to performFlowAnalysis.
      */
@@ -267,10 +268,17 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     /**
-     * @return The store immediately before a method invocation.
+     * @return The store immediately before a given {@link Tree}.
      */
-    public Store getStoreBefore(MethodInvocationTree tree) {
-        return flowResult.getStoreBeforeMethodInvocation(tree);
+    public Store getStoreBefore(Tree tree) {
+        return flowResult.getStoreBefore(tree);
+    }
+
+    /**
+     * @return The store immediately after a given {@link Tree}.
+     */
+    public Store getStoreAfter(Tree tree) {
+        return flowResult.getStoreAfter(tree);
     }
 
     /**
@@ -279,7 +287,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public Node getNodeForTree(Tree tree) {
         return flowResult.getNodeForTree(tree);
     }
-    
+
     /**
      * Perform a dataflow analysis over a single class tree and its nested
      * classes.
@@ -367,7 +375,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         break;
                     }
                 }
-                
+
                 // Now analyze all methods.
                 // TODO: at this point, we don't have any information about fields of superclasses.
                 for (MethodTree mt : methods) {
@@ -385,13 +393,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             scannedClasses.put(ct, ScanState.FINISHED);
         }
     }
-    
+
     // Maintain a deque of analyses to accomodate nested classes.
     Deque<FlowAnalysis> analyses = new LinkedList<>();
 
     /**
      * Analyze the AST {@code ast} and store the result.
-     * 
+     *
      * @param queue
      *            The queue to add more things to scan.
      * @param fieldValues
@@ -477,7 +485,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
 
         treeAnnotator.visit(tree, type);
-        
+
         // TODO: This is quite ugly
         boolean finishedScanning = enclosingClass == null
                 || scannedClasses.get(enclosingClass) == ScanState.FINISHED;
@@ -495,19 +503,30 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         if (as == null && tree != null) {
             as = flowResult.getValue(tree);
         }
-        final Set<AnnotationMirror> inferred = as != null ? as.getAnnotations()
-                : null;
-        if (inferred != null) {
-            for (AnnotationMirror inf : inferred) {
-                AnnotationMirror present = type.getAnnotationInHierarchy(inf);
-                if (present!=null) {
-                    if (this.qualHierarchy.isSubtype(inf, present)) {
-                        // TODO: why is the above check needed? Shouldn't inferred
-                        // qualifiers always be subtypes?
-                        type.replaceAnnotation(inf);
+        if (as != null) {
+            for (AnnotationMirror top : qualHierarchy.getRootAnnotations()) {
+                InferredAnnotation inferredAnnotation = as.getAnnotation(top);
+                // Check that we actually inferred information.
+                if (inferredAnnotation != null) {
+                    if (inferredAnnotation.isNoInferredAnnotation()) {
+                        // We inferred "no annotation" for this hierarchy.
+                        type.removeAnnotationInHierarchy(top);
+                    } else {
+                        // We inferred an annotation.
+                        AnnotationMirror present = type
+                                .getAnnotationInHierarchy(top);
+                        AnnotationMirror inf = inferredAnnotation
+                                .getAnnotation();
+                        if (present != null) {
+                            if (this.qualHierarchy.isSubtype(inf, present)) {
+                                // TODO: why is the above check needed?
+                                // Shouldn't inferred qualifiers always be subtypes?
+                                type.replaceAnnotation(inf);
+                            }
+                        } else {
+                            type.addAnnotation(inf);
+                        }
                     }
-                } else {
-                    type.addAnnotation(inf);
                 }
             }
         }

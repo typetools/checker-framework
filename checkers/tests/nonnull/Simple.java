@@ -20,17 +20,13 @@ public class Simple {
         System.out.println(s);
     }
 
-    void test2() {
-        @Unclassified @NonNull Simple t = new Simple("");
-        
+    void test2(@Unclassified @NonNull Simple t) {
         //:: error: (assignment.type.incompatible)
         @NonNull Simple a = t.f;
     }
     
     // check committed-only semantics for fields
-    void test3() {
-        @Unclassified @NonNull Simple t = new Simple("");
-        
+    void test3(@Unclassified @NonNull Simple t) {
         @Committed @Nullable Simple a = t.f;
         
         //:: error: (assignment.type.incompatible)

@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
+import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
 import checkers.flow.cfg.node.ImplicitThisLiteralNode;
@@ -37,19 +39,25 @@ import com.sun.source.util.TreePath;
  */
 public class FlowExpressionParseUtil {
 
+    /** Regular expression for an identifier */
+    protected static final String identifierRegex = "[a-z_$][a-z_$0-9]*";
     /** Matches a parameter */
-    protected static Pattern parameterPattern = Pattern
+    protected static final Pattern parameterPattern = Pattern
             .compile("^#([1-9]+[0-9]*)$");
     /** Finds all parameters */
-    protected static Pattern parametersPattern = Pattern
+    protected static final Pattern parametersPattern = Pattern
             .compile("#([1-9]+[0-9]*)");
     /** Matches the self reference */
-    protected static Pattern selfPattern = Pattern.compile("^(this|#0)$");
+    protected static final Pattern selfPattern = Pattern.compile("^(this|#0)$");
     /** Matches an identifier */
-    protected static Pattern identifierPattern = Pattern
-            .compile("^[a-z_$][a-z_$0-9]*$");
+    protected static final Pattern identifierPattern = Pattern.compile("^"
+            + identifierRegex + "$");
+    /** Matches a method call */
+    protected static final Pattern methodPattern = Pattern.compile("^("
+            + identifierRegex + ")\\((.*)\\)$");
     /** Matches a field access */
-    protected static Pattern dotPattern = Pattern.compile("^([^.]+)\\.(.+)$");
+    protected static final Pattern dotPattern = Pattern
+            .compile("^([^.]+)\\.(.+)$");
 
     /**
      * Parse a string and return its representation as a
@@ -72,7 +80,7 @@ public class FlowExpressionParseUtil {
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        return parse(s, context, path, true, true, true, true);
+        return parse(s, context, path, true, true, true, true, true);
     }
 
     /**
@@ -81,13 +89,16 @@ public class FlowExpressionParseUtil {
      */
     private static/* @Nullable */FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
-            boolean allowIdentifier, boolean allowParameter, boolean allowDot)
-            throws FlowExpressionParseException {
+            boolean allowIdentifier, boolean allowParameter, boolean allowDot,
+            boolean allowMethods) throws FlowExpressionParseException {
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
+        Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
+        
+        ProcessingEnvironment env = context.factory.getEnv();
 
         // this literal
         if (selfMatcher.matches() && allowSelf) {
@@ -95,14 +106,13 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             // field access
             try {
-                Resolver resolver = new Resolver(context.factory.getEnv());
+                Resolver resolver = new Resolver(env);
                 Element fieldElement = resolver.findVariable(s, path);
                 return new FieldAccess(context.receiver, context.receiverType,
                         fieldElement);
             } catch (Throwable t) {
-                new FlowExpressionParseException(Result.failure(
+                throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.parse.error", s));
-                return null;
             }
         } else if (parameterMatcher.matches() && allowParameter) {
             // parameter syntax
@@ -119,6 +129,23 @@ public class FlowExpressionParseUtil {
                         "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
             return context.arguments.get(idx - 1);
+        } else if (methodMatcher.matches() && allowMethods) {
+            String methodName = methodMatcher.group(1);
+            String parameterList = methodMatcher.group(2);
+            if (parameterList.length() != 0) {
+                throw new FlowExpressionParseException(
+                        Result.failure("flowexpr.parse.nonempty.parameter"));
+            }
+            try {
+                Resolver resolver = new Resolver(env);
+                Element methodElement = resolver.findMethod(methodName, context.receiverType, path);
+                List<Receiver> parameters = new ArrayList<>();
+                return new PureMethodCall(context.receiverType, methodElement,
+                        context.receiver, parameters);
+            } catch (Throwable t) {
+                throw new FlowExpressionParseException(Result.failure(
+                        "flowexpr.parse.error", s));
+            }
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);
             String remainingString = dotMatcher.group(2);
@@ -129,7 +156,7 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true);
+                    true, true);
         } else {
             throw new FlowExpressionParseException(Result.failure(
                     "flowexpr.parse.error", s));

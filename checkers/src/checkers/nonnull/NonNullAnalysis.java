@@ -11,12 +11,13 @@ import checkers.commitment.CommitmentStore;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.util.Pair;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the
  * transfer function, stores and abstract values.
- * 
+ *
  * @author Stefan Heule
  */
 public class NonNullAnalysis extends
@@ -29,24 +30,28 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    protected NonNullTransfer createTransferFunction() {
-        return new NonNullTransfer(this);
+    public NonNullTransfer createTransferFunction() {
+        return new NonNullTransfer(this, (NonNullChecker) checker);
     }
 
     @Override
-    protected CommitmentStore createEmptyStore(boolean sequentialSemantics) {
+    public CommitmentStore createEmptyStore(boolean sequentialSemantics) {
         return new CommitmentStore(this, sequentialSemantics);
     }
 
     @Override
-    protected CommitmentStore createCopiedStore(CommitmentStore s) {
+    public CommitmentStore createCopiedStore(CommitmentStore s) {
         return new CommitmentStore(s);
     }
 
     @Override
-    protected/* @Nullable */CFValue createAbstractValue(
+    public/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations,
-                supportedAnnotations, this);
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
+    }
+
+    @Override
+    public CFValue createAbstractValue(InferredAnnotation[] annotations) {
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
     }
 }
