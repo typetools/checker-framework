@@ -350,8 +350,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        res = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, false);
-        res = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, false);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, false);
         return res;
     }
 
@@ -367,8 +367,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        res = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, true);
-        res = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, true);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, true);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, true);
 
         return res;
     }
@@ -389,7 +389,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      *         or {@code null}.
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
-            TransferResult<V, S> res, Node secondNode, V firstValue,
+            TransferResult<V, S> res, Node firstNode, Node secondNode, V firstValue,
             V secondValue, boolean notEqualTo) {
         if (firstValue != null) {
             // Only need to insert if the second value is actually different.
@@ -719,15 +719,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (value2 == null) {
             return value1;
         }
-        boolean is1sub2 = value1.isSubtypeOf(value2);
-        boolean is2sub1 = value2.isSubtypeOf(value1);
-        if (!is1sub2 && !is2sub1) {
-            return value1;
-        }
-        if (is1sub2) {
-            return value1;
-        }
-        return value2;
+        return value1.mostSpecific(value2);
     }
 
     @Override
