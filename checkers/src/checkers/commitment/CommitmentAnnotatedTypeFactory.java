@@ -73,20 +73,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>
-     *
-     * In most cases, subclasses want to call this method first because it may
-     * clear all annotations and use the hierarchy's root annotations (as part
-     * of the call to postAsMemberOf).
-     *
-     */
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        super.annotateImplicit(tree, type);
-    }
+    protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
 
     /**
      * {@inheritDoc}
@@ -97,9 +84,6 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
      * clear all annotations and use the hierarchy's root annotations.
      *
      */
-
-    protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
-
     @Override
     protected void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
@@ -132,7 +116,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 || receiverType.hasAnnotation(FREE)) {
 
             type.clearAnnotations();
-            type.addAnnotations(qualHierarchy.getRootAnnotations());
+            type.addAnnotations(qualHierarchy.getTopAnnotations());
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
                     NOT_ONLY_COMMITTED)) {

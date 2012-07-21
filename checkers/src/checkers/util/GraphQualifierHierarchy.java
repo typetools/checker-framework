@@ -16,7 +16,7 @@ import checkers.types.QualifierHierarchy;
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     /**
-     * We only need to make sure that "build" instantiates the right QualifierHierarchy. 
+     * We only need to make sure that "build" instantiates the right QualifierHierarchy.
      */
     public static class GraphFactory extends MultiGraphFactory {
         private final AnnotationMirror bottom;
@@ -48,7 +48,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         }
     }
 
-    
+
     protected GraphQualifierHierarchy(GraphFactory f) {
         super(f);
     }
@@ -82,8 +82,13 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        if (lhs.isEmpty() || rhs.isEmpty()) {
-            SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+        if (rhs.isEmpty()) {
+            Set<AnnotationMirror> top = getTopAnnotations();
+            return AnnotationUtils.areSame(lhs, top);
+        }
+        if (lhs.isEmpty()) {
+            Set<AnnotationMirror> top = getTopAnnotations();
+            return !AnnotationUtils.areSame(rhs, top);
         }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {

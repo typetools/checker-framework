@@ -158,7 +158,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
     /** For storing visitor state **/
     protected final VisitorState visitorState;
-    
+
     /** The annoated-type factory (with a more specific type than super.atypeFactory). */
     protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
 
@@ -170,7 +170,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
         this.checker = checker;
-        
+
         assert super.atypeFactory instanceof AbstractBasicAnnotatedTypeFactory;
         atypeFactory = (AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>) super.atypeFactory;
 
@@ -368,7 +368,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         AnnotationMirror ensuresAnnotation = atypeFactory.getDeclAnnotation(
                 methodElement, EnsuresAnnotation.class);
         checkPostcondition(node, ensuresAnnotation);
-        
+
         // Check for multiple contracts.
         AnnotationMirror ensuresAnnotations = atypeFactory.getDeclAnnotation(
                 methodElement, EnsuresAnnotations.class);
@@ -379,7 +379,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkPostcondition(node, a);
             }
         }
-        
+
         // Check type-system specific annotations.
         Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
@@ -481,7 +481,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkConditionalPostcondition(node, a);
             }
         }
-        
+
         // Check type-system specific annotations.
         Class<ConditionalPostconditionAnnotation> metaAnnotation = ConditionalPostconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
@@ -730,7 +730,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 checkPrecondition(tree, a);
             }
         }
-        
+
         // Check type-system specific annotations.
         Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
@@ -759,7 +759,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             String annotation = AnnotationUtils.elementValueClassName(
                     requiresAnnotation, "annotation");
             AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
-            
+
             checkPrecondition(tree, anno, expressions);
         }
     }
@@ -1878,13 +1878,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     }
                 }
             }
-
-            /* TODO:
-             * This should not be necessary and should be correctly done in the ATF.
-             * However, without it two test cases fail. It is related to how
-             * ATM.substitute replaces upper bounds and when they get initialized.
-             */
-            atypeFactory.annotateImplicitHack(tree, type);
 
             return super.visitTypeVariable(type, tree);
         }

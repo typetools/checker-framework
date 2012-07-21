@@ -294,7 +294,7 @@ public class QualifierDefaults {
 
             if (t == null || t.getKind() == TypeKind.NONE)
                 return null;
-            
+
             // Skip annotating this type if:
             // - the default is "all except (the raw types of) locals"
             // - we are applying defaults to a local
@@ -309,7 +309,7 @@ public class QualifierDefaults {
                 } else {
                     // apply "top" qualifiers
                     annos = factory.getQualifierHierarchy()
-                            .getRootAnnotations();
+                            .getTopAnnotations();
                 }
                 for (AnnotationMirror anno : annos) {
                     if (!t.isAnnotatedInHierarchy(anno)) {
@@ -319,7 +319,7 @@ public class QualifierDefaults {
 
                 return super.scan(t, p);
             }
-            
+
             // Skip type variables, but continue to scan their bounds.
             if (t.getKind() == TypeKind.WILDCARD
                     || t.getKind() == TypeKind.TYPEVAR) {

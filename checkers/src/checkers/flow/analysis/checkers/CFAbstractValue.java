@@ -121,7 +121,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             } else {
                 // Compute lub using the qualifier hierarchy.
                 Set<AnnotationMirror> lub = analysis.qualifierHierarchy
-                        .leastUpperBound(thisAnno.getAnnotations(),
+                        .leastUpperBounds(thisAnno.getAnnotations(),
                                 otherAnno.getAnnotations());
                 if (lub.size() == 0) {
                     resultAnnotations[i] = NoInferredAnnotation.INSTANCE;
@@ -206,7 +206,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     public static InferredAnnotation[] createInferredAnnotationArray(
             CFAbstractAnalysis<?, ?, ?> analysis, AnnotationMirror a) {
-        AnnotationMirror top = analysis.qualifierHierarchy.getRootAnnotation(a);
+        AnnotationMirror top = analysis.qualifierHierarchy.getTopAnnotation(a);
         InferredAnnotation[] annotations = new InferredAnnotation[analysis.tops.length];
         int index = CFAbstractValue.getIndex(top, analysis);
         annotations[index] = new InferredAnnotation(a);
@@ -218,7 +218,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * {@code p} does not need to be the root of a hierarchy.
      */
     public InferredAnnotation getAnnotationInHierarchy(AnnotationMirror p) {
-        AnnotationMirror top = analysis.qualifierHierarchy.getRootAnnotation(p);
+        AnnotationMirror top = analysis.qualifierHierarchy.getTopAnnotation(p);
         return getAnnotation(top);
     }
 
