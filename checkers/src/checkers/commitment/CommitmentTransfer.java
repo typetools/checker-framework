@@ -3,6 +3,7 @@ package checkers.commitment;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import checkers.flow.analysis.ConditionalTransferResult;
@@ -15,8 +16,11 @@ import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.node.AssignmentNode;
+import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 
 /**
@@ -34,10 +38,13 @@ import checkers.flow.cfg.node.MethodInvocationNode;
 public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         CFAbstractTransfer<CFValue, CommitmentStore, T> {
 
+    protected final CommitmentChecker checker;
+
     public CommitmentTransfer(
-            CFAbstractAnalysis<CFValue, CommitmentStore, T> analysis) {
+            CFAbstractAnalysis<CFValue, CommitmentStore, T> analysis,
+            CommitmentChecker checker) {
         super(analysis);
-        this.analysis = analysis;
+        this.checker = checker;
     }
 
     @Override
@@ -59,6 +66,25 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
                     result.getRegularStore().addInitializedField(field);
                 }
             }
+        }
+        return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, CommitmentStore> visitFieldAccess(
+            FieldAccessNode n, TransferInput<CFValue, CommitmentStore> p) {
+        TransferResult<CFValue, CommitmentStore> result = super
+                .visitFieldAccess(n, p);
+        assert !result.containsTwoStores();
+        CommitmentStore store = result.getRegularStore();
+        if (store.isFieldInitialized(n.getElement())) {
+            AnnotationMirror inv = checker.getFieldInvariantAnnotation();
+            InferredAnnotation[] annotations = CFAbstractValue
+                    .createInferredAnnotationArray(analysis, inv);
+            CFValue refinedResultValue = analysis
+                    .createAbstractValue(annotations);
+            result.setResultValue(refinedResultValue.mostSpecific(result
+                    .getResultValue()));
         }
         return result;
     }
