@@ -125,6 +125,7 @@ import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
@@ -2974,6 +2975,7 @@ public class CFGBuilder {
             StatementTree statement = tree.getStatement();
 
             TypeMirror exprType = InternalUtils.typeOf(expression);
+
             if (types.isSubtype(exprType, iterableType)) {
                 // Take the upper bound of a type variable or wildcard
                 exprType = TypesUtils.upperBound(exprType);
@@ -2988,12 +2990,18 @@ public class CFGBuilder {
                 MethodInvocationTree iteratorCall =
                     treeBuilder.buildMethodInvocation(iteratorSelect);
 
-                DeclaredType elementType =
-                    (DeclaredType)InternalUtils.typeOf(iteratorCall);
+                AnnotatedTypeMirror annotatedIteratorType =
+                    factory.getAnnotatedType(iteratorCall);
+
+                DeclaredType iteratorType =
+                    (DeclaredType)annotatedIteratorType.getUnderlyingType();
+
+                Tree annotatedIteratorTypeTree =
+                    treeBuilder.buildAnnotatedType(annotatedIteratorType);
 
                 // Declare and initialize a new, unique iterator variable
                 VariableTree iteratorVariable =
-                    treeBuilder.buildVariableDecl(elementType,
+                    treeBuilder.buildVariableDecl(annotatedIteratorTypeTree,
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
@@ -3074,12 +3082,22 @@ public class CFGBuilder {
                 // TODO: Shift any labels after the initialization of the
                 // temporary array variable.
 
+                AnnotatedTypeMirror annotatedArrayType =
+                    factory.getAnnotatedType(expression);
+                
+                assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType) :
+                    "ArrayType must be represented by AnnotatedArrayType";
+
+                Tree annotatedArrayTypeTree =
+                    treeBuilder.buildAnnotatedType(annotatedArrayType);
+
                 // Declare and initialize a temporary array variable
                 VariableTree arrayVariable =
-                    treeBuilder.buildVariableDecl(arrayType,
+                    treeBuilder.buildVariableDecl(annotatedArrayTypeTree,
                                                   uniqueName("array"),
                                                   variableElement.getEnclosingElement(),
                                                   expression);
+
                 extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
 

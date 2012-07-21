@@ -55,6 +55,7 @@ import checkers.util.Pair;
 import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
+import checkers.util.trees.DetachedVarSymbol;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
@@ -1424,6 +1425,12 @@ public class AnnotatedTypeFactory {
         if (elementToTreeCache.containsKey(elt)) {
             return elementToTreeCache.get(elt);
         }
+
+        // Check for new declarations, outside of the AST.
+        if (elt instanceof DetachedVarSymbol) {
+            return ((DetachedVarSymbol)elt).getDeclaration();
+        }
+
         // TODO: handle type parameter declarations?
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have
