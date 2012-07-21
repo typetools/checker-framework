@@ -97,7 +97,7 @@ public class NonNullChecker extends CommitmentChecker {
     }
 
     @Override
-    protected AnnotationMirror getFieldInvariantAnnotations() {
+    protected AnnotationMirror getFieldInvariantAnnotation() {
         return NONNULL;
     }
 }
