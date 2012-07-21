@@ -18,13 +18,9 @@ import checkers.nonnull.quals.NonNull;
  * Transfer function for the non-null type system. Performs the following
  * refinements:
  * <ol>
- * <li>After the call to a constructor ("this()" call), all non-null fields of
- * the current class can safely be considered initialized.
- * <li>TODO: After a method call with a postcondition that ensures a field to be
- * non-null, that field can safely be considered initialized.
- * <li>All non-null fields with an initializer can be considered initialized.
- * <li>After the call to a super constructor ("super()" call), all non-null
- * fields of the super class can safely be considered initialized.
+ * <li>After an expression is compared with the {@code null} literal, then that
+ * expression can safely be considered {@link NonNull} if the result of the
+ * comparison is false.
  * </ol>
  *
  * @author Stefan Heule
@@ -45,7 +41,7 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
      * <p>
      * Furthermore, this method refines the type to {@code NonNull} for the
      * appropriate branch if an expression is compared to the {@code null}
-     * literal.
+     * literal (listed as case 1 in the class description).
      */
     @Override
     protected TransferResult<CFValue, CommitmentStore> strengthenAnnotationOfEqualTo(
@@ -54,6 +50,7 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
             boolean notEqualTo) {
         res = super.strengthenAnnotationOfEqualTo(res, firstNode, secondNode,
                 firstValue, secondValue, notEqualTo);
+        // Case 1:
         if (firstNode instanceof NullLiteralNode) {
             Receiver secondInternal = FlowExpressions.internalReprOf(
                     analysis.getFactory(), secondNode);
