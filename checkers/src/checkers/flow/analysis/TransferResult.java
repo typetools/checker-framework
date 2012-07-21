@@ -9,14 +9,14 @@ import javax.lang.model.type.TypeMirror;
  * functions of a {@link TransferFunction}. It always belongs to the result of
  * the individual transfer function for a particular {@link Node}, even though
  * that {@code Node} is not explicitly store in {@code TransferResult}.
- * 
+ *
  * <p>
- * 
+ *
  * A {@code TransferResult} contains one or two stores (for 'then' and 'else'),
  * and zero or more stores with a cause ({@link TypeMirror}).
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
@@ -46,7 +46,7 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
     public A getResultValue() {
         return resultValue;
     }
-    
+
     public void setResultValue(A resultValue) {
         this.resultValue = resultValue;
     }
