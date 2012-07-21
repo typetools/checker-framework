@@ -39,8 +39,7 @@ public class RegexAnalysis extends
     @Override
     protected/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations,
-                supportedAnnotations, this);
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
     }
 
     @Override
