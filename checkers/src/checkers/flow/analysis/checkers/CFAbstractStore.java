@@ -1,6 +1,5 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +14,7 @@ import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
@@ -25,7 +25,7 @@ import checkers.util.PurityUtils;
 /**
  * A store for the checker framework analysis tracks the annotations of memory
  * locations such as local variables and fields.
- * 
+ *
  * @author Charlie Garrett
  * @author Stefan Heule
  */
@@ -87,7 +87,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Set the abstract value of a method parameter (only adds the information
-     * to the store, does not remove any other knowledge).
+     * to the store, does not remove any other knowledge). Any previous
+     * information is erased; this method should only be used to initialize the
+     * abstract value.
      */
     public void initializeMethodParameter(LocalVariableNode p, /* @Nullable */
             V value) {
@@ -103,7 +105,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Remove any information that might not be valid any more after a method
      * call, and add information guaranteed by the method.
-     * 
+     *
      * <ol>
      * <li>If the method is side-effect free (as indicated by
      * {@link checkers.quals.Pure}), then no information needs to be removed.
@@ -112,7 +114,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * (e.g., if {@code a} is a local variable or {@code this}, and {@code f} is
      * final).
      * </ol>
-     * 
+     *
      * Furthermore, if the method is deterministic, we store its result
      * {@code val} in the store.
      */
@@ -143,37 +145,43 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         // store information about method call if possible
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getFactory(), n);
-        insertValue(methodCall, val);
+        replaceValue(methodCall, val);
     }
 
     /**
      * Add the annotation {@code a} for the expression {@code r} (correctly
      * deciding where to store the information depending on the type of the
      * expression {@code r}).
-     * 
+     *
      * <p>
      * This method does not take care of removing other information that might
      * be influenced by changes to certain parts of the state.
-     * 
+     *
      * <p>
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
+     * Note that this happens per hierarchy, and if the store already contains
+     * information about a hierarchy other than {@code a}s hierarchy, that
+     * information is preserved.
      */
     public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
-        V value = analysis.createAbstractValue(Collections.singleton(a));
+        AnnotationMirror top = analysis.qualifierHierarchy.getRootAnnotation(a);
+        InferredAnnotation[] annotations = new InferredAnnotation[analysis.tops.length];
+        int index = CFAbstractValue.getIndex(top, analysis);
+        annotations[index] = new InferredAnnotation(a);
+        V value = analysis.createAbstractValue(annotations);
         insertValue(r, value);
     }
 
     /**
      * Returns true if the receiver {@code r} can be stored in this store.
      */
-    public boolean canInsertReceiver(Receiver r) {
+    public static boolean canInsertReceiver(Receiver r) {
         if (r instanceof FlowExpressions.FieldAccess
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.PureMethodCall) {
             return !r.containsUnknown();
         }
-
         return false;
     }
 
@@ -181,14 +189,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Add the abstract value {@code value} for the expression {@code r}
      * (correctly deciding where to store the information depending on the type
      * of the expression {@code r}).
-     * 
+     *
      * <p>
      * This method does not take care of removing other information that might
      * be influenced by changes to certain parts of the state.
-     * 
+     *
      * <p>
      * If there is already a value {@code v} present for {@code r}, then the
      * stronger of the new and old value are taken (according to the lattice).
+     * Note that this happens per hierarchy, and if the store already contains
+     * information about a hierarchy for which {@code value} does not contain
+     * information, then that information is preserved.
      */
     public void insertValue(FlowExpressions.Receiver r, /* @Nullable */
             V value) {
@@ -204,36 +215,64 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             V oldValue = localVariableValues.get(localVar);
-            if (oldValue == null || value.isSubtypeOf(oldValue)) {
-                localVariableValues.put(localVar, value);
-            } else {
-                localVariableValues.put(localVar, oldValue);
-            }
+            localVariableValues.put(localVar, value.mostSpecific(oldValue));
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || fieldAcc.isUnmodifiableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
-                if (oldValue == null || value.isSubtypeOf(oldValue)) {
-                    fieldValues.put(fieldAcc, value);
-                } else {
-                    fieldValues.put(fieldAcc, oldValue);
-                }
+                fieldValues.put(fieldAcc, value.mostSpecific(oldValue));
             }
         } else if (r instanceof FlowExpressions.PureMethodCall) {
             FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
             // Don't store any information if concurrent semantics are enabled.
             if (sequentialSemantics) {
                 V oldValue = methodValues.get(method);
-                if (oldValue == null || value.isSubtypeOf(oldValue)) {
-                    methodValues.put(method, value);
-                } else {
-                    methodValues.put(method, oldValue);
-                }
+                methodValues.put(method, value.mostSpecific(oldValue));
             }
         } else {
             // No other types of expressions need to be stored.
+        }
+    }
+
+    /**
+     * Completely replaces the abstract value {@code value} for the expression
+     * {@code r} (correctly deciding where to store the information depending on
+     * the type of the expression {@code r}). Any previous information is
+     * discarded.
+     *
+     * <p>
+     * This method does not take care of removing other information that might
+     * be influenced by changes to certain parts of the state.
+     */
+    public void replaceValue(FlowExpressions.Receiver r, /* @Nullable */
+            V value) {
+        clearValue(r);
+        insertValue(r, value);
+    }
+
+    /**
+     * Remove any knowledge about the expression {@code r} (correctly deciding
+     * where to remove the information depending on the type of the expression
+     * {@code r}).
+     */
+    public void clearValue(FlowExpressions.Receiver r) {
+        if (r.containsUnknown()) {
+            // Expressions containing unknown expressions are not stored.
+            return;
+        }
+        if (r instanceof FlowExpressions.LocalVariable) {
+            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
+            localVariableValues.remove(localVar);
+        } else if (r instanceof FlowExpressions.FieldAccess) {
+            FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
+            fieldValues.remove(fieldAcc);
+        } else if (r instanceof FlowExpressions.PureMethodCall) {
+            PureMethodCall method = (PureMethodCall) r;
+            methodValues.remove(method);
+        } else {
+            // No other types of expressions are stored.
         }
     }
 
@@ -285,7 +324,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Update the information in the store by considering a field assignment
      * with target {@code n}, where the right hand side has the abstract value
      * {@code val}.
-     * 
+     *
      * @param val
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
@@ -307,7 +346,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Update the information in the store by considering an assignment with
      * target {@code n}, where the target is neither a local variable nor a
      * field access. This includes the following steps:
-     * 
+     *
      * <ol>
      * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code n} might alias any expression in the receiver <em>b</em>.
@@ -338,7 +377,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * more after {@code fieldAccess} has been assigned a new value (with the
      * abstract value {@code val}). This includes the following steps (assume
      * that {@code fieldAccess} is of the form <em>a.f</em> for some <em>a</em>.
-     * 
+     *
      * <ol>
      * <li value="1">Update the abstract value of other field accesses
      * <em>b.g</em> where the field is equal (that is, <em>f=g</em>), and the
@@ -353,7 +392,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * the receiver <em>b</em>.
      * <li value="3">Remove any information about pure method calls.
      * </ol>
-     * 
+     *
      * @param val
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
@@ -401,7 +440,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Remove any information in {@code fieldValues} that might not be true any
      * more after {@code localVar} has been assigned a new value. This includes
      * the following steps:
-     * 
+     *
      * <ol>
      * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code localVar} might alias any expression in the receiver
@@ -467,7 +506,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Set the abstract value of a local variable in the store. Overwrites any
      * value that might have been available previously.
-     * 
+     *
      * @param val
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
@@ -594,7 +633,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         such as "\n").
      */
     public String toDOToutput() {
-        StringBuilder result = new StringBuilder(this.getClass().getCanonicalName() + " (\\n");
+        StringBuilder result = new StringBuilder(this.getClass()
+                .getCanonicalName() + " (\\n");
         internalDotOutput(result);
         result.append(")");
         return result.toString();

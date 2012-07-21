@@ -12,9 +12,9 @@ import checkers.util.AnnotationUtils;
 /**
  * An implementation of an abstract value used by the Checker Framework dataflow
  * analysis. Contains a set of annotations.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AbstractValue<V> {
@@ -33,7 +33,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * {@link InferredAnnotation}. Because the mapping usually only contains one
      * or two entries, an array is used. The item at position {@code i}
      * corresponds to the hierarchy with root annotation {@code tops[i]}.
-     * 
+     *
      * <p>
      * Every position of the index can be one of three possibilities:
      * <ul>
@@ -100,6 +100,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return -1;
     }
 
+    /** Returns the index of a hierarchy identified by {@code top}. */
+    public static int getIndex(AnnotationMirror top,
+            CFAbstractAnalysis<?, ?, ?> analysis) {
+        for (int i = 0; i < analysis.tops.length; i++) {
+            if (AnnotationUtils.areSame(top, analysis.tops[i])) {
+                return i;
+            }
+        }
+        assert false;
+        return -1;
+    }
+
     /**
      * Computes and returns the least upper bound of two sets of type
      * annotations. The return value is always of type
@@ -108,7 +120,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     @Override
     public/* @Nullable */V leastUpperBound(V other) {
         if (other == null) {
-            return analysis.createAbstractValue(annotations);
+            @SuppressWarnings("unchecked")
+            V v = (V) this;
+            return v;
         }
         InferredAnnotation[] resultAnnotations = new InferredAnnotation[tops.length];
         for (int i = 0; i < tops.length; i++) {
@@ -162,6 +176,40 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             }
         }
         return true;
+    }
+
+    /**
+     * Returns the more specific version of two values {@code this} and {@code other}.
+     * If they do not contain information for all hierarchies, then it is
+     * possible that information from both {@code this} and {@code other} are taken.
+     */
+    public V mostSpecific(/* @Nullable */V other) {
+        if (other == null) {
+            @SuppressWarnings("unchecked")
+            V v = (V) this;
+            return v;
+        }
+        InferredAnnotation[] resultAnnotations = new InferredAnnotation[tops.length];
+        for (int i = 0; i < tops.length; i++) {
+            InferredAnnotation aAnno = annotations[i];
+            InferredAnnotation bAnno = other.annotations[i];
+            if (aAnno == null) {
+                resultAnnotations[i] = bAnno;
+            } else if (bAnno == null) {
+                resultAnnotations[i] = aAnno;
+            } else {
+                // Compute the more specific annotation using the qualifier
+                // hierarchy.
+                boolean subtype = analysis.qualifierHierarchy.isSubtype(
+                        aAnno.getAnnotations(), bAnno.getAnnotations());
+                if (subtype) {
+                    resultAnnotations[i] = aAnno;
+                } else {
+                    resultAnnotations[i] = bAnno;
+                }
+            }
+        }
+        return analysis.createAbstractValue(resultAnnotations);
     }
 
     /**

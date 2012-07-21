@@ -65,7 +65,7 @@ import com.sun.source.tree.Tree;
  * provide checker-specific logic how to combine types (e.g., what is the type
  * of a string concatenation, given the types of the two operands) and as an
  * abstraction function (e.g., determine the annotations on literals)..
- * 
+ *
  * @author Charlie Garrett
  * @author Stefan Heule
  */
@@ -350,16 +350,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        ConditionalTransferResult<V, S> a;
-        a = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, false);
-        if (a != null) {
-            return a;
-        }
-        a = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, false);
-        if (a != null) {
-            return a;
-        }
-
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, false);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, false);
         return res;
     }
 
@@ -375,15 +367,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        ConditionalTransferResult<V, S> a;
-        a = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, true);
-        if (a != null) {
-            return a;
-        }
-        a = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, true);
-        if (a != null) {
-            return a;
-        }
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftV, rightV, true);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightV, leftV, true);
 
         return res;
     }
@@ -393,7 +378,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * {@code secondValue} is less precise than {@code firstvalue}. This is
      * possible, if {@code secondNode} is an expression that is tracked by the
      * store (e.g., a local variable or a field).
-     * 
+     *
      * @param res
      *            The previous result.
      * @param notEqualTo
@@ -403,26 +388,28 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * @return The conditional transfer result (if information has been added),
      *         or {@code null}.
      */
-    protected ConditionalTransferResult<V, S> strengthenAnnotationOfEqualTo(
+    protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
             TransferResult<V, S> res, Node secondNode, V firstValue,
             V secondValue, boolean notEqualTo) {
-        if (firstValue != null
-                && (secondValue == null || firstValue.isSubtypeOf(secondValue))) {
-            Receiver secondInternal = FlowExpressions.internalReprOf(
-                    analysis.getFactory(), secondNode);
-            S thenStore = res.getRegularStore();
-            if (thenStore.canInsertReceiver(secondInternal)) {
-                S elseStore = thenStore.copy();
-                if (notEqualTo) {
-                    elseStore.insertValue(secondInternal, firstValue);
-                } else {
-                    thenStore.insertValue(secondInternal, firstValue);
+        if (firstValue != null) {
+            // Only need to insert if the second value is actually different.
+            if (!firstValue.equals(secondValue)) {
+                Receiver secondInternal = FlowExpressions.internalReprOf(
+                        analysis.getFactory(), secondNode);
+                if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                    S thenStore = res.getThenStore();
+                    S elseStore = res.getElseStore();
+                    if (notEqualTo) {
+                        elseStore.insertValue(secondInternal, firstValue);
+                    } else {
+                        thenStore.insertValue(secondInternal, firstValue);
+                    }
+                    return new ConditionalTransferResult<>(
+                            res.getResultValue(), thenStore, elseStore);
                 }
-                return new ConditionalTransferResult<>(res.getResultValue(),
-                        thenStore, elseStore);
             }
         }
-        return null;
+        return res;
     }
 
     @Override
