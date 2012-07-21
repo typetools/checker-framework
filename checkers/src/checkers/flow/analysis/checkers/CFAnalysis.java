@@ -1,6 +1,5 @@
 package checkers.flow.analysis.checkers;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -10,15 +9,15 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
+import checkers.flow.analysis.checkers.CFAbstractValue.NoInferredAnnotation;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
 import checkers.util.Pair;
 
 /**
  * The default dataflow analysis used in the Checker Framework.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class CFAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
@@ -54,8 +53,7 @@ public class CFAnalysis extends
     @Override
     protected/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return defaultCreateAbstractValue(annotations, supportedAnnotations,
-                this);
+        return defaultCreateAbstractValue(annotations, this);
     }
 
     @Override
@@ -75,22 +73,24 @@ public class CFAnalysis extends
     }
 
     /**
-     * Only uses the legal annotations in {@code annotations} and
-     * {@code effectiveAnnotations}, and creates a {@link CFValue}. It is
-     * assumed that information for all hierarchies is available. If for a given
-     * hierarchy, the set does not contain an annotation, then it is assumed
-     * that "no annotation" is the correct information for that hierarchy.
+     * Creates a {@link CFValue}. It is assumed that information for all
+     * hierarchies is available. If for a given hierarchy, the set does not
+     * contain an annotation, then it is assumed that "no annotation" is the
+     * correct information for that hierarchy.
      */
     public static CFValue defaultCreateAbstractValue(
-            Set<AnnotationMirror> annotations,
-            Set<AnnotationMirror> legalAnnotations,
+            Set<AnnotationMirror> annotationSet,
             CFAbstractAnalysis<CFValue, ?, ?> analysis) {
-        Set<AnnotationMirror> as = new HashSet<>();
-        for (AnnotationMirror a : annotations) {
-            if (AnnotationUtils.containsSameIgnoringValues(legalAnnotations, a)) {
-                as.add(a);
-            }
+        InferredAnnotation[] annotations = new InferredAnnotation[analysis.tops.length];
+        for (int i = 0; i < analysis.tops.length; i++) {
+            annotations[i] = NoInferredAnnotation.INSTANCE;
         }
-        return new CFValue(analysis, as);
+        for (AnnotationMirror anno : annotationSet) {
+            AnnotationMirror top = analysis.qualifierHierarchy
+                    .getRootAnnotation(anno);
+            annotations[CFAbstractValue.getIndex(top, analysis)] = new InferredAnnotation(
+                    anno);
+        }
+        return CFAnalysis.defaultCreateAbstractValue(annotations, analysis);
     }
 }
