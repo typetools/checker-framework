@@ -165,9 +165,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     }
 
     /**
-     * Returns the more specific version of two values {@code this} and {@code other}.
-     * If they do not contain information for all hierarchies, then it is
-     * possible that information from both {@code this} and {@code other} are taken.
+     * Returns the more specific version of two values {@code this} and
+     * {@code other}. If they do not contain information for all hierarchies,
+     * then it is possible that information from both {@code this} and
+     * {@code other} are taken.
      */
     public V mostSpecific(/* @Nullable */V other) {
         if (other == null) {
@@ -196,6 +197,20 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             }
         }
         return analysis.createAbstractValue(resultAnnotations);
+    }
+
+    /**
+     * Returns the array of {@link InferredAnnotation}s for a given annotation.
+     * Only the annotation {@code a} is set in this array, all other hierarchies
+     * are assume to not have any information.
+     */
+    public static InferredAnnotation[] createInferredAnnotationArray(
+            CFAbstractAnalysis<?, ?, ?> analysis, AnnotationMirror a) {
+        AnnotationMirror top = analysis.qualifierHierarchy.getRootAnnotation(a);
+        InferredAnnotation[] annotations = new InferredAnnotation[analysis.tops.length];
+        int index = CFAbstractValue.getIndex(top, analysis);
+        annotations[index] = new InferredAnnotation(a);
+        return annotations;
     }
 
     /**
@@ -252,7 +267,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             if (a == null) {
                 continue;
             } else if (a.isNoInferredAnnotation()) {
-                result.add(tops[i].toString()+"->[]");
+                result.add(tops[i].toString() + "->[]");
             } else {
                 result.add(a.getAnnotation().toString());
             }
