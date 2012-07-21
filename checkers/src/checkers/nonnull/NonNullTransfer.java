@@ -9,16 +9,20 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
-import checkers.commitment.CommitmentChecker;
 import checkers.commitment.CommitmentStore;
 import checkers.commitment.CommitmentTransfer;
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.FlowExpressions.ThisReference;
+import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.UnderlyingAST;
@@ -33,7 +37,6 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.VariableTree;
 
 /**
  * Transfer function for the non-null type system. Performs the following
@@ -44,6 +47,8 @@ import com.sun.source.tree.VariableTree;
  * <li>TODO: After a method call with a postcondition that ensures a field to be
  * non-null, that field can safely be considered initialized.
  * <li>All non-null fields with an initializer can be considered initialized.
+ * <li>After the call to a super constructor ("super()" call), all non-null
+ * fields of the super class can safely be considered initialized.
  * </ol>
  *
  * @author Stefan Heule
@@ -53,8 +58,8 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
     /** Type-specific version of super.analysis. */
     protected final NonNullAnalysis analysis;
 
-    public NonNullTransfer(NonNullAnalysis analysis) {
-        super(analysis);
+    public NonNullTransfer(NonNullAnalysis analysis, NonNullChecker checker) {
+        super(analysis, checker);
         this.analysis = analysis;
     }
 
@@ -86,13 +91,24 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
                 && methodString.equals("this")) {
             ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
                     .getPath(tree));
-            Set<VariableTree> fields = CommitmentChecker.getAllFields(clazz);
-            for (VariableTree field : fields) {
-                AnnotatedTypeMirror fieldAnno = analysis.getFactory()
-                        .getAnnotatedType(field);
-                if (fieldAnno.hasAnnotation(NonNull.class)) {
-                    result.add(TreeUtils.elementFromDeclaration(field));
-                }
+            TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
+            markNonNullFieldsAsInitialized(result, clazzElem);
+        }
+
+        // Case 4: After a call to the constructor of the super class, all
+        // non-null fields of any super class are guaranteed to be initialized.
+        if (isConstructor && receiver instanceof ThisLiteralNode
+                && methodString.equals("super")) {
+            ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
+                    .getPath(tree));
+            TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
+            TypeMirror superClass = clazzElem.getSuperclass();
+
+            while (superClass != null && superClass.getKind() != TypeKind.NONE) {
+                clazzElem = (TypeElement) analysis.getTypes().asElement(
+                        superClass);
+                superClass = clazzElem.getSuperclass();
+                markNonNullFieldsAsInitialized(result, clazzElem);
             }
         }
 
@@ -101,6 +117,23 @@ public class NonNullTransfer extends CommitmentTransfer<NonNullTransfer> {
         addInitializedFields(transferResult.getThenStore());
         addInitializedFields(transferResult.getElseStore());
         return result;
+    }
+
+    /**
+     * Adds all the fields of the class {@code clazzElem} to the set of
+     * initialized fields {@code result}.
+     */
+    protected void markNonNullFieldsAsInitialized(Set<Element> result,
+            TypeElement clazzElem) {
+        List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem
+                .getEnclosedElements());
+        for (VariableElement field : fields) {
+            AnnotatedTypeMirror fieldAnno = analysis.getFactory()
+                    .getAnnotatedType(field);
+            if (fieldAnno.hasAnnotation(NonNull.class)) {
+                result.add(field);
+            }
+        }
     }
 
     /**
