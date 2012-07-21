@@ -36,28 +36,28 @@ public class CFAnalysis extends
     }
 
     @Override
-    protected CFTransfer createTransferFunction() {
+    public CFTransfer createTransferFunction() {
         return new CFTransfer(this);
     }
 
     @Override
-    protected CFStore createEmptyStore(boolean sequentialSemantics) {
+    public CFStore createEmptyStore(boolean sequentialSemantics) {
         return new CFStore(this, sequentialSemantics);
     }
 
     @Override
-    protected CFStore createCopiedStore(CFStore s) {
+    public CFStore createCopiedStore(CFStore s) {
         return new CFStore(this, s);
     }
 
     @Override
-    protected/* @Nullable */CFValue createAbstractValue(
+    public/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
         return defaultCreateAbstractValue(annotations, this);
     }
 
     @Override
-    protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
+    public CFValue createAbstractValue(InferredAnnotation[] annotations) {
         return defaultCreateAbstractValue(annotations, this);
     }
 

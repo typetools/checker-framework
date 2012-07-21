@@ -78,8 +78,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         super(env);
         qualifierHierarchy = factory.getQualifierHierarchy();
         this.factory = factory;
-        transferFunction = createTransferFunction();
         this.checker = checker;
+        transferFunction = createTransferFunction();
         Set<AnnotationMirror> topAnnotations = factory.getQualifierHierarchy()
                 .getRootAnnotations();
         tops = new ArrayList<>(topAnnotations)
@@ -119,29 +119,29 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return The transfer function to be used by the analysis.
      */
-    protected abstract T createTransferFunction();
+    public abstract T createTransferFunction();
 
     /**
      * @return An empty store of the appropriate type.
      */
-    protected abstract S createEmptyStore(boolean sequentialSemantics);
+    public abstract S createEmptyStore(boolean sequentialSemantics);
 
     /**
      * @return An identical copy of the store {@code s}.
      */
-    protected abstract S createCopiedStore(S s);
+    public abstract S createCopiedStore(S s);
 
     /**
      * @return An abstract value containing the valid subset of annotations of
      *         {@code annotations}.
      */
-    protected abstract/* @Nullable */V createAbstractValue(
+    public abstract/* @Nullable */V createAbstractValue(
             Set<AnnotationMirror> annotationSet);
 
     /**
      * Creates an abstract value given.
      */
-    protected abstract V createAbstractValue(
+    public abstract V createAbstractValue(
             InferredAnnotation[] resultAnnotations);
 
     public QualifierHierarchy getTypeHierarchy() {
