@@ -58,7 +58,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
      * @return The list of annotations that is forbidden for the constructor
      *         return type.
      */
-    protected Set<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
+    public Set<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
         return getCommitmentAnnotations();
     }
 
@@ -66,7 +66,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
      * Returns the annotation that makes up the invariant of this commitment
      * type system.
      */
-    abstract protected AnnotationMirror getFieldInvariantAnnotation();
+    public abstract AnnotationMirror getFieldInvariantAnnotation();
 
     /**
      * Returns a list of all fields of the given class
