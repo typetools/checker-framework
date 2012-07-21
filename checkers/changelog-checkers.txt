@@ -5,11 +5,9 @@ Clarify installation instructions for Windows.
 Framework improvements:
   Implement @PolyAll qualifier to vary over multiple type systems.
   Improve defaulting for multiple qualifier hierarchies.
-  Big refactoring of how qualifier hierarchies are built up and
-    how errors are cuommunicated.
-  Invariant array subtyping can be turned on with a lint command line
-  option:
-    -Alint:arrays:invariant
+  Big refactoring of how qualifier hierarchies are built up.
+  Invariant array subtyping can be turned on with the lint command
+  line option -Alint:arrays:invariant
   Improvements to error handling output for unexpected exceptions.
   Bug fixes and documentation improvements.
 
