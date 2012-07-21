@@ -74,13 +74,13 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>
-     * 
+     *
      * In most cases, subclasses want to call this method first because it may
      * clear all annotations and use the hierarchy's root annotations (as part
      * of the call to postAsMemberOf).
-     * 
+     *
      */
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
@@ -89,12 +89,12 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>
-     * 
+     *
      * In most cases, subclasses want to call this method first because it may
      * clear all annotations and use the hierarchy's root annotations.
-     * 
+     *
      */
 
     protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
@@ -116,7 +116,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
      * Determine the type of a field access (implicit or explicit) based on the
      * receiver type and the declared annotations for the field
      * (committed-only).
-     * 
+     *
      * @param type
      *            Type of the field access expression.
      * @param declaredFieldAnnotations
@@ -191,6 +191,5 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
             }
             return null;
         }
-
     }
 }
