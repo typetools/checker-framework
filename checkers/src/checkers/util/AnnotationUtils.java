@@ -1277,7 +1277,7 @@ public class AnnotationUtils {
 
     /**
      * 
-     * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror, boolean)
+     * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror)
      */
     public static <T> void updateMappingToImmutableSet(Map<T, Set<AnnotationMirror>> map,
             T key, Set<AnnotationMirror> newQual) {
