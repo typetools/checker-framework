@@ -33,6 +33,9 @@ public class FenumAnnotatedTypeFactory extends
     defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
                                  Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
     defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
+
+    this.postInit();
+    // flow.setDebug(System.err);
   }
 
   @Override
@@ -60,7 +63,7 @@ public class FenumAnnotatedTypeFactory extends
       ExpressionTree expr = node.getExpression();
       AnnotatedTypeMirror varType = getAnnotatedType(var);
       AnnotatedTypeMirror exprType = getAnnotatedType(expr);
-      Set<AnnotationMirror> lub = qualHierarchy.leastUpperBound(varType.getAnnotations(), exprType.getAnnotations());
+      Set<AnnotationMirror> lub = qualHierarchy.leastUpperBounds(varType.getAnnotations(), exprType.getAnnotations());
       type.clearAnnotations();
       type.addAnnotations(lub);
       return super.visitCompoundAssignment(node, type);

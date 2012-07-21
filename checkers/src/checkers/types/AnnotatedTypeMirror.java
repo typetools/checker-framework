@@ -70,7 +70,8 @@ public abstract class AnnotatedTypeMirror {
             case DECLARED:
                 return new AnnotatedDeclaredType((DeclaredType)type, env, typeFactory);
             case ERROR:
-                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
+                SourceChecker.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
+                return null; // dead code
             case EXECUTABLE:
                 return new AnnotatedExecutableType((ExecutableType)type, env, typeFactory);
             case VOID:
@@ -87,7 +88,8 @@ public abstract class AnnotatedTypeMirror {
                 if (type.getKind().isPrimitive()) {
                     return new AnnotatedPrimitiveType((PrimitiveType)type, env, typeFactory);
                 }
-                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.createType: unidentified type " + type);
+                SourceChecker.errorAbort("AnnotatedTypeMirror.createType: unidentified type " + type);
+                return null; // dead code
         }
     }
 
@@ -256,9 +258,9 @@ public abstract class AnnotatedTypeMirror {
             aliased = typeFactory.aliasedAnnotation(p);
         }
         if (typeFactory.isSupportedQualifier(aliased)) {
-            AnnotationMirror root = this.typeFactory.qualHierarchy.getRootAnnotation(aliased);
+            AnnotationMirror top = this.typeFactory.qualHierarchy.getTopAnnotation(aliased);
             for(AnnotationMirror anno : annotations) {
-                if (this.typeFactory.qualHierarchy.isSubtype(anno, root)) {
+                if (this.typeFactory.qualHierarchy.isSubtype(anno, top)) {
                     return anno;
                 }
             }
@@ -477,7 +479,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            throw new SourceChecker.CheckerError("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            SourceChecker.errorAbort("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (typeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
@@ -618,11 +620,10 @@ public abstract class AnnotatedTypeMirror {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : lst) {
             if (obj==null) {
-                throw new SourceChecker.CheckerError("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                SourceChecker.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
             if (isInvisibleQualified(obj) &&
-                    !printInvisible &&
-                    !env.getOptions().containsKey("printAllQualifiers")) {
+                    !printInvisible) {
                 continue;
             }
 
@@ -643,7 +644,7 @@ public abstract class AnnotatedTypeMirror {
 
     @Override
     public final String toString() {
-        return toString(false);
+        return toString(env.getOptions().containsKey("printAllQualifiers"));
     }
 
     /**
@@ -1238,10 +1239,11 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             // TODO: pass printInvisible to all components
+            boolean noParams = getParameterTypes().isEmpty();
             return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
                 + getReturnType()
-                + (getParameterTypes().isEmpty() ? " ()" : " (" + getParameterTypes() + ")")
-                + " " + getReceiverType()
+                + " (" + getReceiverType() + " this"
+                + (noParams ? "" : ", " + getParameterTypes()) + ")"
                 + (getThrownTypes().isEmpty() ? "" : " throws " + getThrownTypes());
         }
     }
@@ -1336,8 +1338,7 @@ public abstract class AnnotatedTypeMirror {
                 component = array.getComponentType();
                 if (array.getAnnotations().size() > 0) {
                     sb.append(' ');
-                    sb.append(formatAnnotationString(env, array.getAnnotations(), printInvisible).trim());
-                    sb.append(' ');
+                    sb.append(formatAnnotationString(env, array.getAnnotations(), printInvisible));
                 }
                 sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
@@ -1522,7 +1523,7 @@ public abstract class AnnotatedTypeMirror {
                     lowerBound.clearAnnotations();
                     lowerBound.addAnnotations(uAnnos);
                 } else {
-                    throw new SourceChecker.CheckerError("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnnos + ") is inconsistent with explicit upper bound: " + this);
+                    SourceChecker.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnnos + ") is inconsistent with explicit upper bound: " + this);
                 }
             }
         }
@@ -1838,7 +1839,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
-                return formatAnnotationString(env, getAnnotations(), printInvisible) + " null";
+                return formatAnnotationString(env, getAnnotations(), printInvisible) + "null";
             } else {
                 return "null";
             }

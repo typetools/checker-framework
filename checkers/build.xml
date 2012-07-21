@@ -185,7 +185,7 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
@@ -237,6 +237,7 @@ ${build.version} of the 'javac.jar' library."/>
                 <fileset dir="${tests}">
                     <include name="src/tests/**/*.java"/>
                     <include name="test-lubglb/**/*.java"/>
+                    <include name="test-polyall/**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -390,6 +391,13 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the lubglb checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LubGlbTest"/>
+        </antcall>
+    </target>
+
+    <target name="polyall-tests" depends="jar,build-tests"
+      description="Run tests for the polyall checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.PolyAllTest"/>
         </antcall>
     </target>
 

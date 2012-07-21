@@ -13,6 +13,7 @@ import checkers.flow.Flow;
 import checkers.flow.FlowState;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -214,7 +215,8 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             return "";
         else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)sel).getExpression().toString() + ".";
-        throw new AssertionError("Cannot be here");
+        SourceChecker.errorAbort("NullnessFlow.receiver: cannot be here");
+        return null; // dead code
     }
 
     // TODO: move shouldInferNullness somewhere more appropriate. Maybe NullnessFlowConditions.
@@ -1336,6 +1338,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param tree the tree to check
      * @return the element for the variable in the tree
      */
+    // TODO: can we remove this method?
     static final Element var(ExpressionTree tree) {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {

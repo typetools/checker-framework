@@ -210,6 +210,7 @@ implements Flow {
     }
 
     public static void addFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
+        // This method doesn't handle multiple annotations from one hierarchy correctly.
         Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
         if (flowResults.containsKey(tree)) {
             set.addAll(flowResults.get(tree));
@@ -500,8 +501,17 @@ implements Flow {
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror type = factory.fromMember(node);
             if (!isNonFinalField(elem) && !type.isAnnotated()) {
-                propagate(node, init);
-                recordBits(getCurrentPath());
+                // Set the assignment context for array component type inference.
+                // Note that flow is performed before the BaseTypeVisitor could set this
+                // information.
+                Tree preAssCtxt = visitorState.getAssignmentContextTree();
+                factory.getVisitorState().setAssignmentContextTree(node);
+                try {
+                    propagate(node, init);
+                    recordBits(getCurrentPath());
+                } finally {
+                    factory.getVisitorState().setAssignmentContextTree(preAssCtxt);
+                }
             }
         }
         return null;

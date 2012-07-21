@@ -11,7 +11,7 @@ class UnannoPrimitives {
     // test whether an arbitrary declaration annotation gets confused
     @SuppressWarnings("tata")
     int h = new Integer(5);
-    
+
     int i = new Integer(99) + 1900;
     int j = 7 + 1900;
 
@@ -28,7 +28,7 @@ class UnannoPrimitives {
     String strDate = "/" + year;
   }
 
-  //:: error: (type.invalid) :: error: (assignment.type.incompatible)
+  //:: error: (type.invalid)
   @Nullable byte[] d1 = {4};
   byte @Nullable [] d1b = {4};
 

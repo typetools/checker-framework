@@ -2,7 +2,6 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -13,10 +12,8 @@ import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
+import checkers.source.SourceVisitor;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -93,7 +90,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     public void initChecker(ProcessingEnvironment processingEnv) {
         super.initChecker(processingEnv);
         this.supportedQuals = this.createSupportedTypeQualifiers();
-        this.qualHierarchy = this.createQualifierHierarchy();
+        this.qualHierarchy = this.getQualifierHierarchy();
         this.typeHierarchy = this.createTypeHierarchy();
     }
 
@@ -245,7 +242,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
@@ -363,6 +360,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
         lintSet.add("flow:inferFromAsserts");
+        // Temporary option to make array subtyping invariant,
+        // which will be the new default soon.
+        lintSet.add("arrays:invariant");
+
         return lintSet;
     }
 
@@ -398,22 +399,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
         try {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
-        } catch (InvocationTargetException ite) {
-            if (ite.getCause() instanceof CheckerError) {
-                throw (CheckerError) ite.getCause();
-            } else {
-                throw new CheckerError("Unexpected " + ite.getClass().getSimpleName() + " for " +
-                        "class name " + name +
-                        " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
-                        // + " and args: " + Arrays.toString(args),
-                ite);
-            }
-        } catch (Exception e) {
-            throw new CheckerError("Unexpected " + e.getClass().getSimpleName() + " for " +
+        } catch (Throwable t) {
+            SourceChecker.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
                     "class name " + name +
                     " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
                     // + " and args: " + Arrays.toString(args),
-            e);
+                    t);
+            return null; // dead code
         }
     }
 

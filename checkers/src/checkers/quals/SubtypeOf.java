@@ -32,7 +32,7 @@ import java.lang.annotation.*;
  *
  * <p>
  *
- * For the root type qualifier in the qualifier hierarchy (i.e., the
+ * For the top qualifier in the qualifier hierarchy (i.e., the
  * qualifier that is a supertype of all other qualifiers in the given
  * hierarchy), use an empty set of values:
  *

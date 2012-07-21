@@ -52,7 +52,7 @@ public class GenKillBits<K> {
     bitsets = new HashMap<K, BitSet>(keys.size());
     for (K key : keys) {
       if (key==null) {
-        throw new SourceChecker.CheckerError("GenKillBits(keys): No null keys allowed!");
+        SourceChecker.errorAbort("GenKillBits(keys): No null keys allowed!");
       }
       bitsets.put(key, new BitSet());
     }
@@ -73,7 +73,7 @@ public class GenKillBits<K> {
     bitsets = new HashMap<K, BitSet>(other.bitsets);
     for (K key : bitsets.keySet()) {
       if (key==null) {
-        throw new SourceChecker.CheckerError("GenKillBits(other): No null keys allowed!");
+        SourceChecker.errorAbort("GenKillBits(other): No null keys allowed!");
       }
       BitSet newbits = (BitSet) bitsets.get(key).clone();
       bitsets.put(key, newbits);
@@ -89,7 +89,7 @@ public class GenKillBits<K> {
    */
   public void set(K key, int index) {
     if (key==null) {
-      throw new SourceChecker.CheckerError("GenKillBits.set: No null keys allowed!");
+      SourceChecker.errorAbort("GenKillBits.set: No null keys allowed!");
     }
     if (!bitsets.containsKey(key)) {
       bitsets.put(key, new BitSet());

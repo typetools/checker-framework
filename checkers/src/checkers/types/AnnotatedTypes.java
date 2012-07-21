@@ -12,6 +12,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 
 import checkers.quals.TypeQualifier;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -99,7 +100,7 @@ public class AnnotatedTypes {
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
                 // Is there a better place for this?
-                res.addAnnotations(factory.getQualifierHierarchy().getRootAnnotations());
+                res.addAnnotations(factory.getQualifierHierarchy().getTopAnnotations());
             }
             return res;
         }
@@ -408,15 +409,18 @@ public class AnnotatedTypes {
         if (iterableType.getKind() == TypeKind.TYPEVAR)
             return getIteratedType(((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
-        if (iterableType.getKind() != TypeKind.DECLARED)
-            throw new IllegalArgumentException("Not iterable type: " + iterableType);
+        if (iterableType.getKind() != TypeKind.DECLARED) {
+            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            return null; // dead code
+        }
 
         TypeElement iterableElement = env.getElementUtils().getTypeElement("java.lang.Iterable");
         AnnotatedDeclaredType iterableElmType = factory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(iterableType, iterableElmType);
-        if (dt == null)
-            throw new IllegalArgumentException("Not iterable type: " + iterableType);
-        else if (dt.getTypeArguments().isEmpty()) {
+        if (dt == null) {
+            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            return null; // dead code
+        } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = env.getElementUtils().getTypeElement("java.lang.Object");
             AnnotatedDeclaredType t = factory.fromElement(e);
             t.clearAnnotations();
@@ -925,7 +929,8 @@ public class AnnotatedTypes {
             return factory.getAnnotatedType((VariableTree)assignmentContext);
         }
 
-        throw new AssertionError("Shouldn't be here!");
+        SourceChecker.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
+        return null; // dead code
     }
 
     /**

@@ -61,9 +61,8 @@ public class QualifierDefaults {
             AnnotationMirror anno = def.first;
             QualifierHierarchy qh = factory.getQualifierHierarchy();
             if (!absoluteDefaultAnno.equals(anno) &&
-                    qh.isSubtype(absoluteDefaultAnno, qh.getRootAnnotation(anno))) {
-                // TODO: get a Checker for a nicer error message
-                throw new SourceChecker.CheckerError("Only one qualifier from a hierarchy can be the default! Existing: "
+                    qh.isSubtype(absoluteDefaultAnno, qh.getTopAnnotation(anno))) {
+                SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                         + absoluteDefaults + " and new: " + absoluteDefaultAnno);
             }
         }

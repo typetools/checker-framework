@@ -244,14 +244,19 @@ hierarchy.
 % this the previous paragraph is confusing, as it does not give a correct
 % example.
 
+% TODO: describe multiple type hierarchies
+% TODO: describe multiple polymorphic qualifiers and PolyAll
+% TODO: the code consistently uses "top" for type qualifiers and
+%       "root" for ASTs, in particular for CompilationUnitTrees.
+
   All type qualifiers, except for polymorphic qualifiers (see below and
   also Section~\ref{qualifier-polymorphism}), need to be
   properly annotated with \refclass{quals}{SubtypeOf}.
 
-  The root qualifier should be annotated with
-  \<@SubtypeOf( \{ \} )>.  The root qualifier is the qualifier that is
+  The top qualifier is annotated with
+  \<@SubtypeOf( \{ \} )>.  The top qualifier is the qualifier that is
   a supertype of all other qualifiers.  For example, \<@\refclass{nullness/quals}{Nullable}>
-  is the root of the Nullness type system, hence is defined as:
+  is the top qualifier of the Nullness type system, hence is defined as:
 
   \begin{Verbatim}
     @TypeQualifier
@@ -260,9 +265,9 @@ hierarchy.
     public @interface Nullable { }
   \end{Verbatim}
 
-  If the root of the hierarchy is the unqualified type, then its children
+  If the top qualifier of the hierarchy is the unqualified type, then its children
   will use \code{@SubtypeOf(Unqualified.class)}, but no \code{@SubtypeOf(
-    \{ \} )} annotation on the root is necessary.  For an example, see the
+    \{ \} )} annotation on the top qualifier is necessary.  For an example, see the
   \<Encrypted> type system of Section~\ref{encrypted-example}.
 
 \item \<@\refclass{quals}{PolymorphicQualifier}> denotes that a qualifier is a
