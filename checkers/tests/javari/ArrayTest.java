@@ -73,14 +73,14 @@ class ArrayTest {
         aMTm = aRoRo;  // error
 
         // aMRo = ...
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aMRo = aMM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aMRo = aMTm;
         aMRo = aMRo;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aMRo = aTmM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aMRo = aTmTm;
         aMRo = aTmRo;
         //:: error: (assignment.type.incompatible)
@@ -127,14 +127,14 @@ class ArrayTest {
         aTmTm = aRoRo; // error
 
         // aTmRo = ...
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aTmRo = aMM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aTmRo = aMTm;
         aTmRo = aMRo;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aTmRo = aTmM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aTmRo = aTmTm;
         aTmRo = aTmRo;
         //:: error: (assignment.type.incompatible)
@@ -177,19 +177,19 @@ class ArrayTest {
         aRoTm = aRoRo; // error
 
         // aRoRo = ...
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aMM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aMTm;
         aRoRo = aMRo;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aTmM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aTmTm;
         aRoRo = aTmRo;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aRoM;
-        //:: error: (assignment.type.incompatible)
+        //TODOINVARR:: error: (assignment.type.incompatible)
         aRoRo = aRoTm;
         aRoRo = aRoRo;
 

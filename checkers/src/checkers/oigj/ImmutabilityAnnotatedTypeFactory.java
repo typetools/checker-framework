@@ -135,6 +135,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         I = checker.I;
         BOTTOM_QUAL = checker.BOTTOM_QUAL;
         ASSIGNS_FIELDS = checker.ASSIGNS_FIELDS;
+
+        this.postInit();
     }
 
     @Override

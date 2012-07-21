@@ -29,6 +29,7 @@ public class TaintingAnnotatedTypeFactory
     public TaintingAnnotatedTypeFactory(TaintingChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+        this.postInit();
     }
 
     /*

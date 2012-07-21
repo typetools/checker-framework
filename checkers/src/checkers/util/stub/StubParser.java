@@ -10,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
-import checkers.source.SourceChecker.CheckerError;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -59,11 +59,14 @@ public class StubParser {
 
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
+        IndexUnit parsedindex;
         try {
-            this.index = JavaParser.parse(inputStream);
+            parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            throw new CheckerError("StubParser: exception from JavaParser.parse", e);
+            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
+            parsedindex = null; // dead code, but needed for def. assignment checks
         }
+        this.index = parsedindex;
         this.atypeFactory = factory;
         this.env = env;
         this.annoUtils = AnnotationUtils.getInstance(env);
@@ -571,11 +574,10 @@ public class StubParser {
         if (m.containsKey(key)) {
             // TODO: instead of failing, can we try merging the information from
             // multiple stub files?
-            CheckerError e = new CheckerError("StubParser: key is already in map: " + LINE_SEPARATOR
+            SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
                             + "while adding: " + LINE_SEPARATOR
                             + "  " + key + " => " + value);
-            throw e;
         }
         m.put(key, value);
     }
@@ -629,7 +631,8 @@ public class StubParser {
             // NormalAnnotationExpr nrmanno = (NormalAnnotationExpr)annotation;
             // String annoName = nrmanno.getName().getName();
             // annoMirror = supportedAnnotations.get(annoName);
-            throw new CheckerError("StubParser: unhandled annotation type: " + annotation);
+            SourceChecker.errorAbort("StubParser: unhandled annotation type: " + annotation);
+            annoMirror = null; // dead code
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr)annotation;
             String annoName = sglanno.getName().getName();
@@ -644,7 +647,8 @@ public class StubParser {
             handleExpr(builder, "value", valexpr);
             return builder.build();
         } else {
-            throw new CheckerError("StubParser: unknown annotation type: " + annotation);
+            SourceChecker.errorAbort("StubParser: unknown annotation type: " + annotation);
+            annoMirror = null; // dead code
         }
         return annoMirror;
     }
@@ -663,13 +667,13 @@ public class StubParser {
                 VariableElement[] arr = { elem };
                 builder.setValue(name, arr);
             } else {
-                throw new CheckerError("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
+                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
             }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() != TypeKind.ARRAY) {
-                throw new CheckerError("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
 
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
@@ -681,26 +685,26 @@ public class StubParser {
             for (int i = 0; i < aiexprvals.size(); ++i) {
                 anaiexpr = aiexprvals.get(i);
                 if (!(anaiexpr instanceof FieldAccessExpr)) {
-                    throw new CheckerError("StubParser: unhandled annotation attribute type: " + expr);
+                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
                 }
                 varelemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
             }
 
             builder.setValue(name, varelemarr);
         } else {
-            throw new CheckerError("StubParser: unhandled annotation attribute type: " + expr);
+            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
         }
     }
 
     private VariableElement findVariableElement(FieldAccessExpr faexpr) {
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt==null) {
-            throw new CheckerError("StubParser: unknown annotation attribute receiver: " + faexpr);
+            SourceChecker.errorAbort("StubParser: unknown annotation attribute receiver: " + faexpr);
         }
         VariableElement elem = TreeUtils.getField(faexpr.getScope().toString(), faexpr.getField().toString() , env);
 
         if (elem==null) {
-            throw new CheckerError("StubParser: unknown annotation attribute field access: " + faexpr);
+            SourceChecker.errorAbort("StubParser: unknown annotation attribute field access: " + faexpr);
         }
         return elem;
     }

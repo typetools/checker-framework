@@ -40,6 +40,7 @@ public class LockAnnotatedTypeFactory
             CompilationUnitTree root) {
         super(checker, root);
         GUARDED_BY = annotations.fromClass(GuardedBy.class);
+        this.postInit();
     }
 
     public void setHeldLocks(List<String> heldLocks) {

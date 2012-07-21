@@ -289,7 +289,8 @@ For example, it would be incorrect to annotate the type parameter of
 
 The Checker Framework also supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
-type signatures.
+type signatures.  This is similar to Java's generics, but is used in
+situations where you cannot use Java generics.
 
 To \emph{define} a polymorphic qualifier, mark the definition with
 \<@\refclass{quals}{PolymorphicQualifier}>.  For example,
@@ -316,16 +317,10 @@ The method body must type-check with all signatures.  A method call is
 type-correct if it type-checks under any one of the signatures.  If a call
 matches multiple signatures, then the compiler uses the most specific
 matching signature for the purpose of type-checking.  This is just like
-Java's rule for resolving overriding methods, though there is no effect on
-run-time dispatch or behavior.
+Java's rule for resolving overloaded methods.
 
 Polymorphic qualifiers can be used on a method signature or body.
 They may not be used on classes or fields.
-
-%% I don't see why this is necessarily true; one could define @PolyNull1
-%% and @PolyNull2.  It's not so relevant to the manual anyway, and raising
-%% the point just makes type system bigots criticize the Checker Framework.
-% Qualifier polymorphism is limited to a single qualifier variable per method.
 
 
 \subsection{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
@@ -372,6 +367,35 @@ known as the \emph{least upper bound} or lub.  If both
 arguments are \code{@NonNull}, their unification (lub) is \<@NonNull>, and the
 method return type is \<@NonNull>.  But if even one of the arguments is \<@Nullable>,
 then the unification (lub) is \<@Nullable>, and so is the return type.
+
+
+
+\subsection{\label{qualifier-polymorhism-vs-subtyping}Relationship to subtyping and generics}
+
+Qualifier polymorphism has the same purpose and plays the same role as
+Java's generics.  If a method is written using generics, it usually does
+not need qualifier polymorphism.  If you have legacy code that is not
+written generically, and you cannot change it to use generics, then you can
+use qualifier polymorphism to achieve a similar effect, with respect to
+type qualifiers only (not the base Java types).
+
+Why not use ordinary subtyping to handle qualifier polymorphism?
+Ordinarily, when you want a method to work on multiple types, you can just
+use Java's subtyping.  For example, the \<equals> method is declared to
+take an \<Object> as its first formal parameter, but it can be called on a
+\<String> or a \<Date> because those are subtypes of \<Object>.
+
+In most cases, the same subtyping mechanism works with type qualifiers.
+\<String> is a supertype of \<@Interned String>, so a method \<toUpperCase>
+that is declared to take a \<String> parameter can also be called on a
+\<@Interned String> argument.
+
+You use qualifier polymorphism in the same cases when you would use Java's
+generics.  (If you can use Java's generics, then that is often better and
+you don't also need to use qualifier polymorphism.)  One example is when
+you want a method to operate on collections with different types of
+elements.  Another example is when you want two different formal parameters
+to be of the same type, without constraining them to be one specific type.
 
 
 \subsection{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
@@ -465,6 +489,81 @@ of these signatures (and likewise for the \<Collection> version):
 In conclusion, use of a single polymorphic qualifier may be necessary in
 legacy code, but can be avoided by use of better code style.
 
+
+\subsection{\code{@PolyAll} qualifier applies to every type system}
+
+Ordinarily, you have to create a new polymorphic type qualifier for each
+type system you write.  This can be tedious.  More seriously, it can lead
+to an explosion in the number of type annotations, if some method is
+qualifier-polymorphic over multiple type qualifier hierarchies.
+
+For example, a method that only performs \<==> on array elements will work
+no matter what the array's element types are:
+
+\begin{Verbatim}
+  /** Searches for the first occurrence of the given element in the array,
+   *  testing for equality using == (not the equals method). */
+  public static int indexOfEq(/*@PolyAll*/ Object[] a, Object elt) {
+    for (int i=0; i<a.length; i++)
+      if (elt == a[i])
+        return i;
+    return -1;
+  }
+\end{Verbatim}
+
+The \<@PolyAll> qualifier takes an optional argument so that you can
+specify multiple, independent polymorphic type qualifiers.  For example,
+this signature is overly restrictive:
+
+// Omit this:
+//    *  The arguments must be non-null and have equal length.
+
+\begin{Verbatim}
+  /** Returns true if the arrays are elementwise equal,
+   *  testing for equality using == (not the equals method). */
+  public static int eltwiseEqualUsingEq(/*@PolyAll*/ Object[] a, /*@PolyAll*/ Object[] b) {
+    for (int i=0; i<a.length; i++)
+      if (elt != a[i])
+        return false;
+    return true;
+  }
+\end{Verbatim}
+
+\noindent
+That signature requires the element type annotation to be identical for the
+two arguments.  For example, it forbids this invocation:
+
+\begin{Verbatim}
+    @Mutable Object[] x;
+  @Immutable Object[] y;
+  ... eltwiseEqualUsingEq(x, y) ...
+\end{Verbatim}
+
+\noindent
+A better signature lets the two arrays' element types vary independently:
+
+\begin{Verbatim}
+  public static int eltwiseEqualUsingEq(/*@PolyAll(1)*/ Object[] a, /*@PolyAll(2)*/ Object[] b)
+\end{Verbatim}
+
+The \<@PolyAll> annotation applies to every type qualifier hierarchy for
+which no explicit qualifier is written.  For example, a declaration like
+\<@PolyAll @NonNull String s> is polymorphic over every type system
+\emph{except} the nullness type system, for which the type is fixed at
+\<@NonNull>.
+
+
+% Suppose that some type system has two qualifiers, such as 
+% \<@Nullable> and \<@NonNull>.  When a polymorphic type qualifier such
+% as \<@PolyNull> is used in a method, then the method conceptually
+% has two different versions:  one in which every instance of
+% \<@PolyNull> has been replaced by \<@NonNull> and one in
+% which every instance of \<@PolyNull> has been replaced by
+% \<@Nullable>.
+
+
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
 % LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
+%  LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase
+%  LocalWords:  PolyAll arrays'

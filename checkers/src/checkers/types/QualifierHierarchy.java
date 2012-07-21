@@ -35,15 +35,15 @@ public abstract class QualifierHierarchy {
     // **********************************************************************
 
     /**
-     * @return  the root (ultimate super) type qualifier in the hierarchy
+     * @return  the top (ultimate super) type qualifiers in the type system
      */
-    public abstract Set<AnnotationMirror> getRootAnnotations();
+    public abstract Set<AnnotationMirror> getTopAnnotations();
 
     /**
-     * Return the root for the given qualifier, that is, the qualifier that is a
-     * supertype of start but no further supertypes exist. 
+     * Return the top qualifier for the given qualifier, that is, the qualifier
+     * that is a supertype of start but no further supertypes exist. 
      */
-    public abstract AnnotationMirror getRootAnnotation(AnnotationMirror start);
+    public abstract AnnotationMirror getTopAnnotation(AnnotationMirror start);
 
     /**
      * Return the bottom for the given qualifier, that is, the qualifier that is a
@@ -66,7 +66,8 @@ public abstract class QualifierHierarchy {
 
     /**
      * Returns the names of all type qualifiers in this type qualifier
-     * hierarchy
+     * hierarchy.
+     * TODO: What is the relation to {@link checkers.basetype.BaseTypeChecker#getSupportedTypeQualifiers()}?
      *
      * @return the fully qualified name represented in this hierarchy
      */
@@ -137,12 +138,16 @@ public abstract class QualifierHierarchy {
      * @return the least upper bound of annos1 and annos2
      */
     public Set<AnnotationMirror>
-    leastUpperBound(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    leastUpperBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
         if (annos1.size() == 1 && annos2.size() == 1) {
             AnnotationMirror a1 = annos1.iterator().next();
             AnnotationMirror a2 = annos2.iterator().next();
             return Collections.singleton(leastUpperBound(a1, a2));
         }
+
+        assert annos1.size() == annos2.size() && annos1.size()!=0 :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {
@@ -154,6 +159,49 @@ public abstract class QualifierHierarchy {
             }
         }
 
+        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+
         return result;
     }
+
+    /**
+     * Returns the type qualifiers that are the greatest lower bound of
+     * the qualifiers in annos1 and annos2.
+     *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     * 
+     * @param annos1 First collection of qualifiers
+     * @param annos2 Second collection of qualifiers
+     * @return Greatest lower bound of the two collections of qualifiers
+     */
+    public Set<AnnotationMirror>
+    greatestLowerBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+        if (annos1.size() == 1 && annos2.size() == 1) {
+            AnnotationMirror a1 = annos1.iterator().next();
+            AnnotationMirror a2 = annos2.iterator().next();
+            return Collections.singleton(greatestLowerBound(a1, a2));
+        }
+
+        assert annos1.size() == annos2.size() && !annos1.isEmpty() :
+            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets or sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : annos1) {
+            for (AnnotationMirror a2 : annos2) {
+                AnnotationMirror glb = greatestLowerBound(a1, a2);
+                if (glb!=null) {
+                    result.add(glb);
+                }
+            }
+        }
+
+        assert result.size() == annos1.size() : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+
+        return result;
+    }
+
 }

@@ -36,19 +36,13 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
             if (this.bottom!=null) {
                 // A special bottom qualifier was provided; go through the existing
                 // bottom qualifiers and tie them all to this bottom qualifier.
-                Set<AnnotationMirror> bottoms = findBottoms(supertypes, null);
+                Set<AnnotationMirror> bottoms = findBottoms(supertypes);
                 for (AnnotationMirror abot : bottoms) {
                     if (!AnnotationUtils.areSame(bottom, abot)) {
                         addSubtype(bottom, abot);
                     }
                 }
-
-                if (!this.polyQualifiers.isEmpty()) {
-                    for (AnnotationMirror poly : polyQualifiers.values()) {
-                        addSubtype(bottom, poly);
                     }
-                }
-            }
 
             return new GraphQualifierHierarchy(this);
         }
@@ -64,20 +58,20 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     }
 
     /**
-     * Returns the root qualifier for this hierarchy.
+     * Returns the top qualifier for this hierarchy.
      *
-     * The root qualifier is inferred from the hierarchy, as being the only
+     * The top qualifier is inferred from the hierarchy, as being the only
      * one without any super qualifiers
      */
     @Override
-    public Set<AnnotationMirror> getRootAnnotations() {
-        if (roots.size() != 1) {
-            checker.errorAbort("Expected 1 possible root, found "
-                               + roots.size()
+    public Set<AnnotationMirror> getTopAnnotations() {
+        if (tops.size() != 1) {
+            SourceChecker.errorAbort("Expected 1 possible top qualifier, found "
+                               + tops.size()
                                + " (does the checker know about all type qualifiers?): "
-                               + roots);
+                               + tops);
         }
-        return this.roots;
+        return this.tops;
     }
 
     @Override
@@ -88,13 +82,8 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
-        if (rhs.isEmpty()) {
-            Set<AnnotationMirror> top = getRootAnnotations();
-            return AnnotationUtils.areSame(lhs, top);
-        }
-        if (lhs.isEmpty()) {
-            Set<AnnotationMirror> top = getRootAnnotations();
-            return !AnnotationUtils.areSame(rhs, top);
+        if (lhs.isEmpty() || rhs.isEmpty()) {
+            SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {

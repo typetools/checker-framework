@@ -1,7 +1,6 @@
 package checkers.nullness;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +12,7 @@ import checkers.flow.Flow;
 import checkers.nullness.quals.*;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
+import checkers.quals.PolyAll;
 import checkers.quals.Unused;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -63,13 +63,8 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
  * Implementation detail:  (*) cases are handled by a meta-annotation
  * rather than by code in this class.
  */
-public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
+public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<NullnessSubchecker> {
 
-    private final Flow flow;
-    private final QualifierDefaults defaults;
-    private final TypeAnnotator typeAnnotator;
-    private final TreeAnnotator treeAnnotator;
-    private final QualifierPolymorphism poly;
     private final DependentTypes dependentTypes;
     /*package*/ final AnnotatedTypeFactory rawnessFactory;
     private final AnnotatedTypeFactory plainFactory;
@@ -77,8 +72,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
     /** Represents the Nullness Checker qualifiers */
-    protected final AnnotationMirror POLYNULL, NONNULL, RAW, NULLABLE, LAZYNONNULL, PRIMITIVE;
-    protected final AnnotationMirror UNUSED;
+    protected final AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, RAW,
+            PRIMITIVE, POLYNULL, POLYALL, UNUSED;
 
     private final MapGetHeuristics mapGetHeuristics;
     private final SystemGetPropertyHandler systemGetPropertyHandler;
@@ -90,8 +85,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         super(checker, root);
 
         plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
-        typeAnnotator = new NonNullTypeAnnotator(checker);
-        treeAnnotator = new NonNullTreeAnnotator(checker);
 
         // TODO: why is this not a KeyForAnnotatedTypeFactory?
         // What qualifiers does it insert? The qualifier hierarchy is null.
@@ -99,13 +92,14 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
         systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
-        POLYNULL = this.annotations.fromClass(PolyNull.class);
         NONNULL = checker.NONNULL;
-        RAW = this.annotations.fromClass(Raw.class);
         NULLABLE = checker.NULLABLE;
         LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
-        UNUSED = this.annotations.fromClass(Unused.class);
+        RAW = this.annotations.fromClass(Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
+        POLYNULL = this.annotations.fromClass(PolyNull.class);
+        POLYALL = this.annotations.fromClass(PolyAll.class);
+        UNUSED = this.annotations.fromClass(Unused.class);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -133,11 +127,9 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work.
 
-        defaults = new QualifierDefaults(this, this.annotations);
         defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
 
-        this.poly = new QualifierPolymorphism(checker, this);
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
 
         RawnessSubchecker rawness = new RawnessSubchecker();
@@ -145,15 +137,10 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         rawness.init(checker.getProcessingEnvironment());
         rawnessFactory = rawness.createFactory(root);
 
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        flowQuals.add(NONNULL);
-        flowQuals.add(PRIMITIVE);
-        flow = new NullnessFlow(checker, root, flowQuals, this);
-
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
-        postInit();
+        this.postInit();
     }
 
     @Override
@@ -163,9 +150,33 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
+    protected Flow createFlow(NullnessSubchecker checker, CompilationUnitTree root,
+            Set<AnnotationMirror> flowQuals) {
+        return new NullnessFlow(checker, root, flowQuals, this);
+    }
+
+    @Override
+    protected Set<AnnotationMirror> createFlowQualifiers(NullnessSubchecker checker) {
+        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
+        flowQuals.add(NONNULL);
+        flowQuals.add(PRIMITIVE);
+        return flowQuals;
+    }
+
+    @Override
+    protected TreeAnnotator createTreeAnnotator(NullnessSubchecker checker) {
+        return new NonNullTreeAnnotator(checker);
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator(NullnessSubchecker checker) {
+        return new NonNullTypeAnnotator(checker);
+    }
+
+    @Override
     protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        if (elt instanceof VariableElement)
-            annotateIfStatic(elt, type);
+        // For example, the "System" in "System.out" is always non-null.
+        annotateIfStatic(elt, type);
 
         typeAnnotator.visit(type);
 
@@ -177,7 +188,8 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
+                boolean iUseFlow) {
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type);
         // case 6: apply default
@@ -188,10 +200,12 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
         }
         substituteUnused(tree, type);
 
-        final Set<AnnotationMirror> inferred = flow.test(tree);
-        if (inferred != null) {
-            // case 7: flow analysis
-            type.replaceAnnotations(inferred);
+        if (iUseFlow) {
+            final Set<AnnotationMirror> inferred = flow.test(tree);
+            if (inferred != null) {
+                // case 7: flow analysis
+                type.replaceAnnotations(inferred);
+            }
         }
         dependentTypes.handle(tree, type);
         completer.visit(type);
@@ -219,20 +233,20 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
     @Override
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
-        super.postDirectSuperTypes(type, supertypes);
         for (AnnotatedTypeMirror supertype : supertypes) {
             typeAnnotator.visit(supertype);
             if (supertype.getKind() == TypeKind.DECLARED)
                 defaults.annotateTypeElement((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
             completer.visit(supertype);
         }
+        // Apply supertype operations last.
+        super.postDirectSuperTypes(type, supertypes);
     }
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
-        poly.annotate(tree, method);
 
         TreePath path = this.getPath(tree);
         if (path!=null) {
@@ -377,10 +391,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @param type the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-
-        if (elt == null)
-            return;
-
         if (elt.getKind().isClass() || elt.getKind().isInterface()
                 // Workaround for System.{out,in,err} issue: assume all static
                 // fields in java.lang.System are nonnull.
@@ -501,7 +511,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         @Override
         public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
-
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
             // case 8: class in static member access
@@ -511,7 +520,6 @@ public class NullnessAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         @Override
         public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
 
