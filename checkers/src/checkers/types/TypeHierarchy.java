@@ -193,7 +193,7 @@ public class TypeHierarchy {
                         // The annotations on the upper bound of the RHS are below the annotation on the LHS -> good
                         return true;
                     } else {
-                        // LHS has annotation that is not a root annotation -> bad
+                        // LHS has annotation that is not a top annotation -> bad
                         return false;
                     }
                 }
@@ -405,7 +405,8 @@ public class TypeHierarchy {
         // End of copied code.
 
         // The main array component annotations must be equal.
-        if (!AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
+        if (checker.getLintOption("arrays:invariant", false) &&
+                !AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
             return false;
         }
 

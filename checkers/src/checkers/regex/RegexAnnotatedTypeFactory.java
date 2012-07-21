@@ -108,6 +108,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
         partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, env);
         REGEX = annotations.fromClass(Regex.class);
+        this.postInit();
     }
     
     @Override

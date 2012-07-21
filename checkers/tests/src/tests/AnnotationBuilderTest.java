@@ -3,6 +3,7 @@ package tests;
 import static org.junit.Assert.*;
 import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
+import checkers.source.SourceChecker;
 import checkers.util.AnnotationUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
 
@@ -48,14 +49,14 @@ public class AnnotationBuilderTest {
         assertEquals(1, anno.getElementValues().size());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void buildingTwice() {
         AnnotationBuilder builder = new AnnotationBuilder(env, NonNull.class);
         builder.build();
         builder.build();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void addingValuesAfterBuilding() {
         AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
         builder.setValue("value", "m");
@@ -63,13 +64,13 @@ public class AnnotationBuilderTest {
         builder.setValue("value", "n");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void notFoundElements() {
         AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
         builder.setValue("n", "m");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void illegalValue() {
         AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
         builder.setValue("value", 1);
@@ -92,14 +93,14 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void listArrayObjectWrongType() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", new Object[] { "m", "n", 1});
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void listArrayObjectWrongType1() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
         builder.setValue("strings", 1);
@@ -115,7 +116,7 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void primitiveValueWithException() {
         AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
         builder.setValue("a", 3.0);
@@ -132,7 +133,7 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void multiple2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, Mult.class);
         builder.setValue("a", "m");
@@ -160,7 +161,7 @@ public class AnnotationBuilderTest {
         assertTrue("storedValue is " + storedValue.getClass(), storedValue instanceof TypeMirror);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void testClassNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, ClassElt.class);
         builder.setValue("value", 2);
@@ -176,7 +177,7 @@ public class AnnotationBuilderTest {
 
     // Failing test for now.  AnnotationBuilder is a bit permissive
     // It doesn't not check type argument subtyping
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     @Ignore // bug for now
     public void testRetClassNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, RestrictedClassElt.class);
@@ -195,13 +196,13 @@ public class AnnotationBuilderTest {
         builder.setValue("value", MyEnum.NOT);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void testEnumNegative() {
         AnnotationBuilder builder = new AnnotationBuilder(env, EnumElt.class);
         builder.setValue("value", 2);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void testEnumNegative2() {
         AnnotationBuilder builder = new AnnotationBuilder(env, EnumElt.class);
         builder.setValue("value", OtherEnum.TEST);
@@ -256,7 +257,7 @@ public class AnnotationBuilderTest {
         assertEquals("@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)", builder.build().toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = SourceChecker.CheckerError.class)
     public void testAnnoAsArgNegative() {
         AnnotationMirror anno = AnnotationUtils.getInstance(env).fromClass(Anno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);

@@ -21,6 +21,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
+import checkers.util.QualifierPolymorphism;
 import checkers.util.TreeUtils;
 import checkers.util.Pair;
 
@@ -677,9 +678,15 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType) {
-        // At most a single qualifier on a type
-        if (useType.getAnnotations().size() > 1) {
-            return false;
+        // At most a single qualifier on a type, ignoring a possible PolyAll annotation.
+        boolean found = false;
+        for (AnnotationMirror anno : useType.getAnnotations()) {
+            if (!QualifierPolymorphism.isPolyAll(anno)) {
+                if (found) {
+                    return false;
+                }
+                found = true;
+            }
         }
         return super.isValidUse(declarationType, useType);
     }

@@ -3,6 +3,8 @@ package checkers.util;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
+import checkers.source.SourceChecker;
+import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
@@ -76,8 +78,10 @@ public class AnnotationUtils {
         final DeclaredType annoType = typeFromName(name);
         if (annoType == null)
             return null;
-        if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE)
-            throw new AssertionError(annoType + " is not an annotation");
+        if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE) {
+            SourceChecker.errorAbort(annoType + " is not an annotation");
+            return null; // dead code
+        }
         AnnotationMirror result = new AnnotationMirror() {
             String toString = "@" + annoType;
 
@@ -158,8 +162,10 @@ public class AnnotationUtils {
             if (cls != null) typeElt = InternalUtils.symbol(cls);
         }
 
-        if (typeElt == null)
-            throw new IllegalArgumentException("no element or enclosing element");
+        if (typeElt == null) {
+            SourceChecker.errorAbort("no element or enclosing element");
+            return null; // dead code
+        }
 
         return findDefaultLocations(typeElt);
     }
@@ -192,8 +198,10 @@ public class AnnotationUtils {
 
             /*@Nullable*/ String name = parseStringValue(a, "value");
             /*@Nullable*/ TypeElement aElt = elements.getTypeElement(name);
-            if (aElt == null)
-                throw new RuntimeException("illegal annotation name: " + name);
+            if (aElt == null) {
+                SourceChecker.errorAbort("illegal annotation name: " + name);
+                return null; // dead code
+            }
 
             /*@Nullable*/ Set<DefaultLocation> locs =
                 parseEnumConstantArrayValue(a, "types",
@@ -728,8 +736,9 @@ public class AnnotationUtils {
         private boolean wasBuilt = false;
 
         private void assertNotBuilt() {
-            if (wasBuilt)
-                throw new IllegalStateException("type was already built");
+            if (wasBuilt) {
+                SourceChecker.errorAbort("type was already built");
+            }
         }
 
         public AnnotationMirror build() {
@@ -786,8 +795,10 @@ public class AnnotationUtils {
             List<AnnotationValue> value = new ArrayList<AnnotationValue>();
             ExecutableElement var = findElement(elementName);
             TypeMirror expectedType = var.getReturnType();
-            if (expectedType.getKind() != TypeKind.ARRAY)
-                throw new IllegalArgumentException("value is an array while expected type is not");
+            if (expectedType.getKind() != TypeKind.ARRAY) {
+                SourceChecker.errorAbort("value is an array while expected type is not");
+                return null; // dead code
+            }
             expectedType = ((ArrayType)expectedType).getComponentType();
 
             for (Object v : values) {
@@ -840,9 +851,9 @@ public class AnnotationUtils {
             AnnotationValue val = createValue(value);
             ExecutableElement var = findElement(elementName);
             // Check subtyping
-            {
-                if (!TypesUtils.isClass(var.getReturnType()))
-                    throw new IllegalArgumentException("expected " + var.getReturnType());
+            if (!TypesUtils.isClass(var.getReturnType())) {
+                SourceChecker.errorAbort("expected " + var.getReturnType());
+                return null; // dead code
             }
 
             elementValues.put(var, val);
@@ -861,8 +872,10 @@ public class AnnotationUtils {
                 return env.getTypeUtils().getArrayType(componentType);
             } else {
                 TypeElement element = env.getElementUtils().getTypeElement(clazz.getCanonicalName());
-                if (element == null)
-                    throw new IllegalArgumentException("Unrecognized class: " + clazz);
+                if (element == null) {
+                    SourceChecker.errorAbort("Unrecognized class: " + clazz);
+                    return null; // dead code
+                }
                 return element.asType();
             }
         }
@@ -878,10 +891,14 @@ public class AnnotationUtils {
 
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
             ExecutableElement var = findElement(elementName);
-            if (var.getReturnType().getKind() != TypeKind.DECLARED)
-                throw new IllegalArgumentException("exptected a non enum: " + var.getReturnType());
-            if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement()))
-                throw new IllegalArgumentException("expected a different type of enum: " + value.getEnclosingElement());
+            if (var.getReturnType().getKind() != TypeKind.DECLARED) {
+                SourceChecker.errorAbort("exptected a non enum: " + var.getReturnType());
+                return null; // dead code
+            }
+            if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement())) {
+                SourceChecker.errorAbort("expected a different type of enum: " + value.getEnclosingElement());
+                return null; // dead code
+            }
             elementValues.put(var, createValue(value));
             return this;
         }
@@ -891,15 +908,22 @@ public class AnnotationUtils {
             assertNotBuilt();
             VariableElement enumElt = findEnumElement(values[0]);
             ExecutableElement var = findElement(elementName);
-            TypeMirror expectedType = var.getReturnType();
 
-            if (expectedType.getKind() != TypeKind.ARRAY)
-                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            TypeMirror expectedType = var.getReturnType();
+            if (expectedType.getKind() != TypeKind.ARRAY) {
+                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                return null; // dead code
+            }
+
             expectedType = ((ArrayType)expectedType).getComponentType();
-            if (expectedType.getKind() != TypeKind.DECLARED)
-                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
-            if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement()))
-                throw new IllegalArgumentException("expected a different type of enum: " + enumElt.getEnclosingElement());
+            if (expectedType.getKind() != TypeKind.DECLARED) {
+                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                return null; // dead code
+            }
+            if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement())) {
+                SourceChecker.errorAbort("expected a different type of enum: " + enumElt.getEnclosingElement());
+                return null; // dead code
+            }
 
             List<AnnotationValue> res = new ArrayList<AnnotationValue>();
             for (Enum<?> ev : values) {
@@ -917,15 +941,22 @@ public class AnnotationUtils {
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement[] values) {
             assertNotBuilt();
             ExecutableElement var = findElement(elementName);
-            TypeMirror expectedType = var.getReturnType();
 
-            if (expectedType.getKind() != TypeKind.ARRAY)
-                throw new IllegalArgumentException("exptected a non array: " + var.getReturnType());
+            TypeMirror expectedType = var.getReturnType();
+            if (expectedType.getKind() != TypeKind.ARRAY) {
+                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                return null; // dead code
+            }
+
             expectedType = ((ArrayType)expectedType).getComponentType();
-            if (expectedType.getKind() != TypeKind.DECLARED)
-                throw new IllegalArgumentException("exptected a non enum component type: " + var.getReturnType());
-            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement()))
-                throw new IllegalArgumentException("expected a different type of enum: " + values[0].getEnclosingElement());
+            if (expectedType.getKind() != TypeKind.DECLARED) {
+                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                return null; // dead code
+            }
+            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement())) {
+                SourceChecker.errorAbort("expected a different type of enum: " + values[0].getEnclosingElement());
+                return null; // dead code
+            }
 
             List<AnnotationValue> res = new ArrayList<AnnotationValue>();
             for (VariableElement ev : values) {
@@ -945,7 +976,8 @@ public class AnnotationUtils {
                 if (enumElt.getSimpleName().contentEquals(value.name()))
                     return (VariableElement)enumElt;
             }
-            throw new AssertionError("cannot be here");
+            SourceChecker.errorAbort("cannot be here");
+            return null; // dead code
         }
 
         private AnnotationBuilder setValue(CharSequence key, Object value) {
@@ -964,7 +996,8 @@ public class AnnotationUtils {
                     return elt;
                 }
             }
-            throw new IllegalArgumentException("Couldn't find " + key + " element in " + annotationElt);
+            SourceChecker.errorAbort("Couldn't find " + key + " element in " + annotationElt);
+            return null; // dead code
         }
 
         // TODO: this method always returns true and no-one ever looks at the return value.
@@ -1005,11 +1038,13 @@ public class AnnotationUtils {
                 isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
             }
 
-            if (!isSubtype)
-                throw new IllegalArgumentException(
+            if (!isSubtype) {
+                SourceChecker.errorAbort(
                         "given value differs from expected" + newLine +
                         "found: " + found + newLine +
                         "expected: " + expected);
+                return false; // dead code
+            }
 
             return true;
         }
@@ -1112,8 +1147,9 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new IllegalArgumentException("No element with name " + name
+        SourceChecker.errorAbort("No element with name " + name
                 + " in annotation " + anno);
+        return null; // dead code
     }
 
     /**
@@ -1140,8 +1176,9 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        throw new IllegalArgumentException("No element with name " + name
+        SourceChecker.errorAbort("No element with name " + name
                 + " in annotation " + anno);
+        return null; // dead code
     }
 
     /**
@@ -1216,5 +1253,61 @@ public class AnnotationUtils {
     /** Returns true if the given annotation has a @Inherited meta-annotation. */
     public static boolean hasInheritedMeta(AnnotationMirror anno) {
         return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
+    }
+
+    /**
+     * Update a mapping from some key to a set of AnnotationMirrors.
+     * If the key already exists in the mapping and the new qualifier
+     * is in the same qualifier hierarchy as any of the existing qualifiers,
+     * do nothing and return false.
+     * If the key already exists in the mapping and the new qualifier
+     * is not in the same qualifier hierarchy as any of the existing qualifiers,
+     * add the qualifier to the existing set and return true.
+     * If the key does not exist in the mapping, add the new qualifier as a
+     * singleton set and return true.
+     *
+     * @param map The mapping to modify.
+     * @param key The key to update.
+     * @param newQual The value to add.
+     * @return Whether there was a qualifier hierarchy collision.
+     */
+    public static <T> boolean updateMappingToMutableSet(QualifierHierarchy qualHierarchy,
+            Map<T, Set<AnnotationMirror>> map,
+            T key, AnnotationMirror newQual) {
+
+        if (!map.containsKey(key)) {
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(newQual);
+            map.put(key, set);
+        } else {
+            Set<AnnotationMirror> prevs = map.get(key);
+            for (AnnotationMirror p : prevs) {
+                if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
+                        qualHierarchy.getTopAnnotation(newQual))) {
+                    return false;
+                }
+            }
+            prevs.add(newQual);
+            map.put(key, prevs);
+        }
+        return true;
+    }
+
+    /**
+     * 
+     * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror)
+     */
+    public static <T> void updateMappingToImmutableSet(Map<T, Set<AnnotationMirror>> map,
+            T key, Set<AnnotationMirror> newQual) {
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        // TODO: if T is also an AnnotationMirror, should we use areSame?
+        if (!map.containsKey(key)) {
+            result.addAll(newQual);
+        } else {
+            result.addAll(map.get(key));
+            result.addAll(newQual);
+        }
+        map.put(key, Collections.unmodifiableSet(result));
     }
 }

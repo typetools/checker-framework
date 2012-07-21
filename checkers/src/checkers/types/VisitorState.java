@@ -20,6 +20,8 @@ public class VisitorState {
     /** The enclosing method tree **/
     private MethodTree mt;
 
+    private Tree assignmentcontext;
+
     /** The visitor's current tree path. */
     private TreePath path;
 
@@ -49,6 +51,10 @@ public class VisitorState {
      */
     public void setMethodTree(MethodTree mt) {
         this.mt = mt;
+    }
+
+    public void setAssignmentContextTree(Tree assCtxt) {
+        this.assignmentcontext = assCtxt;
     }
 
     /**
@@ -88,6 +94,10 @@ public class VisitorState {
      */
     public MethodTree getMethodTree() {
         return this.mt;
+    }
+
+    public Tree getAssignmentContextTree() {
+        return assignmentcontext;
     }
 
     /**

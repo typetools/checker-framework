@@ -4,6 +4,7 @@ import checkers.signature.quals.*;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
+import checkers.quals.PolyAll;
 import checkers.types.AnnotatedTypeFactory;
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -18,10 +19,11 @@ import com.sun.source.tree.CompilationUnitTree;
     FieldDescriptor.class,
     FieldDescriptorForArray.class,
     SignatureBottom.class,
-      
+
     MethodDescriptor.class,
 
-    PolySignature.class
+    PolySignature.class,
+    PolyAll.class
 })
 public final class SignatureChecker extends BaseTypeChecker {
 

@@ -334,7 +334,6 @@ abstract public class CheckerTest {
     /**
      * Concatenate the string representations of the objects, placing the
      * delimiter between them.
-     * @see ArraysMDE#toString(int[])
      **/
     public static String join(Object[] a, String delim) {
         if (a.length == 0) return "";

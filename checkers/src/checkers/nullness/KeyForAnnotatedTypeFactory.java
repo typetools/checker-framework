@@ -15,6 +15,7 @@ import com.sun.source.tree.Tree;
 import checkers.nullness.quals.KeyFor;
 import checkers.quals.DefaultLocation;
 import checkers.quals.Unqualified;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -28,12 +29,12 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
   public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
                                     CompilationUnitTree root) {
-    super(checker, root, false);
-    // The "false" above disables flow inference, because the current implementation
-    // ignores annotation attributes. Enable once Flow supports attributes.
+    super(checker, root);
 
     AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
     this.defaults.addAbsoluteDefault(UNQUALIFIED, Collections.singleton(DefaultLocation.ALL));
+
+    this.postInit();
   }
 
   /* TODO: we currently do not substitute field types.
@@ -127,7 +128,8 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
       return "";
     else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
       return ((MemberSelectTree)sel).getExpression().toString();
-    throw new AssertionError("Cannot be here");
+    SourceChecker.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
+    return null; // dead code
   }
 
   // TODO: doc
