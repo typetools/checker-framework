@@ -24,10 +24,10 @@ import checkers.flow.cfg.node.MethodInvocationNode;
  * {@link CommitmentStore}s. In addition to the features of
  * {@link CFAbstractTransfer}, this transfer function also track which fields of
  * the current class ('self' receiver) have been initialized.
- * 
+ *
  * @author Stefan Heule
  * @see CommitmentStore
- * 
+ *
  * @param <T>
  *            The type of the transfer function.
  */
@@ -83,7 +83,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     /**
      * Returns the set of fields that can safely be considered initialized after
      * the method call {@code node}.
-     * 
+     *
      * @param result
      */
     protected Set<Element> initializedFieldsAfterCall(
