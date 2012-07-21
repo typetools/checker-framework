@@ -119,6 +119,8 @@ public class NonNullAnnotatedTypeFactory
         localdef.add(NULLABLE);
         localdef.add(UNCLASSIFIED);
         defaults.setLocalVariableDefault(localdef);
+
+        postInit();
     }
 
     @Override
@@ -178,7 +180,7 @@ public class NonNullAnnotatedTypeFactory
     /**
      * If the element is {@link NonNull} when used in a static member access,
      * modifies the element's type (by adding {@link NonNull}).
-     * 
+     *
      * @param elt
      *            the element being accessed
      * @param type
