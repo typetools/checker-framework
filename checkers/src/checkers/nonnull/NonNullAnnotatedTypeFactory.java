@@ -13,14 +13,8 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.CommitmentAnnotatedTypeFactory;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.nonnull.quals.AssertNonNullAfter;
-import checkers.nonnull.quals.AssertNonNullIfFalse;
-import checkers.nonnull.quals.AssertNonNullIfNonNull;
-import checkers.nonnull.quals.AssertNonNullIfTrue;
-import checkers.nonnull.quals.AssertParametersNonNull;
 import checkers.nonnull.quals.LazyNonNull;
 import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.NonNullOnEntry;
 import checkers.nonnull.quals.Nullable;
 import checkers.nullness.quals.Primitive;
 import checkers.quals.DefaultLocation;
@@ -55,29 +49,6 @@ public class NonNullAnnotatedTypeFactory
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
 
-        addAliasedDeclAnnotation(
-                checkers.nullness.quals.AssertNonNullAfter.class,
-                AssertNonNullAfter.class,
-                annotations.fromClass(AssertNonNullAfter.class));
-        addAliasedDeclAnnotation(
-                checkers.nullness.quals.AssertNonNullIfFalse.class,
-                AssertNonNullIfFalse.class,
-                annotations.fromClass(AssertNonNullIfFalse.class));
-        addAliasedDeclAnnotation(
-                checkers.nullness.quals.AssertNonNullIfTrue.class,
-                AssertNonNullIfTrue.class,
-                annotations.fromClass(AssertNonNullIfTrue.class));
-        addAliasedDeclAnnotation(
-                checkers.nullness.quals.AssertNonNullIfNonNull.class,
-                AssertNonNullIfNonNull.class,
-                annotations.fromClass(AssertNonNullIfNonNull.class));
-        addAliasedDeclAnnotation(
-                checkers.nullness.quals.AssertParametersNonNull.class,
-                AssertParametersNonNull.class,
-                annotations.fromClass(AssertParametersNonNull.class));
-        addAliasedDeclAnnotation(checkers.nullness.quals.NonNullOnEntry.class,
-                NonNullOnEntry.class,
-                annotations.fromClass(NonNullOnEntry.class));
         addAliasedDeclAnnotation(checkers.nullness.quals.LazyNonNull.class,
                 LazyNonNull.class, annotations.fromClass(LazyNonNull.class));
 
@@ -113,8 +84,8 @@ public class NonNullAnnotatedTypeFactory
 
         defaults.addAbsoluteDefault(NONNULL,
                 Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-        // defaults.addAbsoluteDefault(COMMITTED,
-        // Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+//        defaults.addAbsoluteDefault(COMMITTED,
+//                Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         Set<AnnotationMirror> localdef = new HashSet<AnnotationMirror>();
         localdef.add(NULLABLE);
         localdef.add(UNCLASSIFIED);
