@@ -38,4 +38,17 @@ public class InvariantTypes {
     rem(new @Regex String[] {"a("});
   }
 
+  // method argument context
+
+    String[] retunqm(String[] sa) { return sa;}
+    @Regex String[] retrem(@Regex String[] rsa) { return rsa; }
+    @Regex String[] mixedm( String[] rsa) { return null; }
+
+    void retunqcalls() {
+        @Regex String[] re = mixedm(new String[] {"a("});
+        //TODOINVARR:: error: (argument.type.incompatible)
+        String [] u = retunqm(new String[] {"a"});
+        //TODOINVARR:: error: (argument.type.incompatible)
+        re = mixedm(new String[2]);
+    }
 }
