@@ -14,9 +14,9 @@ import com.sun.source.tree.Tree;
  * An {@link AnalysisResult} represents the result of a dataflow analysis by
  * providing the abstract values given a node or a tree. Note that it does not
  * keep track of custom results computed by some analysis.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <A>
  *            type of the abstract value that is tracked.
  */
