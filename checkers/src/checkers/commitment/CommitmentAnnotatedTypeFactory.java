@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 
@@ -156,6 +157,15 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
         public CommitmentTypeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
+
+        @Override
+        public Void visitExecutable(AnnotatedExecutableType t, ElementKind p) {
+            Void result = super.visitExecutable(t, p);
+            if (p == ElementKind.CONSTRUCTOR) {
+                t.getReceiverType().replaceAnnotation(FREE);
+            }
+            return result;
+        }
     }
 
     protected class CommitmentTreeAnnotator extends TreeAnnotator {
@@ -171,9 +181,6 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 assert p instanceof AnnotatedExecutableType;
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
                 exeType.getReceiverType().replaceAnnotation(FREE);
-                // TODO: find out why this doesn't allow for this() constructor
-                // to be called from another constructor (the @Free annotation
-                // doesn't stay?)
             }
             return result;
         }
