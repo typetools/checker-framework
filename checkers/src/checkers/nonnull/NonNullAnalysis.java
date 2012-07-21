@@ -17,7 +17,7 @@ import checkers.util.Pair;
 /**
  * The analysis class for the non-null type system (serves as factory for the
  * transfer function, stores and abstract values.
- * 
+ *
  * @author Stefan Heule
  */
 public class NonNullAnalysis extends
@@ -47,10 +47,9 @@ public class NonNullAnalysis extends
     @Override
     protected/* @Nullable */CFValue createAbstractValue(
             Set<AnnotationMirror> annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations,
-                supportedAnnotations, this);
+        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
     }
-    
+
     @Override
     protected CFValue createAbstractValue(InferredAnnotation[] annotations) {
         return CFAnalysis.defaultCreateAbstractValue(annotations, this);

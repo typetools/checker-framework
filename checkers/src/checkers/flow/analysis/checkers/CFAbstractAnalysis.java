@@ -30,16 +30,16 @@ import checkers.util.Pair;
  * combine types (e.g., what is the type of a string concatenation, given the
  * types of the two operands) and as an abstraction function (e.g., determine
  * the annotations on literals).
- * 
+ *
  * <p>
  * The purpose of this class is twofold: Firstly, it serves as factory for
  * abstract values, stores and the transfer function. Furthermore, it makes it
  * easy for the transfer function and the stores to access the
  * {@link AnnoatedTypeFactory}, the qualifier hierarchy, etc.
- * 
+ *
  * @author Charlie Garrett
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>>
         extends Analysis<V, S, T> {
@@ -136,12 +136,13 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      *         {@code annotations}.
      */
     protected abstract/* @Nullable */V createAbstractValue(
-            Set<AnnotationMirror> annotations);
+            Set<AnnotationMirror> annotationSet);
 
     /**
      * Creates an abstract value given.
      */
-    protected abstract V createAbstractValue(InferredAnnotation[] resultAnnotations);
+    protected abstract V createAbstractValue(
+            InferredAnnotation[] resultAnnotations);
 
     public QualifierHierarchy getTypeHierarchy() {
         return qualifierHierarchy;
