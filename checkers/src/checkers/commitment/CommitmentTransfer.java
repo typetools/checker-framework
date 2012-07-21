@@ -47,6 +47,18 @@ import com.sun.source.tree.MethodInvocationTree;
  * {@link CFAbstractTransfer}, this transfer function also track which fields of
  * the current class ('self' receiver) have been initialized.
  *
+ * <p>
+ * More precisely, the following refinements are performed:
+ * <ol>
+ * <li>After the call to a constructor ("this()" call), all non-null fields of
+ * the current class can safely be considered initialized.
+ * <li>TODO: After a method call with a postcondition that ensures a field to be
+ * non-null, that field can safely be considered initialized.
+ * <li>All non-null fields with an initializer can be considered initialized.
+ * <li>After the call to a super constructor ("super()" call), all non-null
+ * fields of the super class can safely be considered initialized.
+ * </ol>
+ *
  * @author Stefan Heule
  * @see CommitmentStore
  *
@@ -69,7 +81,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     public CommitmentStore initialStore(UnderlyingAST underlyingAST,
             List<LocalVariableNode> parameters) {
         CommitmentStore result = super.initialStore(underlyingAST, parameters);
-        // Case 3: all non-null fields that have an initializer are part of
+        // Case 3: all invariant fields that have an initializer are part of
         // 'fieldValues', and can be considered initialized.
         addInitializedFields(result);
         return result;
@@ -90,7 +102,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         String methodString = tree.getMethodSelect().toString();
 
         // Case 1: After a call to the constructor of the same class, all
-        // non-null fields are guaranteed to be initialized.
+        // invariant fields are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisLiteralNode
                 && methodString.equals("this")) {
             ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
@@ -100,7 +112,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         }
 
         // Case 4: After a call to the constructor of the super class, all
-        // non-null fields of any super class are guaranteed to be initialized.
+        // invariant fields of any super class are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisLiteralNode
                 && methodString.equals("super")) {
             ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
@@ -180,6 +192,10 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         return result;
     }
 
+    /**
+     * If an invariant field is initialized, than it has at least the invariant
+     * annotation.
+     */
     @Override
     public TransferResult<CFValue, CommitmentStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CommitmentStore> p) {
