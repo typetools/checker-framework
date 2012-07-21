@@ -1,13 +1,19 @@
 Version 1.3.1, 21 Jul 2012
 
-Clarify installation instructions for Windows.
+Installation:
+  Clarify installation instructions for Windows.  Remove javac.bat, which
+  worked for running distributed checkers but not for creating new checkers.
 
-Framework improvements:
+User-visible framework improvements:
   Implement @PolyAll qualifier to vary over multiple type systems.
+  The Checker Framework is unsound due to Java's covariant array subtyping.
+    You can enable invariant array subtyping (for qualifiers only, not for
+    base Java types) with the command-line option -Alint:arrays:invariant.
+    This will become the default in the future.
+
+Internal framework improvements:
   Improve defaulting for multiple qualifier hierarchies.
   Big refactoring of how qualifier hierarchies are built up.
-  Invariant array subtyping can be turned on with the lint command
-  line option -Alint:arrays:invariant
   Improvements to error handling output for unexpected exceptions.
   Bug fixes and documentation improvements.
 
