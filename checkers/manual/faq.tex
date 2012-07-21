@@ -23,6 +23,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
 \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
+\ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler? \\
 \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked? \\
 \ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
 \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker? \\
@@ -175,6 +176,25 @@ software.
 Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, so type-checking errors
 will not cause \<javac> to exit with a failure status.
+
+
+\section{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
+
+Using the Checker Framework has no impact on the execution of your program:
+the Type Annotations compiler emits the identical bytecodes as the Java 8
+compiler and so there is no run-time effect.  Because there is no run-time
+representation of type qualifiers, there is no way to use reflection to
+query the qualifier on a given object, though you can use reflection to
+examine a class/method/field declaration.
+
+Using the Checker Framework does increase compilation time.  In theory it
+should only add a few percent overhead, but our current implementation
+can double the compilation time --- or more, if you run many pluggable
+type-checkers at once.  This is especially true if you run pluggable
+type-checking on every file (as we recommend) instead of just on the ones
+that have recently changed.
+Nonetheless, compilation with pluggable type-checking still feels like
+compilation, and you can do it as part of your normal development process.
 
 
 \section{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
