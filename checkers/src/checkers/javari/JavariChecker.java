@@ -4,11 +4,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.*;
+import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotationUtils;
 
@@ -20,7 +19,7 @@ import checkers.util.AnnotationUtils;
  * @checker.framework.manual #javari-checker Javari Checker
  */
 @TypeQualifiers( { ReadOnly.class, ThisMutable.class, Mutable.class,
-    PolyRead.class, QReadOnly.class })
+    PolyRead.class, QReadOnly.class, PolyAll.class })
 public class JavariChecker extends BaseTypeChecker {
 
     protected AnnotationMirror READONLY, THISMUTABLE, MUTABLE, POLYREAD, QREADONLY, ASSIGNABLE;
