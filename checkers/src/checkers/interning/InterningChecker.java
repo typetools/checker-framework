@@ -7,6 +7,7 @@ import javax.lang.model.type.DeclaredType;
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
+import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
@@ -26,7 +27,8 @@ import checkers.source.SupportedLintOptions;
  *
  * @checker.framework.manual #interning-checker Interning checker
  */
-@TypeQualifiers({ Interned.class, PolyInterned.class, Unqualified.class})
+@TypeQualifiers({ Interned.class, Unqualified.class,
+    PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {
