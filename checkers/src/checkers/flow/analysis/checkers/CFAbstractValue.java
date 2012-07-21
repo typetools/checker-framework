@@ -1,6 +1,8 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -260,26 +262,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        boolean first = true;
-        sb.append("[");
+        List<String> result = new ArrayList<>();
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation a = annotations[i];
             if (a == null) {
                 continue;
             } else if (a.isNoInferredAnnotation()) {
-                sb.append(tops[i].toString());
-                sb.append("->[]");
+                result.add(tops[i].toString()+"->[]");
             } else {
-                sb.append(a.getAnnotation().toString());
-            }
-            first = false;
-            if (!first) {
-                sb.append(", ");
+                result.add(a.getAnnotation().toString());
             }
         }
-        sb.append("]");
-        return sb.toString();
+        return result.toString();
     }
 
     /**
