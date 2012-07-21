@@ -1,3 +1,19 @@
+Version 1.3.1, 21 Jul 2012
+
+Clarify installation instructions for Windows.
+
+Framework improvements:
+  Implement @PolyAll qualifier to vary over multiple type systems.
+  Improve defaulting for multiple qualifier hierarchies.
+  Big refactoring of how qualifier hierarchies are built up and
+    how errors are cuommunicated.
+  Invariant array subtyping can be turned on with a lint command line
+  option:
+    -Alint:arrays:invariant
+  Improvements to error handling output for unexpected exceptions.
+  Bug fixes and documentation improvements.
+
+----------------------------------------------------------------------
 Version 1.3.0, 3 Jul 2012
 
 Annotation syntax changes, as mandated by the latest Type Annotations
