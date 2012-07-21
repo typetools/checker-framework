@@ -165,10 +165,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * information is preserved.
      */
     public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
-        AnnotationMirror top = analysis.qualifierHierarchy.getRootAnnotation(a);
-        InferredAnnotation[] annotations = new InferredAnnotation[analysis.tops.length];
-        int index = CFAbstractValue.getIndex(top, analysis);
-        annotations[index] = new InferredAnnotation(a);
+        InferredAnnotation[] annotations = CFAbstractValue
+                .createInferredAnnotationArray(analysis, a);
         V value = analysis.createAbstractValue(annotations);
         insertValue(r, value);
     }
