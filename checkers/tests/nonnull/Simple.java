@@ -26,9 +26,7 @@ public class Simple {
     }
     
     // check committed-only semantics for fields
-    void test3() {
-        @Unclassified @NonNull Simple t = new Simple("");
-        
+    void test3(@Unclassified @NonNull Simple t) {
         @Committed @Nullable Simple a = t.f;
         
         //:: error: (assignment.type.incompatible)
