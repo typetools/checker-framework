@@ -23,7 +23,6 @@ import checkers.flow.cfg.block.RegularBlock;
 import checkers.flow.cfg.block.SingleSuccessorBlock;
 import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ReturnNode;
 import checkers.util.Pair;
@@ -35,9 +34,9 @@ import com.sun.source.tree.VariableTree;
 /**
  * An implementation of an iterative algorithm to solve a dataflow problem,
  * given a control flow graph and a transfer function.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <A>
  *            The abstract value type to be tracked by the analysis.
  * @param <S>
@@ -74,11 +73,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected Map<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
 
-    /**
-     * The stores before every method call.
-     */
-    protected Map<MethodInvocationNode, S> storesBeforeMethodInvocation;
-
     /** The worklist used for the fix-point iteration. */
     protected Worklist worklist;
 
@@ -88,7 +82,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * The node that is currently handled in the analysis (if it is running).
      * The following invariant holds:
-     * 
+     *
      * <pre>
      *   !isRunning ==> (currentNode == null)
      * </pre>
@@ -144,7 +138,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * Perform the actual analysis. Should only be called once after the object
      * has been created.
-     * 
+     *
      * @param cfg
      */
     public void performAnalysis(ControlFlowGraph cfg) {
@@ -264,11 +258,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected TransferResult<A, S> callTransferFunction(Node node,
             TransferInput<A, S> store) {
 
-        if (node instanceof MethodInvocationNode) {
-            storesBeforeMethodInvocation.put((MethodInvocationNode) node, store
-                    .getRegularStore().copy());
-        }
-
         if (node.isLValue()) {
             // TODO: should the default behavior be to return either a regular
             // transfer result or a conditional transfer result (depending on
@@ -294,7 +283,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         this.cfg = cfg;
         stores = new HashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
-        storesBeforeMethodInvocation = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
         worklist.add(cfg.getEntryBlock());
@@ -547,7 +535,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        return new AnalysisResult<>(nodeValues, storesBeforeMethodInvocation,
+        return new AnalysisResult<>(nodeValues, stores,
                 cfg.getTreeLookup());
     }
 

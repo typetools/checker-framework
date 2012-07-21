@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.Analysis;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.CFGDOTVisualizer;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
@@ -28,16 +30,16 @@ import checkers.util.Pair;
  * combine types (e.g., what is the type of a string concatenation, given the
  * types of the two operands) and as an abstraction function (e.g., determine
  * the annotations on literals).
- * 
+ *
  * <p>
  * The purpose of this class is twofold: Firstly, it serves as factory for
  * abstract values, stores and the transfer function. Furthermore, it makes it
  * easy for the transfer function and the stores to access the
  * {@link AnnoatedTypeFactory}, the qualifier hierarchy, etc.
- * 
+ *
  * @author Charlie Garrett
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>>
         extends Analysis<V, S, T> {
@@ -45,6 +47,12 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      * The qualifier hierarchy for which to track annotations.
      */
     protected final QualifierHierarchy qualifierHierarchy;
+
+    /**
+     * The 'top' annotations in all hierarchies. This is used in the abstract
+     * values to determine the index at which to store various annotations.
+     */
+    protected final AnnotationMirror[] tops;
 
     /**
      * A type factory that can provide static type annotations for AST Trees.
@@ -70,8 +78,12 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         super(env);
         qualifierHierarchy = factory.getQualifierHierarchy();
         this.factory = factory;
-        transferFunction = createTransferFunction();
         this.checker = checker;
+        transferFunction = createTransferFunction();
+        Set<AnnotationMirror> topAnnotations = factory.getQualifierHierarchy()
+                .getRootAnnotations();
+        tops = new ArrayList<>(topAnnotations)
+                .toArray(new AnnotationMirror[topAnnotations.size()]);
 
         // Build the set of supported annotations.
         supportedAnnotations = AnnotationUtils.createAnnotationSet();
@@ -88,7 +100,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
                 supportedAnnotations.add(a);
             }
         }
-        
+
         fieldValues = Collections.emptyList();
     }
 
@@ -99,7 +111,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this(factory, env, checker);
         this.fieldValues = fieldValues;
     }
-    
+
     public List<Pair<VariableElement, V>> getFieldValues() {
         return fieldValues;
     }
@@ -107,24 +119,30 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return The transfer function to be used by the analysis.
      */
-    protected abstract T createTransferFunction();
+    public abstract T createTransferFunction();
 
     /**
      * @return An empty store of the appropriate type.
      */
-    protected abstract S createEmptyStore(boolean sequentialSemantics);
+    public abstract S createEmptyStore(boolean sequentialSemantics);
 
     /**
      * @return An identical copy of the store {@code s}.
      */
-    protected abstract S createCopiedStore(S s);
+    public abstract S createCopiedStore(S s);
 
     /**
      * @return An abstract value containing the valid subset of annotations of
-     *         {@code annotations} (or {@code null} if that set is empty).
+     *         {@code annotations}.
      */
-    protected abstract/* @Nullable */V createAbstractValue(
-            Set<AnnotationMirror> annotations);
+    public abstract/* @Nullable */V createAbstractValue(
+            Set<AnnotationMirror> annotationSet);
+
+    /**
+     * Creates an abstract value given.
+     */
+    public abstract V createAbstractValue(
+            InferredAnnotation[] resultAnnotations);
 
     public QualifierHierarchy getTypeHierarchy() {
         return qualifierHierarchy;
