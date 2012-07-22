@@ -8,6 +8,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
 import checkers.igj.quals.*;
+import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -80,6 +81,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     /** To cache the supported type qualifiers. */
     private Set<Class<? extends Annotation>> supportedQuals;
 
+    /** To cache the supported monotonic type qualifiers. */
+    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+
     /** To represent the supported qualifiers and their hierarchy. */
     private QualifierHierarchy qualHierarchy;
 
@@ -141,6 +145,27 @@ public abstract class BaseTypeChecker extends SourceChecker {
         if (supportedQuals == null)
             supportedQuals = createSupportedTypeQualifiers();
         return supportedQuals;
+    }
+
+    /**
+     * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this
+     * checker.
+     *
+     * @return the monotonic type qualifiers supported this processor, or an empty
+     * set if none
+     * @see MonotonicAnnotation
+     */
+    public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
+        if (supportedMonotonicQuals == null) {
+            supportedMonotonicQuals = new HashSet<>();
+            for (Class<? extends Annotation> anno : getSupportedTypeQualifiers()) {
+                MonotonicAnnotation mono = anno.getAnnotation(MonotonicAnnotation.class);
+                if (mono != null) {
+                    supportedMonotonicQuals.add(anno);
+                }
+            }
+        }
+        return supportedMonotonicQuals;
     }
 
     /** Factory method to easily change what Factory is used to

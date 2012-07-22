@@ -1,6 +1,7 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -19,7 +20,10 @@ import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
+import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.AnnotationUtils;
+import checkers.util.Pair;
 import checkers.util.PurityUtils;
 
 /**
@@ -113,16 +117,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * be removed, except if the method {@code n} cannot modify {@code a.f}
      * (e.g., if {@code a} is a local variable or {@code this}, and {@code f} is
      * final).
+     * <li>Furthermore, if the field has a monotonic annotation, then its
+     * information can also be kept.
      * </ol>
      *
      * Furthermore, if the method is deterministic, we store its result
      * {@code val} in the store.
      */
+    static int i;
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory factory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
-        // remove information if necessary
+        // case 1: remove information if necessary
         if (!PurityUtils.isSideEffectFree(factory, method)) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
@@ -130,10 +137,44 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     .entrySet()) {
                 FlowExpressions.FieldAccess fieldAccess = e.getKey();
                 V otherVal = e.getValue();
-                // case 1:
+
+                // case 3:
+                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = factory
+                        .getAnnotationWithMetaAnnotation(
+                                fieldAccess.getField(),
+                                MonotonicAnnotation.class);
+                V newOtherVal = null;
+                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                    String annotation = AnnotationUtils.elementValueClassName(
+                            monotonicAnnotation, "value");
+                    AnnotationMirror target = factory
+                            .annotationFromName(annotation);
+                    InferredAnnotation anno = otherVal
+                            .getAnnotationInHierarchy(target);
+                    // Make sure the 'target' annotation is present.
+                    if (!anno.isNoInferredAnnotation()
+                            && AnnotationUtils.areSame(anno.getAnnotation(),
+                                    target)) {
+                        newOtherVal = analysis.createAbstractValue(
+                                CFAbstractValue.createInferredAnnotationArray(
+                                        analysis, target)).mostSpecific(
+                                newOtherVal);
+                    }
+                }
+                if (newOtherVal != null) {
+                    // keep information for all hierarchies where we had a
+                    // monotone annotation.
+                    newFieldValues.put(fieldAccess, newOtherVal);
+                    continue;
+                }
+
+                // case 2:
                 if (!fieldAccess.isUnmodifiableByOtherCode()) {
                     continue; // remove information completely
                 }
+
+                // keep information
                 newFieldValues.put(fieldAccess, otherVal);
             }
             fieldValues = newFieldValues;

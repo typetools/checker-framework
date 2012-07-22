@@ -7,29 +7,27 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import checkers.nonnull.NonNullChecker;
-import checkers.quals.ImplicitFor;
+import checkers.quals.MonotonicAnnotation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
-import com.sun.source.tree.Tree;
-
 /**
- * {@link Nullable} is a type annotation that indicates that the value is not
- * known to be non-null (see {@link NonNull}). Only if an expression has a
- * {@link Nullable} type it can be assigned {@code null}.
+ * Indicates that a variable if of a monotonic non-null type; that is, the
+ * variable might start out as {@link Nullable} and will monotonically change to
+ * {@link NonNull}. It is not guaranteed that the variable will ever reach
+ * {@link NonNull}, but if it does, it will stay {@link NonNull}.
  *
  * <p>
  * This annotation is associated with the {@link NonNullChecker}.
  *
- * @see NonNull
- * @see MonoNonNull
+ * @see MonotonicAnnotation
  * @see NonNullChecker
  */
 @Documented
-@SubtypeOf({})
 @TypeQualifier
+@SubtypeOf(Nullable.class)
+@Target(ElementType.TYPE_USE)
+@MonotonicAnnotation(NonNull.class)
 @Retention(RetentionPolicy.RUNTIME)
-@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface Nullable {
+public @interface MonoNonNull {
 }

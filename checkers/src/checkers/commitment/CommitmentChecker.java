@@ -6,19 +6,20 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.Committed;
+import checkers.commitment.quals.FBCBottom;
 import checkers.commitment.quals.Free;
 import checkers.commitment.quals.NotOnlyCommitted;
 import checkers.commitment.quals.Unclassified;
 import checkers.quals.TypeQualifiers;
 import checkers.util.AnnotationUtils;
 
-@TypeQualifiers({ Free.class, Committed.class, Unclassified.class })
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+
+@TypeQualifiers({ Free.class, Committed.class, Unclassified.class, FBCBottom.class })
 public abstract class CommitmentChecker extends BaseTypeChecker {
 
     /** Annotation constants */

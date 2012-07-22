@@ -23,6 +23,8 @@ public final class System {
 
 public class Object {
     @Pure public Object();
+    @Pure public String toString();
+    @Pure public int hashCode();
 }
 
 package java.util;
