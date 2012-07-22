@@ -3,16 +3,10 @@ package checkers.nonnull;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nonnull.quals.AssertNonNullIfFalse;
-import checkers.nonnull.quals.AssertNonNullIfTrue;
-import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -27,11 +21,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -44,9 +36,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 
     // Error message keys
     private static final String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
-    private static final String ASSERTIFTRUE_ONLY_ON_BOOLEAN = "assertiftrue.only.on.boolean";
-    private static final String ASSERTIFFALSE_ONLY_ON_BOOLEAN = "assertiffalse.only.on.boolean";
-    private static final String LAZYNONNULL_NULL_ASSIGNMENT = "lazynonnull.null.assignment";
     private static final String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
     private static final String KNOWN_NONNULL = "known.nonnull";
     private static final String LOCKING_NULLABLE = "locking.nullable";
@@ -146,26 +135,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     @Override
     public Void visitIf(IfTree node, Void p) {
         return super.visitIf(node, p);
-    }
-
-    @Override
-    public Void visitMethod(MethodTree node, Void p) {
-        ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
-        if (getNonNullFactory().getDeclAnnotation(elt,
-                AssertNonNullIfTrue.class) != null
-                && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
-
-            checker.report(Result.failure(ASSERTIFTRUE_ONLY_ON_BOOLEAN), node);
-        }
-
-        if (getNonNullFactory().getDeclAnnotation(elt,
-                AssertNonNullIfFalse.class) != null
-                && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
-
-            checker.report(Result.failure(ASSERTIFFALSE_ONLY_ON_BOOLEAN), node);
-        }
-
-        return super.visitMethod(node, p);
     }
 
     /**
