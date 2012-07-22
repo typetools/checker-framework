@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class Conditions {
@@ -16,7 +17,7 @@ public class Conditions {
         c.f.hashCode();
     }
     
-    /*@AssertNonNullIfTrue("f")*/
+    @EnsuresNonNullIf(expression="f", result=true)
     public boolean isNN() {
         return (f != null);
     }
