@@ -5,7 +5,10 @@ import checkers.nonnull.quals.*;
 public class Lazy {
     
     @NonNull String f;
-    @LazyNonNull String g;
+    @MonoNonNull String g;
+    @MonoNonNull String g2;
+    @checkers.nullness.quals.LazyNonNull String _g;
+    @checkers.nullness.quals.LazyNonNull String _g2;
     
     public Lazy() {
         f = "";
@@ -18,6 +21,12 @@ public class Lazy {
         g.toLowerCase();
     }
     
+    void _test() {
+        _g = "";
+        test2(); // retain non-null property across method calls
+        _g.toLowerCase();
+    }
+    
     void test2() {
     }
     
@@ -27,7 +36,21 @@ public class Lazy {
     }
     
     void test4() {
-        //:: error: (lazynonnull.null.assignment)
+        //:: error: (assignment.type.incompatible)
         g = null;
+        //:: error: (monotonic.type.incompatible)
+        g = g2;
+    }
+    
+    void _test3() {
+        //:: error: (dereference.of.nullable)
+        _g.toLowerCase();
+    }
+    
+    void _test4() {
+        //:: error: (assignment.type.incompatible)
+        _g = null;
+        //:: error: (monotonic.type.incompatible)
+        _g = _g2;
     }
 }
