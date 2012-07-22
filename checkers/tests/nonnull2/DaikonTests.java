@@ -10,15 +10,13 @@ public class DaikonTests {
     class Bug1 {
         @Nullable Object field;
 
-        // skip-test TODO
-        /*
         public void cond1() {
             if ( this.hashCode() > 6 && Bug1Other.field != null ) {
                 // spurious dereference error
                 Bug1Other.field.toString();
             }
         }
-        */
+        
         public void cond1(Bug1 p) {
             if ( this.hashCode() > 6 && p.field != null ) {
                 // works
