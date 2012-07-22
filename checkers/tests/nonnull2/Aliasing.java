@@ -12,6 +12,8 @@ public class Aliasing {
 
   static void m(@NonNull Aliasing a, @NonNull Aliasing b) {
     a.no = b.nno;
+    // Changing a.no to nonnull does not mean that b.no is also nonnull
+    //:: error: (assignment.type.incompatible)
     b.nno = b.no;
 
     System.out.println("@NonNull field b.nno is: " + b.nno);
