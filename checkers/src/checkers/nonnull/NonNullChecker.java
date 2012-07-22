@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.commitment.CommitmentChecker;
 import checkers.commitment.quals.Committed;
+import checkers.commitment.quals.FBCBottom;
 import checkers.commitment.quals.Free;
 import checkers.commitment.quals.Unclassified;
 import checkers.nonnull.quals.MonoNonNull;
@@ -47,7 +48,7 @@ import com.sun.source.tree.CompilationUnitTree;
 //			see Checker Manual 20.2.1, added "Suppression" test case to show that it works
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class, Committed.class,
-        Unclassified.class })
+        Unclassified.class, FBCBottom.class })
 public class NonNullChecker extends CommitmentChecker {
 
     /** Annotation constants */
