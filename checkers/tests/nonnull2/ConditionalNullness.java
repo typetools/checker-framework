@@ -1,11 +1,12 @@
+import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 import java.util.*;
 public class ConditionalNullness {
 
-    @AssertNonNullIfTrue({"field", "method()"})
+    @EnsuresNonNullIf(expression={"field", "method()"}, result=true)
     boolean checkNonNull() {
         // don't bother with the implementation
-        //:: error: (assertiftrue.postcondition.not.satisfied)
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
