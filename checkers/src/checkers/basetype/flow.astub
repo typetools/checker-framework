@@ -23,6 +23,7 @@ public final class System {
 
 public class Object {
     @Pure public Object();
+    @Pure public String toString();
 }
 
 package java.util;
