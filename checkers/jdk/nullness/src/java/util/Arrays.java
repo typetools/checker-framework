@@ -1,5 +1,6 @@
 package java.util;
 import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 public class Arrays{
   protected Arrays() {}
