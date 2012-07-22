@@ -21,7 +21,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
  * This checker should only be used for testing the framework.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Odd.class, Even.class, Unqualified.class } )
+@TypeQualifiers( { Odd.class, MonoOdd.class, Even.class, Unqualified.class } )
 public final class TestChecker extends BaseTypeChecker {
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {

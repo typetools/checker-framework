@@ -8,10 +8,9 @@ import java.lang.annotation.Target;
 
 /**
  * A meta annotation to allow multiple conditional postcondition annotations.
- * 
+ *
  * @author Stefan Heule
  * @see EnsuresAnnotationIf
- * 
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

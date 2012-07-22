@@ -1798,7 +1798,7 @@ public class AnnotatedTypeFactory {
         // Not found in either location
         return null;
     }
-    
+
     /**
      * Returns all of the actual annotation mirrors used to annotate this type
      * (includes stub files).
@@ -1820,7 +1820,7 @@ public class AnnotatedTypeFactory {
     }
 
     /**
-     * Returns a list of all annotation mirrors used to annotate this type,
+     * Returns a list of all declaration annotations used to annotate this element,
      * which have a meta-annotation (i.e., an annotation on that annotation)
      * with class {@code metaAnnotation}.
      *
@@ -1839,6 +1839,47 @@ public class AnnotatedTypeFactory {
 
         // Consider real annotations.
         annotationMirrors.addAll(element.getAnnotationMirrors());
+
+        // Consider stub annotations.
+        String eltName = ElementUtils.getVerboseName(element);
+        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (stubAnnos != null) {
+            annotationMirrors.addAll(stubAnnos);
+        }
+
+        // Go through all annotations found.
+        for (AnnotationMirror annotation : annotationMirrors) {
+            List<? extends AnnotationMirror> annotationsOnAnnotation = annotation
+                    .getAnnotationType().asElement().getAnnotationMirrors();
+            for (AnnotationMirror a : annotationsOnAnnotation) {
+                if (AnnotationUtils.areSameByClass(a, metaAnnotation)) {
+                    result.add(Pair.of(annotation, a));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a list of all annotations used to annotate this element,
+     * which have a meta-annotation (i.e., an annotation on that annotation)
+     * with class {@code metaAnnotation}.
+     *
+     * @param element
+     *            The element at which to look for annotations.
+     * @param metaAnnotation
+     *            The meta annotation that needs to be present.
+     * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
+     *         the annotation mirror at {@code element}, and {@code metaAnno} is
+     *         the annotation mirror used to annotate {@code anno}.
+     */
+    public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
+            Element element, Class<? extends Annotation> metaAnnotation) {
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
+
+        // Consider real annotations.
+        annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
 
         // Consider stub annotations.
         String eltName = ElementUtils.getVerboseName(element);

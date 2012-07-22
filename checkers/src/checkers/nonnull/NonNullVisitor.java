@@ -3,16 +3,10 @@ package checkers.nonnull;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nonnull.quals.AssertNonNullIfFalse;
-import checkers.nonnull.quals.AssertNonNullIfTrue;
-import checkers.nonnull.quals.LazyNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -27,11 +21,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -44,9 +36,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 
     // Error message keys
     private static final String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
-    private static final String ASSERTIFTRUE_ONLY_ON_BOOLEAN = "assertiftrue.only.on.boolean";
-    private static final String ASSERTIFFALSE_ONLY_ON_BOOLEAN = "assertiffalse.only.on.boolean";
-    private static final String LAZYNONNULL_NULL_ASSIGNMENT = "lazynonnull.null.assignment";
     private static final String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
     private static final String KNOWN_NONNULL = "known.nonnull";
     private static final String LOCKING_NULLABLE = "locking.nullable";
@@ -55,7 +44,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     private static final String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
-    private final AnnotationMirror NONNULL, NULLABLE;
+    private final AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
     private final TypeMirror stringType;
 
     public NonNullVisitor(NonNullChecker checker, CompilationUnitTree root) {
@@ -63,6 +52,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
+        MONONONNULL = checker.MONONONNULL;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -73,26 +63,11 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         if (TreeUtils.isFieldAccess(varTree)) {
             AnnotatedTypeMirror valueType = atypeFactory
                     .getAnnotatedType(valueExp);
-            Element el;
-            if (varTree.getKind().equals(Tree.Kind.IDENTIFIER)) {
-                el = TreeUtils.elementFromUse((IdentifierTree) varTree);
-            } else {
-                // cast is safe: isFieldAccess is only true for identifiers or
-                // memberselects
-                el = TreeUtils.elementFromUse((MemberSelectTree) varTree);
-            }
-            // special case writing to LazyNonNull
-            if (getNonNullFactory().getDeclAnnotation(el, LazyNonNull.class) != null) {
-                if (!valueType.hasAnnotation(NONNULL)) {
-                    checker.report(Result.failure(LAZYNONNULL_NULL_ASSIGNMENT,
-                            varTree), varTree);
-                }
-            }
             // special case writing to NonNull field for free/unc receivers
             // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = getNonNullFactory()
                     .getDeclaredAndDefaultedAnnotatedType(
-                            (ExpressionTree) varTree);
+                            varTree);
             // receiverType is null for static field accesses
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
@@ -160,26 +135,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     @Override
     public Void visitIf(IfTree node, Void p) {
         return super.visitIf(node, p);
-    }
-
-    @Override
-    public Void visitMethod(MethodTree node, Void p) {
-        ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
-        if (getNonNullFactory().getDeclAnnotation(elt,
-                AssertNonNullIfTrue.class) != null
-                && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
-
-            checker.report(Result.failure(ASSERTIFTRUE_ONLY_ON_BOOLEAN), node);
-        }
-
-        if (getNonNullFactory().getDeclAnnotation(elt,
-                AssertNonNullIfFalse.class) != null
-                && elt.getReturnType().getKind() != TypeKind.BOOLEAN) {
-
-            checker.report(Result.failure(ASSERTIFFALSE_ONLY_ON_BOOLEAN), node);
-        }
-
-        return super.visitMethod(node, p);
     }
 
     /**
@@ -256,7 +211,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     /**
      * Issues a 'dereference.of.nullable' if the type is not of a
      * {@link NonNull} type.
-     * 
+     *
      * @param type
      *            type to be checked nullability
      * @param errMsg
@@ -277,10 +232,10 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         if (!TreeUtils.isSelfAccess(node)) {
             Set<AnnotationMirror> recvAnnos = atypeFactory
                     .getReceiverType(node).getAnnotations();
-            // if receiver is Nullable, then we don't want to issue a warning
+            // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
-            // "dereference.of.nullable" message
-            if (recvAnnos.contains(NULLABLE)) {
+            // "dereference.of.nullable" message).
+            if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONONONNULL)) {
                 return true;
             }
         }
