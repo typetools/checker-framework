@@ -11,9 +11,9 @@ import checkers.commitment.CommitmentChecker;
 import checkers.commitment.quals.Committed;
 import checkers.commitment.quals.Free;
 import checkers.commitment.quals.Unclassified;
+import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
-import checkers.nullness.quals.LazyNonNull;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
@@ -46,12 +46,12 @@ import com.sun.source.tree.CompilationUnitTree;
 // DONE: Brandon: SuppressWarnings("nonnull"): it appears to work out of the box,
 //			see Checker Manual 20.2.1, added "Suppression" test case to show that it works
 
-@TypeQualifiers({ Nullable.class, NonNull.class, Free.class, Committed.class,
+@TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class, Committed.class,
         Unclassified.class })
 public class NonNullChecker extends CommitmentChecker {
 
     /** Annotation constants */
-    public AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL;
+    public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
@@ -60,7 +60,7 @@ public class NonNullChecker extends CommitmentChecker {
 
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
-        LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
+        MONONONNULL = annoFactory.fromClass(MonoNonNull.class);
     }
 
     @Override
