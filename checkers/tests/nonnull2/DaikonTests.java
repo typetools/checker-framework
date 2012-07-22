@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /*
@@ -53,7 +54,7 @@ public class DaikonTests {
     
     // Based on problem found in FloatEqual.
     class Bug3 {
-        /*@AssertNonNullIfTrue("derived")*/
+        @EnsuresNonNullIf(expression="derived", result=true)
         public boolean isDerived() {
             return (derived != null);
         }
