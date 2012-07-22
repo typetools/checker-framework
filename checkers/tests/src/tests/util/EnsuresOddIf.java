@@ -12,9 +12,8 @@ import checkers.quals.ConditionalPostconditionAnnotation;
  * A conditional postcondition annotation to indicate that a method ensures
  * certain expressions to be {@link Odd} given a certain result (either true or
  * false).
- * 
+ *
  * @author Stefan Heule
- * 
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
