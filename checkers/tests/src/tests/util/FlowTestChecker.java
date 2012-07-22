@@ -16,7 +16,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Value.class, Odd.class, Unqualified.class } )
+@TypeQualifiers( { Value.class, Odd.class, MonoOdd.class, Unqualified.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
 
     protected AnnotationMirror VALUE;
