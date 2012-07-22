@@ -17,7 +17,7 @@ longer than one line.
 
 ===========================================================================
 
-"NNEL" default becomes "top except locals, casts, and instanceof"
+"NNEL" default becomes "top for locals, casts, and instanceof"
 The top qualifier should only be added to top-level type variables,
 because those will get suitably refined by flow.
 For type variables in other positions, e.g. as type argument in your
