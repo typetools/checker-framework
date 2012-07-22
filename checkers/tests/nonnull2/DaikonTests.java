@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.EnsuresNonNull;
 import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
@@ -91,13 +92,10 @@ public class DaikonTests {
     }
     
     // Based on problem found in chicory.Runtime:
-    
-    // skip-test TODO
-    /*
     class Bug5 {
         @Nullable Object clazz;
         
-        @AssertNonNullAfter("clazz")
+        @EnsuresNonNull("clazz")
         void init() {
             clazz = new Object();
         }
@@ -115,7 +113,7 @@ public class DaikonTests {
             b.clazz.hashCode();
         }
     }
-    */
+    
 }
 
 class Bug1Other {
