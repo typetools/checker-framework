@@ -7,18 +7,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import checkers.quals.ConditionalPostconditionAnnotation;
+import checkers.quals.PostconditionAnnotation;
 
 /**
- * A conditional postcondition annotation to indicate that a method ensures
- * certain expressions to be {@link NonNull} given a certain result (either true
- * or false).
+ * A postcondition annotation to indicate that certain expressions are
+ * {@link NonNull} on successful termination of a method.
  *
  * @author Stefan Heule
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-@ConditionalPostconditionAnnotation(annotation = NonNull.class)
+@PostconditionAnnotation(annotation = NonNull.class)
 public @interface EnsuresNonNull {
     /**
      * The Java expressions that are ensured to be {@link NonNull} on successful
@@ -28,11 +28,5 @@ public @interface EnsuresNonNull {
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
-    String[] expression();
-
-    /**
-     * The return value of the method that needs to hold for the postcondition
-     * to hold.
-     */
-    boolean result();
+    String[] value();
 }
