@@ -1,8 +1,9 @@
 import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.quals.Pure;
 import checkers.nullness.quals.*;
 import java.util.*;
 public class ConditionalNullness {
-
+    
     @EnsuresNonNullIf(expression={"field", "method()"}, result=true)
     boolean checkNonNull() {
         // don't bother with the implementation
@@ -11,7 +12,7 @@ public class ConditionalNullness {
     }
 
     @Nullable Object field = null;
-    @Nullable Object method() { return "m"; }
+    @Pure @Nullable Object method() { return "m"; }
 
     void testSelfWithCheck() {
         ConditionalNullness other = new ConditionalNullness();
