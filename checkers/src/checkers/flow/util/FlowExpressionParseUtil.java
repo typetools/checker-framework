@@ -33,9 +33,8 @@ import com.sun.source.util.TreePath;
  * A collection of helper methods to parse a string that represents a restricted
  * Java expression. Such expressions can be found in annotations (e.g., to
  * specify a pre- or postcondition).
- * 
+ *
  * @author Stefan Heule
- * 
  */
 public class FlowExpressionParseUtil {
 
@@ -64,7 +63,7 @@ public class FlowExpressionParseUtil {
      * {@link FlowExpression.Receiver}, or throw an
      * {@link FlowExpressionParseException}. The expression is assumed to be
      * used in the context of a method.
-     * 
+     *
      * @param s
      *            The string to parse.
      * @param path
@@ -97,7 +96,7 @@ public class FlowExpressionParseUtil {
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
-        
+
         ProcessingEnvironment env = context.factory.getEnv();
 
         // this literal
