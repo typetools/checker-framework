@@ -267,12 +267,21 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             if (a == null) {
                 continue;
             } else if (a.isNoInferredAnnotation()) {
-                result.add(tops[i].toString() + "->[]");
+                result.add(annotationToString(tops[i]) + "->[]");
             } else {
-                result.add(a.getAnnotation().toString());
+                result.add(annotationToString(a.getAnnotation()));
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Returns a string representation of an {@link AnnotationMirror}.
+     */
+    protected String annotationToString(AnnotationMirror a) {
+        String fullString = a.toString();
+        return fullString.substring(fullString.lastIndexOf('.') + 1,
+                fullString.length());
     }
 
     /**
