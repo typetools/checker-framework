@@ -21,27 +21,27 @@ import com.sun.source.tree.Tree;
  * {@code @NonNull} is a type annotation that indicates that a value is never
  * null.
  * <p>
- * 
+ *
  * When applied to a member field's type, indicates that the field is never null
  * after instantiation (construction) completes. When applied to a static
  * field's type, indicates that the field is never null after the containing
  * class is initialized.
  * <p>
- * 
+ *
  * This annotation is rarely written in source code, because it is the default.
  * No more than one of {@code @NonNull} and {@link Nullable} may be written on a
  * given type.
  * <p>
- * 
+ *
  * This annotation is associated with the {@link NullnessChecker}.
- * 
+ *
  * @see Nullable
  * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier
-@SubtypeOf(Nullable.class)
+@SubtypeOf(MonoNonNull.class)
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(types = { TypeKind.PACKAGE }, typeClasses = { AnnotatedPrimitiveType.class }, trees = {
