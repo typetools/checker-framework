@@ -1,5 +1,6 @@
 package checkers.basetype;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1206,6 +1207,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         }
 
         boolean success = checker.isSubtype(valueType, varType);
+        if (success) {
+            for (Class<? extends Annotation> mono : checker.getSupportedMonotonicTypeQualifiers()) {
+                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
+                    checker.report(Result.failure("monotonic.type.incompatible",
+                            mono.getCanonicalName(), mono.getCanonicalName(), valueType.toString()), valueTree);
+                    return;
+                }
+            }
+        }
 
         if (options.containsKey("showchecks")) {
             // In case of failure, if both types as strings are the same, try outputting
