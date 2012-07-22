@@ -194,7 +194,8 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
 
     /**
      * If an invariant field is initialized and has the invariant annotation,
-     * than it has at least the invariant annotation.
+     * than it has at least the invariant annotation. Note that only field of
+     * the 'this' receiver are tracked for initialization.
      */
     @Override
     public TransferResult<CFValue, CommitmentStore> visitFieldAccess(
@@ -203,7 +204,8 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
                 .visitFieldAccess(n, p);
         assert !result.containsTwoStores();
         CommitmentStore store = result.getRegularStore();
-        if (store.isFieldInitialized(n.getElement())) {
+        if (store.isFieldInitialized(n.getElement())
+                && n.getReceiver() instanceof ThisLiteralNode) {
             AnnotatedTypeMirror fieldAnno = analysis.getFactory()
                     .getAnnotatedType(n.getElement());
             // Only if the field has the 'invariant' annotation.
