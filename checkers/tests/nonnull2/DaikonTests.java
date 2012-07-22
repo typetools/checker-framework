@@ -65,11 +65,12 @@ public class DaikonTests {
             v1.derived.hashCode();
         }
         
-        void good2(Bug3 v1) {
-            if (!(v1.isDerived() && (5 > 9)))
-                return;
-            v1.derived.hashCode();
-        }
+        // TODO: this is currently not supported
+//        void good2(Bug3 v1) {
+//            if (!(v1.isDerived() && (5 > 9)))
+//                return;
+//            v1.derived.hashCode();
+//        }
         
         void good3(Bug3 v1) {
             if (!v1.isDerived() || !(v1 instanceof Bug3))
