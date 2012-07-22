@@ -1,0 +1,222 @@
+#if 0
+  //  This file is used to generate the common suppression factory
+  //  code.  The following parameters must be defined:
+  //
+  //    FACTORY_CNT         - number of factories to be created.  Up to five
+  //                          can be created.
+  //    FACTORY_INVCLASS    - class of invariant being suppressed
+  //    FACTORY1            - name of the suppression routine for factory 1
+  //    FACTORY1_INV_CNT    - Number of invariants for the first factory
+  //    FACTORY1_VAR_INFO   - Var info initializer(s) for first factory.
+  //                          For example: {new VarInfo[2]}
+  //    FACTORY2            - name of the suppression routine for factory 2
+  //    FACTORY2_INV_CNT    - Number of invariants for the second factory
+  //    FACTORY2_VAR_INFO   - Var info initializer(s) for second factory.
+  //                          For example: {new VarInfo[2]}
+  //    FACTORY3            - name of the suppression routine for factory 3
+  //    FACTORY3_INV_CNT    - Number of invariants for the third factory
+  //    FACTORY3_VAR_INFO   - Var info initializer(s) for third factory.
+  //                          For example: {new VarInfo[2]}
+  //    FACTORY4            - name of suppression routine for factory 4
+  //    FACTORY4_INV_CNT    - Number of invariants for the fourth factory
+  //    FACTORY4_VAR_INFO   - Var info initializer(s) for fourth factory.
+  //                          For example: {new VarInfo[2]}
+  //    FACTORY5            - name of suppression routine for factory 4
+  //    FACTORY5_INV_CNT    - Number of invariants for the fourth factory
+  //    FACTORY5_VAR_INFO   - Var info initializer(s) for fourth factory.
+  //                          For example: {new VarInfo[2]}
+  //
+  //  Undefined FACTORY names are simply not created.  Factories are
+  //  always named factory1, factory2, factory3, factory4, and factory5
+#endif
+
+#ifndef FACTORY1
+  #error "FACTORY1 not defined"
+#endif
+#if FACTORY_CNT >= 2 && !defined(FACTORY2)
+  #error "FACTORY2 not defined"
+#endif
+#if FACTORY_CNT < 2 && defined(FACTORY2)
+  #error "FACTORY2 defined"
+#endif
+#if FACTORY_CNT >= 3 && !defined(FACTORY3)
+  #error "FACTORY3 not defined"
+#endif
+#if FACTORY_CNT < 3 && defined(FACTORY3)
+  #error "FACTORY3 defined"
+#endif
+#if FACTORY_CNT >= 4 && !defined(FACTORY4)
+  #error "FACTORY4 not defined"
+#endif
+#if FACTORY_CNT < 4 && defined(FACTORY4)
+  #error "FACTORY4 defined"
+#endif
+#if FACTORY_CNT >= 5 && !defined(FACTORY5)
+  #error "FACTORY5 not defined"
+#endif
+#if FACTORY_CNT < 5 && defined(FACTORY5)
+  #error "FACTORY5 defined"
+#endif
+
+
+  private static SuppressionFactory[] suppressionFactories = null;
+
+  public SuppressionFactory[] getSuppressionFactories() {
+    if (suppressionFactories == null) {
+      SuppressionFactory[] supers = super.getSuppressionFactories();
+
+      suppressionFactories = new SuppressionFactory[supers.length
+                                                        + FACTORY_CNT];
+      System.arraycopy (supers, 0, suppressionFactories, 0, supers.length);
+
+      // Fill in each specified factory
+      suppressionFactories[supers.length] = factory1.getInstance();
+      #if defined(FACTORY2)
+      suppressionFactories[supers.length+1] = factory2.getInstance();
+      #endif
+      #if defined(FACTORY3)
+      suppressionFactories[supers.length+2] = factory3.getInstance();
+      #endif
+      #if defined(FACTORY4)
+      suppressionFactories[supers.length+3] = factory4.getInstance();
+      #endif
+      #if defined(FACTORY5)
+      suppressionFactories[supers.length+4] = factory5.getInstance();
+      #endif
+    }
+    return suppressionFactories;
+  }
+
+  // Factory 1
+  public static final class factory1 extends SuppressionFactory {
+
+    private static final factory1 theInstance = new factory1();
+
+    private factory1() {
+      supTemplate = new SuppressionTemplate(FACTORY1_INV_CNT);
+    }
+
+    public static SuppressionFactory getInstance() {
+      return theInstance;
+    }
+
+    private Object readResolve() {
+      return theInstance;
+    }
+
+    private transient SuppressionTemplate supTemplate;
+
+
+    public SuppressionLink generateSuppressionLink (Invariant arg) {
+      supTemplate.resetResults();
+      return (FACTORY1 ((FACTORY_INVCLASS) arg, supTemplate, this));
+    }
+  }
+
+#if defined (FACTORY2)
+  // Factory 2
+  public static final class factory2 extends SuppressionFactory {
+
+    private static final factory2 theInstance = new factory2();
+
+    private factory2() {
+      supTemplate = new SuppressionTemplate(FACTORY2_INV_CNT);
+    }
+
+    public static SuppressionFactory getInstance() {
+      return theInstance;
+    }
+
+    private Object readResolve() {
+      return theInstance;
+    }
+
+    private transient SuppressionTemplate supTemplate;
+
+    public SuppressionLink generateSuppressionLink (Invariant arg) {
+      supTemplate.resetResults();
+      return (FACTORY2 ((FACTORY_INVCLASS) arg, supTemplate, this));
+    }
+  }
+#endif
+
+#if defined (FACTORY3)
+  // Factory 3
+  public static final class factory3 extends SuppressionFactory {
+
+    private static final factory3 theInstance = new factory3();
+
+    private factory3() {
+      supTemplate = new SuppressionTemplate(FACTORY3_INV_CNT);
+    }
+
+    public static SuppressionFactory getInstance() {
+      return theInstance;
+    }
+
+    private Object readResolve() {
+      return theInstance;
+    }
+
+    private transient SuppressionTemplate supTemplate;
+
+    public SuppressionLink generateSuppressionLink (Invariant arg) {
+      supTemplate.resetResults();
+      return (FACTORY3 ((FACTORY_INVCLASS) arg, supTemplate, this));
+    }
+  }
+#endif
+
+#if defined (FACTORY4)
+  // Factory 4
+  public static final class factory4 extends SuppressionFactory {
+
+    private static final factory4 theInstance = new factory4();
+
+    private factory4() {
+      supTemplate = new SuppressionTemplate(FACTORY4_INV_CNT);
+    }
+
+    public static SuppressionFactory getInstance() {
+      return theInstance;
+    }
+
+    private Object readResolve() {
+      return theInstance;
+    }
+
+    private transient SuppressionTemplate supTemplate;
+
+    public SuppressionLink generateSuppressionLink (Invariant arg) {
+      supTemplate.resetResults();
+      return (FACTORY4 ((FACTORY_INVCLASS) arg, supTemplate, this));
+    }
+  }
+#endif
+
+#if defined (FACTORY5)
+  // Factory 5
+  public static final class factory5 extends SuppressionFactory {
+
+    private static final factory5 theInstance = new factory5();
+
+    private factory5() {
+      supTemplate = new SuppressionTemplate(FACTORY5_INV_CNT);
+    }
+
+    public static SuppressionFactory getInstance() {
+      return theInstance;
+    }
+
+    private Object readResolve() {
+      return theInstance;
+    }
+
+    private transient SuppressionTemplate supTemplate;
+
+    public SuppressionLink generateSuppressionLink (Invariant arg) {
+      supTemplate.resetResults();
+      return (FACTORY5 ((FACTORY_INVCLASS) arg, supTemplate, this));
+    }
+  }
+#endif
