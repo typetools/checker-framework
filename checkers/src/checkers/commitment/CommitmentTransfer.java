@@ -193,8 +193,8 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     }
 
     /**
-     * If an invariant field is initialized, than it has at least the invariant
-     * annotation.
+     * If an invariant field is initialized and has the invariant annotation,
+     * than it has at least the invariant annotation.
      */
     @Override
     public TransferResult<CFValue, CommitmentStore> visitFieldAccess(
@@ -204,13 +204,18 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
         assert !result.containsTwoStores();
         CommitmentStore store = result.getRegularStore();
         if (store.isFieldInitialized(n.getElement())) {
-            AnnotationMirror inv = checker.getFieldInvariantAnnotation();
-            InferredAnnotation[] annotations = CFAbstractValue
-                    .createInferredAnnotationArray(analysis, inv);
-            CFValue refinedResultValue = analysis
-                    .createAbstractValue(annotations);
-            result.setResultValue(refinedResultValue.mostSpecific(result
-                    .getResultValue()));
+            AnnotatedTypeMirror fieldAnno = analysis.getFactory()
+                    .getAnnotatedType(n.getElement());
+            // Only if the field has the 'invariant' annotation.
+            if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
+                AnnotationMirror inv = checker.getFieldInvariantAnnotation();
+                InferredAnnotation[] annotations = CFAbstractValue
+                        .createInferredAnnotationArray(analysis, inv);
+                CFValue refinedResultValue = analysis
+                        .createAbstractValue(annotations);
+                result.setResultValue(refinedResultValue.mostSpecific(result
+                        .getResultValue()));
+            }
         }
         return result;
     }
