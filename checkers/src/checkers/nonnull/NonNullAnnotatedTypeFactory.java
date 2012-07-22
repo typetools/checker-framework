@@ -12,7 +12,7 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.CommitmentAnnotatedTypeFactory;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.nonnull.quals.LazyNonNull;
+import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.nullness.quals.Primitive;
@@ -47,8 +47,8 @@ public class NonNullAnnotatedTypeFactory
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
 
-        addAliasedDeclAnnotation(checkers.nullness.quals.LazyNonNull.class,
-                LazyNonNull.class, annotations.fromClass(LazyNonNull.class));
+        addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
+                annotations.fromClass(MonoNonNull.class));
 
         // aliases borrowed from NullnessAnnotatedTypeFactory
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
@@ -107,32 +107,6 @@ public class NonNullAnnotatedTypeFactory
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-
-        // treat LazyNonNull as Nullable, except for:
-        // 1. flow will preserve nonnull information about LazyNonNull fields
-        // over method calls (see NonNullFlow).
-        // 2. only nonnull can be assigned to lazynonnull fields
-        // (see NonNullVisitor.commonAssignmentCheck).
-        if (TreeUtils.isFieldAccess(tree)) {
-            Element el;
-            if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
-                el = TreeUtils.elementFromUse((IdentifierTree) tree);
-            } else {
-                // cast is safe: isFieldAccess is only true for identifiers or
-                // memberselects
-                el = TreeUtils.elementFromUse((MemberSelectTree) tree);
-            }
-            if (getDeclAnnotation(el, LazyNonNull.class) != null) {
-                type.replaceAnnotation(NULLABLE);
-            }
-        }
-
-        // determines commitment type (and nullability based on commitment type)
-        super.annotateImplicit(tree, type);
-    }
-
-    @Override
     protected TypeAnnotator createTypeAnnotator(NonNullChecker checker) {
         return new NonNullTypeAnnotator(checker);
     }
@@ -152,7 +126,6 @@ public class NonNullAnnotatedTypeFactory
      *            the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-
         if (elt == null)
             return;
 
@@ -160,7 +133,6 @@ public class NonNullAnnotatedTypeFactory
         // Workaround for System.{out,in,err} issue: assume all static
         // fields in java.lang.System are nonnull.
                 || isSystemField(elt)) {
-
             type.replaceAnnotation(NONNULL);
         }
     }

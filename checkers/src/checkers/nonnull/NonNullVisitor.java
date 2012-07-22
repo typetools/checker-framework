@@ -12,7 +12,7 @@ import checkers.commitment.CommitmentVisitor;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.AssertNonNullIfFalse;
 import checkers.nonnull.quals.AssertNonNullIfTrue;
-import checkers.nonnull.quals.LazyNonNull;
+import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -55,7 +55,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     private static final String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
-    private final AnnotationMirror NONNULL, NULLABLE;
+    private final AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
     private final TypeMirror stringType;
 
     public NonNullVisitor(NonNullChecker checker, CompilationUnitTree root) {
@@ -63,6 +63,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
+        MONONONNULL = checker.MONONONNULL;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -73,26 +74,11 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         if (TreeUtils.isFieldAccess(varTree)) {
             AnnotatedTypeMirror valueType = atypeFactory
                     .getAnnotatedType(valueExp);
-            Element el;
-            if (varTree.getKind().equals(Tree.Kind.IDENTIFIER)) {
-                el = TreeUtils.elementFromUse((IdentifierTree) varTree);
-            } else {
-                // cast is safe: isFieldAccess is only true for identifiers or
-                // memberselects
-                el = TreeUtils.elementFromUse((MemberSelectTree) varTree);
-            }
-            // special case writing to LazyNonNull
-            if (getNonNullFactory().getDeclAnnotation(el, LazyNonNull.class) != null) {
-                if (!valueType.hasAnnotation(NONNULL)) {
-                    checker.report(Result.failure(LAZYNONNULL_NULL_ASSIGNMENT,
-                            varTree), varTree);
-                }
-            }
             // special case writing to NonNull field for free/unc receivers
             // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = getNonNullFactory()
                     .getDeclaredAndDefaultedAnnotatedType(
-                            (ExpressionTree) varTree);
+                            varTree);
             // receiverType is null for static field accesses
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
@@ -256,7 +242,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     /**
      * Issues a 'dereference.of.nullable' if the type is not of a
      * {@link NonNull} type.
-     * 
+     *
      * @param type
      *            type to be checked nullability
      * @param errMsg
@@ -277,10 +263,10 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         if (!TreeUtils.isSelfAccess(node)) {
             Set<AnnotationMirror> recvAnnos = atypeFactory
                     .getReceiverType(node).getAnnotations();
-            // if receiver is Nullable, then we don't want to issue a warning
+            // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
-            // "dereference.of.nullable" message
-            if (recvAnnos.contains(NULLABLE)) {
+            // "dereference.of.nullable" message).
+            if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONONONNULL)) {
                 return true;
             }
         }
