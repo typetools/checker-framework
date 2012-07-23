@@ -175,29 +175,33 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
             CommitmentStore store = (CommitmentStore) atypeFactory
                     .getRegularExitStore(node);
-            for (VariableTree field : fields) {
-                // Does this field need to satisfy the invariant?
-                if (atypeFactory.getAnnotatedType(field).hasAnnotation(
-                        invariant)) {
-                    // Has the field been initialized?
-                    if (!store.isFieldInitialized(TreeUtils
-                            .elementFromDeclaration(field))) {
-                        violatingFields.add(field);
+            // If the store is null, then the constructor cannot terminate successfully
+            if (store != null) {
+                for (VariableTree field : fields) {
+                    // Does this field need to satisfy the invariant?
+                    if (atypeFactory.getAnnotatedType(field).hasAnnotation(
+                            invariant)) {
+                        // Has the field been initialized?
+                        if (!store.isFieldInitialized(TreeUtils
+                                .elementFromDeclaration(field))) {
+                            violatingFields.add(field);
+                        }
                     }
                 }
-            }
-            if (!violatingFields.isEmpty()) {
-                StringBuilder fieldsString = new StringBuilder();
-                boolean first = true;
-                for (VariableTree f : violatingFields) {
-                    if (!first) {
-                        fieldsString.append(", ");
+                if (!violatingFields.isEmpty()) {
+                    StringBuilder fieldsString = new StringBuilder();
+                    boolean first = true;
+                    for (VariableTree f : violatingFields) {
+                        if (!first) {
+                            fieldsString.append(", ");
+                        }
+                        first = false;
+                        fieldsString.append(f.getName());
                     }
-                    first = false;
-                    fieldsString.append(f.getName());
+                    checker.report(Result.failure(
+                            COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
+                            node);
                 }
-                checker.report(Result.failure(COMMITMENT_FIELDS_UNINITIALIZED,
-                        fieldsString), node);
             }
         }
         return super.visitMethod(node, p);
