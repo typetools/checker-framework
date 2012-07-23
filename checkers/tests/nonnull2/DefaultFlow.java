@@ -1,6 +1,5 @@
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
 public class DefaultFlow {
 
     void test() {
