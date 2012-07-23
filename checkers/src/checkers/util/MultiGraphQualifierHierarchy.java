@@ -161,13 +161,15 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * The top qualifiers of the individual type hierarchies.
      */
-    protected final Set<AnnotationMirror> tops;
+    // Not final to allow a subclass to re-assign it in the constructor.
+    protected /*final*/ Set<AnnotationMirror> tops;
 
     /**
      * The bottom qualifiers of the type hierarchies.
      * TODO: clarify relation to tops.
      */
-    protected final Set<AnnotationMirror> bottoms;
+    // Not final to allow a subclass to re-assign it in the constructor.
+    protected /*final*/ Set<AnnotationMirror> bottoms;
 
     /**
      * @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers
@@ -415,8 +417,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *
      * Field supertypesMap is not set yet when this method is called - use fullMap instead.
      */
+    /* The method gets all required parameters passed in and could be static. However,
+     * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
+     */
     // TODO: document
-    protected static void addPolyRelations(SourceChecker checker,
+    protected void addPolyRelations(SourceChecker checker,
             AnnotationUtils annoFactory,
             QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
