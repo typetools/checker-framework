@@ -675,8 +675,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     @Override
     public TransferResult<V, S> visitAssert(AssertNode n, TransferInput<V, S> in) {
-        // TODO: Perform type propagation separately with a thenStore and an
-        // elseStore.
+        if (in.containsTwoStores()) {
+            return new RegularTransferResult<>(null, in.getThenStore());
+        }
         return new RegularTransferResult<>(null, in.getRegularStore());
     }
 
