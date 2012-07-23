@@ -29,6 +29,7 @@ import checkers.flow.cfg.node.CompoundAssignmentNode;
 import checkers.flow.cfg.node.ConditionalNotNode;
 import checkers.flow.cfg.node.EqualToNode;
 import checkers.flow.cfg.node.FieldAccessNode;
+import checkers.flow.cfg.node.InstanceOfNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
@@ -717,6 +718,43 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // flow-refined value was more precise, we keep that value.
         V resultValue = moreSpecificValue(value, operandValue);
         result.setResultValue(resultValue);
+        return result;
+    }
+
+    /**
+     * Refine the operand of an instanceof check with more specific annotations
+     * if possible.
+     */
+    @Override
+    public TransferResult<V, S> visitInstanceOf(InstanceOfNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitInstanceOf(n, p);
+
+        // Look at the annotations from the type of the instanceof check
+        // (provided by the factory)
+        AnnotatedTypeMirror typeAnnotations = analysis.getFactory()
+                .getAnnotatedType(n.getTree().getType());
+        V value = analysis
+                .createAbstractValue(typeAnnotations.getAnnotations());
+
+        // Look at the value from the operand.
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+
+        // Combine the two.
+        V mostPreciceValue = moreSpecificValue(value, operandValue);
+        result.setResultValue(mostPreciceValue);
+
+        // Insert into the store if possible.
+        Receiver operandInternal = FlowExpressions.internalReprOf(
+                analysis.getFactory(), n.getOperand());
+        if (CFAbstractStore.canInsertReceiver(operandInternal)) {
+            S thenStore = result.getThenStore();
+            S elseStore = result.getElseStore();
+            thenStore.insertValue(operandInternal, mostPreciceValue);
+            return new ConditionalTransferResult<>(result.getResultValue(),
+                    thenStore, elseStore);
+        }
+
         return result;
     }
 
