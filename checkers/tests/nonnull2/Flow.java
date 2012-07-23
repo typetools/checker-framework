@@ -269,14 +269,14 @@ public class Flow {
         return true;
     }
 
-    void while_set_and_test(@Nullable String s) {
-        String line;
-        // imagine "s" is "reader.readLine()" (but avoid use of libraries
-        // in unit tests)
-        while ((line = s) != null) {
-            line.trim();
-        }
-    }
+//    void while_set_and_test(@Nullable String s) {
+//        String line;
+//        // imagine "s" is "reader.readLine()" (but avoid use of libraries
+//        // in unit tests)
+//        while ((line = s) != null) {
+//            line.trim();
+//        }
+//    }
 
     void equality_test(@Nullable String s) {
         @NonNull String n = "m";
@@ -311,7 +311,7 @@ public class Flow {
         }
     }
 
-    private double @LazyNonNull [] intersect = null;
+    private double @LazyNonNull [] intersect;// = null; TODO: do we want to allow assignments of null to LazyNonNull?
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
