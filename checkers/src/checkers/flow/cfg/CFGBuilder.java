@@ -2631,8 +2631,6 @@ public class CFGBuilder {
             case OR:
             case XOR: {
                 // see JLS 15.22
-                TypeMirror exprType = InternalUtils.typeOf(tree);
-
                 ConditionalJump cjump = null;
                 if (conditionalMode) {
                     cjump = new ConditionalJump(thenTargetL, elseTargetL);
