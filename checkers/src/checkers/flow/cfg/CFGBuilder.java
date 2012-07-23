@@ -1654,6 +1654,37 @@ public class CFGBuilder {
         }
 
         /**
+         * Returns true if the argument type is a numeric primitive or
+         * a boxed numeric primitive and false otherwise.
+         */
+        protected boolean isNumericOrBoxed(TypeMirror type) {
+            if (TypesUtils.isBoxedPrimitive(type)) {
+                type = types.unboxedType(type);
+            }
+            return TypesUtils.isNumeric(type);
+        }
+
+        /**
+         * Compute the type to which two numeric types must be promoted
+         * before performing a binary numeric operation on them.  The
+         * input types must both be numeric and the output type is primitive.
+         *
+         * @param left   the type of the left operand
+         * @param right  the type of the right operand
+         * @return a TypeMirror representing the binary numeric promoted type
+         */
+        protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
+            if (TypesUtils.isBoxedPrimitive(left)) {
+                left = types.unboxedType(left);
+            }
+            if (TypesUtils.isBoxedPrimitive(right)) {
+                right = types.unboxedType(right);
+            }
+            TypeKind promotedTypeKind = TypesUtils.widenedNumericType(left, right);
+            return types.getPrimitiveType(promotedTypeKind);
+        }
+
+        /**
          * Perform binary numeric promotion on the input node to make it match
          * the expression type.
          *
@@ -2261,9 +2292,11 @@ public class CFGBuilder {
                 Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
-
-                target = binaryNumericPromotion(target, exprType);
-                value = binaryNumericPromotion(value, exprType);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
+                TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                target = binaryNumericPromotion(target, promotedType);
+                value = binaryNumericPromotion(value, promotedType);
 
                 if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
                     r = new NumericalMultiplicationAssignmentNode(tree, target,
@@ -2297,15 +2330,18 @@ public class CFGBuilder {
                 Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
 
-                if (TypesUtils.isString(exprType)) {
+                if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
                     target = stringConversion(target, exprType);
                     value = stringConversion(value, exprType);
                     r = new StringConcatenateAssignmentNode(tree, target, value);
                 } else {
-                    target = binaryNumericPromotion(target, exprType);
-                    value = binaryNumericPromotion(value, exprType);
+                    TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                    target = binaryNumericPromotion(target, promotedType);
+                    value = binaryNumericPromotion(value, promotedType);
 
                     if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
                         r = new NumericalAdditionAssignmentNode(tree, target,
@@ -2348,14 +2384,20 @@ public class CFGBuilder {
                 Node target = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
 
-                if (TypesUtils.isNumeric(exprType)) {
-                    target = binaryNumericPromotion(target, exprType);
-                    value = binaryNumericPromotion(value, exprType);
-                } else if (TypesUtils.isBooleanType(exprType)) {
+                if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+                    TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                    target = binaryNumericPromotion(target, promotedType);
+                    value = binaryNumericPromotion(value, promotedType);
+                } else if (TypesUtils.isBooleanType(leftType) &&
+                           TypesUtils.isBooleanType(rightType)) {
                     target = unbox(target);
                     value = unbox(value);
+                } else {
+                    assert false :
+                        "Both argument to logical operation must be numeric or boolean";
                 }
 
                 if (kind == Tree.Kind.AND_ASSIGNMENT) {
@@ -2388,9 +2430,12 @@ public class CFGBuilder {
                 Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
+                TypeMirror promotedType = binaryPromotedType(leftType, rightType);
 
-                left = binaryNumericPromotion(left, exprType);
-                right = binaryNumericPromotion(right, exprType);
+                left = binaryNumericPromotion(left, promotedType);
+                right = binaryNumericPromotion(right, promotedType);
 
                 if (kind == Tree.Kind.MULTIPLY) {
                     r = new NumericalMultiplicationNode(tree, left, right);
@@ -2420,15 +2465,18 @@ public class CFGBuilder {
                 Node right = scan(tree.getRightOperand(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
 
-                if (TypesUtils.isString(exprType)) {
+                if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS);
                     left = stringConversion(left, exprType);
                     right = stringConversion(right, exprType);
                     r = new StringConcatenateNode(tree, left, right);
                 } else {
-                    left = binaryNumericPromotion(left, exprType);
-                    right = binaryNumericPromotion(right, exprType);
+                    TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                    left = binaryNumericPromotion(left, promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
 
                     // TODO: Decide whether to deal with floating-point value
                     // set conversion.
@@ -2490,13 +2538,9 @@ public class CFGBuilder {
                     rightType = types.unboxedType(rightType);
                 }
 
-                TypeKind widenedTypeKind = TypesUtils.widenedNumericType(
-                        leftType, rightType);
-                TypeMirror widenedType = types
-                        .getPrimitiveType(widenedTypeKind);
-
-                left = binaryNumericPromotion(left, widenedType);
-                right = binaryNumericPromotion(right, widenedType);
+                TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                left = binaryNumericPromotion(left, promotedType);
+                right = binaryNumericPromotion(right, promotedType);
 
                 Node node;
                 if (kind == Tree.Kind.GREATER_THAN) {
@@ -2556,11 +2600,10 @@ public class CFGBuilder {
                             .unboxedType(leftType) : leftType;
                     TypeMirror rightUnboxedType = isRightBoxedNumeric ? types
                             .unboxedType(rightType) : rightType;
-                    TypeKind widened = TypesUtils.widenedNumericType(
-                            leftUnboxedType, rightUnboxedType);
-                    TypeMirror commonType = types.getPrimitiveType(widened);
-                    left = binaryNumericPromotion(left, commonType);
-                    right = binaryNumericPromotion(right, commonType);
+                    TypeMirror promotedType =
+                        binaryPromotedType(leftUnboxedType, rightUnboxedType);
+                    left = binaryNumericPromotion(left, promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
                 } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
                     left = unbox(left);
                 } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
@@ -2589,8 +2632,6 @@ public class CFGBuilder {
             case XOR: {
                 // see JLS 15.22
                 TypeMirror exprType = InternalUtils.typeOf(tree);
-                boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
-                assert !conditionalMode || isBooleanOp;
 
                 ConditionalJump cjump = null;
                 if (conditionalMode) {
@@ -2602,12 +2643,19 @@ public class CFGBuilder {
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
-                if (TypesUtils.isNumeric(exprType)) {
-                    left = binaryNumericPromotion(left, exprType);
-                    right = binaryNumericPromotion(right, exprType);
-                } else if (isBooleanOp) {
+                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
+                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
+                boolean isBooleanOp = TypesUtils.isBooleanType(leftType) &&
+                    TypesUtils.isBooleanType(rightType);
+                assert !conditionalMode || isBooleanOp;
+
+                if (isBooleanOp) {
                     left = unbox(left);
                     right = unbox(right);
+                } else if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+                    TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+                    left = binaryNumericPromotion(left, promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
                 }
 
                 Node node;
