@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 
@@ -21,12 +22,12 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     public static class GraphFactory extends MultiGraphFactory {
         private final AnnotationMirror bottom;
 
-        public GraphFactory(SourceChecker checker) {
+        public GraphFactory(BaseTypeChecker checker) {
             super(checker);
             this.bottom = null;
         }
 
-        public GraphFactory(SourceChecker checker, AnnotationMirror bottom) {
+        public GraphFactory(BaseTypeChecker checker, AnnotationMirror bottom) {
             super(checker);
             this.bottom = bottom;
         }
@@ -44,12 +45,11 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
                 }
             }
 
-            return new GraphQualifierHierarchy(this);
+            return checker.createQualifierHierarchy(this);
         }
     }
 
-    
-    protected GraphQualifierHierarchy(GraphFactory f) {
+    public GraphQualifierHierarchy(GraphFactory f) {
         super(f);
     }
 
