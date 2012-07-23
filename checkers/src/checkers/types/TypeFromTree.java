@@ -536,8 +536,8 @@ abstract class TypeFromTree extends
                 return null; // dead code
             }
 
-            TypeParameterElement tpe = (TypeParameterElement)
-                    ((TypeVariable)type.getUnderlyingType()).asElement();
+            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
+            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
@@ -552,8 +552,14 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
+                // Captured types can have a generic element (owner) that is
+                // not an element at all, namely Symtab.noSymbol.
+                if (InternalUtils.isCaptured(typeVar)) {
+                    return type;
+                } else {
+                    SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                    return null; // dead code
+                }
             }
         }
 
