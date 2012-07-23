@@ -6,3 +6,6 @@ class Class {
       @ReportCall
      Class<?> forName(String s);
 }
+
+@ReportUse
+package java.util.regex;
