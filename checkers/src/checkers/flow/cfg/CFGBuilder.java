@@ -2097,8 +2097,6 @@ public class CFGBuilder {
 
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-            List<Node> arguments = convertCallArguments(method, actualExprs);
-
             // Look up method to invoke and possibly throw NullPointerException
             Node receiver = getReceiver(methodSelect,
                     TreeUtils.enclosingClass(getCurrentPath()));
@@ -2116,6 +2114,8 @@ public class CFGBuilder {
                     .getTypeElement("java.lang.NullPointerException");
                 extendWithNodeWithException(target, npeElement.asType());
             }
+
+            List<Node> arguments = convertCallArguments(method, actualExprs);
 
             // TODO: lock the receiver for synchronized methods
 
