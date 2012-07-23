@@ -7,7 +7,9 @@ import java.util.*;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
+/*>>>
 import checkers.igj.quals.*;
+*/
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -15,6 +17,7 @@ import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.*;
 import checkers.util.*;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.annotation.processing.*;
@@ -148,6 +151,22 @@ public abstract class BaseTypeChecker extends SourceChecker {
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new GraphQualifierHierarchy.GraphFactory(this);
+    }
+
+    /** Factory method to easily change what QualifierHierarchy is
+     * created.
+     * Needs to be public only because the GraphFactory must be able to call this method.
+     * No external use of this method is necessary.
+     */
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        if (factory instanceof GraphQualifierHierarchy.GraphFactory) {
+            return new GraphQualifierHierarchy((GraphQualifierHierarchy.GraphFactory)factory);
+        } else {
+            // If you get this error, you simply need to override this method in
+            // your checker.
+            SourceChecker.errorAbort("Given factory is not a GraphFactory subtype: " + factory);
+            return null; // dead code
+        }
     }
 
     /**

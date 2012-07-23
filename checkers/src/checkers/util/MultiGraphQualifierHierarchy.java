@@ -12,10 +12,10 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
-import checkers.quals.PolyAll;
 import checkers.quals.PolymorphicQualifier;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
@@ -69,11 +69,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
-        private final SourceChecker checker;
+        protected final BaseTypeChecker checker;
 
-        private final AnnotationUtils annoFactory;
+        protected final AnnotationUtils annoFactory;
 
-        public MultiGraphFactory(SourceChecker checker) {
+        public MultiGraphFactory(BaseTypeChecker checker) {
             this.supertypes = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<AnnotationMirror, AnnotationMirror>();
             this.checker = checker;
@@ -130,7 +130,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         protected QualifierHierarchy createQualifierHierarchy() {
-            return new MultiGraphQualifierHierarchy(this);
+            return checker.createQualifierHierarchy(this);
         }
 
         private boolean wasBuilt = false;
@@ -176,8 +176,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
-    protected MultiGraphQualifierHierarchy(MultiGraphFactory f) {
-        super(f.checker);
+    public MultiGraphQualifierHierarchy(MultiGraphFactory f) {
+        super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
         this.supertypesGraph = Collections.unmodifiableMap(f.supertypes);
@@ -189,7 +189,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         this.bottoms = findBottoms(fullMap);
         this.polyQualifiers = f.polyQualifiers;
 
-        addPolyRelations(checker, f.annoFactory, this,
+        addPolyRelations(f.annoFactory, this,
                 fullMap, this.polyQualifiers,
                 this.tops, this.bottoms);
 
@@ -198,7 +198,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
-        super(h.checker);
+        super();
         this.supertypesGraph = h.supertypesGraph;
         this.supertypesMap = h.supertypesMap;
         this.lubs = h.lubs;
@@ -421,8 +421,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
      */
     // TODO: document
-    protected void addPolyRelations(SourceChecker checker,
-            AnnotationUtils annoFactory,
+    protected void addPolyRelations(AnnotationUtils annoFactory,
             QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
