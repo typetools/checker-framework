@@ -9,6 +9,7 @@ The following items most likely need to be updated or added to the checker manua
 - Update the new purity annotation @Pure (with the two version for determinitic methods and side-effect free methods).  It is now available for all type-systems, not just nullness.
 - Document @Covariant annotation
 - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees
+- Document -AassumeAssertsAreEnabled.
 
 ===========================================================================
 
