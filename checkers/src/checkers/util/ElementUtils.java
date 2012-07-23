@@ -118,7 +118,12 @@ public class ElementUtils {
      * Returns a verbose name that identifies the element.
      */
     public static String getVerboseName(Element elt) {
-        return getQualifiedClassName(elt) + " " + elt.toString();
+        if (elt.getKind() == ElementKind.PACKAGE ||
+                elt.getKind().isClass()) {
+            return getQualifiedClassName(elt).toString();
+        } else {
+            return getQualifiedClassName(elt) + "." + elt.toString();
+        }
     }
 
     /**
