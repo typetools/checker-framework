@@ -8,7 +8,7 @@ User-visible framework improvements:
   Implement @PolyAll qualifier to vary over multiple type systems.
   The Checker Framework is unsound due to Java's covariant array subtyping.
     You can enable invariant array subtyping (for qualifiers only, not for
-    base Java types) with the command-line option -Alint:arrays:invariant.
+    base Java types) with the command-line option -Alint=arrays:invariant.
     This will become the default in the future.
 
 Internal framework improvements:
