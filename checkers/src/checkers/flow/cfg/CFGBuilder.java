@@ -3318,11 +3318,11 @@ public class CFGBuilder {
                 case INTERFACE:
                     node = new ClassNameNode(tree);
                     break;
-                case EXCEPTION_PARAMETER:
                 case FIELD:
                     // Note that "this" is a field, but not a field access.
                     node = new ExplicitThisLiteralNode(tree);
                     break;
+                case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:
                 case PARAMETER:
                     node = new LocalVariableNode(tree);
