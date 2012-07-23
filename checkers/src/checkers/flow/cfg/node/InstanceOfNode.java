@@ -9,27 +9,32 @@ import javax.lang.model.util.Types;
 
 import checkers.flow.util.HashCodeUtils;
 
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 
 /**
  * A node for the instanceof operator:
- * 
+ *
  * <em>x</em> instanceof <em>Point</em>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class InstanceOfNode extends Node {
 
-    // The value being tested
+    /** The value being tested. */
     protected Node operand;
 
-    // The reference type being tested against
+    /** The reference type being tested against. */
     protected TypeMirror refType;
+
+    /** The tree associated with this node. */
+    protected final InstanceOfTree tree;
 
     public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
         assert tree.getKind() == Tree.Kind.INSTANCE_OF;
+        this.tree = (InstanceOfTree) tree;
         this.operand = operand;
         this.type = types.getPrimitiveType(TypeKind.BOOLEAN);
         this.refType = refType;
@@ -39,6 +44,7 @@ public class InstanceOfNode extends Node {
         return operand;
     }
 
+    @Override
     public TypeMirror getType() {
         return type;
     }
@@ -48,8 +54,8 @@ public class InstanceOfNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
-        return null;
+    public InstanceOfTree getTree() {
+        return tree;
     }
 
     @Override
