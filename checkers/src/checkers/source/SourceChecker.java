@@ -232,7 +232,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /**
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
-     * 
+     *
      * @param msg The error message to log.
      */
     public static void errorAbort(String msg) {
@@ -276,7 +276,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Instead use initChecker.
      * This allows us to handle CheckerError only here and doesn't
      * require all overriding implementations to be aware of CheckerError.
-     * 
+     *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      * @see SourceChecker#initChecker(ProcessingEnvironment)
      */
@@ -288,7 +288,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             if (this.env == null) {
                 errorInInit = true;
                 // Set the messager first, as it wasn't initialized
-                messager = (JavacMessager) processingEnv.getMessager();
+                messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
                         "You have forgotten to call super.initChecker in your "
@@ -305,7 +305,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Initialize the checker.
-     * 
+     *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
     public void initChecker(ProcessingEnvironment processingEnv) {
@@ -768,6 +768,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("printErrorStack");
         options.add("printAllQualifiers");
         options.add("flowdotdir");
+        options.add("assumeAssertsAreEnabled");
         options.add("concurrentSemantics");
         options.add("suggestPureMethods");
         options.addAll(super.getSupportedOptions());

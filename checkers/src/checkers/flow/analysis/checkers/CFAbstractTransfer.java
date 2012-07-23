@@ -350,8 +350,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, false);
-        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, false);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV,
+                false);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV,
+                false);
         return res;
     }
 
@@ -367,8 +369,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // if annotations differ, use the one that is more precise for both
         // sides (and add it to the store if possible)
-        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV, true);
-        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV, true);
+        res = strengthenAnnotationOfEqualTo(res, leftN, rightN, leftV, rightV,
+                true);
+        res = strengthenAnnotationOfEqualTo(res, rightN, leftN, rightV, leftV,
+                true);
 
         return res;
     }
@@ -389,8 +393,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      *         or {@code null}.
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
-            TransferResult<V, S> res, Node firstNode, Node secondNode, V firstValue,
-            V secondValue, boolean notEqualTo) {
+            TransferResult<V, S> res, Node firstNode, Node secondNode,
+            V firstValue, V secondValue, boolean notEqualTo) {
         if (firstValue != null) {
             // Only need to insert if the second value is actually different.
             if (!firstValue.equals(secondValue)) {
@@ -671,12 +675,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     /**
      * An assert produces no value and since it may be disabled, it has no
-     * effect on the store.
+     * effect on the store. However, if 'assumeAssertsAreEnabled' is used, then
+     * we can safely use the 'then' store, as the 'else' store will go the the
+     * exceptional exit.
      */
     @Override
     public TransferResult<V, S> visitAssert(AssertNode n, TransferInput<V, S> in) {
         if (in.containsTwoStores()) {
-            return new RegularTransferResult<>(null, in.getThenStore());
+            if (analysis.getEnv().getOptions()
+                    .containsKey("assumeAssertsAreEnabled")) {
+                // If assertions are enabled, then assertions stop the execution
+                // if the expression is false.
+                return new RegularTransferResult<>(null, in.getThenStore());
+            }
         }
         return new RegularTransferResult<>(null, in.getRegularStore());
     }
