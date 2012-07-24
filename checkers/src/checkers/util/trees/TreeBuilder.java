@@ -42,6 +42,7 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -50,6 +51,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Pair;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the
@@ -416,17 +418,27 @@ public class TreeBuilder {
             // that actually appear in an AST Tree.  Other annotations,
             // such as @Unqualified, are skipped.
             if (!AnnotatedTypeMirror.isUnqualified(am)) {
+                // Create a new Attribute to match the AnnotationMirror.
+                List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
+                for (Map.Entry<? extends ExecutableElement,
+                               ? extends AnnotationValue> entry :
+                         am.getElementValues().entrySet()) {
+                    values = values.append(new Pair((Symbol.MethodSymbol)entry.getKey(),
+                                                    (Attribute)entry.getValue()));
+                }
+                Attribute.Compound compound =
+                    new Attribute.Compound((Type.ClassType)am.getAnnotationType(),
+                                           values);
+                Attribute.TypeCompound typeCompound =
+                    new Attribute.TypeCompound(compound, new TypeAnnotationPosition());
+
                 JCTree.JCAnnotation annotationTree =
-                    maker.Annotation((Attribute.Compound)am);
+                    maker.Annotation(typeCompound);
                 JCTree.JCTypeAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(annotationTree.getAnnotationType(),
                                          annotationTree.getArguments());
                 
-                if (am instanceof Attribute.TypeCompound) {
-                    typeAnnotationTree.attribute_field = (Attribute.TypeCompound)am;
-                } else {
-                    throw new RuntimeException("Bad annotation: " + am);
-                }
+                typeAnnotationTree.attribute_field = typeCompound;
 
                 annotationTrees = annotationTrees.append(typeAnnotationTree);
             }
