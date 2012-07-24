@@ -1608,17 +1608,16 @@ public class CFGBuilder {
          *
          * @param node
          *            an input node
-         * @param stringType
-         *            representation of the String type
          * @return a Node with the value promoted to String, which may be the
          *         input node
          */
-        protected Node stringConversion(Node node, TypeMirror stringType) {
+        protected Node stringConversion(Node node) {
             // For string conversion, see JLS 5.1.11
-            assert TypesUtils.isString(stringType);
+            TypeElement stringElement =
+                elements.getTypeElement("java.lang.String");
             if (!TypesUtils.isString(node.getType())) {
                 node = new StringConversionNode(node.getTree(), node,
-                        stringType);
+                    stringElement.asType());
                 replaceInLookupMap(node);
                 extendWithNode(node);
             }
@@ -2335,8 +2334,8 @@ public class CFGBuilder {
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
-                    target = stringConversion(target, exprType);
-                    value = stringConversion(value, exprType);
+                    target = stringConversion(target);
+                    value = stringConversion(value);
                     r = new StringConcatenateAssignmentNode(tree, target, value);
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
@@ -2470,8 +2469,8 @@ public class CFGBuilder {
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS);
-                    left = stringConversion(left, exprType);
-                    right = stringConversion(right, exprType);
+                    left = stringConversion(left);
+                    right = stringConversion(right);
                     r = new StringConcatenateNode(tree, left, right);
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
