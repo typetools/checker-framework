@@ -2187,7 +2187,7 @@ public class CFGBuilder {
                 // add assignment node
                 AssignmentNode assignmentNode = new AssignmentNode(tree,
                         target, expression);
-                extendWithNode(assignmentNode);
+                return extendWithNode(assignmentNode);
             }
 
             // case 2: other cases
@@ -2221,8 +2221,7 @@ public class CFGBuilder {
             expression = assignConvert(expression, target.getType());
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
                     expression);
-            extendWithNode(assignmentNode);
-            return expression;
+            return extendWithNode(assignmentNode);
         }
 
         /**
