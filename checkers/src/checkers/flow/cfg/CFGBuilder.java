@@ -2156,7 +2156,7 @@ public class CFGBuilder {
 
             assert !conditionalMode;
 
-            Node expression;
+            AssignmentNode assignmentNode;
             ExpressionTree variable = tree.getVariable();
             TypeMirror varType = InternalUtils.typeOf(variable);
 
@@ -2167,7 +2167,7 @@ public class CFGBuilder {
                         TreeUtils.enclosingClass(getCurrentPath()));
 
                 // visit expression
-                expression = scan(tree.getExpression(), p);
+                Node expression = scan(tree.getExpression(), p);
                 expression = assignConvert(expression, varType);
 
                 // visit field access (throws null-pointer exception)
@@ -2186,7 +2186,7 @@ public class CFGBuilder {
                 }
 
                 // add assignment node
-                AssignmentNode assignmentNode = new AssignmentNode(tree,
+                assignmentNode = new AssignmentNode(tree,
                         target, expression);
                 extendWithNode(assignmentNode);
             }
@@ -2196,16 +2196,16 @@ public class CFGBuilder {
                 Node target = scan(variable, p);
                 target.setLValue();
 
-                expression = translateAssignment(tree, target,
+                assignmentNode = translateAssignment(tree, target,
                         tree.getExpression());
             }
-            return expression;
+            return assignmentNode;
         }
 
         /**
          * Translate an assignment.
          */
-        protected Node translateAssignment(Tree tree, Node target,
+        protected AssignmentNode translateAssignment(Tree tree, Node target,
                 ExpressionTree rhs) {
             Node expression = scan(rhs, null);
             return translateAssignment(tree, target, expression);
@@ -2214,7 +2214,7 @@ public class CFGBuilder {
         /**
          * Translate an assignment where the RHS has already been scanned.
          */
-        protected Node translateAssignment(Tree tree, Node target,
+        protected AssignmentNode translateAssignment(Tree tree, Node target,
                 Node expression) {
             assert tree instanceof AssignmentTree
                     || tree instanceof VariableTree;
@@ -2223,7 +2223,7 @@ public class CFGBuilder {
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
                     expression);
             extendWithNode(assignmentNode);
-            return expression;
+            return assignmentNode;
         }
 
         /**
