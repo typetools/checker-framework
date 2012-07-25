@@ -10,28 +10,29 @@ import com.sun.source.tree.Tree;
 
 /**
  * A abstract node for compound assignments:
- * 
+ *
  * <pre>
  *   <em>variable</em> <em>operator</em>= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
-public class CompoundAssignmentNode extends Node {
+public abstract class CompoundAssignmentNode extends Node {
 
     protected Tree tree;
     protected Node left;
     protected Node right;
 
-    public CompoundAssignmentNode(Tree tree, Node left,
-            Node right) {
+    public CompoundAssignmentNode(Tree tree, Node left, Node right) {
         this.tree = tree;
         this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }
+
+    public abstract String getOperator();
 
     public Node getLeftOperand() {
         return left;
@@ -53,18 +54,25 @@ public class CompoundAssignmentNode extends Node {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null
-                || !obj.getClass().equals(getClass())) {
+        if (obj == null || !obj.getClass().equals(getClass())) {
             return false;
         }
         CompoundAssignmentNode other = (CompoundAssignmentNode) obj;
         return getLeftOperand().equals(other.getLeftOperand())
-                && getRightOperand().equals(other.getRightOperand());
+                && getRightOperand().equals(other.getRightOperand())
+                && getOperator().equals(other.getOperator());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(getLeftOperand(), getRightOperand());
+        return HashCodeUtils.hash(getLeftOperand(), getRightOperand(),
+                getOperator());
+    }
+
+    @Override
+    public String toString() {
+        return "(" + getLeftOperand() + " " + getOperator() + "= "
+                + getRightOperand() + ")";
     }
 
     @Override

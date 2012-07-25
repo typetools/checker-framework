@@ -1608,16 +1608,17 @@ public class CFGBuilder {
          *
          * @param node
          *            an input node
+         * @param stringType
+         *            representation of the String type
          * @return a Node with the value promoted to String, which may be the
          *         input node
          */
-        protected Node stringConversion(Node node) {
+        protected Node stringConversion(Node node, TypeMirror stringType) {
             // For string conversion, see JLS 5.1.11
-            TypeElement stringElement =
-                elements.getTypeElement("java.lang.String");
+            assert TypesUtils.isString(stringType);
             if (!TypesUtils.isString(node.getType())) {
                 node = new StringConversionNode(node.getTree(), node,
-                    stringElement.asType());
+                        stringType);
                 replaceInLookupMap(node);
                 extendWithNode(node);
             }
@@ -2155,7 +2156,7 @@ public class CFGBuilder {
 
             assert !conditionalMode;
 
-            Node expression;
+            AssignmentNode assignmentNode;
             ExpressionTree variable = tree.getVariable();
             TypeMirror varType = InternalUtils.typeOf(variable);
 
@@ -2166,7 +2167,7 @@ public class CFGBuilder {
                         TreeUtils.enclosingClass(getCurrentPath()));
 
                 // visit expression
-                expression = scan(tree.getExpression(), p);
+                Node expression = scan(tree.getExpression(), p);
                 expression = assignConvert(expression, varType);
 
                 // visit field access (throws null-pointer exception)
@@ -2185,9 +2186,9 @@ public class CFGBuilder {
                 }
 
                 // add assignment node
-                AssignmentNode assignmentNode = new AssignmentNode(tree,
+                assignmentNode = new AssignmentNode(tree,
                         target, expression);
-                return extendWithNode(assignmentNode);
+                extendWithNode(assignmentNode);
             }
 
             // case 2: other cases
@@ -2195,16 +2196,16 @@ public class CFGBuilder {
                 Node target = scan(variable, p);
                 target.setLValue();
 
-                expression = translateAssignment(tree, target,
+                assignmentNode = translateAssignment(tree, target,
                         tree.getExpression());
             }
-            return expression;
+            return assignmentNode;
         }
 
         /**
          * Translate an assignment.
          */
-        protected Node translateAssignment(Tree tree, Node target,
+        protected AssignmentNode translateAssignment(Tree tree, Node target,
                 ExpressionTree rhs) {
             Node expression = scan(rhs, null);
             return translateAssignment(tree, target, expression);
@@ -2213,7 +2214,7 @@ public class CFGBuilder {
         /**
          * Translate an assignment where the RHS has already been scanned.
          */
-        protected Node translateAssignment(Tree tree, Node target,
+        protected AssignmentNode translateAssignment(Tree tree, Node target,
                 Node expression) {
             assert tree instanceof AssignmentTree
                     || tree instanceof VariableTree;
@@ -2221,7 +2222,8 @@ public class CFGBuilder {
             expression = assignConvert(expression, target.getType());
             AssignmentNode assignmentNode = new AssignmentNode(tree, target,
                     expression);
-            return extendWithNode(assignmentNode);
+            extendWithNode(assignmentNode);
+            return assignmentNode;
         }
 
         /**
@@ -2333,8 +2335,8 @@ public class CFGBuilder {
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
-                    target = stringConversion(target);
-                    value = stringConversion(value);
+                    target = stringConversion(target, exprType);
+                    value = stringConversion(value, exprType);
                     r = new StringConcatenateAssignmentNode(tree, target, value);
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
@@ -2468,8 +2470,8 @@ public class CFGBuilder {
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS);
-                    left = stringConversion(left);
-                    right = stringConversion(right);
+                    left = stringConversion(left, exprType);
+                    right = stringConversion(right, exprType);
                     r = new StringConcatenateNode(tree, left, right);
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);

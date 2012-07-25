@@ -5,14 +5,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the numerical subtraction compound assignment:
- * 
+ *
  * <pre>
  *   <em>variable</em> -= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class NumericalSubtractionAssignmentNode extends CompoundAssignmentNode {
 
@@ -27,7 +27,7 @@ public class NumericalSubtractionAssignmentNode extends CompoundAssignmentNode {
     }
 
     @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " -= " + getRightOperand() + ")";
+    public String getOperator() {
+        return "-";
     }
 }

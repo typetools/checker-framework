@@ -106,9 +106,9 @@ public class FlowExpressionParseUtil {
             // field access
             try {
                 Resolver resolver = new Resolver(env);
-                Element fieldElement = resolver.findVariable(s, path);
+                Element fieldElem = resolver.findField(s, context.receiverType, path);
                 return new FieldAccess(context.receiver, context.receiverType,
-                        fieldElement);
+                        fieldElem);
             } catch (Throwable t) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.parse.error", s));

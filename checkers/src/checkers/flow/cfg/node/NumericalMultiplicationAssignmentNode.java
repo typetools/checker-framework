@@ -5,14 +5,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the numerical multiplication compound assignment:
- * 
+ *
  * <pre>
  *   <em>variable</em> *= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class NumericalMultiplicationAssignmentNode extends CompoundAssignmentNode {
 
@@ -28,8 +28,8 @@ public class NumericalMultiplicationAssignmentNode extends CompoundAssignmentNod
     }
 
     @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " *= " + getRightOperand() + ")";
+    public String getOperator() {
+        return "*";
     }
-    
+
 }
