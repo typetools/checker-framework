@@ -161,15 +161,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * The top qualifiers of the individual type hierarchies.
      */
-    // Not final to allow a subclass to re-assign it in the constructor.
-    protected /*final*/ Set<AnnotationMirror> tops;
+    protected final Set<AnnotationMirror> tops;
 
     /**
      * The bottom qualifiers of the type hierarchies.
      * TODO: clarify relation to tops.
      */
-    // Not final to allow a subclass to re-assign it in the constructor.
-    protected /*final*/ Set<AnnotationMirror> bottoms;
+    protected final Set<AnnotationMirror> bottoms;
 
     /**
      * @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers
@@ -177,6 +175,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
     public MultiGraphQualifierHierarchy(MultiGraphFactory f) {
+        this(f, (Object[])null);
+    }
+
+    // Allow a subclass to provide additional constructor parameters that
+    // are simply passed back via a call to the "finish" method.
+    public MultiGraphQualifierHierarchy(MultiGraphFactory f, Object... args) {
         super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
@@ -193,20 +197,23 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 fullMap, this.polyQualifiers,
                 this.tops, this.bottoms);
 
+        finish(f.annoFactory, this, fullMap, this.polyQualifiers,
+                this.tops, this.bottoms, args);
+
         this.supertypesMap = Collections.unmodifiableMap(fullMap);
         // System.out.println("MGH: " + this);
     }
 
-    protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
-        super();
-        this.supertypesGraph = h.supertypesGraph;
-        this.supertypesMap = h.supertypesMap;
-        this.lubs = h.lubs;
-        this.glbs = h.glbs;
-        this.tops = h.tops;
-        this.polyQualifiers = h.polyQualifiers;
-        this.bottoms = h.bottoms;
-    }
+    /**
+     * Method to finalize the qualifier hierarchy before it becomes unmodifiable.
+     * The parameters pass all fields and allow modification.
+     */
+    protected void finish(AnnotationUtils annoFactory,
+            QualifierHierarchy qualHierarchy,
+            Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
+            Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
+            Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
+            Object... args) { }
 
     @Override
     public String toString() {
@@ -369,7 +376,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * Infer the tops of the subtype hierarchy.  Simple finds the qualifiers
      * that have no supertypes.
      */
-    protected static Set<AnnotationMirror>
+    // Not static to allow adaptation in subclasses. Only parameters should be modified.
+    protected Set<AnnotationMirror>
     findTops(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Set<AnnotationMirror> possibleTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : supertypes.keySet()) {
@@ -383,7 +391,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * Infer the bottoms of the subtype hierarchy.  Simple finds the qualifiers
      * that are not supertypes of other qualifiers.
      */
-    protected static Set<AnnotationMirror>
+    // Not static to allow adaptation in subclasses. Only parameters should be modified.
+    protected Set<AnnotationMirror>
     findBottoms(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(supertypes.keySet());
@@ -396,7 +405,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * Computes the transitive closure of the given map and returns it.
      */
-    protected static Map<AnnotationMirror, Set<AnnotationMirror>>
+    /* The method gets all required parameters passed in and could be static. However,
+     * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
+     */
+    protected Map<AnnotationMirror, Set<AnnotationMirror>>
     buildFullMap(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = AnnotationUtils.createAnnotationMap();
         for (AnnotationMirror anno : supertypes.keySet()) {

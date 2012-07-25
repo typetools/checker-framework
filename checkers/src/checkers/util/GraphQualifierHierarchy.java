@@ -1,11 +1,11 @@
 package checkers.util;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 
@@ -16,45 +16,36 @@ import checkers.types.QualifierHierarchy;
 */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-    /**
-     * We only need to make sure that "build" instantiates the right QualifierHierarchy. 
-     */
-    public static class GraphFactory extends MultiGraphFactory {
-        private final AnnotationMirror bottom;
-
-        public GraphFactory(BaseTypeChecker checker) {
-            super(checker);
-            this.bottom = null;
-        }
-
-        public GraphFactory(BaseTypeChecker checker, AnnotationMirror bottom) {
-            super(checker);
-            this.bottom = bottom;
-        }
-
-        @Override
-        protected QualifierHierarchy createQualifierHierarchy() {
-            if (this.bottom!=null) {
-                // A special bottom qualifier was provided; go through the existing
-                // bottom qualifiers and tie them all to this bottom qualifier.
-                Set<AnnotationMirror> bottoms = findBottoms(supertypes);
-                for (AnnotationMirror abot : bottoms) {
-                    if (!AnnotationUtils.areSame(bottom, abot)) {
-                        addSubtype(bottom, abot);
-                    }
-                }
-            }
-
-            return checker.createQualifierHierarchy(this);
-        }
+    public GraphQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
+        super(f, bottom);
+        // this.bottom = bottom;
     }
 
-    public GraphQualifierHierarchy(GraphFactory f) {
-        super(f);
-    }
+    // private final AnnotationMirror bottom;
 
-    protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
-        super(h);
+    @Override
+    protected void finish(AnnotationUtils annoFactory,
+            QualifierHierarchy qualHierarchy,
+            Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
+            Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
+            Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
+            Object... args) {
+        // Careful, when this method is called, a field this.bottom would not be set yet.
+        if (args!=null && args[0]!=null) {
+            AnnotationMirror thebottom = (AnnotationMirror) args[0];
+            // A special bottom qualifier was provided; go through the existing
+            // bottom qualifiers and tie them all to this bottom qualifier.
+            // Set<AnnotationMirror> bottoms = findBottoms(supertypes);
+            Set<AnnotationMirror> allQuals = AnnotationUtils.createAnnotationSet();
+            allQuals.addAll(fullMap.keySet());
+            allQuals.remove(thebottom);
+            AnnotationUtils.updateMappingToImmutableSet(fullMap, thebottom, allQuals);
+            // thebottom is initially a top qualifier
+            tops.remove(thebottom);
+            // thebottom is now the single bottom qualifier
+            bottoms.clear();
+            bottoms.add(thebottom);
+        }
     }
 
     /**
