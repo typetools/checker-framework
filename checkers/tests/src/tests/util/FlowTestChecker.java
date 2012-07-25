@@ -36,7 +36,7 @@ public final class FlowTestChecker extends BaseTypeChecker {
     }
 
     @Override
-	public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new FlowQualifierHierarchy(factory);
     }
 
