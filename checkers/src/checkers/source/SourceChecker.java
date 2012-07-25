@@ -771,6 +771,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("assumeAssertsAreEnabled");
         options.add("concurrentSemantics");
         options.add("suggestPureMethods");
+        options.add("resourceStats");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }
