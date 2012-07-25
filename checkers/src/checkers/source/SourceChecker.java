@@ -382,17 +382,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             visitor.scan(p, null);
         } catch (CheckerError ce) {
             logCheckerError(ce);
-        } catch (Throwable exception) {
-            String message = getClass().getSimpleName().replaceAll("Checker", "")
-            + " processor threw unexpected exception when processing "
-            + currentRoot.getSourceFile().getName();
-
-            Error err = new Error(message, exception);
-            err.printStackTrace();
-            // TODO: how can we output where in the source file the error
-            // occurred?
-            // Calling visitor.getCurrentPath() gives null.
-            throw err;
+        } catch (Throwable t) {
+            logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
+                    t.getClass().getSimpleName() + ")  when processing "
+                    + currentRoot.getSourceFile().getName() +
+                    "; message: " + t.getMessage(), t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
