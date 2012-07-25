@@ -150,7 +150,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this);
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
     /** Factory method to easily change what QualifierHierarchy is
@@ -159,14 +159,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * No external use of this method is necessary.
      */
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        if (factory instanceof GraphQualifierHierarchy.GraphFactory) {
-            return new GraphQualifierHierarchy((GraphQualifierHierarchy.GraphFactory)factory);
-        } else {
-            // If you get this error, you simply need to override this method in
-            // your checker.
-            SourceChecker.errorAbort("Given factory is not a GraphFactory subtype: " + factory);
-            return null; // dead code
-        }
+        return new GraphQualifierHierarchy(factory, null);
     }
 
     /**
