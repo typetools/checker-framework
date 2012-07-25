@@ -9,3 +9,13 @@ The project branched off of javaparser 1.0.7, available at:
 
 Known Issues:
 - does not parse annotations on new class or new array expressions
+
+
+-------------------------------------------------------------------------
+To rebuild the parser, simply run javacc (the Java Compiler Compiler) on 
+the java_1_5.jj file in src/japa/parser directory:
+    cd src/java/parser
+    javacc java_1_5.jj
+
+When debugging parser changes, the -debug_parser option is helpful.  It
+provides extensive debug output about what parses are attempted.
