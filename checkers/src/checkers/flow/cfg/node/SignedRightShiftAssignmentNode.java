@@ -5,14 +5,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for bitwise right shift compound assignments with sign extension:
- * 
+ *
  * <pre>
  *   <em>variable</em> >>= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class SignedRightShiftAssignmentNode extends CompoundAssignmentNode {
 
@@ -27,7 +27,7 @@ public class SignedRightShiftAssignmentNode extends CompoundAssignmentNode {
     }
 
     @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " >>= " + getRightOperand() + ")";
+    public String getOperator() {
+        return ">>";
     }
 }

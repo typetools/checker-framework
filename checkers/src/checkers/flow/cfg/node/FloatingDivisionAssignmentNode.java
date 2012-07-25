@@ -5,14 +5,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the floating-point division compound assignment:
- * 
+ *
  * <pre>
  *   <em>variable</em> /= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class FloatingDivisionAssignmentNode extends CompoundAssignmentNode {
 
@@ -27,7 +27,7 @@ public class FloatingDivisionAssignmentNode extends CompoundAssignmentNode {
     }
 
     @Override
-    public String toString() {
-        return "(" + getLeftOperand() + " /= " + getRightOperand() + ")";
+    public String getOperator() {
+        return "/";
     }
 }
