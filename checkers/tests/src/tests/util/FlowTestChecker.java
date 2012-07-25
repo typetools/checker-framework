@@ -14,6 +14,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @TypeQualifiers( { Value.class, Odd.class, Unqualified.class } )
@@ -35,14 +36,14 @@ public final class FlowTestChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new FlowQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+	public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new FlowQualifierHierarchy(factory);
     }
 
     private final class FlowQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public FlowQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public FlowQualifierHierarchy(MultiGraphFactory f) {
+            super(f, null);
         }
 
         @Override
