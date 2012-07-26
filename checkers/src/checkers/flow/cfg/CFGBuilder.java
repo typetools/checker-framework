@@ -42,7 +42,7 @@ import checkers.flow.cfg.block.SpecialBlockImpl;
 import checkers.flow.cfg.node.ArrayAccessNode;
 import checkers.flow.cfg.node.ArrayCreationNode;
 import checkers.flow.cfg.node.ArrayTypeNode;
-import checkers.flow.cfg.node.AssertNode;
+import checkers.flow.cfg.node.AssertionErrorNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
 import checkers.flow.cfg.node.BitwiseAndNode;
@@ -2177,7 +2177,7 @@ public class CFGBuilder {
             if (tree.getDetail() != null) {
                 detail = scan(tree.getDetail(), p);
             }
-            AssertNode assertNode = new AssertNode(tree, condition, detail);
+            AssertionErrorNode assertNode = new AssertionErrorNode(tree, condition, detail);
             extendWithNode(assertNode);
             TypeElement assertException = elements
                     .getTypeElement("java.lang.AssertionError");

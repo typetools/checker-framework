@@ -10,23 +10,23 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * A node for the assert statement:
- * 
+ * A node for the {@link AssertionError} when an assertion fails.
+ *
  * <pre>
  *   assert <em>condition</em> : <em>detail</em> ;
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
-public class AssertNode extends Node {
+public class AssertionErrorNode extends Node {
 
     protected Tree tree;
     protected Node condition;
     protected Node detail;
 
-    public AssertNode(Tree tree, Node condition, Node detail) {
+    public AssertionErrorNode(Tree tree, Node condition, Node detail) {
         assert tree.getKind() == Kind.ASSERT;
         this.tree = tree;
         // TODO: Find out the correct "type" for statements.
@@ -51,20 +51,20 @@ public class AssertNode extends Node {
 
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
-        return visitor.visitAssert(this, p);
+        return visitor.visitAssertionError(this, p);
     }
 
     @Override
     public String toString() {
-        return "assert " + getCondition() + ":" + getDetail();
+        return "AssertionError(" + getDetail() + ")";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof AssertNode)) {
+        if (obj == null || !(obj instanceof AssertionErrorNode)) {
             return false;
         }
-        AssertNode other = (AssertNode) obj;
+        AssertionErrorNode other = (AssertionErrorNode) obj;
         return getCondition().equals(other.getCondition()) &&
             getDetail().equals(other.getDetail());
     }
