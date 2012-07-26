@@ -19,10 +19,15 @@ import com.sun.source.tree.MethodInvocationTree;
 /**
  * A control-flow graph builder (see {@link CFGBuilder}) that knows about the
  * {@link TerminatesExecution} annotation.
- * 
+ *
  * @author Stefan Heule
  */
 public class CFCFGBuilder extends CFGBuilder {
+
+    public CFCFGBuilder() {
+        super(false, false);
+    }
+
     /**
      * Build the control flow graph of some code.
      */
