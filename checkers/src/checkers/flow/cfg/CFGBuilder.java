@@ -222,6 +222,18 @@ import com.sun.source.util.Trees;
  */
 public class CFGBuilder {
 
+    /** Can assertions assumed to be disabled? */
+    protected final boolean assumeAssertionsDisabled;
+
+    /** Can assertions assumed to be disabled? */
+    protected final boolean assumeAssertionsEnabled;
+
+    public CFGBuilder(boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        assert !(assumeAssertionsDisabled && assumeAssertionsEnabled);
+        this.assumeAssertionsEnabled = assumeAssertionsEnabled;
+        this.assumeAssertionsDisabled = assumeAssertionsDisabled;
+    }
+
     /**
      * Class declarations that have been encountered when building the
      * control-flow graph for a method.
@@ -238,7 +250,7 @@ public class CFGBuilder {
     public static ControlFlowGraph build(AnnotatedTypeFactory factory,
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        return new CFGBuilder().run(factory, root, env, underlyingAST);
+        return new CFGBuilder(false, false).run(factory, root, env, underlyingAST);
     }
 
     /**
@@ -247,7 +259,7 @@ public class CFGBuilder {
     public static ControlFlowGraph build(AnnotatedTypeFactory factory,
             CompilationUnitTree root, ProcessingEnvironment env,
             MethodTree tree, Tree classTree) {
-        return new CFGBuilder().run(factory, root, env, tree, classTree);
+        return new CFGBuilder(false, false).run(factory, root, env, tree, classTree);
     }
 
     /**
@@ -2143,10 +2155,49 @@ public class CFGBuilder {
 
         @Override
         public Node visitAssert(AssertTree tree, Void p) {
-            Node condition = unbox(scan(tree.getCondition(), p));
-            Node detail = scan(tree.getDetail(), p);
 
-            return extendWithNode(new AssertNode(tree, condition, detail));
+            // see JLS 14.10
+
+            // all necessary labels
+            Label thenEntry = new Label();
+            Label elseEntry = new Label();
+
+            // basic block for the condition
+            assert conditionalMode == false;
+            conditionalMode = true;
+            thenTargetL = thenEntry;
+            elseTargetL = elseEntry;
+            Node condition = unbox(scan(tree.getCondition(), p));
+            extendWithExtendedNode(new UnconditionalJump(thenEntry));
+            conditionalMode = false;
+
+            // else branch
+            Node detail = null;
+            addLabelForNextNode(elseEntry);
+            if (tree.getDetail() != null) {
+                detail = scan(tree.getDetail(), p);
+            }
+            AssertNode assertNode = new AssertNode(tree, condition, detail);
+            extendWithNode(assertNode);
+            TypeElement assertException = elements
+                    .getTypeElement("java.lang.AssertionError");
+            NodeWithExceptionsHolder exNode = extendWithNodeWithException(
+                    new ThrowNode(null, assertNode), assertException.asType());
+            exNode.setTerminatesExecution(true);
+
+            // then branch (nothing happens)
+            addLabelForNextNode(thenEntry);
+
+//            String name = uniqueName("assertionsEnabled");
+//            MethodTree enclosingMethod = TreeUtils
+//                    .enclosingMethod(getCurrentPath());
+//            Element owner = TreeUtils.elementFromDeclaration(enclosingMethod);
+//            ExpressionTree initializer = null;
+//            VariableTree ea = treeBuilder.buildVariableDecl(
+//                    types.getPrimitiveType(TypeKind.BOOLEAN), name, owner,
+//                    initializer);
+
+            return null;
         }
 
         @Override
