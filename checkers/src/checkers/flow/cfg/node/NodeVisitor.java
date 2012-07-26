@@ -2,9 +2,9 @@ package checkers.flow.cfg.node;
 
 /**
  * A visitor for a {@link Node} tree.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <R>
  *            Return type of the visitor. Use {@link Void} if the visitor does
  *            not have a return value.
@@ -79,7 +79,7 @@ public interface NodeVisitor<R, P> {
 
     // Compound assignments
     R visitCompoundAssignment(CompoundAssignmentNode n, P p);
-    
+
     R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
 
     R visitNumericalAdditionAssignment(NumericalAdditionAssignmentNode n, P p);
@@ -167,7 +167,7 @@ public interface NodeVisitor<R, P> {
     R visitTypeCast(TypeCastNode n, P p);
 
     // Statements
-    R visitAssert(AssertNode n, P p);
+    R visitAssertionError(AssertionErrorNode n, P p);
 
     R visitThrow(ThrowNode n, P p);
 

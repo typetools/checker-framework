@@ -6,14 +6,14 @@ package checkers.flow.cfg.node;
  * several related visit methods at once. An example is the
  * {@code visitValueLiteral} method, that is called for every
  * {@link ValueLiteralNode}.
- * 
+ *
  * <p>
- * 
+ *
  * This is useful to implement a visitor that performs the same operation (e.g.,
  * nothing) for most {@link Node}s and only has special behavior for a few.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <R>
  *            Return type of the visitor.
  * @param <P>
@@ -182,6 +182,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     }
 
     // Compound assignments
+    @Override
     public R visitCompoundAssignment(CompoundAssignmentNode n, P p) {
         return visitNode(n, p);
     };
@@ -346,7 +347,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     public R visitArrayAccess(ArrayAccessNode n, P p) {
         return visitNode(n, p);
     }
-    
+
     public R visitThisLiteral(ThisLiteralNode n, P p) {
         return visitNode(n, p);
     }
@@ -408,7 +409,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     // Statements
     @Override
-    public R visitAssert(AssertNode n, P p) {
+    public R visitAssertionError(AssertionErrorNode n, P p) {
         return visitNode(n, p);
     }
 
