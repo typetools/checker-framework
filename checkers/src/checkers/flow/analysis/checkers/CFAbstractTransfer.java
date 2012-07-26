@@ -22,7 +22,6 @@ import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.UnderlyingAST.Kind;
 import checkers.flow.cfg.node.AbstractNodeVisitor;
-import checkers.flow.cfg.node.AssertNode;
 import checkers.flow.cfg.node.AssignmentNode;
 import checkers.flow.cfg.node.CaseNode;
 import checkers.flow.cfg.node.CompoundAssignmentNode;
@@ -672,25 +671,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 // these errors are reported at the declaration, ignore here
             }
         }
-    }
-
-    /**
-     * An assert produces no value and since it may be disabled, it has no
-     * effect on the store. However, if 'assumeAssertsAreEnabled' is used, then
-     * we can safely use the 'then' store, as the 'else' store will go the the
-     * exceptional exit.
-     */
-    @Override
-    public TransferResult<V, S> visitAssert(AssertNode n, TransferInput<V, S> in) {
-        if (in.containsTwoStores()) {
-            if (analysis.getEnv().getOptions()
-                    .containsKey("assumeAssertsAreEnabled")) {
-                // If assertions are enabled, then assertions stop the execution
-                // if the expression is false.
-                return new RegularTransferResult<>(null, in.getThenStore());
-            }
-        }
-        return new RegularTransferResult<>(null, in.getRegularStore());
     }
 
     /**
