@@ -9,11 +9,13 @@ The project branched off of javaparser 1.0.7, available at:
 
 Known Issues:
 - does not parse annotations on new class or new array expressions
-
+- uses the old receiver parameter syntax, must be adapted
+- This is only a Java 1.5 parser, ideally we would use a Java 8 parser eventually
 
 -------------------------------------------------------------------------
-To rebuild the parser, simply run javacc (the Java Compiler Compiler) on 
-the java_1_5.jj file in src/japa/parser directory:
+To modify and rebuild the parser, install javacc (the Java Compiler
+Compiler, available from http://javacc.java.net/), edit the grammar
+in src/japa/parser/java_1_5.jj, and rebuild the parser:
     cd src/java/parser
     javacc java_1_5.jj
 
