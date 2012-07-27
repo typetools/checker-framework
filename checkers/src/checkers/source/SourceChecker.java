@@ -872,7 +872,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @param filePath the name/path of the file to be read
      * @return  the properties
      */
-    private Properties getProperties(Class<?> cls, String filePath) {
+    protected Properties getProperties(Class<?> cls, String filePath) {
         Properties prop = new Properties();
         try {
             InputStream base = cls.getResourceAsStream(filePath);
