@@ -67,7 +67,9 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
-            if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)) {
+            if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)
+                    && checker.getLintOption("strictmonoinit",
+                            NonNullChecker.LINT_DEFAULT_STRICTMONOINIT)) {
                 return;
             }
         }
@@ -78,8 +80,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
             // special case writing to NonNull field for free/unc receivers
             // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = getNonNullFactory()
-                    .getDeclaredAndDefaultedAnnotatedType(
-                            varTree);
+                    .getDeclaredAndDefaultedAnnotatedType(varTree);
             // receiverType is null for static field accesses
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
