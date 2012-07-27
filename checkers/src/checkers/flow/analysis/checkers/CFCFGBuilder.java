@@ -24,7 +24,8 @@ import com.sun.source.tree.MethodInvocationTree;
  */
 public class CFCFGBuilder extends CFGBuilder {
 
-    public CFCFGBuilder() {
+    public CFCFGBuilder(boolean assumeAssertionsEnabled,
+            boolean assumeAssertionsDisabled) {
         super(false, false);
     }
 
@@ -32,7 +33,7 @@ public class CFCFGBuilder extends CFGBuilder {
      * Build the control flow graph of some code.
      */
     @Override
-        public ControlFlowGraph run(AnnotatedTypeFactory factory,
+    public ControlFlowGraph run(AnnotatedTypeFactory factory,
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
