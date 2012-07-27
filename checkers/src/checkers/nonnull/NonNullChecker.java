@@ -23,30 +23,12 @@ import checkers.util.MultiGraphQualifierHierarchy;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-// TODO: make all tests in nullness-other-failing pass
-// TODO: Get error messages to work.
 // TODO: Suppress "fields.uninitialized" warning if the cause for a field not being
 //		 initialized is a type error (the uninitialized error shows up before the
 //		 error that actually caused the problem, which is confusing)
-// TODO/later: Fix documentation of qualifiers.
-// TODO/later: Error messages about LazyNonNull don't mention LazyNonNull, but Nullable
 // TODO/later: Add "CommittedOnly" and adapt logic to support either as default, and only one annotation can be present, only present on fields
 
-// TODO/later: Make @Unclassified @Nullable the default for local variables.
-//		 Current status: @Nullable @Committed is default for local vars due to flow
-//		 not working for commitment annotations.
-
-// DONE: Stefan: Fix Constructor Receiver Type / Return type confusion.
-// DONE: (Stefan: this seems to work) Brandon: Assert*After*
 // DONE: Stefan: don't allow casts between initialization types.
-// DONE: Brandon: make sure that method calls on nullable only issues one warning about null-deref,
-//		 and not invalid method invocation.
-//		 Overriding checkMethodInvocability() and returning true if "dereference.of.nullable" will
-//		 be issued so that it won't issue a method invocation error.
-// DONE: Stefan: test our checker with our nullness tests
-// DONE: Stefan: LazyNonNull
-// DONE: Brandon: SuppressWarnings("nonnull"): it appears to work out of the box,
-//			see Checker Manual 20.2.1, added "Suppression" test case to show that it works
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class, Committed.class,
         Unclassified.class, FBCBottom.class })
