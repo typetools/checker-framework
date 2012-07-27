@@ -411,7 +411,14 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues) {
-        CFGBuilder builder = new CFCFGBuilder();
+        boolean assumeAssertionsEnabled = getEnv().getOptions().containsKey(
+                "assumeAssertionsAreEnabled");
+        boolean assumeAssertionsDisabled = getEnv().getOptions().containsKey(
+                "assumeAssertionsAreDisabled");
+        if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
+            Checker.errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
+        }
+        CFGBuilder builder = new CFCFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled);
         ControlFlowGraph cfg = builder.run(this, root, env, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(checker, fieldValues);
         analyses.addFirst(newAnalysis);
