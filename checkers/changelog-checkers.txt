@@ -1,0 +1,1710 @@
+Version 1.3.1, 21 Jul 2012
+
+Installation:
+  Clarify installation instructions for Windows.  Remove javac.bat, which
+  worked for running distributed checkers but not for creating new checkers.
+
+User-visible framework improvements:
+  Implement @PolyAll qualifier to vary over multiple type systems.
+  The Checker Framework is unsound due to Java's covariant array subtyping.
+    You can enable invariant array subtyping (for qualifiers only, not for
+    base Java types) with the command-line option -Alint:arrays:invariant.
+    This will become the default in the future.
+
+Internal framework improvements:
+  Improve defaulting for multiple qualifier hierarchies.
+  Big refactoring of how qualifier hierarchies are built up.
+  Improvements to error handling output for unexpected exceptions.
+  Bug fixes and documentation improvements.
+
+----------------------------------------------------------------------
+Version 1.3.0, 3 Jul 2012
+
+Annotation syntax changes, as mandated by the latest Type Annotations
+(JSR 308) specification.  The most important ones are:
+- New receiver syntax, using "this" as a formal parameter name:
+    ReturnType methodname(@ReceiverAnnotation MyClass this, ...) { ... }
+- Changed @Target default to be the Java 1.5 values
+- UW extension: in addition to annotations in comments, support
+    special /*>>> */ comments to hide multiple tokens.
+    This is useful for the new receiver syntax and for import statements.
+
+Framework improvements:
+  Adapt to annotation storage changes in jsr308-langtools 1.3.0.
+  Move type validation methods from the BaseTypeChecker to BaseTypeVisitor.
+
+----------------------------------------------------------------------
+Version 1.2.7, 14 May 2012
+
+Regex Checker:
+  Add basic support for the concatenation of two non-regular expressions
+    that produce a valid regular expression.
+  Support "isRegex" in flow inference.
+
+Framework improvements:
+  New @StubFiles annotation declaratively adds stub files to a checker.
+
+Internal bug fixes:
+  Respect skipDefs and skipUses in NullnessFlow.
+  Support package annotations in stub files.
+  Better support for enums in annotation attributes.
+  Cleanups to how implicit receivers are determined.
+
+----------------------------------------------------------------------
+Version 1.2.6, 18 Mar 2012
+
+Nullness Checker:
+  Correctly handle unboxing in more contexts (if, switch (Issue 129),
+    while loops, ...)
+
+Regex Checker:
+  Add capturing groups parameter to Regex qualifier.
+    Count groups in String literals and String concatenation.
+    Verify group number to method calls that take a capturing group
+      number.
+    Update RegexUtil methods to take optional groups parameter.
+    Modify regex qualifier hierarchy to support groups parameter.
+  Add special case for Pattern.compile when called with Pattern.LITERAL flag.
+
+Internal bug fixes:
+  Improve flow's support of annotations with parameters.
+  Fix generics corner cases (Issues 131, 132, 133, 135).
+  Support type annotations in annotations and type check annotations.
+  Improve reflective look-up of visitors and factories.
+  Small cleanups.
+
+----------------------------------------------------------------------
+Version 1.2.5.1, 06 Feb 2012
+
+Nullness Checker:
+  Correct the annotations on ThreadLocal and InheritableThreadLocal.
+
+Internal bug fixes:
+  Expand release tests.
+  Compile release with JDK 6 to work on both JDK 6 and JDK 7.
+
+----------------------------------------------------------------------
+Version 1.2.5, 3 Feb 2012
+
+Don't put classpath on the bootclasspath when invoking javac.  This
+prevents problems if, for example, android.jar is on the classpath.
+
+New -jsr308_imports ... and -Djsr308.imports=... command-line options, for
+specifying implicit imports from the command line.  This is needed by Maven.
+
+New -Aignorejdkastub option makes the checker not load the jdk.astub
+file. Files from the "stubs" option are still loaded.
+
+Regex Checker:
+  Support concatenation of PolyRegex strings.
+  Improve examples of use of RegexUtil methods.
+
+Signature Checker:
+  Add new @ClassGetName annotation, for a 4th string representation of a
+    class that is used by the JDK.  Add supporting annotations to make the
+    type hierarchy a complete lattice.
+  Add PolySignature annotation.
+
+Internal bug fixes:
+  Improve method type argument inference.
+  Handle type variables whose upper bound is a type variable.
+  Fix bug in least upper bound computation for anonymous classes.
+  Improve handling of annotations inherited from superclasses.
+  Fix design problem with Nullness Checker and primitive types.
+  Ensure that overriding methods respect pre- and postconditions.
+  Correctly resolve references to an enclosing this.
+  Improve handling of Java source that contains compilation errors.
+
+----------------------------------------------------------------------
+Version 1.2.4, 15 Dec 2011
+
+All checkers:
+- @Target(TYPE_USE) meta-annotation is properly handled.
+
+Nullness Checker:
+- Do not allow nullness annotations on primitive types.
+- Improvements to rawness (initialization) checks.
+- Special-case known keys for System.getProperty.
+- The -Alint=uninitialized command-line option now defaults to off, and
+  applies only to initialization of primitive and @Nullable fields.  It is
+  not possible to disable, from the command line, the check that all
+  @NonNull fields are initialized.  Such warnings must be suppressed
+  explicitly, for example by using @SuppressWarnings.
+
+Regex Checker:
+- Improved RegexUtil class.
+
+Manual:
+- Add FAQ item "Is the Checker Framework an official part of Java?"
+- Trim down README.txt; users should read the manual instead.
+- Improvements throughout, especially to Nullness and Regex Checker sections.
+
+Implementation details:
+- Add a new @InvisibleQualifier meta-annotation for type qualifiers.
+  Instead of special-casing @Unqualified in the AnnotatedTypeMirror it
+  now looks for this meta-annotation. This also allows type systems to
+  hide type qualifiers it doesn't want visible, which we now use in the
+  Nullness Checker to hide the @Primitive annotation.
+- Nullness Checker:  Introduce a new internal qualifier @Primitive that is
+  used for primitive types.
+- Be stricter about qualifiers being present on all types. If you get
+  errors about missing qualifiers, check your defaulting rules.
+  This helped in fixing small bugs in corner cases of the type
+  hierarchy and type factory.
+- Unify decoding type annotations from trees and elements.
+- Improve handling of annotations on type variables and upper bounds.
+- Support checkers that use multiple, disjoint qualifier hierarchies.
+- Many bug fixes.
+
+----------------------------------------------------------------------
+Version 1.2.3, 1 Nov 2011
+
+Regex Checker:
+- Add @PolyRegex polymorphic annotation
+- Add more stub library annotations
+
+Implementation details:
+- Do not use "null" for unqualified types. Explicitly use @Unqualified
+  and be strict about correct usage. If this causes trouble for you,
+  check your @ImplicitFor and @DefaultQualifierInHierarchy
+  meta-annotations and ensure correct defaulting in your
+  AnnotatedTypeFactory.
+
+Bug fixes:
+- Correctly handle f-bounded polymorphism. AnnotatedTypeMirror now has
+  methods to query the "effective" annotations on a type, which
+  handles type variable and wildcard bounds correctly. Also, terminate
+  recursions by not doing lazy-initialization of bounds during defaulting.
+- Many other small bug fixes and documentation updates.
+
+----------------------------------------------------------------------
+Version 1.2.2, 1 Oct 2011
+
+Be less restrictive about when to start type processing when errors
+already exist.
+Add -AskipDefs command-line option to not type-check some class
+definitions.
+Documentation improvements.
+
+----------------------------------------------------------------------
+Version 1.2.1, 20 Sep 2011
+
+Fix issues 109, 110, 111 and various other cleanups.
+Improvements to the release process.
+Documentation improvements.
+
+----------------------------------------------------------------------
+Version 1.2.0.1, 4 Sep 2011
+
+New version number to stay in sync with JSR 308 compiler bugfix.
+No significant changes.
+
+----------------------------------------------------------------------
+Version 1.2.0, 2 Sep 2011
+
+Updated to JDK 8. Use -source 8 (the new default) for type annotations.
+Documentation improvements
+Bug fixes all over
+
+Nullness Checker:
+- Correct the upper bounds of all Collection subtypes
+
+----------------------------------------------------------------------
+Version 1.1.5, 22 Jul 2011
+
+Units Checker:
+  Instead of conversion routines, provide unit constants, with which
+  to multiply unqualified values. This is easier to type and the
+  multiplication gets optimized away by the compiler.
+
+Fenum Checker:
+  Ensure that the switch statement expression is a supertype of all
+  the case expressions.
+
+Implementation details:
+
+- Parse declaration annotations in stub files
+
+- Output error messages instead of raising exceptions. This change
+  required us to introduce method "initChecker" in class
+  SourceChecker, which should be used instead of "init". This allows
+  us to handle the calls to initChecker within the framework.
+  Use method "errorAbort" to output an error message and abort
+  processing.
+
+----------------------------------------------------------------------
+Version 1.1.4, 8 Jul 2011
+
+Units Checker (new):
+  Ensures operations are performed on variables of correct units of
+  measurement (e.g., miles vs. kilometers vs. kilograms).
+
+Changed -AskipClasses command-line option to -AskipUses
+
+Implementation details:
+
+- Improve support for type qualifiers with enum attributes
+
+----------------------------------------------------------------------
+Version 1.1.3, 17 Jun 2011
+
+Interning:
+- Add @UsesObjectEquals annotation
+
+Manual:
+- Signature Checker is now documented
+- Fenum Checker documentation improved
+- Small improvements to other sections
+
+Implementation details:
+
+- Updates to the web-site build process
+
+- The BaseTypeVisitor used to provide the same two type parameters as
+  class SourceVisitor. However, all subtypes of BaseTypeVisitor were
+  instantiated as <Void, Void>. We decided to directly instantiate the
+  SourceVisitor as <Void, Void> and removed this complexity.
+  Instead, the BaseTypeVisitor is now parameterized by the subtype of
+  BaseTypeChecker that should be used. This gives a more concrete type
+  to field "checker" and is similar to BasicAnnotatedTypeFactory.
+
+- Added method AnnotatedTypeFactory.typeVariablesFromUse to allow type
+  checkers to adapt the upper bounds of a type variable depending on
+  the type instantiation.
+
+- Method type argument inference:
+  Changed AnnotatedTypeFactory.methodFromUse to return a Pair consisting
+  of the method and the inferred or explicit method type arguments.
+  If you override this method, you will need to update your version.
+  See this change set for a simple example:
+  http://code.google.com/p/checker-framework/source/detail?r=8381a213a4
+
+- Testing framework:
+  Support for multiple expected errors using the "//:: A :: B :: C" syntax.
+
+Many small updates and fixes.
+
+----------------------------------------------------------------------
+Version 1.1.2, 12 Jan 2011
+
+Fake Enum Checker (new):
+  A "fake enumeration" is a set of integers rather than a proper Java enum.
+  They are used in legacy code and for efficiency (e.g., in Android).  The
+  Fake Enum Checker gives them the same safety guarantees as a proper Java
+  enum.
+
+Property File Checker (new):
+  Ensures that valid keys are used for property files and resource bundles.
+  Also includes a checker that code is properly internationalized and a
+  checker for compiler message keys as used in the Checker Framework.
+
+Signature Checker (new):
+  Ensures that different string representations of a Java type (e.g.,
+  "package.Outer.Inner" vs. "package.Outer$Inner" vs. "Lpackage/Outer$Inner;")
+  are not misused.
+
+Interning Checker enhancements:
+  Issues fewer false positives for code like "a==b || a.equals(b)"
+
+Foreign annotations:
+  The Checker Framework supports more non-Checker-Framework annotations.
+  This means that it can check already-annotated code without requiring you
+  to rewrite your annotations.
+    Add as an alias for checkers.interning.quals.Interned:
+      com.sun.istack.Interned
+    Add as aliases for checkers.nullness.quals.NonNull:
+      com.sun.istack.NotNull
+      org.netbeans.api.annotations.common.NonNull
+    Add as aliases for checkers.nullness.quals.Nullable:
+      com.sun.istack.Nullable
+      javax.validation.constraints.NotNull
+      org.netbeans.api.annotations.common.CheckForNull
+      org.netbeans.api.annotations.common.NullAllowed
+      org.netbeans.api.annotations.common.NullUnknown
+
+Manual improvements:
+  Improve installation instructions
+  Rewrite section on generics (thanks to Bert Fernandez and David Cok)
+    Also refactor the generics section into its own chapter
+  Rewrite section on @Unused and @Dependent
+  New manual section: Writing Java expressions as annotation arguments
+  Better explanation of warning suppression
+  JSR 308 is planned for Java 8, not Java 7
+
+Stub files:
+  Support nested classes by expressing them at top level in binary form: A$B
+  Improved error reporting when parsing stub files
+
+Annotated JDK:
+  New way of generating annotated JDK
+  jdk.jar file no longer appears in repository
+  Warning if you are not using the annotated JDK.
+
+Miscellaneous:
+  Warn if -source command-line argument does not support type annotations
+
+Many bug fixes
+  There are too many to list, but some notable ones are to local type
+  inference, generics, pre- and post-conditions (e.g., @NonNullOnEntry,
+  @AssertNonNull*), and map keys (@KeyFor).  In particular, preconditions
+  and map key annotations are now checked, and if they cannot be verified,
+  an error is raised; previously, they were not verified, just unsoundly
+  trusted.
+
+----------------------------------------------------------------------
+Version 1.1.1, 18 Sep 2010
+
+Eclipse support:
+  Removed the obsolete Eclipse plug-in from repository.  The new one uses a
+  different repository
+  (http://code.google.com/a/eclipselabs.org/p/checker-plugin/) but a user
+  obtains it from the same URL as before:
+  http://types.cs.washington.edu/checker-framework/eclipse/
+
+Property Key Checker:
+  The property key checker allows multiple resource bundles and the
+  simultaneous use of both resource bundles and property files.
+
+Javari Checker:
+  Added Javari stub classes for more JDK classes.
+
+Distribution:
+  Changed directory structure (top level is "checker-framework"; "checkers"
+  is a under that) for consistency with version control repository.
+
+Many documentation improvements and minor bugfixes.
+
+----------------------------------------------------------------------
+Version 1.1.0b, 16 Jun 2010
+
+Fixed a bug related to running binary release in JDK 6
+
+----------------------------------------------------------------------
+Version 1.1.0, 13 Jun 2010
+
+Checkers
+  Introduced a new simple mechanism for running the Checkers
+  Added one annotated JDK for all checkers
+
+Nullness Checker
+  Fixed bugs related to map.get() and KeyFor annotation
+  Fixed bugs related to AssertNonNull* and parameters
+  Minor updates to the annotated JDK, especially to java.io.File
+
+Manual
+  Updated installation instructions
+  Clarified section regarding fields and type inference
+
+----------------------------------------------------------------------
+Version 1.0.9, 25 May 2010
+
+Nullness Checker:
+  Improved Javadocs and manual documentation
+  Added two new annotations: AssertNonNullAfter, KeyFor
+  Fixed a bug related to AssertNonNullIfFalse and assert statements
+  Renamed NonNullVariable to NonNullOnEntry
+
+Checkers:
+  Interning: Skipping equality check, if either operands should be skipped
+  Fixed a bug related to annotations targeting array fields found in classfile
+  Fixed a bug related to method invocation generic type inference
+    in static methods
+
+Manual
+  Added a section on nullness method annotations
+  Revised the Nullness Checker section
+  Updated Ant usage instructions
+
+----------------------------------------------------------------------
+Version 1.0.8, 15 May 2010
+
+Checkers
+  Changed behavior of flow type refinement when annotation is explicit
+  Handle array initializer trees (without explicit type)
+  Handle the case of Vector.copyInto
+  Include javax classes in the distributed jdk jar files
+
+Interning Checker
+  Handle interning inference of string concatenation
+  Add 20+ @Interned annotations to the JDK
+  Add an option, checkclass, to validate the interning
+    of specific classes only
+
+Bug fixes
+  Fix a bug related to array implicit types
+  Lock checker: Treat null as a bottom type
+
+Manual
+  Added a new section about Flow inference and fields
+
+----------------------------------------------------------------------
+Version 1.0.7, 12 Apr 2010
+
+Checkers
+  Distributed a Maven repository
+  Updated stub parser project to latest version (javaparser 1.0.8)
+  Fixed bugs related to iterable wildcards and type parameter types
+
+----------------------------------------------------------------------
+Version 1.0.6, 24 Feb 2009
+
+Checkers
+
+Nullness Checker
+  Added support for new annotations:
+    Pure - indicates that the method, given the same parameters, return the
+            same values
+    AssertNonNullIfFalse - indicates that a field is NonNull if the method
+            returns false
+  Renamed AssertNonNull to AssertParametersNonNull
+  Updated the annotated jdk
+
+Javari Checker
+  Fixed many bugs:
+    handle implicit dereferencing of this (e.g. `field` in place of
+      `this.field`)
+    apply default annotations to method parameters
+
+----------------------------------------------------------------------
+Version 1.0.5, 12 Jan 2009
+
+Checkers
+  Added support for annotated jdk jars
+  Improved readability of some failure messages
+  Added AssertNonNullIfTrue support for method parameter references
+  Fixed a bug related to LazyNonNull and array fields
+  Fixed a bug related to inference and compound assignments (e.g. +=)
+  nullness: permit the type of @NonNull Void
+
+Manual
+  Updated annotating-libraries chapter regarding annotated jdk
+
+----------------------------------------------------------------------
+Version 1.0.4, 19 Dec 2009
+
+Bug Fixes
+  wildcards not recognized as subtypes of type variables
+    e.g. '? extends A' and 'A'
+  PolyNull methods not accepting null literal value arguments
+  spurious unexpected Raw warnings
+
+Manual
+  Clarified FAQ item regarding why List's type parameter is
+    "extends @NonNull Object"  
+
+----------------------------------------------------------------------
+Version 1.0.3, 5 Dec 2009
+
+Checkers
+  New location UPPER_BOUND for DefaultQualifier permits setting the default
+    for upper bounds, such as Object in "? extends Object".
+  @DefaultQualifier accepts simple names, like @DefaultQualifier("Nullable"),
+    rather than requiring @DefaultQualifier("checkers.nullness.quals.Nullable").
+  Local variable type inference has improved support for array accesses.
+  The repository contains Eclipse project and launch configuration files.
+    This is helpful too people who want to build a checker, not to people
+    who merely want to run a checker.
+  Many bug fixes, including:
+    handling wildcard subtyping rules
+    stub files and vararg methods being ignored
+    nullness and spurious rawness errors
+    uses of array clone method (e.g. String[].clone())
+    multibound type parameters (e.g. <T extends @A Number & @B Cloneable>)
+
+Manual
+  Documented the behavior of annotations on type parameter declarations.
+  New FAQ item:
+    How to collect warnings from multiple files
+    Why a qualifier shouldn't apply to both types and declarations
+
+----------------------------------------------------------------------
+Version 1.0.2, 16 Nov 2009
+
+Checkers
+  Renamed Regex checker's @ValidRegex annotation to @Regex
+  Improved Collection.toArray() heuristics to be more sound
+
+Bug fixes
+  Fixed the annotated JDK to match OpenJDK 6
+    - Added missing methods and corrected class hierarchy
+  Fixed a crash related to intersection types
+
+----------------------------------------------------------------------
+Version 1.0.1, 1 Nov 2009
+
+Checkers
+  Added new checkers:
+    RegEx checker to detect invalid regular expression use
+    Internationalization (I18n) checker to detect internationalization errors
+
+Functionality
+  Added more performance optimizations
+  nullness: Added support for netbeans nullness annotations
+  nullness: better semantics for redundant nullness tests
+	related to redundant tests in assertions
+  lock: Added support for JCIP annotation in Lock checker
+  tainting: Added support for polymorphism
+  Lock Checker supports the JCIP GuardedBy annotation
+
+Bug fixes
+  Fixed a crashing bug related to interaction between
+	generic types and wildcards
+  Fixed a bug in stub file parser related to vararg annotations
+  Fixed few bugs in skeleton file generators
+
+Manual
+  Tweak installation instructions
+  Reference units checkers
+  Added new sections for new checkers
+    RegEx checker (S 10)
+    Internationalization checker (S 11)
+
+----------------------------------------------------------------------
+Version 1.0.0, 30 Sep 2009
+
+Functionality
+  Added Linear Checker to restrict aliasing
+
+Bug fixes
+  Fixed flow erros related to loop controls and break/continue
+
+Manual
+  Adopt new term, "Declaration Annotation" instead of non-type annotations
+  Added new sections:
+    Linear Checker (S 9)
+    Inexpressible types (S 14.3)
+    How to get started annotating legacy code (S 2.4.4)
+  Expanded Tainting Checker section
+
+----------------------------------------------------------------------
+Version 0.9.9, 4 Sep 2009
+
+Functionality
+  Added more optional lint checks (cast:unsafe, all)
+  Nullness Checker supports @SuppressWarnings("nullness:generic.argument"),
+    for suppressing warnings related to misuse of generic type arguments.
+    This was already supported and documented, but had not been mentioned
+    in the changelog.
+
+Bug fixes
+  Fixed many bugs related to Stub files causing parser to ignore
+    bodiless constructors
+    annotated arrays annotations
+    type parameter and wildcard bounds annotations
+
+Manual
+  Rewrote 'javac implementation survival guide' (S 13.9)
+  Restructured 'Using a checker' (S 2)
+  Added 'Integration with external tools' (S 14)
+  Added new questions to the FAQ (S 15)
+
+----------------------------------------------------------------------
+Version 0.9.8, 21 Aug 2009
+
+Functionality
+  Added a Tainting Checker
+  Added support for conditional nonnull checking
+  Added optional check for redundant nullness tests
+  Updated stub parser to latest libraries
+
+Bug fixes
+  Fixed a bug related to int[] treated as Object when passed to vararg T...
+  Fixed a crash related to intersection types
+  Fixed a bug related to -AskipClasses not being honored
+  Fixed a bug related to flow
+
+Manual
+  Added new sections
+    8 Tainting Checker
+    3.2.3 Conditional nullness
+
+----------------------------------------------------------------------
+Version 0.9.7, 12 Aug 2009
+
+Functionality
+  Changed swNonNull to castNonNull
+  nullness: Improved flow to infer nullness based on method invocations
+  locking: Permitted @Holding to appear on constructors
+
+Bug fixes
+  Fixed a bug related to typevar and wildcard extends clauses
+
+----------------------------------------------------------------------
+Version 0.9.6, 29 Jul 2009
+
+Functionality
+  Changed 'jsr308.skipClasses' property with '-AskipClasses' option
+  Locking checker
+    - Add subtype checking for Holding
+    - Treat constructors as synchronized methods
+
+Bug fixes
+  Added some missing nullness annotations in the jdk
+  Fixed some bugs related to reading stub files
+
+Manual
+  Added a new section
+    2.10  Tips about writing annotations
+  Updated sections of
+    2.6   Unused fields and dependent types
+    3.1.1 Rawness annotation hierarchy
+
+----------------------------------------------------------------------
+Version 0.9.5, 13 Jul 2009
+
+Functionality
+  Added support for Findbugs, JSR305, and IntelliJ nullness annotations
+  Added an Aggregate Checker base-class
+  Added support for a form of field access control
+
+Bug fixes
+  Added check for arguments in super() calls in constructors
+
+Manual
+  Added new sections:
+    Fields access control
+    Other tools for nullness checking
+    Bundling multiple checkers
+
+----------------------------------------------------------------------
+Version 0.9.4, 30 Jun 2009
+
+Functionality
+  Added Lock checker
+
+Bug fixes
+  Handle more patterns for determining Map.get() return type
+
+Manual Documentations
+  Improved installation instructions
+  Added the following sections
+    2.6 Dependent types
+    3.1 subsection for LazyNonNull
+    10.9 When to use (and not to use) type qualifiers
+
+----------------------------------------------------------------------
+Version 0.9.3, 23 Jun 2009
+
+Functionality
+  Added support DefaultQualifier on packages
+  Added support for Dependent qualifier types
+    see checkers.quals.Dependent
+  Added an option to treat checker errors as warnings
+  Improved flow handling of boolean logic
+
+Manual Documentations
+  Improved installation instructions
+  Improved discussion of effective and implicit qualifiers and defaults
+  Added a discussion about the need for bottom qualifiers
+  Added sections for how-to
+    . suppress basic checker warnings
+    . troubleshoot skeleton files
+
+----------------------------------------------------------------------
+Version 0.9.2, 2 Jun 2009
+
+Functionality
+  Added pre-liminary support for lazy initialization in nullness
+    see LazyNonNull
+
+Bug fixes
+  Corrected method declarations in JDK skeleton files
+    - bug resulted in a runtime error
+
+Documentations
+  Updated qualifier javadoc documentations
+  Corrected a reference on passing qualifiers to javac
+
+----------------------------------------------------------------------
+Version 0.9.1, 19 May 2009
+
+Bug fixes
+  Eliminated unexpected compiler errors when using checkers
+  Fixed bug related to reading annotations in skeleton files
+
+API Changes
+  Renamed SourceChecker.process() to .typeProcess()
+
+Manual
+  Updated troubleshooting info
+    info for annotations in skeleton files
+
+----------------------------------------------------------------------
+Version 0.9b, 22 Apr 2009
+
+No visible changes
+
+----------------------------------------------------------------------
+Version 0.9, 16 Apr 2009
+
+Framework
+  More space and performance optimizations
+  Handle raw type with multiple type var level
+    e.g. class Pair<X, Y extends X> { ... }
+
+Manual
+  Improve installation instructions
+  Update references to command line arguments
+
+----------------------------------------------------------------------
+Version 0.8.9, 28 Mar 2009
+
+Framework
+  Introduce Space (and minor performance) optimizations
+  Type-check constructor invocation receiver type
+  Fixed bug related to try-catch flow sensitivity analysis
+  Fixed bugs when type-checking annotations and enums
+    - bug results in null-pointer exception
+
+----------------------------------------------------------------------
+Version 0.8.8, 13 Mar 2009
+
+Nullness Checker
+  Support for custom nullness assertion via @AssertNonNull
+  Support for meta-annotation AssertNonNull
+  Support for Collection.toArray() method
+    Infer the nullness of the returned type
+  Corrected some JDK Collection API annotations
+
+Framework
+  Fixed bugs related to assignments expressions in Flow
+  Fixed bugs related to enum and annotation type hierarchy
+  Fixed bugs related to default annotations on wildcard bounds
+
+----------------------------------------------------------------------
+Version 0.8.7, 27 Feb 2009
+
+Framework
+  Support annotations on type parameters
+  Fixed bugs related to polymorphic types/annotations
+  Fixed bugs related to stub fixes
+
+Manual
+  Specify annotation defaults settings for IGJ
+  Update Known Problems section
+----------------------------------------------------------------------
+Version 0.8.6, 3 Feb 2009
+
+Framework
+  Fixed bugs related to flow sensitivity analysis related to
+    . for loop and do while loops
+    . multiple iterations of a loop
+    . complement of logical conditions
+  Declarative syntax for string literal type introduction rules
+  Support for specifying stub file directories
+
+----------------------------------------------------------------------
+Version 0.8.5, 17 Jan 2009
+
+Framework
+  Fixed bugs related to flow sensitivity analysis
+  Fixed bugs related to annotations on type parameters
+
+----------------------------------------------------------------------
+Version 0.8.4, 17 Dec 2008
+
+Distribution
+  Included checkers-quals.jar which contains the qualifiers only
+
+Framework
+  Fixed bugs related to inner classes
+  Fixed a bug related to resolving polymorphic qualifiers
+    within static methods
+
+Manual
+  Added 'Distributing your annotated project'
+
+----------------------------------------------------------------------
+Version 0.8.3, 7 Dec 2008
+
+Framework
+  Fixed bugs related to inner classes
+  Changed cast semantics
+    Unqualified casts don't change cast away (or in) any qualifiers
+  Refactored AnnotationBuilder to ease building annotations
+  Added support for Object += String new behavior
+  Added a type validation check for method return types
+
+Nullness
+  Added inference of field initialization
+    Suppress false warnings due to method invocations within constructors
+
+IGJ
+  Added proper support for AssignsFields and inner classes interactions
+
+Manual
+  Updated 'Known Problems' section
+
+----------------------------------------------------------------------
+Version 0.8.2, 14 Nov 2008
+
+Framework
+  Included a binary distribution in the releases
+  Added support for annotations on type parameters
+  Fixed bugs related to casts
+
+Nullness
+  Improved error messages readability
+  Added partial support for Map.get() detection
+
+Manual
+  Improved installation instructions
+
+----------------------------------------------------------------------
+Version 0.8.1, 1 Nov 2008
+
+Framework
+  Added support for array initializers
+  Fixed many bugs related to generics and generic type inference
+
+Documentations
+  Added 'Getting Started' guide
+
+----------------------------------------------------------------------
+Version 0.8, 27 Sep 2008
+
+Framework
+  Added support for newly specified array syntax
+  Refactored code for annotating supertypes
+  Fixed AnnotationBuilder AnnotationMirror string representation
+  Fixed AnnotatedTypeMirror hashCode
+
+Manual
+  Reorganized 'Annotating Libraries' section
+
+----------------------------------------------------------------------
+Version 0.7.9, 19 Sep 2008
+
+Framework
+  Added support for stub files/classes
+  Fixed bugs related to anonymous classes
+  Fixed bugs related to qualifier polymorphism
+
+Manual
+  Updated 'Annotating Libraries' section to describe stub files
+
+Tests
+  Added support for Windows
+  Fixed a bug causing IGJ tests to fail on Windows
+
+----------------------------------------------------------------------
+Version 0.7.8, 12 Sep 2008
+
+Framework
+  Improved support for anonymous classes
+  Included refactorings to ease extensibility
+  Fixed some minor bugs
+
+Nullness
+  Fix some errors in annotated JDK
+
+----------------------------------------------------------------------
+Version 0.7.7, 29 Aug 2008
+
+Framework
+  Fixed bugs related to polymorphic qualifiers
+  Fixed bugs related to elements array convention
+  Add implicit type arguments to raw types
+
+Interning
+  Suppress cast warnings for interned classes
+
+Manual
+  Removed discussion of non-standard array syntax alternatives
+
+----------------------------------------------------------------------
+Version 0.7.6, 12 Aug 2008
+
+Framework
+  Changed default array syntax to ARRAYS-PRE, per the JSR 308 specification
+  Added an optional check for qualifier unsafe casts
+  Added support for running multiple checkers at once
+  Fixed bugs related array syntax
+  Fixed bugs related to accessing outer classes with-in inner classes
+
+Manual
+  Added a new subsection about Checker Auto-Discovery
+    2.2.1 Checker Auto-discovery
+
+----------------------------------------------------------------------
+Version 0.7.5, 2 Aug 2008
+
+Framework
+  Added support for ARRAYS-PRE and ELTS-PRE array syntax
+  Added a check for unsafe casts
+  Some improvements to the AnnotationBuilder API
+
+Nullness Checker
+  Added a check for synchronized objects
+  Added a check for (un)boxing conversions
+
+Javari Checker
+  Fixed some JDK annotated classes
+
+----------------------------------------------------------------------
+Version 0.7.4, 11 July 2008
+
+Framework
+  Added support for annotations found in classfiles
+  Added support for the ARRAY-IN array syntax
+  Added AnnotationBuilder, to create AnotationMirrors with values
+  Improved the readability of recursive types string representation
+
+Nullness Checker
+  Added a check for thrown Throwable nullability
+
+IGJ Checker
+  Treat enums as mutable by default, like regular classes
+
+Manual
+  Added a new subsection about array syntax proposals:
+    2.1.2 Annotating Arrays
+
+----------------------------------------------------------------------
+Version 0.7.3,  4 July 2008
+
+Javari Checker
+  Converted JDK files into stubs
+
+Nullness Checker
+  Fixed java.lang.Number declaration in the annotated jdk
+
+Framework
+  Fixed a bug causing crashes related to primitive type boxing
+  Renamed DAGQualifierHierarchy to GraphQualifierHierarchy
+
+----------------------------------------------------------------------
+Version 0.7.2, 26 June 2008
+
+IGJ Checker
+  Supports flow-sensitive type refinement
+
+Framework
+  Renamed Default annotation to DefaultQualifier
+  Added DefaultQualifiers annotation
+  Fixed bugs related to flow-sensitive type refinement
+  Fixed an error in the build script in Windows
+
+Manual
+  Added a new section
+    9.2  javac implementation survival guide
+  Added hyperlinks to Javadocs of the referenced classes
+
+----------------------------------------------------------------------
+Version 0.7.1, 20 June 2008
+
+Nullness Checker
+  Made NNEL the default qualifier scheme
+
+Basic Checker
+  Moved to its own checkers.basic package
+
+Framework
+  Enhanced type checking within qualifier-polymorphic method bodies
+  Fixed a bug causing StackOverflowError when type-checking wildcards
+  Fixed a bug causing a NullPointerException when type-checking
+    compound assignments, in the form of +=
+
+Class Skeleton Generator
+  Distributed in compiled form (no more special installation instructions)
+  Added required asmx.jar library to lib/
+
+Manual
+  Added new sections
+    2.2.1 Ant tasks
+    2.2.2 Eclipse plugin
+    2.6   The effective qualifier on a type
+  Rewrote section 8 on annotating libraries
+    Added reference to the new Eclipse plug-in
+    Deleted installation instructions
+
+Javari Checker
+  Fixed bugs causing a NullPointerException when type-checking
+    primitive arrays
+
+IGJ Checker
+  Fixed bugs related to uses of raw types
+
+API Changes
+  Moved AnnotationFactory functionality to AnnotationUtils
+  Removed .root and .inConflict from DAGQualifierHierarchy
+
+----------------------------------------------------------------------
+Version 0.7, 14 June 2008
+
+Installation
+  New, very simple installation instructions for Linux.  For other
+    operating systems, you should continue to use the old instructions.
+
+Nullness Checker
+  Renamed from "NonNull Checker" to "Nullness Checker".
+    Renamed package from checkers.nonnull to checkers.nullness.
+    The annotation names remain the same.
+  Added PolyNull, a polymorphic type qualifier for nullness.
+
+Interning Checker
+  Renamed from "Interned Checker" to "Interning Checker".
+    Renamed package from checkers.interned to checkers.interning.
+    The annotation names remain the same.
+  Added PolyInterned, a polymorphic type qualifier for Interning.
+  Added support for @Default annotation.
+
+Framework
+  Qualifiers
+    @PolymorphicQualifier was not previously documented in the manual.
+    Moved meta-qualifiers from checkers.metaquals package to checkers.quals.
+    Removed @VariableQualifier and @RootQualifier meta-qualifiers.
+  Added BasicAnnotatedTypeFactory, a factory that handles implicitFor,
+    defaults, flow-sensitive type inference.
+  Deprecated GraphQualifierHierarchy; DAGQualifierHierarchy replaces it.
+  Renamed methods in QualifierHierarchy.
+
+Manual
+  Rewrote several manual sections, most notably:
+    2.1.1  Writing annotations in comments for backward compatibility
+      (note new -Xspacesincomments argument to javac)
+    2.3  Checking partially-annotated programs: handling unannotated code
+    2.6  Default qualifier for unannotated types
+    2.7  Implicitly refined types (flow-sensitive type qualifier inference)
+    8  Annotating libraries
+    9  How to create a new checker plugin
+  Javadoc for the Checker Framework is included in its distribution and is
+    available online at http://types.cs.washington.edu/checker-framework/current/doc/ .
+
+----------------------------------------------------------------------
+Version 0.6.4, 9 June 2008
+
+All Framework
+  Updated the distributed JDK and examples to the new location of qualifiers
+
+Javari Checker
+  Improved documentation on polymorphism resolution
+  Removed redundant code now added to the framework from JavariVisitor,
+    JavariChecker and JavariAnnotatedTypeFactory
+  Refactored method polymorphism into JavariAnnotatedTypeFactory
+  Fixed bug on obtaining type from NewClassTree, annotations at constructor
+    invocation are not ignored now
+  Refactored polymorphism resolution, now all annotations on parameters and
+    receivers are replaced, not only on the return type
+  Refactored and renamed internal annotator classes in
+    JavariAnnotatedTypeFactory
+  Added more constructor tests
+  Moved Javari annotations to checkers.javari.quals package
+
+----------------------------------------------------------------------
+Version 0.6.3, 6 June 2008
+
+Checker Framework
+  Improved documentation and manual
+  Treat qualifiers on extends clauses of type variables and wildcard types as
+    if present on type variable itself
+  Renamed AnnotationRelations to QualifierHierarchy
+  Renamed GraphAnnotationRelations to GraphQualifierHierarchy
+  Renamed TypeRelations to TypeHierarchy
+  Added flow as a supported lint option for all checkers
+  Determined the suppress warning key reflectively
+
+Interned Checker
+  Moved @Interned annotation to checkers.interned.quals package
+
+NonNull Checker
+  Moved nonnull annotations to checkers.nonnull.quals package
+
+Miscellaneous
+  Included Javadocs in the release
+  Improved documentation for all checkers
+
+----------------------------------------------------------------------
+Version 0.6.2, 30 May 2008
+
+Checker Framework API
+  Added support for @Default annotation via TreeAnnotator
+  Added support for PolymorphicQualifier meta-annotation
+  Disallow the use of @SupportedAnnotationTypes on checkers
+  Fixed bugs related to wildcards with super clauses
+  Improved flow-sensitive analysis for fields
+
+Javari Checker
+  Moved Javari qualifiers from checkers.quals to checkers.javari.quals
+  Fixed bugs causing null pointer exceptions
+
+NonNull Checker
+  Fixed bugs related to nonnull flow
+  Added new tests to test suite
+
+Basic Checker
+  Renamed Custom Checker to Basic Checker
+
+----------------------------------------------------------------------
+Version 0.6.1, 26 Apr 2008
+
+Checkers Framework API
+  Added support for @ImplicitFor meta-annotations via the new TypeAnnotator
+    and TreeAnnotator classes
+  Improved documentation and specifications
+  Fixed a bug related to getting supertypes of wildcards
+  Fixed a crash on class literals of primitive and array types
+  Framework ignores annotations that are not part of a type system
+  Fixed several minor bugs in the flow-sensitive inference implementation.
+
+IGJ Checker
+  Updated the checker to use AnnotationRelations and TypeRelations
+
+Javari Checker
+  Changing RoMaybe annotation to PolyRead
+  Updated checker to use AnnotationRelations and TypeRelations
+  Updated the JDK
+  Fixed bugs related to QReadOnly and type argument subtyping
+  Fixed bugs related to this-mutable fields in methods with @ReadOnly receiver
+  Fixed bugs related to primitive type casts
+  Added new tests to test suit
+
+NonNull Checker
+  Updated the annotated JDK
+  Fixed bugs in which default annotations were not correctly applied
+  Added @Raw types to handle partial object initialization.
+  Fixed several minor bugs in the checker implementation.
+
+Custom Checker
+  Updated checker to use hierarchy meta-annotations, via -Aquals argument
+
+----------------------------------------------------------------------
+Version 0.6, 11 Apr 2008
+
+Checkers Framework API
+  Introduced AnnotationRelations and TypeRelations, more robust classes to
+    represent type and annotation hierarchies, and deprecated
+    SimpleSubtypeRelation
+  Add support for meta-annotations to declare type qualifiers subtype relations
+  Re-factored AnnotatedTypes and AnnotatedTypeFactory
+  Added a default implementation of SourceChecker.getSuppressWarningsKey()
+    that reads the @SuppressWarningsKey class annotation
+  Improved support for multidimensional arrays and new array expressions
+  Fixed a bug in which implicit annotations were not being applied to
+    parenthesized expressions
+  Framework ignores annotations on a type that do not have @TypeQualifier
+  Moved error/warning messages into "messages.properties" files in each
+    checker package
+  Fixed a bug in which annotations were inferred to liberally by
+    checkers.flow.Flow
+
+Interned Checker
+  Added heuristics that suppress warnings for certain comparisons (namely in
+    methods that override Comparator.compareTo and Object.equals)
+  The Interned checker uses flow-sensitive inference by default
+
+IGJ Checker
+  Fixed bugs related to resolving immutability variable in method invocation
+  Fixed a bug related to reassignability of fields
+  Add more tests
+
+Javari Checker
+  Added placeholder annotation for ThisMutable mutability
+  Re-factored JavariAnnotatedTypeFactory
+  Fixed self-type resolution for method receivers for readonly classes
+  Fixed annotations on parameters of readonly methods
+  Fixed type validation for arrays of primitives
+  Added more tests
+  Renamed @RoMaybe annotation to @PolyRead
+
+NonNull Checker
+  Removed deprecated checkers.nonnull.flow package
+  Fixed a bug in which default annotations were not applied correctly
+
+Miscellaneous
+  Improved Javadocs
+  Added FactoryTestChecker, a more modular tester for the annotated type
+    factory
+  Simplify error output for some types by stripping package names
+
+----------------------------------------------------------------------
+Version 0.5.1, 21 Mar 2008
+
+Checkers Framework API
+  Added support for conditional expression
+  Added checks for type validity and assignability
+  Added support for checkers customization of asMemberOf
+  Added support for type parameters in method invocation,
+    including type inference
+  Enhanced performance of AnnotatedTypeFactory
+  Checkers run only when no errors are found by Javac
+  Fixed bugs related AnnotationUtils.deepCopy()
+  Fixed support for annotated class type parameters
+  Fixed some support for annotated type variable bounds
+  Added enhancements to flow-sensitive qualifier inference
+  Added checks for type parameter bounds
+
+Interned Checker
+  Fixed some failing test cases
+  Fixed a bug related to auto-boxing/unboxing
+  Added experimental flow-sensitive qualifier inference (use
+    "-Alint=flow" to enable)
+  Improved subtype testing, removing some spurious errors
+
+IGJ Checker
+  Deleted IGJVisitor!
+  Fixed some bugs related to immutability type variable resolution
+
+Javari Checker
+  Removed redundant methods from JavariVisitor in the new framework
+  Added support to constructor receivers
+  Added support to parenthesized expressions
+  Fixed a bug related to resolving RoMaybe constructors
+  Fixed a bug related to parsing conditional expressions
+  Added parsing of parenthesized expressions
+  Replaced checkers.javari.VisitorState with
+    checkers.types.VisitorState, present in BaseTypeVisitor
+  Modified JavariVisitor type parameters (it now extends
+    BaseTypeVisitor<Void, Void>, not BaseTypeVisitor<Void,
+    checkers.javari.VisitorState>)
+  Modified JavariAnnotatedTypeFactory TreePreAnnotator to mutate a
+    AnnotatedTypeMirror parameter instead of returning a
+    List<AnnotationMirror>, in accordance with other parts of the
+    framework design
+  Modified test output format
+  Added tests to test suite
+
+NonNull Checker
+  Fixed a bug related to errors produced on package declarations
+  Exception parameters are now treated as NonNull by default
+  Added better support for complex conditionals in NonNull-specific
+    flow-sensitive inference
+  Fixed some failing test cases
+  Improved subtype testing, removing some spurious errors
+
+Custom Checker
+  Added a new type checker for type systems with no special semantics, for
+    which annotations can be provided via the command line
+
+Miscellaneous
+  Made corrections and added more links to Javadocs
+  A platform-independent binary version of the checkers and framework
+    (checkers.jar) is now included in this release
+
+----------------------------------------------------------------------
+Version 0.5, 7 Mar 2008
+
+Checkers Framework API
+  Enhanced the supertype finder to take annotations on extends and
+    implements clauses of a class type
+  Fixed a bug related to checking an empty array initializer ("{}")
+  Fixed a bug related to missing type information when multiple
+    top-level classes are defined in a single file
+  Fixed infinite recursion when checking expressions like "Enum<E
+    extends Enum<E>>"
+  Fixed a crash in checkers.flow.Flow related to multiple top-level
+    classes in a single file
+  Added better support for annotated wildcard type bounds
+  Added AnnotatedTypeFactory.annotateImplicit() methods to replace
+    overriding the getAnntoatedType() methods directly
+  Fixed a bug in which constructor arguments were not checked
+
+Interned Checker
+  Fixed a bug related to auto-unboxing of classes for primitives
+  Added checks for calling methods with an @Interned receiver
+
+IGJ Checker
+  Implemented the immutability inference for self-type (type of
+    'this') properly
+  Enhanced the implicit annotations to make an un-annotated code
+    type-check
+  Fixed bugs related to invoking methods based on a method's receiver
+    annotations
+
+Javari Checker
+  Restored in this version, after porting to the new framework
+
+NonNull Checker
+  Fixed a bug in which primitive types were considered possibly null
+  Improvements to support for @Default annotations
+
+Miscellaneous
+  Improved error message display for all checkers
+
+----------------------------------------------------------------------
+Version 0.4.1, 22 Feb 2008
+
+Checkers Framework API
+  Introduced AnnotatedTypeFactory.directSupertypes() which finds the
+    supertypes as annotated types, which can be used by the framework.
+  Introduced default error messages analogous to javac's error messages.
+  Fixed bugs related to handling array access and enhanced-for-loop type
+    testing.
+  Fixed several bugs that are due AnnotationMirror not overriding .equals()
+    and .hashCode().
+  Improved Javadocs for various classes and methods.
+  Fixed several bugs that caused crashes in the checkers.
+  Fixed a bug where varargs annotations were not handled correctly.
+
+IGJ Checker
+  Restored in this version, after porting the checker to the new framework.
+
+NonNull Checker
+  Fixed a bug where static field accesses were not handled correctly.
+  Improved error messages for the NonNull checker.
+  Added the NNEL (NonNull Except Locals) annotation default.
+
+Interned Checker
+  Fixed a bug where annotations on type parameter bounds were not handled
+    correctly.
+  Improved error messages for the Interned checker.
+
+----------------------------------------------------------------------
+Version 0.4, 11 Feb 2008
+
+Checkers Framework API
+  Added checkers.flow, an improved and generalized flow-sensitive type
+    qualifier inference, and removed redundant parts from
+    checkers.nonnull.flow.
+  Fixed a bug that prevented AnnotatedTypeMirror.removeAnnotation from working
+    correctly.
+  Fixed incorrect behavior in checkers.util.SimpleSubtypeRelation.
+
+NonNull Checker
+  Adopted the new checkers.flow.Flow type qualifier inference.
+  Clarifications and improvements to Javadocs.
+
+----------------------------------------------------------------------
+Version 0.3.99, 20 Nov 2007
+
+Checkers Framework API
+  Deprecated AnnotatedClassType, AnnotatedMethodType, and AnnotationLocation
+    in favor of AnnotatedTypeMirror (a new representation of annotated types
+    based on the javax.lang.model.type hierarchy).
+  Added checkers.basetype, which provides simple assignment and
+    pseudo-assignment checking.
+  Deprecated checkers.subtype in favor of checkers.basetype.
+  Added options for debugging output from checkers: -Afilenames, -Ashowchecks
+
+Interned Checker
+  Adopted the new checkers framework API.
+  Fixed a bug in which "new" expressions had an incorrect type.
+
+NonNull Checker
+  Adopted the new checkers framework API.
+
+Javari Checker
+IGJ Checker
+  Removed in this version, to be restored in a future version pending
+    completion of updates to these checkers with respect to the new framework
+    API.
+
+----------------------------------------------------------------------
+Version 0.3, 1 Oct 2007
+
+Miscellaneous Changes
+  Consolidated HTML documentation into a single user manual (see the "manual"
+    directory in the distribution).
+
+IGJ Checker
+  New features:
+    Added a test suite.
+    Added annotations (skeleton files) for parts of java.util and java.lang.
+
+NonNull Checker
+  New features:
+    @SuppressWarnings("nonnull") annotation suppresses checker warnings.
+    @Default annotation can make NonNull (not Nullable) the default.
+    Added annotations (skeleton classes) for parts of java.util and java.lang.
+    NonNull checker skips no classes by default (previously skipped JDK).
+    Improved error messages: checker reports expected and found types.
+
+  Bug fixes:
+    Fixed a null-pointer exception when checking certain array accesses.
+    Improved checking for field dereferences.
+
+Interned Checker
+  New features:
+    @SuppressWarnings("interned") annotation suppresses checker warnings.
+    The checker warns when two @Interned objects are compared with .equals
+
+  Bug fixes:
+    The checker honors @Interned annotations on method receivers.
+    java.lang.Class types are treated as @Interned.
+
+Checkers Framework API
+  New features:
+    Added support for default annotations and warning suppression in checkers
+
+----------------------------------------------------------------------
+Version 0.2.3, 30 Aug 2007
+
+IGJ Checker
+  New features:
+    changed @W(int) annotation to @I(String) to improve readability
+    improved readability of error messages
+    added a test for validity of types (testing @Mutable String)
+
+  Bug fixes:
+    fixed resolving of @I on fields on receiver type
+    fixed assignment checking assignment validity for enhanced for loop
+    added check for constructor invocation parameters
+
+Interned Checker
+  added the Interned checker, for verifying the absence of equality testing
+    errors; see "interned-checker.html" for more information
+
+Javari Checker
+  New features:
+    added skeleton classes for parts of java.util and java.lang with Javari
+      annotations
+
+  Bug fixes:
+    fixed readonly inner class bug on Javari checker
+
+NonNull Checker
+  New features:
+    flow-sensitive analysis for assignments from a known @NonNull type (e.g.,
+      when the right-hand of an assignment is @NonNull, the left-hand is
+      considered @NonNull from the assignment to the next possible
+      reassignment)
+    flow-sensitive analysis within conditional checks
+
+  Bug fixes:
+    fixed several sources of null-pointer errors in the NonNull checker
+    fixed a bug in the flow-sensitive analysis when a variable was used on
+      both sides of the "=" operator
+
+Checkers Framework API
+  New features:
+    added the TypesUtils.toString() method for pretty-printing annotated types
+    added AnnotationUtils, a utility class for working with annotations and
+      their values
+    added SourceChecker.getDefaultSkipPattern(), so that checkers can
+      individually specify which classes to skip by default
+    added preliminary support for suppressing checker warnings via
+      the @SuppressWarnings annotation
+
+  Bug fixes:
+    fixed handling of annotations of field values
+    InternalAnnotation now correctly uses defaults for annotation values
+    improved support for annotations on class type parameter bounds
+    fixed an assertion violation when compiling certain uses of arrays
+
+----------------------------------------------------------------------
+Version 0.2.2, 16 Aug 2007
+
+
+Code Changes
+
+* checkers.igj
+    some bug fixes and improved documentation
+
+* checkers.javari
+    fixed standard return value to be @Mutable
+    fixed generic and array handling of @ReadOnly
+    fixed @RoMaybe resolution of receivers at method invocation
+    fixed parsing of parenthesized trees and conditional trees
+    added initial support for for-enhanced loop
+    fixed constructor behavior on @ReadOnly classes
+    added checks for annotations on primitive types inside arrays
+
+* checkers.nonnull
+    flow sensitive analysis supports System.exit, new class/array creation
+
+* checkers.subtype
+    fixes for method overriding and other generics-related bugs
+
+* checkers.types
+    added AnnotatedTypeMirror, a new representation for annotated types that
+      might be moved to the compiler in later version
+    added AnnotatedTypeScanner and AnnotatedTypeVisitor, visitors for types
+    AnnotatedTypeFactory uses GenericsUtils for improved handing of annotated
+      generic types
+
+* checkers.util
+    added AnnotatedTypes, a utility class for AnnotatedTypeMirror
+    added GenericsUtils, a utility class for working with generic types
+
+* tests
+    modified output to print only missing and unexpected diagnostics
+    added new test cases for the Javari checker
+
+
+Documentation Changes
+
+* checkers/igj-checker.html
+    improvements to page
+
+* checkers/javari-checker.html
+    examples now point to test suit files
+
+Miscellaneous Changes
+
+* checkers/build.xml
+    Ant script fails if it doesn't find the correct JSR 308 javac version
+
+----------------------------------------------------------------------
+Version 0.2.1, 1 Aug 2007
+
+
+Code Changes
+
+* checkers.igj & checkers.igj.quals
+    added an initial implementation for the IGJ language
+
+* checkers.javari
+    added a state parameter to the visitor methods
+    added tests and restructured the test suite
+    restructured and implemented RoMaybe
+    modified return type to be mutable by default
+    fixed mutability type handling for type casts and field access
+    fixed bug, ensuring no primitives can be ReadOnly
+    a method receiver type is now based on the correct annotation
+    fixed parameter type checking for overriden methods
+    fixed bug on readonly field initialization
+    added handling for unary trees
+
+* checkers.nonnull
+    added a tests for the flow-senstive analysis and varargs methods
+    improved flow-sensitive analysis: else statements, asserts,
+      return/throw statements, instanceof checks, complex conditionals with &&
+    fixed a bug in the flow-sensitive analysis that incorrectly inferred
+      @NonNull for some elements
+    removed NonnullAnnotatedClassType, moving its functionality into
+      NonnullAnnotatedTypeFactory
+
+* checkers.source
+    SourceChecker.getSupportedAnnotationTypes() returns ["*"], overriding
+      AbstractProcessor.getSupportedAnnotationTypes(). This enables all
+      checkers to run on unannotated code
+
+* checkers.subtypes
+    fixed a bug pertaining to method parameter checks for overriding methods
+    fixed a bug that caused crashes when checking varargs methods
+
+* checkers.types
+    AnnotatedTypeFactory.getClass(Element) and getMethod(Element) use the
+      tree of the passed Element if one exists
+    AnnotatedClassType.includeAt, .execludeAt, .getAnnotationData were
+      added and are public
+    added constructor() and skipParens() methods to InternalUtils
+    renamed getTypeArgumentLocations() to getAnnotatedTypeArgumentLocations()
+      in AnnotatedClassType
+    added AnnotationData to represent annotations instead of Class instances;
+      primarily allows querying annotation arguments
+    added switch for whether or not to use includes/excludes in
+      AnnotatedClassType.hasAnnotationAt()
+
+* checkers.util
+    added utility classes
+    added skeleton class generator utility for annotating external libraries
+
+
+Documentation Changes
+
+* checkers/nonnull-checker.html
+    added a note about JML
+    added a caveat about variable initialization
+
+* checkers/README-checkers.html
+    improvements to instructions
+
+----------------------------------------------------------------------
+Version 0.2, 2 Jul 2007
+
+
+Code Changes
+
+* checkers.subtype
+    subtype checker warns for annotated and redundant typecasts
+    SubtypeVisitor checks for invalid return and parameter types in overriding
+      methods
+    added checks for compound assignments (like '+=')
+
+* checkers.source
+    SourceChecker honors the "checkers.skipClasses" property as a regex for
+      suppressing warnings from unannotated code (property is "java.*" by
+      default)
+    SourceVisitor extends TreePathScanner<R,P> instead of
+      TreeScanner<Void,Void>
+
+* checkers.types
+    AnnotatedClassType.isAnnotatedWith removed
+    AnnotatedClassType.getInnerLocations renamed to getTypeArgumentLocations
+    AnnotatedClassType.include now removes from the exclude list (and
+      vice-versa)
+    AnnotatedClassType.setElement and setTree methods are now public
+
+* checkers.nonnull
+    added a flow-sensitive analysis for inferring @NonNull in "if (var !=
+      null)"-style checks
+    added checks for prefix and postfix increment and decrement operations
+
+* checkers.javari
+    added initial implementation of a typechecker for the Javari language
+
+----------------------------------------------------------------------
+Version 0.1.1, 7 Jun 2007
+
+
+Documentation Changes
+
+* checkers/nonnull-checker.html
+    created "Tiny examples" subsection
+    created "Annotated library" subsection
+    noted where to read @NonNull-annotated source
+    moved instructions for unannotated code to README-checkers.html
+    various minor corrections and clarifications
+
+* checkers/README-checkers.html
+    added cross-references to other checkers documents
+    removed redundant text
+    moved instructions for unannotated code from nonnull-checker.html
+    various minor corrections and clarifications
+
+* checkers/creating-a-checker.html
+    added note about getSupportedSourceVersion
+    removed line numbers from @Interned example
+    added section on SubtypeChecker/SubtypeVisitor
+    various minor corrections and clarifications
+
+
+Code Changes
+
+* checkers.subtype
+    removed deprecated getCheckedAnnotation() mechanism
+    added missing package Javadocs
+    package Javadocs reference relevant HTML documentation
+    various improvements to Javadocs
+    SubtypeVisitor and SubtypeChecker are now abstract classes
+    updated with respect to preferred usages of
+      AnnotatedClassType.hasAnnotationAt and AnnotatedClassType.annotateAt
+
+* checkers.source
+    added missing package Javadocs
+    package Javadocs reference relevant HTML documentation
+
+* checkers.types
+    added missing package Javadocs
+    package Javadocs reference relevant HTML documentation
+    AnnotatedClassType.annotateAt now correctly handles
+      AnnotationLocation.RAW argument
+    AnnotatedClassType.annotate deprecated in favor of
+      AnnotatedClassType.annotateAt with AnnotationLocation.RAW as an argument
+    AnnotatedClassType.isAnnotatedWith deprecated in favor of
+      AnnotatedClassType.hasAnnotationAt with AnnotationLocation.RAW as an
+      argument
+    Added fromArray and fromList methods to AnnotationLocation and made
+      corresponding constructors private.
+
+* checkers.quals
+    added Javadocs and meta-annotations on annotation declarations where
+      missing
+    package Javadocs reference relevant HTML documentation
+
+* checkers.nonnull
+    various improvements to Javadocs
+    package Javadocs reference relevant HTML documentation
+
+
+Miscellaneous Changes
+
+    improved documentation of checkers examples
+    checkers build file now only attempts to compile .java files
+
+
+----------------------------------------------------------------------
+Version 0.1.0, 1 May 2007
+
+Initial release.
