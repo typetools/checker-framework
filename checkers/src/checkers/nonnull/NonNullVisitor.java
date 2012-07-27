@@ -3,6 +3,7 @@ package checkers.nonnull;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
@@ -29,6 +30,7 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
@@ -60,6 +62,16 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             String errorKey) {
+
+        // allow MonotonicNonNull to be initialized to null at declaration
+        if (varTree.getKind() == Tree.Kind.VARIABLE) {
+            Element elem = TreeUtils
+                    .elementFromDeclaration((VariableTree) varTree);
+            if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)) {
+                return;
+            }
+        }
+
         if (TreeUtils.isFieldAccess(varTree)) {
             AnnotatedTypeMirror valueType = atypeFactory
                     .getAnnotatedType(valueExp);
