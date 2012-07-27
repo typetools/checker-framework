@@ -10,6 +10,9 @@ public class Lazy {
     @checkers.nullness.quals.LazyNonNull String _g;
     @checkers.nullness.quals.LazyNonNull String _g2;
     
+    // Initialization with null is allowed for legacy reasons.
+    @MonoNonNull String init = null;
+    
     public Lazy() {
         f = "";
         // does not have to initialize g
