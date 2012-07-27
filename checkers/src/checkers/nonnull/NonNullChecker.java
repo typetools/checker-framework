@@ -16,6 +16,7 @@ import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.quals.TypeQualifiers;
+import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
@@ -49,10 +50,13 @@ import com.sun.source.tree.CompilationUnitTree;
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class, Committed.class,
         Unclassified.class, FBCBottom.class })
+@SupportedLintOptions({"strictmonoinit"})
 public class NonNullChecker extends CommitmentChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
+
+    public static final boolean LINT_DEFAULT_STRICTMONOINIT = false;
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
