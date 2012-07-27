@@ -94,7 +94,6 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
                             annos.toString()), varTree);
                 }
             }
-
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
