@@ -68,7 +68,7 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)
-                    && checker.getLintOption("strictmonoinit",
+                    && !checker.getLintOption("strictmonoinit",
                             NonNullChecker.LINT_DEFAULT_STRICTMONOINIT)) {
                 return;
             }
