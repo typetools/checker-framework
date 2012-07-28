@@ -1,5 +1,6 @@
 package checkers.nonnull;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,8 +19,10 @@ import checkers.nonnull.quals.Nullable;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
-import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -30,9 +33,9 @@ import com.sun.source.tree.CompilationUnitTree;
 
 // DONE: Stefan: don't allow casts between initialization types.
 
-@TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class, Committed.class,
-        Unclassified.class, FBCBottom.class })
-@SupportedLintOptions({"strictmonoinit"})
+@TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
+        Committed.class, Unclassified.class, FBCBottom.class })
+@SupportedLintOptions({ "strictmonoinit" })
 public class NonNullChecker extends CommitmentChecker {
 
     /** Annotation constants */
@@ -42,17 +45,22 @@ public class NonNullChecker extends CommitmentChecker {
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
-        super.initChecker(processingEnv);
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         MONONONNULL = annoFactory.fromClass(MonoNonNull.class);
+
+        super.initChecker(processingEnv);
     }
 
-    @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    /**
+     * Returns a {@link Free} annotation with a given type frame.
+     */
+    public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
+        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
+                env, Free.class.getCanonicalName());
+        builder.setValue("value", typeFrame);
+        return builder.build();
     }
 
     @Override
@@ -71,6 +79,7 @@ public class NonNullChecker extends CommitmentChecker {
     public Set<AnnotationMirror> getNonNullAnnotations() {
         Set<AnnotationMirror> result = new HashSet<>();
         result.add(NONNULL);
+        result.add(MONONONNULL);
         result.add(NULLABLE);
         return result;
     }
@@ -86,5 +95,17 @@ public class NonNullChecker extends CommitmentChecker {
     @Override
     public AnnotationMirror getFieldInvariantAnnotation() {
         return NONNULL;
+    }
+
+    @Override
+    protected QualifierHierarchy getChildQualifierHierarchy() {
+        MultiGraphFactory factory = new GraphQualifierHierarchy.GraphFactory(
+                this);
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = new HashSet<>();
+        supportedTypeQualifiers.add(NonNull.class);
+        supportedTypeQualifiers.add(Nullable.class);
+        supportedTypeQualifiers.add(MonoNonNull.class);
+        return createQualifierHierarchy(supportedTypeQualifiers,
+                AnnotationUtils.getInstance(env), factory);
     }
 }
