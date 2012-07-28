@@ -16,6 +16,7 @@ import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.*;
 import checkers.util.*;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.annotation.processing.*;
@@ -190,11 +191,26 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
 
-        for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
+        return createQualifierHierarchy(supportedTypeQualifiers, annoFactory, factory);
+    }
+
+    /**
+     * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
+     *
+     * The implementation builds the type qualifier hierarchy for the
+     * {@code supportedTypeQualifiers}.  The current implementation returns an
+     * instance of {@code GraphQualifierHierarchy}.
+     *
+     * @return an annotation relation tree representing the supported qualifiers
+     */
+    protected static QualifierHierarchy createQualifierHierarchy(
+            Set<Class<? extends Annotation>> supportedTypeQualifiers,
+            AnnotationUtils annoFactory, MultiGraphFactory factory) {
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
