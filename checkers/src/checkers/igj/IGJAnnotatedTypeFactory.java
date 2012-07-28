@@ -1,6 +1,5 @@
 package checkers.igj;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -134,13 +133,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     @Override
     protected TypeAnnotator createTypeAnnotator(IGJChecker checker) {
         return new IGJTypePostAnnotator(checker);
-    }
-    
-    @Override
-    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
-        Set<Class<? extends Annotation>> result = new HashSet<>();
-        result.add(I.class);
-        return result;
     }
 
     // **********************************************************************
