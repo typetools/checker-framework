@@ -405,7 +405,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             return null;
         }
 
-        assert cls != null;
+        assert cls != null : "reflectively loading " + name + " failed";
 
         // Invoke the constructor.
         try {
