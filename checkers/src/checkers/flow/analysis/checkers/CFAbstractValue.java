@@ -57,19 +57,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.annotations = annotations;
     }
 
-    /**
-     * Are the annotations {@code annotations} valid for the given analysis?
-     */
-    protected boolean areValidAnnotations(Set<AnnotationMirror> annotations) {
-        for (AnnotationMirror a : annotations) {
-            if (!AnnotationUtils.containsSameIgnoringValues(
-                    analysis.supportedAnnotations, a)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /** Returns the annotation of the hierarchy identified by 'top'. */
     public InferredAnnotation getAnnotation(AnnotationMirror top) {
         return annotations[getIndex(top)];

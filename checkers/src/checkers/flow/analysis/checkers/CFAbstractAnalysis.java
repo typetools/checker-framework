@@ -64,12 +64,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      */
     protected final BaseTypeChecker checker;
 
-    /**
-     * The set of annotations that the flow analysis should track (must be a
-     * subset of the legal annotations of the qualifier hierarchy).
-     */
-    protected final Set<AnnotationMirror> supportedAnnotations;
-
     protected List<Pair<VariableElement, V>> fieldValues;
 
     public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
@@ -84,22 +78,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
                 .getTopAnnotations();
         tops = new ArrayList<>(topAnnotations)
                 .toArray(new AnnotationMirror[topAnnotations.size()]);
-
-        // Build the set of supported annotations.
-        supportedAnnotations = AnnotationUtils.createAnnotationSet();
-        Set<Class<? extends Annotation>> noFlowInferenceAnnotations = factory
-                .noFlowInferenceAnnotations();
-        for (AnnotationMirror a : qualifierHierarchy.getAnnotations()) {
-            boolean add = true;
-            for (Class<? extends Annotation> c : noFlowInferenceAnnotations) {
-                if (AnnotationUtils.areSameByClass(a, c)) {
-                    add = false;
-                }
-            }
-            if (add) {
-                supportedAnnotations.add(a);
-            }
-        }
 
         fieldValues = Collections.emptyList();
     }
@@ -150,10 +128,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 
     public AnnotatedTypeFactory getFactory() {
         return factory;
-    }
-
-    public Set<AnnotationMirror> getSupportedAnnotations() {
-        return supportedAnnotations;
     }
 
     /**

@@ -1,6 +1,5 @@
 package checkers.oigj;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,13 +146,6 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
     @Override
     protected TypeAnnotator createTypeAnnotator(ImmutabilitySubchecker checker) {
         return new IGJTypePostAnnotator(checker);
-    }
-    
-    @Override
-    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
-        Set<Class<? extends Annotation>> result = new HashSet<>();
-        result.add(I.class);
-        return result;
     }
 
     // **********************************************************************

@@ -155,14 +155,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this(checker, root, FLOW_BY_DEFAULT);
     }
 
-    /**
-     * Returns the set of annotations for which no flow inference should be
-     * performed. This defaults to the empty set.
-     */
-    public Set<Class<? extends Annotation>> noFlowInferenceAnnotations() {
-        return Collections.emptySet();
-    }
-
     // **********************************************************************
     // Factory Methods for the appropriate annotator classes
     // **********************************************************************
