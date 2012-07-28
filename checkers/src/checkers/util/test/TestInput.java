@@ -67,7 +67,7 @@ public class TestInput {
 
         JavaCompiler.CompilationTask task = compiler.getTask(output, fileManager,
               diagnostics, this.options, this.processors, this.files);
-        
+
         /* 
          * In Eclipse, std out and std err for multiple tests appear as one
          * long stream. When selecting a specific failed test, one sees the
