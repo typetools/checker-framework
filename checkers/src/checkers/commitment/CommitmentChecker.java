@@ -273,26 +273,8 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
-            boolean isChild1 = isChildAnnotation(anno1);
-            boolean isChild2 = isChildAnnotation(anno2);
-            if (isChild1 && isChild2) {
-                return childHierarchy.greatestLowerBound(anno1, anno2);
-            }
-            // If the two annotations are not from the same hierarchy, then null
-            // should be returned.
-            if (isChild1 || isChild2) {
-                return null;
-            }
-            if (AnnotationUtils.areSame(anno1, UNCLASSIFIED)) {
-                return anno2;
-            }
-            if (AnnotationUtils.areSame(anno2, UNCLASSIFIED)) {
-                return anno1;
-            }
-            if (AnnotationUtils.areSame(anno1, anno2)) {
-                return anno1;
-            }
-            return FBCBOTTOM;
+            assert false : "This code is not needed for this type system so far.";
+            return null;
         }
 
     }
