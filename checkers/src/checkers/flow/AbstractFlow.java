@@ -378,7 +378,7 @@ implements Flow {
             flowState_whenTrue = flowState;
             flowState = null;
         } else {
-            assert false : "Incorrect call of scanCond!";
+            assert false : "Incorrect call of scanCond: " + tree;
         }
     }
 
@@ -403,7 +403,7 @@ implements Flow {
     protected void scanExpr(ExpressionTree tree) {
         alive = true;
         scan(tree, null);
-        assert flowState != null;
+        assert flowState != null : "flowState null for: " + tree;
     }
 
     // **********************************************************************

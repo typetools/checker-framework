@@ -204,7 +204,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         try {
         Element elt = InternalUtils.symbol(node);
-        assert elt != null : "no symbol for method";
+        assert elt != null : "no symbol for method: " + node;
         if (InternalUtils.isAnonymousConstructor(node)) {
             // We shouldn't dig deeper
             return null;
@@ -384,8 +384,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node,
             List<? extends AnnotatedTypeMirror> params) {
-        assert params.size() == 1;
-        assert node.getArguments().size() == 1;
+        assert params.size() == 1 : "invalid no. of parameters " + params + " found for method invocation " + node;
+        assert node.getArguments().size() == 1 : "invalid no. of arguments in method invocation " + node;
 
         AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node.getArguments().get(0));
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
@@ -697,7 +697,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
-        assert var != null;
+        assert var != null : "no variable found for tree: " + varTree;
         checkAssignability(var, varTree);
         commonAssignmentCheck(var, valueExp, errorKey);
     }
@@ -720,11 +720,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 && ((NewArrayTree)valueExp).getType() == null) {
             AnnotatedTypeMirror compType = ((AnnotatedArrayType)varType).getComponentType();
             NewArrayTree arrayTree = (NewArrayTree)valueExp;
-            assert arrayTree.getInitializers() != null;
+            assert arrayTree.getInitializers() != null : "array initializers are not expected to be null in: " + valueExp;
             checkArrayInitialization(compType, arrayTree.getInitializers());
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
-        assert valueType != null;
+        assert valueType != null : "null type for expression: " + valueExp;
         commonAssignmentCheck(varType, valueType, valueExp, errorKey);
     }
 
@@ -917,7 +917,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     // Unfortunately Javari override it!
     protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs) {
-        assert requiredArgs.size() == passedArgs.size();
+        assert requiredArgs.size() == passedArgs.size() : "mismatch between required args (" + requiredArgs +
+                ") and passed args (" + passedArgs + ")";
         for (int i = 0; i < requiredArgs.size(); ++i) {
             commonAssignmentCheck(requiredArgs.get(i),
                     passedArgs.get(i),
@@ -1062,7 +1063,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     protected MemberSelectTree enclosingMemberSelect() {
         TreePath path = this.getCurrentPath();
-        assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER;
+        assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER :
+            "expected identifier, found: " + path.getLeaf();
         if (path.getParentPath().getLeaf().getKind() == Tree.Kind.MEMBER_SELECT)
             return (MemberSelectTree)path.getParentPath().getLeaf();
         else
@@ -1270,7 +1272,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 // May be zero for a "diamond" (inferred type args in constructor invocation).
                 int numTypeArgs = typeargtree.getTypeArguments().size();
                 if (numTypeArgs != 0) {
-                    assert tatypes.size() == numTypeArgs;
+                    assert tatypes.size() == numTypeArgs : "size mismatch for type arguments: " + type +
+                            " and " + typeargtree;
 
                     for (int i=0; i < tatypes.size(); ++i) {
                         scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
