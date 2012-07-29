@@ -1,5 +1,6 @@
 package checkers.commitment;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,6 +8,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.Committed;
@@ -28,8 +30,7 @@ import com.sun.source.tree.VariableTree;
 public abstract class CommitmentChecker extends BaseTypeChecker {
 
     /** Annotation constants */
-    protected AnnotationMirror COMMITTED, FREE, UNCLASSIFIED, FBCBOTTOM,
-            NOT_ONLY_COMMITTED;
+    protected AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
@@ -37,24 +38,18 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
                 .getInstance(processingEnv);
         COMMITTED = annoFactory.fromClass(Committed.class);
         FREE = annoFactory.fromClass(Free.class);
-        UNCLASSIFIED = annoFactory.fromClass(Unclassified.class);
         FBCBOTTOM = annoFactory.fromClass(FBCBottom.class);
         NOT_ONLY_COMMITTED = annoFactory.fromClass(NotOnlyCommitted.class);
 
         super.initChecker(processingEnv);
     }
 
-    /**
-     * @return The list of type annotations of the commitment type system (i.e.,
-     *         not including declaration annotations like {@link CommmittedOnly}
-     *         or {@link NotOnlyCommitted}).
-     */
-    public Set<AnnotationMirror> getCommitmentAnnotations() {
-        Set<AnnotationMirror> result = new HashSet<>();
-        result.add(FREE);
-        result.add(COMMITTED);
-        result.add(UNCLASSIFIED);
-        result.add(FBCBOTTOM);
+    public Set<Class<? extends Annotation>> getCommitmentAnnotations() {
+        Set<Class<? extends Annotation>> result = new HashSet<>();
+        result.add(Free.class);
+        result.add(Committed.class);
+        result.add(FBCBottom.class);
+        result.add(Unclassified.class);
         return result;
     }
 
@@ -67,7 +62,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
      * @return The list of annotations that is forbidden for the constructor
      *         return type.
      */
-    public Set<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
+    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getCommitmentAnnotations();
     }
 
@@ -102,6 +97,49 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
     }
 
     /**
+     * Returns a {@link Free} annotation with a given type frame.
+     */
+    public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
+        assert typeFrame != null;
+        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
+                env, Free.class.getCanonicalName());
+        builder.setValue("value", typeFrame);
+        return builder.build();
+    }
+
+    /**
+     * Returns a {@link Free} annotation with a given type frame.
+     */
+    public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
+        assert typeFrame != null;
+        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
+                env, Unclassified.class.getCanonicalName());
+        builder.setValue("value", typeFrame);
+        return builder.build();
+    }
+
+    /**
+     * Returns a {@link Unclassified} annotation with a given type frame.
+     */
+    public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
+        assert typeFrame != null;
+        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
+                env, Unclassified.class.getCanonicalName());
+        builder.setValue("value", typeFrame);
+        return builder.build();
+    }
+
+    /**
+     * Returns the type frame of a given annotation. The annotation must either
+     * be {@link Free} or {@link Unclassified}.
+     */
+    public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
+        Class<?> name = AnnotationUtils.elementValue(annotation, "value",
+                Class.class);
+        return AnnotationUtils.getInstance(env).typeFromClass(name);
+    }
+
+    /**
      * The {@link QualifierHierarchy} for the initialization type system. This
      * hierarchy also includes the child type system, whose hierarchy is
      * provided through {@link #getChildQualifierHierarchy()}.
@@ -119,7 +157,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
             AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
             tops = new HashSet<>();
-            tops.add(UNCLASSIFIED);
+            tops.add(createUnclassifiedAnnotation(Object.class));
             tops.addAll(childHierarchy.getTopAnnotations());
 
             bottoms = new HashSet<>();
@@ -202,7 +240,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
             if (isChild1 || isChild2) {
                 return false;
             }
-            if (AnnotationUtils.areSame(anno2, UNCLASSIFIED)) {
+            if (AnnotationUtils.areSameByClass(anno2, Unclassified.class)) {
                 return true;
             }
             if (AnnotationUtils.areSame(anno1, FBCBOTTOM)) {
@@ -267,7 +305,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
             if (AnnotationUtils.areSame(anno1, anno2)) {
                 return anno1;
             }
-            return UNCLASSIFIED;
+            return createUnclassifiedAnnotation(Object.class);
         }
 
         @Override
