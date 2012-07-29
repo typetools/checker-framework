@@ -1,11 +1,9 @@
 package checkers.flow.cfg;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -23,18 +21,18 @@ import com.sun.source.tree.Tree;
 
 /**
  * A control flow graph (CFG for short) of a single method.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class ControlFlowGraph {
 
     /** The entry block of the control flow graph. */
     protected final SpecialBlock entryBlock;
-    
+
     /** The regular exit block of the control flow graph. */
     protected final SpecialBlock regularExitBlock;
-    
+
     /** The exceptiona exit block of the control flow graph. */
     protected final SpecialBlock exceptionalExitBlock;
 
@@ -43,7 +41,7 @@ public class ControlFlowGraph {
 
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected IdentityHashMap<Tree, Node> treeLookup;
-    
+
     /**
      * All return nodes (if any) encountered. Only includes return
      * statements that actually return something
@@ -73,15 +71,15 @@ public class ControlFlowGraph {
     public SpecialBlock getEntryBlock() {
         return entryBlock;
     }
-    
+
     public List<ReturnNode> getReturnNodes() {
         return returnNodes;
     }
-    
+
     public SpecialBlock getRegularExitBlock() {
         return regularExitBlock;
     }
-    
+
     public SpecialBlock getExceptionalExitBlock() {
         return exceptionalExitBlock;
     }
@@ -139,8 +137,8 @@ public class ControlFlowGraph {
     /**
      * @return The tree-lookup map.
      */
-    public Map<Tree, Node> getTreeLookup() {
-        return Collections.unmodifiableMap(treeLookup);
+    public IdentityHashMap<Tree, Node> getTreeLookup() {
+        return new IdentityHashMap<>(treeLookup);
     }
 
 }

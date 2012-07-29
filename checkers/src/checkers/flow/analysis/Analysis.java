@@ -534,8 +534,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
-        return new AnalysisResult<>(nodeValues, stores,
-                cfg.getTreeLookup());
+        IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
+        return new AnalysisResult<>(nodeValues, stores, treeLookup);
     }
 
     /**
