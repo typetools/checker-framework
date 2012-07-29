@@ -45,22 +45,13 @@ public class NonNullChecker extends CommitmentChecker {
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
+        AnnotationUtils annoFactory = AnnotationUtils
+                .getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         MONONONNULL = annoFactory.fromClass(MonoNonNull.class);
 
         super.initChecker(processingEnv);
-    }
-
-    /**
-     * Returns a {@link Free} annotation with a given type frame.
-     */
-    public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
-        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
-                env, Free.class.getCanonicalName());
-        builder.setValue("value", typeFrame);
-        return builder.build();
     }
 
     @Override
@@ -85,10 +76,12 @@ public class NonNullChecker extends CommitmentChecker {
     }
 
     @Override
-    public Set<AnnotationMirror> getInvalidConstructorReturnTypeAnnotations() {
-        Set<AnnotationMirror> l = new HashSet<>(
+    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
+        Set<Class<? extends Annotation>> l = new HashSet<>(
                 super.getInvalidConstructorReturnTypeAnnotations());
-        l.addAll(getNonNullAnnotations());
+        l.add(NonNull.class);
+        l.add(Nullable.class);
+        l.add(MonoNonNull.class);
         return l;
     }
 

@@ -7,13 +7,17 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.commitment.quals.Free;
 import checkers.commitment.quals.NotOnlyCommitted;
+import checkers.commitment.quals.Unclassified;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
@@ -27,22 +31,21 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 
 public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker, Transfer extends CommitmentTransfer<Transfer>, Flow extends CFAbstractAnalysis<CFValue, CommitmentStore, Transfer>>
         extends
         AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CommitmentStore, Transfer, Flow> {
 
     /** The annotations */
-    public final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED,
-            NOT_ONLY_COMMITTED;
+    public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
 
     public CommitmentAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root) {
         super(checker, root, true);
 
         COMMITTED = checker.COMMITTED;
-        FREE = checker.FREE;
-        UNCLASSIFIED = checker.UNCLASSIFIED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
     }
 
@@ -112,8 +115,8 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
             AnnotatedTypeMirror receiverType) {
-        if (receiverType.hasAnnotation(UNCLASSIFIED)
-                || receiverType.hasAnnotation(FREE)) {
+        if (receiverType.hasAnnotation(Unclassified.class)
+                || receiverType.hasAnnotation(Free.class)) {
 
             type.clearAnnotations();
             type.addAnnotations(qualHierarchy.getTopAnnotations());
@@ -146,7 +149,10 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
         public Void visitExecutable(AnnotatedExecutableType t, ElementKind p) {
             Void result = super.visitExecutable(t, p);
             if (p == ElementKind.CONSTRUCTOR) {
-                t.getReceiverType().replaceAnnotation(FREE);
+                AnnotatedDeclaredType receiverType = t.getReceiverType();
+                DeclaredType underlyingType = receiverType.getUnderlyingType();
+                receiverType.replaceAnnotation(checker
+                        .createFreeAnnotation(underlyingType));
             }
             return result;
         }
@@ -164,7 +170,11 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
             if (TreeUtils.isConstructor(node)) {
                 assert p instanceof AnnotatedExecutableType;
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
-                exeType.getReceiverType().replaceAnnotation(FREE);
+                DeclaredType underlyingType = exeType.getReceiverType()
+                        .getUnderlyingType();
+                AnnotationMirror a = checker
+                        .createFreeAnnotation(underlyingType);
+                exeType.getReceiverType().replaceAnnotation(a);
             }
             return result;
         }
@@ -173,12 +183,13 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
             super.visitNewClass(node, p);
             boolean allCommitted = true;
+            Type type = ((JCTree) node).type;
             for (ExpressionTree a : node.getArguments()) {
                 allCommitted = allCommitted
                         && getAnnotatedType(a).hasAnnotation(COMMITTED);
             }
             if (!allCommitted) {
-                p.replaceAnnotation(FREE);
+                p.replaceAnnotation(checker.createFreeAnnotation(type));
             }
             return null;
         }

@@ -82,7 +82,7 @@ public class NonNullAnnotatedTypeFactory
 
         Set<AnnotationMirror> localdef = new HashSet<AnnotationMirror>();
         localdef.add(NULLABLE);
-        localdef.add(UNCLASSIFIED);
+        localdef.add(checker.createUnclassifiedAnnotation(Object.class));
         defaults.setLocalVariableDefault(localdef);
 
         postInit();
