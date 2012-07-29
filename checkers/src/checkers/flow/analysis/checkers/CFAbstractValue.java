@@ -267,7 +267,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     protected String annotationToString(AnnotationMirror a) {
         String fullString = a.toString();
-        return fullString.substring(fullString.lastIndexOf('.') + 1,
+        int indexOfParen = fullString.indexOf("(");
+        String annoName = fullString;
+        if (indexOfParen >= 0) {
+            annoName = fullString.substring(0, indexOfParen);
+        }
+        return fullString.substring(annoName.lastIndexOf('.') + 1,
                 fullString.length());
     }
 
