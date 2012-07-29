@@ -9,6 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.Committed;
@@ -134,9 +135,9 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
      * be {@link Free} or {@link Unclassified}.
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
-        Class<?> name = AnnotationUtils.elementValue(annotation, "value",
-                Class.class);
-        return AnnotationUtils.getInstance(env).typeFromClass(name);
+        TypeMirror name = AnnotationUtils.elementValueWithDefaults(annotation,
+                "value", TypeMirror.class);
+        return name;
     }
 
     /**
@@ -150,6 +151,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
         protected Set<AnnotationMirror> bottoms;
         protected Set<Name> typeQualifiers;
         protected QualifierHierarchy childHierarchy = getChildQualifierHierarchy();
+        protected Types types = env.getTypeUtils();
 
         public InitializationQualifierHierarchy() {
             super(CommitmentChecker.this);
@@ -234,19 +236,53 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
             boolean isChild1 = isChildAnnotation(anno1);
             boolean isChild2 = isChildAnnotation(anno2);
+            // If both annotations are from the child hierarchy, use
+            // childHierarchy.isSubtyp.
             if (isChild1 && isChild2) {
                 return childHierarchy.isSubtype(anno1, anno2);
             }
+            // If one annotation is from the child hierarchy, but the other is
+            // not, then they cannot be subtypes of each other.
             if (isChild1 || isChild2) {
                 return false;
             }
-            if (AnnotationUtils.areSameByClass(anno2, Unclassified.class)) {
+            // 't' is always a subtype of 't'
+            if (AnnotationUtils.areSame(anno1, anno2)) {
                 return true;
             }
+            // @Committed is only a supertype of @FBCBottom.
+            if (AnnotationUtils.areSame(anno2, COMMITTED)) {
+                return AnnotationUtils.areSame(anno1, FBCBOTTOM);
+            }
+            // @Committed is only a subtype of @Unclassified.
+            boolean unc2 = AnnotationUtils.areSameByClass(anno2,
+                    Unclassified.class);
+            if (AnnotationUtils.areSame(anno1, COMMITTED)) {
+                return unc2;
+            }
+            // @FBCBottom is a supertype of nothing.
+            if (AnnotationUtils.areSame(anno2, FBCBOTTOM)) {
+                return false;
+            }
+            // @FBCBottom is a subtype of everything.
             if (AnnotationUtils.areSame(anno1, FBCBOTTOM)) {
                 return true;
             }
-            return AnnotationUtils.areSame(anno1, anno2);
+            boolean unc1 = AnnotationUtils.areSameByClass(anno1,
+                    Unclassified.class);
+            boolean free1 = AnnotationUtils.areSameByClass(anno1, Free.class);
+            boolean free2 = AnnotationUtils.areSameByClass(anno2, Free.class);
+            // @Unclassified is not a subtype of @Free.
+            if (unc1 && free2) {
+                return false;
+            }
+            // Now, either both annotations are @Free, both annotations are
+            // @Unclassified or anno1 is @Free and anno2 is @Unclassified.
+            assert (free1 && free2) || (unc1 && unc2) || (free1 && unc2);
+            // Thus, we only need to look at the type frame.
+            TypeMirror frame1 = getTypeFrameFromAnnotation(anno1);
+            TypeMirror frame2 = getTypeFrameFromAnnotation(anno2);
+            return types.isSubtype(frame1, frame2);
         }
 
         /**
@@ -288,6 +324,8 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
                 AnnotationMirror anno2) {
             boolean isChild1 = isChildAnnotation(anno1);
             boolean isChild2 = isChildAnnotation(anno2);
+            // If both annotations are from the child hierarchy, use
+            // childHierarchy.leastUpperBound.
             if (isChild1 && isChild2) {
                 return childHierarchy.leastUpperBound(anno1, anno2);
             }
@@ -296,16 +334,52 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
             if (isChild1 || isChild2) {
                 return null;
             }
-            if (AnnotationUtils.areSame(anno1, FBCBOTTOM)) {
+
+            // Handle the case where one is a subtype of the other.
+            if (isSubtype(anno1, anno2)) {
                 return anno2;
-            }
-            if (AnnotationUtils.areSame(anno2, FBCBOTTOM)) {
+            } else if (isSubtype(anno2, anno1)) {
                 return anno1;
             }
-            if (AnnotationUtils.areSame(anno1, anno2)) {
-                return anno1;
+            boolean unc1 = AnnotationUtils.areSameByClass(anno1,
+                    Unclassified.class);
+            boolean unc2 = AnnotationUtils.areSameByClass(anno2,
+                    Unclassified.class);
+            boolean free1 = AnnotationUtils.areSameByClass(anno1, Free.class);
+            boolean free2 = AnnotationUtils.areSameByClass(anno2, Free.class);
+
+            // Handle @Committed.
+            if (AnnotationUtils.areSame(anno1, COMMITTED)) {
+                assert free2;
+                return createUnclassifiedAnnotation(getTypeFrameFromAnnotation(anno2));
+            } else if (AnnotationUtils.areSame(anno2, COMMITTED)) {
+                assert free1;
+                return createUnclassifiedAnnotation(getTypeFrameFromAnnotation(anno1));
             }
-            return createUnclassifiedAnnotation(Object.class);
+
+            if (free1 && free2) {
+                return createFreeAnnotation(lubTypeFrame(
+                        getTypeFrameFromAnnotation(anno1),
+                        getTypeFrameFromAnnotation(anno2)));
+            }
+
+            assert (unc1 || free1) && (unc2 || free2);
+            return createUnclassifiedAnnotation(lubTypeFrame(
+                    getTypeFrameFromAnnotation(anno1),
+                    getTypeFrameFromAnnotation(anno2)));
+        }
+
+        /**
+         * Returns the least upper bound of two types.
+         */
+        protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
+            if (types.isSubtype(a, b)) {
+                return b;
+            } else if (types.isSubtype(b, a)) {
+                return a;
+            }
+            assert false : "not fully implemented yet";
+            return AnnotationUtils.getInstance(env).typeFromClass(Object.class);
         }
 
         @Override
