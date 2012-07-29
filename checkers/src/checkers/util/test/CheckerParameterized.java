@@ -104,9 +104,9 @@ public class CheckerParameterized extends Suite {
 
         String testCaseName() {
             File file = (File)fParameterList.get(fParameterSetNumber)[0];
-            String name = file.getPath().replace(".java", "").replace("tests/", "");
-            if (name.contains("/"))
-                return name.substring(name.indexOf("/") + 1);
+            String name = file.getPath().replace(".java", "").replace("tests" + System.getProperty("file.separator"), "");
+            if (name.contains(System.getProperty("file.separator")))
+                return name.substring(name.indexOf(System.getProperty("file.separator")) + 1);
             else
                 return name;
         }
