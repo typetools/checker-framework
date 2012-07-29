@@ -66,18 +66,18 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * The stores before every basic blocks (assumed to be 'no information' if
      * not present).
      */
-    protected Map<Block, TransferInput<A, S>> stores;
+    protected IdentityHashMap<Block, TransferInput<A, S>> stores;
 
     /**
      * The stores after every return statement.
      */
-    protected Map<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
+    protected IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
 
     /** The worklist used for the fix-point iteration. */
     protected Worklist worklist;
 
     /** Abstract values of nodes. */
-    protected Map<Node, A> nodeValues;
+    protected IdentityHashMap<Node, A> nodeValues;
 
     /**
      * The node that is currently handled in the analysis (if it is running).
@@ -281,7 +281,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /** Initialize the analysis with a new control flow graph. */
     protected void init(ControlFlowGraph cfg) {
         this.cfg = cfg;
-        stores = new HashMap<>();
+        stores = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
