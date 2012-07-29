@@ -38,7 +38,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * Initialize with a given node-value mapping.
      */
     public AnalysisResult(Map<Node, A> nodeValues,
-            IdentityHashMap<Block, TransferInput<A, S>> stores, Map<Tree, Node> treeLookup) {
+            IdentityHashMap<Block, TransferInput<A, S>> stores, IdentityHashMap<Tree, Node> treeLookup) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
