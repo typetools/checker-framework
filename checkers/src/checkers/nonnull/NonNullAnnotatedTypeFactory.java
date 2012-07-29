@@ -1,8 +1,6 @@
 package checkers.nonnull;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -79,11 +77,6 @@ public class NonNullAnnotatedTypeFactory
         addAliasedAnnotation(
                 org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
-
-        Set<AnnotationMirror> localdef = new HashSet<AnnotationMirror>();
-        localdef.add(NULLABLE);
-        localdef.add(checker.createUnclassifiedAnnotation(Object.class));
-        defaults.setLocalVariableDefault(localdef);
 
         postInit();
     }
