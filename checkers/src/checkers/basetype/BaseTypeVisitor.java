@@ -976,7 +976,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (return type %s)%n   overridden: %s %s (return type %s)%n",
                         (success ? "success: overriding return type is subtype of overridden" : "FAILURE: overriding return type is not subtype of overridden"),
-                        root.getLineMap().getLineNumber(valuePos),
+                        (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
                         overriderMeth, overriderTyp, overrider.getReturnType().toString(),
                         overriddenMeth, overriddenTyp, overridden.getReturnType().toString());
             }
@@ -1004,7 +1004,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (parameter %d type %s)%n   overridden: %s %s (parameter %d type %s)%n",
                         (success ? "success: overridden parameter type is subtype of overriding" : "FAILURE: overridden parameter type is not subtype of overriding"),
-                        root.getLineMap().getLineNumber(valuePos),
+                        (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
                         overriderMeth, overriderTyp, i, overriderParams.get(i).toString(),
                         overriddenMeth, overriddenTyp, i, overriddenParams.get(i).toString());
             }
