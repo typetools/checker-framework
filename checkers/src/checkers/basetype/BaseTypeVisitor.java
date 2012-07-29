@@ -746,7 +746,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     "About to test whether actual is a subtype of expected",
-                    root.getLineMap().getLineNumber(valuePos),
+                    (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(), valueTree,
                     valueType.getKind(), valueType,
                     varType.getKind(), varType);
@@ -771,7 +771,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     (success ? "success: actual is subtype of expected" : "FAILURE: actual is not subtype of expected"),
-                    root.getLineMap().getLineNumber(valuePos),
+                    (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(), valueTree,
                     valueType.getKind(), valueTypeString,
                     varType.getKind(), varTypeString);
