@@ -546,7 +546,7 @@ public class AnnotationUtils {
             return annotationName(a1).equals(annotationName(a2));
         return a1 == a2;
     }
-    
+
     /**
      * Checks that the annotation {@code am} has the name {@code aname}. Values
      * are ignored.
@@ -860,27 +860,8 @@ public class AnnotationUtils {
             return this;
         }
 
-        private TypeMirror typeFromClass(Class<?> clazz) {
-            if (clazz == void.class) {
-                return env.getTypeUtils().getNoType(TypeKind.VOID);
-            } else if (clazz.isPrimitive()) {
-                String primitiveName = clazz.getName().toUpperCase();
-                TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-                return env.getTypeUtils().getPrimitiveType(primitiveKind);
-            } else if (clazz.isArray()) {
-                TypeMirror componentType = typeFromClass(clazz.getComponentType());
-                return env.getTypeUtils().getArrayType(componentType);
-            } else {
-                TypeElement element = env.getElementUtils().getTypeElement(clazz.getCanonicalName());
-                if (element == null) {
-                    SourceChecker.errorAbort("Unrecognized class: " + clazz);
-                    return null; // dead code
-                }
-                return element.asType();
-            }
-        }
         public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
-            return setValue(elementName, typeFromClass(value));
+            return setValue(elementName, AnnotationUtils.getInstance(env).typeFromClass(value));
         }
 
         public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
@@ -1294,7 +1275,7 @@ public class AnnotationUtils {
     }
 
     /**
-     * 
+     *
      * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror)
      */
     public static <T> void updateMappingToImmutableSet(Map<T, Set<AnnotationMirror>> map,
@@ -1309,5 +1290,28 @@ public class AnnotationUtils {
             result.addAll(newQual);
         }
         map.put(key, Collections.unmodifiableSet(result));
+    }
+
+    /**
+     * Returns the {@link TypeMirror} for a given {@link Class}.
+     */
+    public TypeMirror typeFromClass(Class<?> clazz) {
+        if (clazz == void.class) {
+            return env.getTypeUtils().getNoType(TypeKind.VOID);
+        } else if (clazz.isPrimitive()) {
+            String primitiveName = clazz.getName().toUpperCase();
+            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
+            return env.getTypeUtils().getPrimitiveType(primitiveKind);
+        } else if (clazz.isArray()) {
+            TypeMirror componentType = typeFromClass(clazz.getComponentType());
+            return env.getTypeUtils().getArrayType(componentType);
+        } else {
+            TypeElement element = env.getElementUtils().getTypeElement(clazz.getCanonicalName());
+            if (element == null) {
+                SourceChecker.errorAbort("Unrecognized class: " + clazz);
+                return null; // dead code
+            }
+            return element.asType();
+        }
     }
 }
