@@ -1,5 +1,6 @@
 package checkers.commitment;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.commitment.quals.Free;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -37,13 +39,11 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
 
     // Annotation constants
-    protected final AnnotationMirror COMMITTED, FREE, UNCLASSIFIED;
+    protected final AnnotationMirror COMMITTED;
 
     public CommitmentVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
         COMMITTED = checker.COMMITTED;
-        FREE = checker.FREE;
-        UNCLASSIFIED = checker.UNCLASSIFIED;
 
         checkForAnnotatedJdk();
     }
@@ -76,7 +76,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
             if (!ElementUtils.isStatic(el)
                     && !(yType.hasAnnotation(COMMITTED) || xType
-                            .hasAnnotation(FREE))) {
+                            .hasAnnotation(Free.class))) {
                 String err;
                 if (xType.hasAnnotation(COMMITTED)) {
                     err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
@@ -97,11 +97,15 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             Set<AnnotationMirror> annotationMirrors = atypeFactory
                     .getAnnotatedType(node).getExplicitAnnotations();
             // Fields cannot have commitment annotations.
-            for (AnnotationMirror a : checker.getCommitmentAnnotations()) {
-                if (AnnotationUtils.containsSame(annotationMirrors, a)) {
-                    checker.report(Result.failure(
-                            COMMITMENT_INVALID_FIELD_ANNOTATION, node), node);
-                    break;
+            for (Class<? extends Annotation> c : checker
+                    .getCommitmentAnnotations()) {
+                for (AnnotationMirror a : annotationMirrors) {
+                    if (AnnotationUtils.areSameByClass(a, c)) {
+                        checker.report(Result.failure(
+                                COMMITMENT_INVALID_FIELD_ANNOTATION, node),
+                                node);
+                        break;
+                    }
                 }
             }
         }
@@ -116,14 +120,14 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
-        for (AnnotationMirror a : checker.getCommitmentAnnotations()) {
+        for (Class<? extends Annotation> a : checker.getCommitmentAnnotations()) {
             if (castType.hasAnnotation(a)) {
                 assert castAnno == null;
-                castAnno = a;
+                castAnno = castType.getAnnotation(a);
             }
             if (exprType.hasAnnotation(a)) {
                 assert exprAnno == null;
-                exprAnno = a;
+                exprAnno = exprType.getAnnotation(a);
             }
         }
 
@@ -156,13 +160,15 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
         if (TreeUtils.isConstructor(node)) {
             Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
             // check for invalid constructor return type
-            for (AnnotationMirror a : checker
+            for (Class<? extends Annotation> c : checker
                     .getInvalidConstructorReturnTypeAnnotations()) {
-                if (AnnotationUtils.containsSame(returnTypeAnnotations, a)) {
-                    checker.report(Result.failure(
-                            COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE, node),
-                            node);
-                    break;
+                for (AnnotationMirror a : returnTypeAnnotations) {
+                    if (AnnotationUtils.areSameByClass(a, c)) {
+                        checker.report(Result.failure(
+                                COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE,
+                                node), node);
+                        break;
+                    }
                 }
             }
 
@@ -175,7 +181,8 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
             CommitmentStore store = (CommitmentStore) atypeFactory
                     .getRegularExitStore(node);
-            // If the store is null, then the constructor cannot terminate successfully
+            // If the store is null, then the constructor cannot terminate
+            // successfully
             if (store != null) {
                 for (VariableTree field : fields) {
                     // Does this field need to satisfy the invariant?

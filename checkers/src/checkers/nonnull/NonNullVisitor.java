@@ -7,6 +7,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.commitment.CommitmentVisitor;
+import checkers.commitment.quals.Free;
+import checkers.commitment.quals.Unclassified;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
@@ -85,8 +87,8 @@ public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
             if (receiverType != null
-                    && (receiverType.hasAnnotation(FREE) || receiverType
-                            .hasAnnotation(UNCLASSIFIED))) {
+                    && (receiverType.hasAnnotation(Free.class) || receiverType
+                            .hasAnnotation(Unclassified.class))) {
                 if (annos.hasAnnotation(NONNULL)
                         && !valueType.hasAnnotation(NONNULL)) {
                     checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
