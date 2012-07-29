@@ -24,21 +24,21 @@ import com.sun.source.tree.Tree;
 public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /** Abstract values of nodes. */
-    protected final Map<Node, A> nodeValues;
+    protected final IdentityHashMap<Node, A> nodeValues;
 
     /** Map from AST {@link Tree}s to {@link Node}s. */
-    protected final Map<Tree, Node> treeLookup;
+    protected final IdentityHashMap<Tree, Node> treeLookup;
 
     /**
      * The stores before every method call.
      */
-    protected final Map<Block, TransferInput<A, S>> stores;
+    protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
     /**
      * Initialize with a given node-value mapping.
      */
     public AnalysisResult(Map<Node, A> nodeValues,
-            Map<Block, TransferInput<A, S>> stores, Map<Tree, Node> treeLookup) {
+            IdentityHashMap<Block, TransferInput<A, S>> stores, Map<Tree, Node> treeLookup) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
@@ -97,6 +97,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public S getStoreBefore(Tree tree) {
         Node node = getNodeForTree(tree);
+        if (node == null) {
+            return null;
+        }
         return runAnalysisFor(node, true);
     }
 
@@ -105,6 +108,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public S getStoreAfter(Tree tree) {
         Node node = getNodeForTree(tree);
+        if (node == null) {
+            return null;
+        }
         return runAnalysisFor(node, false);
     }
 
