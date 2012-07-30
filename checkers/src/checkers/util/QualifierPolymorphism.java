@@ -355,6 +355,28 @@ public class QualifierPolymorphism {
         }
 
         @Override
+        public Map<AnnotationMirror, Set<AnnotationMirror>> visitPrimitive(AnnotatedPrimitiveType type,
+                AnnotatedTypeMirror actualType) {
+            Map<AnnotationMirror, Set<AnnotationMirror>> result =
+                    new HashMap<AnnotationMirror, Set<AnnotationMirror>>();
+
+            for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
+                AnnotationMirror top = kv.getKey();
+                AnnotationMirror poly = kv.getValue();
+
+                if (top == null && actualType.hasAnnotation(POLYALL)) {
+                    // PolyAll qualifier
+                    result.put(poly, type.getAnnotations());
+                } else if (actualType.hasAnnotation(poly)) {
+                    AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
+                    result.put(poly, Collections.singleton(typeQual));
+                }
+            }
+
+            return result;
+        }
+
+        @Override
         public Map<AnnotationMirror, Set<AnnotationMirror>> visitNull(
                 AnnotatedNullType type, AnnotatedTypeMirror actualType) {
 
