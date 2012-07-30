@@ -386,7 +386,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ")  when processing "
                     + currentRoot.getSourceFile().getName() +
-                    "; message: " + t.getMessage(), t));
+                    (t.getMessage()!=null ? "; message: " + t.getMessage() : ""), t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
