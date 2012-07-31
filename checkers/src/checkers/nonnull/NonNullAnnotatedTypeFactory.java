@@ -89,11 +89,11 @@ public class NonNullAnnotatedTypeFactory
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
         HACK_DONT_CALL_POST_AS_MEMBER = true;
-        SHOULD_CACHE = false;
+        shouldCache = false;
 
         AnnotatedTypeMirror type = getAnnotatedType(tree);
 
-        SHOULD_CACHE = true;
+        shouldCache = true;
         HACK_DONT_CALL_POST_AS_MEMBER = false;
 
         return type;
