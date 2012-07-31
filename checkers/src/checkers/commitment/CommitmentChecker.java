@@ -111,6 +111,17 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
     /**
      * Returns a {@link Free} annotation with a given type frame.
      */
+    public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
+        assert typeFrame != null;
+        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
+                env, Free.class.getCanonicalName());
+        builder.setValue("value", typeFrame);
+        return builder.build();
+    }
+
+    /**
+     * Returns a {@link Free} annotation with a given type frame.
+     */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
