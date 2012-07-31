@@ -2,7 +2,6 @@ package checkers.commitment;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -18,7 +17,6 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -37,6 +35,9 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     private static final String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
+
+    /** A better typed version of the ATF. */
+    protected final CommitmentAnnotatedTypeFactory<?, ?, ?> factory = (CommitmentAnnotatedTypeFactory<?, ?, ?>) atypeFactory;
 
     // Annotation constants
     protected final AnnotationMirror COMMITTED;
@@ -72,8 +73,8 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
             ExpressionTree lhs = (ExpressionTree) varTree;
             ExpressionTree y = valueExp;
             Element el = TreeUtils.elementFromUse(lhs);
-            AnnotatedTypeMirror xType = atypeFactory.getReceiverType(lhs);
-            AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
+            AnnotatedTypeMirror xType = factory.getReceiverType(lhs);
+            AnnotatedTypeMirror yType = factory.getAnnotatedType(y);
             if (!ElementUtils.isStatic(el)
                     && !(yType.hasAnnotation(COMMITTED) || xType
                             .hasAnnotation(Free.class))) {
@@ -94,8 +95,8 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     public Void visitVariable(VariableTree node, Void p) {
         // is this a field (and not a local variable)?
         if (TreeUtils.elementFromDeclaration(node).getKind().isField()) {
-            Set<AnnotationMirror> annotationMirrors = atypeFactory
-                    .getAnnotatedType(node).getExplicitAnnotations();
+            Set<AnnotationMirror> annotationMirrors = factory.getAnnotatedType(
+                    node).getExplicitAnnotations();
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : checker
                     .getCommitmentAnnotations()) {
@@ -114,9 +115,9 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node
+        AnnotatedTypeMirror exprType = factory.getAnnotatedType(node
                 .getExpression());
-        AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror castType = factory.getAnnotatedType(node);
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
@@ -174,27 +175,13 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
             // Check that all fields have been initialized at the end of the
             // constructor.
-            ClassTree currentClass = TreeUtils.enclosingClass(getCurrentPath());
-            Set<VariableTree> fields = CommitmentChecker
-                    .getAllFields(currentClass);
-            Set<VariableTree> violatingFields = new HashSet<>();
-            AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
-            CommitmentStore store = (CommitmentStore) atypeFactory
-                    .getRegularExitStore(node);
+            CommitmentStore store = factory.getRegularExitStore(node);
             // If the store is null, then the constructor cannot terminate
             // successfully
             if (store != null) {
-                for (VariableTree field : fields) {
-                    // Does this field need to satisfy the invariant?
-                    if (atypeFactory.getAnnotatedType(field).hasAnnotation(
-                            invariant)) {
-                        // Has the field been initialized?
-                        if (!store.isFieldInitialized(TreeUtils
-                                .elementFromDeclaration(field))) {
-                            violatingFields.add(field);
-                        }
-                    }
-                }
+                Set<VariableTree> violatingFields = factory
+                        .getUninitializedInvariantFields(store,
+                                getCurrentPath());
                 if (!violatingFields.isEmpty()) {
                     StringBuilder fieldsString = new StringBuilder();
                     boolean first = true;
@@ -216,7 +203,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
     public Set<AnnotationMirror> getExplicitReturnTypeAnnotations(
             MethodTree node) {
-        AnnotatedTypeMirror t = atypeFactory.fromMember(node);
+        AnnotatedTypeMirror t = factory.fromMember(node);
         assert t instanceof AnnotatedExecutableType;
         AnnotatedExecutableType type = (AnnotatedExecutableType) t;
         return type.getReturnType().getAnnotations();
