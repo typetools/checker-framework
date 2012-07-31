@@ -332,11 +332,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                     switch (m.getKind()) {
                     case METHOD:
                         MethodTree mt = (MethodTree) m;
-                        // Skip abstract methods because they have no body.
+                        // Skip abstract and native methods because they have no body.
                         ModifiersTree modifiers = mt.getModifiers();
                         if (modifiers != null) {
                             Set<Modifier> flags = modifiers.getFlags();
-                            if (flags.contains(Modifier.ABSTRACT)) {
+                            if (flags.contains(Modifier.ABSTRACT) ||
+                                flags.contains(Modifier.NATIVE)) {
                                 break;
                             }
                         }

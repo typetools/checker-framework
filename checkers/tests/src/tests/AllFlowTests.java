@@ -11,7 +11,14 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Stefan Heule
  */
 @RunWith(Suite.class)
-@SuiteClasses({ Flow2Test.class, RegexTest.class, I18nTest.class,
-        PuritySuggestionsTest.class, FlowTest.class, NonNullTest.class, NonNull2Test.class })
+@SuiteClasses({AnnotationBuilderTest.class, BasicEncryptedTest.class,
+            BasicSuperSubTest.class, FenumTest.class, FlowTest.class, 
+            Flow2Test.class, FrameworkTest.class,
+            I18nTest.class, LubGlbTest.class, NonNullTest.class,
+            PuritySuggestionsTest.class, RegexTest.class, ReportModifiersTest.class,
+            ReportTest.class, ReportTreeKindsTest.class, SignatureTest.class,
+            TaintingTest.class, TreeParserTest.class, UnitsTest.class
+            // NonNull2Test.class
+            })
 public class AllFlowTests {
 }
