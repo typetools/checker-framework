@@ -220,6 +220,7 @@ public class AnnotatedTypeFactory {
 
     /** Should results be cached? Disable for better debugging. */
     protected static boolean SHOULD_CACHE = true;
+    protected boolean shouldCache = SHOULD_CACHE;
 
     /** Size of LRU cache. */
     private final static int CACHE_SIZE = 300;
@@ -327,7 +328,7 @@ public class AnnotatedTypeFactory {
         case ANNOTATION_TYPE:
         case METHOD:
         // case VARIABLE:
-            if (SHOULD_CACHE)
+            if (shouldCache)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -410,7 +411,7 @@ public class AnnotatedTypeFactory {
         // Caching is disabled if indexTypes == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (SHOULD_CACHE && indexTypes != null)
+        if (shouldCache && indexTypes != null)
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
@@ -446,7 +447,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromMemberINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -463,7 +464,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromExpressionINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -511,7 +512,7 @@ public class AnnotatedTypeFactory {
             }
         }
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -1428,7 +1429,7 @@ public class AnnotatedTypeFactory {
             fromElt = TreeInfo.declarationFor((Symbol)elt, (JCTree)root);
             break;
         }
-        if (SHOULD_CACHE)
+        if (shouldCache)
             elementToTreeCache.put(elt, fromElt);
         return fromElt;
     }
