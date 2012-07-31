@@ -1,6 +1,9 @@
 package checkers.commitment;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -8,6 +11,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.commitment.quals.Free;
@@ -31,6 +35,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
@@ -55,10 +60,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
 
     // left in because it may be useful in the future for determining if you can
     // safely apply class frame types
-    @SuppressWarnings("unused")
-    private boolean areAllFieldsCommittedOnly(Tree tree) {
-        ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
-
+    protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         for (Tree member : classTree.getMembers()) {
             if (!member.getKind().equals(Tree.Kind.VARIABLE))
                 continue;
@@ -98,6 +100,76 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 computeFieldAccessType(type, declaredFieldAnnotations, owner);
             }
         }
+    }
+
+    @Override
+    public AnnotatedDeclaredType getSelfType(Tree tree) {
+        AnnotatedDeclaredType selfType = super.getSelfType(tree);
+        TreePath path = getPath(tree);
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        // Set the correct type for 'this' inside of constructors.
+        if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+            Type classType = ((JCTree) enclosingClass).type;
+
+            // If all fields are committed-only, and they are all initialized,
+            // then it is save to switch to @Free(CurrentClass).
+            if (areAllFieldsCommittedOnly(enclosingClass)) {
+                CommitmentStore store = getStoreBefore(tree);
+                if (store != null) {
+                    if (getUninitializedInvariantFields(store, path).size() == 0) {
+                        AnnotationMirror annotation = checker.createFreeAnnotation(classType);
+                        selfType.replaceAnnotation(annotation);
+                    }
+                }
+            }
+
+            // Find the super-class (if any)
+            List<? extends TypeMirror> superTypes = types
+                    .directSupertypes(classType);
+            TypeMirror superClass = null;
+            for (TypeMirror superType : superTypes) {
+                ElementKind kind = types.asElement(superType).getKind();
+                if (kind == ElementKind.CLASS) {
+                    superClass = superType;
+                    break;
+                }
+            }
+            // Create annotation.
+            AnnotationMirror annotation;
+            if (superClass != null) {
+                annotation = checker.createFreeAnnotation(superClass);
+            } else {
+                // Use Object as a valid super-class
+                annotation = checker.createFreeAnnotation(Object.class);
+            }
+            selfType.replaceAnnotation(annotation);
+        }
+        return selfType;
+    }
+
+    /**
+     * Returns the set of fields that have the invariant annotation and are not yet initialized in a given store.
+     */
+    public Set<VariableTree> getUninitializedInvariantFields(
+            CommitmentStore store, TreePath path) {
+        ClassTree currentClass = TreeUtils.enclosingClass(path);
+        Set<VariableTree> fields = CommitmentChecker
+                .getAllFields(currentClass);
+        Set<VariableTree> violatingFields = new HashSet<>();
+        AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
+        for (VariableTree field : fields) {
+            // Does this field need to satisfy the invariant?
+            if (getAnnotatedType(field).hasAnnotation(
+                    invariant)) {
+                // Has the field been initialized?
+                if (!store.isFieldInitialized(TreeUtils
+                        .elementFromDeclaration(field))) {
+                    violatingFields.add(field);
+                }
+            }
+        }
+        return violatingFields;
     }
 
     /**
