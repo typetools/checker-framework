@@ -1,4 +1,4 @@
-package checkers.commitment.quals;
+package checkers.initialization.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -10,14 +10,14 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 @Documented
+@SubtypeOf({})
 @TypeQualifier
-@SubtypeOf(Unclassified.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface Free {
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface Unclassified {
     /**
      * The type-frame down to which the expression (of this type) has been
-     * initialized.
+     * initialized at least.
      */
     Class<?> value() default Object.class;
 }

@@ -1,4 +1,4 @@
-package checkers.commitment;
+package checkers.initialization;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -8,7 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeVisitor;
-import checkers.commitment.quals.Free;
+import checkers.initialization.quals.Free;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -25,7 +25,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
-public class CommitmentVisitor<Checker extends CommitmentChecker> extends
+public class InitializationVisitor<Checker extends InitializationChecker> extends
         BaseTypeVisitor<Checker> {
 
     // Error message keys
@@ -37,12 +37,12 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
 
     /** A better typed version of the ATF. */
-    protected final CommitmentAnnotatedTypeFactory<?, ?, ?> factory = (CommitmentAnnotatedTypeFactory<?, ?, ?>) atypeFactory;
+    protected final InitializationAnnotatedTypeFactory<?, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, ?, ?>) atypeFactory;
 
     // Annotation constants
     protected final AnnotationMirror COMMITTED;
 
-    public CommitmentVisitor(Checker checker, CompilationUnitTree root) {
+    public InitializationVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
         COMMITTED = checker.COMMITTED;
 
@@ -175,7 +175,7 @@ public class CommitmentVisitor<Checker extends CommitmentChecker> extends
 
             // Check that all fields have been initialized at the end of the
             // constructor.
-            CommitmentStore store = factory.getRegularExitStore(node);
+            InitializationStore store = factory.getRegularExitStore(node);
             // If the store is null, then the constructor cannot terminate
             // successfully
             if (store != null) {

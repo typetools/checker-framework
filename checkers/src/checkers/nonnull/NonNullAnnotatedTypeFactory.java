@@ -8,8 +8,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.commitment.CommitmentAnnotatedTypeFactory;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
@@ -28,7 +28,7 @@ import com.sun.source.tree.Tree;
 
 public class NonNullAnnotatedTypeFactory
         extends
-        CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis> {
+        InitializationAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
@@ -157,7 +157,7 @@ public class NonNullAnnotatedTypeFactory
 
     protected class NonNullTreeAnnotator
             extends
-            CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTreeAnnotator {
+            InitializationAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTreeAnnotator {
         public NonNullTreeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
@@ -198,7 +198,7 @@ public class NonNullAnnotatedTypeFactory
 
     protected class NonNullTypeAnnotator
             extends
-            CommitmentAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTypeAnnotator {
+            InitializationAnnotatedTypeFactory<NonNullChecker, NonNullTransfer, NonNullAnalysis>.CommitmentTypeAnnotator {
         public NonNullTypeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }

@@ -7,11 +7,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
-import checkers.commitment.CommitmentStore;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
+import checkers.initialization.InitializationStore;
 import checkers.util.Pair;
 
 /**
@@ -21,7 +21,7 @@ import checkers.util.Pair;
  * @author Stefan Heule
  */
 public class NonNullAnalysis extends
-        CFAbstractAnalysis<CFValue, CommitmentStore, NonNullTransfer> {
+        CFAbstractAnalysis<CFValue, InitializationStore, NonNullTransfer> {
 
     public NonNullAnalysis(NonNullAnnotatedTypeFactory factory,
             ProcessingEnvironment env, NonNullChecker checker,
@@ -35,13 +35,13 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    public CommitmentStore createEmptyStore(boolean sequentialSemantics) {
-        return new CommitmentStore(this, sequentialSemantics);
+    public InitializationStore createEmptyStore(boolean sequentialSemantics) {
+        return new InitializationStore(this, sequentialSemantics);
     }
 
     @Override
-    public CommitmentStore createCopiedStore(CommitmentStore s) {
-        return new CommitmentStore(s);
+    public InitializationStore createCopiedStore(InitializationStore s) {
+        return new InitializationStore(s);
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
 
-import checkers.commitment.CommitmentChecker;
+import checkers.initialization.InitializationChecker;
 import checkers.nonnull.NonNullChecker;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
@@ -27,7 +27,7 @@ import com.sun.source.tree.Tree;
  * field is never {@code null}
  * <em>after the class has been fully initialized</em>. Class initialization is
  * controlled by the Freedom Before Commitment type system, see
- * {@link CommitmentChecker} for more details.
+ * {@link InitializationChecker} for more details.
  *
  * <p>
  * For static fields, the {@link NonNull} annotation indicates that this field

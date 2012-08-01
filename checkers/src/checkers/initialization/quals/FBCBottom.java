@@ -1,4 +1,4 @@
-package checkers.commitment.quals;
+package checkers.initialization.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

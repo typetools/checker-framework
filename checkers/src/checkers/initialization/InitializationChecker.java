@@ -1,4 +1,4 @@
-package checkers.commitment;
+package checkers.initialization;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -12,11 +12,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.commitment.quals.Committed;
-import checkers.commitment.quals.FBCBottom;
-import checkers.commitment.quals.Free;
-import checkers.commitment.quals.NotOnlyCommitted;
-import checkers.commitment.quals.Unclassified;
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
+import checkers.initialization.quals.Free;
+import checkers.initialization.quals.NotOnlyCommitted;
+import checkers.initialization.quals.Unclassified;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
@@ -28,7 +28,7 @@ import com.sun.source.tree.VariableTree;
 
 @TypeQualifiers({ Free.class, Committed.class, Unclassified.class,
         FBCBottom.class })
-public abstract class CommitmentChecker extends BaseTypeChecker {
+public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Annotation constants */
     protected AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
@@ -165,7 +165,7 @@ public abstract class CommitmentChecker extends BaseTypeChecker {
         protected Types types = env.getTypeUtils();
 
         public InitializationQualifierHierarchy() {
-            super(CommitmentChecker.this);
+            super(InitializationChecker.this);
 
             AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
