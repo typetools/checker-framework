@@ -1,4 +1,5 @@
-@checkers.quals.DefaultQualifier("Nullable") public class MyException extends Exception {
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.Nullable.class)
+public class MyException extends Exception {
 
      public MyException() { }
 
