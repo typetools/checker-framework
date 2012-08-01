@@ -17,7 +17,6 @@ import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.quals.TypeQualifiers;
-import checkers.source.SupportedLintOptions;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
@@ -35,16 +34,15 @@ import com.sun.source.tree.CompilationUnitTree;
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
         Committed.class, Unclassified.class, FBCBottom.class })
-@SupportedLintOptions({ "strictmonoinit" })
-public class AbstractNonNullChecker extends InitializationChecker {
+public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
 
     public static final boolean LINT_DEFAULT_STRICTMONOINIT = false;
 
-    public AbstractNonNullChecker() {
-        super(true);
+    public AbstractNonNullChecker(boolean useFbc) {
+        super(useFbc);
     }
 
     @Override
