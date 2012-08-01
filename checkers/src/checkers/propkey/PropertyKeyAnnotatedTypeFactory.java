@@ -5,14 +5,15 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.Bottom;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -74,6 +75,20 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
             // possibly pointing to the opposite problem, keys that were supposed to
             // be used somewhere, but have not been, maybe because of copy-and-paste errors.
             return super.visitLiteral(tree, type);
+        }
+
+        // Result of binary op might not be a property key.
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            type.clearAnnotations();
+            return null; // super.visitBinary(node, type);
+        }
+
+        // Result of unary op might not be a property key.
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            type.clearAnnotations();
+            return null; // super.visitCompoundAssignment(node, type);
         }
     }
 
