@@ -87,7 +87,9 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitBinary(BinaryTree node,
                 AnnotatedTypeFactory f) {
-            return f.type(node);
+            AnnotatedTypeMirror res = f.type(node);
+            res.clearAnnotations();
+            return res;
         }
 
         @Override
@@ -95,7 +97,9 @@ abstract class TypeFromTree extends
                 CompoundAssignmentTree node, AnnotatedTypeFactory f) {
 
             // Recurse on the type of the variable.
-            return visit(node.getVariable(), f);
+            AnnotatedTypeMirror res = visit(node.getVariable(), f);
+            res.clearAnnotations();
+            return res;
         }
 
         @Override
