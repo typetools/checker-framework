@@ -24,14 +24,14 @@ public class NonNullAnalysis extends
         CFAbstractAnalysis<CFValue, InitializationStore, NonNullTransfer> {
 
     public NonNullAnalysis(NonNullAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, NonNullChecker checker,
+            ProcessingEnvironment env, AbstractNonNullChecker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(factory, env, checker, fieldValues);
     }
 
     @Override
     public NonNullTransfer createTransferFunction() {
-        return new NonNullTransfer(this, (NonNullChecker) checker);
+        return new NonNullTransfer(this, (AbstractNonNullChecker) checker);
     }
 
     @Override

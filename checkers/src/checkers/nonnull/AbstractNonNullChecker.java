@@ -36,14 +36,14 @@ import com.sun.source.tree.CompilationUnitTree;
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
         Committed.class, Unclassified.class, FBCBottom.class })
 @SupportedLintOptions({ "strictmonoinit" })
-public class NonNullChecker extends InitializationChecker {
+public class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
 
     public static final boolean LINT_DEFAULT_STRICTMONOINIT = false;
 
-    public NonNullChecker() {
+    public AbstractNonNullChecker() {
         super(true);
     }
 
