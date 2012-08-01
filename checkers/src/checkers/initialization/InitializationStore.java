@@ -1,4 +1,4 @@
-package checkers.commitment;
+package checkers.initialization;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -16,22 +16,22 @@ import checkers.flow.analysis.checkers.CFValue;
  * fields of the 'self' reference have been initialized.
  * 
  * @author Stefan Heule
- * @see CommitmentTransfer
+ * @see InitializationTransfer
  */
-public class CommitmentStore extends CFAbstractStore<CFValue, CommitmentStore> {
+public class InitializationStore extends CFAbstractStore<CFValue, InitializationStore> {
 
     /** The list of fields that are initialized. */
     protected final Set<Element> initializedFields;
 
-    public CommitmentStore(
-            CFAbstractAnalysis<CFValue, CommitmentStore, ?> analysis,
+    public InitializationStore(
+            CFAbstractAnalysis<CFValue, InitializationStore, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
     }
 
     /** A copy constructor. */
-    public CommitmentStore(CommitmentStore other) {
+    public InitializationStore(InitializationStore other) {
         super(other);
         initializedFields = new HashSet<>(other.initializedFields);
     }
@@ -51,11 +51,11 @@ public class CommitmentStore extends CFAbstractStore<CFValue, CommitmentStore> {
     }
 
     @Override
-    protected boolean supersetOf(CFAbstractStore<CFValue, CommitmentStore> o) {
-        if (!(o instanceof CommitmentStore)) {
+    protected boolean supersetOf(CFAbstractStore<CFValue, InitializationStore> o) {
+        if (!(o instanceof InitializationStore)) {
             return false;
         }
-        CommitmentStore other = (CommitmentStore) o;
+        InitializationStore other = (InitializationStore) o;
         for (Element field : other.initializedFields) {
             if (!initializedFields.contains(field)) {
                 return false;
@@ -65,8 +65,8 @@ public class CommitmentStore extends CFAbstractStore<CFValue, CommitmentStore> {
     }
 
     @Override
-    public CommitmentStore leastUpperBound(CommitmentStore other) {
-        CommitmentStore result = super.leastUpperBound(other);
+    public InitializationStore leastUpperBound(InitializationStore other) {
+        InitializationStore result = super.leastUpperBound(other);
 
         // Set intersection for initializedFields.
         result.initializedFields.addAll(other.initializedFields);

@@ -1,4 +1,4 @@
-package checkers.commitment;
+package checkers.initialization;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,11 +14,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.commitment.quals.Free;
-import checkers.commitment.quals.NotOnlyCommitted;
-import checkers.commitment.quals.Unclassified;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
+import checkers.initialization.quals.Free;
+import checkers.initialization.quals.NotOnlyCommitted;
+import checkers.initialization.quals.Unclassified;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,14 +39,14 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
-public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentChecker, Transfer extends CommitmentTransfer<Transfer>, Flow extends CFAbstractAnalysis<CFValue, CommitmentStore, Transfer>>
+public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Transfer extends InitializationTransfer<Transfer>, Flow extends CFAbstractAnalysis<CFValue, InitializationStore, Transfer>>
         extends
-        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CommitmentStore, Transfer, Flow> {
+        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, InitializationStore, Transfer, Flow> {
 
     /** The annotations */
     public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
 
-    public CommitmentAnnotatedTypeFactory(Checker checker,
+    public InitializationAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root) {
         super(checker, root, true);
 
@@ -116,7 +116,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
             // If all fields are committed-only, and they are all initialized,
             // then it is save to switch to @Free(CurrentClass).
             if (areAllFieldsCommittedOnly(enclosingClass)) {
-                CommitmentStore store = getStoreBefore(tree);
+                InitializationStore store = getStoreBefore(tree);
                 if (store != null) {
                     if (getUninitializedInvariantFields(store, path).size() == 0) {
                         annotation = checker.createFreeAnnotation(classType);
@@ -165,9 +165,9 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
      * yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
-            CommitmentStore store, TreePath path) {
+            InitializationStore store, TreePath path) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        Set<VariableTree> fields = CommitmentChecker.getAllFields(currentClass);
+        Set<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
@@ -243,7 +243,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
     protected class CommitmentTreeAnnotator extends TreeAnnotator {
 
         public CommitmentTreeAnnotator(BaseTypeChecker checker) {
-            super(checker, CommitmentAnnotatedTypeFactory.this);
+            super(checker, InitializationAnnotatedTypeFactory.this);
         }
 
         @Override

@@ -8,11 +8,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeVisitor;
-import checkers.commitment.CommitmentChecker;
-import checkers.commitment.quals.Committed;
-import checkers.commitment.quals.FBCBottom;
-import checkers.commitment.quals.Free;
-import checkers.commitment.quals.Unclassified;
+import checkers.initialization.InitializationChecker;
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
+import checkers.initialization.quals.Free;
+import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
@@ -36,7 +36,7 @@ import com.sun.source.tree.CompilationUnitTree;
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
         Committed.class, Unclassified.class, FBCBottom.class })
 @SupportedLintOptions({ "strictmonoinit" })
-public class NonNullChecker extends CommitmentChecker {
+public class NonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
