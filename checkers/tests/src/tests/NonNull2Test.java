@@ -14,7 +14,7 @@ public class NonNull2Test extends ParameterizedCheckerTest {
 
 	public NonNull2Test(File testFile) {
 		super(testFile, checkers.nonnull.NonNullChecker.class.getName(),
-				"nonnull", "-AassumeAssertsAreEnabled", "-Anomsgtext");
+				"nonnull", "-AassumeAssertionsAreEnabled", "-Anomsgtext");
 	}
 
 	@Parameters
