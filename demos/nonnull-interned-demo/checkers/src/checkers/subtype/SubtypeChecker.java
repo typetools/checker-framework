@@ -37,7 +37,7 @@ import com.sun.source.tree.*;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"*"})
 @SupportedLintOptions({"cast", "cast:redundant"})
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public abstract class SubtypeChecker extends SourceChecker {
 
     /** The annotation to check (in isSubtype). */

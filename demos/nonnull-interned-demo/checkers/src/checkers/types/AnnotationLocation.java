@@ -37,7 +37,7 @@ import com.sun.source.tree.Tree;
  * </table>
  *
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class AnnotationLocation {
 
     /** The location for an annotation on a raw type. */

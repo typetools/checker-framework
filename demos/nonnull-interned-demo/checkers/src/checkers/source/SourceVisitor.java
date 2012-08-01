@@ -20,7 +20,7 @@ import com.sun.source.util.*;
  * instead, checking is performed within each method and errors are reported as
  * errors are found.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
     /** The {@link SourceChecker} to invoke on the input source tree. */

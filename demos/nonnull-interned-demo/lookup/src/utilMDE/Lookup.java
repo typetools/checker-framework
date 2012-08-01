@@ -36,7 +36,7 @@ import com.sun.javadoc.*;
  * '\include{filename}'. <p>
  *
  **/
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class Lookup {
 
   /** Show detailed help information and exit. **/

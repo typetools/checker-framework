@@ -22,7 +22,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
  * 
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class TypesUtils {
 
     private ProcessingEnvironment env;

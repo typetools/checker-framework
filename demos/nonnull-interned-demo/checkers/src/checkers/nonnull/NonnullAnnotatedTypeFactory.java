@@ -31,7 +31,7 @@ import com.sun.tools.javac.tree.*;
  *  <li>literals (except the null literal) and arrays of literals
  * </ul>
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class NonnullAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
     /** Used to perform flow-sensitive nonnull analysis. */

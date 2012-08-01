@@ -75,7 +75,7 @@ import com.sun.javadoc.FieldDoc;
  *  non-options as an array
  * </ul>
  **/
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class Options {
 
   /** Information about an option **/

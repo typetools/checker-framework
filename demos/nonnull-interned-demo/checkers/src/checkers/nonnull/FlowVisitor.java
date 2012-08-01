@@ -22,7 +22,7 @@ import static checkers.types.InternalUtils.*;
  * ends where the variable is first reassigned or where it is first passed as
  * an argument to a method. 
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 class FlowVisitor extends TreePathScanner<Void, Void> {
 
     /** The root of the source tree (required for pathfinding). */
