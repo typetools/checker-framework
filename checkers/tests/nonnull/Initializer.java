@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 import checkers.nonnull.quals.*;
 import checkers.quals.*;
-import checkers.commitment.quals.*;
+import checkers.initialization.quals.*;
 
 class Initializer {
     

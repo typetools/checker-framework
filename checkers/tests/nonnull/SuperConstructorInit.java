@@ -1,5 +1,5 @@
 import checkers.nonnull.quals.*;
-import static checkers.nonnull.util.NonNullUtils.*;;
+import static checkers.nonnull.util.NonNullUtils.*;
 
 class SuperConstructorInit {
     

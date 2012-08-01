@@ -1,6 +1,6 @@
 
 import checkers.nullness.quals.*;
-import static checkers.nonnull.util.NonNullUtils.*;;
+import static checkers.nonnull.util.NonNullUtils.*;
 
 class HierarchicalInit {
     

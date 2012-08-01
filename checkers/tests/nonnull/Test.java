@@ -1,6 +1,6 @@
 package examples;
 
-import checkers.commitment.quals.Unclassified;
+import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.NonNull;
 
 

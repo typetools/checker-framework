@@ -1,6 +1,6 @@
 
 import checkers.nonnull.quals.*;
-import checkers.commitment.quals.*;
+import checkers.initialization.quals.*;
 
 class MethodInvocation {
 
