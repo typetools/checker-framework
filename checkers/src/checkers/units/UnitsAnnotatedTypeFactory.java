@@ -56,7 +56,7 @@ public class UnitsAnnotatedTypeFactory extends
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
 
     @Override
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         String aname = a.getAnnotationType().toString();
         if (aliasMap.containsKey(aname)) {
             return aliasMap.get(aname);
