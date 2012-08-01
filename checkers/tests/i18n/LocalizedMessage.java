@@ -31,6 +31,8 @@ class LocalizedMessage {
         //:: error: (argument.type.incompatible)
         localized(s1 + s1);     // error
         //:: error: (argument.type.incompatible)
+        localized(s1 += s1);    // error
+        //:: error: (argument.type.incompatible)
         localized(s1 + "m");    // error
         //:: error: (argument.type.incompatible)
         localized(s1 + s2);     // error
