@@ -101,5 +101,9 @@ public class Primitives {
     return result;
   }
 
-
+  void compounds() {
+    int res = 0;
+    res += 5;
+    res /= 9;
+  }
 }
