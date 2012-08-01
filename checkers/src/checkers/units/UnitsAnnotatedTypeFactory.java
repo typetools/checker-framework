@@ -106,7 +106,7 @@ public class UnitsAnnotatedTypeFactory extends
                     // TODO: warning
                     System.out.println("UnitsRelation mismatch, taking neither! Previous: "
                                     + bestres + " and current: " + res);
-                    return super.visitBinary(node, type);
+                    return null; // super.visitBinary(node, type);
                 }
 
                 if (res!=null) {
@@ -162,7 +162,7 @@ public class UnitsAnnotatedTypeFactory extends
                 }
             }
 
-            return super.visitBinary(node, type);
+            return null; // super.visitBinary(node, type);
         }
 
         private boolean noUnits(AnnotatedTypeMirror t) {
