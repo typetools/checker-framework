@@ -1,8 +1,10 @@
 package checkers.util;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 
 import checkers.quals.*;
@@ -33,8 +35,6 @@ public class QualifierDefaults {
     private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
             new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
 
-    private final Map<String, String> qualifiedNameMap;
-
     /**
      * @param factory the factory for this checker
      * @param annoFactory an annotation factory, used to get annotations by name
@@ -42,14 +42,6 @@ public class QualifierDefaults {
     public QualifierDefaults(AnnotatedTypeFactory factory, AnnotationUtils annoFactory) {
         this.factory = factory;
         this.annoFactory = annoFactory;
-
-        qualifiedNameMap = new HashMap<String, String>();
-        for (Name name : factory.getQualifierHierarchy().getTypeQualifiers()) {
-            String qualified = name.toString();
-            String unqualified = qualified.substring(qualified.lastIndexOf('.') + 1);
-            qualifiedNameMap.put(qualified, qualified);
-            qualifiedNameMap.put(unqualified, qualified);
-        }
     }
 
     /**
@@ -261,12 +253,29 @@ public class QualifierDefaults {
     }
 
     private void applyDefault(Element annotationScope, DefaultQualifier d, AnnotatedTypeMirror type) {
-        String name = d.value();
-        if (qualifiedNameMap.containsKey(name))
-            name = qualifiedNameMap.get(name);
-        AnnotationMirror anno = annoFactory.fromName(name);
+        // TODO: I want to simply write d.value(), but that doesn't work.
+        // It works in other places, e.g. see handling of @SubtypeOf.
+        // The hack below should probably be added to:
+        // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(d, "value");
+        Class<? extends Annotation> cls;
+        try {
+            cls = d.value();
+        } catch( MirroredTypeException mte ) {
+            try {
+                cls = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
+            } catch (ClassNotFoundException e) {
+                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
+                cls = null;
+            }
+        }
+
+        AnnotationMirror anno = annoFactory.fromClass(cls);
         if (anno == null)
             return;
+        if (!factory.isSupportedQualifier(anno)) {
+            anno = factory.aliasedAnnotation(anno);
+        }
+
         if (factory.isSupportedQualifier(anno)) {
             new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
         }
