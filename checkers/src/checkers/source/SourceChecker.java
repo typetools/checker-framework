@@ -296,9 +296,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             }
         } catch (CheckerError ce) {
             errorInInit = true;
+            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(ce);
         } catch (Throwable t) {
             errorInInit = true;
+            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
                     t.getClass().getSimpleName() + "); message: " + t.getMessage(), t));
         }
