@@ -564,6 +564,20 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             assert elt != null;
             return elt.getKind() == ElementKind.EXCEPTION_PARAMETER;
         }
+
+        // The result of a binary operation is always non-null.
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return null; // super.visitBinary(node, type);
+        }
+
+        // The result of a unary operation is always non-null.
+        @Override
+        public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return null; // super.visitUnary(node, type);
+        }
     }
 
 }
