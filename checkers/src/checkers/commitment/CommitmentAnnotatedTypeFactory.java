@@ -111,6 +111,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
         if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
             ClassTree enclosingClass = TreeUtils.enclosingClass(path);
             Type classType = ((JCTree) enclosingClass).type;
+            AnnotationMirror annotation = null;
 
             // If all fields are committed-only, and they are all initialized,
             // then it is save to switch to @Free(CurrentClass).
@@ -118,30 +119,31 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 CommitmentStore store = getStoreBefore(tree);
                 if (store != null) {
                     if (getUninitializedInvariantFields(store, path).size() == 0) {
-                        AnnotationMirror annotation = checker.createFreeAnnotation(classType);
+                        annotation = checker.createFreeAnnotation(classType);
                         selfType.replaceAnnotation(annotation);
                     }
                 }
             }
 
             // Find the super-class (if any)
-            List<? extends TypeMirror> superTypes = types
-                    .directSupertypes(classType);
-            TypeMirror superClass = null;
-            for (TypeMirror superType : superTypes) {
-                ElementKind kind = types.asElement(superType).getKind();
-                if (kind == ElementKind.CLASS) {
-                    superClass = superType;
-                    break;
+            if (annotation == null) {
+                List<? extends TypeMirror> superTypes = types
+                        .directSupertypes(classType);
+                TypeMirror superClass = null;
+                for (TypeMirror superType : superTypes) {
+                    ElementKind kind = types.asElement(superType).getKind();
+                    if (kind == ElementKind.CLASS) {
+                        superClass = superType;
+                        break;
+                    }
                 }
-            }
-            // Create annotation.
-            AnnotationMirror annotation;
-            if (superClass != null) {
-                annotation = checker.createFreeAnnotation(superClass);
-            } else {
-                // Use Object as a valid super-class
-                annotation = checker.createFreeAnnotation(Object.class);
+                // Create annotation.
+                if (superClass != null) {
+                    annotation = checker.createFreeAnnotation(superClass);
+                } else {
+                    // Use Object as a valid super-class
+                    annotation = checker.createFreeAnnotation(Object.class);
+                }
             }
             selfType.replaceAnnotation(annotation);
         }
@@ -149,19 +151,18 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
     }
 
     /**
-     * Returns the set of fields that have the invariant annotation and are not yet initialized in a given store.
+     * Returns the set of fields that have the invariant annotation and are not
+     * yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
             CommitmentStore store, TreePath path) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        Set<VariableTree> fields = CommitmentChecker
-                .getAllFields(currentClass);
+        Set<VariableTree> fields = CommitmentChecker.getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             // Does this field need to satisfy the invariant?
-            if (getAnnotatedType(field).hasAnnotation(
-                    invariant)) {
+            if (getAnnotatedType(field).hasAnnotation(invariant)) {
                 // Has the field been initialized?
                 if (!store.isFieldInitialized(TreeUtils
                         .elementFromDeclaration(field))) {
