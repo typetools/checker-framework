@@ -9,7 +9,7 @@ public class DefaultAnnotation {
 
     }
 
-    @DefaultQualifiers(@DefaultQualifier(value="checkers.nullness.quals.NonNull", locations={DefaultLocation.ALL}))
+    @DefaultQualifiers(@DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL}))
     public void testDefault() {
 
         //:: error: (assignment.type.incompatible)
@@ -19,7 +19,7 @@ public class DefaultAnnotation {
         lst.add(null);                                  // error
     }
 
-    @DefaultQualifier(value="checkers.nullness.quals.NonNull", locations={DefaultLocation.ALL})
+    @DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL})
     public class InnerDefault {
 
         public void testDefault() {
@@ -38,7 +38,7 @@ public class DefaultAnnotation {
         }
     }
 
-    @DefaultQualifier(value="checkers.nullness.quals.NonNull", locations={DefaultLocation.ALL})
+    @DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL})
     public static class DefaultDefs {
 
         public String getNNString() {
@@ -71,7 +71,7 @@ public class DefaultAnnotation {
 
         }
 
-        @DefaultQualifier(value="checkers.nullness.quals.NonNull", locations={DefaultLocation.ALL})
+        @DefaultQualifier(value=checkers.nullness.quals.NonNull.class, locations={DefaultLocation.ALL})
         public void testDefaultArgs() {
 
             DefaultDefs d = new DefaultDefs();
@@ -85,7 +85,7 @@ public class DefaultAnnotation {
 
     }
 
-    @DefaultQualifier(value="checkers.nullness.quals.NonNull")
+    @DefaultQualifier(value=NonNull.class)
     static class DefaultExtends implements Iterator<String>, Iterable<String> {
 
         @Override public boolean hasNext() { throw new UnsupportedOperationException(); }
@@ -103,7 +103,7 @@ public class DefaultAnnotation {
         public boolean add(E e) { throw new RuntimeException(); }
     }
 
-    @DefaultQualifier(value="NonNull")
+    @DefaultQualifier(value=NonNull.class)
     public void testDefaultUnqualified() {
 
         //:: error: (assignment.type.incompatible)
