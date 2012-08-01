@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {

@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class HashSet<E extends @Nullable Object> extends AbstractSet<E> implements Set<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;

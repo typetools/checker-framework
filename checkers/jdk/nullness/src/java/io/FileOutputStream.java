@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class FileOutputStream extends OutputStream {
   public FileOutputStream(String a1) throws FileNotFoundException { throw new RuntimeException("skeleton method"); }

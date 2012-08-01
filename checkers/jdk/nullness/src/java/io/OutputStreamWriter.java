@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class OutputStreamWriter extends Writer {
   public OutputStreamWriter(OutputStream a1, String a2) throws UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
