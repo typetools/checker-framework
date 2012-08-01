@@ -1263,9 +1263,9 @@ public class AnnotatedTypeFactory {
      *
      * Returns an aliased type of the current one
      */
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (a==null) return null;
-        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+        TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);
     }
