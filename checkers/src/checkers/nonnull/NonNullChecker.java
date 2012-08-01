@@ -43,6 +43,10 @@ public class NonNullChecker extends InitializationChecker {
 
     public static final boolean LINT_DEFAULT_STRICTMONOINIT = false;
 
+    public NonNullChecker() {
+        super(true);
+    }
+
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
         AnnotationUtils annoFactory = AnnotationUtils
