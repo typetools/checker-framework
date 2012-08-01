@@ -1,8 +1,8 @@
 package checkers.nonnull.util;
 
 import static checkers.nonnull.util.NonNullUtils.castFrame;
+import checkers.initialization.quals.*;
 import checkers.nullness.quals.*;
-import checkers.commitment.quals.*;
 
 /**
  * Utilities class for the Nullness Checker.

@@ -6,10 +6,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
-import checkers.commitment.CommitmentVisitor;
-import checkers.commitment.quals.Free;
-import checkers.commitment.quals.Unclassified;
 import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.initialization.InitializationVisitor;
+import checkers.initialization.quals.Free;
+import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -36,7 +36,7 @@ import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
-public class NonNullVisitor extends CommitmentVisitor<NonNullChecker> {
+public class NonNullVisitor extends InitializationVisitor<NonNullChecker> {
 
     // Error message keys
     private static final String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";

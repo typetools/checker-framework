@@ -1,4 +1,4 @@
-package checkers.commitment;
+package checkers.initialization;
 
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +43,7 @@ import com.sun.source.tree.MethodInvocationTree;
 
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks
- * {@link CommitmentStore}s. In addition to the features of
+ * {@link InitializationStore}s. In addition to the features of
  * {@link CFAbstractTransfer}, this transfer function also track which fields of
  * the current class ('self' receiver) have been initialized.
  *
@@ -60,27 +60,27 @@ import com.sun.source.tree.MethodInvocationTree;
  * </ol>
  *
  * @author Stefan Heule
- * @see CommitmentStore
+ * @see InitializationStore
  *
  * @param <T>
  *            The type of the transfer function.
  */
-public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
-        CFAbstractTransfer<CFValue, CommitmentStore, T> {
+public class InitializationTransfer<T extends InitializationTransfer<T>> extends
+        CFAbstractTransfer<CFValue, InitializationStore, T> {
 
-    protected final CommitmentChecker checker;
+    protected final InitializationChecker checker;
 
-    public CommitmentTransfer(
-            CFAbstractAnalysis<CFValue, CommitmentStore, T> analysis,
-            CommitmentChecker checker) {
+    public InitializationTransfer(
+            CFAbstractAnalysis<CFValue, InitializationStore, T> analysis,
+            InitializationChecker checker) {
         super(analysis);
         this.checker = checker;
     }
 
     @Override
-    public CommitmentStore initialStore(UnderlyingAST underlyingAST,
+    public InitializationStore initialStore(UnderlyingAST underlyingAST,
             List<LocalVariableNode> parameters) {
-        CommitmentStore result = super.initialStore(underlyingAST, parameters);
+        InitializationStore result = super.initialStore(underlyingAST, parameters);
         // Case 3: all invariant fields that have an initializer are part of
         // 'fieldValues', and can be considered initialized.
         addInitializedFields(result);
@@ -93,7 +93,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
      */
     protected Set<Element> initializedFieldsAfterCall(
             MethodInvocationNode node,
-            ConditionalTransferResult<CFValue, CommitmentStore> transferResult) {
+            ConditionalTransferResult<CFValue, InitializationStore> transferResult) {
         Set<Element> result = new HashSet<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -157,7 +157,7 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
      * property (by looking at 'fieldValues' in the store) to the set of
      * initialized fields.
      */
-    protected void addInitializedFields(CommitmentStore store) {
+    protected void addInitializedFields(InitializationStore store) {
         Map<FieldAccess, CFValue> fieldValues = store.getFieldValues();
         for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
             FieldAccess field = e.getKey();
@@ -170,9 +170,9 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     }
 
     @Override
-    public TransferResult<CFValue, CommitmentStore> visitAssignment(
-            AssignmentNode n, TransferInput<CFValue, CommitmentStore> in) {
-        TransferResult<CFValue, CommitmentStore> result = super
+    public TransferResult<CFValue, InitializationStore> visitAssignment(
+            AssignmentNode n, TransferInput<CFValue, InitializationStore> in) {
+        TransferResult<CFValue, InitializationStore> result = super
                 .visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
         Receiver expr = FlowExpressions.internalReprOf(analysis.getFactory(),
@@ -198,12 +198,12 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
      * the 'this' receiver are tracked for initialization.
      */
     @Override
-    public TransferResult<CFValue, CommitmentStore> visitFieldAccess(
-            FieldAccessNode n, TransferInput<CFValue, CommitmentStore> p) {
-        TransferResult<CFValue, CommitmentStore> result = super
+    public TransferResult<CFValue, InitializationStore> visitFieldAccess(
+            FieldAccessNode n, TransferInput<CFValue, InitializationStore> p) {
+        TransferResult<CFValue, InitializationStore> result = super
                 .visitFieldAccess(n, p);
         assert !result.containsTwoStores();
-        CommitmentStore store = result.getRegularStore();
+        InitializationStore store = result.getRegularStore();
         if (store.isFieldInitialized(n.getElement())
                 && n.getReceiver() instanceof ThisLiteralNode) {
             AnnotatedTypeMirror fieldAnno = analysis.getFactory()
@@ -223,13 +223,13 @@ public class CommitmentTransfer<T extends CommitmentTransfer<T>> extends
     }
 
     @Override
-    public TransferResult<CFValue, CommitmentStore> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<CFValue, CommitmentStore> in) {
-        TransferResult<CFValue, CommitmentStore> result = super
+    public TransferResult<CFValue, InitializationStore> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, InitializationStore> in) {
+        TransferResult<CFValue, InitializationStore> result = super
                 .visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
         Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
-                (ConditionalTransferResult<CFValue, CommitmentStore>) result);
+                (ConditionalTransferResult<CFValue, InitializationStore>) result);
         if (newlyInitializedFields.size() > 0) {
             for (Element f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
