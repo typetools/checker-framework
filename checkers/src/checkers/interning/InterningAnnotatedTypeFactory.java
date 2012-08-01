@@ -1,12 +1,15 @@
 package checkers.interning;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import javax.lang.model.element.*;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.*;
-import checkers.javari.quals.Mutable;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
+import checkers.quals.Unqualified;
 import checkers.types.*;
 import checkers.util.TreeUtils;
 import checkers.util.ElementUtils;
@@ -37,7 +40,7 @@ import com.sun.source.tree.*;
 public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<InterningChecker> {
 
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED;
+    final AnnotationMirror INTERNED, UNQUALIFIED;
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a
@@ -50,6 +53,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         CompilationUnitTree root) {
         super(checker, root);
         this.INTERNED = annotations.fromClass(Interned.class);
+        this.UNQUALIFIED = annotations.fromClass(Unqualified.class);
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
@@ -81,26 +85,40 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         InterningTreeAnnotator(BaseTypeChecker checker) {
             super(checker, InterningAnnotatedTypeFactory.this);
+            internedOps.add(Tree.Kind.EQUAL_TO);
+            internedOps.add(Tree.Kind.NOT_EQUAL_TO);
+            internedOps.add(Tree.Kind.CONDITIONAL_AND);
+            internedOps.add(Tree.Kind.CONDITIONAL_OR);
+            internedOps.add(Tree.Kind.PLUS);
+            internedOps.add(Tree.Kind.MINUS);
+            internedOps.add(Tree.Kind.MULTIPLY);
+            internedOps.add(Tree.Kind.DIVIDE);
+            internedOps.add(Tree.Kind.REMAINDER);
         }
+
+        Set<Tree.Kind> internedOps = EnumSet.noneOf(Tree.Kind.class);
 
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             if (TreeUtils.isCompileTimeString(node)) {
                 type.addAnnotation(INTERNED);
+            } else if (TreeUtils.isStringConcatenation(node)) {
+                type.addAnnotation(UNQUALIFIED);
+            } else if (internedOps.contains(node.getKind())) {
+                type.addAnnotation(INTERNED);
+            } else {
+                type.addAnnotation(UNQUALIFIED);
             }
-
             return super.visitBinary(node, type);
         }
 
         /* Compound assignments never result in an interned result.
-         * I expected that I would need to clear some annotations here, but it doesn't seem necessary.
+         */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-          System.out.println("InternintATF::visitCompoundAssignment: " + type);
-          // type.clearAnnotations();
+          type.addAnnotation(UNQUALIFIED);
           return super.visitCompoundAssignment(node, type);
         }
-        */
     }
 
     /**
