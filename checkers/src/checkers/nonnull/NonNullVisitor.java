@@ -36,7 +36,7 @@ import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
-public class NonNullVisitor extends InitializationVisitor<NonNullChecker> {
+public class NonNullVisitor extends InitializationVisitor<AbstractNonNullChecker> {
 
     // Error message keys
     private static final String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
@@ -51,7 +51,7 @@ public class NonNullVisitor extends InitializationVisitor<NonNullChecker> {
     private final AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
     private final TypeMirror stringType;
 
-    public NonNullVisitor(NonNullChecker checker, CompilationUnitTree root) {
+    public NonNullVisitor(AbstractNonNullChecker checker, CompilationUnitTree root) {
         super(checker, root);
 
         NONNULL = checker.NONNULL;
@@ -71,7 +71,7 @@ public class NonNullVisitor extends InitializationVisitor<NonNullChecker> {
                     .elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)
                     && !checker.getLintOption("strictmonoinit",
-                            NonNullChecker.LINT_DEFAULT_STRICTMONOINIT)) {
+                            AbstractNonNullChecker.LINT_DEFAULT_STRICTMONOINIT)) {
                 return;
             }
         }
