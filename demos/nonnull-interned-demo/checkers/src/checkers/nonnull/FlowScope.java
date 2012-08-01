@@ -15,7 +15,7 @@ import javax.lang.model.element.*;
  *
  * @see SourcePositions
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 class FlowScope {
 
     /** The variable for this scope. */

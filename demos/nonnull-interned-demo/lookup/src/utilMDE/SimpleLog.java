@@ -3,7 +3,7 @@ package utilMDE;
 import checkers.quals.*;
 import java.util.Stack;
 
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class SimpleLog {
 
   public String indent_str = "";
