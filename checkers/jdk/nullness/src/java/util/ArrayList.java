@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // permits null elements
 public class ArrayList<E extends @Nullable Object> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {

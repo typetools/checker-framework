@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class RandomAccessFile implements DataOutput, DataInput, Closeable {
   public RandomAccessFile(String a1, String a2) throws FileNotFoundException { throw new RuntimeException("skeleton method"); }
