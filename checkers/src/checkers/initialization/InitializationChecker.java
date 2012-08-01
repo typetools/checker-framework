@@ -33,6 +33,16 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     /** Annotation constants */
     protected AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
 
+    /**
+     * Should the initialization type system be FBC? If not, the rawness type
+     * system is used for initialization.
+     */
+    public final boolean useFbc;
+
+    public InitializationChecker(boolean useFbc) {
+        this.useFbc = useFbc;
+    }
+
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
         AnnotationUtils annoFactory = AnnotationUtils
