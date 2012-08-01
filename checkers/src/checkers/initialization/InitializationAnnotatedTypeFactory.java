@@ -69,6 +69,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     // left in because it may be useful in the future for determining if you can
     // safely apply class frame types
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
+        if (!useFbc) {
+            return true;
+        }
         for (Tree member : classTree.getMembers()) {
             if (!member.getKind().equals(Tree.Kind.VARIABLE))
                 continue;
@@ -127,15 +130,20 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 InitializationStore store = getStoreBefore(tree);
                 if (store != null) {
                     if (getUninitializedInvariantFields(store, path).size() == 0) {
-                        annotation = checker.createFreeAnnotation(classType);
+                        if (useFbc) {
+                            annotation = checker
+                                    .createFreeAnnotation(classType);
+                        } else {
+                            annotation = checker
+                                    .createUnclassifiedAnnotation(classType);
+                        }
                         selfType.replaceAnnotation(annotation);
                     }
                 }
             }
 
             if (annotation == null) {
-                // Find the super-class (if any)
-                annotation = getFreeAnnotationOfSuperType(classType);
+                annotation = getFreeOrRawAnnotationOfSuperType(classType);
             }
             selfType.replaceAnnotation(annotation);
         }
@@ -143,10 +151,10 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns a {@link Free} annotation that has the supertype of {@code type}
-     * as type frame.
+     * Returns a {@link Free} annotation (or {@link Unclassified} if rawness is
+     * used) that has the supertype of {@code type} as type frame.
      */
-    protected AnnotationMirror getFreeAnnotationOfSuperType(TypeMirror type) {
+    protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
         AnnotationMirror annotation;
         List<? extends TypeMirror> superTypes = types.directSupertypes(type);
@@ -160,10 +168,18 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         }
         // Create annotation.
         if (superClass != null) {
-            annotation = checker.createFreeAnnotation(superClass);
+            if (useFbc) {
+                annotation = checker.createFreeAnnotation(superClass);
+            } else {
+                annotation = checker.createUnclassifiedAnnotation(superClass);
+            }
         } else {
             // Use Object as a valid super-class
-            annotation = checker.createFreeAnnotation(Object.class);
+            if (useFbc) {
+                annotation = checker.createFreeAnnotation(Object.class);
+            } else {
+                annotation = checker.createUnclassifiedAnnotation(Object.class);
+            }
         }
         return annotation;
     }
@@ -175,7 +191,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     public Set<VariableTree> getUninitializedInvariantFields(
             InitializationStore store, TreePath path) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        Set<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
+        Set<VariableTree> fields = InitializationChecker
+                .getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
@@ -213,7 +230,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             type.addAnnotations(qualHierarchy.getTopAnnotations());
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
-                    NOT_ONLY_COMMITTED)) {
+                    NOT_ONLY_COMMITTED) || !useFbc) {
                 // add root annotation for all other hierarchies, and
                 // Committed for the commitment hierarchy
                 type.replaceAnnotation(COMMITTED);
@@ -242,7 +259,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             if (p == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType receiverType = t.getReceiverType();
                 DeclaredType underlyingType = receiverType.getUnderlyingType();
-                receiverType.replaceAnnotation(getFreeAnnotationOfSuperType(underlyingType));
+                receiverType
+                        .replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
             }
             return result;
         }
@@ -262,7 +280,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
                 DeclaredType underlyingType = exeType.getReceiverType()
                         .getUnderlyingType();
-                AnnotationMirror a = getFreeAnnotationOfSuperType(underlyingType);
+                AnnotationMirror a = getFreeOrRawAnnotationOfSuperType(underlyingType);
                 exeType.getReceiverType().replaceAnnotation(a);
             }
             return result;
@@ -271,14 +289,16 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
             super.visitNewClass(node, p);
-            boolean allCommitted = true;
-            Type type = ((JCTree) node).type;
-            for (ExpressionTree a : node.getArguments()) {
-                allCommitted = allCommitted
-                        && getAnnotatedType(a).hasAnnotation(COMMITTED);
-            }
-            if (!allCommitted) {
-                p.replaceAnnotation(checker.createFreeAnnotation(type));
+            if (useFbc) {
+                boolean allCommitted = true;
+                Type type = ((JCTree) node).type;
+                for (ExpressionTree a : node.getArguments()) {
+                    allCommitted = allCommitted
+                            && getAnnotatedType(a).hasAnnotation(COMMITTED);
+                }
+                if (!allCommitted) {
+                    p.replaceAnnotation(checker.createFreeAnnotation(type));
+                }
             }
             return null;
         }
