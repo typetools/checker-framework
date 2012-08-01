@@ -316,6 +316,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             visitorState.setClassTree(ct);
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
+            boolean oldShouldCache = shouldCache;
             shouldCache = false;
 
             try {
@@ -383,7 +384,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 visitorState.setClassTree(preClassTree);
                 visitorState.setMethodReceiver(preAMT);
                 visitorState.setMethodTree(preMT);
-                shouldCache = SHOULD_CACHE;
+                shouldCache = oldShouldCache;
             }
 
             scannedClasses.put(ct, ScanState.FINISHED);
