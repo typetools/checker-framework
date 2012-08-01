@@ -125,29 +125,39 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 }
             }
 
-            // Find the super-class (if any)
             if (annotation == null) {
-                List<? extends TypeMirror> superTypes = types
-                        .directSupertypes(classType);
-                TypeMirror superClass = null;
-                for (TypeMirror superType : superTypes) {
-                    ElementKind kind = types.asElement(superType).getKind();
-                    if (kind == ElementKind.CLASS) {
-                        superClass = superType;
-                        break;
-                    }
-                }
-                // Create annotation.
-                if (superClass != null) {
-                    annotation = checker.createFreeAnnotation(superClass);
-                } else {
-                    // Use Object as a valid super-class
-                    annotation = checker.createFreeAnnotation(Object.class);
-                }
+                // Find the super-class (if any)
+                annotation = getFreeAnnotationOfSuperType(classType);
             }
             selfType.replaceAnnotation(annotation);
         }
         return selfType;
+    }
+
+    /**
+     * Returns a {@link Free} annotation that has the supertype of {@code type}
+     * as type frame.
+     */
+    protected AnnotationMirror getFreeAnnotationOfSuperType(TypeMirror type) {
+        // Find supertype if possible.
+        AnnotationMirror annotation;
+        List<? extends TypeMirror> superTypes = types.directSupertypes(type);
+        TypeMirror superClass = null;
+        for (TypeMirror superType : superTypes) {
+            ElementKind kind = types.asElement(superType).getKind();
+            if (kind == ElementKind.CLASS) {
+                superClass = superType;
+                break;
+            }
+        }
+        // Create annotation.
+        if (superClass != null) {
+            annotation = checker.createFreeAnnotation(superClass);
+        } else {
+            // Use Object as a valid super-class
+            annotation = checker.createFreeAnnotation(Object.class);
+        }
+        return annotation;
     }
 
     /**
@@ -224,8 +234,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
             if (p == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType receiverType = t.getReceiverType();
                 DeclaredType underlyingType = receiverType.getUnderlyingType();
-                receiverType.replaceAnnotation(checker
-                        .createFreeAnnotation(underlyingType));
+                receiverType.replaceAnnotation(getFreeAnnotationOfSuperType(underlyingType));
             }
             return result;
         }
@@ -245,8 +254,7 @@ public abstract class CommitmentAnnotatedTypeFactory<Checker extends CommitmentC
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
                 DeclaredType underlyingType = exeType.getReceiverType()
                         .getUnderlyingType();
-                AnnotationMirror a = checker
-                        .createFreeAnnotation(underlyingType);
+                AnnotationMirror a = getFreeAnnotationOfSuperType(underlyingType);
                 exeType.getReceiverType().replaceAnnotation(a);
             }
             return result;
