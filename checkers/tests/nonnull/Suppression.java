@@ -18,7 +18,7 @@ public class Suppression {
     }
     
     void test() {
-        @SuppressWarnings("nonnull:assignment.type.incompatible")
+        @SuppressWarnings("nonnullfbc:assignment.type.incompatible")
         @NonNull String s = null;
     }
 

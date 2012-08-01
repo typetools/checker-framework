@@ -13,7 +13,7 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NonNull2Test extends ParameterizedCheckerTest {
 
 	public NonNull2Test(File testFile) {
-		super(testFile, checkers.nonnull.AbstractNonNullChecker.class.getName(),
+		super(testFile, checkers.nonnull.NonNullFbcChecker.class.getName(),
 				"nonnull", "-Anomsgtext");
 	}
 
