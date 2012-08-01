@@ -120,7 +120,7 @@ For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
 import checkers.quals.*;        // for DefaultQualifier[s]
 import checkers.nullness.quals.NonNull;
 
-@DefaultQualifier("NonNull")
+@DefaultQualifier(NonNull.class)
 class MyClass {
 
   public boolean compile(File myFile) { // myFile has type "@NonNull File"
@@ -132,7 +132,7 @@ class MyClass {
       ...
   }
 
-  @DefaultQualifier("Mutable")
+  @DefaultQualifier(Mutable.class)
   public boolean isJavaFile(File myfile) {  // myFile has type "@Mutable File"
     ...
   }
@@ -146,8 +146,8 @@ use
 
 \begin{Verbatim}
 @DefaultQualifiers({
-  @DefaultQualifier("NonNull"),
-  @DefaultQualifier("Mutable")
+  @DefaultQualifier(NonNull.class),
+  @DefaultQualifier(Mutable.class)
 })
 \end{Verbatim}
 
