@@ -46,12 +46,20 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     /** The annotations */
     public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
 
+    /**
+     * Should the initialization type system be FBC? If not, the rawness type
+     * system is used for initialization.
+     */
+    public final boolean useFbc;
+
     public InitializationAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root) {
         super(checker, root, true);
 
         COMMITTED = checker.COMMITTED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
+
+        useFbc = checker.useFbc;
     }
 
     public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
