@@ -103,9 +103,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param useFlow
      *            whether flow analysis should be performed
      */
-    @SuppressWarnings("deprecation") // we alias a deprecated annotation to its replacement
-    public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
-            boolean useFlow) {
+    @SuppressWarnings("deprecation")
+    // we alias a deprecated annotation to its replacement
+    public AbstractBasicAnnotatedTypeFactory(Checker checker,
+            CompilationUnitTree root, boolean useFlow) {
         super(checker, root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
@@ -119,7 +120,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
-                        Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+                        Collections
+                                .singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
                 foundDefault = true;
             }
         }
@@ -151,7 +153,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param root
      *            the compilation unit to scan
      */
-    public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
+    public AbstractBasicAnnotatedTypeFactory(Checker checker,
+            CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
     }
 
@@ -265,14 +268,26 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @return The store immediately before a given {@link Tree}.
      */
     public Store getStoreBefore(Tree tree) {
-        return flowResult.getStoreBefore(tree);
+        if (analyses == null || analyses.isEmpty()) {
+            return flowResult.getStoreBefore(tree);
+        }
+        FlowAnalysis analysis = analyses.getFirst();
+        Node node = analysis.getNodeForTree(tree);
+        Store store = AnalysisResult.runAnalysisFor(node, true, analysis.getStore(node.getBlock()));
+        return store;
     }
 
     /**
      * @return The store immediately after a given {@link Tree}.
      */
     public Store getStoreAfter(Tree tree) {
-        return flowResult.getStoreAfter(tree);
+        if (analyses == null || analyses.isEmpty()) {
+            return flowResult.getStoreAfter(tree);
+        }
+        FlowAnalysis analysis = analyses.getFirst();
+        Node node = analysis.getNodeForTree(tree);
+        Store store = AnalysisResult.runAnalysisFor(node, false, analysis.getStore(node.getBlock()));
+        return store;
     }
 
     /**
@@ -316,8 +331,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             visitorState.setClassTree(ct);
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
-            boolean oldShouldCache = shouldCache;
-            shouldCache = false;
 
             try {
                 List<MethodTree> methods = new ArrayList<>();
@@ -344,11 +357,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                            analyze(queue, new CFGStatement(initializer), fieldValues);
+                            analyze(queue, new CFGStatement(initializer),
+                                    fieldValues);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
-                                VariableElement element = TreeUtils.elementFromDeclaration(vt);
+                                VariableElement element = TreeUtils
+                                        .elementFromDeclaration(vt);
                                 fieldValues.add(Pair.of(element, value));
                             }
                         }
@@ -373,7 +388,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 }
 
                 // Now analyze all methods.
-                // TODO: at this point, we don't have any information about fields of superclasses.
+                // TODO: at this point, we don't have any information about
+                // fields of superclasses.
                 for (MethodTree mt : methods) {
                     analyze(queue,
                             new CFGMethod(mt, TreeUtils
@@ -384,7 +400,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 visitorState.setClassTree(preClassTree);
                 visitorState.setMethodReceiver(preAMT);
                 visitorState.setMethodTree(preMT);
-                shouldCache = oldShouldCache;
             }
 
             scannedClasses.put(ct, ScanState.FINISHED);
@@ -413,7 +428,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
             Checker.errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
-        CFGBuilder builder = new CFCFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled);
+        CFGBuilder builder = new CFCFGBuilder(assumeAssertionsEnabled,
+                assumeAssertionsDisabled);
         ControlFlowGraph cfg = builder.run(this, root, env, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(checker, fieldValues);
         analyses.addFirst(newAnalysis);
@@ -430,8 +446,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
-            returnStatementStores.put(method,
-                    analyses.getFirst().getReturnStatementStores());
+            returnStatementStores.put(method, analyses.getFirst()
+                    .getReturnStatementStores());
         }
 
         if (env.getOptions().containsKey("flowdotdir")) {
@@ -460,7 +476,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return null;
     }
 
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
+            boolean iUseFlow) {
         assert root != null : "root needs to be set when used on trees";
         if (iUseFlow) {
             annotateImplicitWithFlow(tree, type);
@@ -535,7 +552,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         if (present != null) {
                             if (this.qualHierarchy.isSubtype(inf, present)) {
                                 // TODO: why is the above check needed?
-                                // Shouldn't inferred qualifiers always be subtypes?
+                                // Shouldn't inferred qualifiers always be
+                                // subtypes?
                                 type.replaceAnnotation(inf);
                             }
                         } else {

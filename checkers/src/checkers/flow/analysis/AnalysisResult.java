@@ -38,7 +38,8 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * Initialize with a given node-value mapping.
      */
     public AnalysisResult(Map<Node, A> nodeValues,
-            IdentityHashMap<Block, TransferInput<A, S>> stores, IdentityHashMap<Tree, Node> treeLookup) {
+            IdentityHashMap<Block, TransferInput<A, S>> stores,
+            IdentityHashMap<Tree, Node> treeLookup) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
@@ -123,51 +124,71 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected S runAnalysisFor(Node node, boolean before) {
         Block block = node.getBlock();
         TransferInput<A, S> transferInput = stores.get(block);
+        return runAnalysisFor(node, before, transferInput);
+    }
+
+    /**
+     * Runs the analysis again within the block of {@code node} and returns the
+     * store at the location of {@code node}. If {@code before} is true, then
+     * the store immediately before the {@link Node} {@code node} is returned.
+     * Otherwise, the store after {@code node} is returned.
+     */
+    public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
+            Node node, boolean before, TransferInput<A, S> transferInput) {
+        Block block = node.getBlock();
         Analysis<A, S, ?> analysis = transferInput.analysis;
+        Node oldCurrentNode = analysis.currentNode;
 
-        switch (block.getType()) {
-        case REGULAR_BLOCK: {
-            RegularBlock rb = (RegularBlock) block;
+        try {
+            switch (block.getType()) {
+            case REGULAR_BLOCK: {
+                RegularBlock rb = (RegularBlock) block;
 
-            // Apply transfer function to contents until we found the node we
-            // are looking for.
-            TransferInput<A, S> store = transferInput;
-            TransferResult<A, S> transferResult = null;
-            for (Node n : rb.getContents()) {
-                if (n == node && before) {
-                    return store.getRegularStore();
+                // Apply transfer function to contents until we found the node
+                // we
+                // are looking for.
+                TransferInput<A, S> store = transferInput;
+                TransferResult<A, S> transferResult = null;
+                for (Node n : rb.getContents()) {
+                    analysis.currentNode = n;
+                    if (n == node && before) {
+                        return store.getRegularStore();
+                    }
+                    transferResult = analysis.callTransferFunction(n, store);
+                    if (n == node) {
+                        return transferResult.getRegularStore();
+                    }
+                    store = new TransferInput<>(n, analysis, transferResult);
                 }
-                transferResult = analysis.callTransferFunction(n, store);
-                if (n == node) {
-                    return transferResult.getRegularStore();
-                }
-                store = new TransferInput<>(n, analysis, transferResult);
+                // This point should never be reached. If the block of 'node' is
+                // 'block', then 'node' must be part of the contents of 'block'.
+                assert false;
+                return null;
             }
-            // This point should never be reached. If the block of 'node' is
-            // 'block', then 'node' must be part of the contents of 'block'.
-            assert false;
+
+            case EXCEPTION_BLOCK: {
+                ExceptionBlock eb = (ExceptionBlock) block;
+
+                // apply transfer function to content
+                assert eb.getNode() == node;
+                if (before) {
+                    return transferInput.getRegularStore();
+                }
+                analysis.currentNode = node;
+                TransferResult<A, S> transferResult = analysis
+                        .callTransferFunction(node, transferInput);
+                return transferResult.getRegularStore();
+            }
+
+            default:
+                // Only regular blocks and exceptional blocks can hold nodes.
+                assert false;
+                break;
+            }
+
             return null;
+        } finally {
+            analysis.currentNode = oldCurrentNode;
         }
-
-        case EXCEPTION_BLOCK: {
-            ExceptionBlock eb = (ExceptionBlock) block;
-
-            // apply transfer function to content
-            assert eb.getNode() == node;
-            if (before) {
-                return transferInput.getRegularStore();
-            }
-            TransferResult<A, S> transferResult = analysis
-                    .callTransferFunction(node, transferInput);
-            return transferResult.getRegularStore();
-        }
-
-        default:
-            // Only regular blocks and exceptional blocks can hold nodes.
-            assert false;
-            break;
-        }
-
-        return null;
     }
 }

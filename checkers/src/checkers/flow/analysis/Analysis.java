@@ -515,11 +515,18 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         if (t == currentTree) {
             return null;
         }
-        Node nodeCorrespondingToTree = cfg.getNodeCorrespondingToTree(t);
+        Node nodeCorrespondingToTree = getNodeForTree(t);
         if (nodeCorrespondingToTree == null) {
             return null;
         }
         return getValue(nodeCorrespondingToTree);
+    }
+
+    /**
+     * Get the {@link Node} for a given {@link Tree}.
+     */
+    public Node getNodeForTree(Tree t) {
+        return cfg.getNodeCorrespondingToTree(t);
     }
 
     public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {
