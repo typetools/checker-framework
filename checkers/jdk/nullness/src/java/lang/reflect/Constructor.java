@@ -3,7 +3,7 @@ package java.lang.reflect;
 import java.lang.annotation.Annotation;
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class Constructor<T extends @Nullable Object> extends AccessibleObject implements GenericDeclaration, Member {
 	public Class<T> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
 	public String getName() { throw new RuntimeException("skeleton method"); }

@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class HashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;

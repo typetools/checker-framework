@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}

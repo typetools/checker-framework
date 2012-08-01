@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class DataOutputStream extends FilterOutputStream implements DataOutput {
   public DataOutputStream(OutputStream a1) { throw new RuntimeException("skeleton method"); }

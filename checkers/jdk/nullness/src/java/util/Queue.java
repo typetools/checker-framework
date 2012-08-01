@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface Queue<E extends @Nullable Object> extends Collection<E> {

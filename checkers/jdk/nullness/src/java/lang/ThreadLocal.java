@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // It is permitted to write a subclass that extends ThreadLocal<@NonNull
 // MyType>, but in such a case:

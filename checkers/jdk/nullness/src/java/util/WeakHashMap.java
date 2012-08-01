@@ -1,6 +1,6 @@
 package java.util;
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // permits null keys and values
 public class WeakHashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements Map<K, V> {

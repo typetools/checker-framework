@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract interface DataOutput {
   public abstract void write(int a1) throws IOException;
