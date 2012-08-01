@@ -23,6 +23,7 @@ class Simple {
 
     void concatenation(@Untainted String s1, String s2) {
         execute(s1 + s1);
+        execute(s1 += s1);
         execute(s1 + "m");
         //:: error: (argument.type.incompatible)
         execute(s1 + s2);   // error
