@@ -18,7 +18,7 @@ import javax.lang.model.util.*;
  * Utilities for working with annotated generic types, and particularly,
  * applying annotations from annotated type arguments to type variables.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class GenericsUtils {
 
     public static boolean DEBUG = false;

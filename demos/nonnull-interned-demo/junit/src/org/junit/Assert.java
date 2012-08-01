@@ -17,7 +17,7 @@ import checkers.quals.DefaultQualifier;
  *
  * @see AssertionError
  */
-@DefaultQualifier("checkers.nullness.quals.Nullable")
+@DefaultQualifier(checkers.nullness.quals.Nullable.class)
 public class Assert {
 	/**
 	 * Protect constructor since it is a static only class
