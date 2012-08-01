@@ -1,5 +1,5 @@
 import checkers.nonnull.quals.*;
-import checkers.commitment.quals.*;
+import checkers.initialization.quals.*;
 import static checkers.nonnull.util.NonNullUtils.*;
 
 class MultiConstructorInit {
