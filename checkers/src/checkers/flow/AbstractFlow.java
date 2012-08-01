@@ -542,16 +542,6 @@ implements Flow {
         // if (var instanceof IdentifierTree)
         //     this.scan(var, p);
 
-        // WMD added this to get (s2 = (s1 += 1)) working.
-        // Is something similar needed for other expressions?
-        // I copied this from visitTypeCast, so maybe it's needed elsewhere, too.
-        AnnotatedTypeMirror t = factory.getAnnotatedType(var);
-        for (AnnotationMirror a : this.flowState.getAnnotations()) {
-            if (t.hasAnnotation(a)) {
-                addFlowResult(flowResults, node, a);
-            }
-        }
-
         return null;
     }
 
