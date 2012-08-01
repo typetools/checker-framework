@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 import java.lang.annotation.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(NonNull.class)
 class DotClass {
 
     void test() {

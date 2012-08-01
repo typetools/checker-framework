@@ -1,11 +1,11 @@
 import checkers.nullness.quals.*;
 import checkers.quals.DefaultQualifier;
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(NonNull.class)
 interface Foo {
     void foo(String a, String b);
 }
 
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(NonNull.class)
 class DefaultInterface {
 
     public void test() {

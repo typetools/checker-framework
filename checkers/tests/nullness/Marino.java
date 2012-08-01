@@ -1,6 +1,6 @@
 import checkers.nullness.quals.*;
 // Test cases originally written by Dan Marino, UCLA, 10/8/2007.
-@checkers.quals.DefaultQualifier("Nullable")
+@checkers.quals.DefaultQualifier(Nullable.class)
 public class Marino {
 
     @NonNull String m_str;
