@@ -14,9 +14,10 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ AnnotationBuilderTest.class, BasicEncryptedTest.class,
         BasicSuperSubTest.class, FenumTest.class, FlowTest.class,
         Flow2Test.class, FrameworkTest.class, I18nTest.class, LubGlbTest.class,
-        NonNullTest.class, PuritySuggestionsTest.class, RegexTest.class,
+        NonNullFbcTest.class, PuritySuggestionsTest.class, RegexTest.class,
         ReportModifiersTest.class, ReportTest.class, ReportTreeKindsTest.class,
         SignatureTest.class, TaintingTest.class, TreeParserTest.class,
-        UnitsTest.class, NonNull2Test.class })
+        UnitsTest.class,
+        NonNullRawnessTest.class })
 public class AllFlowTests {
 }
