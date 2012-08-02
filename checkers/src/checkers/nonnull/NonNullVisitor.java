@@ -8,8 +8,6 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
-import checkers.initialization.quals.Free;
-import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -36,7 +34,8 @@ import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
-public class NonNullVisitor extends InitializationVisitor<AbstractNonNullChecker> {
+public class NonNullVisitor extends
+        InitializationVisitor<AbstractNonNullChecker> {
 
     // Error message keys
     private static final String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
@@ -51,7 +50,8 @@ public class NonNullVisitor extends InitializationVisitor<AbstractNonNullChecker
     private final AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
     private final TypeMirror stringType;
 
-    public NonNullVisitor(AbstractNonNullChecker checker, CompilationUnitTree root) {
+    public NonNullVisitor(AbstractNonNullChecker checker,
+            CompilationUnitTree root) {
         super(checker, root);
 
         NONNULL = checker.NONNULL;
@@ -87,8 +87,8 @@ public class NonNullVisitor extends InitializationVisitor<AbstractNonNullChecker
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
             if (receiverType != null
-                    && (receiverType.hasAnnotation(Free.class) || receiverType
-                            .hasAnnotation(Unclassified.class))) {
+                    && (checker.isFree(receiverType) || checker
+                            .isUnclassified(receiverType))) {
                 if (annos.hasAnnotation(NONNULL)
                         && !valueType.hasAnnotation(NONNULL)) {
                     checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
