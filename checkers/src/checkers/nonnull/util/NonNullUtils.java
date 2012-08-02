@@ -1,7 +1,5 @@
 package checkers.nonnull.util;
 
-import checkers.initialization.quals.*;
-import checkers.nonnull.quals.*;
 import checkers.nullness.quals.AssertParametersNonNull;
 
 /**
@@ -32,7 +30,7 @@ public final class NonNullUtils {
      * <p>
      *
      * The method takes a possibly-null reference, unsafely casts it to
-     * have the @NonNull type qualifier, and returns it.  The Nullness
+     * have the @checkers.nonnull.quals.NonNull type qualifier, and returns it.  The Nullness
      * Checker considers both the return value, and also the argument, to
      * be non-null after the method call.  Therefore, the
      * <tt>castNonNull</tt> method can be used either as a cast expression or
@@ -67,106 +65,106 @@ public final class NonNullUtils {
      * <p>
      *
      * @param ref a possibly-null reference
-     * @return the argument, casted to have the type qualifier @NonNull
+     * @return the argument, casted to have the type qualifier @checkers.nonnull.quals.NonNull
      */
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castNonNull(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNullFbc(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castNonNullFbc(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castKeyFor(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castKeyFor(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castTypeState(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castTypeState(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
 
     @SuppressWarnings("nullness")
-    public static <T extends Object> /*@Nullable*/ T castKnownNull(T ref) {
+    public static <T extends Object> /*@checkers.nonnull.quals.Nullable*/ T castKnownNull(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return ref;
     }
 
     @SuppressWarnings("nullness")
-    public static <T extends Object> /*@Nullable*/ T castKnownNull2(T ref) {
+    public static <T extends Object> /*@checkers.nonnull.quals.Nullable*/ T castKnownNull2(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return ref;
     }
 
     @SuppressWarnings("rawness")
-    public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ T castNonRaw(T ref) {
-        return (/*@NonRaw*/ T)ref;
+    public static <T extends /*@checkers.initialization.quals.Raw*/ /*@Unclassified*/ Object> /*@checkers.initialization.quals.NonRaw*/ T castNonRaw(T ref) {
+        return (/*@checkers.initialization.quals.NonRaw*/ T)ref;
     }
 
     @SuppressWarnings("rawness")
-    public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castFrame(T ref) {
-        return (/*@NonRaw*/ /*@Committed*/ T)ref;
+    public static <T extends /*@checkers.initialization.quals.Raw*/ /*@Unclassified*/ Object> /*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T castFrame(T ref) {
+        return (/*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T)ref;
     }
 
     // for if you know it's in the list (getSelectedIndex) or if hasNext() & .next() is called, menuBar.getMenu
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castListIndex(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castListIndex(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castWeird(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castWeird(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // flow cannot figure out something
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castFlow(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castFlow(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // access some attributes of an element of a config file (domain specific knowledge)
     // depending on structure of XML file being parsed, certain fields are known to be set
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castDomain(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castDomain(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
 
     // this seems like a bug, but our confidence is not very high about that
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castUnsafe(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castUnsafe(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // definitely looks like a bug
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castBug(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castBug(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     /**
@@ -175,24 +173,24 @@ public final class NonNullUtils {
      * @return
      */
     @SuppressWarnings({"rawness","commitment"})
-    public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castInitGui(T ref) {
-        return (/*@NonRaw*/ /*@Committed*/ T)ref;
+    public static <T extends /*@checkers.initialization.quals.Raw*/ /*@Unclassified*/ Object> /*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T castInitGui(T ref) {
+        return (/*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T)ref;
     }
 
     /**
      * For final-factory cases, not counted
      */
     @SuppressWarnings({"rawness","commitment"})
-    public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castFactory(T ref) {
-        return (/*@NonRaw*/ /*@Committed*/ T)ref;
+    public static <T extends /*@checkers.initialization.quals.Raw*/ /*@Unclassified*/ Object> /*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T castFactory(T ref) {
+        return (/*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T)ref;
     }
 
     // System.getProperty (should really be a different type system for that)
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castSystemProperty(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castSystemProperty(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // application invariant. uses so far:
@@ -200,33 +198,33 @@ public final class NonNullUtils {
     // - SSH_FILEXFER_ATTR_UIDGID set -> nonnull field gid
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castAI(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castAI(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // known state of filesystem guarantees if you pass a valid input it returns null (getIcon)
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castKnownFilesystem(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castKnownFilesystem(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // for cases where PolyNull would really be best
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castPoly(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castPoly(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
     // array that really should be lazynonnull
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castArray(T ref) {
+    public static <T extends /*@checkers.nonnull.quals.Nullable*/ Object> /*@checkers.nonnull.quals.NonNull*/ T castArray(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        return (/*@checkers.nonnull.quals.NonNull*/ T)ref;
     }
 
 
