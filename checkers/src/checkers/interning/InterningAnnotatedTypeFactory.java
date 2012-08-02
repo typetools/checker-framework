@@ -85,6 +85,8 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         InterningTreeAnnotator(BaseTypeChecker checker) {
             super(checker, InterningAnnotatedTypeFactory.this);
+            // TODO: Might be easier to track the non-interning operations.
+            // These all result in booleans. What other options are there?
             internedOps.add(Tree.Kind.EQUAL_TO);
             internedOps.add(Tree.Kind.NOT_EQUAL_TO);
             internedOps.add(Tree.Kind.CONDITIONAL_AND);
@@ -94,6 +96,10 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
             internedOps.add(Tree.Kind.MULTIPLY);
             internedOps.add(Tree.Kind.DIVIDE);
             internedOps.add(Tree.Kind.REMAINDER);
+            internedOps.add(Tree.Kind.LESS_THAN);
+            internedOps.add(Tree.Kind.LESS_THAN_EQUAL);
+            internedOps.add(Tree.Kind.GREATER_THAN);
+            internedOps.add(Tree.Kind.GREATER_THAN_EQUAL);
         }
 
         Set<Tree.Kind> internedOps = EnumSet.noneOf(Tree.Kind.class);
