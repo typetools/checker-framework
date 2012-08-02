@@ -70,6 +70,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     // safely apply class frame types
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         if (!useFbc) {
+            // In the rawness type system, no fields can store not fully
+            // initialized objects.
             return true;
         }
         for (Tree member : classTree.getMembers()) {
@@ -223,8 +225,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
             AnnotatedTypeMirror receiverType) {
-        if (receiverType.hasAnnotation(Unclassified.class)
-                || receiverType.hasAnnotation(Free.class)) {
+        if (checker.isUnclassified(receiverType)
+                || checker.isFree(receiverType)) {
 
             type.clearAnnotations();
             type.addAnnotations(qualHierarchy.getTopAnnotations());
@@ -293,8 +295,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 boolean allCommitted = true;
                 Type type = ((JCTree) node).type;
                 for (ExpressionTree a : node.getArguments()) {
-                    allCommitted = allCommitted
-                            && getAnnotatedType(a).hasAnnotation(COMMITTED);
+                    allCommitted &= checker.isCommitted(getAnnotatedType(a));
                 }
                 if (!allCommitted) {
                     p.replaceAnnotation(checker.createFreeAnnotation(type));
