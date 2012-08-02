@@ -85,24 +85,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         InterningTreeAnnotator(BaseTypeChecker checker) {
             super(checker, InterningAnnotatedTypeFactory.this);
-            // TODO: Might be easier to track the non-interning operations.
-            // These all result in booleans. What other options are there?
-            internedOps.add(Tree.Kind.EQUAL_TO);
-            internedOps.add(Tree.Kind.NOT_EQUAL_TO);
-            internedOps.add(Tree.Kind.CONDITIONAL_AND);
-            internedOps.add(Tree.Kind.CONDITIONAL_OR);
-            internedOps.add(Tree.Kind.PLUS);
-            internedOps.add(Tree.Kind.MINUS);
-            internedOps.add(Tree.Kind.MULTIPLY);
-            internedOps.add(Tree.Kind.DIVIDE);
-            internedOps.add(Tree.Kind.REMAINDER);
-            internedOps.add(Tree.Kind.LESS_THAN);
-            internedOps.add(Tree.Kind.LESS_THAN_EQUAL);
-            internedOps.add(Tree.Kind.GREATER_THAN);
-            internedOps.add(Tree.Kind.GREATER_THAN_EQUAL);
         }
-
-        Set<Tree.Kind> internedOps = EnumSet.noneOf(Tree.Kind.class);
 
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
@@ -110,7 +93,9 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
                 type.addAnnotation(INTERNED);
             } else if (TreeUtils.isStringConcatenation(node)) {
                 type.addAnnotation(UNQUALIFIED);
-            } else if (internedOps.contains(node.getKind())) {
+            } else if ((type.getKind().isPrimitive()) ||
+                    node.getKind() == Tree.Kind.EQUAL_TO ||
+                    node.getKind() == Tree.Kind.NOT_EQUAL_TO) {
                 type.addAnnotation(INTERNED);
             } else {
                 type.addAnnotation(UNQUALIFIED);
