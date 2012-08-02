@@ -1,5 +1,6 @@
 package checkers.nonnull.util;
 
+import checkers.initialization.quals.*;
 import checkers.nullness.quals.AssertParametersNonNull;
 
 /**
