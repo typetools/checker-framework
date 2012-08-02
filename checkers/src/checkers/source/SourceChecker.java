@@ -13,15 +13,16 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.Nullable;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
+*/
 
 import com.sun.source.tree.*;
 import com.sun.source.util.AbstractTypeProcessor;
@@ -223,7 +224,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Only public to allow tests.AnnotationBuilderTest;
      * this class should be private. TODO: nicer way?
      */
-    public static class CheckerError extends RuntimeException {
+    @SuppressWarnings("serial")
+	public static class CheckerError extends RuntimeException {
         public CheckerError(String msg, Throwable cause) {
             super(msg, cause);
         }
