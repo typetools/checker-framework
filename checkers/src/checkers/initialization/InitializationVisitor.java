@@ -8,7 +8,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeVisitor;
-import checkers.initialization.quals.Free;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,13 +38,8 @@ public class InitializationVisitor<Checker extends InitializationChecker> extend
     /** A better typed version of the ATF. */
     protected final InitializationAnnotatedTypeFactory<?, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, ?, ?>) atypeFactory;
 
-    // Annotation constants
-    protected final AnnotationMirror COMMITTED;
-
     public InitializationVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
-        COMMITTED = checker.COMMITTED;
-
         checkForAnnotatedJdk();
     }
 
@@ -76,10 +70,9 @@ public class InitializationVisitor<Checker extends InitializationChecker> extend
             AnnotatedTypeMirror xType = factory.getReceiverType(lhs);
             AnnotatedTypeMirror yType = factory.getAnnotatedType(y);
             if (!ElementUtils.isStatic(el)
-                    && !(yType.hasAnnotation(COMMITTED) || xType
-                            .hasAnnotation(Free.class))) {
+                    && !(checker.isCommitted(yType) || checker.isFree(xType))) {
                 String err;
-                if (xType.hasAnnotation(COMMITTED)) {
+                if (checker.isCommitted(xType)) {
                     err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                 } else {
                     err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
