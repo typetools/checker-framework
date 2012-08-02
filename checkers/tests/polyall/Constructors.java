@@ -48,4 +48,11 @@ class Constructors {
         //:: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
     }
+
+    @checkers.nullness.quals.Nullable @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
+
+    void test4(@H1S1 @H2S2 String p) {
+        @H1S1 @H2S2 Constructors c1 = new Constructors(p, 4);
+        @H1S1 @H2S2 Constructors c2 = new @checkers.nullness.quals.Nullable Constructors(p);
+    }
 }
