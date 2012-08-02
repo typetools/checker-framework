@@ -294,4 +294,16 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         return super.visitUnary(node, type);
     }
 
+    /*
+     * TODO: would this make sense in general?
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getTrueExpression());
+            AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getFalseExpression());
+            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+            type.replaceAnnotations(lubs);
+        }
+        return super.visitConditionalExpression(node, type);
+    }*/
 }
