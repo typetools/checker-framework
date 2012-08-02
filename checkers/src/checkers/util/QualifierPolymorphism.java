@@ -175,6 +175,23 @@ public class QualifierPolymorphism {
         }
     }
 
+    public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
+        if (polyQuals.isEmpty()) return;
+        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
+        List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
+
+        Map<AnnotationMirror, Set<AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
+        // TODO: poly on receiver for constructors?
+        //matchingMapping = collector.reduce(matchingMapping,
+        //        collector.visit(factory.getReceiverType(tree), type.getReceiverType()));
+
+        if (matchingMapping != null && !matchingMapping.isEmpty()) {
+            replacer.visit(type, matchingMapping);
+        } else {
+            completer.visit(type);
+        }
+    }
+
     private final AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<AnnotationMirror>>> replacer
     = new AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<AnnotationMirror>>>() {
         @Override
