@@ -23,12 +23,12 @@ class MethodInvocation {
     public void a() {
     }
 
-    public void b(@Free MethodInvocation this) {
+    public void b(@Free @Raw MethodInvocation this) {
         //:: error: (dereference.of.nullable)
         s.hashCode();
     }
     
-    public void c(@Unclassified MethodInvocation this) {
+    public void c(@Unclassified @Raw MethodInvocation this) {
         //:: error: (dereference.of.nullable)
         s.hashCode();
     }
