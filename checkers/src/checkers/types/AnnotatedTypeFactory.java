@@ -16,8 +16,10 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
+/*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
+*/
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
@@ -33,7 +35,6 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -1056,6 +1057,8 @@ public class AnnotatedTypeFactory {
      * {@link #fromExpression(ExpressionTree)} on the constructor invocation;
      * those determine the type of the <i>result</i> of invoking the
      * constructor, which is probably an {@link AnnotatedDeclaredType}.
+     * TODO: Should the result of getAnnotatedType be the return type
+     *   from the AnnotatedExecutableType computed here?
      *
      * @param tree the constructor invocation tree
      * @return the annotated type of the invoked constructor (as an executable
