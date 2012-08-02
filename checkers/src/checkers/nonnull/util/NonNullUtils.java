@@ -1,8 +1,8 @@
 package checkers.nonnull.util;
 
-import static checkers.nonnull.util.NonNullUtils.castFrame;
 import checkers.initialization.quals.*;
-import checkers.nullness.quals.*;
+import checkers.nonnull.quals.*;
+import checkers.nullness.quals.AssertParametersNonNull;
 
 /**
  * Utilities class for the Nullness Checker.
@@ -75,21 +75,21 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNullFbc(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castKeyFor(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castTypeState(T ref) {
@@ -103,23 +103,23 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return ref;
     }
-    
+
     @SuppressWarnings("nullness")
     public static <T extends Object> /*@Nullable*/ T castKnownNull2(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return ref;
     }
-    
+
     @SuppressWarnings("rawness")
     public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ T castNonRaw(T ref) {
         return (/*@NonRaw*/ T)ref;
     }
-    
+
     @SuppressWarnings("rawness")
     public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castFrame(T ref) {
         return (/*@NonRaw*/ /*@Committed*/ T)ref;
     }
-    
+
     // for if you know it's in the list (getSelectedIndex) or if hasNext() & .next() is called, menuBar.getMenu
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -127,22 +127,22 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castWeird(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // flow cannot figure out something
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castFlow(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
-    }  
-    
+    }
+
     // access some attributes of an element of a config file (domain specific knowledge)
     // depending on structure of XML file being parsed, certain fields are known to be set
     @SuppressWarnings("nullness")
@@ -150,9 +150,9 @@ public final class NonNullUtils {
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castDomain(T ref) {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
-    }  
-    
-    
+    }
+
+
     // this seems like a bug, but our confidence is not very high about that
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -160,7 +160,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // definitely looks like a bug
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -168,7 +168,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     /**
      * For use only in GUI listener code.
      * @param ref
@@ -178,7 +178,7 @@ public final class NonNullUtils {
     public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castInitGui(T ref) {
         return (/*@NonRaw*/ /*@Committed*/ T)ref;
     }
-    
+
     /**
      * For final-factory cases, not counted
      */
@@ -186,7 +186,7 @@ public final class NonNullUtils {
     public static <T extends /*@Raw*/ /*@Unclassified*/ Object> /*@NonRaw*/ /*@Committed*/ T castFactory(T ref) {
         return (/*@NonRaw*/ /*@Committed*/ T)ref;
     }
-    
+
     // System.getProperty (should really be a different type system for that)
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -194,7 +194,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // application invariant. uses so far:
     // - map that always contains key username
     // - SSH_FILEXFER_ATTR_UIDGID set -> nonnull field gid
@@ -204,7 +204,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // known state of filesystem guarantees if you pass a valid input it returns null (getIcon)
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -212,7 +212,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // for cases where PolyNull would really be best
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -220,7 +220,7 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
+
     // array that really should be lazynonnull
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
@@ -228,6 +228,6 @@ public final class NonNullUtils {
         assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
         return (/*@NonNull*/ T)ref;
     }
-    
-    
+
+
 }
