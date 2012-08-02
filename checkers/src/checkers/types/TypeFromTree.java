@@ -250,7 +250,9 @@ abstract class TypeFromTree extends
             AnnotatedDeclaredType type = f.fromNewClass(node);
             // Enum constructors lead to trouble.
             // TODO: is there more to check? Can one annotate them?
-            if (isNewEnum(type)) {
+            if (isNewEnum(type) ||
+                    // This happens with the Nullness Checker. TODO.
+                    f.getQualifierHierarchy()==null) {
                 return type;
             }
             // Add annotations that are on the constructor declaration.
@@ -269,9 +271,11 @@ abstract class TypeFromTree extends
                 }
             }
             for (AnnotationMirror cta : ex.getReturnType().getAnnotations()) {
-                if (!type.isAnnotatedInHierarchy(cta)) {
+                if (f.isSupportedQualifier(cta) &&
+                        !type.isAnnotatedInHierarchy(cta)) {
                     for (AnnotationMirror fromDecl : decret) {
-                        if (AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
+                        if (f.isSupportedQualifier(fromDecl) &&
+                                AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
                                 f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
                             type.addAnnotation(cta);
                             break;
