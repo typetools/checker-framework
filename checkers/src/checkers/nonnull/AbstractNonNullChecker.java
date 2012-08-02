@@ -9,14 +9,9 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
-import checkers.initialization.quals.Committed;
-import checkers.initialization.quals.FBCBottom;
-import checkers.initialization.quals.Free;
-import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
-import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
@@ -32,8 +27,6 @@ import com.sun.source.tree.CompilationUnitTree;
 
 // DONE: Stefan: don't allow casts between initialization types.
 
-@TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
-        Committed.class, Unclassified.class, FBCBottom.class })
 public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
