@@ -1,26 +1,46 @@
 package checkers.nonnull;
 
-import static checkers.util.Heuristics.Matchers.*;
+import static checkers.util.Heuristics.Matchers.ofKind;
+import static checkers.util.Heuristics.Matchers.or;
+import static checkers.util.Heuristics.Matchers.preceededBy;
+import static checkers.util.Heuristics.Matchers.whenTrue;
+import static checkers.util.Heuristics.Matchers.withIn;
 
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import checkers.nullness.quals.KeyFor;
-
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
-import checkers.util.Heuristics.Matcher;
 import checkers.util.ElementUtils;
+import checkers.util.Heuristics.Matcher;
 import checkers.util.InternalUtils;
+import checkers.util.Resolver2;
 import checkers.util.TreeUtils;
-import checkers.util.Resolver;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
 /**
@@ -65,7 +85,7 @@ import com.sun.source.util.TreePath;
     private final ProcessingEnvironment env;
     private final NonNullAnnotatedTypeFactory factory;
     private final AnnotatedTypeFactory keyForFactory;
-    private final Resolver resolver;
+    private final Resolver2 resolver;
 
     private final ExecutableElement mapGet;
     private final ExecutableElement mapPut;
@@ -78,7 +98,7 @@ import com.sun.source.util.TreePath;
         this.env = env;
         this.factory = factory;
         this.keyForFactory = keyForFactory;
-        this.resolver = new Resolver(env);
+        this.resolver = new Resolver2(env);
 
         mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, env);
         mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, env);
@@ -151,7 +171,7 @@ import com.sun.source.util.TreePath;
 
         List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
         for (String map: maps) {
-            Element elt = null;//resolver.findVariable(map, path);
+            Element elt = resolver.findVariable(map, path);
             if (elt.equals(mapElement) &&
                     !isSiteRequired(TreeUtils.getReceiverTree((ExpressionTree)path.getLeaf()), elt)) {
                 return true;
