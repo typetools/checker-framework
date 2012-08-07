@@ -13,8 +13,9 @@ import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nonnull.quals.MonoNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
-import checkers.nullness.quals.Primitive;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.ElementUtils;
@@ -24,14 +25,20 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 public class NonNullAnnotatedTypeFactory
         extends
         InitializationAnnotatedTypeFactory<AbstractNonNullChecker, NonNullTransfer, NonNullAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
+    protected final AnnotationMirror NONNULL, NULLABLE;
+
+    protected final MapGetHeuristics mapGetHeuristics;
+    protected final SystemGetPropertyHandler systemGetPropertyHandler;
+    protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
     public NonNullAnnotatedTypeFactory(AbstractNonNullChecker checker,
             CompilationUnitTree root) {
@@ -39,7 +46,6 @@ public class NonNullAnnotatedTypeFactory
 
         NONNULL = this.annotations.fromClass(NonNull.class);
         NULLABLE = this.annotations.fromClass(Nullable.class);
-        PRIMITIVE = this.annotations.fromClass(Primitive.class);
 
         // aliases with checkers.nullness.quals qualifiers
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
@@ -78,11 +84,44 @@ public class NonNullAnnotatedTypeFactory
                 org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
+        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(
+                checker.getProcessingEnvironment(), null, root, null);
+        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
+        // do this last, as it might use the factory again.
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env,
+                this);
+
         postInit();
     }
 
     @Override
-    protected NonNullAnalysis createFlowAnalysis(AbstractNonNullChecker checker,
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
+            MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
+                .methodFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
+
+        TreePath path = this.getPath(tree);
+        if (path != null) {
+            /*
+             * The above check for null ensures that Issue 109 does not arise.
+             * TODO: I'm a bit concerned about one aspect: it looks like the
+             * field initializer is used to determine the type of a read field.
+             * Why is this not just using the declared type of the field? Could
+             * this lead to confusion for programmers? I think skipping the
+             * mapGetHeuristics is always a safe option.
+             */
+            mapGetHeuristics.handle(path, method);
+        }
+        systemGetPropertyHandler.handle(tree, method);
+        collectionToArrayHeuristics.handle(tree, method);
+        return mfuPair;
+    }
+
+    @Override
+    protected NonNullAnalysis createFlowAnalysis(
+            AbstractNonNullChecker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         return new NonNullAnalysis(this, env, checker, fieldValues);
     }
