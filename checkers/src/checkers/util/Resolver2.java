@@ -21,6 +21,8 @@ import com.sun.tools.javac.util.*;
 
 /**
  * A Utility class to find symbols corresponding to string references
+ *
+ * TODO: This class is only supposed to be used temporarily until a good solution for the MapGetHeuristic is found.
  */
 public class Resolver2 {
     private final Resolve resolve;
