@@ -1137,8 +1137,8 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        SourceChecker.errorAbort("No element with name " + name
-                + " in annotation " + anno);
+        SourceChecker.errorAbort("No element with name \'" + name
+                + "\' in annotation " + anno);
         return null; // dead code
     }
 
@@ -1166,8 +1166,8 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        SourceChecker.errorAbort("No element with name " + name
-                + " in annotation " + anno);
+        SourceChecker.errorAbort("No element with name \'" + name
+                + "\' in annotation " + anno);
         return null; // dead code
     }
 
