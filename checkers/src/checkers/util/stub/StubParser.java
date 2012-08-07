@@ -606,12 +606,24 @@ public class StubParser {
             String annoName = ((MarkerAnnotationExpr)annotation).getName().getName();
             annoMirror = supportedAnnotations.get(annoName);
         } else if (annotation instanceof NormalAnnotationExpr) {
-            // TODO: support @A(a=b, c=d) annotations
-            // NormalAnnotationExpr nrmanno = (NormalAnnotationExpr)annotation;
-            // String annoName = nrmanno.getName().getName();
-            // annoMirror = supportedAnnotations.get(annoName);
-            SourceChecker.errorAbort("StubParser: unhandled annotation type: " + annotation);
-            annoMirror = null; // dead code
+            NormalAnnotationExpr nrmanno = (NormalAnnotationExpr)annotation;
+            String annoName = nrmanno.getName().getName();
+            annoMirror = supportedAnnotations.get(annoName);
+            if (annoMirror == null) {
+                // Not a supported qualifier -> ignore
+                return null;
+            }
+            AnnotationUtils.AnnotationBuilder builder =
+                    new AnnotationUtils.AnnotationBuilder(env, annoMirror);
+            List<MemberValuePair> pairs = nrmanno.getPairs();
+            if (pairs!=null) {
+                for (MemberValuePair mvp : pairs) {
+                    String meth = mvp.getName();
+                    Expression exp = mvp.getValue();
+                    handleExpr(builder, meth, exp);
+                }
+            }
+            return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr)annotation;
             String annoName = sglanno.getName().getName();
