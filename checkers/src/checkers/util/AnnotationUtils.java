@@ -874,7 +874,7 @@ public class AnnotationUtils {
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
             ExecutableElement var = findElement(elementName);
             if (var.getReturnType().getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non enum: " + var.getReturnType());
                 return null; // dead code
             }
             if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement())) {
@@ -893,13 +893,13 @@ public class AnnotationUtils {
 
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non array: " + var.getReturnType());
                 return null; // dead code
             }
 
             expectedType = ((ArrayType)expectedType).getComponentType();
             if (expectedType.getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non enum component type: " + var.getReturnType());
                 return null; // dead code
             }
             if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement())) {
@@ -926,13 +926,13 @@ public class AnnotationUtils {
 
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("exptected an array, but found: " + expectedType);
+                SourceChecker.errorAbort("expected an array, but found: " + expectedType);
                 return null; // dead code
             }
 
             expectedType = ((ArrayType)expectedType).getComponentType();
             if (expectedType.getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a declared component type, but found: " + expectedType +
+                SourceChecker.errorAbort("expected a declared component type, but found: " + expectedType +
                         " kind: " + expectedType.getKind());
                 return null; // dead code
             }
