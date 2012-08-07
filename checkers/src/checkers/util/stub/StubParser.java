@@ -334,7 +334,18 @@ public class StubParser {
 
     private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {
         List<AnnotatedTypeMirror> arrayTypes = arrayAllComponents(atype);
-        assert typeDef.getArrayCount() == arrayTypes.size() - 1;
+        assert typeDef.getArrayCount() == arrayTypes.size() - 1 ||
+                // We want to allow simply using "Object" as return type of a
+                // method, regardless of what the real type is.
+                typeDef.getArrayCount() == 0 :
+            "Mismatched array lengths; typeDef: " + typeDef.getArrayCount() +
+            " vs. arrayTypes: " + (arrayTypes.size() - 1) +
+                    "\n  typedef: " + typeDef + "\n  arraytypes: " + arrayTypes;
+        /* Separate TODO: the check for zero above ensures that "Object" can be
+         * used as return type, even when the real method uses something else.
+         * However, why was this needed for the RequiredPermissions declaration annotation?
+         * It looks like the StubParser ignored the target for annotations.
+         */
         for (int i = 0; i < typeDef.getArrayCount(); ++i) {
             List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
             if (annotations != null) {
