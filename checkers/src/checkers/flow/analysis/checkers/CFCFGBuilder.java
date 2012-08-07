@@ -31,9 +31,15 @@ public class CFCFGBuilder extends CFGBuilder {
     /** The associated checker. */
     protected final BaseTypeChecker checker;
 
-    public CFCFGBuilder(boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled, BaseTypeChecker checker) {
-        super(false, false);
+    public CFCFGBuilder(BaseTypeChecker checker) {
+        super(checker.getProcessingEnvironment().getOptions()
+                .containsKey("assumeAssertionsAreEnabled"), checker
+                .getProcessingEnvironment().getOptions()
+                .containsKey("assumeAssertionsAreDisabled"));
+        if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
+            BaseTypeChecker
+                    .errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
+        }
         this.checker = checker;
     }
 
