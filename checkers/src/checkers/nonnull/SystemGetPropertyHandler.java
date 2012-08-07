@@ -24,7 +24,7 @@ import com.sun.source.tree.*;
 /*package-scope*/ class SystemGetPropertyHandler {
 
     private final ProcessingEnvironment env;
-    private final NullnessAnnotatedTypeFactory factory;
+    private final NonNullAnnotatedTypeFactory factory;
 
     private final ExecutableElement systemGetProperty;
 
@@ -64,7 +64,7 @@ import com.sun.source.tree.*;
                         );
 
     public SystemGetPropertyHandler(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory) {
+            NonNullAnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
 
