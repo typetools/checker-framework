@@ -1,21 +1,20 @@
 package checkers.nonnull;
 
-import checkers.initialization.quals.FBCBottom;
-import checkers.initialization.quals.NonRaw;
-import checkers.initialization.quals.Raw;
-import checkers.nonnull.quals.MonoNonNull;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
-import checkers.quals.TypeQualifiers;
-import checkers.source.SupportedLintOptions;
+import java.util.ArrayList;
+import java.util.Collection;
 
-@TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class,
-    NonRaw.class, Raw.class, FBCBottom.class })
-@SupportedLintOptions({ "strictMonotonicNonNullInit" })
-public class NonNullRawnessChecker extends AbstractNonNullChecker {
+import checkers.nullness.KeyForSubchecker;
+import checkers.source.SourceChecker;
+import checkers.util.AggregateChecker;
 
-    public NonNullRawnessChecker() {
-        super(false);
+public class NonNullRawnessChecker extends AggregateChecker {
+
+    @Override
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>();
+        checkers.add(AbstractNonNullRawnessChecker.class);
+        checkers.add(KeyForSubchecker.class);
+        return checkers;
     }
 
 }
