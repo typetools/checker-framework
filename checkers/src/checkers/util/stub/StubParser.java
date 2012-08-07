@@ -660,6 +660,18 @@ public class StubParser {
             } else {
                 SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
             }
+        } else if (expr instanceof StringLiteralExpr) {
+            StringLiteralExpr slexpr = (StringLiteralExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.DECLARED) {
+                builder.setValue(name, slexpr.getValue());
+            } else if (expected.getKind() == TypeKind.ARRAY) {
+                String[] arr = { slexpr.getValue() };
+                builder.setValue(name, arr);
+            } else {
+                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
+            }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
@@ -670,20 +682,23 @@ public class StubParser {
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
             List<Expression> aiexprvals = aiexpr.getValues();
 
-            VariableElement[] varelemarr = new VariableElement[aiexprvals.size()];
+            Object[] elemarr = new Object[aiexprvals.size()];
 
             Expression anaiexpr;
             for (int i = 0; i < aiexprvals.size(); ++i) {
                 anaiexpr = aiexprvals.get(i);
-                if (!(anaiexpr instanceof FieldAccessExpr)) {
-                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
+                if (anaiexpr instanceof FieldAccessExpr) {
+                    elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                } else if (anaiexpr instanceof StringLiteralExpr) {
+                    elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
+                } else {
+                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
                 }
-                varelemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
             }
 
-            builder.setValue(name, varelemarr);
+            builder.setValue(name, elemarr);
         } else {
-            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
+            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
 
