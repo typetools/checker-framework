@@ -926,24 +926,32 @@ public class AnnotationUtils {
 
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                SourceChecker.errorAbort("exptected an array, but found: " + expectedType);
                 return null; // dead code
             }
 
             expectedType = ((ArrayType)expectedType).getComponentType();
             if (expectedType.getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                SourceChecker.errorAbort("exptected a declared component type, but found: " + expectedType +
+                        " kind: " + expectedType.getKind());
                 return null; // dead code
             }
-            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement())) {
-                SourceChecker.errorAbort("expected a different type of enum: " + values[0].getEnclosingElement());
+            if (!((DeclaredType)expectedType).equals(values[0].asType())) {
+                SourceChecker.errorAbort("expected a different declared component type: " +
+                        expectedType + " vs. " + values[0]);
                 return null; // dead code
             }
 
             List<AnnotationValue> res = new ArrayList<AnnotationValue>();
             for (VariableElement ev : values) {
                 checkSubtype(expectedType, ev);
-                res.add(createValue(ev));
+                // Is there a better way to distinguish between enums and
+                // references to constants?
+                if (ev.getConstantValue()!=null) {
+                    res.add(createValue(ev.getConstantValue()));
+                } else {
+                    res.add(createValue(ev));
+                }
             }
             AnnotationValue val = createValue(res);
             elementValues.put(var, val);
