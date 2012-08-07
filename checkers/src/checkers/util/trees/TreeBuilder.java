@@ -119,7 +119,7 @@ public class TreeBuilder {
                 elementType = ((Type.CapturedType)elementType).wildcard;
             }
 
-            iteratorType = 
+            iteratorType =
                 types.getDeclaredType((TypeElement)types.asElement(iteratorType),
                                       elementType);
         }
@@ -243,7 +243,7 @@ public class TreeBuilder {
      * @return  a MemberSelectTree to dereference the length of the array
      */
     public MemberSelectTree buildArrayLengthAccess(ExpressionTree expression) {
-        
+
         return (JCTree.JCFieldAccess)
             maker.Select((JCTree.JCExpression)expression, symtab.lengthVar);
     }
@@ -328,7 +328,7 @@ public class TreeBuilder {
                                       ExpressionTree expr) {
         return maker.TypeCast((Type)type, (JCTree.JCExpression)expr);
     }
-    
+
     /**
      * Builds an AST Tree to assign an expression to a variable.
      *
@@ -359,7 +359,7 @@ public class TreeBuilder {
      */
     public BinaryTree buildLessThan(ExpressionTree left, ExpressionTree right) {
         JCTree.JCBinary binary =
-            maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression)left, 
+            maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression)left,
                          (JCTree.JCExpression)right);
         binary.setType((Type)types.getPrimitiveType(TypeKind.BOOLEAN));
         return binary;
@@ -406,7 +406,6 @@ public class TreeBuilder {
 
     private Tree AnnotatedType(AnnotatedTypeMirror annotatedType) {
         // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
-        JCTree.JCExpression tp;
 
         // Convert the annotations from a set of AnnotationMirrors
         // to a list of AnnotationTrees.
@@ -423,7 +422,7 @@ public class TreeBuilder {
                 for (Map.Entry<? extends ExecutableElement,
                                ? extends AnnotationValue> entry :
                          am.getElementValues().entrySet()) {
-                    values = values.append(new Pair((Symbol.MethodSymbol)entry.getKey(),
+                    values = values.append(new Pair<>((Symbol.MethodSymbol)entry.getKey(),
                                                     (Attribute)entry.getValue()));
                 }
                 Attribute.Compound compound =
@@ -437,7 +436,7 @@ public class TreeBuilder {
                 JCTree.JCTypeAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(annotationTree.getAnnotationType(),
                                          annotationTree.getArguments());
-                
+
                 typeAnnotationTree.attribute_field = typeCompound;
 
                 annotationTrees = annotationTrees.append(typeAnnotationTree);
@@ -480,7 +479,7 @@ public class TreeBuilder {
             // No recursive annotations.
             AnnotatedTypeMirror.AnnotatedTypeVariable variable =
                 (AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType;
-            TypeVariable underlyingTypeVar = 
+            TypeVariable underlyingTypeVar =
                 (TypeVariable)variable.getUnderlyingType();
             underlyingTypeTree =
                 maker.Ident((Symbol.TypeSymbol)(underlyingTypeVar).asElement());
