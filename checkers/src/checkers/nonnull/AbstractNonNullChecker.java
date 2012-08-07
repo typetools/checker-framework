@@ -32,7 +32,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
 
-    public static final boolean LINT_DEFAULT_STRICTMONOINIT = false;
+    public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
 
     public AbstractNonNullChecker(boolean useFbc) {
         super(useFbc);

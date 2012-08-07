@@ -10,7 +10,7 @@ The following items most likely need to be updated or added to the checker manua
 - Document @Covariant annotation
 - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees
 - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled.
-- Document the lint option strictmonoinit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
+- Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
 
 ===========================================================================
 

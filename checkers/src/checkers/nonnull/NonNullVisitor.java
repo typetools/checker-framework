@@ -70,8 +70,10 @@ public class NonNullVisitor extends
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)
-                    && !checker.getLintOption("strictmonoinit",
-                            AbstractNonNullChecker.LINT_DEFAULT_STRICTMONOINIT)) {
+                    && !checker
+                            .getLintOption(
+                                    "strictMonotonicNonNullInit",
+                                    AbstractNonNullChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
                 return;
             }
         }

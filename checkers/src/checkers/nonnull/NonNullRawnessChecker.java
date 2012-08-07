@@ -11,7 +11,7 @@ import checkers.source.SupportedLintOptions;
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class,
     NonRaw.class, Raw.class, FBCBottom.class })
-@SupportedLintOptions({ "strictmonoinit" })
+@SupportedLintOptions({ "strictMonotonicNonNullInit" })
 public class NonNullRawnessChecker extends AbstractNonNullChecker {
 
     public NonNullRawnessChecker() {
