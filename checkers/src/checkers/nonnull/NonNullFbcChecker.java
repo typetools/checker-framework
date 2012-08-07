@@ -12,7 +12,7 @@ import checkers.source.SupportedLintOptions;
 
 @TypeQualifiers({ Nullable.class, MonoNonNull.class, NonNull.class, Free.class,
     Committed.class, Unclassified.class, FBCBottom.class })
-@SupportedLintOptions({ "strictmonoinit" })
+@SupportedLintOptions({ "strictMonotonicNonNullInit" })
 public class NonNullFbcChecker extends AbstractNonNullChecker {
 
     public NonNullFbcChecker() {
