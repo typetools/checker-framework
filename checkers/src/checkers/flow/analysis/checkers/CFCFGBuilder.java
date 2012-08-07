@@ -1,10 +1,12 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
@@ -13,7 +15,9 @@ import checkers.quals.TerminatesExecution;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.InternalUtils;
 
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 
 /**
@@ -24,9 +28,13 @@ import com.sun.source.tree.MethodInvocationTree;
  */
 public class CFCFGBuilder extends CFGBuilder {
 
+    /** The associated checker. */
+    protected final BaseTypeChecker checker;
+
     public CFCFGBuilder(boolean assumeAssertionsEnabled,
-            boolean assumeAssertionsDisabled) {
+            boolean assumeAssertionsDisabled, BaseTypeChecker checker) {
         super(false, false);
+        this.checker = checker;
     }
 
     /**
@@ -64,6 +72,23 @@ public class CFCFGBuilder extends CFGBuilder {
                 extendedMethodNode.setTerminatesExecution(true);
             }
             return mi;
+        }
+
+        @Override
+        protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
+            ExpressionTree detail = tree.getDetail();
+            if (detail != null) {
+                String msg = detail.toString();
+                Collection<String> warningKeys = checker
+                        .getSuppressWarningsKey();
+                for (String warningKey : warningKeys) {
+                    String prefix = "@SuppressWarnings(" + warningKey + ")";
+                    if (msg.startsWith(prefix)) {
+                        return true;
+                    }
+                }
+            }
+            return super.assumeAssertionsEnabledFor(tree);
         }
     }
 }

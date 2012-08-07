@@ -1238,12 +1238,12 @@ public class CFGBuilder {
      */
     protected static class PhaseOneResult {
 
-        private IdentityHashMap<Tree, Node> treeLookupMap;
-        private UnderlyingAST underlyingAST;
-        private Map<Label, Integer> bindings;
-        private ArrayList<ExtendedNode> nodeList;
-        private Set<Integer> leaders;
-        private List<ReturnNode> returnNodes;
+        private final IdentityHashMap<Tree, Node> treeLookupMap;
+        private final UnderlyingAST underlyingAST;
+        private final Map<Label, Integer> bindings;
+        private final ArrayList<ExtendedNode> nodeList;
+        private final Set<Integer> leaders;
+        private final List<ReturnNode> returnNodes;
 
         public PhaseOneResult(UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
@@ -2183,7 +2183,7 @@ public class CFGBuilder {
 
             // If assertions are enabled, then we can just translate the
             // assertion.
-            if (assumeAssertionsEnabled) {
+            if (assumeAssertionsEnabled || assumeAssertionsEnabledFor(tree)) {
                 translateAssertWithAssertionsEnabled(tree);
                 return null;
             }
@@ -2210,6 +2210,14 @@ public class CFGBuilder {
             addLabelForNextNode(assertionDisabled);
 
             return null;
+        }
+
+        /**
+         * Should assertions be assumed to be executed for a given
+         * {@link AssertTree}? False by default.
+         */
+        protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
+            return false;
         }
 
         /**
