@@ -84,6 +84,8 @@ public class NonNullAnnotatedTypeFactory
                 org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
+        // TODO: Tthese heuristics are just here temporarily. They all either
+        // need to be replaced, or carefully checked for correctness.
         AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(
                 checker.getProcessingEnvironment(), null, root, null);
         mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
