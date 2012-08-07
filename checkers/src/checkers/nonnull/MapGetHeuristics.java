@@ -63,7 +63,7 @@ import com.sun.source.util.TreePath;
 /*package-scope*/ class MapGetHeuristics {
 
     private final ProcessingEnvironment env;
-    private final NullnessAnnotatedTypeFactory factory;
+    private final NonNullAnnotatedTypeFactory factory;
     private final AnnotatedTypeFactory keyForFactory;
     private final Resolver resolver;
 
@@ -73,7 +73,7 @@ import com.sun.source.util.TreePath;
     private final ExecutableElement mapContains;
 
     public MapGetHeuristics(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory,
+            NonNullAnnotatedTypeFactory factory,
             AnnotatedTypeFactory keyForFactory) {
         this.env = env;
         this.factory = factory;
