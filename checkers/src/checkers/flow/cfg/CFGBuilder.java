@@ -1678,6 +1678,9 @@ public class CFGBuilder {
                 extendWithNode(node);
                 break;
             }
+            default:
+                // Nothing to do.
+                break;
             }
 
             return node;
@@ -2543,6 +2546,9 @@ public class CFGBuilder {
                     r = new BitwiseXorAssignmentNode(tree, target, value);
                 }
                 break;
+            default:
+                assert false : "unexpected compound assignment type";
+                break;
             }
             assert r != null : "unexpected compound assignment type";
             extendWithNode(r);
@@ -2876,6 +2882,9 @@ public class CFGBuilder {
                     return node;
                 }
             }
+            default:
+                assert false : "unexpected binary tree";
+                break;
 
             /*
              * case CONDITIONAL_OR: {
@@ -3578,6 +3587,9 @@ public class CFGBuilder {
             case STRING_LITERAL:
                 r = new StringLiteralNode(tree);
                 break;
+            default:
+                assert false : "unexpected literal tree";
+                break;
             }
             assert r != null : "unexpected literal tree";
             Node result = extendWithNode(r);
@@ -3953,6 +3965,9 @@ public class CFGBuilder {
                     break;
                 case UNARY_PLUS:
                     result = extendWithNode(new NumericalPlusNode(tree, expr));
+                    break;
+                default:
+                    assert false;
                     break;
                 }
             }
