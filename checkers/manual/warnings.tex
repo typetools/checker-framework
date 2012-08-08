@@ -309,7 +309,7 @@ annotations, and a Java 5/6/7 compiler only permits annotations on
 declarations (but not on generic arguments, casts, \<extends> clauses, method receiver, etc.).
 
 So that your code can be compiled by any Java compiler (for any version of
-the Java language), you may write any annotation inside a
+the Java language), you may write any single annotation inside a
 \code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
 The Type Annotations compiler treats the code exactly as if you had not written the
 \code{/*} and \code{*/}.
@@ -364,6 +364,7 @@ public boolean getResult(/*>>> @ReadOnly MyClass this, */ String argument) { ...
 
 \noindent
 for a method that does not modify its receiver.
+It can also be used for adding multiple annotations inside one comment.
 
 It would be possible to abuse this mechanism to inject code only when using
 the Type Annotations compiler.  Doing so is not a sanctioned use of the
