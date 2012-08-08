@@ -664,10 +664,19 @@ public class StubParser {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
-                builder.setValue(name, elem);
+                if (elem.getConstantValue()!=null) {
+                    builder.setValue(name, (String) elem.getConstantValue());
+                } else {
+                    builder.setValue(name, elem);
+                }
             } else if (expected.getKind() == TypeKind.ARRAY) {
-                VariableElement[] arr = { elem };
-                builder.setValue(name, arr);
+                if (elem.getConstantValue()!=null) {
+                    String[] arr = { (String) elem.getConstantValue() };
+                    builder.setValue(name, arr);
+                } else {
+                    VariableElement[] arr = { elem };
+                    builder.setValue(name, arr);
+                }
             } else {
                 SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
             }
@@ -700,6 +709,10 @@ public class StubParser {
                 anaiexpr = aiexprvals.get(i);
                 if (anaiexpr instanceof FieldAccessExpr) {
                     elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                    String constval = (String) ((VariableElement)elemarr[i]).getConstantValue();
+                    if (constval!=null) {
+                        elemarr[i] = constval;
+                    }
                 } else if (anaiexpr instanceof StringLiteralExpr) {
                     elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
                 } else {
