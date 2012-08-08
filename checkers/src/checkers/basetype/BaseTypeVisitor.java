@@ -423,6 +423,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForDeclaration(node, getCurrentPath(),
                         atypeFactory);
+        // Only check if the postcondition concerns this checker
+        if (!checker.isSupportedAnnotation(anno)) {
+            return;
+        }
 
         for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;
@@ -520,6 +524,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         boolean result = AnnotationUtils.elementValue(ensuresAnnotationIf,
                 "result", Boolean.class);
         AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
+        // Only check if the postcondition concerns this checker
+        if (!checker.isSupportedAnnotation(anno)) {
+            return;
+        }
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForDeclaration(node, getCurrentPath(),
@@ -772,6 +780,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void checkPrecondition(MethodInvocationTree tree,
             AnnotationMirror requiredAnnotation, List<String> expressions) {
+
+        // Only check if the precondition concerns this checker
+        if (!checker.isSupportedAnnotation(requiredAnnotation)) {
+            return;
+        }
 
         Node nodeNode = atypeFactory.getNodeForTree(tree);
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil

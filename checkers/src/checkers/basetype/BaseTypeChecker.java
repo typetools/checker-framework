@@ -386,6 +386,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
     // Misc. methods
     // **********************************************************************
 
+    /** Returns true iff {@code anno} is supported by this checker. */
+    public boolean isSupportedAnnotation(AnnotationMirror anno) {
+        for (Class<? extends Annotation> c : getSupportedTypeQualifiers()) {
+            if (AnnotationUtils.areSameByClass(anno, c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Specify 'flow' and 'cast' as supported lint options for all Type checkers.
      *
