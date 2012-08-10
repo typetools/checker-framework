@@ -13,13 +13,13 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.*;
 
 /**
- * Utility class for handling {@code System.getProperty(String)} invocations.
+ * Utility class for handling {@link java.lang.System#getProperty(String)} invocations.
  *
+ * <p>
  * If the argument is a literal key that is guaranteed to be present in the
  * system properties may (according to the documentation of
- * System.getProperties), as in
- * <pre>System.getProperties("line.separator")</pre>
- * , then the result of the method call is assumed to be non-null.
+ * {@link java.lang.System#getProperty(String)}), as in
+ * {@code System.getProperties("line.separator")}, then the result of the method call is assumed to be non-null.
  */
 /*package-scope*/ class SystemGetPropertyHandler {
 
