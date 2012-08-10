@@ -7,6 +7,9 @@ public final class Class {
 }
 
 public class Object {
+    @Pure public Object();
+    @Pure public String toString();
+    @Pure public int hashCode();
     @Pure public final Class<?> getClass();
 }
 
@@ -18,14 +21,8 @@ public final class String {
 
 public final class System {
     @TerminatesExecution public static void exit(int status);
-
 }
 
-public class Object {
-    @Pure public Object();
-    @Pure public String toString();
-    @Pure public int hashCode();
-}
 
 package java.util;
 
@@ -36,6 +33,7 @@ public interface Map<K, V> {
 public abstract class TimeZone {
     @Pure public final String getDisplayName();
 }
+
 
 package java.util.regex;
 
