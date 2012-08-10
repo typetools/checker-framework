@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}

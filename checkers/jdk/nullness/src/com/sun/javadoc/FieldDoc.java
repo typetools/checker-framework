@@ -1,6 +1,6 @@
 package com.sun.javadoc;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public abstract interface FieldDoc extends MemberDoc {
   public abstract com.sun.javadoc.Type type();

@@ -1,6 +1,6 @@
 package java.util.regex;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public final class Pattern implements java.io.Serializable{
     private static final long serialVersionUID = 0L;

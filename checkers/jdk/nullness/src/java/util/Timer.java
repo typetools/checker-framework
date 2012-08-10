@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public class Timer{
   public Timer() { throw new RuntimeException("skeleton method"); }

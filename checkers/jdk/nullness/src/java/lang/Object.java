@@ -1,12 +1,11 @@
 package java.lang;
 
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.Raw;
+import checkers.nonnull.quals.Nullable;
+import checkers.initialization.quals.Raw;
 
 import checkers.initialization.quals.Unclassified;
 
-@Unclassified @Raw
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
   public @Pure boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }

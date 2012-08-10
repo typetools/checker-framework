@@ -28,7 +28,7 @@ package java.lang;
 // import sun.misc.FloatingDecimal;
 import java.util.Arrays;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * A mutable sequence of characters.

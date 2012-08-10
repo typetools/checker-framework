@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * The class <code>Exception</code> and its subclasses are a form of

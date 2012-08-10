@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 
 // See comment in ThreadLocal class about type parameter annotation.

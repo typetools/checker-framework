@@ -1,8 +1,8 @@
 package java.util;
 import checkers.quals.Pure;
 import checkers.nullness.quals.KeyFor;
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.Nullable;
 
 // This collection can only contain nonnull values
 public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> extends Dictionary<K, V> implements Map<K, V>, Cloneable, java.io.Serializable {

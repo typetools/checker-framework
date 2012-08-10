@@ -1,6 +1,6 @@
 package java.util;
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public class LinkedHashMap<K extends @Nullable Object, V extends @Nullable Object> extends HashMap<K, V> implements Map<K, V> {
   private static final long serialVersionUID = 0;

@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * Thrown when a particular method cannot be found.

@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * Thrown when an application tries to create an instance of a class

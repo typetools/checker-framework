@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 /**
  * A high-performance, immutable {@code Set} with reliable, user-specified

@@ -1,7 +1,7 @@
 package java.lang;
 
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 import checkers.nullness.quals.PolyRaw;
 
 

@@ -1,7 +1,7 @@
 package java.util;
 import checkers.quals.Pure;
 import checkers.nullness.quals.KeyFor;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 // This class allows null elements
 public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements Map<K, V>, java.io.Serializable, Cloneable {

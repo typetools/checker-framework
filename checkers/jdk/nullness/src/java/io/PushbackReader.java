@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 
 public class PushbackReader extends FilterReader {

@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public class Properties extends Hashtable<Object, Object> {
   private static final long serialVersionUID = 0;
