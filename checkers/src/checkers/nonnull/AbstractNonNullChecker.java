@@ -15,7 +15,6 @@ import checkers.nonnull.quals.Nullable;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -87,8 +86,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     @Override
     protected QualifierHierarchy getChildQualifierHierarchy() {
-        MultiGraphFactory factory = new GraphQualifierHierarchy.GraphFactory(
-                this);
+        MultiGraphFactory factory = new MultiGraphFactory(this);
         Set<Class<? extends Annotation>> supportedTypeQualifiers = new HashSet<>();
         supportedTypeQualifiers.add(NonNull.class);
         supportedTypeQualifiers.add(Nullable.class);

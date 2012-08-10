@@ -9,6 +9,7 @@ import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -33,10 +34,8 @@ public final class TestChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        AnnotationUtils annoFactory = AnnotationUtils
-                .getInstance(processingEnv);
-        return new GraphQualifierHierarchy.GraphFactory(this,
-                annoFactory.fromClass(Bottom.class));
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GraphQualifierHierarchy(factory, AnnotationUtils
+                .getInstance(env).fromClass(Bottom.class));
     }
 }

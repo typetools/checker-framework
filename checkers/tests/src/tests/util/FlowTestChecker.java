@@ -42,18 +42,11 @@ public final class FlowTestChecker extends BaseTypeChecker {
         return new FlowQualifierHierarchy(factory);
     }
 
-    @Override
-    protected MultiGraphFactory createQualifierHierarchyFactory() {
-        AnnotationUtils annoFactory = AnnotationUtils
-                .getInstance(processingEnv);
-        return new GraphQualifierHierarchy.GraphFactory(this,
-                annoFactory.fromClass(Bottom.class));
-    }
-
     private final class FlowQualifierHierarchy extends GraphQualifierHierarchy {
 
         public FlowQualifierHierarchy(MultiGraphFactory f) {
-            super(f, null);
+            super(f, AnnotationUtils.getInstance(processingEnv).fromClass(
+                    Bottom.class));
         }
 
         @Override
