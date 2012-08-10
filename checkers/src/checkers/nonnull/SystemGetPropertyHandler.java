@@ -1,5 +1,7 @@
 package checkers.nonnull;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
 
@@ -13,62 +15,42 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.*;
 
 /**
- * Utility class for handling {@code System.getProperty(String)} invocations.
+ * Utility class for handling {@link java.lang.System#getProperty(String)}
+ * invocations.
  *
+ * <p>
  * If the argument is a literal key that is guaranteed to be present in the
  * system properties may (according to the documentation of
- * System.getProperties), as in
- * <pre>System.getProperties("line.separator")</pre>
- * , then the result of the method call is assumed to be non-null.
+ * {@link java.lang.System#getProperty(String)}), as in
+ * {@code System.getProperties("line.separator")}, then the result of the method
+ * call is assumed to be non-null.
  */
-/*package-scope*/ class SystemGetPropertyHandler {
+public class SystemGetPropertyHandler {
 
-    private final ProcessingEnvironment env;
-    private final NonNullAnnotatedTypeFactory factory;
+    protected final ProcessingEnvironment env;
+    protected final NonNullAnnotatedTypeFactory factory;
 
-    private final ExecutableElement systemGetProperty;
+    protected final ExecutableElement systemGetProperty;
 
     // This list is from the Javadoc of System.getProperties.
-    // I'm assuming they are all non-null.
-    // (For efficiency, could use a TreeSet or HashSet.)
-    List<String> systemProperties
-        = Arrays.asList(
-                        "java.version",
-                        "java.vendor",
-                        "java.vendor.url",
-                        "java.home",
-                        "java.vm.specification.version",
-                        "java.vm.specification.vendor",
-                        "java.vm.specification.name",
-                        "java.vm.version",
-                        "java.vm.vendor",
-                        "java.vm.name",
-                        "java.specification.version",
-                        "java.specification.vendor",
-                        "java.specification.name",
-                        "java.class.version",
-                        "java.class.path",
-                        "java.library.path",
-                        "java.io.tmpdir",
-                        "java.compiler",
-                        "java.ext.dirs",
-                        "os.name",
-                        "os.arch",
-                        "os.version",
-                        "file.separator",
-                        "path.separator",
-                        "line.separator",
-                        "user.name",
-                        "user.home",
-                        "user.dir"
-                        );
+    Collection<String> systemProperties = new HashSet<>(Arrays.asList(
+            "java.version", "java.vendor", "java.vendor.url", "java.home",
+            "java.vm.specification.version", "java.vm.specification.vendor",
+            "java.vm.specification.name", "java.vm.version", "java.vm.vendor",
+            "java.vm.name", "java.specification.version",
+            "java.specification.vendor", "java.specification.name",
+            "java.class.version", "java.class.path", "java.library.path",
+            "java.io.tmpdir", "java.compiler", "java.ext.dirs", "os.name",
+            "os.arch", "os.version", "file.separator", "path.separator",
+            "line.separator", "user.name", "user.home", "user.dir"));
 
     public SystemGetPropertyHandler(ProcessingEnvironment env,
             NonNullAnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
 
-        systemGetProperty = TreeUtils.getMethod("java.lang.System", "getProperty", 1, env);
+        systemGetProperty = TreeUtils.getMethod("java.lang.System",
+                "getProperty", 1, env);
     }
 
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
