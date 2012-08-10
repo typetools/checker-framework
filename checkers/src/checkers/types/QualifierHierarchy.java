@@ -7,7 +7,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
-import checkers.source.SourceChecker;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -20,15 +19,6 @@ import checkers.util.AnnotationUtils;
  * with at least one qualifier from the hierarchy.
  */
 public abstract class QualifierHierarchy {
-
-    /* The checker to use for error reporting.
-     * The field should be final,
-     */
-    protected final SourceChecker checker;
-
-    protected QualifierHierarchy(SourceChecker c) {
-        this.checker = c;
-    }
 
     // **********************************************************************
     // Getter methods about this hierarchy

@@ -19,7 +19,7 @@ import checkers.regex.quals.RegexBottom;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.util.TreeUtils;
 
 /**
@@ -58,13 +58,8 @@ public class RegexChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new RegexQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
-    }
-
-    @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new RegexQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
     }
 
     /**
@@ -76,8 +71,9 @@ public class RegexChecker extends BaseTypeChecker {
      */
     private final class RegexQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public RegexQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public RegexQualifierHierarchy(MultiGraphFactory f,
+                AnnotationMirror bottom) {
+            super(f, bottom);
         }
 
         @Override

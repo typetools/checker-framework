@@ -1,5 +1,5 @@
 public class ReferencesDefaults {
-    @checkers.quals.DefaultQualifier("checkers.nullness.quals.Nullable")
+    @checkers.quals.DefaultQualifier(checkers.nullness.quals.Nullable.class)
     class Decl {
         Object test() {
             // legal, because of changed default.

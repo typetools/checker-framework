@@ -15,9 +15,9 @@ import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
 import checkers.types.QualifierHierarchy;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -103,27 +103,22 @@ public class FenumChecker extends BaseTypeChecker {
         return swKeys;
     }
 
-    /* The user is expected to introduce additional fenum annotations.
-     * These annotations are declared to be subtypes of FenumTop, using the
-     * @SubtypeOf annotation.
-     * However, there is no way to declare that it is a supertype of Bottom.
-     * Therefore, we use the constructor of GraphQualifierHierarchy that allows
-     * us to set a dedicated bottom qualifier.
-     */
     @Override
-    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this, BOTTOM);
-    }
-
-    @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new FenumQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new FenumQualifierHierarchy(factory);
     }
 
     protected class FenumQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public FenumQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        /* The user is expected to introduce additional fenum annotations.
+         * These annotations are declared to be subtypes of FenumTop, using the
+         * @SubtypeOf annotation.
+         * However, there is no way to declare that it is a supertype of Bottom.
+         * Therefore, we use the constructor of GraphQualifierHierarchy that allows
+         * us to set a dedicated bottom qualifier.
+         */
+        public FenumQualifierHierarchy(MultiGraphFactory factory) {
+            super(factory, BOTTOM);
         }
 
         @Override

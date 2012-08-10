@@ -58,7 +58,10 @@ if [ "$LANGTOOLS_USE_BOOTCLASSPATH" != "no" ]; then
 fi
 
 # tools currently assumes that assertions are enabled in the launcher
-ea=-ea:com.sun.tools...
+# The -esa enables assertion checking in the Checker Framework.
+# The packages in -ea are more for documentation; untested whether they
+# have an effect.
+ea="-ea:com.sun.tools...,checkers...,japa... -esa"
 
 # If user supplies no explicit -cp argument, use this, after the -jar
 # option (i.e., as an option to javac and not to java).

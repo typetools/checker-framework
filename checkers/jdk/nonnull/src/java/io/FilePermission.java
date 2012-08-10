@@ -2,6 +2,7 @@ package java.io;
 
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public final class FilePermission extends java.security.Permission implements Serializable {
   private static final long serialVersionUID = 0;

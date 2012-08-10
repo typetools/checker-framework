@@ -148,9 +148,7 @@ or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
 or the \ahref{http://openjdk.java.net/}{OpenJDK}.
 
-The installation process is simple!  (For a set of commands that you can
-copy and paste into your command shell, see
-Section~\ref{javac-installation}.)
+The installation process is simple!
 \begin{enumerate}
 \item
   Download the Checker Framework distribution
@@ -177,10 +175,10 @@ Section~\ref{javac-installation}.)
   understands type annotations.    The Type Annotations compiler is
   backward-compatible, so using it as your Java compiler should have no negative consequences.
 
-  You can do this in four ways.  You can use any one of them.  However, if
+  You can do this in three ways.  You can use any one of them.  However, if
   you are using the Windows command shell, you must use the last one.  The
-  instructions assume an \code{CHECKERS} environment variable that is set
-  to the \code{.../checker-framework/checkers} directory, but you can just
+  instructions assume a \code{CHECKERS} environment variable that is set
+  to the \code{.../checker-framework/checkers} directory, but you can
   use an absolute path if you prefer.
 
   % Is the last one required for Cygwin, as well as for the Windows command shell?
@@ -199,8 +197,8 @@ Section~\ref{javac-installation}.)
   \item
     Whenever this document tells you to run \code{javac}, you
     can instead run \code{\$CHECKERS/binary/javac}.
-  \item
-    Introduce an alias, and 
+
+    You can simplify this by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
     alias.  Here is the syntax for your 
     \verb|~/.bashrc| file:
@@ -210,17 +208,26 @@ Section~\ref{javac-installation}.)
 % Unconfuse Emacs LaTeX mode:  $
 
  \item
-   Introduce an alias that invokes java (not javac),
-   but passes an extra \code{-Xbootclasspath/p:} and
-   \code{-jar} argument.  For example:
- 
- \begin{Verbatim}
-   # Unix
-   alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar'
- 
-   # Windows
-   doskey javacheck=java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar %CHECKERS%\binary\jsr308-all.jar $*
- \end{Verbatim}
+   Whenever this document tells you to run \code{javac}, instead
+   run \<java> (not \<javac>),
+   but pass an extra \code{-Xbootclasspath/p:} and
+   \code{-jar} argument, as in:
+
+\begin{Verbatim}
+  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar ...
+\end{Verbatim}
+
+    You can simplify this by introducing an alias.  Then,
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  For example:
+
+\begin{Verbatim}
+  # Unix
+  alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar'
+
+  # Windows
+  doskey javacheck=java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar %CHECKERS%\binary\jsr308-all.jar $*
+\end{Verbatim}
 \end{itemize}
 
 \end{enumerate}
@@ -232,7 +239,7 @@ full pathname to \<javac> or the alias, if you did not add the Type Annotations 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.3.0
+  javac 1.7.0-jsr308-1.3.1
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -323,6 +330,8 @@ required: @NonNull Object
 1 error
 \end{Verbatim}
 
+\end{enumerate}
+
 The type qualifiers (e.g., \<@NonNull>) are permitted anywhere
 that would write a type, including generics and casts; see
 Section~\ref{writing-annotations}.
@@ -332,8 +341,6 @@ Section~\ref{writing-annotations}.
   int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}  // parameter
   \underline{@NonNull} List<\underline{@Interned} String> messages;     // non-null list of interned Strings
 \end{alltt}
-
-\end{enumerate}
 
 
 \htmlhr

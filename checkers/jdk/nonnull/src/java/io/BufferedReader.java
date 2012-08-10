@@ -3,6 +3,7 @@ package java.io;
 import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class BufferedReader extends Reader {
   public BufferedReader(Reader a1, int a2) { throw new RuntimeException("skeleton method"); }

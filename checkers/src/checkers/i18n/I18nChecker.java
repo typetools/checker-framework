@@ -15,7 +15,7 @@ import checkers.util.AggregateChecker;
  * bundles) get used as such.</li>
  * </ol>
  *
- * @see SubI18Checker
+ * @see I18nSubchecker
  * @see LocalizableKeyChecker
  */
 public class I18nChecker extends AggregateChecker {
@@ -24,7 +24,7 @@ public class I18nChecker extends AggregateChecker {
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
         Collection<Class<? extends SourceChecker>> checkers
             = new ArrayList<Class<? extends SourceChecker>>();
-        checkers.add(SubI18Checker.class);
+        checkers.add(I18nSubchecker.class);
         checkers.add(LocalizableKeyChecker.class);
         return checkers;
     }

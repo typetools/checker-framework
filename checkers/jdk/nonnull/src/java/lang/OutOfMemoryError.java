@@ -6,10 +6,10 @@ public
 class OutOfMemoryError extends VirtualMachineError {
     private static final long serialVersionUID = 0L;
     public OutOfMemoryError() {
-	super();
+        super();
     }
 
     public OutOfMemoryError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

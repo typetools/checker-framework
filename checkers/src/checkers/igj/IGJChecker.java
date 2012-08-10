@@ -10,6 +10,7 @@ import checkers.quals.TypeQualifiers;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.*;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
@@ -116,8 +117,8 @@ public class IGJChecker extends BaseTypeChecker {
     // **********************************************************************
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new IGJQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new IGJQualifierHierarchy(factory);
     }
 
     @Override
@@ -150,8 +151,8 @@ public class IGJChecker extends BaseTypeChecker {
     // TODO: Explain these cases more
     //
     private final class IGJQualifierHierarchy extends GraphQualifierHierarchy {
-        public IGJQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public IGJQualifierHierarchy(MultiGraphFactory factory) {
+            super(factory, BOTTOM_QUAL);
         }
 
         @Override

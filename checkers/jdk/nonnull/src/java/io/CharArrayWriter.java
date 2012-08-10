@@ -2,6 +2,7 @@ package java.io;
 
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class CharArrayWriter extends Writer {
   public CharArrayWriter() { throw new RuntimeException("skeleton method"); }

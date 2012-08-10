@@ -13,12 +13,14 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * A utility class used to abstract common functionality from tree-to-type
@@ -87,7 +89,9 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitBinary(BinaryTree node,
                 AnnotatedTypeFactory f) {
-            return f.type(node);
+            AnnotatedTypeMirror res = f.type(node);
+            res.clearAnnotations();
+            return res;
         }
 
         @Override
@@ -95,7 +99,9 @@ abstract class TypeFromTree extends
                 CompoundAssignmentTree node, AnnotatedTypeFactory f) {
 
             // Recurse on the type of the variable.
-            return visit(node.getVariable(), f);
+            AnnotatedTypeMirror res = visit(node.getVariable(), f);
+            res.clearAnnotations();
+            return res;
         }
 
         @Override
@@ -239,24 +245,49 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitNewClass(NewClassTree node,
                 AnnotatedTypeFactory f) {
-
-            // Use the annotated type of the part between "new" and the
-            // constructor arguments.
+            // constructorFromUse obviously has Void as return type.
+            // Therefore, use the overall type to return.
             AnnotatedDeclaredType type = f.fromNewClass(node);
-            if (node.getClassBody() != null) {
-                DeclaredType dt = (DeclaredType)InternalUtils.typeOf(node);
-                AnnotatedDeclaredType anonType =
-                    (AnnotatedDeclaredType)AnnotatedTypeMirror.createType(dt, f.env, f);
-                anonType.setElement(type.getElement());
-                if (type.isAnnotated()) {
-                    List<AnnotatedDeclaredType> supertypes = Collections.singletonList(type);
-                    anonType.setDirectSuperTypes(supertypes);
-                    anonType.addAnnotations(type.getAnnotations());
-                    f.postDirectSuperTypes(anonType, supertypes);
+            // Enum constructors lead to trouble.
+            // TODO: is there more to check? Can one annotate them?
+            if (isNewEnum(type) ||
+                    // This happens with the Nullness Checker. TODO.
+                    f.getQualifierHierarchy()==null) {
+                return type;
+            }
+            // Add annotations that are on the constructor declaration.
+            // constructorFromUse gives us resolution of polymorphic qualifiers.
+            // However, it also applies defaulting, so we might apply too many qualifiers.
+            // Therefore, ensure to only add the qualifiers that are explicitly on
+            // the constructor, but then take the possibly substituted qualifier.
+            AnnotatedExecutableType ex = f.constructorFromUse(node).first;
+            ExecutableElement ctor = TreeUtils.elementFromUse(node);
+            // TODO: There will be a nicer way to access this in 308 soon.
+            List<TypeCompound> decall = ((com.sun.tools.javac.code.Symbol)ctor).typeAnnotations;
+            Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
+            for (TypeCompound da : decall) {
+                if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
+                    decret.add(da);
                 }
-                type = anonType;
+            }
+            for (AnnotationMirror cta : ex.getReturnType().getAnnotations()) {
+                if (f.isSupportedQualifier(cta) &&
+                        !type.isAnnotatedInHierarchy(cta)) {
+                    for (AnnotationMirror fromDecl : decret) {
+                        if (f.isSupportedQualifier(fromDecl) &&
+                                AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
+                                f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
+                            type.addAnnotation(cta);
+                            break;
+                        }
+                    }
+                }
             }
             return type;
+        }
+
+        private boolean isNewEnum(AnnotatedDeclaredType type) {
+            return type.getUnderlyingType().asElement().getKind() == ElementKind.ENUM;
         }
 
         @Override

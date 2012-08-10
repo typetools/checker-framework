@@ -7,6 +7,12 @@ public class Constructors {
         field = 0;
     }
 
+    // TODO: the annotation on the constructor wasn't previously
+    // necessary. However, without it the constructor instantiation
+    // below fails. Should a receiver annotation be automatically
+    // propagated?
+    // TODO JSR 308: is this receiver annotation even still valid?
+    @Immutable 
     Constructors(@Immutable Constructors this, int a) {
         field = 0;
     }

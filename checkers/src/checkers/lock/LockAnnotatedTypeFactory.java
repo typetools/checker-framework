@@ -139,7 +139,7 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
                 net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
             AnnotationBuilder builder = new AnnotationBuilder(env, GuardedBy.class);

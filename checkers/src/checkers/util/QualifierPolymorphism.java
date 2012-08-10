@@ -175,6 +175,23 @@ public class QualifierPolymorphism {
         }
     }
 
+    public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
+        if (polyQuals.isEmpty()) return;
+        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
+        List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
+
+        Map<AnnotationMirror, Set<AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
+        // TODO: poly on receiver for constructors?
+        //matchingMapping = collector.reduce(matchingMapping,
+        //        collector.visit(factory.getReceiverType(tree), type.getReceiverType()));
+
+        if (matchingMapping != null && !matchingMapping.isEmpty()) {
+            replacer.visit(type, matchingMapping);
+        } else {
+            completer.visit(type);
+        }
+    }
+
     private final AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<AnnotationMirror>>> replacer
     = new AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<AnnotationMirror>>>() {
         @Override
@@ -349,6 +366,28 @@ public class QualifierPolymorphism {
 
             if (type.isParameterized() && dcType.isParameterized()) {
                 result = reduce(result, visit(type.getTypeArguments(), dcType.getTypeArguments()));
+            }
+
+            return result;
+        }
+
+        @Override
+        public Map<AnnotationMirror, Set<AnnotationMirror>> visitPrimitive(AnnotatedPrimitiveType type,
+                AnnotatedTypeMirror actualType) {
+            Map<AnnotationMirror, Set<AnnotationMirror>> result =
+                    new HashMap<AnnotationMirror, Set<AnnotationMirror>>();
+
+            for (Map.Entry<AnnotationMirror, AnnotationMirror> kv : polyQuals.entrySet()) {
+                AnnotationMirror top = kv.getKey();
+                AnnotationMirror poly = kv.getValue();
+
+                if (top == null && actualType.hasAnnotation(POLYALL)) {
+                    // PolyAll qualifier
+                    result.put(poly, type.getAnnotations());
+                } else if (actualType.hasAnnotation(poly)) {
+                    AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
+                    result.put(poly, Collections.singleton(typeQual));
+                }
             }
 
             return result;

@@ -1,7 +1,8 @@
 package java.io;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.*;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class BufferedWriter extends Writer {
   public BufferedWriter(Writer a1) { throw new RuntimeException("skeleton method"); }

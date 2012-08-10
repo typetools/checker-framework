@@ -2,6 +2,7 @@ package java.io;
 
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class FileInputStream extends InputStream {
   public FileInputStream(String a1) throws FileNotFoundException { throw new RuntimeException("skeleton method"); }
