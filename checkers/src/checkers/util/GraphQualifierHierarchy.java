@@ -16,20 +16,14 @@ import checkers.types.QualifierHierarchy;
 */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-    /**
-     * We only need to make sure that "build" instantiates the right QualifierHierarchy.
-     */
-    public static class GraphFactory extends MultiGraphFactory {
-        private final AnnotationMirror bottom;
-
-        public GraphFactory(SourceChecker checker) {
-            super(checker);
-            this.bottom = null;
-        }
+    public GraphQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
+        super(f, bottom);
+        // this.bottom = bottom;
+    }
 
     // private final AnnotationMirror bottom;
 
-        @Override
+    @Override
     protected void finish(AnnotationUtils annoFactory,
             QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
@@ -39,8 +33,8 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         // Careful, when this method is called, a field this.bottom would not be set yet.
         if (args!=null && args[0]!=null) {
             AnnotationMirror thebottom = (AnnotationMirror) args[0];
-                // A special bottom qualifier was provided; go through the existing
-                // bottom qualifiers and tie them all to this bottom qualifier.
+            // A special bottom qualifier was provided; go through the existing
+            // bottom qualifiers and tie them all to this bottom qualifier.
             // Set<AnnotationMirror> bottoms = findBottoms(supertypes);
             Set<AnnotationMirror> allQuals = AnnotationUtils.createAnnotationSet();
             allQuals.addAll(fullMap.keySet());
@@ -51,20 +45,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
             // thebottom is now the single bottom qualifier
             bottoms.clear();
             bottoms.add(thebottom);
-                    }
-                }
-
-            return new GraphQualifierHierarchy(this);
         }
-    }
-
-
-    protected GraphQualifierHierarchy(GraphFactory f) {
-        super(f);
-    }
-
-    protected GraphQualifierHierarchy(GraphQualifierHierarchy h) {
-        super(h);
     }
 
     /**
