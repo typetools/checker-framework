@@ -4,7 +4,7 @@
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-CHECKER_DIRS = nullness igj javari
+CHECKER_DIRS = nonnull igj javari
 
 all: clean classes
 # Extracts unannotated .class files from $(RTJAR)
@@ -27,7 +27,7 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(RTJAR).
 ANNOTATED_CLASSES = \
-	$(patsubst nullness/build/%.class,annotated/%.class, \
+	$(patsubst nonnull/build/%.class,annotated/%.class, \
 	  $(patsubst igj/build/%.class,annotated/%.class, \
 	    $(patsubst javari/build/%.class,annotated/%.class, \
 		  $(ANNOTATED_CLASSES_BY_DIR))))
