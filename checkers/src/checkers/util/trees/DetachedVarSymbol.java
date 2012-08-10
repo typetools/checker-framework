@@ -6,6 +6,10 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.util.Name;
 
+/*>>>
+import checkers.nonnull.quals.Nullable;
+*/
+
 /**
  * A DetachedVarSymbol represents a variable that is not part of any
  * AST Tree.  DetachedVarSymbols are created when desugaring source
