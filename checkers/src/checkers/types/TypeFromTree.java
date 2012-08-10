@@ -542,9 +542,14 @@ abstract class TypeFromTree extends
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
-                ClassTree cls = (ClassTree)f.declarationFromElement(typeElt);
-                AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
-                return result;
+                ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
+                if (cls != null) {
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
+                    return result;
+                } else {
+                    // We already have all info from the element -> nothing to do.
+                    return type;
+                }
             } else if (elt instanceof ExecutableElement) {
                 ExecutableElement exElt = (ExecutableElement)elt;
                 int idx = exElt.getTypeParameters().indexOf(tpe);
