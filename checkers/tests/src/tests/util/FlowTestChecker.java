@@ -1,12 +1,12 @@
 package tests.util;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.source.tree.CompilationUnitTree;
-
 import checkers.basetype.BaseTypeChecker;
+import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeFactory;
@@ -14,9 +14,12 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import com.sun.source.tree.CompilationUnitTree;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Value.class, Odd.class, MonoOdd.class, Unqualified.class } )
+@TypeQualifiers( { Value.class, Odd.class, MonoOdd.class, Unqualified.class, Bottom.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
 
     protected AnnotationMirror VALUE;
@@ -37,6 +40,14 @@ public final class FlowTestChecker extends BaseTypeChecker {
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return new FlowQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+    }
+
+    @Override
+    protected MultiGraphFactory createQualifierHierarchyFactory() {
+        AnnotationUtils annoFactory = AnnotationUtils
+                .getInstance(processingEnv);
+        return new GraphQualifierHierarchy.GraphFactory(this,
+                annoFactory.fromClass(Bottom.class));
     }
 
     private final class FlowQualifierHierarchy extends GraphQualifierHierarchy {

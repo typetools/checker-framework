@@ -144,6 +144,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             } else {
                 thisAnnos = thisAnno.getAnnotations();
             }
+            if (thisAnnos.isEmpty()) {
+                Set<AnnotationMirror> top = Collections.singleton(tops[i]);
+                return AnnotationUtils.areSame(otherAnnos, top);
+            }
+            if (otherAnnos.isEmpty()) {
+                Set<AnnotationMirror> top = Collections.singleton(tops[i]);
+                return !AnnotationUtils.areSame(thisAnnos, top);
+            }
+            assert thisAnnos.size() == 1 && otherAnnos.size() == 1;
             if (!analysis.qualifierHierarchy.isSubtype(thisAnnos, otherAnnos)) {
                 return false;
             }
