@@ -393,45 +393,23 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs,
-                Collection<AnnotationMirror> lhs) {
-            if (rhs.isEmpty()) {
-                Set<AnnotationMirror> top = getTopAnnotations();
-                for (AnnotationMirror lhsAnno : lhs) {
-                    for (AnnotationMirror rhsAnno : top) {
-                        if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno),
-                                getTopAnnotation(rhsAnno))
-                                && !AnnotationUtils.areSame(rhsAnno, lhsAnno)) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
+        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+            if (lhs.isEmpty() || rhs.isEmpty()) {
+                SourceChecker.errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
-            if (lhs.isEmpty()) {
-                Set<AnnotationMirror> top = getTopAnnotations();
-                for (AnnotationMirror lhsAnno : rhs) {
-                    for (AnnotationMirror rhsAnno : top) {
-                        if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno),
-                                getTopAnnotation(rhsAnno))
-                                && AnnotationUtils.areSame(rhsAnno, lhsAnno)) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
+            if (lhs.size() != rhs.size()) {
+                SourceChecker.errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
             }
             int valid = 0;
             for (AnnotationMirror lhsAnno : lhs) {
                 for (AnnotationMirror rhsAnno : rhs) {
-                    if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno),
-                            getTopAnnotation(rhsAnno))
-                            && isSubtype(rhsAnno, lhsAnno)) {
+                    if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno), getTopAnnotation(rhsAnno)) &&
+                            isSubtype(rhsAnno, lhsAnno)) {
                         ++valid;
                     }
                 }
             }
-            return lhs.size() == valid;
+            return lhs.size()==valid;
         }
 
         @Override
