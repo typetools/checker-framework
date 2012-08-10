@@ -315,7 +315,7 @@ possible but are not as useful.
   \code{@\refclass{nullness/quals}{Nullable}}:  Unannotated types are regarded as possibly-null, or
   nullable.  This default is backward-compatible with Java, which permits
   any reference to be null.  You can activate this default by writing
-  a \code{@DefaultQualifier("Nullable")} annotation on a
+  a \code{@DefaultQualifier(Nullable.class)} annotation on a
   % package/
   class or method
   % /variable
@@ -325,7 +325,7 @@ possible but are not as useful.
   % This may leads to fewer annotations written in your code.
   You can activate this
   default via the
-  \code{@DefaultQualifier("NonNull")} annotation.
+  \code{@DefaultQualifier(NonNull.class)} annotation.
 \item
   Non-null except locals (NNEL):  Unannotated types are treated as
   \code{@\refclass{nullness/quals}{NonNull}}, \emph{except} that the
@@ -334,7 +334,7 @@ possible but are not as useful.
   local variable still default to
   \code{@\refclass{nullness/quals}{NonNull}}.)  This is the standard
   behavior.  You can explicitly activate this default via the
-  \code{@DefaultQualifier(value="NonNull",
+  \code{@DefaultQualifier(value=NonNull.class,
     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
   annotation.
 

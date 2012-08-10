@@ -24,7 +24,7 @@ import com.sun.tools.javac.comp.*;
  *
  * @see AnnotationTarget
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class InternalAnnotation implements AnnotationData {
 
     /** The annotation's Target. */

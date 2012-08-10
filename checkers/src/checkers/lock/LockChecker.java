@@ -8,7 +8,6 @@ import checkers.lock.quals.GuardedBy;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
@@ -34,20 +33,20 @@ public class LockChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory ignorefactory) {
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
 
         factory.addQualifier(GUARDEDBY);
         factory.addQualifier(UNQUALIFIED);
         factory.addSubtype(UNQUALIFIED, GUARDEDBY);
 
-        return new LockQualifierHierarchy((GraphQualifierHierarchy) factory.build());
+        return new LockQualifierHierarchy(factory);
     }
 
     private final class LockQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public LockQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public LockQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+            super(factory, UNQUALIFIED);
         }
 
         @Override

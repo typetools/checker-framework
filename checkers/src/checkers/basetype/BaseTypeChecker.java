@@ -7,8 +7,9 @@ import java.util.*;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
+/*>>>
 import checkers.igj.quals.*;
-import checkers.quals.MonotonicAnnotation;
+*/import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -173,7 +174,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this);
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    }
+
+    /** Factory method to easily change what QualifierHierarchy is
+     * created.
+     * Needs to be public only because the GraphFactory must be able to call this method.
+     * No external use of this method is necessary.
+     */
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GraphQualifierHierarchy(factory, null);
     }
 
     /**
@@ -444,7 +454,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             return null;
         }
 
-        assert cls != null;
+        assert cls != null : "reflectively loading " + name + " failed";
 
         // Invoke the constructor.
         try {

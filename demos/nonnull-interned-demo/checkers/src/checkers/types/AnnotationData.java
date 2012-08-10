@@ -16,7 +16,7 @@ import javax.lang.model.type.*;
  *
  * @see AnnotationFactory
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public interface AnnotationData {
 
     /**

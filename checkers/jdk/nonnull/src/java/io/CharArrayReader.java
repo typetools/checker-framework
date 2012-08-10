@@ -2,6 +2,7 @@ package java.io;
 
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class CharArrayReader extends Reader {
   public CharArrayReader(char[] a1) { throw new RuntimeException("skeleton method"); }

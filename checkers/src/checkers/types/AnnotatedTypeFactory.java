@@ -16,8 +16,10 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
+/*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
+*/
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
@@ -702,7 +704,7 @@ public class AnnotatedTypeFactory {
 
             if (classElt != null && !type.isAnnotated()) {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
-                assert classType != null;
+                assert classType != null : "Unexpected null type for class element: " + classElt;
                 for (AnnotationMirror anno : classType.getAnnotations()) {
                     if (AnnotationUtils.hasInheritedMeta(anno)) {
                         type.addAnnotation(anno);
@@ -760,10 +762,10 @@ public class AnnotatedTypeFactory {
         assert (tree.getKind() == Tree.Kind.IDENTIFIER
                 || tree.getKind() == Tree.Kind.MEMBER_SELECT
                 || tree.getKind() == Tree.Kind.METHOD_INVOCATION
-                || tree.getKind() == Tree.Kind.NEW_CLASS);
+                || tree.getKind() == Tree.Kind.NEW_CLASS) : "Unexpected tree kind: " + tree.getKind();
 
         Element element = InternalUtils.symbol(tree);
-        assert element != null;
+        assert element != null : "Unexpected null element for tree: " + tree;
         // Return null if the element kind has no receiver.
         if (!ElementUtils.hasReceiver(element)) {
             return null;
@@ -796,7 +798,7 @@ public class AnnotatedTypeFactory {
         }
 
         Element rcvelem = InternalUtils.symbol(receiver);
-        assert rcvelem != null;
+        assert rcvelem != null : "Unexpected null element for receiver: " + receiver;
 
         if (!ElementUtils.hasReceiver(rcvelem)) {
             return null;
@@ -1082,6 +1084,8 @@ public class AnnotatedTypeFactory {
      * {@link #fromExpression(ExpressionTree)} on the constructor invocation;
      * those determine the type of the <i>result</i> of invoking the
      * constructor, which is probably an {@link AnnotatedDeclaredType}.
+     * TODO: Should the result of getAnnotatedType be the return type
+     *   from the AnnotatedExecutableType computed here?
      *
      * @param tree the constructor invocation tree
      * @return the annotated type of the invoked constructor (as an executable
@@ -1289,9 +1293,9 @@ public class AnnotatedTypeFactory {
      *
      * Returns an aliased type of the current one
      */
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (a==null) return null;
-        TypeElement elem = (TypeElement)a.getAnnotationType().asElement();
+        TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);
     }
@@ -1347,10 +1351,10 @@ public class AnnotatedTypeFactory {
 
         // Attempt to obtain the type via TreePath (slower).
         TreePath path = this.getPath(node);
-        assert path != null : "no path or type in tree";
+        assert path != null : "No path or type in tree: " + node;
 
         TypeMirror t = trees.getTypeMirror(path);
-        assert validType(t) : node + " --> " + t;
+        assert validType(t) : "Invalid type " + t + " for node " + t;
 
         return toAnnotatedType(t);
     }
@@ -1585,7 +1589,7 @@ public class AnnotatedTypeFactory {
 
             @Override
             public Void visitExecutable(AnnotatedExecutableType type, Void p) {
-                assert type.getElement() != null;
+                assert type.getElement() != null : "Unexpected null executable type.";
                 return super.visitExecutable(type, p);
             }
 

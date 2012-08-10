@@ -28,16 +28,15 @@ import java.lang.annotation.Target;
 public @interface DefaultQualifier {
 
     /**
-     * The name of the default annotation.  It may be a short name like
-     * "NonNull", if an appropriate import statement exists.  Otherwise, it
-     * should be fully-qualified, like "checkers.nullness.quals.NonNull".
+     * The Class for the default annotation.
+     * 
      * <p>
      *
      * To prevent affecting other type systems, always specify an annotation
      * in your own type hierarchy.  (For example, do not set
      * "checkers.quals.Unqualified" as the default.)
      */
-    String value();
+    Class<? extends Annotation> value();
 
     /** @return the locations to which the annotation should be applied */
     DefaultLocation[] locations() default {DefaultLocation.ALL};

@@ -8,22 +8,154 @@
 </head>
 <body>
 
-<h1>Tutorial: Preventing Runtime Errors at Compile Time</h1>
+<h1>Tutorial: Preventing Runtime Errors at Compile Time with the Checker Framework</h1>
 
 <p>
-<a href="http://www.cs.washington.edu/homes/wmdietl/">Werner Dietl</a>
-and
-<a href="http://www.cs.washington.edu/homes/mernst/">Michael D. Ernst</a>,
-University of Washington.
-</p>
-
-<p>
-This is the companion site to our
-<a href="http://www.oscon.com/oscon2012/public/schedule/detail/24366">OSCON session</a>.
+In this self-paced tutorial, you will learn to use the Checker Framework to
+improve code quality.  In particular, the Checker Framework will give a
+compile-time guarantee that certain run-time errors cannot occur.
 </p>
 
 
-<h2>Abstract</h2>
+<h2>Resources</h2>
+
+<ul>
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">The Checker Framework manual</a>
+  </li>
+
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/">The Checker Framework homepage</a>
+  </li>
+
+  <li>
+    <a href="http://types.cs.washington.edu/jsr308/">Type Annotations (JSR 308)</a>
+  </li>
+  <li>
+    Feel free to <b>contact</b> us!  Email
+    <a href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>
+  </li>
+</ul>
+
+
+
+<h2>Install the Checker Framework</h2>
+
+<p>
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#installation">Install
+  the Checker Framework</a>.
+</p>
+
+<p>
+Be sure that running <tt>javac -version</tt> produces an output string that
+contains <tt>jsr308</tt>.
+</p>
+
+<p>
+Follow the instructions for an
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#example-use">example
+  use</a> of the Nullness Checker.
+</p>
+
+<!--
+<p>
+The following instructions assume a <code>CHECKERS</code> environment
+variable that is set to the
+<code>checker-framework/checkers/</code> directory within
+your Checker Framework installation, but you can use absolute pathnames
+instead.
+</p>
+-->
+
+
+<h2>Find missing input validation</h2>
+
+<p>
+We will find and correct errors in how the 
+<a href="Search.java">Search.java</a>.
+application uses regular expressions.
+Currently, when the user provides invalid inputs, the program crashes with
+a stack trace, which is offputting and uninformative to users.
+The <tt>Search.java</tt> application is incorrect in that it does not
+validate user input.  You will correct this problem.
+</p>
+
+<p>
+Download <a href="Search.java">Search.java</a>.
+</p>
+
+<p>
+Type check <tt>Search.java</tt> by running the following command, using the
+Checker Framework's <tt>javac</tt>:
+</p>
+
+<pre>
+javac -processor checkers.regex.RegexChecker Search.java
+</pre>
+
+<p>
+The Regex Checker finds the error &mdash; the missing validation.  Correct
+the problem by adding proper validation, and verify that your solution is
+correct by re-running the Regex Checker until it issues no errors.
+</p>
+
+<p>
+<b>TODO:  Give away the answer, by supplying a link that gives the missing
+  validation lines, for use by users who get stuck.</b>
+</p>
+
+
+
+<h2>Write an Encryption Checker</h2>
+
+<p>
+You will write your own declarative type checker to ensure
+encrypted communication!
+</p>
+
+<p>
+Demo application: <a href="EncryptionDemo.java">EncryptionDemo.java</a>.
+</p>
+
+<p>
+In the session we will write a new Encrypted annotation.
+You compile it like any other Java class:
+</p>
+
+<pre>
+javac .../Encrypted.java
+</pre>
+
+<p>
+You then use the Basic Checker to check the demo program, like so:
+<p>
+
+<pre>
+$CHECKERS/binary/javac -processor checkers.basic.BasicChecker -Aquals=encrypted.quals.Encrypted .../EncryptionDemo.java
+</pre>
+
+<p>
+[It is sometimes necessary to provide the location of the annotation
+class on the bootclasspath. Use the "-Xbootclasspath/p:yourpath"
+parameter for this.]
+</p>
+
+
+<h2>Find a security error in the Personal Blog project</h2>
+
+<p>
+As a first demonstration, we will use the
+Personal Blog demonstration.
+You can download the
+<a href="personalblog-demo.zip">project here</a>.
+Unzip it into a directory.
+An Ant build file is there.
+In Eclipse, you can import the folder as a new project.
+</p>
+
+
+
+<h2>Abstract of the tutorial</h2>
 
 <p>
 A pluggable type system extends a language's built-in type system to
@@ -49,9 +181,6 @@ code in a lightweight way and to create custom analyses.  And it enables
 students to better appreciate type system concepts.
 </p>
 
-
-<h2>Tutorial format</h2>
-
 <p>We will:</p>
 <ul>
 <li>guide the audience through installing the Checker Framework,
@@ -71,106 +200,17 @@ optional).
 </p>
 
 
-<p>
-During our tutorial, we will use the Checker Framework.
-For the command-line setup, see the <a
- href="../current/checkers-manual.html#installation">installation
-instructions and tutorial</a> in the Checker Framework manual.<br/>
-After following those, set the <code>CHECKERS</code> environment variable to the
-<code>checker-framework/checkers/</code> directory within
-your Checker Framework installation.
-</p>
-
-
-<h2>Resources</h2>
-
-<ul>
-  <li>
-    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">The Checker Framework manual</a>
-  </li>
-
-  <li>
-    <a href="../">The Checker Framework homepage</a>
-  </li>
-
-  <li>
-    <a href="../../jsr308">Type Annotations (JSR 308)</a>
-  </li>
-</ul>
-
-
-<h3>Regular Expression Checker demonstration</h3>
-
-<p>
-Demo application: <a href="Search.java">Search.java</a>.
-</p>
-
-<p>
-After installing the Checker Framework, type check this
-application by running:
-</p>
-
-<pre>
-$CHECKERS/binary/javac -processor checkers.regex.RegexChecker Search.java
-</pre>
-
-
-<h3>Encryption Checker demonstration</h3>
-
-<p>
-You will write your own declarative type checker to ensure
-encrypted communication!
-</p>
-
-<p>
-Demo application: <a href="EncryptionDemo.java">EncryptionDemo.java</a>.
-</p>
-
-<p>
-In the session we will write a new Encrypted annotation.
-You compile it like any other Java class:
-</p>
-
-<pre>
-$CHECKERS/binary/javac .../Encrypted.java
-</pre>
-
-<p>
-You then use the Basic Checker to check the demo program, like so:
-<p>
-
-<pre>
-$CHECKERS/binary/javac -processor checkers.basic.BasicChecker -Aquals=encrypted.quals.Encrypted .../EncryptionDemo.java
-</pre>
-
-<p>
-[It is sometimes necessary to provide the location of the annotation
-class on the bootclasspath. Use the "-Xbootclasspath/p:yourpath"
-parameter for this.]
-</p>
-
-
-<h3>Personal Blog demonstration</h3>
-
-<p>
-As a first demonstration, we will use the
-Personal Blog demonstration.
-You can download the
-<a href="personalblog-demo.zip">project here</a>.
-Unzip it into a directory.
-An Ant build file is there.
-In Eclipse, you can import the folder as a new project.
-</p>
-
-<p>
-Feel free to <b>contact</b> us!  Email
-<a href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>
-</p>
-
 <hr />
 
 <p>
-Last updated: July 17, 2012
+<a href="http://www.cs.washington.edu/homes/wmdietl/">Werner Dietl</a>
+and
+<a href="http://www.cs.washington.edu/homes/mernst/">Michael D. Ernst</a>,
+University of Washington.
+</p>
+
+<p>
+Last updated: July 22, 2012
 </p>
 
 </body>

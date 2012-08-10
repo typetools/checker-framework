@@ -15,10 +15,10 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.units.quals.*;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.basetype.BaseTypeChecker;
 
 /**
@@ -174,19 +174,15 @@ public class UnitsChecker extends BaseTypeChecker {
     /* Set the Bottom qualifier as the bottom of the hierarchy.
      */
     @Override
-    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
-    }
-
-    @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new UnitsQualifierHierarchy((GraphQualifierHierarchy)super.createQualifierHierarchy());
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new UnitsQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public UnitsQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public UnitsQualifierHierarchy(MultiGraphFactory f,
+                AnnotationMirror bottom) {
+            super(f, bottom);
         }
 
         @Override

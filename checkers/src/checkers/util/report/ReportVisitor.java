@@ -4,7 +4,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
@@ -59,6 +61,51 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         return super.scan(tree, p);
     }
 
+    /**
+     * Check for uses of the {@link ReportUse} annotation.
+     * This method has to be called for every explicit or implicit use of a type,
+     * most cases are simply covered by the type validator.
+     *
+     * @param node The tree for error reporting only.
+     * @param member The element from which to start looking.
+     */
+    private void checkReportUse(Tree node, Element member) {
+        Element loop = member;
+        while (loop!=null) {
+            boolean report = this.atypeFactory.getDeclAnnotation(loop, ReportUse.class) != null;
+            if (report) {
+                checker.report(Result.failure("usage", node,
+                        ElementUtils.getVerboseName(loop), loop.getKind(),
+                        ElementUtils.getVerboseName(member), member.getKind()), node);
+                break;
+            } else {
+                if (loop.getKind() == ElementKind.PACKAGE) {
+                    // Packages are not enclosed within each other, we have to manually climb
+                    // the namespaces.
+                    // TODO: put something like this into ElementUtils.
+                    String fqnstart = ((PackageElement)loop).getQualifiedName().toString();
+                    String fqn = fqnstart;
+                    if (fqn!=null && !fqn.isEmpty() && fqn.contains(".")) {
+                        // We already tested the first package, so strip it off first.
+                        fqn = fqn.substring(0, fqn.lastIndexOf('.'));
+                        loop = this.elements.getPackageElement(fqn);
+                        continue;
+                    }
+                }
+            }
+            // Package will always be the last iteration.
+            loop = loop.getEnclosingElement();
+        }
+    }
+
+    /* Would we want this? Seems redundant, as all uses of the imported
+     * package should already be reported.
+     * Also, how do we get an element for the import?
+    public Void visitImport(ImportTree node, Void p) {
+        checkReportUse(node, elem);
+    }
+    */
+
     @Override
     public Void visitClass(ClassTree node, Void p) {
         TypeElement member = TreeUtils.elementFromDeclaration(node);
@@ -71,14 +118,8 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
-                // Set member to report the right member, if found.
-                member = sup;
-                break;
+                checker.report(Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
             }
-        }
-
-        if (report) {
-            checker.report(Result.failure("inherit", node, member), node);
         }
         return super.visitClass(node, p);
     }
@@ -104,7 +145,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
         if (report) {
             checker.report(Result.failure("override", node,
-                    method.getEnclosingElement().toString() + "." + method), node);
+                    ElementUtils.getVerboseName(method)), node);
         }
         return super.visitMethod(node, p);
     }
@@ -112,6 +153,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
+        checkReportUse(node, method);
         boolean report = this.atypeFactory.getDeclAnnotation(method, ReportCall.class) != null;
 
         if (!report) {
@@ -133,7 +175,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
         if (report) {
             checker.report(Result.failure("methodcall", node,
-                    method.getEnclosingElement().toString() + "." + method), node);
+                    ElementUtils.getVerboseName(method)), node);
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -141,11 +183,12 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         Element member = TreeUtils.elementFromUse(node);
+        checkReportUse(node, member);
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
             checker.report(Result.failure("fieldreadwrite", node,
-                    member.getEnclosingElement().toString() + "." + member.getSimpleName()), node);
+                    ElementUtils.getVerboseName(member)), node);
         }
         return super.visitMemberSelect(node, p);
     }
@@ -157,7 +200,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
         if (report) {
             checker.report(Result.failure("fieldreadwrite", node,
-                    member.getEnclosingElement().toString() + "." + member.getSimpleName()), node);
+                    ElementUtils.getVerboseName(member)), node);
         }
         return super.visitIdentifier(node, p);
     }
@@ -169,7 +212,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
         if (report) {
             checker.report(Result.failure("fieldwrite", node,
-                    member.getEnclosingElement().toString() + "." + member.getSimpleName()), node);
+                    ElementUtils.getVerboseName(member)), node);
         }
         return super.visitAssignment(node, p);
     }
@@ -203,7 +246,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         }
 
         if (report) {
-            checker.report(Result.failure("creation", node, member), node);
+            checker.report(Result.failure("creation", node, ElementUtils.getVerboseName(member)), node);
         }
         return super.visitNewClass(node, p);
     }
@@ -238,5 +281,19 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
             }
         }
         return super.visitModifiers(node, p);
+    }
+
+    protected TypeValidator createTypeValidator() {
+        return new ReportTypeValidator();
+    }
+
+    protected class ReportTypeValidator extends TypeValidator {
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
+            Element member = type.getUnderlyingType().asElement();
+            checkReportUse(tree, member);
+
+            return super.visitDeclared(type, tree);
+        }
     }
 }
