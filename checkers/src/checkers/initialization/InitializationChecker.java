@@ -258,7 +258,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         protected Types types = env.getTypeUtils();
 
         public InitializationQualifierHierarchy() {
-            super(InitializationChecker.this);
+            super();
 
             AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
