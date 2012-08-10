@@ -167,9 +167,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation aAnno = annotations[i];
             InferredAnnotation bAnno = other.annotations[i];
-            if (aAnno == null) {
+            // TODO: what should happen if the annotations on one
+            // side are empty? Is taking the other side always sound?
+            // Or should this be an error for non-type-variables?
+            if (aAnno == null || aAnno.getAnnotations().isEmpty()) {
                 resultAnnotations[i] = bAnno;
-            } else if (bAnno == null) {
+            } else if (bAnno == null || bAnno.getAnnotations().isEmpty()) {
                 resultAnnotations[i] = aAnno;
             } else {
                 // Compute the more specific annotation using the qualifier
