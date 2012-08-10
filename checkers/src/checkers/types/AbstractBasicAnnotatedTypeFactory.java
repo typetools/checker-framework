@@ -57,6 +57,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -467,6 +468,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         assert false;
         return null;
+    }
+
+    @Override
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
+            NewClassTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
+                .constructorFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
+        poly.annotate(tree, method);
+        return mfuPair;
     }
 
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
