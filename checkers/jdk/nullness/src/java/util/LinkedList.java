@@ -1,7 +1,7 @@
 package java.util;
 import checkers.quals.Pure;
-import checkers.nullness.quals.AssertNonNullIfFalse;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nonnull.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
 // This class permits null elements
@@ -50,6 +50,6 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

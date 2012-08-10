@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public abstract class ListResourceBundle extends ResourceBundle {
   public ListResourceBundle() { throw new RuntimeException("skeleton method"); }

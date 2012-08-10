@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

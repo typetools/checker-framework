@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.AssertNonNullIfFalse;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nonnull.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
@@ -20,7 +20,7 @@ public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
   public abstract SortedSet<E> headSet(E a1);
   public abstract SortedSet<E> tailSet(E a1);
 
-  @AssertNonNullIfFalse({"pollFirst()", "pollLast()"})
+  @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
   public abstract boolean isEmpty();
 
 }

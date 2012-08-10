@@ -1,7 +1,7 @@
 package java.lang.reflect;
 
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.Nullable;
 
 public abstract interface ParameterizedType extends Type {
   public abstract

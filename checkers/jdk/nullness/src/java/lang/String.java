@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 
 public final class String implements java.io.Serializable, Comparable<String>, CharSequence {
