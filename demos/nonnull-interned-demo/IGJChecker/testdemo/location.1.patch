@@ -1,0 +1,13 @@
+Index: src/checkers/types/AnnotationLocation.java
+===================================================================
+--- src/checkers/types/AnnotationLocation.java	(revision 3580)
++++ src/checkers/types/AnnotationLocation.java	(working copy)
+@@ -108,7 +108,7 @@
+      *            the integer list specifying the location (see above)
+      */
+     private AnnotationLocation(@ReadOnly List<Integer> location) {
+-        this.location = Collections.unmodifiableList(location);
++        this.location = new @Immutable ArrayList<Integer>(location);
+     }
+ 
+     /**
