@@ -1,6 +1,6 @@
 package com.sun.javadoc;
 
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public abstract interface ProgramElementDoc extends Doc {
   public abstract @Nullable com.sun.javadoc.ClassDoc containingClass();

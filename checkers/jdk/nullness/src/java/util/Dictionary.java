@@ -1,6 +1,6 @@
 package java.util;
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class Dictionary<K extends @Nullable Object, V extends @Nullable Object> {

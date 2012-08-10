@@ -1,6 +1,6 @@
 package java.util;
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public class BitSet implements Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 0L;

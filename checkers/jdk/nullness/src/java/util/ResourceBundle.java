@@ -1,7 +1,7 @@
 package java.util;
 import checkers.quals.Pure;
 import checkers.nullness.quals.KeyFor;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public abstract class ResourceBundle{
   public static class Control{

@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 public interface Enumeration<E extends @Nullable Object> {
   public abstract boolean hasMoreElements();

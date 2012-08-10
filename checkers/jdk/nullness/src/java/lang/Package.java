@@ -1,7 +1,7 @@
 package java.lang;
 
 import checkers.quals.Pure;
-import checkers.nullness.quals.Nullable;
+import checkers.nonnull.quals.Nullable;
 
 
 public class Package implements java.lang.reflect.AnnotatedElement{
