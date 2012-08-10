@@ -34,7 +34,10 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.nullness.NullnessChecker;
+import checkers.nonnull.NonNullFbcChecker;
+/*>>>
+import checkers.nonnull.quals.Nullable;
+*/
 import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.EnsuresAnnotation;
@@ -115,8 +118,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * Note that since this implementation only performs assignment and
  * pseudo-assignment checking, other rules for custom type systems must be added
- * in subclasses (e.g., dereference checking in the {@link NullnessChecker} is
- * implemented in the {@link NullnessChecker}'s
+ * in subclasses (e.g., dereference checking in the {@link NonNullFbcChecker} is
+ * implemented in the {@link NonNullFbcChecker}'s
  * {@link TreeScanner#visitMemberSelect} method).
  *
  * <p>

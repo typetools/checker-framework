@@ -1,10 +1,10 @@
-import checkers.nullness.quals.*;
+import checkers.nonnull.quals.*;
 
 public class SkipDefs2 {
 
   static class SkipMe {
     @Nullable Object f;
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     static void foo() {
     }
   }

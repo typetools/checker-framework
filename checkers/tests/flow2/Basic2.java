@@ -159,9 +159,21 @@ class Basic2 {
     }
     
     // generics
-    public <T extends @Odd String> void t10(T p1, @Odd T p2) {
+    public <T extends String> void t10a(T p1, @Odd T p2) {
         T l1 = p1;
+        p1 = l1;
         T l2 = p2;
+        p2 = l2;
+        //:: error: (assignment.type.incompatible)
+        @Odd T l3 = p1;
+        @Odd T l4 = p2;
+    }
+
+    public <T extends @Odd String> void t10b(T p1, @Odd T p2) {
+        T l1 = p1;
+        p1 = l1;
+        T l2 = p2;
+        p2 = l2;
         @Odd T l3 = p1;
         @Odd T l4 = p2;
     }

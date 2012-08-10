@@ -7,6 +7,10 @@ import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.LiteralTree;
 
+/*>>>
+import checkers.nonnull.quals.Nullable;
+*/
+
 /**
  * A node for a literals that have some form of value:
  * <ul>
