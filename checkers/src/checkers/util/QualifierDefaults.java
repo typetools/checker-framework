@@ -311,9 +311,13 @@ public class QualifierDefaults {
                     annos = factory.getQualifierHierarchy()
                             .getTopAnnotations();
                 }
-                for (AnnotationMirror anno : annos) {
-                    if (!t.isAnnotatedInHierarchy(anno)) {
-                        t.addAnnotation(anno);
+
+                // Skip type variables: we assume the empty set of annotations as default for them.
+                if (!(t.getKind() == TypeKind.WILDCARD || t.getKind() == TypeKind.TYPEVAR)) {
+                    for (AnnotationMirror anno : annos) {
+                        if (!t.isAnnotatedInHierarchy(anno)) {
+                            t.addAnnotation(anno);
+                        }
                     }
                 }
 
