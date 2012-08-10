@@ -592,14 +592,74 @@ public class StubParser {
             if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
                 return;
             }
-            // TODO: instead of failing, can we try merging the information from
-            // multiple stub files?
-            SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
-                    + "  " + key + " => " + value2 + LINE_SEPARATOR
-                    + "while adding: " + LINE_SEPARATOR
-                    + "  " + key + " => " + value);
+            AnnotatedTypeMirror prev = m.get(key);
+            mergeATM(value, prev);
         }
         m.put(key, value);
+    }
+
+    /**
+     * Merge the qualifiers from the second parameter into the first parameter.
+     * Modifies the first parameter directly.
+     * Raises an exception if both types have a qualifier in a given hierarchy.
+     * 
+     * @param into target type
+     * @param from source type
+     */
+    // Should we move this to AnnotationUtils? The way collisions are handled is specific.
+    private static void mergeATM(AnnotatedTypeMirror into, AnnotatedTypeMirror from) {
+        assert into.getClass() == from.getClass();
+        // Everybody needs to merge the main qualifier.
+        for (AnnotationMirror afrom : from.getAnnotations()) {
+            if (into.isAnnotatedInHierarchy(afrom) &&
+                    !AnnotationUtils.areSame(into.getAnnotationInHierarchy(afrom), afrom)) {
+                // TODO: raise error on the caller, this message might not help in debugging.
+                SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+                        + " existing: " + into + " new: " + from);
+                return; // dead code
+            } else {
+                into.addAnnotation(afrom);
+            }
+        }
+
+        if (from instanceof AnnotatedArrayType) {
+            AnnotatedArrayType cinto = (AnnotatedArrayType) into;
+            AnnotatedArrayType cfrom = (AnnotatedArrayType) from;
+            // Also merge the component types.
+            mergeATM(cinto.getComponentType(), cfrom.getComponentType());
+        } else if (from instanceof AnnotatedDeclaredType) {
+            AnnotatedDeclaredType cinto = (AnnotatedDeclaredType) into;
+            AnnotatedDeclaredType cfrom = (AnnotatedDeclaredType) from;
+            mergeATMs(cinto.getTypeArguments(), cfrom.getTypeArguments());
+        } else if (from instanceof AnnotatedExecutableType) {
+            AnnotatedExecutableType cinto = (AnnotatedExecutableType) into;
+            AnnotatedExecutableType cfrom = (AnnotatedExecutableType) from;
+            mergeATMs(cinto.getTypeVariables(), cinto.getTypeVariables());
+            mergeATM(cinto.getReturnType(), cfrom.getReturnType());
+            mergeATM(cinto.getReceiverType(), cfrom.getReceiverType());
+            mergeATMs(cinto.getParameterTypes(), cfrom.getParameterTypes());
+            mergeATMs(cinto.getThrownTypes(), cfrom.getThrownTypes());
+        } else if (from instanceof AnnotatedTypeVariable) {
+            AnnotatedTypeVariable cinto = (AnnotatedTypeVariable) into;
+            AnnotatedTypeVariable cfrom = (AnnotatedTypeVariable) from;
+            mergeATM(cinto.getLowerBound(), cfrom.getLowerBound());
+            mergeATM(cinto.getUpperBound(), cfrom.getUpperBound());
+        } else if (from instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType cinto = (AnnotatedWildcardType) into;
+            AnnotatedWildcardType cfrom = (AnnotatedWildcardType) from;
+            mergeATM(cinto.getSuperBound(), cfrom.getSuperBound());
+            mergeATM(cinto.getExtendsBound(), cfrom.getExtendsBound());
+        } else {
+            // Remainder: No, Null, Primitive
+            // Nothing to do.
+        }
+    }
+
+    private static void mergeATMs(List<? extends AnnotatedTypeMirror> into, List<? extends AnnotatedTypeMirror> from) {
+        assert into.size() == from.size();
+        for (int i=0; i<into.size(); ++i) {
+            mergeATM(into.get(i), from.get(i));
+        }
     }
 
     /** Just like Map.putAll, but errs if any key is already in the map. */
