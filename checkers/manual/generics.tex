@@ -9,21 +9,24 @@ capability over type qualifiers.
 
 The Checker Framework fully supports
 type-qualified Java generic types (also known in the research literature as ``parametric
-polymorphism'').  Before running any checker, we recommend that you eliminate
-raw types from your code (e.g., your code should use \code{List<...>} as
-opposed to \code{List}).
-Using generics helps prevent type errors just as using a pluggable
-type-checker does.
-% Should say why, or what are the consequences of violating this.
-
+polymorphism'').
 When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
 
+Before running any checker, we recommend that you eliminate
+raw types from your code (e.g., your code should use \code{List<...>} as
+opposed to \code{List}).
+Using generics helps prevent type errors just as using a pluggable
+type-checker does, and the Checker Framework has not been extensively
+tested on code that uses raw types.
+
+
 
 \subsection{Restricting instantiation of a generic class}
 
-When you define a generic class, the generic type parameters can restrict
+When you define a generic class in Java, the \<extends> or \<super> clause
+of the generic type parameter restricts
 how the class may be instantiated.  For example, given the definition
 \verb|class G<T extends Number> {...}|,
 a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
@@ -62,6 +65,8 @@ required on the actual type argument, rather than just a bound.  For example:
   MyClassNble<@Nullable Number> v3;  // OK
 \end{Verbatim}
 
+\subsection{A qualifier on a type parameter is like two bounds\label{qualifier-is-like-two-bounds}}
+
 A way to view a type annotation on a generic type parameter declaration is
 as syntactic sugar for the annotation on both the \<extends> and the
 \<super> clauses of the declaration.  For example, these two declarations
@@ -79,8 +84,9 @@ specify both the upper and the
 lower bound, and it is impossible to specify a type annotation for a lower
 bound without also specifying a type (use of \<void> is illegal).
 
-If a type parameter declaration is annotated with \code{@A}, and a bound is
-also given, then the annotation applies everywhere that there is no
+Suppose that a type parameter declaration is annotated with \code{@A}, and
+a bound is also given.  Then the annotation \<@A> applies to all bounds
+that have no
 explicit annotation.  For example, the following pairs of declarations are
 identical.
 
@@ -101,7 +107,13 @@ identical.
   class MyClass<T extends @A Object super @B Number> { ... }
 \end{Verbatim}
 
-We can see from the above that almost all of the following types mean
+
+\subsection{Examples of qualifiers on a type parameters}
+
+Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
+for any \emph{X}\@.
+We can see from Section~\ref{qualifier-is-like-two-bounds} that almost all
+of the following types mean
 different things:
 
 \begin{Verbatim}
@@ -126,7 +138,9 @@ instantiation, yet rigorous enough to impose the correct constraints of the
 specific instantiation.  It must also itself comply with the constraints of
 the potential instantiations.
 
-One way to express the difference is by comparing what expressions are
+One way to express the difference
+among \<MyList1>, \<MyList2>, \<MyList3>, and \<MyList4>
+is by comparing what expressions are
 legal in the implementation of the list --- that is, what expressions may
 appear in the ellipsis, such as inside a method's body.  Suppose each class
 has, in the ellipsis, these declarations:
@@ -191,6 +205,7 @@ However, instantiation may be restricted if a default qualifier is in
 effect (see Section~\ref{defaults}).  For example, the Nullness Checker
 (Chapter~\ref{nullness-checker}) uses a (configurable) default of
 \<@NonNull> (see Section~\ref{null-defaults}).  That means that either
+% of the two declarations
 declaration above is interpreted as
 
 \begin{Verbatim}
@@ -208,16 +223,16 @@ In such a case, to permit all type arguments, the programmer would write
 
 It is possible to set the default qualifier for upper bounds separately
 from other default qualifiers, by writing an annotation such as
-\<@DefaultQualifier(value="Nullable", locations={DefaultLocation.UPPER\_BOUNDS})>.
+\<@DefaultQualifier(value=Nullable.class, locations={DefaultLocation.UPPER\_BOUNDS})>.
 
 
 \subsection{Type annotations on a use of a generic type variable}
 
-A type annotation on a generic type variable overrides/ignores any type
+A type annotation on a use of a generic type variable overrides/ignores any type
 qualifier (in the same type hierarchy) on the corresponding actual type
 argument.  For example, suppose that \code{T} is a formal type parameter.
 Then using \code{@Nullable T} within the scope of \code{T} applies the type
-qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}.
+qualifier \code{@Nullable} to the (unqualified) Java type of \code{T}\@.
 This feature is only rarely used.
 
 Here is an example of applying a type annotation to a generic type
@@ -256,7 +271,7 @@ In \code{MyClass2<@Interned String>},
 \subsection{Covariant type parameters\label{covariant-type-parameters}}
 
 Java types are \emph{invariant} in their type parameter.  This means that
-\code{A<X>} is a subtype of \code{B<Y>} only if $\<X> \equiv \<Y>$.  For
+\code{A<X>} is a subtype of \code{B<Y>} only if \<X> is identical to \<Y>.  For
 example, \code{ArrayList<Number>} is a subtype of \code{List<Number>}, but
 neither \code{ArrayList<Integer>} nor \code{List<Integer>} is a subtype of
 \code{List<Number>}.  (If they were, there would be a type hole in the Java
@@ -266,23 +281,28 @@ of \code{List<String>}.
 
 When a type parameter is used in a read-only way --- that is, when values
 of that type are read but are never assigned --- then it is safe for the
-type to be \emph{covariant} in the type parameter.  This means that a
-subtype's type parameter can be a subtype of the supertype's type
-parameter.  Use the \<@\refclass{nullness/quals}{Covariant}> annotation to indicate
+type to be \emph{covariant} in the type parameter.  Use the \<@\refclass{nullness/quals}{Covariant}> annotation to indicate
 this.
+When a type parameter is covariant, two instantiations of the class with
+different type arguments have the same subtyping relationship as the type
+arguments do.
 
 For example, consider \<Iterator>.  Its elements can be read but not
 written, so \code{Iterator<@Nullable String>} can be a subtype of
 \code{Iterator<String>} without introducing a hole in the type system.
 Therefore, its type parameter is annotated with \<@Covariant>.
 The first type parameter of \<Map.Entry> is also covariant.
-Another example would be a hypothetical class \<ImmutableList>.
+Another example would be the type parameter of a hypothetical class
+\<ImmutableList>. 
 
 The \<@Covariant> annotation is trusted but not checked.
-If you write \<@Covariant> in a position that can be written (say, by a
-\<set> operation), then you have created an unsoundness in the type system.
+If you incorrectly specify as covariant a type parameter that that can be
+written (say, the class performs a
+\<set> operation or some other mutation on an object of that type), then
+you have created an unsoundness in the type system.
 For example, it would be incorrect to annotate the type parameter of
-\<ListIterator>, which supports a \<set> operation.
+\<ListIterator> as covariant, because \<ListIterator> supports a \<set>
+operation.
 
 
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
@@ -291,6 +311,24 @@ The Checker Framework also supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
 type signatures.  This is similar to Java's generics, but is used in
 situations where you cannot use Java generics.
+
+To \emph{use} a polymorphic qualifier, just write it on a type.
+For example, you can write \<@PolyNull> anywhere in a method that you would write
+\<@NonNull> or \<@Nullable>.
+A polymorphic qualifiers can be used on a method signature or body.
+It may not be used on a class or field.
+
+A method written using a polymorphic qualifier conceptually has multiple
+versions, somewhat like a template in C++ or the generics feature of Java.
+In each version, each instance of the polymorphic qualifier has been
+replaced by the same other qualifier from the hierarchy.  See the examples
+below in Section~\ref{qualifier-polymorphism-examples}.
+
+The method body must type-check with all signatures.  A method call is
+type-correct if it type-checks under any one of the signatures.  If a call
+matches multiple signatures, then the compiler uses the most specific
+matching signature for the purpose of type-checking.  This is the same as
+Java's rule for resolving overloaded methods.
 
 To \emph{define} a polymorphic qualifier, mark the definition with
 \<@\refclass{quals}{PolymorphicQualifier}>.  For example,
@@ -303,24 +341,9 @@ qualifier for the Nullness type system:
   public @interface PolyNull { }
 \end{Verbatim}
 
-To \emph{use} a polymorphic qualifier, just write it on a type.
-For example, you can write \<@PolyNull> anywhere that you would write
-\<@NonNull> or \<@Nullable>.
-
-A method written using a polymorphic qualifier conceptually has multiple
-versions, somewhat like a template in C++ or the generics feature of Java.
-In each version, each instance of the polymorphic qualifier has been
-replaced by the same other qualifier from the hierarchy.  See the examples
-below in Section~\ref{qualifier-polymorphism-examples}.
-
-The method body must type-check with all signatures.  A method call is
-type-correct if it type-checks under any one of the signatures.  If a call
-matches multiple signatures, then the compiler uses the most specific
-matching signature for the purpose of type-checking.  This is just like
-Java's rule for resolving overloaded methods.
-
-Polymorphic qualifiers can be used on a method signature or body.
-They may not be used on classes or fields.
+\noindent
+See Section~\ref{polyall} for a way you can sometimes avoid defining a new
+polymorphic qualifier.
 
 
 \subsection{Examples of using polymorphic qualifiers\label{qualifier-polymorphism-examples}}
@@ -348,6 +371,7 @@ methods with the same Java signature.
 As another example, consider
 
 \begin{Verbatim}
+  // Returns null if either argument is null.
   @PolyNull T max(@PolyNull T x, @PolyNull T y);
 \end{Verbatim}
 
@@ -360,6 +384,8 @@ which is like writing
 \end{Verbatim}
 
 \noindent
+At a call site, the most specific applicable signature is selected.
+
 Another way of thinking about which one of the two \code{max} variants is
 selected is that the nullness annotations of (the declared types of) both
 arguments are \emph{unified} to a type that is a supertype of both, also
@@ -370,14 +396,14 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 
 
 
-\subsection{\label{qualifier-polymorhism-vs-subtyping}Relationship to subtyping and generics}
+\subsection{Relationship to subtyping and generics\label{qualifier-polymorhism-vs-subtyping}}
 
 Qualifier polymorphism has the same purpose and plays the same role as
 Java's generics.  If a method is written using generics, it usually does
 not need qualifier polymorphism.  If you have legacy code that is not
 written generically, and you cannot change it to use generics, then you can
 use qualifier polymorphism to achieve a similar effect, with respect to
-type qualifiers only (not the base Java types).
+type qualifiers only.  The base Java types are still treated non-generically.
 
 Why not use ordinary subtyping to handle qualifier polymorphism?
 Ordinarily, when you want a method to work on multiple types, you can just
@@ -398,7 +424,7 @@ elements.  Another example is when you want two different formal parameters
 to be of the same type, without constraining them to be one specific type.
 
 
-\subsection{Use multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
+\subsection{Using multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
 
 %% I can't think of a non-clumsy way to say this.
 % Each method containing a polymorphic qualifier is (conceptually) expanded
@@ -466,31 +492,40 @@ should be used multiple times in a signature.  It can make sense to use a
 polymorphic qualifier just once, if it is on an array or generic element
 type.
 
-For example, consider a routine that returns the first index, in an array
-or collection, of a given element:
+For example, consider a routine that returns the index, in an array, of a
+given element:
 
 \begin{Verbatim}
-  public static int indexOf(@PolyNull Object[] a, Object elt) { ... }
-
-  public static int indexOf(Collection<@PolyNull Object> a, Object elt) { ... }
+  public static int indexOf(@PolyNull Object[] a, @Nullable Object elt) { ... }
 \end{Verbatim}
 
 If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
-some safe client calls would be rejected.
-
-Of course, it would be better style to use a generic method, as in either
-of these signatures (and likewise for the \<Collection> version):
+one of these safe client calls would be rejected:
 
 \begin{Verbatim}
- public static <T> int indexOf(T[] a, /*@Nullable*/ Object elt) { ... }
- public static <T> int indexOf(T[] a, T elt) { ... }
+  @Nullable Object[] a1;
+  @NonNull Object[] a2;
+
+  indexOf(a1, someObject);
+  indexOf(a2, someObject);
 \end{Verbatim}
 
-In conclusion, use of a single polymorphic qualifier may be necessary in
-legacy code, but can be avoided by use of better code style.
+Of course, it would be better style to use a generic method, as in either
+of these signatures:
+
+\begin{Verbatim}
+ public static <T extends @Nullable Object> int indexOf(T[] a, @Nullable Object elt) { ... }
+ public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
+\end{Verbatim}
+
+The examples in this section use arrays, but analogous collection examples exist.
+
+These examples show that use of a single polymorphic qualifier may be
+necessary in legacy code, but can often be avoided by use of better code
+style.
 
 
-\subsection{\code{@PolyAll} qualifier applies to every type system}
+\subsection{The \code{@PolyAll} qualifier applies to every type system\label{polyall}}
 
 Ordinarily, you have to create a new polymorphic type qualifier for each
 type system you write.  This can be tedious.  More seriously, it can lead
@@ -503,7 +538,7 @@ no matter what the array's element types are:
 \begin{Verbatim}
   /** Searches for the first occurrence of the given element in the array,
    *  testing for equality using == (not the equals method). */
-  public static int indexOfEq(/*@PolyAll*/ Object[] a, Object elt) {
+  public static int indexOfEq(@PolyAll Object[] a, @Nullable Object elt) {
     for (int i=0; i<a.length; i++)
       if (elt == a[i])
         return i;
@@ -513,15 +548,13 @@ no matter what the array's element types are:
 
 The \<@PolyAll> qualifier takes an optional argument so that you can
 specify multiple, independent polymorphic type qualifiers.  For example,
-this signature is overly restrictive:
-
-// Omit this:
-//    *  The arguments must be non-null and have equal length.
+the method also works no matter what the type argument on the second
+argument is.  This signature is overly restrictive:
 
 \begin{Verbatim}
   /** Returns true if the arrays are elementwise equal,
    *  testing for equality using == (not the equals method). */
-  public static int eltwiseEqualUsingEq(/*@PolyAll*/ Object[] a, /*@PolyAll*/ Object[] b) {
+  public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
     for (int i=0; i<a.length; i++)
       if (elt != a[i])
         return false;
@@ -535,22 +568,27 @@ two arguments.  For example, it forbids this invocation:
 
 \begin{Verbatim}
     @Mutable Object[] x;
-  @Immutable Object[] y;
-  ... eltwiseEqualUsingEq(x, y) ...
+  @Immutable Object   y;
+  ... indexOf(x, y) ...
 \end{Verbatim}
 
 \noindent
 A better signature lets the two arrays' element types vary independently:
 
 \begin{Verbatim}
-  public static int eltwiseEqualUsingEq(/*@PolyAll(1)*/ Object[] a, /*@PolyAll(2)*/ Object[] b)
+  public static int eltwiseEqualUsingEq(@PolyAll(1) Object[] a, @PolyAll(2) Object elt)
 \end{Verbatim}
+
+\noindent
+Note that in this case, the \<@Nullable> annotation on \<elt>'s type is no
+longer necessary, since it is subsumed by \<@PolyAll>.
 
 The \<@PolyAll> annotation applies to every type qualifier hierarchy for
 which no explicit qualifier is written.  For example, a declaration like
-\<@PolyAll @NonNull String s> is polymorphic over every type system
+\<@PolyAll @NonNull Object elt> is polymorphic over every type system
 \emph{except} the nullness type system, for which the type is fixed at
-\<@NonNull>.
+\<@NonNull>.  That would be the proper declaration for \<elt> if the body
+had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
 
 
 % Suppose that some type system has two qualifiers, such as 
@@ -565,5 +603,5 @@ which no explicit qualifier is written.  For example, a declaration like
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
 % LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
-%  LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase
+%  LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
 %  LocalWords:  PolyAll arrays'

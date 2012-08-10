@@ -23,7 +23,7 @@ import com.sun.source.tree.Tree;
  * "default" annotation, or implicitly present (e.g., {@code @NonNull} for
  * {@link String} literals).
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class AnnotatedClassType {
 
     /** The element node related to this annotated type. */

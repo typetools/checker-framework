@@ -2,7 +2,7 @@ import checkers.nullness.quals.*;
 import java.io.*;
 import java.util.*;
 
-@checkers.quals.DefaultQualifier("Nullable")
+@checkers.quals.DefaultQualifier(Nullable.class)
 public class GenericArgs {
 
     public @NonNull Set<@NonNull String> strings = new HashSet<@NonNull String>();

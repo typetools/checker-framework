@@ -21,7 +21,7 @@ import com.sun.source.util.TreePath;
  * A type-checking visitor for type qualifiers for which the qualified type
  * is the subtype of the unqualified type.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
 
     /** The checker associated with this visitor. */

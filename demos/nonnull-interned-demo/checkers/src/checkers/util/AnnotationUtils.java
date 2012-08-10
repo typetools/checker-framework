@@ -17,7 +17,7 @@ import javax.lang.model.util.*;
 /**
  * A utility class for working with annotations.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class AnnotationUtils {
 
     private final ProcessingEnvironment env;

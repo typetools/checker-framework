@@ -38,8 +38,8 @@ public final class FlowTestChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new FlowQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new FlowQualifierHierarchy(factory);
     }
 
     @Override
@@ -52,8 +52,8 @@ public final class FlowTestChecker extends BaseTypeChecker {
 
     private final class FlowQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public FlowQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public FlowQualifierHierarchy(MultiGraphFactory f) {
+            super(f, null);
         }
 
         @Override

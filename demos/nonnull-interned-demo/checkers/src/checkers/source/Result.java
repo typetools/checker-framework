@@ -13,7 +13,7 @@ import java.util.*;
  * 
  * @see SourceChecker#report
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class Result {
 
     private static enum Type {

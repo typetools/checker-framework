@@ -41,7 +41,7 @@ import com.sun.source.util.*;
  *      @SuppressWarnings annotations)
  * </ul>
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public abstract class SourceChecker extends AbstractProcessor {
 
     /** Provides access to compiler helpers/internals. */

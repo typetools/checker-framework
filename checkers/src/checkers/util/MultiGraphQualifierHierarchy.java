@@ -12,10 +12,10 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
-import checkers.quals.PolyAll;
 import checkers.quals.PolymorphicQualifier;
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
@@ -69,11 +69,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
-        private final SourceChecker checker;
+        protected final BaseTypeChecker checker;
 
-        private final AnnotationUtils annoFactory;
+        protected final AnnotationUtils annoFactory;
 
-        public MultiGraphFactory(SourceChecker checker) {
+        public MultiGraphFactory(BaseTypeChecker checker) {
             this.supertypes = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<AnnotationMirror, AnnotationMirror>();
             this.checker = checker;
@@ -130,7 +130,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         protected QualifierHierarchy createQualifierHierarchy() {
-            return new MultiGraphQualifierHierarchy(this);
+            return checker.createQualifierHierarchy(this);
         }
 
         private boolean wasBuilt = false;
@@ -174,8 +174,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
-    protected MultiGraphQualifierHierarchy(MultiGraphFactory f) {
-        super(f.checker);
+    public MultiGraphQualifierHierarchy(MultiGraphFactory f) {
+        this(f, (Object[])null);
+    }
+
+    // Allow a subclass to provide additional constructor parameters that
+    // are simply passed back via a call to the "finish" method.
+    public MultiGraphQualifierHierarchy(MultiGraphFactory f, Object... args) {
+        super();
         // no need for copying as f.supertypes has no mutable references to it
         // TODO: also make the Set of supertypes immutable?
         this.supertypesGraph = Collections.unmodifiableMap(f.supertypes);
@@ -187,24 +193,27 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         this.bottoms = findBottoms(fullMap);
         this.polyQualifiers = f.polyQualifiers;
 
-        addPolyRelations(checker, f.annoFactory, this,
+        addPolyRelations(f.annoFactory, this,
                 fullMap, this.polyQualifiers,
                 this.tops, this.bottoms);
+
+        finish(f.annoFactory, this, fullMap, this.polyQualifiers,
+                this.tops, this.bottoms, args);
 
         this.supertypesMap = Collections.unmodifiableMap(fullMap);
         // System.out.println("MGH: " + this);
     }
 
-    protected MultiGraphQualifierHierarchy(MultiGraphQualifierHierarchy h) {
-        super(h.checker);
-        this.supertypesGraph = h.supertypesGraph;
-        this.supertypesMap = h.supertypesMap;
-        this.lubs = h.lubs;
-        this.glbs = h.glbs;
-        this.tops = h.tops;
-        this.polyQualifiers = h.polyQualifiers;
-        this.bottoms = h.bottoms;
-    }
+    /**
+     * Method to finalize the qualifier hierarchy before it becomes unmodifiable.
+     * The parameters pass all fields and allow modification.
+     */
+    protected void finish(AnnotationUtils annoFactory,
+            QualifierHierarchy qualHierarchy,
+            Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
+            Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
+            Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
+            Object... args) { }
 
     @Override
     public String toString() {
@@ -371,7 +380,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * Infer the tops of the subtype hierarchy.  Simple finds the qualifiers
      * that have no supertypes.
      */
-    protected static Set<AnnotationMirror>
+    // Not static to allow adaptation in subclasses. Only parameters should be modified.
+    protected Set<AnnotationMirror>
     findTops(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Set<AnnotationMirror> possibleTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : supertypes.keySet()) {
@@ -385,7 +395,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * Infer the bottoms of the subtype hierarchy.  Simple finds the qualifiers
      * that are not supertypes of other qualifiers.
      */
-    protected static Set<AnnotationMirror>
+    // Not static to allow adaptation in subclasses. Only parameters should be modified.
+    protected Set<AnnotationMirror>
     findBottoms(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
         bottoms.addAll(supertypes.keySet());
@@ -398,7 +409,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * Computes the transitive closure of the given map and returns it.
      */
-    protected static Map<AnnotationMirror, Set<AnnotationMirror>>
+    /* The method gets all required parameters passed in and could be static. However,
+     * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
+     */
+    protected Map<AnnotationMirror, Set<AnnotationMirror>>
     buildFullMap(Map<AnnotationMirror, Set<AnnotationMirror>> supertypes) {
         Map<AnnotationMirror, Set<AnnotationMirror>> fullMap = AnnotationUtils.createAnnotationMap();
         for (AnnotationMirror anno : supertypes.keySet()) {
@@ -419,9 +433,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *
      * Field supertypesMap is not set yet when this method is called - use fullMap instead.
      */
+    /* The method gets all required parameters passed in and could be static. However,
+     * we want to allow subclasses to adapt the behavior and therefore make it an instance method.
+     */
     // TODO: document
-    protected static void addPolyRelations(SourceChecker checker,
-            AnnotationUtils annoFactory,
+    protected void addPolyRelations(AnnotationUtils annoFactory,
             QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,

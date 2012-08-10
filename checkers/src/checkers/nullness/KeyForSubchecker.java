@@ -19,6 +19,7 @@ import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 /**
  * TODO: doc
@@ -118,14 +119,14 @@ public class KeyForSubchecker extends BaseTypeChecker {
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new KeyForQualifierHierarchy((GraphQualifierHierarchy) super.createQualifierHierarchy());
+	public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new KeyForQualifierHierarchy(factory);
     }
 
     private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public KeyForQualifierHierarchy(GraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public KeyForQualifierHierarchy(MultiGraphFactory factory) {
+            super(factory, null);
         }
 
         @Override

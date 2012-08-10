@@ -23,11 +23,11 @@ class SimplePrims {
     }
 
     void concatenation(@Untainted int s1, int s2) {
-        //:: error: (argument.type.incompatible)
         execute(s1 + s1);
+        execute(s1 += s1);
         //:: error: (argument.type.incompatible)
         execute(s1 + 3);
-        
+
         //:: error: (argument.type.incompatible)
         execute(s1 + s2);
 

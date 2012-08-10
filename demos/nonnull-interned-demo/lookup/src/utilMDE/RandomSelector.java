@@ -52,7 +52,7 @@ import java.util.*;
  *
  **/
 
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class RandomSelector<T> {
 
     // Rep Invariant: values != null && values.size() <= num_elts &&

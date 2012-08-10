@@ -21,6 +21,7 @@ import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 
 /**
@@ -166,8 +167,8 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     }
 
     @Override
-    protected GraphQualifierHierarchy.GraphFactory createQualifierHierarchyFactory() {
-        return new GraphQualifierHierarchy.GraphFactory(this, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
+    public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GraphQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
     }
 
 }

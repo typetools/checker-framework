@@ -3,7 +3,7 @@ import checkers.quals.*;
 
 class MyClass<T extends @Nullable Object> {}
 
-@DefaultQualifier(value="Nullable", locations=DefaultLocation.UPPER_BOUNDS)
+@DefaultQualifier(value=Nullable.class, locations=DefaultLocation.UPPER_BOUNDS)
 class Varargs {
   void test() { ignore(newInstance()); }
   static void ignore(MyClass<?>... consumer) {}

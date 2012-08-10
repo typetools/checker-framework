@@ -34,7 +34,7 @@ import java.util.regex.*;
  * The syntax of each of these is customizable.
  * @see #get_entry() and @see #set_entry_start_stop(String,String)
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class MultiReader implements Iterable<String>, @NonNull Iterator<@NonNull String> {
 
   /** Information about the current reader **/

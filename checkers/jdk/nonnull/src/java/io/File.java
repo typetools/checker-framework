@@ -3,6 +3,7 @@ package java.io;
 import checkers.quals.Pure;
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public class File implements Serializable, Comparable<File> {
   private static final long serialVersionUID = 0;

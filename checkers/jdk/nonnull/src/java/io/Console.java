@@ -2,6 +2,7 @@ package java.io;
 
 import checkers.nonnull.quals.Nullable;
 
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
 
 public final class Console implements Flushable {
   protected Console() {}

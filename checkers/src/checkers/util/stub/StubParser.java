@@ -334,7 +334,18 @@ public class StubParser {
 
     private void annotateAsArray(AnnotatedArrayType atype, ReferenceType typeDef) {
         List<AnnotatedTypeMirror> arrayTypes = arrayAllComponents(atype);
-        assert typeDef.getArrayCount() == arrayTypes.size() - 1;
+        assert typeDef.getArrayCount() == arrayTypes.size() - 1 ||
+                // We want to allow simply using "Object" as return type of a
+                // method, regardless of what the real type is.
+                typeDef.getArrayCount() == 0 :
+            "Mismatched array lengths; typeDef: " + typeDef.getArrayCount() +
+            " vs. arrayTypes: " + (arrayTypes.size() - 1) +
+                    "\n  typedef: " + typeDef + "\n  arraytypes: " + arrayTypes;
+        /* Separate TODO: the check for zero above ensures that "Object" can be
+         * used as return type, even when the real method uses something else.
+         * However, why was this needed for the RequiredPermissions declaration annotation?
+         * It looks like the StubParser ignored the target for annotations.
+         */
         for (int i = 0; i < typeDef.getArrayCount(); ++i) {
             List<AnnotationExpr> annotations = typeDef.getAnnotationsAtLevel(i);
             if (annotations != null) {
@@ -686,12 +697,24 @@ public class StubParser {
             String annoName = ((MarkerAnnotationExpr)annotation).getName().getName();
             annoMirror = supportedAnnotations.get(annoName);
         } else if (annotation instanceof NormalAnnotationExpr) {
-            // TODO: support @A(a=b, c=d) annotations
-            // NormalAnnotationExpr nrmanno = (NormalAnnotationExpr)annotation;
-            // String annoName = nrmanno.getName().getName();
-            // annoMirror = supportedAnnotations.get(annoName);
-            SourceChecker.errorAbort("StubParser: unhandled annotation type: " + annotation);
-            annoMirror = null; // dead code
+            NormalAnnotationExpr nrmanno = (NormalAnnotationExpr)annotation;
+            String annoName = nrmanno.getName().getName();
+            annoMirror = supportedAnnotations.get(annoName);
+            if (annoMirror == null) {
+                // Not a supported qualifier -> ignore
+                return null;
+            }
+            AnnotationUtils.AnnotationBuilder builder =
+                    new AnnotationUtils.AnnotationBuilder(env, annoMirror);
+            List<MemberValuePair> pairs = nrmanno.getPairs();
+            if (pairs!=null) {
+                for (MemberValuePair mvp : pairs) {
+                    String meth = mvp.getName();
+                    Expression exp = mvp.getValue();
+                    handleExpr(builder, meth, exp);
+                }
+            }
+            return builder.build();
         } else if (annotation instanceof SingleMemberAnnotationExpr) {
             SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr)annotation;
             String annoName = sglanno.getName().getName();
@@ -721,12 +744,33 @@ public class StubParser {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
-                builder.setValue(name, elem);
+                if (elem.getConstantValue()!=null) {
+                    builder.setValue(name, (String) elem.getConstantValue());
+                } else {
+                    builder.setValue(name, elem);
+                }
             } else if (expected.getKind() == TypeKind.ARRAY) {
-                VariableElement[] arr = { elem };
-                builder.setValue(name, arr);
+                if (elem.getConstantValue()!=null) {
+                    String[] arr = { (String) elem.getConstantValue() };
+                    builder.setValue(name, arr);
+                } else {
+                    VariableElement[] arr = { elem };
+                    builder.setValue(name, arr);
+                }
             } else {
                 SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
+            }
+        } else if (expr instanceof StringLiteralExpr) {
+            StringLiteralExpr slexpr = (StringLiteralExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.DECLARED) {
+                builder.setValue(name, slexpr.getValue());
+            } else if (expected.getKind() == TypeKind.ARRAY) {
+                String[] arr = { slexpr.getValue() };
+                builder.setValue(name, arr);
+            } else {
+                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
             }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
@@ -738,20 +782,27 @@ public class StubParser {
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
             List<Expression> aiexprvals = aiexpr.getValues();
 
-            VariableElement[] varelemarr = new VariableElement[aiexprvals.size()];
+            Object[] elemarr = new Object[aiexprvals.size()];
 
             Expression anaiexpr;
             for (int i = 0; i < aiexprvals.size(); ++i) {
                 anaiexpr = aiexprvals.get(i);
-                if (!(anaiexpr instanceof FieldAccessExpr)) {
-                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
+                if (anaiexpr instanceof FieldAccessExpr) {
+                    elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                    String constval = (String) ((VariableElement)elemarr[i]).getConstantValue();
+                    if (constval!=null) {
+                        elemarr[i] = constval;
+                    }
+                } else if (anaiexpr instanceof StringLiteralExpr) {
+                    elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
+                } else {
+                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
                 }
-                varelemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
             }
 
-            builder.setValue(name, varelemarr);
+            builder.setValue(name, elemarr);
         } else {
-            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr);
+            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
 

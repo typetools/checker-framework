@@ -22,11 +22,14 @@ import checkers.interning.quals.PolyInterned;
  * <tt>@NonNull</tt>.
  * <p>
  *
+ * <!-- TODO: uncomment when this is implemented
  * The optional argument creates conceptually distinct polymorphic
- * qualifiers, permitting them to vary independently.  When a method has
- * multiple occurrences of a single polymorphic qualifier (all of them have
- * no argument or the same argument), all of those occurrences vary
- * together.
+ * qualifiers, such as <tt>@PolyAll(1)</tt> and <tt>@PolyAll(2)</tt>.
+ * These two qualifierrs can vary independently.  When a method has
+ * multiple occurrences of a single polymorphic qualifier, all of the
+ * occurrences with the same argument (or with no argument) vary together.
+ * <p>
+ * -->
  * 
  * To support <tt>@PolyAll</tt> in a type system, simply add it to the
  * list of <tt>@TypeQualifiers</tt>.
@@ -41,6 +44,6 @@ import checkers.interning.quals.PolyInterned;
 @Retention(RetentionPolicy.RUNTIME)
 @PolymorphicQualifier
 public @interface PolyAll {
-    // TODO: support multiple variables using an id.
+    // TODO: support multiple variables using an id, then uncomment some Javadoc
     //int value() default 0;
 }
