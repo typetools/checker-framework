@@ -97,3 +97,9 @@ Note that putting data in a local variable doesn't fix the problem, just
 masks it from one particular checker.  This is bad style!
 
 ===========================================================================
+
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
+if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
+subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
+
+Can we find better naming for Basic vs. Base classes?
