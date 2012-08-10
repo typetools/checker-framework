@@ -5,8 +5,6 @@ import org.junit.Ignore;
 
 import checkers.regex.quals.Regex;
 
-//@skip-test
-//temporarily disabled until generics work properly
 class AnnotatedTypeParams3 {
     private <T extends Annotation> T
             safeGetAnnotation(Field f, Class<T> annotationClass) {
