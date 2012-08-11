@@ -22,11 +22,14 @@ import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
 public class NonNullAnnotatedTypeFactory
@@ -235,6 +238,26 @@ public class NonNullAnnotatedTypeFactory
             return super.visitIdentifier(node, type);
         }
 
+        // The result of a binary operation is always non-null.
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return null; // super.visitBinary(node, type);
+        }
+
+        // The result of a compound operation is always non-null.
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return null; // super.visitCompoundAssignment(node, type);
+        }
+
+        // The result of a unary operation is always non-null.
+        @Override
+        public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return null; // super.visitUnary(node, type);
+        }
     }
 
     protected class NonNullTypeAnnotator
