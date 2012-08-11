@@ -9,7 +9,8 @@ import com.sun.source.tree.Tree;
 
 /*>>>
 import checkers.igj.quals.*;
-*/import checkers.quals.MonotonicAnnotation;
+*/
+import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
