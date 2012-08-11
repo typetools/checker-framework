@@ -1,5 +1,6 @@
 import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier("Nullable")
+
+@checkers.quals.DefaultQualifier(Nullable.class)
 public class ArrayArgs {
 
     public void test(@NonNull String[] args) {
