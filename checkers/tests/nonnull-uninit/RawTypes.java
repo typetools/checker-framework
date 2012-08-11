@@ -2,7 +2,8 @@
 
 import checkers.nullness.quals.*;
 import java.util.*;
-@checkers.quals.DefaultQualifier("Nullable")
+
+@checkers.quals.DefaultQualifier(Nullable.class)
 class RawTypes {
 
     class Bad {
