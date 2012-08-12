@@ -135,9 +135,9 @@ public abstract class QualifierHierarchy {
             return Collections.singleton(leastUpperBound(a1, a2));
         }
 
-//        assert annos1.size() == annos2.size() && annos1.size()!=0 :
-//            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
-//                    "    Set 1: " + annos1 + " Set 2: " + annos2;
+        assert annos1.size() == annos2.size() && annos1.size()!=0 :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {
@@ -149,8 +149,8 @@ public abstract class QualifierHierarchy {
             }
         }
 
-//        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
-//                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
 
         return result;
     }
