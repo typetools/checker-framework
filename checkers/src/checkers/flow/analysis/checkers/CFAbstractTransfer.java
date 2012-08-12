@@ -712,16 +712,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // Look at the annotations from the type of the instanceof check
         // (provided by the factory)
-        AnnotatedTypeMirror typeAnnotations = analysis.getFactory()
-                .getAnnotatedType(n.getTree().getType());
-        V value = analysis
-                .createAbstractValue(typeAnnotations.getAnnotations());
+        V factoryValue = getValueFromFactory(n.getTree().getType());
 
         // Look at the value from the operand.
         V operandValue = p.getValueOfSubNode(n.getOperand());
 
         // Combine the two.
-        V mostPreciceValue = moreSpecificValue(value, operandValue);
+        V mostPreciceValue = moreSpecificValue(factoryValue, operandValue);
         result.setResultValue(mostPreciceValue);
 
         // Insert into the store if possible.
@@ -749,7 +746,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (value2 == null) {
             return value1;
         }
-        return value1.mostSpecific(value2);
+        return value1.mostSpecific(value2, value1);
     }
 
     @Override
