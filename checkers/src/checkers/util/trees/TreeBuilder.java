@@ -8,9 +8,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -62,7 +64,8 @@ import com.sun.tools.javac.util.Pair;
 
 public class TreeBuilder {
     private final Elements elements;
-    private final Types types;
+    private final Types modelTypes;
+    private final com.sun.tools.javac.code.Types javacTypes;
     private final TreeMaker maker;
     private final Names names;
     private final Symtab symtab;
@@ -70,7 +73,8 @@ public class TreeBuilder {
     public TreeBuilder(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment)env).getContext();
         elements = env.getElementUtils();
-        types = env.getTypeUtils();
+        modelTypes = env.getTypeUtils();
+        javacTypes = com.sun.tools.javac.code.Types.instance(context);
         maker = TreeMaker.instance(context);
         names = Names.instance(context);
         symtab = Symtab.instance(context);
@@ -120,7 +124,7 @@ public class TreeBuilder {
             }
 
             iteratorType =
-                types.getDeclaredType((TypeElement)types.asElement(iteratorType),
+                modelTypes.getDeclaredType((TypeElement)modelTypes.asElement(iteratorType),
                                       elementType);
         }
 
@@ -361,7 +365,7 @@ public class TreeBuilder {
         JCTree.JCBinary binary =
             maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression)left,
                          (JCTree.JCExpression)right);
-        binary.setType((Type)types.getPrimitiveType(TypeKind.BOOLEAN));
+        binary.setType((Type)modelTypes.getPrimitiveType(TypeKind.BOOLEAN));
         return binary;
     }
 
@@ -417,19 +421,8 @@ public class TreeBuilder {
             // that actually appear in an AST Tree.  Other annotations,
             // such as @Unqualified, are skipped.
             if (!AnnotatedTypeMirror.isUnqualified(am)) {
-                // Create a new Attribute to match the AnnotationMirror.
-                List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
-                for (Map.Entry<? extends ExecutableElement,
-                               ? extends AnnotationValue> entry :
-                         am.getElementValues().entrySet()) {
-                    values = values.append(new Pair<>((Symbol.MethodSymbol)entry.getKey(),
-                                                    (Attribute)entry.getValue()));
-                }
-                Attribute.Compound compound =
-                    new Attribute.Compound((Type.ClassType)am.getAnnotationType(),
-                                           values);
                 Attribute.TypeCompound typeCompound =
-                    new Attribute.TypeCompound(compound, new TypeAnnotationPosition());
+                    attributeFromAnnotationMirror(am);
 
                 JCTree.JCAnnotation annotationTree =
                     maker.Annotation(typeCompound);
@@ -548,5 +541,59 @@ public class TreeBuilder {
         annotatedTypeTree.setType((Type)annotatedType.getUnderlyingType());
 
         return annotatedTypeTree;
+    }
+
+    /**
+     * Returns a newly created Attribute.TypeCompound corresponding to an
+     * argument AnnotationMirror.
+     *
+     * @param am  an AnnotationMirror, which may be part of an AST or an internally
+     *            created subclass.
+     * @return  a new Attribute.TypeCompound corresponding to the AnnotationMirror
+     */
+    private Attribute.TypeCompound attributeFromAnnotationMirror(AnnotationMirror am) {
+        // Create a new Attribute to match the AnnotationMirror.
+        List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
+        for (Map.Entry<? extends ExecutableElement,
+                 ? extends AnnotationValue> entry :
+                 am.getElementValues().entrySet()) {
+            Attribute attribute = attributeFromAnnotationValue(entry.getValue());
+            values = values.append(new Pair<>((Symbol.MethodSymbol)entry.getKey(),
+                                              attribute));
+        }
+        Attribute.Compound compound =
+            new Attribute.Compound((Type.ClassType)am.getAnnotationType(),
+                                   values);
+        return new Attribute.TypeCompound(compound, new TypeAnnotationPosition());
+    }
+
+    /**
+     * Returns a newly created Attribute corresponding to an argument
+     * AnnotationValue.
+     *
+     * @param am  an AnnotationValue, which may be part of an AST or an internally
+     *            created subclass.
+     * @return  a new Attribute corresponding to the AnnotationValue
+     */
+    private Attribute attributeFromAnnotationValue(AnnotationValue av) {
+        // Create a new Attribute to match the AnnotationValue.
+        if (av instanceof AnnotationMirror) {
+            return attributeFromAnnotationMirror((AnnotationMirror)av);
+        }
+        
+        // TODO: Create other kinds of Attributes.
+
+        Object value = av.getValue();
+        if (value instanceof Type) {
+            return new Attribute.Class(javacTypes, (Type)value);
+        } else if (value instanceof Symbol.VarSymbol) {
+            Symbol.VarSymbol sym = (Symbol.VarSymbol) value;
+            if (sym.getKind() == ElementKind.ENUM) {
+                return new Attribute.Enum(sym.type, sym);
+            }
+        }
+
+        assert false : "Unexpected type of AnnotationValue: " + value.getClass();
+        return null;
     }
 }
