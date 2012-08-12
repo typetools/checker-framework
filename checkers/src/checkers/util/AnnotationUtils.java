@@ -2,7 +2,9 @@ package checkers.util;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import checkers.quals.*;
+/*>>>
 import checkers.nullness.quals.*;
+*/
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
@@ -991,8 +993,6 @@ public class AnnotationUtils {
 
         // TODO: this method always returns true and no-one ever looks at the return value.
         private boolean checkSubtype(TypeMirror expected, Object givenValue) {
-            final String newLine = System.getProperty("line.separator");
-
             Types types = env.getTypeUtils();
 
             if (expected.getKind().isPrimitive())
@@ -1028,10 +1028,16 @@ public class AnnotationUtils {
             }
 
             if (!isSubtype) {
-                SourceChecker.errorAbort(
-                        "given value differs from expected" + newLine +
-                        "found: " + found + newLine +
-                        "expected: " + expected);
+                if (found.toString().equals(expected.toString())) {
+                    SourceChecker.errorAbort(
+                            "given value differs from expected, but same string representation; " +
+                            "this is likely a bootclasspath/classpath issue; " +
+                            "found: " + found);
+                } else {
+                    SourceChecker.errorAbort(
+                            "given value differs from expected; " +
+                            "found: " + found + "; expected: " + expected);
+                }
                 return false; // dead code
             }
 

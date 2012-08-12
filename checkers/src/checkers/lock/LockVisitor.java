@@ -12,6 +12,7 @@ import javax.lang.model.element.Modifier;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.lock.quals.Holding;
 import checkers.source.Result;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -122,7 +123,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         } else if (methodSel.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)methodSel).getExpression().toString();
         } else {
-            checker.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
+            SourceChecker.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
             return null;
         }
     }

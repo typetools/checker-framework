@@ -17,10 +17,10 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-
+/*>>>
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.flow.analysis.FlowExpressions;
+*/import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
