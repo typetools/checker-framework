@@ -20,7 +20,9 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
+/*>>>
 import checkers.nullness.quals.NonNull;
+*/
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;

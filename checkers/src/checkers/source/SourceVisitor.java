@@ -3,7 +3,9 @@ package checkers.source;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.*;
 
+/*>>>
 import checkers.nullness.quals.*;
+*/
 import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
