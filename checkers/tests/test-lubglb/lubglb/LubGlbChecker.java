@@ -12,19 +12,19 @@ import checkers.util.AnnotationUtils;
 @TypeQualifiers( {A.class, B.class, C.class, D.class, E.class, F.class} )
 public class LubGlbChecker extends BaseTypeChecker {
 
-    private AnnotationMirror A, B, C, D, E, F;
+    private AnnotationMirror B, C, D, E; // A and F not needed
 
     @Override
     public void initChecker(ProcessingEnvironment env) {
         super.initChecker(env);
 
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
-        A = annoFactory.fromClass(A.class);
+        // A = annoFactory.fromClass(A.class);
         B = annoFactory.fromClass(B.class);
         C = annoFactory.fromClass(C.class);
         D = annoFactory.fromClass(D.class);
         E = annoFactory.fromClass(E.class);
-        F = annoFactory.fromClass(F.class);
+        // F = annoFactory.fromClass(F.class);
 
         QualifierHierarchy qh = this.getQualifierHierarchy();
 

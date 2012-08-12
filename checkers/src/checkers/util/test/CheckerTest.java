@@ -8,8 +8,10 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
+/*>>>
 import checkers.quals.*;
 import checkers.javari.quals.*;
+*/
 
 /**
  * Abstract class for testing a checker in the Checker Framework.
