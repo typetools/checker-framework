@@ -1,7 +1,9 @@
 package checkers.source;
 
+/*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
+*/
 
 import java.util.*;
 
