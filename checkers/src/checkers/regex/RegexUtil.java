@@ -3,9 +3,12 @@ package checkers.regex;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import checkers.quals.EnsuresAnnotationIf;
+import checkers.regex.quals.Regex;
+
 /*>>>
 import checkers.nullness.quals.*;
-import checkers.regex.quals.*;import checkers.quals.*;
+import checkers.regex.quals.*;
 */
 
 // This class should be kept in sync with plume.RegexUtil .
