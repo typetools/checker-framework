@@ -531,10 +531,12 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         return null;
     }
 
+    /*
     private boolean isNonNull(Element e) {
         int index = flowState.vars.indexOf(e);
         return flowState.annos.get(NONNULL, index);
     }
+     */
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
@@ -803,9 +805,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                /*if (DO_ADVANCED_CHECKS) { // TODO: Enable again
                     checker.report(Result.warning("field.not.found.nullness.parse.error", annoVal), meth);
-                }
+                }*/
                 // TODO: Check this
                 e = findElement(annoVal, flowState.vars);
             }
@@ -892,9 +894,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                     // TODO: Handles static fields only as they are
                     // resolved in compile time
                     if (ElementUtils.isError(e)) {
-                        if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                        /*if (DO_ADVANCED_CHECKS) { // TODO: Enable again
                             checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-                        }
+                        }*/
                         // TODO: Check this
                         e = findElement(check, flowState.vars);
                     }
@@ -981,9 +983,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
-                if (false && DO_ADVANCED_CHECKS) { // TODO: Enable again
+                /*if (DO_ADVANCED_CHECKS) { // TODO: Enable again
                     checker.report(Result.warning("field.not.found.nullness.parse.error", check), meth);
-                }
+                }*/
                 // TODO: Check this
                 e = findElement(check, flowState.vars);
             }
