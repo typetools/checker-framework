@@ -2,7 +2,9 @@ package checkers.util;
 
 import java.util.*;
 
+/*>>>
 import checkers.nullness.quals.Nullable;
+*/
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;

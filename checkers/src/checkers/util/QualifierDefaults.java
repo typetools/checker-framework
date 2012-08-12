@@ -262,7 +262,9 @@ public class QualifierDefaults {
             cls = d.value();
         } catch( MirroredTypeException mte ) {
             try {
-                cls = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
+                @SuppressWarnings("unchecked")
+                Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
+                cls = clscast;
             } catch (ClassNotFoundException e) {
                 SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
                 cls = null;
