@@ -12,8 +12,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
 import checkers.flow.AbstractFlow;
+/*>>>
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.PolyNull;
+*/
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;

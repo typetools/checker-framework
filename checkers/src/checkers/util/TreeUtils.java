@@ -3,7 +3,9 @@ package checkers.util;
 import java.util.EnumSet;
 import java.util.Set;
 
+/*>>>
 import checkers.nullness.quals.*;
+*/
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 

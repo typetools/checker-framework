@@ -3,8 +3,10 @@ package checkers.util.test;
 import java.util.*;
 import javax.tools.*;
 
+/*>>>
 import checkers.quals.*;
 import checkers.javari.quals.*;
+*/
 
 public class TestRun implements Iterable<Diagnostic<? extends JavaFileObject>> {
 

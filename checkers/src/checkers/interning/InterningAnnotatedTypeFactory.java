@@ -1,8 +1,5 @@
 package checkers.interning;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import javax.lang.model.element.*;
 
 import checkers.basetype.BaseTypeChecker;

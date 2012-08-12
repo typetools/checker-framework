@@ -19,7 +19,9 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
+/*>>>
 import checkers.nullness.quals.*;
+*/
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -795,7 +797,7 @@ implements Flow {
         if (iter != null) {
             propagateFromType(var, iter);
         } else {
-            checker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+            SourceChecker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
         }
 
         ST stEntry = copyState(flowState);
