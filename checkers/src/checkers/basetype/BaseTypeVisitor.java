@@ -7,8 +7,9 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
-
+/*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.NullnessChecker;
@@ -203,33 +204,33 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         visitorState.setMethodTree(node);
 
         try {
-        Element elt = InternalUtils.symbol(node);
-        assert elt != null : "no symbol for method: " + node;
-        if (InternalUtils.isAnonymousConstructor(node)) {
-            // We shouldn't dig deeper
-            return null;
-        }
+            Element elt = InternalUtils.symbol(node);
+            assert elt != null : "no symbol for method: " + node;
+            if (InternalUtils.isAnonymousConstructor(node)) {
+                // We shouldn't dig deeper
+                return null;
+            }
 
-        // constructor return types are null
-        if (node.getReturnType() != null) {
-            typeValidator.visit(methodType.getReturnType(), node.getReturnType());
-        }
+            // constructor return types are null
+            if (node.getReturnType() != null) {
+                typeValidator.visit(methodType.getReturnType(), node.getReturnType());
+            }
 
-        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
-        AnnotatedDeclaredType enclosingType =
-            (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(
-                    methodElement.getEnclosingElement());
+            ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+            AnnotatedDeclaredType enclosingType =
+                    (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(
+                            methodElement.getEnclosingElement());
 
-        // Find which method this overrides!
-        Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-            annoTypes.overriddenMethods(methodElement);
-        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
-            AnnotatedDeclaredType overriddenType = pair.getKey();
-            AnnotatedExecutableType overriddenMethod =
-                annoTypes.asMemberOf(overriddenType, pair.getValue());
-            checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
-        }
-        return super.visitMethod(node, p);
+            // Find which method this overrides!
+            Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+                    annoTypes.overriddenMethods(methodElement);
+            for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
+                AnnotatedDeclaredType overriddenType = pair.getKey();
+                AnnotatedExecutableType overriddenMethod =
+                        annoTypes.asMemberOf(overriddenType, pair.getValue());
+                checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
+            }
+            return super.visitMethod(node, p);
         } finally {
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
@@ -524,23 +525,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             visitorState.setAssignmentContextTree(at.getVariable());
 
             try {
-            AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
-            if (expected.getKind()!=TypeKind.ARRAY) {
-                // Expected is not an array -> direct comparison.
-                commonAssignmentCheck(expected, actual, at.getExpression(),
-                        "annotation.type.incompatible");
-            } else {
-                if (actual.getKind()==TypeKind.ARRAY) {
-                    // Both actual and expected are arrays.
+                AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
+                if (expected.getKind()!=TypeKind.ARRAY) {
+                    // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
                             "annotation.type.incompatible");
                 } else {
-                    // The declaration is an array type, but just a single element is given.
-                    commonAssignmentCheck(((AnnotatedArrayType)expected).getComponentType(),
-                            actual, at.getExpression(),
-                            "annotation.type.incompatible");
+                    if (actual.getKind()==TypeKind.ARRAY) {
+                        // Both actual and expected are arrays.
+                        commonAssignmentCheck(expected, actual, at.getExpression(),
+                                "annotation.type.incompatible");
+                    } else {
+                        // The declaration is an array type, but just a single element is given.
+                        commonAssignmentCheck(((AnnotatedArrayType)expected).getComponentType(),
+                                actual, at.getExpression(),
+                                "annotation.type.incompatible");
+                    }
                 }
-            }
             } finally {
                 visitorState.setAssignmentContextTree(preAssCtxt);
             }
