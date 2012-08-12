@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import com.sun.org.apache.xml.internal.serializer.ToStream;
+
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.AnnotationUtils;
@@ -101,22 +103,24 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation thisAnno = annotations[i];
             InferredAnnotation otherAnno = other.annotations[i];
-            if (thisAnno == null) { // thisAnno is top
+            if (isSubtype(i, thisAnno, otherAnno)) {
                 resultAnnotations[i] = otherAnno;
-            } else if (otherAnno == null) { // otherAnno is top
+            } else if (isSubtype(i, otherAnno, thisAnno)) {
                 resultAnnotations[i] = thisAnno;
+            } else if (thisAnno.isNoInferredAnnotation()
+                    || otherAnno.isNoInferredAnnotation()) {
+                // LUB must be 'top'
+                resultAnnotations[i] = null;
             } else {
                 // Compute lub using the qualifier hierarchy.
+                Set<AnnotationMirror> thisAnnos = thisAnno.getAnnotations();
+                Set<AnnotationMirror> otherAnnos = otherAnno.getAnnotations();
+                assert thisAnnos.size() == 1 && otherAnnos.size() == 1;
                 Set<AnnotationMirror> lub = analysis.qualifierHierarchy
-                        .leastUpperBounds(thisAnno.getAnnotations(),
-                                otherAnno.getAnnotations());
-                if (lub.size() == 0) {
-                    resultAnnotations[i] = NoInferredAnnotation.INSTANCE;
-                } else {
-                    assert lub.size() == 1;
-                    resultAnnotations[i] = new InferredAnnotation(lub
-                            .iterator().next());
-                }
+                        .leastUpperBounds(thisAnnos, otherAnnos);
+                assert lub.size() == 1;
+                resultAnnotations[i] = new InferredAnnotation(lub.iterator()
+                        .next());
             }
         }
 
@@ -124,40 +128,66 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     }
 
     /**
-     * Returns whether this value is a proper subtype of the argument
-     * {@code other}. The annotations are compared per hierarchy, and missing
-     * annotations are treated as 'top'.
+     * Returns whether this value is a subtype of the argument {@code other}.
+     * The annotations are compared per hierarchy, and missing annotations are
+     * treated as 'top'.
      */
     public boolean isSubtypeOf(CFAbstractValue<V> other) {
+        boolean result = true;
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation thisAnno = annotations[i];
             InferredAnnotation otherAnno = other.annotations[i];
-            Set<AnnotationMirror> thisAnnos;
-            Set<AnnotationMirror> otherAnnos;
-            if (otherAnno == null) { // thisAnno is top
-                otherAnnos = Collections.singleton(tops[i]);
-            } else {
-                otherAnnos = otherAnno.getAnnotations();
-            }
-            if (thisAnno == null) { // otherAnno is top
-                thisAnnos = Collections.singleton(tops[i]);
-            } else {
-                thisAnnos = thisAnno.getAnnotations();
-            }
-            if (thisAnnos.isEmpty()) {
-                Set<AnnotationMirror> top = Collections.singleton(tops[i]);
-                return AnnotationUtils.areSame(otherAnnos, top);
-            }
-            if (otherAnnos.isEmpty()) {
-                Set<AnnotationMirror> top = Collections.singleton(tops[i]);
-                return !AnnotationUtils.areSame(thisAnnos, top);
-            }
-            assert thisAnnos.size() == 1 && otherAnnos.size() == 1;
-            if (!analysis.qualifierHierarchy.isSubtype(thisAnnos, otherAnnos)) {
-                return false;
-            }
+            result &= isSubtype(i, thisAnno, otherAnno);
         }
-        return true;
+        return result;
+    }
+
+    /**
+     * Returns whether {@code a} is a subtype of {@code b}, where it is assumed
+     * that both {@code a} and {@code b} are part of the hierarchy identified by
+     * {@code topIndex}.
+     *
+     * <p>
+     * If one of the arguments is {@code null}, then it is assumed that 'top'
+     * (from that hierarchy) is meant.
+     *
+     * <p>
+     * Arguments can be {@link NoInferredAnnotation}, which can occur for
+     * generics. In that case, subtyping is handled as follows, where we use
+     * {@code []} to denote {@link NoInferredAnnotation}:
+     * <ul>
+     * <li>{@code [] <: []},
+     * <li>{@code [] <: @A} for an annotation {@code A} if an only if {@code A}
+     * is 'top' from this hierarchy,
+     * <li>{@code false} otherwise.
+     * </ul>
+     */
+    protected boolean isSubtype(int topIndex, InferredAnnotation a,
+            InferredAnnotation b) {
+        Set<AnnotationMirror> as;
+        Set<AnnotationMirror> bs;
+        AnnotationMirror top = tops[topIndex];
+        Set<AnnotationMirror> topSet = Collections.singleton(top);
+        if (b == null) {
+            // null is top
+            bs = topSet;
+        } else {
+            bs = b.getAnnotations();
+        }
+        if (a == null) {
+            // null is top
+            as = topSet;
+        } else {
+            as = a.getAnnotations();
+        }
+        if (as.isEmpty()) {
+            return AnnotationUtils.areSame(bs, topSet);
+        }
+        if (bs.isEmpty()) {
+            return !AnnotationUtils.areSame(as, topSet);
+        }
+        assert as.size() == 1 && bs.size() == 1;
+        return analysis.qualifierHierarchy.isSubtype(as, bs);
     }
 
     /**
@@ -176,23 +206,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation aAnno = annotations[i];
             InferredAnnotation bAnno = other.annotations[i];
-            // TODO: what should happen if the annotations on one
-            // side are empty? Is taking the other side always sound?
-            // Or should this be an error for non-type-variables?
-            if (aAnno == null || aAnno.getAnnotations().isEmpty()) {
-                resultAnnotations[i] = bAnno;
-            } else if (bAnno == null || bAnno.getAnnotations().isEmpty()) {
+
+            if (isSubtype(i, aAnno, bAnno)) {
                 resultAnnotations[i] = aAnno;
             } else {
-                // Compute the more specific annotation using the qualifier
-                // hierarchy.
-                boolean subtype = analysis.qualifierHierarchy.isSubtype(
-                        aAnno.getAnnotations(), bAnno.getAnnotations());
-                if (subtype) {
-                    resultAnnotations[i] = aAnno;
-                } else {
-                    resultAnnotations[i] = bAnno;
-                }
+                resultAnnotations[i] = bAnno;
             }
         }
         return analysis.createAbstractValue(resultAnnotations);
@@ -320,6 +338,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         public Set<AnnotationMirror> getAnnotations() {
             return Collections.singleton(annotation);
         }
+
+        @Override
+        public String toString() {
+            return annotation.toString();
+        }
     }
 
     /**
@@ -349,6 +372,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         @Override
         public Set<AnnotationMirror> getAnnotations() {
             return Collections.emptySet();
+        }
+
+        @Override
+        public String toString() {
+            return "[]";
         }
     }
 }
