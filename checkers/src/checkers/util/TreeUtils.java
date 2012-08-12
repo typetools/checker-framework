@@ -3,7 +3,9 @@ package checkers.util;
 import java.util.EnumSet;
 import java.util.Set;
 
+/*>>>
 import checkers.nullness.quals.*;
+*/
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -21,9 +23,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 
 /**
  * A utility class made for helping to analyze a given {@code Tree}.

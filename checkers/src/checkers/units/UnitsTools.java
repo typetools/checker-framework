@@ -1,5 +1,6 @@
 package checkers.units;
 
+/*>>>
 import checkers.units.quals.A;
 import checkers.units.quals.C;
 import checkers.units.quals.K;
@@ -18,6 +19,7 @@ import checkers.units.quals.mm;
 import checkers.units.quals.mm2;
 import checkers.units.quals.mol;
 import checkers.units.quals.s;
+*/
 
 /**
  * Utility methods to generate annotated types and to convert between them.
