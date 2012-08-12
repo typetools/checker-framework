@@ -7,8 +7,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.org.apache.xml.internal.serializer.ToStream;
-
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.AnnotationUtils;
@@ -195,8 +193,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * {@code other}. If they do not contain information for all hierarchies,
      * then it is possible that information from both {@code this} and
      * {@code other} are taken.
+     *
+     * <p>
+     * If neither of the two is more specific for one of the hierarchies (i.e.,
+     * if the two are incomparable as determined by
+     * {@link #isSubtype(int, InferredAnnotation, InferredAnnotation)}, then the
+     * respective value from {@code backup} is used. If {@code backup} is
+     * {@code null}, then an assertion error is raised.
      */
-    public V mostSpecific(/* @Nullable */V other) {
+    public V mostSpecific(/* @Nullable */V other, /* @Nullable */V backup) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;
@@ -209,8 +214,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
             if (isSubtype(i, aAnno, bAnno)) {
                 resultAnnotations[i] = aAnno;
-            } else {
+            } else if (isSubtype(i, bAnno, aAnno)) {
                 resultAnnotations[i] = bAnno;
+            } else {
+                if (backup == null) {
+                    assert false : "Neither of the two values is more specific: "
+                            + this + ", " + other + ".";
+                } else {
+                    resultAnnotations[i] = backup.annotations[i];
+                }
             }
         }
         return analysis.createAbstractValue(resultAnnotations);

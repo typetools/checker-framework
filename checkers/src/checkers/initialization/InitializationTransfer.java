@@ -65,8 +65,8 @@ import com.sun.source.tree.MethodInvocationTree;
  * @param <T>
  *            The type of the transfer function.
  */
-public class InitializationTransfer<T extends InitializationTransfer<T>> extends
-        CFAbstractTransfer<CFValue, InitializationStore, T> {
+public class InitializationTransfer<T extends InitializationTransfer<T>>
+        extends CFAbstractTransfer<CFValue, InitializationStore, T> {
 
     protected final InitializationChecker checker;
 
@@ -80,7 +80,8 @@ public class InitializationTransfer<T extends InitializationTransfer<T>> extends
     @Override
     public InitializationStore initialStore(UnderlyingAST underlyingAST,
             List<LocalVariableNode> parameters) {
-        InitializationStore result = super.initialStore(underlyingAST, parameters);
+        InitializationStore result = super.initialStore(underlyingAST,
+                parameters);
         // Case 3: all invariant fields that have an initializer are part of
         // 'fieldValues', and can be considered initialized.
         addInitializedFields(result);
@@ -215,8 +216,9 @@ public class InitializationTransfer<T extends InitializationTransfer<T>> extends
                         .createInferredAnnotationArray(analysis, inv);
                 CFValue refinedResultValue = analysis
                         .createAbstractValue(annotations);
-                result.setResultValue(refinedResultValue.mostSpecific(result
-                        .getResultValue()));
+                CFValue oldResultValue = result.getResultValue();
+                result.setResultValue(refinedResultValue.mostSpecific(
+                        oldResultValue, null));
             }
         }
         return result;
@@ -224,11 +226,13 @@ public class InitializationTransfer<T extends InitializationTransfer<T>> extends
 
     @Override
     public TransferResult<CFValue, InitializationStore> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<CFValue, InitializationStore> in) {
+            MethodInvocationNode n,
+            TransferInput<CFValue, InitializationStore> in) {
         TransferResult<CFValue, InitializationStore> result = super
                 .visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
+        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(
+                n,
                 (ConditionalTransferResult<CFValue, InitializationStore>) result);
         if (newlyInitializedFields.size() > 0) {
             for (Element f : newlyInitializedFields) {

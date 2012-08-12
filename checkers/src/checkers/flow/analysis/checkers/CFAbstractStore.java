@@ -159,7 +159,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                         newOtherVal = analysis.createAbstractValue(
                                 CFAbstractValue.createInferredAnnotationArray(
                                         analysis, target)).mostSpecific(
-                                newOtherVal);
+                                newOtherVal, null);
                     }
                 }
                 if (newOtherVal != null) {
@@ -254,21 +254,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             V oldValue = localVariableValues.get(localVar);
-            localVariableValues.put(localVar, value.mostSpecific(oldValue));
+            localVariableValues.put(localVar, value.mostSpecific(oldValue, null));
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || fieldAcc.isUnmodifiableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
-                fieldValues.put(fieldAcc, value.mostSpecific(oldValue));
+                fieldValues.put(fieldAcc, value.mostSpecific(oldValue, null));
             }
         } else if (r instanceof FlowExpressions.PureMethodCall) {
             FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
             // Don't store any information if concurrent semantics are enabled.
             if (sequentialSemantics) {
                 V oldValue = methodValues.get(method);
-                methodValues.put(method, value.mostSpecific(oldValue));
+                methodValues.put(method, value.mostSpecific(oldValue, null));
             }
         } else {
             // No other types of expressions need to be stored.
