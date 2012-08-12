@@ -1723,9 +1723,10 @@ public class AnnotatedTypeFactory {
         return amname.toString().equals(aname);
     }
 
+    /*
     // Checks the annotation name, but not its arguments
     private boolean sameAnnotation(AnnotationMirror am, Class<? extends Annotation> anno) {
         return sameAnnotation(am, anno.getCanonicalName());
     }
-
+     */
 }

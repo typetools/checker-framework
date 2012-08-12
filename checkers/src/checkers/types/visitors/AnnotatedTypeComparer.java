@@ -1,7 +1,6 @@
 package checkers.types.visitors;
 
 import java.util.*;
-import java.lang.UnsupportedOperationException;
 
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
