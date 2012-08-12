@@ -871,8 +871,12 @@ public class CFGBuilder {
                 if (cur.isEmpty()) {
                     computeNeighborhoodOfEmptyBlockBackwards(cur, empty,
                             predecessors);
-                    empty.add(cur);
+                    assert empty.contains(cur) : "cur ought to be in empty";
                     succ = (BlockImpl) cur.getSuccessor();
+                    if (succ == cur) {
+                        // An infinite loop, making exit block unreachable
+                        break;
+                    }
                 } else {
                     break;
                 }
@@ -898,37 +902,36 @@ public class CFGBuilder {
         protected static void computeNeighborhoodOfEmptyBlockBackwards(
                 RegularBlockImpl start, Set<RegularBlockImpl> empty,
                 Set<PredecessorHolder> predecessors) {
-            Queue<RegularBlockImpl> worklist = new LinkedList<>();
-            worklist.add(start);
-            while (!worklist.isEmpty()) {
-                RegularBlockImpl cur = worklist.poll();
-                empty.add(cur);
-                for (final BlockImpl pred : cur.getPredecessors()) {
-                    switch (pred.getType()) {
-                    case SPECIAL_BLOCK:
-                        // add pred correctly to predecessor list
-                        predecessors.add(getPredecessorHolder(pred, cur));
-                        break;
-                    case CONDITIONAL_BLOCK:
-                        // add pred correctly to predecessor list
-                        predecessors.add(getPredecessorHolder(pred, cur));
-                        break;
-                    case EXCEPTION_BLOCK:
-                        // add pred correctly to predecessor list
-                        predecessors.add(getPredecessorHolder(pred, cur));
-                        break;
-                    case REGULAR_BLOCK:
-                        RegularBlockImpl r = (RegularBlockImpl) pred;
-                        if (r.isEmpty()) {
-                            // recursively look backwards
+
+            RegularBlockImpl cur = start;
+            empty.add(cur);
+            for (final BlockImpl pred : cur.getPredecessors()) {
+                switch (pred.getType()) {
+                case SPECIAL_BLOCK:
+                    // add pred correctly to predecessor list
+                    predecessors.add(getPredecessorHolder(pred, cur));
+                    break;
+                case CONDITIONAL_BLOCK:
+                    // add pred correctly to predecessor list
+                    predecessors.add(getPredecessorHolder(pred, cur));
+                    break;
+                case EXCEPTION_BLOCK:
+                    // add pred correctly to predecessor list
+                    predecessors.add(getPredecessorHolder(pred, cur));
+                    break;
+                case REGULAR_BLOCK:
+                    RegularBlockImpl r = (RegularBlockImpl) pred;
+                    if (r.isEmpty()) {
+                        // recursively look backwards
+                        if (!empty.contains(r)) {
                             computeNeighborhoodOfEmptyBlockBackwards(r, empty,
                                     predecessors);
-                        } else {
-                            // add pred correctly to predecessor list
-                            predecessors.add(getPredecessorHolder(pred, cur));
                         }
-                        break;
+                    } else {
+                        // add pred correctly to predecessor list
+                        predecessors.add(getPredecessorHolder(pred, cur));
                     }
+                    break;
                 }
             }
         }
@@ -4100,7 +4103,7 @@ public class CFGBuilder {
      * Print a set of {@link Block}s and the edges between them. This is useful
      * for examining the results of phase two.
      */
-    protected void printBlocks(Set<Block> blocks) {
+    protected static void printBlocks(Set<Block> blocks) {
         for (Block b : blocks) {
             System.out.print(b.hashCode() + ": " + b);
             switch (b.getType()) {
