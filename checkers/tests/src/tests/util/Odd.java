@@ -13,6 +13,6 @@ import com.sun.source.tree.Tree;
 @TypeQualifier
 @Inherited
 @ImplicitFor ( trees = { Tree.Kind.NULL_LITERAL } )
-@SubtypeOf(MonoOdd.class)
+@SubtypeOf(MonotonicOdd.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Odd {}
