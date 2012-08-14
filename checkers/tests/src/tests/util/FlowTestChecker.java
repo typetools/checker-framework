@@ -19,7 +19,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import com.sun.source.tree.CompilationUnitTree;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Value.class, Odd.class, MonoOdd.class, Unqualified.class, Bottom.class } )
+@TypeQualifiers( { Value.class, Odd.class, MonotonicOdd.class, Unqualified.class, Bottom.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
 
     protected AnnotationMirror VALUE;

@@ -25,7 +25,7 @@ import com.sun.source.tree.CompilationUnitTree;
  * This checker should only be used for testing the framework.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers({ Odd.class, MonoOdd.class, Even.class, Unqualified.class,
+@TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
         Bottom.class })
 public final class TestChecker extends BaseTypeChecker {
     @Override
