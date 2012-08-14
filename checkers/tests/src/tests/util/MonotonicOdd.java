@@ -14,4 +14,4 @@ import checkers.quals.Unqualified;
 @SubtypeOf(Unqualified.class)
 @Target({ElementType.TYPE_USE})
 @MonotonicAnnotation(Odd.class)
-public @interface MonoOdd {}
+public @interface MonotonicOdd {}

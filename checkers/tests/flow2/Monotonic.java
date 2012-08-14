@@ -7,8 +7,8 @@ import tests.util.*;
 class Monotonic {
     
     String f1;
-    @MonoOdd String f2;
-    @MonoOdd String f2b;
+    @MonotonicOdd String f2;
+    @MonotonicOdd String f2b;
     @Odd String f3;
     Monotonic[] ms;
     
@@ -28,7 +28,7 @@ class Monotonic {
         //:: error: (assignment.type.incompatible)
         f2 = f1;
         //:: error: (monotonic.type.incompatible)
-        f2 = f2b; // assigning @MonoOdd to @MonoOdd is not allowed
+        f2 = f2b; // assigning @MonotonicOdd to @MonotonicOdd is not allowed
     }
     
     void t3(@Odd String p1) {
