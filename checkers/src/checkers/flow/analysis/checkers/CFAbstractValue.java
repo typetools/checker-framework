@@ -101,14 +101,27 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation thisAnno = annotations[i];
             InferredAnnotation otherAnno = other.annotations[i];
-            if (thisAnno.isNoInferredAnnotation()
-                    || otherAnno.isNoInferredAnnotation()) {
+            Set<AnnotationMirror> thisAnnos;
+            Set<AnnotationMirror> otherAnnos;
+            AnnotationMirror top = tops[i];
+            Set<AnnotationMirror> topSet = Collections.singleton(top);
+            if (thisAnno == null) {
+                // null is top
+                thisAnnos = topSet;
+            } else {
+                thisAnnos = thisAnno.getAnnotations();
+            }
+            if (otherAnno == null) {
+                // null is top
+                otherAnnos = topSet;
+            } else {
+                otherAnnos = otherAnno.getAnnotations();
+            }
+            if (thisAnnos.isEmpty() || otherAnnos.isEmpty()) {
                 // LUB must be [], as [] is the top of the hierarchy
                 resultAnnotations[i] = NoInferredAnnotation.INSTANCE;
             } else {
                 // Compute lub using the qualifier hierarchy.
-                Set<AnnotationMirror> thisAnnos = thisAnno.getAnnotations();
-                Set<AnnotationMirror> otherAnnos = otherAnno.getAnnotations();
                 assert thisAnnos.size() == 1 && otherAnnos.size() == 1;
                 Set<AnnotationMirror> lub = analysis.qualifierHierarchy
                         .leastUpperBounds(thisAnnos, otherAnnos);
