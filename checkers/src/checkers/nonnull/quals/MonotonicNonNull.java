@@ -29,5 +29,5 @@ import checkers.quals.TypeQualifier;
 @Target(ElementType.TYPE_USE)
 @MonotonicAnnotation(NonNull.class)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MonoNonNull {
+public @interface MonotonicNonNull {
 }

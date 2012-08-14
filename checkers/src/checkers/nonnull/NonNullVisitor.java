@@ -47,7 +47,7 @@ public class NonNullVisitor extends
     private static final String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
-    private final AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
+    private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
     private final TypeMirror stringType;
 
     public NonNullVisitor(AbstractNonNullChecker checker,
@@ -56,7 +56,7 @@ public class NonNullVisitor extends
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
-        MONONONNULL = checker.MONONONNULL;
+        MONOTONICNONNULL = checker.MONOTONICNONNULL;
         stringType = elements.getTypeElement("java.lang.String").asType();
         checkForAnnotatedJdk();
     }
@@ -69,7 +69,7 @@ public class NonNullVisitor extends
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
-            if (atypeFactory.fromElement(elem).hasAnnotation(MONONONNULL)
+            if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONICNONNULL)
                     && !checker
                             .getLintOption(
                                     "strictMonotonicNonNullInit",
@@ -251,7 +251,7 @@ public class NonNullVisitor extends
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONONONNULL)) {
+            if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONOTONICNONNULL)) {
                 return true;
             }
         }
