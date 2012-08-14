@@ -40,12 +40,12 @@ import com.sun.source.tree.Tree;
  * This annotation is associated with the {@link AbstractNonNullChecker}.
  *
  * @see Nullable
- * @see MonoNonNull
+ * @see MonotonicNonNull
  * @see AbstractNonNullChecker
  */
 @Documented
 @TypeQualifier
-@SubtypeOf(MonoNonNull.class)
+@SubtypeOf(MonotonicNonNull.class)
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(types = { TypeKind.PACKAGE }, typeClasses = { AnnotatedPrimitiveType.class }, trees = {

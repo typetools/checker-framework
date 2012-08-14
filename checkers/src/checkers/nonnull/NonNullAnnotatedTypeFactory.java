@@ -10,7 +10,7 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
-import checkers.nonnull.quals.MonoNonNull;
+import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.types.AnnotatedTypeFactory;
@@ -55,7 +55,7 @@ public class NonNullAnnotatedTypeFactory
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
 
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
-                annotations.fromClass(MonoNonNull.class));
+                annotations.fromClass(MonotonicNonNull.class));
 
         // aliases borrowed from NullnessAnnotatedTypeFactory
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);

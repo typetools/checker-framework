@@ -22,7 +22,7 @@ import com.sun.source.tree.Tree;
  * This annotation is associated with the {@link AbstractNonNullChecker}.
  *
  * @see NonNull
- * @see MonoNonNull
+ * @see MonotonicNonNull
  * @see AbstractNonNullChecker
  */
 @Documented

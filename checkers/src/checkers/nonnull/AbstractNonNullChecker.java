@@ -9,7 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
-import checkers.nonnull.quals.MonoNonNull;
+import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.types.AnnotatedTypeFactory;
@@ -29,7 +29,7 @@ import com.sun.source.tree.CompilationUnitTree;
 public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
-    public AnnotationMirror NONNULL, NULLABLE, MONONONNULL;
+    public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
     public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
 
@@ -43,7 +43,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
                 .getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
-        MONONONNULL = annoFactory.fromClass(MonoNonNull.class);
+        MONOTONICNONNULL = annoFactory.fromClass(MonotonicNonNull.class);
 
         super.initChecker(processingEnv);
     }
@@ -64,7 +64,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     public Set<AnnotationMirror> getNonNullAnnotations() {
         Set<AnnotationMirror> result = new HashSet<>();
         result.add(NONNULL);
-        result.add(MONONONNULL);
+        result.add(MONOTONICNONNULL);
         result.add(NULLABLE);
         return result;
     }
@@ -75,7 +75,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
                 super.getInvalidConstructorReturnTypeAnnotations());
         l.add(NonNull.class);
         l.add(Nullable.class);
-        l.add(MonoNonNull.class);
+        l.add(MonotonicNonNull.class);
         return l;
     }
 
@@ -90,7 +90,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         Set<Class<? extends Annotation>> supportedTypeQualifiers = new HashSet<>();
         supportedTypeQualifiers.add(NonNull.class);
         supportedTypeQualifiers.add(Nullable.class);
-        supportedTypeQualifiers.add(MonoNonNull.class);
+        supportedTypeQualifiers.add(MonotonicNonNull.class);
         return createQualifierHierarchy(supportedTypeQualifiers,
                 AnnotationUtils.getInstance(env), factory);
     }
