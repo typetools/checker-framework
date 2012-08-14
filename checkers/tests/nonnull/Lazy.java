@@ -5,13 +5,13 @@ import checkers.nonnull.quals.*;
 public class Lazy {
     
     @NonNull String f;
-    @MonoNonNull String g;
-    @MonoNonNull String g2;
+    @MonotonicNonNull String g;
+    @MonotonicNonNull String g2;
     @checkers.nullness.quals.LazyNonNull String _g;
     @checkers.nullness.quals.LazyNonNull String _g2;
     
     // Initialization with null is allowed for legacy reasons.
-    @MonoNonNull String init = null;
+    @MonotonicNonNull String init = null;
     
     public Lazy() {
         f = "";
