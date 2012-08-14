@@ -101,14 +101,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         for (int i = 0; i < tops.length; i++) {
             InferredAnnotation thisAnno = annotations[i];
             InferredAnnotation otherAnno = other.annotations[i];
-            if (isSubtype(i, thisAnno, otherAnno)) {
-                resultAnnotations[i] = otherAnno;
-            } else if (isSubtype(i, otherAnno, thisAnno)) {
-                resultAnnotations[i] = thisAnno;
-            } else if (thisAnno.isNoInferredAnnotation()
+            if (thisAnno.isNoInferredAnnotation()
                     || otherAnno.isNoInferredAnnotation()) {
-                // LUB must be 'top'
-                resultAnnotations[i] = null;
+                // LUB must be [], as [] is the top of the hierarchy
+                resultAnnotations[i] = NoInferredAnnotation.INSTANCE;
             } else {
                 // Compute lub using the qualifier hierarchy.
                 Set<AnnotationMirror> thisAnnos = thisAnno.getAnnotations();
@@ -178,11 +174,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         } else {
             as = a.getAnnotations();
         }
-        if (as.isEmpty()) {
-            return AnnotationUtils.areSame(bs, topSet);
-        }
         if (bs.isEmpty()) {
-            return !AnnotationUtils.areSame(as, topSet);
+            // [] is a supertype of any qualifier, and [] <: []
+            return true;
+        }
+        if (as.isEmpty()) {
+            // [] is a subtype of no qualifier (only [])
+            return false;
         }
         assert as.size() == 1 && bs.size() == 1;
         return analysis.qualifierHierarchy.isSubtype(as, bs);
