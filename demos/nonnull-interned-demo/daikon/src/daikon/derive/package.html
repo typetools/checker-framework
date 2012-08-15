@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Package overview for daikon.derive</title>
+</head>
+
+<body>
+
+<p>
+For derived variables, holds Derivations and Factories for producing
+Derivations.  All derived variables are produced by their specific
+subclass of DerivationFactory.  A class interested in generating
+Derivations will ask various DerivationFactories to instantiate them
+from a number of VarInfos, and each DerivationFactory determines how
+many (if any) Derivations are worth generating.
+</p>
+
+<p>
+Each Derivation holds a set of base variables as VarInfo.  The
+Derivation can generate: VarInfo of the derived variable it
+represents; the value of the variable when given a ValueTuple.
+</p>
+
+
+</body>
+</html>
