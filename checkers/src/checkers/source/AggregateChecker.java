@@ -1,4 +1,4 @@
-package checkers.util;
+package checkers.source;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,9 +11,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
-import checkers.source.SourceChecker;
-
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 
 /**
@@ -30,7 +27,7 @@ import com.sun.source.util.TreePath;
  */
 public abstract class AggregateChecker extends AbstractTypeProcessor {
 
-    List<SourceChecker> checkers;
+    protected List<SourceChecker> checkers;
 
     /**
      * Returns the list of supported checkers to be run together.
@@ -52,11 +49,30 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
         }
     }
 
-    //   AbstractTypeProcessor delegation
+    @Override
+    public final void init(ProcessingEnvironment env) {
+        super.init(env);
+        for (SourceChecker checker : checkers) {
+            checker.setProcessingEnvironment(env);
+        }
+    }
+
+    @Override
+    public void typeProcessingStart() {
+        super.typeProcessingStart();
+        for (SourceChecker checker : checkers) {
+            checker.typeProcessingStart();
+        }
+    }
+
+    // AbstractTypeProcessor delegation
     @Override
     public final void typeProcess(TypeElement element, TreePath tree) {
+        int errsOnLastExit = 0;
         for (SourceChecker checker : checkers) {
+            checker.errsOnLastExit = errsOnLastExit;
             checker.typeProcess(element, tree);
+            errsOnLastExit = checker.errsOnLastExit;
         }
     }
 
@@ -64,15 +80,6 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
     public void typeProcessingOver() {
         for (SourceChecker checker : checkers) {
             checker.typeProcessingOver();
-        }
-    }
-
-    //   Processor method delegation and implementation
-    @Override
-    public final void init(ProcessingEnvironment env) {
-        super.init(env);
-        for (SourceChecker checker : checkers) {
-            checker.init(env);
         }
     }
 
@@ -92,6 +99,6 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
 
     @Override
     public final SourceVersion getSupportedSourceVersion() {
-    	return SourceVersion.RELEASE_8;
+        return SourceVersion.RELEASE_8;
     }
 }
