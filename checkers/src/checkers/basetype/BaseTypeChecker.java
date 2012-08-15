@@ -90,8 +90,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
     private TypeHierarchy typeHierarchy;
 
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
-        super.initChecker(processingEnv);
+    public void initChecker() {
+        super.initChecker();
         this.supportedQuals = this.createSupportedTypeQualifiers();
         this.qualHierarchy = this.getQualifierHierarchy();
         this.typeHierarchy = this.createTypeHierarchy();
@@ -177,7 +177,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
 
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
 

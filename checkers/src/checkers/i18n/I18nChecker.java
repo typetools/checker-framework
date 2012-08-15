@@ -3,8 +3,8 @@ package checkers.i18n;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import checkers.source.AggregateChecker;
 import checkers.source.SourceChecker;
-import checkers.util.AggregateChecker;
 
 /**
  * A type-checker that enforces (and finds the violations of) two properties:
