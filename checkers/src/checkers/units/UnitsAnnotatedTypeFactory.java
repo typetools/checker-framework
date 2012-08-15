@@ -56,7 +56,7 @@ public class UnitsAnnotatedTypeFactory extends
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
 
     @Override
-    protected AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         String aname = a.getAnnotationType().toString();
         if (aliasMap.containsKey(aname)) {
             return aliasMap.get(aname);
@@ -106,7 +106,7 @@ public class UnitsAnnotatedTypeFactory extends
                     // TODO: warning
                     System.out.println("UnitsRelation mismatch, taking neither! Previous: "
                                     + bestres + " and current: " + res);
-                    return super.visitBinary(node, type);
+                    return null; // super.visitBinary(node, type);
                 }
 
                 if (res!=null) {
@@ -162,7 +162,7 @@ public class UnitsAnnotatedTypeFactory extends
                 }
             }
 
-            return super.visitBinary(node, type);
+            return null; // super.visitBinary(node, type);
         }
 
         private boolean noUnits(AnnotatedTypeMirror t) {

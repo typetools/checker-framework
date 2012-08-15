@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 // See comment in ThreadLocal class about type parameter annotation.
 public class InheritableThreadLocal<@Nullable T> extends ThreadLocal<T> {

@@ -226,7 +226,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(createPartialRegexAnnotation(concat));
                 }
             }
-            return super.visitBinary(tree, type);
+            return null; // super.visitBinary(tree, type);
         }
 
         /**
@@ -244,7 +244,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     type.addAnnotation(createRegexAnnotation(lCount + rCount));
                 }
             }
-            return super.visitCompoundAssignment(node, type);
+            return null; // super.visitCompoundAssignment(node, type);
         }
 
         /**

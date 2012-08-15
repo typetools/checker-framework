@@ -5,7 +5,7 @@ import java.util.regex.*;
 import java.io.*;
 import java.util.*;
 
-@DefaultQualifier("NonNull")
+@DefaultQualifier(NonNull.class)
 public class Expressions {
 
   public static double[] returnDoubleArray() {

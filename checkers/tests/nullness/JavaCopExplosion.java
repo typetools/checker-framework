@@ -1,7 +1,7 @@
 import checkers.nullness.quals.*;
 
 import com.sun.tools.javac.util.List;
-@checkers.quals.DefaultQualifier("Nullable")
+@checkers.quals.DefaultQualifier(Nullable.class)
 class Explosion {
     public static class ExplosiveException extends Exception{
 

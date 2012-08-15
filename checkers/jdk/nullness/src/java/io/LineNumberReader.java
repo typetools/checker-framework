@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class LineNumberReader extends BufferedReader {
   public LineNumberReader(Reader a1) { super(a1); throw new RuntimeException("skeleton method"); }

@@ -15,7 +15,7 @@ import javax.lang.model.element.*;
  * they were included via a "default" annotation or written directly as part of
  * the method invocation.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class AnnotatedMethodType {
 
     /** The element related to the annotated method. */

@@ -13,7 +13,7 @@ import javax.lang.model.util.*;
  * Creates new annotations as {@link AnnotationMirror}s that may be added to
  * {@link AnnotatedTypeMirror}s. 
  */ 
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class AnnotationFactory {
 
     /** The environment to use. */

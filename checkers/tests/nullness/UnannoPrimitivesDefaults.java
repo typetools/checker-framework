@@ -1,5 +1,5 @@
 public class UnannoPrimitivesDefaults {
-    @checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+    @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
     class Decl {
         // The return type is not annotated with @NonNull, because
         // the implicit annotation for @Primitive takes precedence.

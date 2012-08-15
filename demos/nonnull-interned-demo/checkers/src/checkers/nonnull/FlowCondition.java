@@ -15,7 +15,7 @@ import com.sun.source.util.*;
  * ExpressionTree}s, a flow-sensitive analysis like {@link FlowVisitor} that
  * uses this class doesn't need to know about specific types of conditions.
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 class FlowCondition {
    
     /** The operand for the conditional check. */

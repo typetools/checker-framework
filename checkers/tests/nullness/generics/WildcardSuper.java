@@ -16,7 +16,7 @@ class WildcardSuper {
         cell.get().toString();
     }
 
-    @DefaultQualifier("Nullable")
+    @DefaultQualifier(Nullable.class)
     void testWithImplicitNullable(@NonNull Cell<? super @NonNull String> cell) {
         //:: error: (dereference.of.nullable)
         cell.get().toString();

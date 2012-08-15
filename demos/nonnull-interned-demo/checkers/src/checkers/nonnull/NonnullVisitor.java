@@ -15,7 +15,7 @@ import javax.lang.model.element.*;
  *
  * @see SubtypeVisitor
  */
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public class NonnullVisitor extends SubtypeVisitor {
 
     /**
