@@ -12,7 +12,7 @@ import com.sun.source.util.TreePath;
  * A utility class made for helping to analyze a given {@code Tree}.
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier("checkers.nullness.quals.NonNull")
+@DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class TreeUtils {
     
     // Cannot be initialized

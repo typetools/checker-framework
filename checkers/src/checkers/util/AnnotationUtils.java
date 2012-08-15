@@ -1,7 +1,9 @@
 package checkers.util;
 
 import checkers.quals.*;
+/*>>>
 import checkers.nullness.quals.*;
+*/
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
@@ -874,7 +876,7 @@ public class AnnotationUtils {
         public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
             ExecutableElement var = findElement(elementName);
             if (var.getReturnType().getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non enum: " + var.getReturnType());
                 return null; // dead code
             }
             if (!((DeclaredType)var.getReturnType()).asElement().equals(value.getEnclosingElement())) {
@@ -893,13 +895,13 @@ public class AnnotationUtils {
 
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non array: " + var.getReturnType());
                 return null; // dead code
             }
 
             expectedType = ((ArrayType)expectedType).getComponentType();
             if (expectedType.getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a non enum component type: " + var.getReturnType());
                 return null; // dead code
             }
             if (!((DeclaredType)expectedType).asElement().equals(enumElt.getEnclosingElement())) {
@@ -926,24 +928,32 @@ public class AnnotationUtils {
 
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("exptected a non array: " + var.getReturnType());
+                SourceChecker.errorAbort("expected an array, but found: " + expectedType);
                 return null; // dead code
             }
 
             expectedType = ((ArrayType)expectedType).getComponentType();
             if (expectedType.getKind() != TypeKind.DECLARED) {
-                SourceChecker.errorAbort("exptected a non enum component type: " + var.getReturnType());
+                SourceChecker.errorAbort("expected a declared component type, but found: " + expectedType +
+                        " kind: " + expectedType.getKind());
                 return null; // dead code
             }
-            if (!((DeclaredType)expectedType).asElement().equals(values[0].getEnclosingElement())) {
-                SourceChecker.errorAbort("expected a different type of enum: " + values[0].getEnclosingElement());
+            if (!((DeclaredType)expectedType).equals(values[0].asType())) {
+                SourceChecker.errorAbort("expected a different declared component type: " +
+                        expectedType + " vs. " + values[0]);
                 return null; // dead code
             }
 
             List<AnnotationValue> res = new ArrayList<AnnotationValue>();
             for (VariableElement ev : values) {
                 checkSubtype(expectedType, ev);
-                res.add(createValue(ev));
+                // Is there a better way to distinguish between enums and
+                // references to constants?
+                if (ev.getConstantValue()!=null) {
+                    res.add(createValue(ev.getConstantValue()));
+                } else {
+                    res.add(createValue(ev));
+                }
             }
             AnnotationValue val = createValue(res);
             elementValues.put(var, val);
@@ -984,8 +994,6 @@ public class AnnotationUtils {
 
         // TODO: this method always returns true and no-one ever looks at the return value.
         private boolean checkSubtype(TypeMirror expected, Object givenValue) {
-            final String newLine = System.getProperty("line.separator");
-
             Types types = env.getTypeUtils();
 
             if (expected.getKind().isPrimitive())
@@ -1021,10 +1029,16 @@ public class AnnotationUtils {
             }
 
             if (!isSubtype) {
-                SourceChecker.errorAbort(
-                        "given value differs from expected" + newLine +
-                        "found: " + found + newLine +
-                        "expected: " + expected);
+                if (found.toString().equals(expected.toString())) {
+                    SourceChecker.errorAbort(
+                            "given value differs from expected, but same string representation; " +
+                            "this is likely a bootclasspath/classpath issue; " +
+                            "found: " + found);
+                } else {
+                    SourceChecker.errorAbort(
+                            "given value differs from expected; " +
+                            "found: " + found + "; expected: " + expected);
+                }
                 return false; // dead code
             }
 
@@ -1129,8 +1143,8 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        SourceChecker.errorAbort("No element with name " + name
-                + " in annotation " + anno);
+        SourceChecker.errorAbort("No element with name \'" + name
+                + "\' in annotation " + anno);
         return null; // dead code
     }
 
@@ -1158,8 +1172,8 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        SourceChecker.errorAbort("No element with name " + name
-                + " in annotation " + anno);
+        SourceChecker.errorAbort("No element with name \'" + name
+                + "\' in annotation " + anno);
         return null; // dead code
     }
 

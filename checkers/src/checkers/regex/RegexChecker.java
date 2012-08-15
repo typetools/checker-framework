@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
@@ -31,7 +30,7 @@ public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX, PARTIALREGEX;
     protected ExecutableElement regexValueElement;
-    private TypeMirror[] legalReferenceTypes;
+    // TODO use? private TypeMirror[] legalReferenceTypes;
 
     @Override
     public void initChecker() {
@@ -42,19 +41,21 @@ public class RegexChecker extends BaseTypeChecker {
         PARTIALREGEX = annoFactory.fromClass(PartialRegex.class);
         regexValueElement = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, processingEnv);
 
+        /*
         legalReferenceTypes = new TypeMirror[] {
             getTypeMirror("java.lang.CharSequence"),
             getTypeMirror("java.lang.Character"),
             getTypeMirror("java.util.regex.Pattern"),
             getTypeMirror("java.util.regex.MatchResult") };
+         */
     }
 
     /**
      * Gets a TypeMirror for the given class name.
-     */
     private TypeMirror getTypeMirror(String className) {
         return processingEnv.getElementUtils().getTypeElement(className).asType();
     }
+    */
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {

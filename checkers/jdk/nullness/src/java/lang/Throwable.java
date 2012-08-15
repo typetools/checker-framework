@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class Throwable implements java.io.Serializable{
     private static final long serialVersionUID = 0L;

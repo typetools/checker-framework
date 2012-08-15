@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class Math{
   public final static double E = 2.718281828459045;

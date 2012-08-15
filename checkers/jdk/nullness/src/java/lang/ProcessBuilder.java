@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class ProcessBuilder{
   public ProcessBuilder(java.util.List<String> a1) { throw new RuntimeException("skeleton method"); }

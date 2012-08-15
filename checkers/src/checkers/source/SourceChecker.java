@@ -13,15 +13,16 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.Nullable;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
+*/
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -225,7 +226,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Only public to allow tests.AnnotationBuilderTest;
      * this class should be private. TODO: nicer way?
      */
-    public static class CheckerError extends RuntimeException {
+    @SuppressWarnings("serial")
+	public static class CheckerError extends RuntimeException {
         public CheckerError(String msg, Throwable cause) {
             super(msg, cause);
         }
@@ -377,7 +379,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ")  when processing "
                     + currentRoot.getSourceFile().getName() +
-                    "; message: " + t.getMessage(), t));
+                    (t.getMessage()!=null ? "; message: " + t.getMessage() : ""), t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
@@ -864,7 +866,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @param filePath the name/path of the file to be read
      * @return  the properties
      */
-    private Properties getProperties(Class<?> cls, String filePath) {
+    protected Properties getProperties(Class<?> cls, String filePath) {
         Properties prop = new Properties();
         try {
             InputStream base = cls.getResourceAsStream(filePath);

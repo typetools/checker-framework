@@ -2,7 +2,7 @@ package java.lang;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(NonNull.class)
 @Raw
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }

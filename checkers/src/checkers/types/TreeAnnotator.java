@@ -262,4 +262,48 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         }
         return super.visitNewArray(tree, type);
     }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror rhs = typeFactory.getAnnotatedType(node.getExpression());
+            AnnotatedTypeMirror lhs = typeFactory.getAnnotatedType(node.getVariable());
+            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
+            type.replaceAnnotations(lubs);
+        }
+        return super.visitCompoundAssignment(node, type);
+    }
+
+    @Override
+    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getLeftOperand());
+            AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getRightOperand());
+            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+            type.replaceAnnotations(lubs);
+        }
+        return super.visitBinary(node, type);
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror exp = typeFactory.getAnnotatedType(node.getExpression());
+            type.replaceAnnotations(exp.getAnnotations());
+        }
+        return super.visitUnary(node, type);
+    }
+
+    /*
+     * TODO: would this make sense in general?
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getTrueExpression());
+            AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getFalseExpression());
+            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+            type.replaceAnnotations(lubs);
+        }
+        return super.visitConditionalExpression(node, type);
+    }*/
 }

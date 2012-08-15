@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier("checkers.nullness.quals.NonNull")
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class SequenceInputStream extends InputStream {
   public SequenceInputStream(java.util.Enumeration<? extends InputStream> a1) { throw new RuntimeException("skeleton method"); }

@@ -1,6 +1,5 @@
 package checkers.flow;
 
-import java.util.Collections;
 import java.util.Set;
 
 import javax.lang.model.element.*;
@@ -14,7 +13,9 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+/*>>>
 import checkers.nullness.quals.*;
+*/
 
 import com.sun.source.tree.*;
 
@@ -41,7 +42,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     @Override
     protected void newVar(VariableTree tree) {
         VariableElement var = TreeUtils.elementFromDeclaration(tree);
-        assert var != null : "no symbol from tree";
+        assert var != null : "no symbol from tree: " + tree;
 
         if (this.flowState.vars.contains(var)) {
             if (debug != null)
@@ -53,7 +54,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         this.flowState.vars.add(var);
 
         AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
-        assert type != null : "no type from symbol";
+        assert type != null : "no type from tree: " + tree;
 
         if (debug != null) {
             debug.println("Flow: newVar(" + tree + ") -- " + type);
@@ -87,7 +88,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
 
         // Get the element for the left-hand side.
         Element elt = InternalUtils.symbol(lhs);
-        assert elt != null;
+        assert elt != null : "no symbol found for " + lhs;
         AnnotatedTypeMirror eltType = factory.getAnnotatedType(elt);
 
         // Get the annotated type of the right-hand side.
@@ -96,7 +97,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
             propagateFromType(lhs, type);
             return;
         }
-        assert type != null;
+        assert type != null : "no type for " + rhs;
 
         int idx = this.flowState.vars.indexOf(elt);
         if (idx < 0)

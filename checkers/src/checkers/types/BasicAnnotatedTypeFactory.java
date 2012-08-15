@@ -2,7 +2,6 @@ package checkers.types;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +25,7 @@ import checkers.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
@@ -235,6 +235,14 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
+        AnnotatedExecutableType method = mfuPair.first;
+        poly.annotate(tree, method);
+        return mfuPair;
+    }
+
+    @Override
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.constructorFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;

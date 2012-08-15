@@ -31,7 +31,8 @@ public class AnnotationBuilderTest {
     @Test
     public void createAnnoWithoutValues() {
         AnnotationBuilder builder = new AnnotationBuilder(env, NonNull.class);
-        AnnotationMirror anno = builder.build();
+        // AnnotationMirror anno =
+        builder.build();
     }
 
     @Test
@@ -60,7 +61,8 @@ public class AnnotationBuilderTest {
     public void addingValuesAfterBuilding() {
         AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
         builder.setValue("value", "m");
-        AnnotationMirror anno = builder.build();
+        // AnnotationMirror anno = 
+        builder.build();
         builder.setValue("value", "n");
     }
 

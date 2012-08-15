@@ -2,12 +2,7 @@ package checkers.igj.quals;
 
 import java.lang.annotation.*;
 
-import javax.lang.model.type.TypeKind;
-
-import com.sun.source.tree.Tree;
-
 import checkers.quals.DefaultQualifierInHierarchy;
-import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
