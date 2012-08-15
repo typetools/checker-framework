@@ -25,7 +25,6 @@ import checkers.nullness.quals.*;
 */
 
 import com.sun.source.tree.*;
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacMessager;
@@ -64,9 +63,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     // TODO checkers should export themselves through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
     // to override
-
-    /** Provides access to compiler helpers/internals. */
-    protected ProcessingEnvironment env;
 
     /** file name of the localized messages */
     private static final String MSGS_FILE = "messages.properties";
@@ -118,7 +114,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         checker
      */
     public ProcessingEnvironment getProcessingEnvironment() {
-        return this.env;
+        return this.processingEnv;
+    }
+
+    /* This method is package visible only to allow the AggregateChecker. */
+    /* package-visible */
+    void setProcessingEnvironment(ProcessingEnvironment env) {
+        this.processingEnv = env;
     }
 
     /**
@@ -247,8 +249,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     private void logCheckerError(CheckerError ce) {
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if (processingEnv.getOptions().containsKey("printErrorStack") &&
-                ce.getCause()!=null) {
+        if ((processingEnv == null ||
+                processingEnv.getOptions() == null ||
+                processingEnv.getOptions().containsKey("printErrorStack")) &&
+                ce.getCause() != null) {
             msg.append("\nException: " +
                             ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
@@ -259,17 +263,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 cause = cause.getCause();
             }
         }
-        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+        if (this.messager != null) {
+            this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+        } else {
+            System.err.println("Exception before having a messager set up: " + msg);
+        }
     }
-
-    /**
-     * Remember whether a CheckerError occurred during
-     * the initChecker call.
-     * We do not want to throw an exception in "init" and therefore
-     * use this field to remember whether something happened and then
-     * in "typeProcess" we abort.
-     */
-    private boolean errorInInit = false;
 
     /**
      * {@inheritDoc}
@@ -283,13 +282,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @see SourceChecker#initChecker(ProcessingEnvironment)
      */
     @Override
-    public final synchronized void init(ProcessingEnvironment processingEnv) {
+    public void typeProcessingStart() {
         try {
-            super.init(processingEnv);
-            initChecker(processingEnv);
-            if (this.env == null) {
-                errorInInit = true;
-                // Set the messager first, as it wasn't initialized
+            super.typeProcessingStart();
+            initChecker();
+            if (this.messager == null) {
                 messager = (JavacMessager) processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
@@ -297,12 +294,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
         } catch (CheckerError ce) {
-            errorInInit = true;
-            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(ce);
         } catch (Throwable t) {
-            errorInInit = true;
-            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
                     t.getClass().getSimpleName() + "); message: " + t.getMessage(), t));
         }
@@ -313,9 +306,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * 
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
-    public void initChecker(ProcessingEnvironment processingEnv) {
-        this.env = processingEnv;
-
+    public void initChecker() {
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
         this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
 
@@ -338,7 +329,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     // The number of errors at the last exit of the type processor.
     // At entry to the type processor we check whether the current error count is
     // higher and then don't process the file, as it contains some Java errors.
-    private int errsOnLastExit = 0;
+    // Needs to be package-visible to allow access from AggregateChecker.
+    /* package-visible */
+    int errsOnLastExit = 0;
 
     /**
      * Type-check the code with Java specifications and then runs the Checker
@@ -348,29 +341,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        if(e==null) {
+        if (e == null) {
             messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TypeElement");
             return;
         }
-        if(p==null) {
+        if (p == null) {
             messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
-        if(errorInInit) {
-            // Nothing to do, message output already.
-            return;
-        }
 
-        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
+        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
                                   "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
-        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
@@ -486,11 +475,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         final String defaultFormat = String.format("(%s)", msgKey);
         String fmtString;
-        if (this.env.getOptions() != null /*nnbug*/
-                && this.env.getOptions().containsKey("nomsgtext"))
+        if (this.processingEnv.getOptions() != null /*nnbug*/
+                && this.processingEnv.getOptions().containsKey("nomsgtext")) {
             fmtString = defaultFormat;
-        else
+        } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
+        }
         String messageText = String.format(fmtString, args);
 
         // Replace '\n' with the proper line separator
@@ -500,7 +490,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (source instanceof Element)
             messager.printMessage(kind, messageText, (Element) source);
         else if (source instanceof Tree)
-            Trees.instance(env).printMessage(kind, messageText, (Tree) source,
+            Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
         else
             SourceChecker.errorAbort("invalid position source: "

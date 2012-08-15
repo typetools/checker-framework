@@ -60,10 +60,10 @@ public class PropertyKeyChecker extends BaseTypeChecker {
     private Set<String> lookupKeys;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
+    public void initChecker() {
+        super.initChecker();
         this.lookupKeys =
-            Collections.unmodifiableSet(buildLookupKeys(env.getOptions()));
+            Collections.unmodifiableSet(buildLookupKeys(processingEnv.getOptions()));
     }
 
     /**
@@ -77,10 +77,10 @@ public class PropertyKeyChecker extends BaseTypeChecker {
         Set<String> result = new HashSet<String>();
 
         if (options.containsKey("propfiles")) {
-            result.addAll( keysOfPropertyFiles(env.getOptions().get("propfiles")) );
+            result.addAll( keysOfPropertyFiles(processingEnv.getOptions().get("propfiles")) );
         }
         if (options.containsKey("bundlenames")) {
-            result.addAll( keysOfResourceBundle(env.getOptions().get("bundlenames")) );
+            result.addAll( keysOfResourceBundle(processingEnv.getOptions().get("bundlenames")) );
         }
 
         return result;
@@ -168,7 +168,7 @@ public class PropertyKeyChecker extends BaseTypeChecker {
 
     @Override
     public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
+        return new GraphQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(Bottom.class));
     }
 
 }

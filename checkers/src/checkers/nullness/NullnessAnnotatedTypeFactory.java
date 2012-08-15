@@ -81,6 +81,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
     public NullnessAnnotatedTypeFactory(NullnessSubchecker checker,
+            RawnessSubchecker rawnesschecker,
             CompilationUnitTree root) {
         super(checker, root);
 
@@ -132,10 +133,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
 
-        RawnessSubchecker rawness = new RawnessSubchecker();
-        rawness.currentPath = checker.currentPath;
-        rawness.init(checker.getProcessingEnvironment());
-        rawnessFactory = rawness.createFactory(root);
+        rawnessFactory = rawnesschecker.createFactory(root);
 
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
