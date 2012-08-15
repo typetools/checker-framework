@@ -2,6 +2,7 @@
 
 import checkers.nullness.quals.*;
 import java.util.*;
+
 @checkers.quals.DefaultQualifier("Nullable")
 class RawTypes {
 
@@ -204,7 +205,6 @@ class RawTypes {
 
     void cast(@Raw Object... args) {
 
-        @SuppressWarnings("rawtypes")
         //:: error: (assignment.type.incompatible)
         Object[] argsNonRaw1 = args;
 
