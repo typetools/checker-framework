@@ -22,7 +22,6 @@ import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.source.util.TaskEvent.Kind;
 
 /**
  * This class is an abstract annotation processor designed to be a
@@ -184,7 +183,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
                 hasInvokedTypeProcessingStart = true;
             }
 
-            Log log = Log.instance(((JavacProcessingEnvironment)processingEnv).getContext());
+            Log log = Log.instance(((JavacProcessingEnvironment) processingEnv).getContext());
 
             if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
                 typeProcessingOver();
