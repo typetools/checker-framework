@@ -1,6 +1,5 @@
 package checkers.util;
 
-import static javax.lang.model.util.ElementFilter.methodsIn;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 import checkers.source.SourceChecker;
@@ -27,8 +26,9 @@ public class AnnotationUtils {
 
     private static AnnotationUtils instance;
     public static AnnotationUtils getInstance(ProcessingEnvironment env) {
-        if (instance == null || instance.env != env)
+        if (instance == null || instance.env != env) {
             instance = new AnnotationUtils(env);
+        }
 
         return instance;
     }
@@ -243,7 +243,7 @@ public class AnnotationUtils {
         if (ad.getElementValues() != null)
             valMap.putAll(ad.getElementValues());
         for (ExecutableElement meth :
-            methodsIn(ad.getAnnotationType().asElement().getEnclosedElements())) {
+            ElementFilter.methodsIn(ad.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue defaultValue = meth.getDefaultValue();
             if (defaultValue != null && !valMap.containsKey(meth))
                 valMap.put(meth, defaultValue);
