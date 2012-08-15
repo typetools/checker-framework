@@ -2,7 +2,6 @@ package checkers.oigj;
 
 import java.util.Collections;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
