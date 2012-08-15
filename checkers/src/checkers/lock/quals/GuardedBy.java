@@ -48,7 +48,7 @@ import checkers.quals.TypeQualifier;
  * </li>
  * </ul>
  *
- * @see GuardedBy
+ * @see Holding
  */
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
