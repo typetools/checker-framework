@@ -1,7 +1,8 @@
 package checkers.nullness;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
@@ -36,18 +37,33 @@ public class NullnessSubchecker extends BaseTypeChecker {
 
     protected AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
 
+    // The associated Rawness Checker.
+    protected RawnessSubchecker rawnesschecker;
+
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
-        super.initChecker(processingEnv);
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        super.initChecker();
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         PRIMITIVE = annoFactory.fromClass(Primitive.class);
+
+        rawnesschecker = new RawnessSubchecker();
+        rawnesschecker.init(this.getProcessingEnvironment());
+        rawnesschecker.initChecker();
     }
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new NullnessTypeHierarchy(this, getQualifierHierarchy());
+    }
+
+    @Override
+    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+        // typeProcess is never called on the rawnesschecker.
+        // We need to at least set the path.
+        rawnesschecker.currentPath = this.currentPath;
+        return new NullnessAnnotatedTypeFactory(this, rawnesschecker, root);
     }
 
     class NullnessTypeHierarchy extends TypeHierarchy {
