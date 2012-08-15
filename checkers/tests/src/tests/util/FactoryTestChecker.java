@@ -79,11 +79,11 @@ public class FactoryTestChecker extends SourceChecker {
     SourceChecker checker;
 
     @Override
-    public void initChecker(ProcessingEnvironment p) {
-        super.initChecker(p);
+    public void initChecker() {
+        super.initChecker();
 
         // Find factory constructor
-        String checkerClassName = env.getOptions().get("checker");
+        String checkerClassName = processingEnv.getOptions().get("checker");
         try {
             if (checkerClassName != null) {
                 Class<?> checkerClass = Class.forName(checkerClassName);

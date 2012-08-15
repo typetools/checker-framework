@@ -29,10 +29,10 @@ public class KeyForSubchecker extends BaseTypeChecker {
     protected AnnotationMirror KEYFOR;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
+    public void initChecker() {
+        super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         KEYFOR = annoFactory.fromClass(KeyFor.class);
     }
 
