@@ -12,6 +12,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 
 /**
  * An aggregate checker that packages multiple checkers together.  The
@@ -65,14 +68,25 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
         }
     }
 
+    // Same functionality as the same field in SourceChecker
+    int errsOnLastExit = 0;
+
     // AbstractTypeProcessor delegation
     @Override
     public final void typeProcess(TypeElement element, TreePath tree) {
-        int errsOnLastExit = 0;
+        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Log log = Log.instance(context);
+        if (log.nerrors > this.errsOnLastExit) {
+            // If there is a Java error, do not perform any
+            // of the component type checks, but come back
+            // for the next compilation unit.
+            this.errsOnLastExit = log.nerrors;
+            return;
+        }
         for (SourceChecker checker : checkers) {
-            checker.errsOnLastExit = errsOnLastExit;
+            checker.errsOnLastExit = this.errsOnLastExit;
             checker.typeProcess(element, tree);
-            errsOnLastExit = checker.errsOnLastExit;
+            this.errsOnLastExit = checker.errsOnLastExit;
         }
     }
 
