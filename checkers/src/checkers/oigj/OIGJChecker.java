@@ -3,8 +3,8 @@ package checkers.oigj;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import checkers.source.AggregateChecker;
 import checkers.source.SourceChecker;
-import checkers.util.AggregateChecker;
 
 /**
  * A type-checker plug-in for the OIGJ immutability type system that finds (and
