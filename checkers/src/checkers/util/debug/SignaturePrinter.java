@@ -10,13 +10,14 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.AbstractElementVisitor6;
 
-import checkers.source.*;
+import checkers.source.AbstractTypeProcessor;
+import checkers.source.SourceChecker;
+import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -86,10 +87,10 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     }
 
     @Override
-    public void init(ProcessingEnvironment env) {
-        super.init(env);
-        String checkerName = env.getOptions().get("checker");
-        init(env, checkerName);
+    public void typeProcessingStart() {
+        super.typeProcessingStart();
+        String checkerName = processingEnv.getOptions().get("checker");
+        init(processingEnv, checkerName);
     }
 
     @Override

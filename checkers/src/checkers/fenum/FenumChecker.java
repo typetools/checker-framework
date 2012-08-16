@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
@@ -43,11 +42,11 @@ public class FenumChecker extends BaseTypeChecker {
     protected AnnotationMirror FENUM, BOTTOM;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils utils = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        AnnotationUtils utils = AnnotationUtils.getInstance(processingEnv);
         BOTTOM = utils.fromClass(Bottom.class);
         FENUM = utils.fromClass(Fenum.class);
-        super.initChecker(env);
+        super.initChecker();
     }
 
     /** Copied from BasicChecker.
@@ -60,7 +59,7 @@ public class FenumChecker extends BaseTypeChecker {
         Set<Class<? extends Annotation>> qualSet =
             new HashSet<Class<? extends Annotation>>();
 
-        String qualNames = env.getOptions().get("quals");
+        String qualNames = processingEnv.getOptions().get("quals");
         if (qualNames == null) {
           // maybe issue a warning?
         } else {

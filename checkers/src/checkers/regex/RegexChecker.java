@@ -2,7 +2,6 @@ package checkers.regex;
 
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -30,17 +29,17 @@ import checkers.util.TreeUtils;
 public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX, PARTIALREGEX;
-    protected ExecutableElement regexValue;
+    protected ExecutableElement regexValueElement;
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
+    public void initChecker() {
+        super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         REGEX = annoFactory.fromClass(Regex.class);
         PARTIALREGEX = annoFactory.fromClass(PartialRegex.class);
-        regexValue = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, env);
+        regexValueElement = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, processingEnv);
 
         /*
         legalReferenceTypes = new TypeMirror[] {
@@ -54,13 +53,13 @@ public class RegexChecker extends BaseTypeChecker {
     /**
      * Gets a TypeMirror for the given class name.
     private TypeMirror getTypeMirror(String className) {
-        return env.getElementUtils().getTypeElement(className).asType();
+        return processingEnv.getElementUtils().getTypeElement(className).asType();
     }
     */
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new RegexQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(RegexBottom.class));
+        return new RegexQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(RegexBottom.class));
     }
 
     /**
@@ -106,7 +105,7 @@ public class RegexChecker extends BaseTypeChecker {
          * Gets the value out of a regex annotation.
          */
         private int getRegexValue(AnnotationMirror anno) {
-            return (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue).getValue();
+            return (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValueElement).getValue();
         }
     }
 
@@ -115,7 +114,7 @@ public class RegexChecker extends BaseTypeChecker {
      * there's a problem getting the group count value.
      */
     public int getGroupCount(AnnotationMirror anno) {
-        AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValue);
+        AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValueElement);
         // If group count value is null then there's no Regex annotation
         // on the parameter so set the group count to 0. This would happen
         // if a non-regex string is passed to Pattern.compile but warnings

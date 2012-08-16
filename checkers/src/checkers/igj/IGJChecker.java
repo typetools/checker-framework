@@ -59,15 +59,15 @@ public class IGJChecker extends BaseTypeChecker {
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         READONLY = annoFactory.fromClass(ReadOnly.class);
         MUTABLE = annoFactory.fromClass(Mutable.class);
         IMMUTABLE = annoFactory.fromClass(Immutable.class);
         I = annoFactory.fromClass(I.class);
         ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
         BOTTOM_QUAL = annoFactory.fromClass(IGJBottom.class);
-        super.initChecker(env);
+        super.initChecker();
     }
 
     // **********************************************************************
