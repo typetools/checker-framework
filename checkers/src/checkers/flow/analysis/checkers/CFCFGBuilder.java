@@ -88,8 +88,8 @@ public class CFCFGBuilder extends CFGBuilder {
                 Collection<String> warningKeys = checker
                         .getSuppressWarningsKey();
                 for (String warningKey : warningKeys) {
-                    String prefix = "@SuppressWarnings(" + warningKey + ")";
-                    if (msg.startsWith(prefix)) {
+                    String key = "@AssumeAssertion(" + warningKey + ")";
+                    if (msg.contains(key)) {
                         return true;
                     }
                 }
