@@ -2,6 +2,7 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -364,15 +365,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     }
 
     /**
-     * Checks all (non-conditional) postcondition on the method {@code node}
-     * with element {@code methodElement}.
+     * Returns a set of pairs {@code (expr, annotation)} of postconditions on
+     * the method {@code methodElement}.
      */
-    protected void checkPostconditions(MethodTree node,
+    protected Set<Pair<String, String>> collectPostconditions(
             ExecutableElement methodElement) {
+        Set<Pair<String, String>> result = new HashSet<>();
         // Check for a single contract.
         AnnotationMirror ensuresAnnotation = atypeFactory.getDeclAnnotation(
                 methodElement, EnsuresAnnotation.class);
-        checkPostcondition(node, ensuresAnnotation);
+        result.addAll(collectPostcondition(ensuresAnnotation));
 
         // Check for multiple contracts.
         AnnotationMirror ensuresAnnotations = atypeFactory.getDeclAnnotation(
@@ -381,67 +383,80 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             List<AnnotationMirror> annotations = AnnotationUtils
                     .elementValueArray(ensuresAnnotations, "value");
             for (AnnotationMirror a : annotations) {
-                checkPostcondition(node, a);
+                result.addAll(collectPostcondition(a));
             }
         }
 
         // Check type-system specific annotations.
         Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
-                methodElement, metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
+        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = atypeFactory
+                .getDeclAnnotationWithMetaAnnotation(methodElement,
+                        metaAnnotation);
+        for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    anno, "value");
+            List<String> expressions = AnnotationUtils.elementValueArray(anno,
+                    "value");
             String annotationString = AnnotationUtils.elementValueClassName(
                     metaAnno, "annotation");
-            AnnotationMirror annotation = atypeFactory.annotationFromName(annotationString);
-            checkPostcondition(node, expressions, annotation);
+            for (String expr : expressions) {
+                result.add(Pair.of(expr, annotationString));
+            }
         }
+        return result;
     }
 
     /**
-     * Checks a single (non-conditional) postcondition {@code ensuresAnnotation}
-     * on the method {@code node}.
+     * Returns a set of pairs {@code (expr, annotation)} of postconditions
+     * according to the given {@link EnsuresAnnotation}.
      */
-    protected void checkPostcondition(MethodTree node,
-    /* @Nullable */AnnotationMirror ensuresAnnotation) {
-        if (ensuresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    ensuresAnnotation, "expression");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    ensuresAnnotation, "annotation");
-            AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
-            checkPostcondition(node, expressions, anno);
+    protected Set<Pair<String, String>> collectPostcondition(
+            AnnotationMirror ensuresAnnotation) {
+        if (ensuresAnnotation == null) {
+            return Collections.emptySet();
         }
+        Set<Pair<String, String>> result = new HashSet<>();
+        List<String> expressions = AnnotationUtils.elementValueArray(
+                ensuresAnnotation, "expression");
+        String annotation = AnnotationUtils.elementValueClassName(
+                ensuresAnnotation, "annotation");
+        for (String expr : expressions) {
+            result.add(Pair.of(expr, annotation));
+        }
+        return result;
     }
 
     /**
-     * Checks a single (non-conditional) postcondition for a given list of
-     * expressions {@code expressions} and the annotation {@code anno} on the
-     * method {@code node}.
+     * Checks all (non-conditional) postcondition on the method {@code node}
+     * with element {@code methodElement}.
      */
-    public void checkPostcondition(MethodTree node, List<String> expressions,
-            AnnotationMirror anno) {
-        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                        atypeFactory);
-        // Only check if the postcondition concerns this checker
-        if (!checker.isSupportedAnnotation(anno)) {
-            return;
-        }
+    protected void checkPostconditions(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, String>> postconditions = collectPostconditions(methodElement);
 
-        for (String stringExpr : expressions) {
+        for (Pair<String, String> p : postconditions) {
+            String expression = p.first;
+            AnnotationMirror annotation = atypeFactory.annotationFromName(p.second);
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
+            }
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
             FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could be
                 // optimized to store the result the first time. (same for
                 // other annotations)
-                expr = FlowExpressionParseUtil.parse(stringExpr,
+                expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
-                checkFlowExprParameters(node, stringExpr);
+                checkFlowExprParameters(node, expression);
 
                 CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
                 if (exitStore == null) {
@@ -451,11 +466,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
                     InferredAnnotation inferredAnno = value == null ? null
-                            : value.getAnnotationInHierarchy(anno);
+                            : value.getAnnotationInHierarchy(annotation);
                     if (inferredAnno == null
                             || inferredAnno.isNoInferredAnnotation()
                             || !AnnotationUtils.areSame(
-                                    inferredAnno.getAnnotation(), anno)) {
+                                    inferredAnno.getAnnotation(), annotation)) {
                         checker.report(
                                 Result.failure("contracts.postcondition.not.satisfied"),
                                 node);
@@ -1520,6 +1535,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     overriderTree);
             result = false;
         }
+
+        // Check postconditions
+
+
         return result;
     }
 
