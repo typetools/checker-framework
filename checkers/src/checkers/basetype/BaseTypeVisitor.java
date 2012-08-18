@@ -372,7 +372,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     protected void checkPostconditions(MethodTree node,
             ExecutableElement methodElement) {
         FlowExpressionContext flowExprContext = null;
-        Set<Pair<String, String>> postconditions = contractsUtils.collectPostconditions(methodElement);
+        Set<Pair<String, String>> postconditions = contractsUtils.getPostconditions(methodElement);
 
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
