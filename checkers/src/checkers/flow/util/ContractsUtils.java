@@ -48,13 +48,13 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions on
      * the method {@code methodElement}.
      */
-    public Set<Pair<String, String>> collectPostconditions(
+    public Set<Pair<String, String>> getPostconditions(
             ExecutableElement methodElement) {
         Set<Pair<String, String>> result = new HashSet<>();
         // Check for a single contract.
         AnnotationMirror ensuresAnnotation = factory.getDeclAnnotation(
                 methodElement, EnsuresAnnotation.class);
-        result.addAll(collectPostcondition(ensuresAnnotation));
+        result.addAll(getPostcondition(ensuresAnnotation));
 
         // Check for multiple contracts.
         AnnotationMirror ensuresAnnotations = factory.getDeclAnnotation(
@@ -63,7 +63,7 @@ public class ContractsUtils {
             List<AnnotationMirror> annotations = AnnotationUtils
                     .elementValueArray(ensuresAnnotations, "value");
             for (AnnotationMirror a : annotations) {
-                result.addAll(collectPostcondition(a));
+                result.addAll(getPostcondition(a));
             }
         }
 
@@ -90,7 +90,7 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions
      * according to the given {@link EnsuresAnnotation}.
      */
-    private Set<Pair<String, String>> collectPostcondition(
+    private Set<Pair<String, String>> getPostcondition(
             AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
