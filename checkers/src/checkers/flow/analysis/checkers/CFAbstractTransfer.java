@@ -1,6 +1,7 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -36,15 +37,13 @@ import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
 import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
+import checkers.flow.util.ContractsUtils;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.quals.ConditionalPostconditionAnnotation;
-import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
-import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
-import checkers.quals.PostconditionAnnotation;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.RequiresAnnotation;
 import checkers.quals.RequiresAnnotations;
@@ -516,69 +515,22 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * {@code tree} and element {@code method} to the store {@code store}.
      */
     protected void processPostconditions(MethodInvocationNode n, S store,
-            ExecutableElement method, Tree tree) {
-        // Process a single postcondition (if present).
-        AnnotationMirror ensuresAnnotation = analysis.factory
-                .getDeclAnnotation(method, EnsuresAnnotation.class);
-        processPostcondition(n, store, tree, ensuresAnnotation);
-
-        // Process multiple postconditions (if present).
-        AnnotationMirror ensuresAnnotations = analysis.factory
-                .getDeclAnnotation(method, EnsuresAnnotations.class);
-        if (ensuresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(ensuresAnnotations, "value");
-            for (AnnotationMirror a : annotations) {
-                processPostcondition(n, store, tree, a);
-            }
-        }
-
-        // Process type-system specific annotations.
-        Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = analysis.factory
-                .getDeclAnnotationWithMetaAnnotation(method, metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
-            AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "value");
-            String annotation = AnnotationUtils.elementValueClassName(metaAnno,
-                    "annotation");
-            processPostcondition(n, store, tree, expressions, annotation);
-        }
-    }
-
-    /**
-     * Add information based on the postcondition {@code ensuresAnnotation} of
-     * method {@code n} with tree {@code tree} to the store {@code store}.
-     */
-    protected void processPostcondition(MethodInvocationNode n, S store,
-            Tree tree, AnnotationMirror ensuresAnnotation) {
-        if (ensuresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    ensuresAnnotation, "expression");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    ensuresAnnotation, "annotation");
-            processPostcondition(n, store, tree, expressions, annotation);
-        }
-    }
-
-    /**
-     * Add information based on the postcondition for annotation
-     * {@code annotation} of method {@code n} with tree {@code tree} to the
-     * store {@code store}, for a given list of expressions.
-     */
-    public void processPostcondition(MethodInvocationNode n, S store,
-            Tree tree, List<String> expressions, String annotation) {
-        AnnotationMirror anno = analysis.factory.annotationFromName(annotation);
+            ExecutableElement methodElement, Tree tree) {
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.factory);
+        Set<Pair<String, String>> postconditions = contracts
+                .getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = FlowExpressionParseUtil
                 .buildFlowExprContextForUse(n, analysis.getFactory());
 
-        for (String exp : expressions) {
+        for (Pair<String, String> p : postconditions) {
+            String expression = p.first;
+            AnnotationMirror anno = analysis.factory
+                    .annotationFromName(p.second);
             try {
-                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(exp,
-                        flowExprContext, analysis.factory.getPath(tree));
+                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
+                        expression, flowExprContext,
+                        analysis.factory.getPath(tree));
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
