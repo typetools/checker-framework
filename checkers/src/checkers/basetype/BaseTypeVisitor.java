@@ -2,7 +2,6 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,11 +17,10 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import checkers.basetype.PurityChecker.PurityResult;
-/*>>>
+
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
-*/import checkers.flow.analysis.FlowExpressions;
+import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
@@ -31,22 +29,17 @@ import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ReturnNode;
+import checkers.flow.util.ContractsUtils;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nonnull.NonNullFbcChecker;
-/*>>>
-import checkers.nonnull.quals.Nullable;
-*/
 import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
-import checkers.quals.EnsuresAnnotations;
 import checkers.quals.EnsuresAnnotationsIf;
-import checkers.quals.PostconditionAnnotation;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
@@ -101,6 +94,11 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+/*>>>
+import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nonnull.quals.Nullable;
+*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -165,6 +163,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     /** For storing visitor state **/
     protected final VisitorState visitorState;
 
+    /** An instance of the {@link ContractUtils} helper class. */
+    protected final ContractsUtils contractsUtils;
+
     /** The annoated-type factory (with a more specific type than super.atypeFactory). */
     protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
 
@@ -179,7 +180,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
         assert super.atypeFactory instanceof AbstractBasicAnnotatedTypeFactory;
         atypeFactory = (AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>) super.atypeFactory;
-
+        contractsUtils = ContractsUtils.getInstance(atypeFactory);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.annoFactory = AnnotationUtils.getInstance(env);
         this.options = env.getOptions();
@@ -365,75 +366,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     }
 
     /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions on
-     * the method {@code methodElement}.
-     */
-    protected Set<Pair<String, String>> collectPostconditions(
-            ExecutableElement methodElement) {
-        Set<Pair<String, String>> result = new HashSet<>();
-        // Check for a single contract.
-        AnnotationMirror ensuresAnnotation = atypeFactory.getDeclAnnotation(
-                methodElement, EnsuresAnnotation.class);
-        result.addAll(collectPostcondition(ensuresAnnotation));
-
-        // Check for multiple contracts.
-        AnnotationMirror ensuresAnnotations = atypeFactory.getDeclAnnotation(
-                methodElement, EnsuresAnnotations.class);
-        if (ensuresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(ensuresAnnotations, "value");
-            for (AnnotationMirror a : annotations) {
-                result.addAll(collectPostcondition(a));
-            }
-        }
-
-        // Check type-system specific annotations.
-        Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = atypeFactory
-                .getDeclAnnotationWithMetaAnnotation(methodElement,
-                        metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
-            AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "value");
-            String annotationString = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
-            for (String expr : expressions) {
-                result.add(Pair.of(expr, annotationString));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions
-     * according to the given {@link EnsuresAnnotation}.
-     */
-    protected Set<Pair<String, String>> collectPostcondition(
-            AnnotationMirror ensuresAnnotation) {
-        if (ensuresAnnotation == null) {
-            return Collections.emptySet();
-        }
-        Set<Pair<String, String>> result = new HashSet<>();
-        List<String> expressions = AnnotationUtils.elementValueArray(
-                ensuresAnnotation, "expression");
-        String annotation = AnnotationUtils.elementValueClassName(
-                ensuresAnnotation, "annotation");
-        for (String expr : expressions) {
-            result.add(Pair.of(expr, annotation));
-        }
-        return result;
-    }
-
-    /**
      * Checks all (non-conditional) postcondition on the method {@code node}
      * with element {@code methodElement}.
      */
     protected void checkPostconditions(MethodTree node,
             ExecutableElement methodElement) {
         FlowExpressionContext flowExprContext = null;
-        Set<Pair<String, String>> postconditions = collectPostconditions(methodElement);
+        Set<Pair<String, String>> postconditions = contractsUtils.collectPostconditions(methodElement);
 
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
