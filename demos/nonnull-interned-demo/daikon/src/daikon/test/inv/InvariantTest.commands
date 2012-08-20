@@ -1,0 +1,284 @@
+daikon.inv.unary.scalar.LowerBound
+int
+add: -10; weakened; a >= -10
+add: -8; no_change; a >= -10
+add: 0; no_change; a >= -10
+add: -12; weakened; a >= -12
+add: -100; weakened; a >= -100
+add: -50; no_change; a >= -100
+add: -8; no_change; a >= -100
+end
+
+daikon.inv.unary.scalar.Modulus
+int
+add: 6; no_change; a == 0  (mod 0)
+add: 12; no_change; a == 0  (mod 6)
+add: 30; no_change; a == 0  (mod 6)
+add: 36; no_change; a == 0  (mod 6)
+add: 72; no_change; a == 0  (mod 6)
+add: 66; no_change; a == 0  (mod 6)
+add: 12; no_change; a == 0  (mod 6)
+add: 18; no_change; a == 0  (mod 6)
+add: 21; no_change; a == 0  (mod 3)
+add: 9; no_change; a == 0  (mod 3)
+add: 1; falsified; a == 0  (mod 3)
+add: 11; falsified; a == 0  (mod 3)
+end
+
+daikon.inv.unary.scalar.NonModulus
+int
+add: 5; no_change; a != ? (mod ?) ***
+add: 10; no_change; a != ? (mod ?) ***
+add: 15; no_change; a != ? (mod ?) ***
+add: 50; no_change; a != ? (mod ?) ***
+add: 13; no_change; a != ? (mod ?) ***
+end
+
+daikon.inv.unary.scalar.NonZero
+int
+add: 1; no_change; a != 0
+add: 2; no_change; a != 0
+add: 54; no_change; a != 0
+add: -12; no_change; a != 0
+add: -15; no_change; a != 0
+add: 0; falsified; a != 0
+end
+
+daikon.inv.unary.scalar.OneOfScalar
+int
+add: 12; weakened; a == 12
+add: 12; no_change; a == 12
+add: 12; no_change; a == 12
+add: 15; weakened; a one of { 12, 15 }
+add: 12; no_change; a one of { 12, 15 }
+add: 12; no_change; a one of { 12, 15 }
+add: 15; no_change; a one of { 12, 15 }
+add: 15; no_change; a one of { 12, 15 }
+add: 17; weakened; a one of { 12, 15, 17 }
+add: 17; no_change; a one of { 12, 15, 17 }
+add: 1; falsified; a one of { 12, 15, 17 }
+add: 2; falsified; a one of { 12, 15, 17 }
+add: 3; falsified; a one of { 12, 15, 17 }
+add: 4; falsified; a one of { 12, 15, 17 }
+end
+
+daikon.inv.unary.scalar.Positive
+int
+add: 1; no_change; a > 0
+add: 2; no_change; a > 0
+add: 3; no_change; a > 0
+add: 4; no_change; a > 0
+add: 5; no_change; a > 0
+add: 11; no_change; a > 0
+add: 0; falsified; a > 0
+add: -1; falsified; a > 0
+end
+
+daikon.inv.unary.string.OneOfString
+string
+add: "hi"; weakened; a == "hi"
+add: "hi"; no_change; a == "hi"
+add: "hi"; no_change; a == "hi"
+add: "bye"; weakened; a one of { "bye", "hi" }
+add: "bye"; no_change; a one of { "bye", "hi" }
+add: "cwcc"; weakened; a one of { "bye", "cwcc", "hi" }
+add: "goto"; falsified; a one of { "bye", "cwcc", "hi" }
+add: "comefrom"; falsified; a one of { "bye", "cwcc", "hi" }
+add: "stack"; falsified; a one of { "bye", "cwcc", "hi" }
+end
+
+daikon.inv.unary.sequence.CommonSequence
+int_array
+add: [ 1 2 3 14 54 19 ]; no_change; {1, 2, 3, 14, 54, 19} subset of a[]
+add: [ 1 2 14 54 17 ]; no_change; {1, 2, 14, 54} subset of a[]
+add: [ 1 2 19 54 ]; no_change; {1, 2, 54} subset of a[]
+add: [ 54 19 2 1 ]; no_change; {54, 2, 1} subset of a[]
+add: [ 2 1 ]; no_change; {2, 1} subset of a[]
+add: [ 1 ]; no_change; {1} subset of a[]
+add: [ 19 ]; falsified; {1} subset of a[]
+end
+
+daikon.inv.unary.sequence.EltLowerBound
+int_array
+add: [ 3 14 54 19 ]; weakened; a[] elements >= 3
+add: [ 14 54 2 17 ]; weakened; a[] elements >= 2
+add: [ 54 19 ]; no_change; a[] elements >= 2
+add: [ 1 ]; weakened; a[] elements >= 1
+add: [ -13 534 ]; weakened; a[] elements >= -13
+end
+
+daikon.inv.unary.sequence.EltNonZero
+int_array
+add: [ 3 14 54 19 ]; no_change; a[] elements != 0
+add: [ 14 54 2 17 ]; no_change; a[] elements != 0
+add: [ 54 19 ]; no_change; a[] elements != 0
+add: [ 0 ]; falsified; a[] elements != 0
+add: [ -13 534 ]; no_change; a[] elements != 0
+end
+
+daikon.inv.unary.sequence.EltOneOf
+int_array
+add: [ 25 26 ]; weakened; a[] elements one of { 25, 26 }
+add: [ 25 26 ]; no_change; a[] elements one of { 25, 26 }
+add: [ 25 ]; no_change; a[] elements one of { 25, 26 }
+add: [ -19 ]; weakened; a[] elements one of { -19, 25, 26 }
+add: [ 26 -19 25 25 -19 26 ]; no_change; a[] elements one of { -19, 25, 26 }
+add: [ -19 0 16 ]; falsified; a[] elements one of { -19, 25, 26 }
+end
+
+daikon.inv.unary.sequence.EltwiseIntEqual
+int_array
+add: [ 1 1 1 1 ]; no_change; a[] elements are equal
+add: [ -5 -5 -5 ]; no_change; a[] elements are equal
+add: [ 0 ]; no_change; a[] elements are equal
+add: [ 5 -5 ]; falsified; a[] elements are equal
+end
+
+daikon.inv.unary.sequence.NoDuplicates
+int_array
+add: [ 3 14 54 -19 ]; no_change; a[] contains no duplicates
+add: [ 14 3 54 -19 ]; no_change; a[] contains no duplicates
+add: [ 54 14 -19 3 14 ]; falsified; a[] contains no duplicates
+end
+
+daikon.inv.unary.sequence.OneOfSequence
+int_array
+add: [ 3 14 54 -19 ]; weakened; a[] == [3, 14, 54, -19]
+add: [ 3 14 54 -19 ]; no_change; a[] == [3, 14, 54, -19]
+add: [ 3 14 54 -19 ]; no_change; a[] == [3, 14, 54, -19]
+add: [ 3 14 54 -19 ]; no_change; a[] == [3, 14, 54, -19]
+add: [ 3 14 54 -19 ]; no_change; a[] == [3, 14, 54, -19]
+add: [ 3 14 -19 54 ]; weakened; a[] one of { [3, 14, -19, 54], [3, 14, 54, -19] }
+add: [ 3 ]; weakened; a[] one of { [3], [3, 14, -19, 54], [3, 14, 54, -19] }
+add: [ 0 ]; falsified; a[] one of { [3], [3, 14, -19, 54], [3, 14, 54, -19] }
+end
+
+daikon.inv.unary.stringsequence.CommonStringSequence
+string_array
+add: [ "key" "" "hi" "computer" "apple" "DEADBEEF" "run" ]; no_change; {key, , hi, computer, apple, DEADBEEF, run} subset of Elements[a]
+add: [ "map" "see" "" "hi" "computer" "apple" "ring" "DEADBEEF" "run" ]; no_change; {, hi, computer, apple, DEADBEEF, run} subset of Elements[a]
+add: [ "run" "load" "" "hi" "computer" "apple" "ring" "run" ]; no_change; {, hi, computer, apple, run} subset of Elements[a]
+add: [ "" "hi" "computer" "bye" ]; no_change; {hi, computer} subset of Elements[a]
+add: [ "computer" "hi" "" ]; no_change; {hi} subset of Elements[a]
+add: [ "zero" ]; falsified; {hi} subset of Elements[a]
+end
+
+daikon.inv.unary.stringsequence.EltOneOfString
+string_array
+add: [ "hi" "hi" ]; weakened; a[] elements == "hi"
+add: [ "bye" "bye" ]; weakened; a[] elements one of { "bye", "hi" }
+add: [ "hi" "bye" ]; no_change; a[] elements one of { "bye", "hi" }
+add: [ "java" ]; weakened; a[] elements one of { "bye", "hi", "java" }
+add: [ "zero" ]; falsified; a[] elements one of { "bye", "hi", "java" }
+end
+
+daikon.inv.unary.stringsequence.OneOfStringSequence
+string_array
+add: [ "hi" "bye" ]; weakened; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "hi" "bye" ]; no_change; a[] == [hi, bye]
+add: [ "bye" "hi" ]; weakened; a[] one of { [bye, hi], [hi, bye] }
+add: [ "bye" "bye" ]; falsified; a[] one of { [bye, hi], [hi, bye] }
+add: [ "zero" ]; falsified; a[] one of { [bye, hi], [hi, bye] }
+end
+
+daikon.inv.binary.twoScalar.IntEqual
+int int
+add: 1; 1; no_change; a == b
+add: 2; 2; no_change; a == b
+add: 3; 3; no_change; a == b
+add: 7; 7; no_change; a == b
+add: 9; -9; falsified; a == b
+end
+
+daikon.inv.binary.twoScalar.LinearBinary
+int int
+add: 3; 5; no_change; warning- too few samples for daikon.inv.binary.twoScalar.LinearBinary invariant- 0 * b == 0 * a + 0
+add: 9; 17; no_change; warning- too few samples for daikon.inv.binary.twoScalar.LinearBinary invariant- 0 * b == 0 * a + 0
+add: -1; -3; no_change; warning- too few samples for daikon.inv.binary.twoScalar.LinearBinary invariant- 0 * b == 0 * a + 0
+add: -100; -201; no_change; b == 2 * a - 1
+add: 13; 25; no_change; b == 2 * a - 1
+add: 0; -1; no_change; b == 2 * a - 1
+add: 12; 24; falsified; b == 2 * a - 1
+end
+
+daikon.inv.binary.twoString.StringEqual
+string string
+add: "hi"; "hi"; no_change; a == b
+add: "bye"; "bye"; no_change; a == b
+add: "wow"; "wow"; no_change; a == b
+add: "oh"; "no"; falsified; a == b
+end
+
+daikon.inv.binary.sequenceScalar.Member
+int_array int
+add: [ 1 13 7 ]; 1; no_change; b in a[]
+add: [ 12 9 11 ]; 9; no_change; b in a[]
+add: [ 43 -93 -1 ]; -93; no_change; b in a[]
+add: [ -2 12 ]; 0; falsified; b in a[]
+add: [ 13 11 43 1 ]; 13; no_change; b in a[]
+end
+
+daikon.inv.binary.sequenceScalar.SeqIntEqual
+int_array int
+add: [ 3 3 3 3 ]; 3; no_change; a[] elements == b
+add: [ -4 -4 -4 -4 -4 -4 ]; -4; no_change; a[] elements == b
+add: [ 5 ]; 5; no_change; a[] elements == b
+add: [ -3 -1 -3 ]; -3; falsified; a[] elements == b
+end
+
+daikon.inv.binary.sequenceString.MemberString
+string_array string
+add: [ "hi" "bye" "" "q" ]; "bye"; no_change; b in a[]
+add: [ "wow" "now" "bow" "dow" ]; "wow"; no_change; b in a[]
+add: [ "" "no" ]; ""; no_change; b in a[]
+add: [ "one" ]; "nope"; falsified; b in a[]
+add: [ "end" ]; "not again"; falsified; b in a[]
+end
+
+daikon.inv.binary.twoSequence.PairwiseIntEqual
+int_array int_array
+add: [ 1 2 3 ]; [1 2 3 ]; no_change; a[] == b[] (elementwise)
+add: [ 10 -1 6 ]; [10 -1 6 ]; no_change; a[] == b[] (elementwise)
+add: [ -3 -3 -9 ]; [-3 6 -9 ]; falsified; a[] == b[] (elementwise)
+end
+
+daikon.inv.binary.twoSequence.Reverse
+int_array int_array
+add: [ 1 5 -9 ]; [-9 5 1 ]; no_change; a[] is the reverse of b[]
+add: [ 3 -8 10 ]; [2 3 ]; falsified; a[] is the reverse of b[]
+add: [ 3 ]; [3 ]; no_change; a[] is the reverse of b[]
+add: [ 17 18 ]; [17 18 ]; falsified; a[] is the reverse of b[]
+end
+
+daikon.inv.binary.twoSequence.SeqSeqIntEqual
+int_array int_array
+add: [ 1 2 3 ]; [1 2 3 ]; no_change; a[] == b[]
+add: [ 14 15 -10 ]; [15 -10 14 ]; falsified; a[] == b[]
+add: [ 10 9 -23 ]; [9 -13 9 ]; falsified; a[] == b[]
+add: [ 11 1 14 ]; [0 1 11 ]; falsified; a[] == b[]
+end
+
+daikon.inv.binary.twoSequence.SubSequence
+int_array int_array
+add: [ 1 2 3 ]; [0 1 2 3 4 ]; no_change; a[] is a subsequence of b[]
+add: [ 14 15 -10 ]; [14 15 -10 ]; no_change; a[] is a subsequence of b[]
+add: [ 10 9 -23 ]; [10 9 -23 19 18 ]; no_change; a[] is a subsequence of b[]
+add: [ 14 11 -9 ]; [14 67 11 -10 -9 11 1 ]; falsified; a[] is a subsequence of b[]
+add: [ 11 1 14 ]; [11 1 ]; falsified; a[] is a subsequence of b[]
+end
+
+daikon.inv.binary.twoSequence.SubSet
+int_array int_array
+add: [ 1 2 3 ]; [0 1 2 3 4 ]; no_change; a[] is a subset of b[]
+add: [ 14 15 -10 ]; [14 -10 15 23 ]; no_change; a[] is a subset of b[]
+add: [ 10 9 -23 ]; [9 10 -23 ]; no_change; a[] is a subset of b[]
+add: [ 11 1 14 ]; [11 1 13 19 ]; falsified; a[] is a subset of b[]
+end
+
