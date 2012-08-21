@@ -20,6 +20,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -616,7 +617,7 @@ public class AnnotatedTypes {
             elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
-            System.err.println("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -665,7 +666,7 @@ public class AnnotatedTypes {
                             AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
                             if (atvrettype.getUnderlyingType().asElement() == var) {
                                 // Special case if the return type is the type variable we are looking at
-                                if (!factory.qualHierarchy.isSubtype(assigned.getAnnotations(),
+                                if (!factory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
                                         rettype.getEffectiveAnnotations())) {
                                     // If the assignment context is not a subtype of the upper bound of the
                                     // return type, take the type qualifiers from the upper bound.
@@ -1017,9 +1018,10 @@ public class AnnotatedTypes {
     /**
      * Add the 'intersection' of the types provided to alub.  This is a similar
      * method to the one provided
+     * TODO: the above sentence should be finished somehow...
      */
     private void addAnnotations(AnnotatedTypeMirror alub,
-            AnnotatedTypeMirror ...types) {
+            AnnotatedTypeMirror... types) {
         Set<TypeMirror> visited = new HashSet<TypeMirror>();
         addAnnotationsImpl(alub, visited, types);
     }
@@ -1033,10 +1035,14 @@ public class AnnotatedTypes {
 
         // types may contain a null in the context of unchecked cast
         // TODO: fix this
-        boolean isFirst = true;
+
+        AnnotatedTypeMirror origalub = alub;
+        boolean shouldAnnoOrig = false;
+
         // get rid of wildcards and type variables
         if (alub.getKind() == TypeKind.WILDCARD) {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
+            // TODO using the getEffective versions copies objects, losing side-effects.
         }
         if (alub.getKind() == TypeKind.TYPEVAR) {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
@@ -1048,6 +1054,10 @@ public class AnnotatedTypes {
         visited.add(alub.actualType);
 
         for (int i = 0; i < types.length; ++i) {
+            if (!(types[i].getAnnotations().isEmpty() ||
+                    bottomsOnly(types[i].getAnnotations()))) {
+                shouldAnnoOrig = true;
+            }
             if (types[i].getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
@@ -1066,6 +1076,7 @@ public class AnnotatedTypes {
 
         Collection<AnnotationMirror> unification = Collections.emptySet();
 
+        boolean isFirst = true;
         for (AnnotatedTypeMirror type : types) {
             if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
             if (type.getAnnotations().isEmpty()) continue;
@@ -1114,6 +1125,20 @@ public class AnnotatedTypes {
             }
             addAnnotationsImpl(aat.getComponentType(), visited, compTypes.toArray(new AnnotatedTypeMirror[0]));
         }
+        if (alub != origalub && shouldAnnoOrig) {
+            // These two are not the same if origalub is a wildcard or type variable.
+            // In that case, add the found annotations to the type variable also.
+            origalub.replaceAnnotations(alub.getAnnotations());
+        }
+    }
+
+    private boolean bottomsOnly(Set<AnnotationMirror> annotations) {
+        for (AnnotationMirror am : annotations) {
+            if (!AnnotationUtils.areSame(am, this.factory.getQualifierHierarchy().getBottomAnnotation(am))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
