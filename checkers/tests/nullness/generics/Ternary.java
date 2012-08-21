@@ -12,7 +12,9 @@ class Ternary {
 
     class Generic2<T extends @Nullable Object> {
         void cond(boolean b, T p) {
+            //:: error: (assignment.type.incompatible)
             T r1 = b ? p : null;
+            //:: error: (assignment.type.incompatible)
             T r2 = b ? null : p;
         }
     }
