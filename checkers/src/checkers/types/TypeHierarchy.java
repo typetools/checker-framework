@@ -123,7 +123,7 @@ public class TypeHierarchy {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
-                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBoundAnnotations();
+                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBound().getAnnotations();
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
             }
         }
@@ -213,9 +213,11 @@ public class TypeHierarchy {
                 rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
             }
             // compare lower bound of lhs to upper bound of rhs
-            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBoundAnnotations();
-            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBoundAnnotations();
-            return qualifierHierarchy.isSubtype(ras, las);
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBound().getAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBound().getAnnotations();
+            // TODO: empty annotation sets happened for captured wildcards. Is there
+            // a nicer solution? Is this a problem somewhere?
+            return las.isEmpty() || qualifierHierarchy.isSubtype(ras, las);
         } else if ((lhsBase.getKind().isPrimitive() || lhsBase.getKind() == TypeKind.DECLARED)
                 && rhsBase.getKind().isPrimitive()) {
             // There are only the main qualifiers and they were compared above.
