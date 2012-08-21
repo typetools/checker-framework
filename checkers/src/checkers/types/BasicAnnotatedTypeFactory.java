@@ -72,7 +72,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @param useFlow whether flow analysis should be performed
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root, boolean useFlow) {
-        super(checker, root);
+        super(checker, checker.getQualifierHierarchy(), root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
@@ -201,7 +201,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 for (AnnotationMirror inf : inferred) {
                     AnnotationMirror present = type.getAnnotationInHierarchy(inf);
                     if (present!=null) {
-                        if (this.qualHierarchy.isSubtype(inf, present)) {
+                        if (this.getQualifierHierarchy().isSubtype(inf, present)) {
                             // TODO: why is the above check needed? Shouldn't inferred
                             // qualifiers always be subtypes?
                             type.replaceAnnotation(inf);
