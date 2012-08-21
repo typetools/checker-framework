@@ -121,6 +121,8 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     leastUpperBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    	// System.out.println("LUB of: " + annos1 + " and " + annos2);
+    	// new Throwable().printStackTrace();
         if (annos1.size() == 1 && annos2.size() == 1) {
             AnnotationMirror a1 = annos1.iterator().next();
             AnnotationMirror a2 = annos2.iterator().next();
@@ -185,5 +187,16 @@ public abstract class QualifierHierarchy {
 
         return result;
     }
+
+    public AnnotationMirror findCorrespondingAnnotation(
+            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+        AnnotationMirror top = this.getTopAnnotation(aliased);
+        for(AnnotationMirror anno : annotations) {
+            if (this.isSubtype(anno, top)) {
+                return anno;
+            }
+        }
+        return null;
+	}
 
 }
