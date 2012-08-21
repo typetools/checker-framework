@@ -66,8 +66,11 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
 public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<NullnessSubchecker> {
 
     private final DependentTypes dependentTypes;
+
     /*package*/ final AnnotatedTypeFactory rawnessFactory;
-    private final AnnotatedTypeFactory plainFactory;
+
+    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
+    private final GeneralAnnotatedTypeFactory generalFactory;
 
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
@@ -84,12 +87,9 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             CompilationUnitTree root) {
         super(checker, root);
 
-        plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
+        generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
 
-        // TODO: why is this not a KeyForAnnotatedTypeFactory?
-        // What qualifiers does it insert? The qualifier hierarchy is null.
-        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
-        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
         systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
         NONNULL = checker.NONNULL;
@@ -130,7 +130,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
 
-        this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
+        this.dependentTypes = new DependentTypes(checker, root);
 
         RawnessSubchecker rawness = new RawnessSubchecker();
         rawness.currentPath = checker.currentPath;
@@ -268,7 +268,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree, constructor);
+        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
         return fromUse;
     }
 
@@ -318,7 +318,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 return false;
             }
         } else {
-            AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
+            AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
             if (receiver == null || receiver.getAnnotation(whenName) == null) {
                 return false;
             }
@@ -442,7 +442,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 type.removeAnnotation(NONNULL);
             }
 
-            assert type.isAnnotated() : type;
+            assert type.isAnnotated() : "NullnessAnnotatedTypeFactory found un-annotated type: " + type;
 
             return super.scan(type, p);
         }
