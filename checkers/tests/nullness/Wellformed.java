@@ -17,6 +17,7 @@ class Wellformed {
 
     // Annotations on type variables override implicit and explicit
     // annotations on the bounds.
+    // TODO: do we really like this?
     class Gen2a<@Nullable T> {}
     class Gen2b<@Nullable T extends Object> {}
     class Gen2c<@Nullable T extends @NonNull Object> {}

@@ -15,6 +15,7 @@ import javax.tools.Diagnostic.Kind;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -126,7 +127,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @return an {@link AnnotatedTypeFactory} for use by typecheckers
      */
     public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return new AnnotatedTypeFactory(this, root);
+        return new GeneralAnnotatedTypeFactory(this, root);
     }
 
     /**
