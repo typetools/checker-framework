@@ -1484,9 +1484,7 @@ public abstract class AnnotatedTypeMirror {
                     if (!annotations.isEmpty()) {
                         lowerBound.replaceAnnotations(annotations);
                     } else {
-                        if (typeFactory.getQualifierHierarchy() != null) {
-                            lowerBound.addAnnotations(typeFactory.qualHierarchy.getBottomAnnotations());
-                        }
+                        lowerBound.addAnnotations(typeFactory.getQualifierHierarchy().getBottomAnnotations());
                         // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                         // How should this be handled? What is that factory doing?
                     }
