@@ -34,64 +34,74 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
   */
 class GeneralQualifierHierarchy extends QualifierHierarchy {
 
+    // Return the qualifier itself instead of the top.
+    @Override
+    public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
+        return start;
+    }
+
+    // Return the qualifier itself instead of the bottom.
+    @Override
+    public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
+        return start;
+    }
+
+    // Never find a corresponding qualifier.
+    @Override
+    public AnnotationMirror findCorrespondingAnnotation(
+            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+        return null;
+    }
+
+    // Not needed - raises error.
     @Override
     public Set<AnnotationMirror> getTopAnnotations() {
         SourceChecker.errorAbort("GeneralQualifierHierarchy:getTopAnnotations() was called! It shouldn't be called.");
         return null;
     }
 
-    @Override
-    public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-        return start;
-    }
-
-    @Override
-    public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-        return start;
-    }
-
+    // Not needed - raises error.
     @Override
     public Set<AnnotationMirror> getBottomAnnotations() {
-        SourceChecker.errorAbort("GeneralQualifierHierarchy:getBottomAnnotations() was called! It shouldn't be called.");
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was called! It shouldn't be called.");
         return null;
     }
 
+    // Not needed - raises error.
     @Override
     public Set<Name> getTypeQualifiers() {
-        SourceChecker.errorAbort("GeneralQualifierHierarchy:getTypeQualifiers() was called! It shouldn't be called.");
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
         return null;
     }
 
+    // Not needed - raises error.
     @Override
     public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-        SourceChecker.errorAbort("GeneralQualifierHierarchy:isSubtype() was called! It shouldn't be called.");
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
         return false;
     }
 
+    // Not needed - raises error.
     @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs,
             Collection<AnnotationMirror> lhs) {
-        SourceChecker.errorAbort("GeneralQualifierHierarchy:isSubtyp() was called! It shouldn't be called.")
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
         return false;
     }
 
+    // Not needed - raises error.
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1,
             AnnotationMirror a2) {
-        SourceChecker.errorAbort("GeneralQualifierHierarchy:leastUpperBound() was called! It shouldn't be called."
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.leastUpperBound() was called! It shouldn't be called.");
         return null;
     }
 
+    // Not needed - raises error.
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
             AnnotationMirror a2) {
-        SourceChecker.errorAbort("ba9");
-        return null;
-    }
-
-    @Override
-    public AnnotationMirror findCorrespondingAnnotation(
-            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
         return null;
     }
 }
