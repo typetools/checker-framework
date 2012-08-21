@@ -185,10 +185,18 @@ public abstract class BaseTypeChecker extends SourceChecker {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
+                        "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                // polymorphic qualifiers don't need to declare their supertypes
-                if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
-                    continue;
                 errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
                     "Add an @checkers.quals.SubtypeOf annotation to it.");
             }
@@ -200,8 +208,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
-        // This no longer seems necessary.
-        // factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
