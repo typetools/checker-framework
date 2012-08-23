@@ -546,14 +546,23 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contracts
                 .getConditionalPostconditions(methodElement);
 
-        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForUse(n, analysis.getFactory());
+        FlowExpressionContext flowExprContext = null;
 
         for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
             String expression = p.first;
             AnnotationMirror anno = analysis.factory
                     .annotationFromName(p.second.second);
             boolean result = p.second.first;
+
+            // Only check if the postcondition concerns this checker
+            if (!analysis.getFactory().getChecker().isSupportedAnnotation(anno)) {
+                continue;
+            }
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(n, analysis.getFactory());
+            }
+
             try {
                 FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,
