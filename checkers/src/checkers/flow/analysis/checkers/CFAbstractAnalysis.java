@@ -124,7 +124,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         return qualifierHierarchy;
     }
 
-    public AnnotatedTypeFactory getFactory() {
+    public AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getFactory() {
         return factory;
     }
 
